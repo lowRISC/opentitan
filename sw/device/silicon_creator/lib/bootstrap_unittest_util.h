@@ -8,7 +8,11 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
@@ -82,7 +86,18 @@ class BootstrapTest : public rom_test::RomTest {
   void ExpectFlashCtrlEraseVerify(rom_error_t err0, rom_error_t err1);
 
   ::rom_test::MockAbsMmio mmio_;
+  // Holds whichever NVM driver mock matches the active top's technology
+  // (MockRramCtrl or MockFlashCtrl); kept as `flash_ctrl_` in both cases so
+  // `bootstrap_unittest.cc`'s many `EXPECT_CALL(flash_ctrl_, DataWrite(...))`
+  // sites -- identical between technologies for every case exercised there
+  // except one address (see the RRAM note in
+  // `BootstrapMisalignedAddrLongPayload`)
+  // -- don't need to be duplicated per technology.
+#ifdef HAS_RRAM_CTRL
+  ::rom_test::MockRramCtrl flash_ctrl_;
+#else
   ::rom_test::MockFlashCtrl flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   ::rom_test::MockOtp otp_;
   ::rom_test::MockRstmgr rstmgr_;
   ::rom_test::MockSpiDevice spi_device_;

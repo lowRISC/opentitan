@@ -152,7 +152,7 @@
         clk_main_infra:
         {
           src_name: main
-          endpoint_ip: flash_ctrl
+          endpoint_ip: rram_ctrl
         }
         clk_usb_infra:
         {

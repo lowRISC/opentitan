@@ -90,11 +90,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       main_sram_bkdr_write32(addr, rand_val);
     end
 
-    // Initialize the data partition in all flash banks to all 1s.
-    `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
-    cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
-
     // Initialize the info and data partition of the RRAM to all 0s.
     cfg.mem_bkdr_util_h[RramInfo].clear_mem();
     cfg.mem_bkdr_util_h[RramData].clear_mem();

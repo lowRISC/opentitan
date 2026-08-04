@@ -12,7 +12,11 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/testing/binary_blob.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -21,24 +25,61 @@
 namespace {
 #include "sw/device/silicon_creator/lib/ownership/testdata/basic_owner_testdata.h"
 
+#ifdef HAS_RRAM_CTRL
+using rom_test::MockRramCtrl;
+using rom_test::RramCfg;
+using rom_test::RramPerms;
+#else
 using rom_test::FlashCfg;
 using rom_test::FlashPerms;
 using rom_test::MockFlashCtrl;
+#endif  // HAS_RRAM_CTRL
 using ::testing::Return;
 using ::testutil::BinaryBlob;
 
 class OwnerBlockTest : public rom_test::RomTest {
  protected:
+#ifdef HAS_RRAM_CTRL
+  MockRramCtrl rram_ctrl_;
+  rram_ctrl_cfg_t default_config = {
+      .scrambling = kMultiBitBool4False,
+      .ecc = kMultiBitBool4False,
+  };
+#else
   MockFlashCtrl flash_ctrl_;
   flash_ctrl_cfg_t default_config = {
       .scrambling = kMultiBitBool4False,
       .ecc = kMultiBitBool4False,
       .he = kMultiBitBool4False,
   };
+#endif  // HAS_RRAM_CTRL
 
   void SetUp() override {
+#ifdef HAS_RRAM_CTRL
+    ON_CALL(rram_ctrl_, DataDefaultCfgGet)
+        .WillByDefault(Return(default_config));
+#else
     ON_CALL(flash_ctrl_, DataDefaultCfgGet)
         .WillByDefault(Return(default_config));
+#endif  // HAS_RRAM_CTRL
+  }
+
+  /**
+   * Stubs `DataDefaultCfgGet` so it always returns `default_config`.
+   *
+   * Not actually exercised by any code path under test in this file (the
+   * only real caller, `rom_ext.c`'s `rom_ext_nvm_protect_self`, is outside
+   * this file's scope) -- several tests below stub it defensively anyway;
+   * preserved as-is rather than removed.
+   */
+  void ExpectDefaultCfgGet() {
+#ifdef HAS_RRAM_CTRL
+    EXPECT_CALL(rram_ctrl_, DataDefaultCfgGet)
+        .WillRepeatedly(Return(default_config));
+#else
+    EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+        .WillRepeatedly(Return(default_config));
+#endif  // HAS_RRAM_CTRL
   }
 };
 
@@ -250,6 +291,23 @@ TEST_F(OwnerBlockTest, FlashConfigTooManyEntries) {
 TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
   // The ROM_EXT always uses regions 0-1 to protect itself,  The items in
   // the flash config always get programmed in order starting at index 2.
+  //
+  // RRAM's perms/cfg have no `erase`/`he` fields (`nvm_ctrl.c`'s
+  // `perms_to_rram`/`cfg_to_rram` drop them before calling the driver), so
+  // `RramPerms`/`RramCfg` below only carry the `read`/`write` and
+  // `scrambling`/`ecc` values from the flash-era matchers above.
+#ifdef HAS_RRAM_CTRL
+  EXPECT_CALL(
+      rram_ctrl_,
+      DataRegionProtect(
+          2, 32, 192, RramPerms(kMultiBitBool4True, kMultiBitBool4True),
+          RramCfg(kMultiBitBool4True, kMultiBitBool4True), kHardenedBoolFalse));
+  EXPECT_CALL(rram_ctrl_,
+              DataRegionProtect(
+                  3, 224, 32, RramPerms(kMultiBitBool4True, kMultiBitBool4True),
+                  RramCfg(kMultiBitBool4False, kMultiBitBool4False),
+                  kHardenedBoolFalse));
+#else
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(
@@ -266,6 +324,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
+#endif  // HAS_RRAM_CTRL
 
   uint32_t mp_index = 0;
   rom_error_t error = owner_block_nvm_apply(&simple_flash_config, kBootSlotA,
@@ -279,6 +338,18 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
 TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
   // The ROM_EXT always uses regions 0-1 to protect itself,  The items in
   // the flash config always get programmed in order starting at index 2.
+#ifdef HAS_RRAM_CTRL
+  EXPECT_CALL(
+      rram_ctrl_,
+      DataRegionProtect(
+          2, 32, 192, RramPerms(kMultiBitBool4True, kMultiBitBool4False),
+          RramCfg(kMultiBitBool4True, kMultiBitBool4True), kHardenedBoolFalse));
+  EXPECT_CALL(rram_ctrl_,
+              DataRegionProtect(
+                  3, 224, 32, RramPerms(kMultiBitBool4True, kMultiBitBool4True),
+                  RramCfg(kMultiBitBool4False, kMultiBitBool4False),
+                  kHardenedBoolFalse));
+#else
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(
@@ -295,6 +366,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
+#endif  // HAS_RRAM_CTRL
 
   uint32_t mp_index = 0;
   rom_error_t error =
@@ -309,6 +381,18 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
 TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
   // The ROM_EXT always uses regions 0-1 to protect itself,  The items in
   // the flash config always get programmed in order starting at index 2.
+#ifdef HAS_RRAM_CTRL
+  EXPECT_CALL(
+      rram_ctrl_,
+      DataRegionProtect(
+          2, 256 + 32, 192, RramPerms(kMultiBitBool4True, kMultiBitBool4True),
+          RramCfg(kMultiBitBool4True, kMultiBitBool4True), kHardenedBoolFalse));
+  EXPECT_CALL(rram_ctrl_, DataRegionProtect(
+                              3, 256 + 224, 32,
+                              RramPerms(kMultiBitBool4True, kMultiBitBool4True),
+                              RramCfg(kMultiBitBool4False, kMultiBitBool4False),
+                              kHardenedBoolFalse));
+#else
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(
@@ -325,6 +409,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
+#endif  // HAS_RRAM_CTRL
 
   uint32_t mp_index = 0;
   rom_error_t error =
@@ -335,8 +420,13 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
 
 TEST_F(OwnerBlockTest, FlashInfoApply) {
   // bank=0, page=6 resolves (via nvm_ctrl_info_page_lookup, which runs for
-  // real -- it's pure computation, not a flash_ctrl call) to
-  // kFlashCtrlInfoPageOwnerReserved1.
+  // real -- it's pure computation, not a driver call) to
+  // kNvmInfoPageOwnerReserved1 / kFlashCtrlInfoPageOwnerReserved1.
+#ifdef HAS_RRAM_CTRL
+  // OwnerReserved1 is an emulated info page on RRAM (relocated onto the data
+  // partition): `nvm_ctrl_info_cfg_set`/`nvm_ctrl_info_perms_set` are no-ops
+  // for emulated pages (see nvm_ctrl.c), so no driver call is expected here.
+#else
   EXPECT_CALL(flash_ctrl_,
               InfoCfgSet(&kFlashCtrlInfoPageOwnerReserved1,
                          FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
@@ -345,14 +435,20 @@ TEST_F(OwnerBlockTest, FlashInfoApply) {
               InfoPermsSet(&kFlashCtrlInfoPageOwnerReserved1,
                            FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
                                       kMultiBitBool4True)));
+#endif  // HAS_RRAM_CTRL
 
   rom_error_t error = owner_block_info_apply(&info_config);
   EXPECT_EQ(error, kErrorOk);
 }
 
 TEST_F(OwnerBlockTest, FlashInfoLock) {
+#ifdef HAS_RRAM_CTRL
+  // See the RRAM note in `FlashInfoApply` above: OwnerReserved1 is emulated,
+  // so `nvm_ctrl_info_cfg_lock` is a no-op and no driver call is expected.
+#else
   // bank=0, page=6 resolves to kFlashCtrlInfoPageOwnerReserved1, as above.
   EXPECT_CALL(flash_ctrl_, InfoCfgLock(&kFlashCtrlInfoPageOwnerReserved1));
+#endif  // HAS_RRAM_CTRL
 
   rom_error_t error = owner_block_info_lockdown(&info_config);
   EXPECT_EQ(error, kErrorOk);
@@ -363,8 +459,7 @@ TEST_F(OwnerBlockTest, ParseBlock) {
   owner_config_t config;
   owner_application_keyring_t keyring{};
 
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   rom_error_t error = owner_block_parse(
       block.get(), /*check_only=*/kHardenedBoolFalse, &config, &keyring);
   EXPECT_EQ(error, kErrorOk);
@@ -400,8 +495,7 @@ TEST_F(OwnerBlockTest, ParseBlockBadHeaderTag) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Write an unknown header of {tag="AAAA", len=0x40} after the RESQ config.
   tlv_header_t rescue = block.Find(kTlvTagRescueConfig).Read<tlv_header_t>();
@@ -420,8 +514,7 @@ TEST_F(OwnerBlockTest, ParseBlockBadLength) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   owner_config_t config;
   owner_application_keyring_t keyring{};
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
 
   // Rewrite the RESQ block length to overflow the TLV region.
   block.Find(kTlvTagRescueConfig)
@@ -451,8 +544,7 @@ TEST_F(OwnerBlockTest, ParseBlockBadLength) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockDupFlash) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as a FLSH tag to test duplicate detection.
   block.Find(kTlvTagRescueConfig).Write(kTlvTagNvmConfig);
@@ -464,8 +556,7 @@ TEST_F(OwnerBlockTest, ParseBlockDupFlash) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockDupInfo) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as an INFO tag to test duplicate detection.
   block.Find(kTlvTagRescueConfig).Write(kTlvTagInfoConfig);
@@ -488,8 +579,7 @@ TEST_F(OwnerBlockTest, ParseBlockDupRescue) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockDupIsfb) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as an ISFB tag to test duplicate detection.
   block.Find(kTlvTagRescueConfig)
@@ -598,8 +688,7 @@ class OwnerBlockPerTagTest : public OwnerBlockTest,
                              public testing::WithParamInterface<TagError> {};
 
 TEST_P(OwnerBlockPerTagTest, ParseBadVersion) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   TagError param = GetParam();
 
@@ -1022,8 +1111,7 @@ class RomExtFlashConfigTest
 
 // Test bad ROM_EXT region configs with respect to the default config.
 TEST_P(RomExtFlashConfigTest, BadFlashConfig) {
-  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
-      .WillRepeatedly(Return(default_config));
+  ExpectDefaultCfgGet();
   const owner_nvm_config_t *param;
   rom_error_t expected;
   std::tie(param, expected) = GetParam();

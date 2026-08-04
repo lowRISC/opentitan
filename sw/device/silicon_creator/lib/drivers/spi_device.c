@@ -11,8 +11,8 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device_bfpt.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/spi_device_regs.h"
 
 static const dt_spi_device_t kSpiDeviceDt = kDtSpiDevice;
@@ -36,10 +36,15 @@ enum {
   kSfdpAreaEndOff = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
                     kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
   /**
-   * Flash data partition size in bits.
+   * Emulated flash (NVM data partition) size in bits, as reported to the SPI
+   * host via the BFPT (see BFPT_WORD_2 below). Uses the same
+   * `NVM_USABLE_DATA_SIZE_BYTES` bound bootstrap.c enforces for
+   * PAGE_PROGRAM/erase addresses, rather than the full NVM data partition,
+   * so this technology-agnostic value never overstates what's actually
+   * writable (relevant on RRAM, where a reserved tail past that bound is not
+   * plain-data-addressable).
    */
-  kFlashBitCount =
-      FLASH_CTRL_PARAM_REG_NUM_BANKS * FLASH_CTRL_PARAM_BYTES_PER_BANK * 8,
+  kFlashBitCount = NVM_USABLE_DATA_SIZE_BYTES * 8,
   /**
    * 32-bit SFDP signature that indicates the presence of a SFDP table
    * (JESD216F 6.2.1).

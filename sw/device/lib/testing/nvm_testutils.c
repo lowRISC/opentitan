@@ -11,7 +11,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #ifdef HAS_RRAM_CTRL
 #include "sw/device/lib/dif/dif_rram_ctrl.h"
@@ -19,6 +18,7 @@
 #else
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #endif  // HAS_RRAM_CTRL
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -80,12 +80,12 @@ status_t nvm_testutils_rom_init(uint32_t otp_nvm_default_cfg) {
   TRY(dif_rram_ctrl_get_default_region_properties(&rram, &props));
   props.rd_en = kMultiBitBool4True;
   if (otp_nvm_default_cfg != 0) {
-    // RRAM has no high-endurance concept, so FLASH_CTRL_OTP_FIELD_HE is not
-    // applied here.
+    // RRAM has no high-endurance concept, so RRAM_CTRL_OTP_FIELD_HE (which
+    // doesn't exist) is not applied here.
     props.scramble_en = bitfield_field32_read(otp_nvm_default_cfg,
-                                              FLASH_CTRL_OTP_FIELD_SCRAMBLING);
+                                              RRAM_CTRL_OTP_FIELD_SCRAMBLING);
     props.ecc_en =
-        bitfield_field32_read(otp_nvm_default_cfg, FLASH_CTRL_OTP_FIELD_ECC);
+        bitfield_field32_read(otp_nvm_default_cfg, RRAM_CTRL_OTP_FIELD_ECC);
   }
   TRY(dif_rram_ctrl_set_default_region_properties(&rram, props));
   TRY(dif_rram_ctrl_set_rram_enablement(&rram, kDifToggleEnabled));

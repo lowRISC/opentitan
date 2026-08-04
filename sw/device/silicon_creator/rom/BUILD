@@ -388,7 +388,6 @@ cc_test(
     srcs = ["bootstrap_unittest.cc"],
     deps = [
         ":bootstrap",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

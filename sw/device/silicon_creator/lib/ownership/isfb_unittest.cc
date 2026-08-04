@@ -10,11 +10,19 @@
 #include <vector>
 
 #include "sw/device/lib/base/hardened.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
+#ifdef HAS_RRAM_CTRL
+using rom_test::MockRramCtrl;
+#else
 using rom_test::MockFlashCtrl;
+#endif  // HAS_RRAM_CTRL
 using ::testing::_;
 
 enum {
@@ -38,12 +46,29 @@ class IsfbTest : public rom_test::RomTest {
 
   void ExpectInfoRead(const std::vector<uint32_t> &data, uint32_t offset,
                       rom_error_t error) {
+#ifdef HAS_RRAM_CTRL
+    // `isfb_config_` above (bank=0, page=5) maps to
+    // `kNvmInfoPageOwnerReserved0` (see `nvm_ctrl_info_page_lookup`), which
+    // is an emulated info page on RRAM: `nvm_ctrl_info_read()` becomes a
+    // plain data-partition `DataRead` at the page's base address rather than
+    // an `InfoRead`.
+    uint32_t addr = kRramCtrlInfoPageOwnerReserved0.page_id *
+                        RRAM_CTRL_PARAM_BYTES_PER_PAGE +
+                    offset;
+    EXPECT_CALL(rram_ctrl_, DataRead(addr, data.size(), _))
+        .WillOnce([data, error](auto, auto, void *out) {
+          uint32_t *data_out = reinterpret_cast<uint32_t *>(out);
+          std::copy_n(data.begin(), data.size(), data_out);
+          return error;
+        });
+#else
     EXPECT_CALL(flash_ctrl_, InfoRead(_, offset, data.size(), _))
         .WillOnce([data, error](auto, auto, auto, void *out) {
           uint32_t *data_out = reinterpret_cast<uint32_t *>(out);
           std::copy_n(data.begin(), data.size(), data_out);
           return error;
         });
+#endif  // HAS_RRAM_CTRL
   }
 
   std::vector<uint32_t> StrikeFlashWords(uint32_t strike_count) {
@@ -63,7 +88,11 @@ class IsfbTest : public rom_test::RomTest {
     }
     return words;
   }
+#ifdef HAS_RRAM_CTRL
+  MockRramCtrl rram_ctrl_;
+#else
   MockFlashCtrl flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   owner_isfb_config_t isfb_config_;
   owner_config_t owner_config_;
 };

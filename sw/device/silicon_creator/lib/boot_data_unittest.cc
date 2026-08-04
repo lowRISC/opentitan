@@ -8,17 +8,39 @@
 #include <cstring>
 
 #include "gtest/gtest.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// `boot_data.c` addresses its two pages via the tech-agnostic `nvm_ctrl_*`
+// API; which pages those are, and how permissions/reads/writes on them
+// actually reach the hardware, depends on the active top's NVM technology
+// (see `nvm_ctrl.c`). BootData0/1 are always *emulated* info pages on RRAM
+// (relocated onto the data partition), so they're mocked at the
+// `rram_ctrl_data_*` layer rather than `rram_ctrl_info_*`, and permission
+// changes on them are no-ops (see the `ExpectPermsSet` no-op below).
+#ifdef HAS_RRAM_CTRL
+using boot_data_page_t = rram_ctrl_info_page_t;
+#define kBootDataPage0 kRramCtrlInfoPageBootData0
+#define kBootDataPage1 kRramCtrlInfoPageBootData1
+#else
+using boot_data_page_t = flash_ctrl_info_page_t;
+#define kBootDataPage0 kFlashCtrlInfoPageBootData0
+#define kBootDataPage1 kFlashCtrlInfoPageBootData1
+
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {
   return std::memcmp(&lhs, &rhs, sizeof(flash_ctrl_perms_t)) == 0;
 }
+#endif  // HAS_RRAM_CTRL
 
 bool operator==(boot_data_t lhs, boot_data_t rhs) {
   return std::memcmp(&lhs, &rhs, sizeof(boot_data_t)) == 0;
@@ -92,7 +114,11 @@ using ::testing::SetArgPointee;
 
 class BootDataTest : public rom_test::RomTest {
  protected:
+#ifdef HAS_RRAM_CTRL
+  rom_test::MockRramCtrl rram_ctrl_;
+#else
   rom_test::MockFlashCtrl flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   rom_test::MockHmac hmac_;
   rom_test::MockOtp otp_;
 
@@ -104,10 +130,10 @@ class BootDataTest : public rom_test::RomTest {
   std::array<uint32_t, kBootDataNumWords> part_erased_entry_ = {};
 
   BootDataTest() {
-    std::fill_n(erased_entry_.begin(), kBootDataNumWords, kFlashCtrlErasedWord);
+    std::fill_n(erased_entry_.begin(), kBootDataNumWords, kNvmErasedWord);
     std::fill_n(non_erased_entry_.begin(), kBootDataNumWords, 0x01234567);
     std::fill_n(part_erased_entry_.begin(), kBootDataNumWords, 0x01234567);
-    std::fill_n(part_erased_entry_.begin(), 3, kFlashCtrlErasedWord);
+    std::fill_n(part_erased_entry_.begin(), 3, kNvmErasedWord);
   }
 
   /**
@@ -124,23 +150,36 @@ class BootDataTest : public rom_test::RomTest {
    * @param count  Optionally the number of values expected to be read from the
    *               start of the entry. Useful for expecting sniffs.
    */
-  void ExpectRead(const flash_ctrl_info_page_t *page, size_t index,
+  void ExpectRead(const boot_data_page_t *page, size_t index,
                   std::array<uint32_t, kBootDataNumWords> data,
                   rom_error_t error) {
     size_t offset = index * sizeof(boot_data_t);
 
-    // Mock out flash_ctrl_page_info_read to pass the given `data` and return
-    // the given `error`.
+    // Mock out the read to pass the given `data` and return the given
+    // `error`.
     //
     // Using a lambda rather than `.SetArrayArgument(...).Return(error)`
     // because we have to cast the `void*` argument to a real pointer type
     // before we can write to it.
+#ifdef HAS_RRAM_CTRL
+    // BootData0/1 are emulated info pages, addressed as plain data-partition
+    // reads (see `nvm_ctrl_info_read`'s `p->emulated` branch).
+    uint32_t addr =
+        page->page_id * (uint32_t)NVM_BYTES_PER_PAGE + (uint32_t)offset;
+    EXPECT_CALL(rram_ctrl_, DataRead(addr, kBootDataNumWords, _))
+        .WillOnce([data, error](auto, auto, void *out) {
+          uint32_t *out_words = static_cast<uint32_t *>(out);
+          std::copy_n(data.begin(), kBootDataNumWords, out_words);
+          return error;
+        });
+#else
     EXPECT_CALL(flash_ctrl_, InfoRead(page, offset, kBootDataNumWords, _))
         .WillOnce([data, error](auto, auto, auto, void *out) {
           uint32_t *out_words = static_cast<uint32_t *>(out);
           std::copy_n(data.begin(), kBootDataNumWords, out_words);
           return error;
         });
+#endif  // HAS_RRAM_CTRL
   }
 
   /**
@@ -153,7 +192,7 @@ class BootDataTest : public rom_test::RomTest {
    * @param error Value to be returned by the read.
    */
   template <size_t N>
-  void ExpectSniff(const flash_ctrl_info_page_t *page, size_t index,
+  void ExpectSniff(const boot_data_page_t *page, size_t index,
                    std::array<uint32_t, N> data, rom_error_t error) {
     static_assert(N > 3, "Data must be at least three words for a sniff");
 
@@ -162,12 +201,23 @@ class BootDataTest : public rom_test::RomTest {
 
     // As with `ExpectRead`, provide the given `data` and `error` using a lambda
     // to support casting the `void*` parameter before writing.
+#ifdef HAS_RRAM_CTRL
+    uint32_t addr =
+        page->page_id * (uint32_t)NVM_BYTES_PER_PAGE + (uint32_t)offset;
+    EXPECT_CALL(rram_ctrl_, DataRead(addr, 3, _))
+        .WillOnce([data, error](auto, auto, void *out) {
+          uint32_t *out_words = static_cast<uint32_t *>(out);
+          std::copy_n(data.begin(), 3, out_words);
+          return error;
+        });
+#else
     EXPECT_CALL(flash_ctrl_, InfoRead(page, offset, 3, _))
         .WillOnce([data, error](auto, auto, auto, void *out) {
           uint32_t *out_words = static_cast<uint32_t *>(out);
           std::copy_n(data.begin(), 3, out_words);
           return error;
         });
+#endif  // HAS_RRAM_CTRL
   }
 
   /**
@@ -211,14 +261,24 @@ class BootDataTest : public rom_test::RomTest {
    * @param write Expected setting for the `.write` permission.
    * @param erase Expected setting for the `.erase` permission.
    */
-  void ExpectPermsSet(const flash_ctrl_info_page_t *page, bool read, bool write,
+  void ExpectPermsSet(const boot_data_page_t *page, bool read, bool write,
                       bool erase) {
+#ifdef HAS_RRAM_CTRL
+    // `page` is always BootData0/BootData1, which are emulated pages on
+    // RRAM. `nvm_ctrl_info_perms_set()` is a no-op for emulated pages (see
+    // nvm_ctrl.c), so no driver call happens here.
+    (void)page;
+    (void)read;
+    (void)write;
+    (void)erase;
+#else
     flash_ctrl_perms_t perms = {
         .read = read ? kMultiBitBool4True : kMultiBitBool4False,
         .write = write ? kMultiBitBool4True : kMultiBitBool4False,
         .erase = erase ? kMultiBitBool4True : kMultiBitBool4False,
     };
     EXPECT_CALL(flash_ctrl_, InfoPermsSet(page, perms));
+#endif  // HAS_RRAM_CTRL
   }
 
   /**
@@ -232,9 +292,8 @@ class BootDataTest : public rom_test::RomTest {
    * @param reads Function given the `page` containing expectations of the reads
    *              happening there.
    */
-  void ExpectPageScan(
-      const flash_ctrl_info_page_t *page,
-      std::function<void(const flash_ctrl_info_page_t *)> reads) {
+  void ExpectPageScan(const boot_data_page_t *page,
+                      std::function<void(const boot_data_page_t *)> reads) {
     ExpectPermsSet(page, true, false, false);
     reads(page);
     ExpectPermsSet(page, false, false, false);
@@ -264,7 +323,7 @@ class BootDataTest : public rom_test::RomTest {
     // #2. Non-erased and bootable but invalid digest.
     // #3. Entry with sniffed area erased but the rest not.
     // #4. Fully erased entry.
-    return [=](const flash_ctrl_info_page_t *page) {
+    return [=](const boot_data_page_t *page) {
       // Expect to sniff each entry, fully reading if it could be erased.
       ExpectSniff(page, 0, non_erased_entry_, kErrorOk);
       ExpectSniff(page, 1, boot_data_raw, kErrorOk);
@@ -331,8 +390,8 @@ class BootDataReadTest : public BootDataTest {};
 
 TEST_F(BootDataReadTest, ReadBothValidTest1) {
   // Expect both pages to be checked, with both giving valid entries.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1));
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kBootDataPage1, EntryPage(kValidEntry1));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -342,8 +401,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest1) {
 
 TEST_F(BootDataReadTest, ReadBothValidTest2) {
   // Same as above, but swap which page contains `test_entry_1`.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry1));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry0));
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntry1));
+  ExpectPageScan(&kBootDataPage1, EntryPage(kValidEntry0));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -353,8 +412,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest2) {
 
 TEST_F(BootDataReadTest, ReadOneEntryTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kBootDataPage1, ErasedPage());
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -363,8 +422,8 @@ TEST_F(BootDataReadTest, ReadOneEntryTest) {
 
 TEST_F(BootDataReadTest, ReadOneValidTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kBootDataPage1, EntryPage(kValidEntry1, false));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -375,8 +434,8 @@ TEST_F(BootDataReadTest, ReadOneValidTest) {
 
 TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kBootDataPage0, ErasedPage());
+  ExpectPageScan(&kBootDataPage1, ErasedPage());
 
   // Expect to fall back to loading the default entry.
   ExpectAllowedInProdCheck(false);
@@ -389,8 +448,8 @@ TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
   // Expect both pages to be searched, but give invalid entries for both.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0, false));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntry0, false));
+  ExpectPageScan(&kBootDataPage1, EntryPage(kValidEntry1, false));
 
   // Expect to fall back to loading the default entry.
   ExpectAllowedInProdCheck(false);
@@ -403,8 +462,8 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadDefaultAllowedInProdTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kBootDataPage0, ErasedPage());
+  ExpectPageScan(&kBootDataPage1, ErasedPage());
 
   // Expect to fall back to loading the default entry (allowed in prod).
   ExpectAllowedInProdCheck(true);
@@ -417,8 +476,8 @@ TEST_F(BootDataReadTest, ReadDefaultAllowedInProdTest) {
 
 TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kBootDataPage0, ErasedPage());
+  ExpectPageScan(&kBootDataPage1, ErasedPage());
 
   // Expect to fall back to loading the default entry (now allowed in prod).
   ExpectAllowedInProdCheck(false);
@@ -430,8 +489,8 @@ TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
 
 TEST_F(BootDataReadTest, ReadV1AsV2Test) {
   // Expect both to be searched, but only provide an entry in one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntryV1));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kBootDataPage0, EntryPage(kValidEntryV1));
+  ExpectPageScan(&kBootDataPage1, ErasedPage());
 
   // Expect a new digest computation on version 2 of the boot data.
   ExpectDigestCompute(kValidEntry0, true);

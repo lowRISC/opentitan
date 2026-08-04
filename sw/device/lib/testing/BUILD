@@ -212,19 +212,30 @@ cc_library(
     ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":flash_ctrl_testutils",
-        ":rram_ctrl_testutils",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:rram_ctrl",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-    ],
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            ":flash_ctrl_testutils",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        [
+            ":rram_ctrl_testutils",
+            "//sw/device/lib/dif:rram_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:rram_ctrl",
+        ],
+        [],
+    ),
 )
 
 cc_library(
@@ -238,13 +249,18 @@ cc_library(
     ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":flash_ctrl_testutils",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
     ] + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            ":flash_ctrl_testutils",
+            "//hw/top:flash_ctrl_c_regs",
+            "//sw/device/lib/dif:flash_ctrl",
+        ],
+        [],
+    ) + opentitan_if_ip(
         "rram_ctrl",
         [
             ":rram_ctrl_testutils",

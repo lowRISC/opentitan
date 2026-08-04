@@ -28,15 +28,6 @@ tl_device_t xbar_devices[$] = '{
     '{"usbdev", '{
         '{32'h40320000, 32'h40320fff}
     }},
-    '{"flash_ctrl__core", '{
-        '{32'h41000000, 32'h410001ff}
-    }},
-    '{"flash_ctrl__prim", '{
-        '{32'h41008000, 32'h4100807f}
-    }},
-    '{"flash_ctrl__mem", '{
-        '{32'h20000000, 32'h200fffff}
-    }},
     '{"rram_ctrl__core", '{
         '{32'h41010000, 32'h410101ff}
     }},
@@ -174,7 +165,6 @@ tl_host_t xbar_hosts[$] = '{
         "rv_dm__mem",
         "sram_ctrl_main__ram",
         "sram_ctrl_sec__ram",
-        "flash_ctrl__mem",
         "rram_ctrl__host"}}
     ,
     '{"rv_core_ibex__cored", 1, '{
@@ -212,9 +202,6 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
-        "flash_ctrl__core",
-        "flash_ctrl__prim",
-        "flash_ctrl__mem",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",
@@ -267,9 +254,6 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
-        "flash_ctrl__core",
-        "flash_ctrl__prim",
-        "flash_ctrl__mem",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",

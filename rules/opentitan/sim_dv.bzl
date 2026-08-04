@@ -98,12 +98,15 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             word_size = word_size,
             fill = "0x00" if is_rram else "0xff",
         )
-        vmem32 = convert_to_vmem(
-            ctx,
-            name = name,
-            src = signed_bin if signed_bin else binary,
-            word_size = 32,
-        )
+        if not is_rram:
+            vmem32 = convert_to_vmem(
+                ctx,
+                name = name,
+                src = signed_bin if signed_bin else binary,
+                word_size = 32,
+            )
+        else:
+            vmem32 = None
         if scramble_tool != None:
             vmem = scramble(
                 ctx,

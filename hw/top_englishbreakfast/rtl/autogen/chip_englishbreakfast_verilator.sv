@@ -270,7 +270,6 @@ module chip_englishbreakfast_verilator (
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
 
   // observe interface
-  logic [7:0] flash_obs;
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -297,11 +296,6 @@ module chip_englishbreakfast_verilator (
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
-
-  // Flash connections
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -462,9 +456,7 @@ module chip_englishbreakfast_verilator (
     // main regulator
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)/otp
-    .flash_power_down_h_o  ( flash_power_down_h ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
+    // pdm control otp
     .otp_power_seq_i       ( otp_macro_pwr_seq ),
     .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
@@ -506,7 +498,6 @@ module chip_englishbreakfast_verilator (
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( flash_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .usb_obs_i             ( '0 ),
@@ -520,7 +511,6 @@ module chip_englishbreakfast_verilator (
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     // englishbreakfast does not use the AST SRAM configuration: leave the cfg
     // request output open and tie the response input off (all consumers default).

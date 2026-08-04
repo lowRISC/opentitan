@@ -29,26 +29,28 @@
 #include "hw/top/csrng_regs.h"          // Generated.
 #include "hw/top/edn_regs.h"            // Generated.
 #include "hw/top/entropy_src_regs.h"    // Generated.
-#include "hw/top/flash_ctrl_regs.h"     // Generated.
-#include "hw/top/gpio_regs.h"           // Generated.
-#include "hw/top/hmac_regs.h"           // Generated.
-#include "hw/top/i2c_regs.h"            // Generated.
-#include "hw/top/keymgr_regs.h"         // Generated.
-#include "hw/top/kmac_regs.h"           // Generated.
-#include "hw/top/lc_ctrl_regs.h"        // Generated.
-#include "hw/top/otbn_regs.h"           // Generated.
-#include "hw/top/otp_ctrl_regs.h"       // Generated.
-#include "hw/top/pinmux_regs.h"         // Generated.
-#include "hw/top/pwrmgr_regs.h"         // Generated.
-#include "hw/top/rstmgr_regs.h"         // Generated.
-#include "hw/top/rv_timer_regs.h"       // Generated.
-#include "hw/top/sensor_ctrl_regs.h"    // Generated.
-#include "hw/top/spi_device_regs.h"     // Generated.
-#include "hw/top/spi_host_regs.h"       // Generated.
-#include "hw/top/sram_ctrl_regs.h"      // Generated.
-#include "hw/top/sysrst_ctrl_regs.h"    // Generated.
-#include "hw/top/uart_regs.h"           // Generated.
-#include "hw/top/usbdev_regs.h"         // Generated.
+#ifdef HAS_FLASH_CTRL
+#include "hw/top/flash_ctrl_regs.h"   // Generated.
+#endif                                // HAS_FLASH_CTRL
+#include "hw/top/gpio_regs.h"         // Generated.
+#include "hw/top/hmac_regs.h"         // Generated.
+#include "hw/top/i2c_regs.h"          // Generated.
+#include "hw/top/keymgr_regs.h"       // Generated.
+#include "hw/top/kmac_regs.h"         // Generated.
+#include "hw/top/lc_ctrl_regs.h"      // Generated.
+#include "hw/top/otbn_regs.h"         // Generated.
+#include "hw/top/otp_ctrl_regs.h"     // Generated.
+#include "hw/top/pinmux_regs.h"       // Generated.
+#include "hw/top/pwrmgr_regs.h"       // Generated.
+#include "hw/top/rstmgr_regs.h"       // Generated.
+#include "hw/top/rv_timer_regs.h"     // Generated.
+#include "hw/top/sensor_ctrl_regs.h"  // Generated.
+#include "hw/top/spi_device_regs.h"   // Generated.
+#include "hw/top/spi_host_regs.h"     // Generated.
+#include "hw/top/sram_ctrl_regs.h"    // Generated.
+#include "hw/top/sysrst_ctrl_regs.h"  // Generated.
+#include "hw/top/uart_regs.h"         // Generated.
+#include "hw/top/usbdev_regs.h"       // Generated.
 
 #endif
 

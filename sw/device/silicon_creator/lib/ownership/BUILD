@@ -7,6 +7,7 @@ load(
     "dual_cc_library",
     "dual_inputs",
 )
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
@@ -57,10 +58,17 @@ cc_test(
         ":owner_block",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
-    ],
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+        [],
+    ),
 )
 
 dual_cc_library(

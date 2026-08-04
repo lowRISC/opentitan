@@ -560,7 +560,7 @@
           desc:
             '''
             MMIO region excludes any memory that is separate from the module configuration
-            space, i.e. ROM, main SRAM, and flash are excluded but retention SRAM, spi_device
+            space, i.e. ROM, main SRAM, and RRAM are excluded but retention SRAM, spi_device
             memory, or usbdev memory are included.
             '''
           nodes:
@@ -591,8 +591,6 @@
             ast
             sensor_ctrl
             sram_ctrl_ret
-            flash_ctrl.core
-            flash_ctrl.prim
             rram_ctrl.core
             rram_macro.prim
             rv_plic
@@ -6003,418 +6001,6 @@
       generate_dif: true
     }
     {
-      name: flash_ctrl
-      type: flash_ctrl
-      template_type: flash_ctrl
-      clock_srcs:
-      {
-        clk_i: main
-        clk_otp_i: io_div4
-      }
-      clock_group: infra
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc
-          domain: Main
-        }
-        rst_otp_ni:
-        {
-          name: lc_io_div4
-          domain: Main
-        }
-      }
-      base_addrs:
-      {
-        core:
-        {
-          hart: 0x41000000
-        }
-        prim:
-        {
-          hart: 0x41008000
-        }
-        mem:
-        {
-          hart: 0x20000000
-        }
-      }
-      param_decl:
-      {
-        ProgFifoDepth: "4"
-      }
-      memory:
-      {
-        mem:
-        {
-          label: eflash
-          swaccess: ro
-          data_intg_passthru: "true"
-          exec: True
-          byte_write: False
-          config:
-          {
-            banks: 2
-            pages_per_bank: 256
-            program_resolution: 8
-            pgm_resolution_bytes: 64
-            bytes_per_page: 2048
-            bytes_per_bank: 524288
-            size: 0x100000
-          }
-          size: 0x100000
-        }
-      }
-      attr: ipgen
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks_i.clk_main_infra
-        clk_otp_i: clkmgr_clocks_i.clk_io_div4_infra
-      }
-      param_list:
-      [
-        {
-          name: SecScrambleEn
-          desc: Compile-time option to enable flash scrambling
-          type: bit
-          default: "1"
-          local: "false"
-          expose: "true"
-          name_top: SecFlashCtrlScrambleEn
-        }
-        {
-          name: ProgFifoDepth
-          desc: Depth of program fifo
-          type: int
-          default: "4"
-          local: "false"
-          expose: "true"
-          name_top: FlashCtrlProgFifoDepth
-        }
-        {
-          name: RdFifoDepth
-          desc: Depth of read fifo
-          type: int
-          default: "16"
-          local: "false"
-          expose: "true"
-          name_top: FlashCtrlRdFifoDepth
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: otp
-          struct: nvm_otp_key
-          package: otp_ctrl_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          top_signame: flash_ctrl_otp
-          index: -1
-        }
-        {
-          name: lc_nvm_debug_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_nvm_debug_en
-          index: -1
-        }
-        {
-          name: flash_bist_enable
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_bist_enable
-        }
-        {
-          name: flash_power_down_h
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_power_down_h
-        }
-        {
-          name: flash_power_ready_h
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_power_ready_h
-        }
-        {
-          name: flash_test_mode_a
-          struct: ""
-          type: io
-          act: none
-          width: 2
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_test_mode_a
-        }
-        {
-          name: flash_test_voltage_h
-          struct: ""
-          type: io
-          act: none
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_test_voltage_h
-        }
-        {
-          name: lc_creator_seed_sw_rw_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
-          index: -1
-        }
-        {
-          name: lc_owner_seed_sw_rw_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
-          index: -1
-        }
-        {
-          name: lc_iso_part_sw_rd_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_iso_part_sw_rd_en
-          index: -1
-        }
-        {
-          name: lc_iso_part_sw_wr_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_iso_part_sw_wr_en
-          index: -1
-        }
-        {
-          name: lc_seed_hw_rd_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_seed_hw_rd_en
-          index: -1
-        }
-        {
-          name: lc_escalate_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_escalate_en
-          index: -1
-        }
-        {
-          name: rma_req
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_nvm_rma_req
-          index: -1
-        }
-        {
-          name: rma_ack
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_nvm_rma_ack
-          index: 0
-        }
-        {
-          name: rma_seed
-          struct: lc_nvm_rma_seed
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_nvm_rma_seed
-          index: -1
-        }
-        {
-          name: pwrmgr
-          struct: pwr_nvm
-          package: pwrmgr_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: pwrmgr_pwr_nvm
-          index: -1
-          external: true
-          conn_type: false
-        }
-        {
-          name: keymgr
-          struct: keymgr_flash
-          package: flash_ctrl_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          index: -1
-        }
-        {
-          name: obs_ctrl
-          struct: ast_obs_ctrl
-          package: ast_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: ast_obs_ctrl
-          index: -1
-        }
-        {
-          name: fla_obs
-          struct: logic
-          type: uni
-          act: req
-          width: 8
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: flash_obs
-        }
-        {
-          name: core_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: flash_ctrl_core_tl
-          index: -1
-        }
-        {
-          name: prim_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: flash_ctrl_prim_tl
-          index: -1
-        }
-        {
-          name: mem_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: flash_ctrl_mem_tl
-          index: -1
-        }
-      ]
-      generate_dif: true
-      domain: Main
-    }
-    {
       name: rram_ctrl
       type: rram_ctrl
       clock_srcs:
@@ -6640,7 +6226,10 @@
           act: req
           width: 1
           inst_name: rram_ctrl
-          index: -1
+          default: ""
+          domain: Main
+          top_signame: lc_ctrl_lc_nvm_rma_ack
+          index: 0
         }
         {
           name: rma_seed
@@ -6663,7 +6252,12 @@
           act: req
           width: 1
           inst_name: rram_ctrl
+          default: ""
+          domain: Main
+          top_signame: pwrmgr_pwr_nvm
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: keymgr
@@ -10614,7 +10208,6 @@
     {
       ast.obs_ctrl:
       [
-        flash_ctrl.obs_ctrl
         otp_macro.obs_ctrl
         rram_macro.obs_ctrl
       ]
@@ -10655,7 +10248,6 @@
       ]
       lc_ctrl.lc_nvm_rma_seed:
       [
-        flash_ctrl.rma_seed
         rram_ctrl.rma_seed
       ]
       otp_ctrl.sram_otp_key:
@@ -10667,7 +10259,7 @@
       ]
       pwrmgr.pwr_nvm:
       [
-        flash_ctrl.pwrmgr
+        rram_ctrl.pwrmgr
       ]
       pwrmgr.pwr_rst:
       [
@@ -10708,13 +10300,12 @@
       ]
       lc_ctrl.lc_nvm_rma_req:
       [
-        flash_ctrl.rma_req
-        otbn.lc_rma_req
         rram_ctrl.rma_req
+        otbn.lc_rma_req
       ]
       lc_ctrl.lc_nvm_rma_ack:
       [
-        flash_ctrl.rma_ack
+        rram_ctrl.rma_ack
         otbn.lc_rma_ack
       ]
       usbdev.usb_dp_pullup:
@@ -10840,7 +10431,6 @@
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
-        flash_ctrl.lc_nvm_debug_en
         rram_macro.lc_nvm_debug_en
       ]
       lc_ctrl.lc_hw_debug_clr:
@@ -10880,7 +10470,6 @@
         sram_ctrl_sec.lc_escalate_en
         sram_ctrl_ret.lc_escalate_en
         aon_timer.lc_escalate_en
-        flash_ctrl.lc_escalate_en
         rram_ctrl.lc_escalate_en
         pinmux.lc_escalate_en
       ]
@@ -10900,28 +10489,23 @@
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
         otp_ctrl.lc_creator_seed_sw_rw_en
-        flash_ctrl.lc_creator_seed_sw_rw_en
         rram_ctrl.lc_creator_seed_sw_rw_en
       ]
       lc_ctrl.lc_owner_seed_sw_rw_en:
       [
-        flash_ctrl.lc_owner_seed_sw_rw_en
         rram_ctrl.lc_owner_seed_sw_rw_en
       ]
       lc_ctrl.lc_iso_part_sw_rd_en:
       [
-        flash_ctrl.lc_iso_part_sw_rd_en
         rram_ctrl.lc_iso_part_sw_rd_en
       ]
       lc_ctrl.lc_iso_part_sw_wr_en:
       [
-        flash_ctrl.lc_iso_part_sw_wr_en
         rram_ctrl.lc_iso_part_sw_wr_en
       ]
       lc_ctrl.lc_seed_hw_rd_en:
       [
         otp_ctrl.lc_seed_hw_rd_en
-        flash_ctrl.lc_seed_hw_rd_en
         rram_ctrl.lc_seed_hw_rd_en
       ]
       lc_ctrl.lc_rma_state:
@@ -11025,18 +10609,6 @@
       usbdev.tl:
       [
         main.tl_usbdev
-      ]
-      flash_ctrl.core_tl:
-      [
-        main.tl_flash_ctrl__core
-      ]
-      flash_ctrl.prim_tl:
-      [
-        main.tl_flash_ctrl__prim
-      ]
-      flash_ctrl.mem_tl:
-      [
-        main.tl_flash_ctrl__mem
       ]
       rram_ctrl.core_tl:
       [
@@ -11216,7 +10788,6 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      flash_ctrl.otp
       rram_ctrl.keymgr
       keymgr.flash
       pinmux.dft_jtag
@@ -11263,12 +10834,6 @@
       clkmgr.hi_speed_sel: hi_speed_sel
       clkmgr.div_step_down_req: div_step_down_req
       clkmgr.calib_rdy: calib_rdy
-      flash_ctrl.flash_bist_enable: flash_bist_enable
-      flash_ctrl.flash_power_down_h: flash_power_down_h
-      flash_ctrl.flash_power_ready_h: flash_power_ready_h
-      flash_ctrl.flash_test_mode_a: flash_test_mode_a
-      flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
-      flash_ctrl.fla_obs: flash_obs
       entropy_src.entropy_src_rng_enable: es_rng_enable
       entropy_src.entropy_src_rng_valid: es_rng_valid
       entropy_src.entropy_src_rng_bits: es_rng_bit
@@ -11362,7 +10927,6 @@
           rv_dm.mem
           sram_ctrl_main.ram
           sram_ctrl_sec.ram
-          flash_ctrl.mem
           rram_ctrl.host
         ]
         rv_core_ibex.cored:
@@ -11377,9 +10941,6 @@
           spi_host0
           spi_host1
           usbdev
-          flash_ctrl.core
-          flash_ctrl.prim
-          flash_ctrl.mem
           rram_ctrl.core
           rram_ctrl.host
           rram_macro.prim
@@ -11409,9 +10970,6 @@
           spi_host0
           spi_host1
           usbdev
-          flash_ctrl.core
-          flash_ctrl.prim
-          flash_ctrl.mem
           rram_ctrl.core
           rram_ctrl.host
           rram_macro.prim
@@ -11648,72 +11206,6 @@
                 hart: 0x40320000
               }
               size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
-        }
-        {
-          name: flash_ctrl.core
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: flash_ctrl
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x41000000
-              }
-              size_byte: 0x200
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
-        }
-        {
-          name: flash_ctrl.prim
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: flash_ctrl
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x41008000
-              }
-              size_byte: 0x80
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
-        }
-        {
-          name: flash_ctrl.mem
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: flash_ctrl
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x20000000
-              }
-              size_byte: 0x100000
             }
           ]
           xbar: false
@@ -12268,45 +11760,6 @@
           default: ""
           domain: Main
           top_signame: usbdev_tl
-          index: -1
-        }
-        {
-          name: tl_flash_ctrl__core
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: main
-          width: 1
-          default: ""
-          domain: Main
-          top_signame: flash_ctrl_core_tl
-          index: -1
-        }
-        {
-          name: tl_flash_ctrl__prim
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: main
-          width: 1
-          default: ""
-          domain: Main
-          top_signame: flash_ctrl_prim_tl
-          index: -1
-        }
-        {
-          name: tl_flash_ctrl__mem
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: main
-          width: 1
-          default: ""
-          domain: Main
-          top_signame: flash_ctrl_mem_tl
           index: -1
         }
         {
@@ -13563,39 +13016,12 @@
         idx: 4
       }
       {
-        name: FLASH_TEST_VOLT
-        type: AnalogIn0
-        bank: VCC
-        connection: manual
-        desc: Flash test voltage input
-        idx: 5
-        port_type: inout
-      }
-      {
-        name: FLASH_TEST_MODE0
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
-        idx: 6
-        port_type: inout
-      }
-      {
-        name: FLASH_TEST_MODE1
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
-        idx: 7
-        port_type: inout
-      }
-      {
         name: OTP_EXT_VOLT
         type: AnalogIn1
         bank: VCC
         connection: manual
         desc: OTP external voltage input
-        idx: 8
+        idx: 5
         port_type: inout
       }
       {
@@ -13604,7 +13030,7 @@
         bank: VCC
         connection: manual
         desc: RRAM analog test signal
-        idx: 9
+        idx: 6
         port_type: inout
       }
       {
@@ -13613,7 +13039,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 10
+        idx: 7
         port_type: inout
       }
       {
@@ -13622,7 +13048,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 11
+        idx: 8
         port_type: inout
       }
       {
@@ -13631,7 +13057,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 12
+        idx: 9
         port_type: inout
       }
       {
@@ -13640,7 +13066,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 13
+        idx: 10
         port_type: inout
       }
       {
@@ -13649,7 +13075,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host clock
-        idx: 14
+        idx: 11
         port_type: inout
       }
       {
@@ -13658,7 +13084,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
-        idx: 15
+        idx: 12
         port_type: inout
       }
       {
@@ -13667,7 +13093,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 16
+        idx: 13
         port_type: inout
       }
       {
@@ -13676,7 +13102,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 17
+        idx: 14
         port_type: inout
       }
       {
@@ -13685,7 +13111,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 18
+        idx: 15
         port_type: inout
       }
       {
@@ -13694,7 +13120,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 19
+        idx: 16
         port_type: inout
       }
       {
@@ -13703,7 +13129,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
-        idx: 20
+        idx: 17
         port_type: inout
       }
       {
@@ -13712,7 +13138,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
-        idx: 21
+        idx: 18
         port_type: inout
       }
       {
@@ -14108,7 +13534,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 22
+        idx: 19
         port_type: inout
       }
       {
@@ -14117,7 +13543,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
-        idx: 23
+        idx: 20
         port_type: inout
       }
       {
@@ -14348,14 +13774,6 @@
       }
       {
         instance: spi_host1
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: flash_ctrl
         port: ""
         connection: muxed
         pad: ""
@@ -15246,7 +14664,7 @@
         glob_idx: 46
       }
       {
-        name: flash_ctrl_tck
+        name: rram_macro_tck
         width: 1
         type: input
         idx: -1
@@ -15258,7 +14676,7 @@
         glob_idx: 47
       }
       {
-        name: flash_ctrl_tms
+        name: rram_macro_tms
         width: 1
         type: input
         idx: -1
@@ -15270,7 +14688,7 @@
         glob_idx: 48
       }
       {
-        name: flash_ctrl_tdi
+        name: rram_macro_tdi
         width: 1
         type: input
         idx: -1
@@ -15282,42 +14700,6 @@
         glob_idx: 49
       }
       {
-        name: rram_macro_tck
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 50
-      }
-      {
-        name: rram_macro_tms
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 51
-      }
-      {
-        name: rram_macro_tdi
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 52
-      }
-      {
         name: sysrst_ctrl_ac_present
         width: 1
         type: input
@@ -15327,7 +14709,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 53
+        glob_idx: 50
       }
       {
         name: sysrst_ctrl_key0_in
@@ -15339,7 +14721,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 54
+        glob_idx: 51
       }
       {
         name: sysrst_ctrl_key1_in
@@ -15351,7 +14733,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 55
+        glob_idx: 52
       }
       {
         name: sysrst_ctrl_key2_in
@@ -15363,7 +14745,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 56
+        glob_idx: 53
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -15375,7 +14757,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 57
+        glob_idx: 54
       }
       {
         name: sysrst_ctrl_lid_open
@@ -15387,7 +14769,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 58
+        glob_idx: 55
       }
       {
         name: usbdev_sense
@@ -15399,7 +14781,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 59
+        glob_idx: 56
       }
       {
         name: spi_host0_sck
@@ -15498,7 +14880,7 @@
         glob_idx: 47
       }
       {
-        name: flash_ctrl_tdo
+        name: rram_macro_tdo
         width: 1
         type: output
         idx: -1
@@ -15510,18 +14892,6 @@
         glob_idx: 48
       }
       {
-        name: rram_macro_tdo
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 49
-      }
-      {
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
@@ -15531,7 +14901,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 50
+        glob_idx: 49
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15543,7 +14913,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 51
+        glob_idx: 50
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15555,7 +14925,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 52
+        glob_idx: 51
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15567,7 +14937,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 53
+        glob_idx: 52
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15579,7 +14949,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 54
+        glob_idx: 53
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15591,7 +14961,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 55
+        glob_idx: 54
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15603,7 +14973,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 56
+        glob_idx: 55
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15615,7 +14985,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 57
+        glob_idx: 56
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -15627,7 +14997,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 58
+        glob_idx: 57
       }
       {
         name: otp_macro_test
@@ -15639,7 +15009,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 59
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_bat_disable
@@ -15651,7 +15021,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 60
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_key0_out
@@ -15663,7 +15033,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 61
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_key1_out
@@ -15675,7 +15045,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 62
+        glob_idx: 61
       }
       {
         name: sysrst_ctrl_key2_out
@@ -15687,7 +15057,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 63
+        glob_idx: 62
       }
       {
         name: sysrst_ctrl_pwrb_out
@@ -15699,7 +15069,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 64
+        glob_idx: 63
       }
       {
         name: sysrst_ctrl_z3_wakeup
@@ -15711,7 +15081,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 65
+        glob_idx: 64
       }
     ]
     io_counts:
@@ -15721,13 +15091,13 @@
         inouts: 12
         inputs: 2
         outputs: 2
-        pads: 24
+        pads: 21
       }
       muxed:
       {
         inouts: 42
-        inputs: 18
-        outputs: 24
+        inputs: 15
+        outputs: 23
         pads: 47
       }
     }
@@ -15755,14 +15125,6 @@
           rstmgr.rst_en:
           {
             unused: true
-          }
-          flash_ctrl.flash_test_mode_a:
-          {
-            signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"
-          }
-          flash_ctrl.flash_test_voltage_h:
-          {
-            signal: FLASH_TEST_VOLT
           }
           otp_macro.ext_voltage_h:
           {
@@ -15914,16 +15276,6 @@
           rstmgr.rst_en:
           {
             unused: true
-          }
-          flash_ctrl.flash_test_mode_a:
-          {
-            unused: true
-            tie_value: ""
-          }
-          flash_ctrl.flash_test_voltage_h:
-          {
-            unused: true
-            tie_value: ""
           }
           otp_macro.ext_voltage_h:
           {
@@ -16150,23 +15502,6 @@
           {
             unused: true
           }
-          flash_ctrl.flash_test_mode_a:
-          {
-            unused: true
-          }
-          flash_ctrl.flash_test_voltage_h:
-          {
-            unused: true
-          }
-          flash_ctrl.flash_power_down_h:
-          {
-            unused: true
-          }
-          flash_ctrl.flash_power_ready_h:
-          {
-            unused: true
-            tie_value: 1'b1
-          }
         }
       }
       pinout:
@@ -16176,11 +15511,8 @@
         [
           CC1
           CC2
-          FLASH_TEST_VOLT
           OTP_EXT_VOLT
           RRAM_ANALOG
-          FLASH_TEST_MODE0
-          FLASH_TEST_MODE1
           USB_P
           USB_N
         ]
@@ -16748,61 +16080,6 @@
       desc: sram_ctrl_ret fatal_error alert
       lpg_name: infra_lc_io_div4_Aon
       lpg_idx: 16
-    }
-    {
-      name: flash_ctrl_recov_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: flash_ctrl
-      desc: flash_ctrl recov_err alert
-      lpg_name: infra_lc_Main
-      lpg_idx: 17
-    }
-    {
-      name: flash_ctrl_fatal_std_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_std_err alert
-      lpg_name: infra_lc_Main
-      lpg_idx: 17
-    }
-    {
-      name: flash_ctrl_fatal_err
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_err alert
-      lpg_name: infra_lc_Main
-      lpg_idx: 17
-    }
-    {
-      name: flash_ctrl_fatal_prim_flash_alert
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: flash_ctrl
-      desc: flash_ctrl fatal_prim_flash_alert alert
-      lpg_name: infra_lc_Main
-      lpg_idx: 17
-    }
-    {
-      name: flash_ctrl_recov_prim_flash_alert
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: flash_ctrl
-      desc: flash_ctrl recov_prim_flash_alert alert
-      lpg_name: infra_lc_Main
-      lpg_idx: 17
     }
     {
       name: rram_ctrl_recov_err
@@ -18788,84 +18065,6 @@
       outgoing: false
     }
     {
-      name: flash_ctrl_prog_empty
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl prog_empty interrupt
-      intr_type: IntrType.Status
-      default_val: true
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: flash_ctrl_prog_lvl
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl prog_lvl interrupt
-      intr_type: IntrType.Status
-      default_val: true
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: flash_ctrl_rd_full
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl rd_full interrupt
-      intr_type: IntrType.Status
-      default_val: false
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: flash_ctrl_rd_lvl
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl rd_lvl interrupt
-      intr_type: IntrType.Status
-      default_val: false
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: flash_ctrl_op_done
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl op_done interrupt
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
-      name: flash_ctrl_corr_err
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-      desc: flash_ctrl corr_err interrupt
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-      domain: Main
-      plic: rv_plic
-      outgoing: false
-    }
-    {
       name: rram_ctrl_wr_empty
       width: 1
       type: interrupt
@@ -19210,11 +18409,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 190
+      count_tot: 184
       count_pd:
       {
         Aon: 7
-        Main: 182
+        Main: 176
       }
     }
   }
@@ -20117,7 +19316,6 @@
     aon_timer
     sensor_ctrl
     sram_ctrl_ret
-    flash_ctrl
     rram_ctrl
     rv_dm
     rv_plic
@@ -20386,7 +19584,7 @@
         alert_handler[32]: fatal_error
       ]
     }
-    module_flash_ctrl:
+    module_rram_ctrl:
     {
       tx_expr: alert_tx[37:33]
       rx_expr: alert_rx[37:33]
@@ -20396,183 +19594,169 @@
         alert_handler[33]: recov_err
         alert_handler[34]: fatal_std_err
         alert_handler[35]: fatal_err
-        alert_handler[36]: fatal_prim_flash_alert
-        alert_handler[37]: recov_prim_flash_alert
-      ]
-    }
-    module_rram_ctrl:
-    {
-      tx_expr: alert_tx[42:38]
-      rx_expr: alert_rx[42:38]
-      async_expr: alert_handler_reg_pkg::AsyncOn[42:38]
-      comments:
-      [
-        alert_handler[38]: recov_err
-        alert_handler[39]: fatal_std_err
-        alert_handler[40]: fatal_err
-        alert_handler[41]: fatal_macro_err
-        alert_handler[42]: recov_macro_err
+        alert_handler[36]: fatal_macro_err
+        alert_handler[37]: recov_macro_err
       ]
     }
     module_rv_dm:
     {
-      tx_expr: alert_tx[43]
-      rx_expr: alert_rx[43]
-      async_expr: alert_handler_reg_pkg::AsyncOn[43]
+      tx_expr: alert_tx[38]
+      rx_expr: alert_rx[38]
+      async_expr: alert_handler_reg_pkg::AsyncOn[38]
       comments:
       [
-        alert_handler[43]: fatal_fault
+        alert_handler[38]: fatal_fault
       ]
     }
     module_rv_plic:
     {
-      tx_expr: alert_tx[44]
-      rx_expr: alert_rx[44]
-      async_expr: alert_handler_reg_pkg::AsyncOn[44]
+      tx_expr: alert_tx[39]
+      rx_expr: alert_rx[39]
+      async_expr: alert_handler_reg_pkg::AsyncOn[39]
       comments:
       [
-        alert_handler[44]: fatal_fault
+        alert_handler[39]: fatal_fault
       ]
     }
     module_aes:
+    {
+      tx_expr: alert_tx[41:40]
+      rx_expr: alert_rx[41:40]
+      async_expr: alert_handler_reg_pkg::AsyncOn[41:40]
+      comments:
+      [
+        alert_handler[40]: recov_ctrl_update_err
+        alert_handler[41]: fatal_fault
+      ]
+    }
+    module_hmac:
+    {
+      tx_expr: alert_tx[42]
+      rx_expr: alert_rx[42]
+      async_expr: alert_handler_reg_pkg::AsyncOn[42]
+      comments:
+      [
+        alert_handler[42]: fatal_fault
+      ]
+    }
+    module_kmac:
+    {
+      tx_expr: alert_tx[44:43]
+      rx_expr: alert_rx[44:43]
+      async_expr: alert_handler_reg_pkg::AsyncOn[44:43]
+      comments:
+      [
+        alert_handler[43]: recov_operation_err
+        alert_handler[44]: fatal_fault_err
+      ]
+    }
+    module_otbn:
     {
       tx_expr: alert_tx[46:45]
       rx_expr: alert_rx[46:45]
       async_expr: alert_handler_reg_pkg::AsyncOn[46:45]
       comments:
       [
-        alert_handler[45]: recov_ctrl_update_err
-        alert_handler[46]: fatal_fault
-      ]
-    }
-    module_hmac:
-    {
-      tx_expr: alert_tx[47]
-      rx_expr: alert_rx[47]
-      async_expr: alert_handler_reg_pkg::AsyncOn[47]
-      comments:
-      [
-        alert_handler[47]: fatal_fault
-      ]
-    }
-    module_kmac:
-    {
-      tx_expr: alert_tx[49:48]
-      rx_expr: alert_rx[49:48]
-      async_expr: alert_handler_reg_pkg::AsyncOn[49:48]
-      comments:
-      [
-        alert_handler[48]: recov_operation_err
-        alert_handler[49]: fatal_fault_err
-      ]
-    }
-    module_otbn:
-    {
-      tx_expr: alert_tx[51:50]
-      rx_expr: alert_rx[51:50]
-      async_expr: alert_handler_reg_pkg::AsyncOn[51:50]
-      comments:
-      [
-        alert_handler[50]: fatal
-        alert_handler[51]: recov
+        alert_handler[45]: fatal
+        alert_handler[46]: recov
       ]
     }
     module_keymgr:
     {
-      tx_expr: alert_tx[53:52]
-      rx_expr: alert_rx[53:52]
-      async_expr: alert_handler_reg_pkg::AsyncOn[53:52]
+      tx_expr: alert_tx[48:47]
+      rx_expr: alert_rx[48:47]
+      async_expr: alert_handler_reg_pkg::AsyncOn[48:47]
       comments:
       [
-        alert_handler[52]: recov_operation_err
-        alert_handler[53]: fatal_fault_err
+        alert_handler[47]: recov_operation_err
+        alert_handler[48]: fatal_fault_err
       ]
     }
     module_csrng:
     {
-      tx_expr: alert_tx[55:54]
-      rx_expr: alert_rx[55:54]
-      async_expr: alert_handler_reg_pkg::AsyncOn[55:54]
+      tx_expr: alert_tx[50:49]
+      rx_expr: alert_rx[50:49]
+      async_expr: alert_handler_reg_pkg::AsyncOn[50:49]
       comments:
       [
-        alert_handler[54]: recov_alert
-        alert_handler[55]: fatal_alert
+        alert_handler[49]: recov_alert
+        alert_handler[50]: fatal_alert
       ]
     }
     module_entropy_src:
     {
-      tx_expr: alert_tx[57:56]
-      rx_expr: alert_rx[57:56]
-      async_expr: alert_handler_reg_pkg::AsyncOn[57:56]
+      tx_expr: alert_tx[52:51]
+      rx_expr: alert_rx[52:51]
+      async_expr: alert_handler_reg_pkg::AsyncOn[52:51]
       comments:
       [
-        alert_handler[56]: recov_alert
-        alert_handler[57]: fatal_alert
+        alert_handler[51]: recov_alert
+        alert_handler[52]: fatal_alert
       ]
     }
     module_edn0:
     {
-      tx_expr: alert_tx[59:58]
-      rx_expr: alert_rx[59:58]
-      async_expr: alert_handler_reg_pkg::AsyncOn[59:58]
+      tx_expr: alert_tx[54:53]
+      rx_expr: alert_rx[54:53]
+      async_expr: alert_handler_reg_pkg::AsyncOn[54:53]
       comments:
       [
-        alert_handler[58]: recov_alert
-        alert_handler[59]: fatal_alert
+        alert_handler[53]: recov_alert
+        alert_handler[54]: fatal_alert
       ]
     }
     module_edn1:
     {
-      tx_expr: alert_tx[61:60]
-      rx_expr: alert_rx[61:60]
-      async_expr: alert_handler_reg_pkg::AsyncOn[61:60]
+      tx_expr: alert_tx[56:55]
+      rx_expr: alert_rx[56:55]
+      async_expr: alert_handler_reg_pkg::AsyncOn[56:55]
       comments:
       [
-        alert_handler[60]: recov_alert
-        alert_handler[61]: fatal_alert
+        alert_handler[55]: recov_alert
+        alert_handler[56]: fatal_alert
       ]
     }
     module_sram_ctrl_main:
     {
-      tx_expr: alert_tx[62]
-      rx_expr: alert_rx[62]
-      async_expr: alert_handler_reg_pkg::AsyncOn[62]
+      tx_expr: alert_tx[57]
+      rx_expr: alert_rx[57]
+      async_expr: alert_handler_reg_pkg::AsyncOn[57]
       comments:
       [
-        alert_handler[62]: fatal_error
+        alert_handler[57]: fatal_error
       ]
     }
     module_sram_ctrl_sec:
     {
-      tx_expr: alert_tx[63]
-      rx_expr: alert_rx[63]
-      async_expr: alert_handler_reg_pkg::AsyncOn[63]
+      tx_expr: alert_tx[58]
+      rx_expr: alert_rx[58]
+      async_expr: alert_handler_reg_pkg::AsyncOn[58]
       comments:
       [
-        alert_handler[63]: fatal_error
+        alert_handler[58]: fatal_error
       ]
     }
     module_rom_ctrl:
     {
-      tx_expr: alert_tx[64]
-      rx_expr: alert_rx[64]
-      async_expr: alert_handler_reg_pkg::AsyncOn[64]
+      tx_expr: alert_tx[59]
+      rx_expr: alert_rx[59]
+      async_expr: alert_handler_reg_pkg::AsyncOn[59]
       comments:
       [
-        alert_handler[64]: fatal
+        alert_handler[59]: fatal
       ]
     }
     module_rv_core_ibex:
     {
-      tx_expr: alert_tx[68:65]
-      rx_expr: alert_rx[68:65]
-      async_expr: alert_handler_reg_pkg::AsyncOn[68:65]
+      tx_expr: alert_tx[63:60]
+      rx_expr: alert_rx[63:60]
+      async_expr: alert_handler_reg_pkg::AsyncOn[63:60]
       comments:
       [
-        alert_handler[65]: fatal_sw_err
-        alert_handler[66]: recov_sw_err
-        alert_handler[67]: fatal_hw_err
-        alert_handler[68]: recov_hw_err
+        alert_handler[60]: fatal_sw_err
+        alert_handler[61]: recov_sw_err
+        alert_handler[62]: fatal_hw_err
+        alert_handler[63]: recov_hw_err
       ]
     }
   }
@@ -20581,11 +19765,11 @@
     alert_handler:
     {
       domain: Main
-      count_tot: 69
+      count_tot: 64
       count_pd:
       {
         Aon: 11
-        Main: 58
+        Main: 53
       }
       connect_pd:
       {
@@ -20669,7 +19853,6 @@
     adc_ctrl
     aon_timer
     sensor_ctrl
-    flash_ctrl
     rram_ctrl
     hmac
     kmac
@@ -24948,312 +24131,6 @@
         conn_type: false
       }
       {
-        name: otp
-        struct: nvm_otp_key
-        package: otp_ctrl_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        top_signame: flash_ctrl_otp
-        index: -1
-      }
-      {
-        name: lc_nvm_debug_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_nvm_debug_en
-        index: -1
-      }
-      {
-        name: flash_bist_enable
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_bist_enable
-      }
-      {
-        name: flash_power_down_h
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_power_down_h
-      }
-      {
-        name: flash_power_ready_h
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_power_ready_h
-      }
-      {
-        name: flash_test_mode_a
-        struct: ""
-        type: io
-        act: none
-        width: 2
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_test_mode_a
-      }
-      {
-        name: flash_test_voltage_h
-        struct: ""
-        type: io
-        act: none
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_test_voltage_h
-      }
-      {
-        name: lc_creator_seed_sw_rw_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
-        index: -1
-      }
-      {
-        name: lc_owner_seed_sw_rw_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
-        index: -1
-      }
-      {
-        name: lc_iso_part_sw_rd_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_iso_part_sw_rd_en
-        index: -1
-      }
-      {
-        name: lc_iso_part_sw_wr_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_iso_part_sw_wr_en
-        index: -1
-      }
-      {
-        name: lc_seed_hw_rd_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_seed_hw_rd_en
-        index: -1
-      }
-      {
-        name: lc_escalate_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_escalate_en
-        index: -1
-      }
-      {
-        name: rma_req
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_nvm_rma_req
-        index: -1
-      }
-      {
-        name: rma_ack
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_nvm_rma_ack
-        index: 0
-      }
-      {
-        name: rma_seed
-        struct: lc_nvm_rma_seed
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_nvm_rma_seed
-        index: -1
-      }
-      {
-        name: pwrmgr
-        struct: pwr_nvm
-        package: pwrmgr_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: pwrmgr_pwr_nvm
-        index: -1
-        external: true
-        conn_type: false
-      }
-      {
-        name: keymgr
-        struct: keymgr_flash
-        package: flash_ctrl_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        index: -1
-      }
-      {
-        name: obs_ctrl
-        struct: ast_obs_ctrl
-        package: ast_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: ast_obs_ctrl
-        index: -1
-      }
-      {
-        name: fla_obs
-        struct: logic
-        type: uni
-        act: req
-        width: 8
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: flash_obs
-      }
-      {
-        name: core_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: flash_ctrl_core_tl
-        index: -1
-      }
-      {
-        name: prim_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: flash_ctrl_prim_tl
-        index: -1
-      }
-      {
-        name: mem_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: flash_ctrl_mem_tl
-        index: -1
-      }
-      {
         name: rram_macro
         struct: rram_macro
         package: rram_ctrl_pkg
@@ -25392,7 +24269,10 @@
         act: req
         width: 1
         inst_name: rram_ctrl
-        index: -1
+        default: ""
+        domain: Main
+        top_signame: lc_ctrl_lc_nvm_rma_ack
+        index: 0
       }
       {
         name: rma_seed
@@ -25415,7 +24295,12 @@
         act: req
         width: 1
         inst_name: rram_ctrl
+        default: ""
+        domain: Main
+        top_signame: pwrmgr_pwr_nvm
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: keymgr
@@ -27701,45 +26586,6 @@
         default: ""
         domain: Main
         top_signame: usbdev_tl
-        index: -1
-      }
-      {
-        name: tl_flash_ctrl__core
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: main
-        width: 1
-        default: ""
-        domain: Main
-        top_signame: flash_ctrl_core_tl
-        index: -1
-      }
-      {
-        name: tl_flash_ctrl__prim
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: main
-        width: 1
-        default: ""
-        domain: Main
-        top_signame: flash_ctrl_prim_tl
-        index: -1
-      }
-      {
-        name: tl_flash_ctrl__mem
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: main
-        width: 1
-        default: ""
-        domain: Main
-        top_signame: flash_ctrl_mem_tl
         index: -1
       }
       {
@@ -31091,126 +29937,6 @@
         netname: calib_rdy
       }
       {
-        package: prim_mubi_pkg
-        struct: mubi4
-        domain: Main
-        inter_pd: false
-        signame: flash_bist_enable_i
-        signame_chip:
-        {
-          asic: flash_bist_enable
-          verilator: flash_bist_enable
-          cw340: flash_bist_enable
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_bist_enable
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: flash_power_down_h_i
-        signame_chip:
-        {
-          asic: flash_power_down_h
-          verilator: flash_power_down_h
-          cw340: 1'b0
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_power_down_h
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: flash_power_ready_h_i
-        signame_chip:
-        {
-          asic: flash_power_ready_h
-          verilator: flash_power_ready_h
-          cw340: 1'b1
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_power_ready_h
-      }
-      {
-        package: ""
-        struct: ""
-        domain: Main
-        inter_pd: false
-        signame: flash_test_mode_a_io
-        signame_chip:
-        {
-          asic: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"
-          verilator: ""
-          cw340: "'0"
-        }
-        width: 2
-        type: io
-        default: ""
-        direction: inout
-        conn_type: false
-        index: -1
-        netname: flash_test_mode_a
-      }
-      {
-        package: ""
-        struct: ""
-        domain: Main
-        inter_pd: false
-        signame: flash_test_voltage_h_io
-        signame_chip:
-        {
-          asic: FLASH_TEST_VOLT
-          verilator: ""
-          cw340: 1'b0
-        }
-        width: 1
-        type: io
-        default: ""
-        direction: inout
-        conn_type: false
-        index: -1
-        netname: flash_test_voltage_h
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: flash_obs_o
-        signame_chip:
-        {
-          asic: flash_obs
-          verilator: flash_obs
-          cw340: flash_obs
-        }
-        width: 8
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: flash_obs
-      }
-      {
         package: ""
         struct: logic
         domain: Main
@@ -34244,78 +32970,6 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: flash_ctrl_core_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        signame: flash_ctrl_core_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        signame: flash_ctrl_prim_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        signame: flash_ctrl_prim_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        signame: flash_ctrl_mem_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        signame: flash_ctrl_mem_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
         signame: rram_ctrl_core_tl_req
         width: 1
         type: req_rsp
@@ -35171,26 +33825,6 @@
         domain: Main
         width: 32
         type: uni
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: nvm_otp_key_req
-        domain: Main
-        signame: flash_ctrl_otp_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: nvm_otp_key_rsp
-        domain: Main
-        signame: flash_ctrl_otp_rsp
-        width: 1
-        type: req_rsp
         end_idx: -1
         default: ""
       }

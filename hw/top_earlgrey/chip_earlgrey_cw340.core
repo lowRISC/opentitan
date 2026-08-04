@@ -13,9 +13,7 @@ filesets:
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:earlgrey_systems:pad_orient_pkg
       - lowrisc:earlgrey_systems:scan_role_pkg
-      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
       - lowrisc:prim_xilinx_ultrascale:all
-      - lowrisc:prim_generic:flash
       - lowrisc:ip:bkdr_loader
     files:
       - rtl/clkgen_xil_ultrascale.sv

@@ -6,7 +6,11 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
@@ -55,7 +59,11 @@ class RomExtBootServicesTest : public rom_test::RomTest {
   rom_test::MockRnd mock_rnd_;
   rom_test::MockLifecycle mock_lifecycle_;
   rom_test::MockOtp mock_otp_;
+#ifdef HAS_RRAM_CTRL
+  rom_test::MockRramCtrl mock_rram_ctrl_;
+#else
   rom_test::MockFlashCtrl mock_flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   rom_test::MockOwnerVerify mock_owner_verify_;
   rom_test::MockOwnershipKey mock_ownership_key_;
   rom_test::MockBootSvcHeader boot_svc_header_;
@@ -560,7 +568,30 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
   // Once the new owner page is determined to be valid, the page will be sealed.
   EXPECT_CALL(mock_ownership_key_, seal_page(1));
 
-  // The sealed page will be written into flash owner slot 1 first.
+  // The sealed page will be written into owner slot 1 first.
+  //
+  // OwnerSlot0/1 are emulated info pages on RRAM (relocated onto the data
+  // partition): `nvm_ctrl_info_erase()` has no hardware erase primitive to
+  // call, so it overwrites each of the page's 4 physical pages with 0xFF via
+  // `DataWrite`, and `nvm_ctrl_info_write()` becomes a single `DataWrite` at
+  // the page's base address (see `ExpectRramInfoErase()`).
+#ifdef HAS_RRAM_CTRL
+  rom_test::ExpectRramInfoErase(mock_rram_ctrl_, kRramCtrlInfoPageOwnerSlot1);
+  EXPECT_CALL(
+      mock_rram_ctrl_,
+      DataWrite(
+          kRramCtrlInfoPageOwnerSlot1.page_id * RRAM_CTRL_PARAM_BYTES_PER_PAGE,
+          sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+
+  rom_test::ExpectRramInfoErase(mock_rram_ctrl_, kRramCtrlInfoPageOwnerSlot0);
+  EXPECT_CALL(
+      mock_rram_ctrl_,
+      DataWrite(
+          kRramCtrlInfoPageOwnerSlot0.page_id * RRAM_CTRL_PARAM_BYTES_PER_PAGE,
+          sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+#else
   EXPECT_CALL(mock_flash_ctrl_,
               InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
@@ -580,6 +611,7 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
       InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
                 sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]))
       .WillOnce(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
 
   if (boot_data.ownership_state != kOwnershipStateUnlockedSelf) {
     EXPECT_CALL(mock_ownership_key_, secret_new(_, _))

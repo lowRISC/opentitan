@@ -13,7 +13,6 @@ module tb;
   import top_earlgrey_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
-  import flash_ctrl_bkdr_util_pkg::*;
   import rram_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import rom_ctrl_bkdr_util_pkg::*;
@@ -125,9 +124,6 @@ module tb;
     .CC1(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc1]),
     .CC2(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc2]),
 `endif
-    .FLASH_TEST_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestVolt]),
-    .FLASH_TEST_MODE0(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode0]),
-    .FLASH_TEST_MODE1(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode1]),
     .OTP_EXT_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadOtpExtVolt]),
     .SPI_HOST_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD0]),
     .SPI_HOST_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD1]),
@@ -463,7 +459,6 @@ module tb;
       // Unfortunately xcelium does not understand typed constructors so we must assign to local
       // variables first.
       rram_ctrl_bkdr_util data, info;
-      flash_ctrl_bkdr_util data0, info0, data1, info1;
       sram_ctrl_bkdr_util ram_main0, ram_ret0;
       rom_ctrl_bkdr_util rom;
       chip_mem_e    mem;
@@ -490,54 +485,6 @@ module tb;
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
       m_mem_bkdr_util[RramInfo] = info;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RramInfo], `RRAM_INFO_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 data", UVM_MEDIUM)
-      data0 = new(
-          .name  ("mem_bkdr_util[FlashBank0Data]"),
-          .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
-          .depth ($size(`FLASH0_DATA_MEM_HIER)),
-          .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR));
-      m_mem_bkdr_util[FlashBank0Data] = data0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
-      info0 = new(
-          .name  ("mem_bkdr_util[FlashBank0Info]"),
-          .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
-          .depth ($size(`FLASH0_INFO_MEM_HIER)),
-          .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR));
-      m_mem_bkdr_util[FlashBank0Info] = info0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
-      data1 = new(
-          .name  ("mem_bkdr_util[FlashBank1Data]"),
-          .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
-          .depth ($size(`FLASH1_DATA_MEM_HIER)),
-          .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES /
-              flash_ctrl_top_specific_pkg::NumBanks));
-      m_mem_bkdr_util[FlashBank1Data] = data1;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 info", UVM_MEDIUM)
-      info1 = new(
-          .name  ("mem_bkdr_util[FlashBank1Info]"),
-          .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
-          .depth ($size(`FLASH1_INFO_MEM_HIER)),
-          .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES /
-              flash_ctrl_top_specific_pkg::NumBanks));
-      m_mem_bkdr_util[FlashBank1Info] = info1;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 tag", UVM_MEDIUM)
       m_mem_bkdr_util[ICacheWay0Tag] = new(
@@ -658,7 +605,14 @@ module tb;
       do begin
         if (mem inside {[RamMain1:RamMain15]} ||
             mem inside {[RamRet1:RamRet15]} ||
-            mem inside {[OtbnDmem1:OtbnDmem15]}) begin
+            mem inside {[OtbnDmem1:OtbnDmem15]} ||
+            // No flash_ctrl on this top: none of these have a mem_bkdr_util
+            // instance above, so registering them would deref a null entry
+            // in `m_mem_bkdr_util`. Existing flash-specific vseqs that still
+            // reference these enum values by name (e.g.
+            // chip_sw_flash_init_vseq.sv) are a separate, known gap.
+            mem inside {FlashBank0Data, FlashBank1Data, FlashBank0Info,
+                        FlashBank1Info}) begin
           mem = mem.next();
           continue;
         end
@@ -695,7 +649,6 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
@@ -712,7 +665,6 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_uart3);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_usbdev);
         end else begin
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);

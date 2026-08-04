@@ -723,25 +723,41 @@ opentitan_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "rram_ctrl",
-    srcs = ["rram_ctrl.c"],
-    hdrs = ["rram_ctrl.h"],
-    deps = [
-        ":flash_ctrl",
-        ":otp",
-        "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:rram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
+    srcs = dual_inputs(
+        device = ["rram_ctrl.c"],
+        host = ["mock_rram_ctrl.cc"],
+        shared = ["rram_ctrl_info_pages.c"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_rram_ctrl.h"],
+        shared = ["rram_ctrl.h"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = dual_inputs(
+        device = [
+            ":otp",
+            "//hw/top:otp_ctrl_c_regs",
+        ],
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//hw/top:rram_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:memory",
+            "//sw/device/lib/base:multibits",
+            "//sw/device/silicon_creator/lib:error",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+    ),
 )
 
 dual_cc_library(
@@ -920,7 +936,11 @@ dual_cc_library(
     ],
     deps = dual_inputs(
         device = [
-            "//hw/top:flash_ctrl_c_regs",
+            # For `NVM_USABLE_DATA_SIZE_BYTES` (the emulated flash's reported
+            # SFDP density) -- deliberately the tech-agnostic abstraction
+            # rather than `flash_ctrl_c_regs` directly, since that target is
+            # unconditionally incompatible on tops without flash_ctrl.
+            dual_cc_device_library_of("//sw/device/silicon_creator/lib:nvm_ctrl"),
             "//hw/top:spi_device_c_regs",
             "//hw/top/dt",
         ],

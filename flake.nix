@@ -122,6 +122,9 @@
           pkgs.pcsclite
           pkgs.dfu-util
           pkgs.lrzsz
+          # `bindgen` CLI, invoked directly (not via the hermetic Bazel
+          # rust_bindgen_toolchain) by util/py/scripts/alert_handler_digest.py.
+          pkgs.rust-bindgen
         ];
       };
     in {

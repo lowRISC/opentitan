@@ -7,7 +7,11 @@
 
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -23,7 +27,6 @@ namespace {
 using ::testing::_;
 using ::testing::Return;
 
-using rom_test::FlashPerms;
 extern "C" {
 rom_error_t protocol_inner(rescue_state_t *state);
 }
@@ -48,18 +51,41 @@ class XmodemTest : public rom_test::RomTest {
   }
 
   void HandleFlashWrite() {
-    ON_CALL(flash_, DataDefaultPermsSet(_)).WillByDefault(Return());
-    ON_CALL(flash_, DataErase(_, _)).WillByDefault(Return(kErrorOk));
-    ON_CALL(flash_, DataWrite(_, _, _)).WillByDefault(Return(kErrorOk));
+#ifdef HAS_RRAM_CTRL
+    // RRAM has no discrete erase operation: `nvm_ctrl_data_erase()` performs
+    // a `DataWrite` of an all-0xFF page instead (see nvm_ctrl.c), so there's
+    // no RRAM equivalent of `DataErase` to stub.
+    ON_CALL(nvm_, DataDefaultPermsSet(_)).WillByDefault(Return());
+    ON_CALL(nvm_, DataWrite(_, _, _)).WillByDefault(Return(kErrorOk));
+#else
+    ON_CALL(nvm_, DataDefaultPermsSet(_)).WillByDefault(Return());
+    ON_CALL(nvm_, DataErase(_, _)).WillByDefault(Return(kErrorOk));
+    ON_CALL(nvm_, DataWrite(_, _, _)).WillByDefault(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
   }
 
   void HandleOwnerWrite() {
-    ON_CALL(flash_, InfoErase(_, _)).WillByDefault(Return(kErrorOk));
-    ON_CALL(flash_, InfoWrite(_, _, _, _)).WillByDefault(Return(kErrorOk));
+#ifdef HAS_RRAM_CTRL
+    // OwnerSlot0/1 are emulated info pages on RRAM (relocated onto the data
+    // partition): `nvm_ctrl_info_erase()`/`_write()` become `DataWrite`
+    // calls rather than `InfoErase`/`InfoWrite` (see nvm_ctrl.c) -- the same
+    // stub as `HandleFlashWrite()` above, kept separate here to mirror the
+    // two logically distinct write paths this fixture models.
+    ON_CALL(nvm_, DataWrite(_, _, _)).WillByDefault(Return(kErrorOk));
+#else
+    ON_CALL(nvm_, InfoErase(_, _)).WillByDefault(Return(kErrorOk));
+    ON_CALL(nvm_, InfoWrite(_, _, _, _)).WillByDefault(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
   }
 
   void HandleOwnerRead() {
-    ON_CALL(flash_, InfoRead(_, _, _, _)).WillByDefault(Return(kErrorOk));
+#ifdef HAS_RRAM_CTRL
+    // Same emulated-page reasoning as `HandleOwnerWrite()` above: reads of
+    // OwnerPage0/1 become `DataRead` rather than `InfoRead`.
+    ON_CALL(nvm_, DataRead(_, _, _)).WillByDefault(Return(kErrorOk));
+#else
+    ON_CALL(nvm_, InfoRead(_, _, _, _)).WillByDefault(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
   }
 
   void HandleRetentionRam() {
@@ -76,7 +102,11 @@ class XmodemTest : public rom_test::RomTest {
   retention_sram_t retram_;
 
   rom_test::NiceMockXmodem xmodem_;
-  rom_test::NiceMockFlashCtrl flash_;
+#ifdef HAS_RRAM_CTRL
+  rom_test::NiceMockRramCtrl nvm_;
+#else
+  rom_test::NiceMockFlashCtrl nvm_;
+#endif  // HAS_RRAM_CTRL
   rom_test::NiceMockRetentionSram retention_sram_;
   rom_test::NiceMockLifecycle lifecycle_;
 };

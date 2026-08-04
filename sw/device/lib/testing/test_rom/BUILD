@@ -111,7 +111,6 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
     ],
@@ -223,6 +222,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print_uart",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
@@ -246,7 +246,6 @@ cc_library(
         [
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
-            "//sw/device/lib/testing:nvm_testutils",
         ],
         [],
     ) + opentitan_if_ip(

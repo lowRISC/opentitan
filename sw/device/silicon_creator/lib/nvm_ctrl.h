@@ -14,7 +14,9 @@
 
 // Hardware parameter and address constants.  Only nvm_ctrl.{h,c} may include
 // these headers directly; all other callers use the NVM_* aliases below.
+#ifdef HAS_FLASH_CTRL
 #include "hw/top/flash_ctrl_regs.h"
+#endif  // HAS_FLASH_CTRL
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef HAS_RRAM_CTRL

@@ -4,6 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library_group")
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen", "rust_bindgen_library")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -29,7 +30,6 @@ _EARLGREY_DEPS = [
     "//sw/device/lib/dif:csrng",
     "//sw/device/lib/dif:edn",
     "//sw/device/lib/dif:entropy_src",
-    "//sw/device/lib/dif:flash_ctrl",
     "//sw/device/lib/dif:gpio",
     "//sw/device/lib/dif:hmac",
     "//sw/device/lib/dif:i2c",
@@ -56,7 +56,28 @@ _DEPS = _ENGLISH_BREAKFAST_DEPS if _TOPLEVEL == "englishbreakfast" else _EARLGRE
 cc_library(
     name = "difs",
     hdrs = ["difs.h"],
-    deps = _DEPS,
+    # flash_ctrl/rram_ctrl aren't in the static _EARLGREY_DEPS/
+    # _ENGLISH_BREAKFAST_DEPS lists above (unlike every other entry there,
+    # whether the current *top variant* has this IP can change independently
+    # of _TOPLEVEL -- e.g. an earlgrey top with flash_ctrl removed), so they
+    # need the real, active-top-aware `opentitan_if_ip` select rather than a
+    # static list membership. difs.h itself guards its
+    # "hw/top/flash_ctrl_regs.h" include on HAS_FLASH_CTRL for the same
+    # reason.
+    local_defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ),
+    deps = _DEPS + opentitan_if_ip(
+        "flash_ctrl",
+        ["//sw/device/lib/dif:flash_ctrl"],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        ["//sw/device/lib/dif:rram_ctrl"],
+        [],
+    ),
 )
 
 rust_bindgen_library(

@@ -13,23 +13,12 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rram_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// Info pages.
-#define INFO_PAGE_STRUCT_DEF_(name_, page_id_, emulated_, num_pages_) \
-  const rram_ctrl_info_page_t name_ = {                               \
-      .page_id = (page_id_),                                          \
-      .emulated = (emulated_),                                        \
-      .num_pages = (num_pages_),                                      \
-  };
-RRAM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DEF_);
-#undef INFO_PAGE_STRUCT_DEF_
 
 /**
  * Base address of the rram_ctrl registers.
@@ -327,14 +316,14 @@ void rram_ctrl_init(void) {
   uint32_t otp_val = otp_read32(
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET);
   multi_bit_bool_t scramble_dis = bitfield_field32_read(
-      otp_val, FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS);
+      otp_val, RRAM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS);
   if (scramble_dis == kMultiBitBool4True) {
     reg_val = bitfield_field32_write(
         reg_val, RRAM_CTRL_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS_FIELD,
         scramble_dis);
   }
   multi_bit_bool_t ecc_dis = bitfield_field32_read(
-      otp_val, FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS);
+      otp_val, RRAM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS);
   if (ecc_dis == kMultiBitBool4True) {
     reg_val = bitfield_field32_write(
         reg_val, RRAM_CTRL_HW_INFO_CFG_OVERRIDE_ECC_DIS_FIELD, ecc_dis);
@@ -364,8 +353,8 @@ void rram_ctrl_init(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
   rram_ctrl_cfg_t data_default_cfg = {
       .scrambling =
-          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
-      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+          bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_ECC),
   };
   rram_ctrl_data_default_cfg_set(data_default_cfg);
 }
@@ -508,8 +497,8 @@ rram_ctrl_cfg_t rram_ctrl_boot_data_cfg_get(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
   return (rram_ctrl_cfg_t){
       .scrambling =
-          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
-      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+          bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_ECC),
   };
 }
 

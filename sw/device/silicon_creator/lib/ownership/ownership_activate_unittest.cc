@@ -12,7 +12,11 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
@@ -108,10 +112,55 @@ class OwnershipActivateTest : public rom_test::RomTest {
 
   rom_test::MockHmac hmac_;
   rom_test::MockRnd rnd_;
+#ifdef HAS_RRAM_CTRL
+  rom_test::MockRramCtrl rram_ctrl_;
+#else
   rom_test::MockFlashCtrl flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   rom_test::MockBootSvcHeader hdr_;
   rom_test::MockLifecycle lifecycle_;
   rom_test::MockOwnershipKey ownership_key_;
+
+  /**
+   * Sets an expectation that the sealed owner page (`owner_page[1]`) is
+   * written into owner slot 1 first, then owner slot 0.
+   */
+  void ExpectSealedPageWrite() {
+#ifdef HAS_RRAM_CTRL
+    // OwnerSlot0/1 are emulated info pages on RRAM: `nvm_ctrl_info_erase()`
+    // has no hardware erase primitive to call, so it overwrites each of the
+    // page's 4 physical pages with 0xFF via `DataWrite`, and
+    // `nvm_ctrl_info_write()` becomes a single `DataWrite` at the page's
+    // base address (see `ExpectRramInfoErase()`).
+    rom_test::ExpectRramInfoErase(rram_ctrl_, kRramCtrlInfoPageOwnerSlot1);
+    EXPECT_CALL(rram_ctrl_, DataWrite(kRramCtrlInfoPageOwnerSlot1.page_id *
+                                          RRAM_CTRL_PARAM_BYTES_PER_PAGE,
+                                      sizeof(owner_page[1]) / sizeof(uint32_t),
+                                      &owner_page[1]))
+        .WillOnce(Return(kErrorOk));
+    rom_test::ExpectRramInfoErase(rram_ctrl_, kRramCtrlInfoPageOwnerSlot0);
+    EXPECT_CALL(rram_ctrl_, DataWrite(kRramCtrlInfoPageOwnerSlot0.page_id *
+                                          RRAM_CTRL_PARAM_BYTES_PER_PAGE,
+                                      sizeof(owner_page[1]) / sizeof(uint32_t),
+                                      &owner_page[1]))
+        .WillOnce(Return(kErrorOk));
+#else
+    EXPECT_CALL(flash_ctrl_, InfoErase(&kFlashCtrlInfoPageOwnerSlot1,
+                                       kFlashCtrlEraseTypePage))
+        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+                                       sizeof(owner_page[1]) / sizeof(uint32_t),
+                                       &owner_page[1]))
+        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(flash_ctrl_, InfoErase(&kFlashCtrlInfoPageOwnerSlot0,
+                                       kFlashCtrlEraseTypePage))
+        .WillOnce(Return(kErrorOk));
+    EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+                                       sizeof(owner_page[1]) / sizeof(uint32_t),
+                                       &owner_page[1]))
+        .WillOnce(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
+  }
 };
 
 class OwnershipActivateInvalidStateTest
@@ -265,22 +314,8 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   // Once the new owner page is determined to be valid, the page will be sealed.
   EXPECT_CALL(ownership_key_, seal_page(1));
 
-  // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
-  // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
+  // The sealed page will be written into owner slot 1, then owner slot 0.
+  ExpectSealedPageWrite();
 
   if (state != kOwnershipStateUnlockedSelf) {
     EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
@@ -335,22 +370,8 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0MinSecVer) {
   // Once the new owner page is determined to be valid, the page will be sealed.
   EXPECT_CALL(ownership_key_, seal_page(1));
 
-  // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
-  // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
+  // The sealed page will be written into owner slot 1, then owner slot 0.
+  ExpectSealedPageWrite();
 
   if (state != kOwnershipStateUnlockedSelf) {
     EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
@@ -401,22 +422,8 @@ TEST_P(OwnershipActivateNextBl0Slot, UpdateBootdataPrimaryBl0Slot) {
   // Once the new owner page is determined to be valid, the page will be sealed.
   EXPECT_CALL(ownership_key_, seal_page(1));
 
-  // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
-  // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
-      .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
-                                     sizeof(owner_page[1]) / sizeof(uint32_t),
-                                     &owner_page[1]))
-      .WillOnce(Return(kErrorOk));
+  // The sealed page will be written into owner slot 1, then owner slot 0.
+  ExpectSealedPageWrite();
 
   // The transfer will regenerate the owner secret.
   EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));

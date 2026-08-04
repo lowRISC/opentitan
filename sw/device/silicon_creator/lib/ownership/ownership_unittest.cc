@@ -13,7 +13,11 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
@@ -27,8 +31,6 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
-using ::rom_test::FlashCfg;
-using ::rom_test::FlashPerms;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -43,10 +45,36 @@ class OwnershipInitTest : public rom_test::RomTest {
  protected:
   rom_test::MockHmac hmac_;
   rom_test::MockRnd rnd_;
+#ifdef HAS_RRAM_CTRL
+  rom_test::NiceMockRramCtrl rram_ctrl_;
+#else
   rom_test::NiceMockFlashCtrl flash_ctrl_;
+#endif  // HAS_RRAM_CTRL
   rom_test::MockLifecycle lifecycle_;
   rom_test::MockOwnershipKey ownership_key_;
   rom_test::MockBootData mock_bootdata_;
+
+  /**
+   * Sets an expectation that owner slot 0 (or 1, if `slot1` is true) is read.
+   *
+   * OwnerSlot0/1 are emulated info pages on RRAM: `nvm_ctrl_info_read()`
+   * becomes a plain data-partition `DataRead` at the page's base address
+   * (`ownership.c` always reads at offset 0) rather than an `InfoRead`.
+   */
+  void ExpectOwnerSlotRead(bool slot1) {
+#ifdef HAS_RRAM_CTRL
+    const rram_ctrl_info_page_t &page =
+        slot1 ? kRramCtrlInfoPageOwnerSlot1 : kRramCtrlInfoPageOwnerSlot0;
+    EXPECT_CALL(rram_ctrl_,
+                DataRead(page.page_id * RRAM_CTRL_PARAM_BYTES_PER_PAGE, _, _))
+        .WillOnce(Return(kErrorOk));
+#else
+    const flash_ctrl_info_page_t &page =
+        slot1 ? kFlashCtrlInfoPageOwnerSlot1 : kFlashCtrlInfoPageOwnerSlot0;
+    EXPECT_CALL(flash_ctrl_, InfoRead(&page, _, _, _))
+        .WillOnce(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
+  }
 };
 
 TEST_F(OwnershipInitTest, InitWithRecoveryState) {
@@ -54,8 +82,7 @@ TEST_F(OwnershipInitTest, InitWithRecoveryState) {
   owner_config_t config = {};
   owner_application_keyring_t keyring = {};
 
-  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot0, _, _, _))
-      .WillOnce(Return(kErrorOk));
+  ExpectOwnerSlotRead(/*slot1=*/false);
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(ownership_key_, seal_check(0))
@@ -63,8 +90,7 @@ TEST_F(OwnershipInitTest, InitWithRecoveryState) {
   EXPECT_CALL(ownership_key_, validate(_, _, _, _, _, _, _, _))
       .WillOnce(Return(kErrorOwnershipInvalidInfoPage));
 
-  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot1, _, _, _))
-      .WillOnce(Return(kErrorOk));
+  ExpectOwnerSlotRead(/*slot1=*/true);
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(ownership_key_, seal_check(1))
@@ -86,8 +112,7 @@ TEST_P(OwnershipInitInvalidPagesTest, InitWithInfoPageCorrupted) {
   owner_config_t config = {};
   owner_application_keyring_t keyring = {};
 
-  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot0, _, _, _))
-      .WillOnce(Return(kErrorOk));
+  ExpectOwnerSlotRead(/*slot1=*/false);
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(ownership_key_, seal_check(0))
@@ -95,8 +120,7 @@ TEST_P(OwnershipInitInvalidPagesTest, InitWithInfoPageCorrupted) {
   EXPECT_CALL(ownership_key_, validate(_, _, _, _, _, _, _, _))
       .WillOnce(Return(kErrorOwnershipInvalidInfoPage));
 
-  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot1, _, _, _))
-      .WillOnce(Return(kErrorOk));
+  ExpectOwnerSlotRead(/*slot1=*/true);
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(ownership_key_, seal_check(1))

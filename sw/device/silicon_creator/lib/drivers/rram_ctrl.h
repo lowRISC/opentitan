@@ -4,6 +4,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RRAM_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RRAM_CTRL_H_
 
+#include <limits.h>
 #include <stdbool.h>
 
 #include "sw/device/lib/base/bitfield.h"
@@ -16,6 +17,34 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ *
+ * RRAM reuses the same OTP words and bit layout as flash_ctrl (the OTP
+ * schema was not redesigned for RRAM); these are RRAM's own copies of
+ * flash_ctrl.h's `FLASH_CTRL_OTP_FIELD_*` macros so that rram_ctrl does not
+ * need to depend on the flash_ctrl driver just for these constants.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define RRAM_CTRL_OTP_FIELD_SCRAMBLING \
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 0}
+#define RRAM_CTRL_OTP_FIELD_ECC \
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE` OTP item.
+ *
+ * See the note above: RRAM reuses flash_ctrl's OTP word/bit layout.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define RRAM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS \
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 0}
+#define RRAM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS \
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
 
 /**
  * A logical RRAM info page.

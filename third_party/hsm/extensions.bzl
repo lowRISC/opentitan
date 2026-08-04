@@ -26,6 +26,10 @@ def _hsm_repos():
         url = "https://github.com/CardContact/sc-hsm-embedded/archive/refs/tags/V2.12.tar.gz",
         strip_prefix = "sc-hsm-embedded-2.12",
         sha256 = "707fca9df630708e0e59a7d4a8a7a016c56c83a585957f0fd9f806c0762f1944",
+        patches = [
+            Label("//third_party/hsm/patches:0001-sc-hsm-fix-true-false-variable-names.patch"),
+        ],
+        patch_args = ["-p1"],
     )
     http_archive(
         name = "opensc",

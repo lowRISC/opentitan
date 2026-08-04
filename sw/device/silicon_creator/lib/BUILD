@@ -506,12 +506,16 @@ cc_library(
     hdrs = ["bootstrap_unittest_util.h"],
     deps = [
         ":bootstrap",
-        "//hw/top:flash_ctrl_c_regs",
+        ":nvm_ctrl",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
-    ],
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        ["//hw/top:flash_ctrl_c_regs"],
+        [],
+    ),
 )
 
 cc_library(
@@ -542,39 +546,58 @@ dual_cc_library(
     # rom_ext, cert/dice_chain, manuf/ft_personalize, ...) needs to see the
     # same macro value nvm_ctrl.c itself was compiled with, since the header
     # branches on it too (NVM_BYTES_PER_PAGE, kNvmCtrlSecMmio*, ...).
-    # Device-only: host-side (unittest) builds always compile the flash
-    # branch, regardless of which NVM technology the device variant uses
-    # below. Existing tests mock at the flash_ctrl layer (boot_data_unittest,
-    # owner_block_unittest, etc.) and nvm_ctrl.c's page_ptr() maps each
-    # nvm_info_page_t back to the same flash_ctrl_info_page_t pointers those
-    # tests already expect.
-    defines = dual_inputs(device = opentitan_if_ip(
+    # Shared: host-side (unittest) builds compile whichever branch matches
+    # the active top's NVM technology, same as the device build, so tests
+    # mock the driver that's actually linked (MockRramCtrl on tops with
+    # rram_ctrl, MockFlashCtrl on tops with flash_ctrl).
+    defines = dual_inputs(shared = opentitan_if_ip(
         "rram_ctrl",
         ["HAS_RRAM_CTRL"],
         [],
+    ) + opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
     )),
+    # Explicit, matching drivers:flash_ctrl/rram_ctrl: dual_cc_library's
+    # default visibility is private, which would otherwise also apply to the
+    # `_on_device_do_not_use_directly`/`_on_host_do_not_use_directly` targets
+    # `dual_cc_device_library_of(":nvm_ctrl")` needs to reference from other
+    # packages (e.g. drivers:spi_device, for NVM_USABLE_DATA_SIZE_BYTES).
+    visibility = ["//visibility:public"],
     deps = dual_inputs(
-        # The device variant links the real flash_ctrl driver, even when
-        # force-included in a host build (e.g. a future shutdown_unittest
-        # FlashKill-style test verifying real register-level behavior); on
-        # tops with rram_ctrl, it links that driver instead.
-        device = [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")] +
-                 opentitan_if_ip(
-                     "rram_ctrl",
-                     ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
-                     [],
-                 ),
-        # The host variant always links the plain flash_ctrl alias (see the
-        # comment above), regardless of the top's actual NVM technology.
-        host = ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        device = opentitan_if_ip(
+            "flash_ctrl",
+            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
+        # The host variant mirrors the device variant above: each dual_cc_library
+        # alias resolves to its own host-side variant (mock) automatically when
+        # built for a host test.
+        host = opentitan_if_ip(
+            "flash_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
         shared = [
             ":error",
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
         ] + opentitan_if_ip(
+            "flash_ctrl",
+            ["//hw/top:flash_ctrl_c_regs"],
+            [],
+        ) + opentitan_if_ip(
             "rram_ctrl",
             ["//hw/top:rram_ctrl_c_regs"],
             [],

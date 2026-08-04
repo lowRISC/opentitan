@@ -11,13 +11,17 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/bootstrap_unittest_util.h"
+#ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/mock_rram_ctrl.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
+#endif  // HAS_RRAM_CTRL
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -176,8 +180,19 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddrLongPayload) {
   ExpectFlashCtrlWriteEnable();
   EXPECT_CALL(flash_ctrl_, DataWrite(0xfff0, 4, HasBytes(flash_bytes_0)))
       .WillOnce(Return(kErrorOk));
+  // `nvm_ctrl_page_program()` rounds the remaining chunk's start address
+  // down to the current NVM technology's program-page boundary
+  // (`NVM_PROG_PAGE_SIZE`): 256 B for flash (0xfff0 -> 0xff00), 512 B for
+  // RRAM (0xfff0 -> 0xfe00). Both round the same first 4-word chunk (0xfff0
+  // happens to be 16 bytes short of either boundary), but land on different
+  // second addresses.
+#ifdef HAS_RRAM_CTRL
+  EXPECT_CALL(flash_ctrl_, DataWrite(0xfe00, 60, HasBytes(flash_bytes_1)))
+      .WillOnce(Return(kErrorOk));
+#else
   EXPECT_CALL(flash_ctrl_, DataWrite(0xff00, 60, HasBytes(flash_bytes_1)))
       .WillOnce(Return(kErrorOk));
+#endif  // HAS_RRAM_CTRL
   ExpectFlashCtrlAllDisable();
 
   EXPECT_CALL(spi_device_, FlashStatusClear());
@@ -378,6 +393,11 @@ TEST_F(BootstrapTest, EraseBank1Error) {
 }
 
 TEST_F(BootstrapTest, EraseVerifyBank0Error) {
+#ifdef HAS_RRAM_CTRL
+  GTEST_SKIP() << "nvm_ctrl_chip_erase_verify() is a hardcoded kErrorOk on "
+                  "RRAM (see ExpectFlashCtrlEraseVerify): this failure mode "
+                  "cannot occur.";
+#endif  // HAS_RRAM_CTRL
   // Erase
   ExpectBootstrapRequestCheck(true);
   EXPECT_CALL(spi_device_, InitBootstrap());
@@ -391,6 +411,11 @@ TEST_F(BootstrapTest, EraseVerifyBank0Error) {
 }
 
 TEST_F(BootstrapTest, EraseVerifyBank1Error) {
+#ifdef HAS_RRAM_CTRL
+  GTEST_SKIP() << "nvm_ctrl_chip_erase_verify() is a hardcoded kErrorOk on "
+                  "RRAM (see ExpectFlashCtrlEraseVerify): this failure mode "
+                  "cannot occur.";
+#endif  // HAS_RRAM_CTRL
   // Erase
   ExpectBootstrapRequestCheck(true);
   EXPECT_CALL(spi_device_, InitBootstrap());
@@ -486,8 +511,7 @@ TEST_F(BootstrapTest, BadEraseAddress) {
   ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Erase
-  ExpectSpiCmd(SectorEraseCmd(FLASH_CTRL_PARAM_BYTES_PER_BANK *
-                              FLASH_CTRL_PARAM_REG_NUM_BANKS));
+  ExpectSpiCmd(SectorEraseCmd(NVM_USABLE_DATA_SIZE_BYTES));
   ExpectSpiFlashStatusGet(true);
 
   EXPECT_EQ(bootstrap(), kErrorBootstrapEraseAddress);
