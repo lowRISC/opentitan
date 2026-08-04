@@ -46,11 +46,11 @@ When one of these power-okay signals drop, the corresponding domain in `top_earl
 Please refer to [reset manager](../../ip_autogen/rstmgr/README.md) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
-Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
-Valid code is assumed to have been instantiated into the flash, if not, the ROM shuts down the device unless prompted to bootstrap.
+Once reset, the reset vector begins in ROM, whose job is to validate code in non-volatile memory (RRAM, see the [Memory](#memory) section below) before jumping to it.
+Valid code is assumed to have been instantiated into NVM, if not, the ROM shuts down the device unless prompted to bootstrap.
 
-There are multiple avenues to load valid code into the flash:
-1. JTAG initiated flash programming.
+There are multiple avenues to load valid code into NVM:
+1. JTAG initiated programming.
 2. ROM bootstrap
 
 #### AST Clocking and Reset Relationship
@@ -153,19 +153,13 @@ The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey currently contains two non-volatile memory (NVM) technologies: 1024kB of embedded-flash (e-flash) and 2MiB of embedded RRAM (resistive RAM).
-Flash is the NVM technology in active use today, and is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
-RRAM is also present in the design, and is intended to replace flash as Earl Grey's NVM technology in the near future.
+Earl Grey currently contains two non-volatile memory (NVM) technologies: 2MiB of embedded RRAM (resistive RAM) and 1024kB of embedded-flash (e-flash).
+RRAM is now the NVM technology in active use: it houses the boot loader mentioned above, as well as the operating system and application that layers on top.
+The flash controller is expected to be removed from the design soon.
+
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
-Embedded-flash is the currently used technology for a silicon design implementing the full OpenTitan device.
-It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA proof of concept, models these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
-This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
-Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
-We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
-
-RRAM is intended for code and data storage, and will eventually replace flash as the primary NVM technology.
+RRAM is the primary technology for code and data storage on Earl Grey.
 Like flash, RRAM is a non-volatile memory technology, so software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
 The FPGA emulation of the memory approximates the read and write speeds and non-volatile nature that the RRAM macro exhibits in silicon.
 
@@ -180,7 +174,7 @@ See those specifications for more details.
 Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
 It is also available for code storage, though that is not its intended purpose.
 
-The base address of the ROM, Flash, RRAM, and SRAM are given in the address map section later in this document.
+The base address of the ROM, RRAM, Flash, and SRAM are given in the address map section later in this document.
 
 ### Secure boot
 
@@ -343,7 +337,7 @@ The specification for the timer can be found [here](../../../ip/rv_timer/README.
 
 ##### RRAM Controller
 
-The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is intended to replace the flash controller as Earl Grey's primary non-volatile storage peripheral for code and data.
+The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is Earl Grey's primary non-volatile storage peripheral for code and data, having replaced the flash controller (below) in that role.
 
 The primary read path for this data is in the standard memory address space.
 Writes on the other hand, need to be initiated by software  which must interact with the RRAM controller.
@@ -363,7 +357,7 @@ For more details see the [RRAM controller module specification](../../../ip/rram
 ##### Flash Controller
 
 The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, emulated embedded flash is available for code and data storage.
+As mentioned in the memory section, flash has been superseded by RRAM as Earl Grey's primary NVM technology, and the flash controller is expected to be removed from the design soon.
 The primary read path for this data is in the standard memory address space.
 Writes to that address space are ignored, however, since one can not write to flash in a standard way.
 Instead, to write to flash, software must interact with the flash controller.
