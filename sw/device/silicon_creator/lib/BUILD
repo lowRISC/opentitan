@@ -530,37 +530,52 @@ dual_cc_library(
     name = "nvm_ctrl",
     srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
     hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
-    # Selects which NVM backend nvm_ctrl.h/.c compile against. Only a
-    # flash_ctrl-backed implementation exists today (earlgrey,
-    # englishbreakfast); a future RRAM-backed top would add its own branch
-    # here alongside a USE_RRAM implementation (see nvm_ctrl.h).
+    # Selects which NVM backend nvm_ctrl.h/.c compile against.
     defines = opentitan_select_top(
         {
-            "earlgrey": ["USE_FLASH"],
+            "earlgrey": ["USE_RRAM"],
             "englishbreakfast": ["USE_FLASH"],
         },
         [],
     ),
     deps = dual_inputs(
-        # The device variant always links the real flash_ctrl driver, even
-        # when force-included in a host build (e.g. a future shutdown_unittest
-        # FlashKill-style test verifying real register-level behavior).
-        device = [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
-        # The host variant links the plain flash_ctrl alias, which resolves to
-        # mock_flash_ctrl on host builds. This lets tests that mock at the
-        # flash_ctrl layer (boot_data_unittest, owner_block_unittest, etc.)
-        # keep working unchanged, since nvm_ctrl.c's page_ptr() maps each
-        # nvm_info_page_t back to the same flash_ctrl_info_page_t pointers
-        # those tests already expect.
-        host = ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        # Links whichever backend driver(s) the top actually has, matching
+        # USE_FLASH/USE_RRAM above. Gated on IP presence (not hardcoded)
+        # so this keeps working once a top drops one of the two IPs.
+        device = opentitan_if_ip(
+            "flash_ctrl",
+            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
+        # Same as above, but linking each backend's mock for host tests.
+        host = opentitan_if_ip(
+            "flash_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
         shared = [
             ":error",
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:top_lib",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
-        ],
+        ] + opentitan_if_ip(
+            "flash_ctrl",
+            ["//hw/top:flash_ctrl_c_regs"],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//hw/top:rram_ctrl_c_regs"],
+            [],
+        ),
     ),
 )
 
