@@ -181,24 +181,27 @@ sudo udevadm control --reload-rules && sudo service udev restart && sudo udevadm
 The CW340 board should be powered via the included DC power adapter.
 To this end:
 1. Turn off the board by setting the *Control Power* switch (top left corner, *SW7*) to the right (towards the OpenTitan logo).
-2. Ensure the *Tgt Power* switch (center of the board) is set to the right, towards the *Auto* option.
-3. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
-4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
-5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
+1. Ensure the *Tgt Power* switch (center of the board) is set to the right, towards the *Auto* option.
+1. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
+1. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
+1. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
    1. Set to `HD` if you are using the HyperDebug board, as also explained in section [Before Connecting HyperDebug to the CW340 Base Board](#before-connecting-hyperdebug-to-the-cw340-base-board).
    2. Set to `FTDI` to (likely) route the UART0 to `/dev/ttyUSB2`.
    3. Set to `SAM` to route the UART0 to `/dev/ttyACM0`.
-6. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
-7. Make sure the DIP switches on the bottom side of the board are set up as follows:
+1. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
+1. Make sure the DIP switches on the bottom side of the board are set up as follows:
    - SW1, SW2: all switches (1 to 8) in the OFF position
    - SW3: switch 1 in the ON position, switch 2, 3 in the OFF position.
    - SW10, SW11: all switches (1 to 3) in the ON position
    - SW12: all switches (1 to 6) in the ON position
    - DIP switch connected to IOB0 - IOB7: all switches (1 to 8) in the ON position
    - DIP switch connected to IOB8 - IOB12: switch 1 to 7 in the ON position, switch 8 in the OFF position.
-8. Depending on your use case, do one of the following:
-   1. If you are connecting a HyperDebug board to your CW340 base board, follow instructions in the [HyperDebug Board](#hyperdebug-board) section.
-   2. Otherwise, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
+1. If you are connecting a HyperDebug board to your CW340 base board, follow instructions in the [HyperDebug Board](#hyperdebug-board) section.
+1. Afterwards, depending on your use case, do the following::
+   - If you want to run SPI host tests, make sure a compatible flash chip is inserted in the U29 socket (right of the SW4).
+     Without a flash you will most likely see the error `SFDP signature is 0xffffffff. CHECK-fail: Expected to find the SFDP signature!`, see below.
+   - If you want to run USB host tests, make sure to connect the device USB port on J9 to the CW340's internal downstream USB hub port 4 on J8 (some test assume this connection).
+1. Finally, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
 
 After completing the rest of the FPGA setup process, you can confirm that these DIP switches are configured correctly by running the following test targets:
 
@@ -217,6 +220,18 @@ Find below the top view and a bottom view photos of a fully configured CW340 boa
 
 [![bottom view of the CW340 board](cw340-bottom-lowres.webp)](cw340-bottom.webp)
 
+#### SFDP signature error
+If a test fails with
+```
+SFDP signature is 0xffffffff.
+CHECK-fail: Expected to find the SFDP signature!
+```
+most likely something is wrong with the flash in U29.
+Check that there is a flash chip inserted and that it is properly mounted.
+This error can happen when the flash chip is not properly connected, leaving the data pin pulled high and causing the system to read a continuous '1.
+
+Note that SPI errors during bootstrapping where the ROM uses the SPI can result in similar SFDP errors.
+In this case, such an error indicates that opentitantool cannot communicate with the ROM via HyperDebug (which could be due to many causes, including a wrong bitstream or a connection issue).
 
 #### HyperDebug Board
 
