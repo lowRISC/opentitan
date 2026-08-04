@@ -586,6 +586,8 @@ status_t handle_sha3_pentest_seed_lfsr(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_sha3_pentest_init(ujson_t *uj) {
+  run_fixed = false;
+
   // Read mode. FPGA or discrete.
   cryptotest_sha3_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_fpga_mode_t(uj, &uj_data));

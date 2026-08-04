@@ -62,18 +62,23 @@ class Target:
                 target_cfg.openocd_design_config,
             )
 
-        self.com_interface = self.target.init_communication(target_cfg.port, self.baudrate)
+        self.com_interface = None
 
     def initialize_target(self, print_output=True):
         self.target.initialize_target(print_output=print_output)
+        self.com_interface = self.target.init_communication(self.target_cfg.port, self.baudrate)
         # Clear the UART
         self.dump_all()
 
     def clear_bitstream(self, delay=2):
         self.target.clear_bitstream(delay=delay)
 
-    def reset_target(self, reset_delay=0.005):
+    def reset_target(self, reset_delay=1.0):
         self.target.reset_target(reset_delay=reset_delay)
+        if self.com_interface:
+            self.com_interface.reset_input_buffer()
+            self.com_interface.reset_output_buffer()
+        self.dump_all()
 
     def write(self, data):
         """Write data to the target."""
@@ -171,7 +176,7 @@ class Target:
                 continue
         return "", False
 
-    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 250):
+    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 30):
         """
         Args:
             max_tries: Maximum number of attempts to read from UART.
@@ -185,12 +190,11 @@ class Target:
             try:
                 read_line = str(self.readline().decode().strip())
             except UnicodeDecodeError:
-                break
+                it += 1
+                continue
             if len(read_line) > 0:
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
-            else:
-                break
             it += 1
         return ""
 

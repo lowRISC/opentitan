@@ -142,7 +142,7 @@ class Sha3ScaTest(unittest.TestCase):
             text = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             masking = True
             actual_result = sca_sha3_functions.char_sha3_batch_absorb(
-                target, iterations, num_segments, fpga, masking, text
+                target, iterations, num_segments, fpga, masking, text, reset=True
             )
             actual_result_json = json.loads(actual_result)
 
