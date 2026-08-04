@@ -144,16 +144,6 @@ enum {
    * Size of `boot_data_t` in words.
    */
   kBootDataNumWords = sizeof(boot_data_t) / sizeof(uint32_t),
-  /**
-   * Number of boot data entries per info page.
-   *
-   * Boot data pages are used as append-only logs where new data is written to
-   * the first empty entry of the active page. If all entries of the currently
-   * active page are used when `boot_data_write()` is called, the other page
-   * will be erased and new data will be written to its first entry, making it
-   * the new active page.
-   */
-  kBootDataEntriesPerPage = 16,
 };
 static_assert(kBootDataInvalidEntry != kBootDataValidEntry,
               "Invalidation values cannot be equal.");

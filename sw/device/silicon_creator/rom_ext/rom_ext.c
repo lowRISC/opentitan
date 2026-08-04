@@ -66,14 +66,15 @@
 
 // Useful constants for NVM sizes and ROM_EXT locations.
 enum {
-  kNvmBankSize = NVM_PAGES_PER_BANK,
+  // Page count of one firmware slot (A or B); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
   kNvmPageSize = NVM_BYTES_PER_PAGE,
-  kNvmTotalSize = 2 * kNvmBankSize,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
   kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kNvmBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
@@ -593,7 +594,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // meaningful action we could take in the event of an error.  If there
   // was an error, ownership_history_get will default history hash result to
   // all ones.
-  OT_DISCARD(ownership_history_get(&owner_history_hash));
+  OT_DISCARD(ownership_history_get(boot_data->ownership_transfers,
+                                   &owner_history_hash));
 
   // Handle any pending boot_svc commands.
   uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;

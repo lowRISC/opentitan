@@ -388,15 +388,14 @@ dual_cc_library(
         shared = ["shutdown.h"],
     ),
     defines = opentitan_if_ip(
-        "flash_ctrl",
-        ["HAS_FLASH_CTRL"],
-        [],
-    ) + opentitan_if_ip(
         "keymgr",
         ["HAS_KEYMGR"],
         [],
     ),
     deps = dual_inputs(
+        device = [
+            ":nvm_ctrl",
+        ],
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -434,6 +433,10 @@ dual_cc_library(
             [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
             [],
         ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ) + opentitan_if_ip(
             "keymgr",
             ["//sw/device/silicon_creator/lib/drivers:keymgr"],
             [],
@@ -448,7 +451,7 @@ cc_test(
         dual_cc_device_library_of(":shutdown"),
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top/dt:flash_ctrl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -531,12 +534,22 @@ dual_cc_library(
     srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
     hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
     # Selects which NVM backend nvm_ctrl.h/.c compile against.
-    defines = opentitan_select_top(
-        {
-            "earlgrey": ["USE_RRAM"],
-            "englishbreakfast": ["USE_FLASH"],
-        },
-        [],
+    defines = dual_inputs(
+        device = opentitan_select_top(
+            {
+                "earlgrey": ["USE_RRAM"],
+                "englishbreakfast": ["USE_FLASH"],
+            },
+            [],
+        ),
+        # Host tests always build against the flash backend, independent of
+        # the selected top: existing unit tests (boot_data_unittest,
+        # flash_ctrl_unittest, rescue_xmodem_unittest, ownership tests, ...)
+        # mock flash_ctrl directly and predate RRAM support. This keeps them
+        # passing but means nvm_ctrl.c's RRAM branch has no host unit test
+        # coverage; it's only exercised by on-device functests/DV.
+        # TODO(#30967): port the silicon_creator host test suite to RRAM.
+        host = ["USE_FLASH"],
     ),
     deps = dual_inputs(
         # Links whichever backend driver(s) the top actually has, matching

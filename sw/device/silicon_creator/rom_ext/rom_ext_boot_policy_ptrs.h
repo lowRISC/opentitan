@@ -17,7 +17,8 @@ extern "C" {
 // Only needed by the inline definitions below: the host/mock build compiles
 // this header too (via mock_rom_ext_boot_policy_ptrs.cc), but only declares
 // the plain function prototypes in the #else branch, so it must not require
-// nvm_ctrl.h which isn't a host dependency.
+// nvm_ctrl.h (which isn't a host dependency, and isn't buildable for every
+// top -- see nvm_ctrl.h/rram_ctrl.h).
 #include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 static_assert((NVM_DATA_SIZE_BYTES % 2) == 0, "NVM size is not divisible by 2");
