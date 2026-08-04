@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -37,24 +38,6 @@ enum {
   kP384MaskedScalarTotalShareBytes = 112,
 };
 
-static const otcrypto_key_config_t kP256PrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = kP256PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
-static const otcrypto_key_config_t kP384PrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP384,
-    .key_length = kP384PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
 // P-256 group order n in little-endian uint32_t limbs.
 static const uint32_t kP256OrderLE[kP256ScalarWords] = {
     0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD,
@@ -65,24 +48,6 @@ static const uint32_t kP256OrderLE[kP256ScalarWords] = {
 static const uint32_t kP384OrderLE[kP384ScalarWords] = {
     0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF, 0xC7634D81,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-};
-
-static const otcrypto_key_config_t kP256ExportableKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = kP256PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
-static const otcrypto_key_config_t kP384ExportableKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP384,
-    .key_length = kP384PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
@@ -257,6 +222,14 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
+  const otcrypto_key_config_t kP256PrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = kP256PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t share0[kP256MaskedScalarShareWords] = {0};
   uint32_t share1[kP256MaskedScalarShareWords] = {0};
   memcpy(share0, uj_private_key->d0, uj_private_key->d0_len);
@@ -304,6 +277,14 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
+  const otcrypto_key_config_t kP384PrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = kP384PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t share0[kP384MaskedScalarShareWords] = {0};
   uint32_t share1[kP384MaskedScalarShareWords] = {0};
   memcpy(share0, uj_private_key->d0, uj_private_key->d0_len);
@@ -408,6 +389,22 @@ static status_t handle_ecdsa_hash(
 
 static status_t handle_ecdsa_keygen(ujson_t *uj,
                                     cryptotest_ecdsa_curve_t uj_curve) {
+  const otcrypto_key_config_t kP256ExportableKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = kP256PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  const otcrypto_key_config_t kP384ExportableKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = kP384PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   cryptotest_ecdsa_keygen_resp_t resp;
   memset(&resp, 0, sizeof(resp));
 

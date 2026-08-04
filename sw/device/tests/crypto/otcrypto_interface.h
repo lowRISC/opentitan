@@ -25,6 +25,7 @@ typedef struct otcrypto_interface_t {
 
   // Build info
   otcrypto_status_t (*build_info)(uint32_t *, bool *, uint32_t *, uint32_t *);
+  otcrypto_lib_version_t (*lib_version)(void);
 
   // Entropy
   otcrypto_status_t (*entropy_init)(void);

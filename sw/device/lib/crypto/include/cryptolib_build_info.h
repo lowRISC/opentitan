@@ -42,6 +42,13 @@ otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
                                       uint32_t *build_hash_low,
                                       uint32_t *build_hash_high);
 
+/**
+ * Return the current version of the cryptolib.
+ *
+ * @return The current crypto library version.
+ */
+otcrypto_lib_version_t otcrypto_lib_version(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

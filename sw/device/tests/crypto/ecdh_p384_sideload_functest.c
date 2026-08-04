@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -40,24 +41,26 @@ static const uint32_t kPrivateKeyBSalt[7] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
                                              0xb8b9babb};
 
 // Configuration for the private key.
-static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdhP384,
-    .key_length = kP384PrivateKeyBytes,
-    .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kEcdhPrivateKeyConfig                         \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdhP384,           \
+      .key_length = kP384PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolTrue,                 \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Configuration for the ECDH shared (symmetric) key. This configuration
 // specifies an AES key, but any symmetric mode that supports 384-bit keys is
 // OK here.
-static const otcrypto_key_config_t kEcdhSharedKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesCtr,
-    .key_length = kP384SharedKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kEcdhSharedKeyConfig                          \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesCtr,             \
+      .key_length = kP384SharedKeyBytes,              \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 status_t key_exchange_test(void) {
   // Allocate space for two sideloaded private keys.

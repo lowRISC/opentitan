@@ -10,6 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -21,8 +22,8 @@ using ::testing::ElementsAreArray;
 #define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR software key).
-constexpr otcrypto_key_config_t kConfigCtr128 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigCtr128 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
@@ -30,8 +31,8 @@ constexpr otcrypto_key_config_t kConfigCtr128 = {
 };
 
 // Key configuration for testing (RSA 2048).
-constexpr otcrypto_key_config_t kConfigRsa2048 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigRsa2048 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeRsaSignPkcs,
     .key_length = 256,
     .hw_backed = kHardenedBoolFalse,
@@ -39,8 +40,8 @@ constexpr otcrypto_key_config_t kConfigRsa2048 = {
 };
 
 // Key configuration for testing (ECC P256).
-constexpr otcrypto_key_config_t kConfigEcdsaP256 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigEcdsaP256 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeEcdsaP256,
     .key_length = 32,
     .hw_backed = kHardenedBoolFalse,
@@ -49,8 +50,8 @@ constexpr otcrypto_key_config_t kConfigEcdsaP256 = {
 
 // Key configuration for testing (31-byte key; not valid but helps test for
 // issues with keys that don't have an even word size).
-constexpr otcrypto_key_config_t kConfigOddBytes = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigOddBytes = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
@@ -59,8 +60,8 @@ constexpr otcrypto_key_config_t kConfigOddBytes = {
 
 // Key configuration for testing (key with a huge number of bytes; not valid
 // but helps test for overflow).
-constexpr otcrypto_key_config_t kConfigHuge = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigHuge = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = UINT32_MAX,
     .hw_backed = kHardenedBoolFalse,
@@ -68,8 +69,8 @@ constexpr otcrypto_key_config_t kConfigHuge = {
 };
 
 // Key configuration for testing (sideloaded AES-CTR key).
-constexpr otcrypto_key_config_t kConfigCtrSideloaded = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigCtrSideloaded = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
@@ -77,8 +78,8 @@ constexpr otcrypto_key_config_t kConfigCtrSideloaded = {
 };
 
 // Key configuration for testing (sideloaded AES-OFB key).
-constexpr otcrypto_key_config_t kConfigOfbSideloaded = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigOfbSideloaded = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesOfb,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,

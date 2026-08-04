@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -68,7 +69,7 @@ static status_t run_bad_args_test(void) {
 
   uint32_t keyblob[16] = {0};
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,
@@ -397,7 +398,7 @@ static status_t run_sideload_test(void) {
   uint32_t div_data[16] = {0};
 
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = 32,
       .hw_backed = kHardenedBoolTrue,

@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -164,7 +165,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -333,7 +334,7 @@ static status_t run_signature_negative_tests(void) {
   otcrypto_blinded_key_t valid_priv = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeRsaSignPkcs,
               .key_length = kOtcryptoRsa2048PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
