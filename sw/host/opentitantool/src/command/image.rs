@@ -34,7 +34,10 @@ use sphincsplus::{
 #[derive(Debug, Args)]
 pub struct AssembleCommand {
     /// The size of the image to assemble.
-    #[arg(short, long, value_parser = usize::from_str, default_value="1048576")]
+    // TODO: hardcoded to RRAM's 2 MiB data-partition size for now; this
+    // should be threaded through per-top instead of defaulted, since
+    // flash-based tops (e.g. englishbreakfast) only have 1 MiB.
+    #[arg(short, long, value_parser = usize::from_str, default_value="2097152")]
     size: usize,
     /// Whether or not the assembled image is mirrored.
     #[arg(short, long, action = clap::ArgAction::Set, default_value = "true")]

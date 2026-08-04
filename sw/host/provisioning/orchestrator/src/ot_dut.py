@@ -96,7 +96,9 @@ class OtDut():
                 confirm()
         else:
             logging.error(f"{key} not found.")
-            confirm()
+            if self.require_confirmation:
+                confirm()
+            return {}
         return json_data
 
     def _base_dev_dir(self) -> str:
@@ -166,7 +168,8 @@ class OtDut():
 
             if res.returncode != 0:
                 logging.warning(f"CP failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
 
             # Extract CP device ID.
             chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
@@ -183,9 +186,14 @@ class OtDut():
                         "cp_device_id empty; setting default DIN of all 0xFF.")
                     din_from_device = DeviceIdentificationNumber.blind_asm()
                 else:
-                    din_from_device = DeviceIdentificationNumber.from_int(
-                        (int(chip_probe_data["cp_device_id"], 16) >> 32) &
-                        (2**64 - 1))
+                    try:
+                        din_from_device = DeviceIdentificationNumber.from_int(
+                            (int(chip_probe_data["cp_device_id"], 16) >> 32) &
+                            (2**64 - 1))
+                    except ValueError as e:
+                        logging.error(
+                            f"Device reported an illegal DIN: {e}")
+                        sys.exit(1)
             logging.info(
                 f"Updating device ID to: {chip_probe_data['cp_device_id']}")
             self.device_id.update_din(din_from_device)
@@ -312,10 +320,15 @@ class OtDut():
             res = run(cmd, stdout_logfile, stderr_logfile)
             if res.returncode != 0:
                 logging.warning(f"FT failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
 
             self.ft_data = self._extract_json_data("PROVISIONING_DATA",
                                                    stdout_logfile)
+
+            if "device_id" not in self.ft_data:
+                logging.error("device_id not found in PROVISIONING_DATA.")
+                sys.exit(1)
 
             # Check device ID from OTP matches one constructed on host.
             #
