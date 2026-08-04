@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -124,7 +125,7 @@ status_t dice_test(void) {
   char buf[256];
 
   otcrypto_key_config_t kPrivateKeyConfig = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = 256 / 8,
       .hw_backed = kHardenedBoolTrue,
@@ -255,7 +256,7 @@ static status_t run_dice_negative_tests(void) {
 
   uint32_t priv_keyblob[80] = {0};
   otcrypto_key_config_t dice_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = 256 / 8,
       .hw_backed = kHardenedBoolTrue,

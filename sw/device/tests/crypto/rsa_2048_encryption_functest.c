@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -158,7 +159,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -240,7 +241,7 @@ static status_t run_encrypt_negative_tests(void) {
   valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
 
   otcrypto_key_config_t priv_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -543,7 +544,7 @@ static status_t run_private_key_from_exponents_negative_tests(void) {
   // Setup valid private key config
   uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
   otcrypto_key_config_t valid_priv_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaSignPkcs,  // valid RSA mode
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,

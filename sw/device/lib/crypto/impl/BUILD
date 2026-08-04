@@ -168,6 +168,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
     deps = [
         ":config",
+        ":cryptolib_build_info",
         ":hmac",
         ":integrity",
         ":keyblob",
@@ -211,6 +212,7 @@ cc_test(
     name = "integrity_unittest",
     srcs = ["integrity_unittest.cc"],
     deps = [
+        ":cryptolib_build_info",
         ":integrity",
         "@googletest//:gtest_main",
     ],
@@ -233,6 +235,7 @@ cc_library(
         ":aes",
         ":aes_gcm",
         ":config",
+        ":cryptolib_build_info",
         ":drbg",
         ":ecc_curve25519",
         ":ecc_p256",
@@ -290,6 +293,7 @@ cc_test(
     name = "keyblob_unittest",
     srcs = ["keyblob_unittest.cc"],
     deps = [
+        ":cryptolib_build_info",
         ":keyblob",
         "@googletest//:gtest_main",
     ],
@@ -316,6 +320,7 @@ cc_test(
     name = "key_transport_unittest",
     srcs = ["key_transport_unittest.cc"],
     deps = [
+        ":cryptolib_build_info",
         ":key_transport",
         "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/keymgr/data:keymgr_c_regs",
@@ -376,6 +381,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        ":cryptolib_build_info",
         ":entropy_src",
         ":integrity",
         ":self_integrity",

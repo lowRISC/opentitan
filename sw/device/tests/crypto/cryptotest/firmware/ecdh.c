@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -107,7 +108,7 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdhP256,
               .key_length = kP256PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -173,7 +174,7 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = kP256SharedSecretBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -257,7 +258,7 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdhP384,
               .key_length = kP384PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -325,7 +326,7 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = kP384SharedSecretBytes,
               .hw_backed = kHardenedBoolFalse,
