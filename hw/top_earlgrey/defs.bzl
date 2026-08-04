@@ -27,17 +27,17 @@ EARLGREY = opentitan_top(
 
 EARLGREY_SLOTS_NORMAL = {
     "rom_ext_slot_a": "0x0",
-    "rom_ext_slot_b": "0x80000",
+    "rom_ext_slot_b": "0x100000",
     "owner_slot_a": "0x10000",
-    "owner_slot_b": "0x90000",
+    "owner_slot_b": "0x110000",
     "rom_ext_size": "0x10000",
 }
 
 EARLGREY_SLOTS_COVERAGE = {
     "rom_ext_slot_a": "0x0",
-    "rom_ext_slot_b": "0x80000",
+    "rom_ext_slot_b": "0x100000",
     "owner_slot_a": "0x20000",
-    "owner_slot_b": "0xa0000",
+    "owner_slot_b": "0x120000",
     "rom_ext_size": "0x20000",
 }
 
