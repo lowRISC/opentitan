@@ -91,12 +91,12 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
 % endfor
 
 % if lib.has_module_type(top, "rram_ctrl") or lib.has_module_type(top, "flash_ctrl"):
-  % if lib.has_module_type(top, "flash_ctrl"):
-#define TOP_${header_suffix}_NVM_BASE_ADDR TOP_${header_suffix}_FLASH_CTRL_MEM_BASE_ADDR
-#define TOP_${header_suffix}_NVM_SIZE_BYTES TOP_${header_suffix}_FLASH_CTRL_MEM_SIZE_BYTES
-  % else:
+  % if lib.has_module_type(top, "rram_ctrl"):
 #define TOP_${header_suffix}_NVM_BASE_ADDR TOP_${header_suffix}_RRAM_CTRL_HOST_BASE_ADDR
 #define TOP_${header_suffix}_NVM_SIZE_BYTES TOP_${header_suffix}_RRAM_CTRL_HOST_SIZE_BYTES
+  % else:
+#define TOP_${header_suffix}_NVM_BASE_ADDR TOP_${header_suffix}_FLASH_CTRL_MEM_BASE_ADDR
+#define TOP_${header_suffix}_NVM_SIZE_BYTES TOP_${header_suffix}_FLASH_CTRL_MEM_SIZE_BYTES
   % endif
 
 % endif
