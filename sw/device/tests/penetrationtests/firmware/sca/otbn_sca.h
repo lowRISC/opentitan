@@ -106,12 +106,12 @@ status_t handle_otbn_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj);
 status_t handle_otbn_pentest_init(ujson_t *uj);
 
 /**
- * Initializes the Keymanager used for the OTBN SCA tests.
+ * Initializes the Keymanager dpe used for the OTBN SCA tests.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_pentest_init_keymgr(ujson_t *uj);
+status_t handle_otbn_pentest_init_keymgr_dpe(ujson_t *uj);
 
 /**
  * otbn.sca.insn.carry_flag command handler.
