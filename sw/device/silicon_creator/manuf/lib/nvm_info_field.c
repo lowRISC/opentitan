@@ -32,6 +32,10 @@ const nvm_info_field_t kNvmInfoFieldWaferYCoord = {
     .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldWaferYCoordStartOffset};
 
+const nvm_info_field_t kNvmInfoFieldWaferInfoCrc = {
+    .page = kNvmInfoPageFactoryId,
+    .byte_offset = kNvmInfoFieldWaferInfoCrcStartOffset};
+
 const nvm_info_field_t kNvmInfoFieldProcessData = {
     .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldProcessDataStartOffset};
@@ -55,6 +59,10 @@ const nvm_info_field_t kNvmInfoFieldAstIndividPatchAddr = {
 const nvm_info_field_t kNvmInfoFieldAstIndividPatchVal = {
     .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldAstIndividPatchValStartOffset};
+
+const nvm_info_field_t kNvmInfoFieldAstIndividPatchCrc = {
+    .page = kNvmInfoPageFactoryId,
+    .byte_offset = kNvmInfoFieldAstIndividPatchCrcStartOffset};
 
 /**
  * Partition 0, page 1 fields.

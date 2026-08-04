@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -104,7 +105,18 @@ static status_t prep_flash_info_page_0(manuf_cp_test_data_t *test_data) {
                                  /*erase_page_before_write=*/false,
                                  /*readback=*/true));
 
-  return OK_STATUS();
+  // Wafer info CRC, covering the four fields above -- must match what
+  // flash_info_page_0_read_and_validate() in sram_cp_provision.c recomputes
+  // on read, or it will treat all of these fields (and the AST calibration
+  // data, which has no CRC of its own) as unprovisioned.
+  const uint32_t wafer_info_words[] = {
+      test_data->lot_name, test_data->wafer_number, test_data->wafer_x_coord,
+      test_data->wafer_y_coord};
+  uint32_t wafer_info_crc = crc32(wafer_info_words, sizeof(wafer_info_words));
+  return manuf_nvm_info_field_write(kNvmInfoFieldWaferInfoCrc, &wafer_info_crc,
+                                    kNvmInfoFieldWaferInfoCrcSizeIn32BitWords,
+                                    /*erase_page_before_write=*/false,
+                                    /*readback=*/true);
 }
 
 bool test_main(void) {
