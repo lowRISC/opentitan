@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -38,7 +39,7 @@ static status_t run_test_vector(void) {
               // The following key_mode is a dummy placeholder. It does not
               // necessarily match the `key_length`.
               .key_mode = kOtcryptoKeyModeKdfKmac128,
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_length = km_num_words * sizeof(uint32_t),
               .hw_backed = kHardenedBoolFalse,
               .security_level = kOtcryptoKeySecurityLevelLow,
@@ -49,6 +50,8 @@ static status_t run_test_vector(void) {
   };
 
   // Populate `checksum` and `config.security_level` fields.
+  *(otcrypto_lib_version_t *)&current_test_vector->key_derivation_key.config
+       .version = otcrypto_lib_version();
   current_test_vector->key_derivation_key.checksum =
       otcrypto_integrity_blinded_checksum(
           &current_test_vector->key_derivation_key);
@@ -93,7 +96,7 @@ static status_t run_kmac_kdf_negative_tests(void) {
   LOG_INFO("Running KMAC KDF negative tests");
 
   otcrypto_key_config_t kdk_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeKdfKmac128,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,
@@ -101,7 +104,7 @@ static status_t run_kmac_kdf_negative_tests(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   otcrypto_key_config_t km_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,
@@ -197,7 +200,7 @@ static status_t run_kmac_kdf_non_word_aligned_test(void) {
   size_t exact_byte_len = (vec->expected_output.len * sizeof(uint32_t)) - 1;
 
   otcrypto_key_config_t okm_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeKdfKmac128,
       .key_length = exact_byte_len,
       .hw_backed = kHardenedBoolFalse,

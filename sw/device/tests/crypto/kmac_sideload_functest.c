@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -54,7 +55,6 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
@@ -110,7 +110,6 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac256,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
@@ -190,7 +189,6 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
@@ -280,6 +278,8 @@ static status_t run_test_vector(void) {
   uint32_t digest1[digest_num_words];
   uint32_t digest2[digest_num_words];
 
+  *(otcrypto_lib_version_t *)&current_test_vector->key.config.version =
+      otcrypto_lib_version();
   current_test_vector->key.checksum =
       otcrypto_integrity_blinded_checksum(&current_test_vector->key);
 

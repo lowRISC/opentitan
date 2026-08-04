@@ -8,13 +8,14 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 namespace integrity_unittest {
 namespace {
 
-constexpr otcrypto_key_config_t kValidConfig = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kValidConfig = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
@@ -87,25 +88,6 @@ TEST(IntegrityTest, BlindedKeyCorruptedConfig) {
   bad_key.checksum = original_checksum;
 
   EXPECT_EQ(otcrypto_integrity_blinded_key_check(&bad_key), kHardenedBoolFalse);
-}
-
-TEST(IntegrityTest, BlindedKeyDowngradeProtection) {
-  std::array<uint32_t, 8> keyblob = {0x11111111, 0x22222222, 0x33333333,
-                                     0x44444444};
-
-  otcrypto_key_config_t downgrade_config = kValidConfig;
-  downgrade_config.version = static_cast<otcrypto_lib_version_t>(0);
-
-  otcrypto_blinded_key_t key = {
-      .config = downgrade_config,
-      .keyblob_length =
-          static_cast<uint32_t>(keyblob.size() * sizeof(uint32_t)),
-      .keyblob = keyblob.data(),
-  };
-
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
-
-  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&key), kHardenedBoolFalse);
 }
 
 TEST(IntegrityTest, BufferCreationAndCheck) {

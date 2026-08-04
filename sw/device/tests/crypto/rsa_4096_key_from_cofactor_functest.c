@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -112,7 +113,7 @@ static status_t run_key_from_cofactor_4096(const uint32_t *cofactor) {
                         ARRAYSIZE(kTestModulus4096));
 
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -188,7 +189,7 @@ static status_t run_cofactor_negative_tests(void) {
   };
 
   otcrypto_key_config_t priv_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,

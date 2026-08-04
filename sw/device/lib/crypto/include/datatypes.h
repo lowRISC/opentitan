@@ -446,6 +446,8 @@ typedef enum otcrypto_key_security_level {
 typedef enum otcrypto_lib_version {
   /// Version 1.
   kOtcryptoLibVersion1 = 0x7f4,
+  /// Version 2.
+  kOtcryptoLibVersion2 = 0x107,
 } otcrypto_lib_version_t;
 
 /**

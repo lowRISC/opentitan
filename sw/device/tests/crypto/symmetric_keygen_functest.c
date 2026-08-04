@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -31,31 +32,34 @@ static const randomness_quality_significance_t kSignificance =
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
 
 // Represents a 192-bit AES-CBC key.
-static otcrypto_key_config_t kAesKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesCbc,
-    .key_length = 192 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kAesKeyConfig                                 \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesCbc,             \
+      .key_length = 192 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Represents a 256-bit HMAC-SHA256 key.
-static otcrypto_key_config_t kHmacKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeHmacSha256,
-    .key_length = 256 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kHmacKeyConfig                                \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeHmacSha256,         \
+      .key_length = 256 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Represents a 128-bit KMAC key.
-static otcrypto_key_config_t kKmacKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeKmac128,
-    .key_length = 128 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kKmacKeyConfig                                \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeKmac128,            \
+      .key_length = 128 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 /**
  * Basic test for generating a symmetric key.
@@ -188,7 +192,7 @@ static status_t generate_multiple_keys_test(void) {
 static status_t hw_backed_keygen_test(void) {
   // Configuration for a 256-bit hardware-backed key.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       // the .mode can be any value
       .key_length = 256 / 8,
       .hw_backed = kHardenedBoolTrue,

@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
@@ -59,7 +60,7 @@ static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
   };
 
   return (otcrypto_key_config_t){
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -263,7 +264,7 @@ static status_t run_negative_tests(void) {
   LOG_INFO("Running negative tests for AES API...");
 
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCbc,
       .key_length = 16,
       .hw_backed = kHardenedBoolFalse,

@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hkdf.h"
@@ -96,7 +97,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
 
   // Construct the input key (IKM in the RFC terminology).
   otcrypto_key_config_t ikm_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->hmac_key_mode,
       .key_length = test->ikm_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -114,7 +115,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
 
   // Construct a blinded key struct for the intermediate key (PRK).
   otcrypto_key_config_t prk_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->hmac_key_mode,
       .key_length = test->prk_wordlen * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
@@ -131,7 +132,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   // Construct a blinded key struct for the output key (OKM). The key mode here
   // doesn't really matter, it just needs to be some symmetric key.
   otcrypto_key_config_t okm_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -394,7 +395,7 @@ static status_t test_otcrypto_hkdf(void) {
 
   // Setup IKM
   otcrypto_key_config_t ikm_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 22,
       .hw_backed = kHardenedBoolFalse,
@@ -412,7 +413,7 @@ static status_t test_otcrypto_hkdf(void) {
 
   // Setup OKM
   otcrypto_key_config_t okm_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = 42,
       .hw_backed = kHardenedBoolFalse,
@@ -452,7 +453,7 @@ static status_t run_negative_tests(void) {
 
   // Base valid configs
   otcrypto_key_config_t valid_ikm_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 22,
       .hw_backed = kHardenedBoolFalse,
@@ -460,7 +461,7 @@ static status_t run_negative_tests(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   otcrypto_key_config_t valid_prk_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,
@@ -468,7 +469,7 @@ static status_t run_negative_tests(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   otcrypto_key_config_t valid_okm_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = 42,
       .hw_backed = kHardenedBoolFalse,

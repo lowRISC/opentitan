@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -187,6 +188,7 @@ static status_t ctx_init(otcrypto_hmac_context_t *ctx,
   // Overwrite the security level of the test vector.
   otcrypto_key_config_t key_config = current_test_vector->key.config;
   key_config.security_level = current_sec_level;
+  key_config.version = otcrypto_lib_version();
   otcrypto_blinded_key_t key = {
       .config = key_config,
       .keyblob = current_test_vector->key.keyblob,
@@ -229,6 +231,7 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
   // Overwrite the security level of the test vector.
   otcrypto_key_config_t key_config = current_test_vector->key.config;
   key_config.security_level = current_sec_level;
+  key_config.version = otcrypto_lib_version();
   otcrypto_blinded_key_t key = {
       .config = key_config,
       .keyblob = current_test_vector->key.keyblob,
