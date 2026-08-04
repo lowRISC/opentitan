@@ -265,6 +265,19 @@ cc_library(
 )
 
 cc_library(
+    name = "dice_mldsa_empty",
+    srcs = ["dice_mldsa_empty.c"],
+    deps = [
+        ":cert",
+        ":dice_mldsa_api",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+    ],
+)
+
+cc_library(
     name = "cbor",
     srcs = ["cbor.c"],
     hdrs = ["cbor.h"],
