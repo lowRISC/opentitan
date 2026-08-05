@@ -315,21 +315,23 @@ module i3c_reg_top
   logic [9:0] ctrl_time_fm_sclhi_div2_qs;
   logic [9:0] ctrl_time_fm_sclhi_div2_wd;
   logic interval_time0_we;
-  logic [11:0] interval_time0_read_stalled_qs;
-  logic [11:0] interval_time0_read_stalled_wd;
-  logic [3:0] interval_time0_ctrl_bus_avail_qs;
-  logic [3:0] interval_time0_ctrl_bus_avail_wd;
-  logic [15:0] interval_time0_dead_bus_qs;
-  logic [15:0] interval_time0_dead_bus_wd;
+  logic [7:0] interval_time0_targ_bus_avail_qs;
+  logic [7:0] interval_time0_targ_bus_avail_wd;
+  logic [7:0] interval_time0_read_stalled_qs;
+  logic [7:0] interval_time0_read_stalled_wd;
+  logic [7:0] interval_time0_ctrl_bus_avail_qs;
+  logic [7:0] interval_time0_ctrl_bus_avail_wd;
+  logic [7:0] interval_time0_dead_bus_qs;
+  logic [7:0] interval_time0_dead_bus_wd;
   logic interval_time1_we;
-  logic [11:0] interval_time1_targ_bus_idle_qs;
-  logic [11:0] interval_time1_targ_bus_idle_wd;
-  logic [11:0] interval_time1_te0_recov_qs;
-  logic [11:0] interval_time1_te0_recov_wd;
-  logic [3:0] interval_time1_targ_trx_rst_qs;
-  logic [3:0] interval_time1_targ_trx_rst_wd;
-  logic [3:0] interval_time1_targ_bus_avail_qs;
-  logic [3:0] interval_time1_targ_bus_avail_wd;
+  logic [7:0] interval_time1_command_retry_qs;
+  logic [7:0] interval_time1_command_retry_wd;
+  logic [7:0] interval_time1_targ_bus_idle_qs;
+  logic [7:0] interval_time1_targ_bus_idle_wd;
+  logic [7:0] interval_time1_te0_recov_qs;
+  logic [7:0] interval_time1_te0_recov_wd;
+  logic [7:0] interval_time1_targ_trx_rst_qs;
+  logic [7:0] interval_time1_targ_trx_rst_wd;
   logic phy_config_we;
   logic phy_config_scl_hk_en_qs;
   logic phy_config_scl_hk_en_wd;
@@ -3148,11 +3150,38 @@ module i3c_reg_top
 
 
   // R[interval_time0]: V(False)
-  //   F[read_stalled]: 11:0
+  //   F[targ_bus_avail]: 7:0
   prim_subreg #(
-    .DW      (12),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (12'h96),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time0_targ_bus_avail (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (interval_time0_we),
+    .wd     (interval_time0_targ_bus_avail_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time0.targ_bus_avail.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time0_targ_bus_avail_qs)
+  );
+
+  //   F[read_stalled]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time0_read_stalled (
     .clk_i   (clk_i),
@@ -3175,11 +3204,11 @@ module i3c_reg_top
     .qs     (interval_time0_read_stalled_qs)
   );
 
-  //   F[ctrl_bus_avail]: 15:12
+  //   F[ctrl_bus_avail]: 23:16
   prim_subreg #(
-    .DW      (4),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h1),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time0_ctrl_bus_avail (
     .clk_i   (clk_i),
@@ -3202,11 +3231,11 @@ module i3c_reg_top
     .qs     (interval_time0_ctrl_bus_avail_qs)
   );
 
-  //   F[dead_bus]: 31:16
+  //   F[dead_bus]: 31:24
   prim_subreg #(
-    .DW      (16),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'hc350),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time0_dead_bus (
     .clk_i   (clk_i),
@@ -3231,11 +3260,38 @@ module i3c_reg_top
 
 
   // R[interval_time1]: V(False)
-  //   F[targ_bus_idle]: 11:0
+  //   F[command_retry]: 7:0
   prim_subreg #(
-    .DW      (12),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (12'hc8),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time1_command_retry (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (interval_time1_we),
+    .wd     (interval_time1_command_retry_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time1.command_retry.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time1_command_retry_qs)
+  );
+
+  //   F[targ_bus_idle]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time1_targ_bus_idle (
     .clk_i   (clk_i),
@@ -3258,11 +3314,11 @@ module i3c_reg_top
     .qs     (interval_time1_targ_bus_idle_qs)
   );
 
-  //   F[te0_recov]: 23:12
+  //   F[te0_recov]: 23:16
   prim_subreg #(
-    .DW      (12),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (12'h3c),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time1_te0_recov (
     .clk_i   (clk_i),
@@ -3285,11 +3341,11 @@ module i3c_reg_top
     .qs     (interval_time1_te0_recov_qs)
   );
 
-  //   F[targ_trx_rst]: 27:24
+  //   F[targ_trx_rst]: 31:24
   prim_subreg #(
-    .DW      (4),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h5),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_interval_time1_targ_trx_rst (
     .clk_i   (clk_i),
@@ -3310,33 +3366,6 @@ module i3c_reg_top
 
     // to register interface (read)
     .qs     (interval_time1_targ_trx_rst_qs)
-  );
-
-  //   F[targ_bus_avail]: 31:28
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h1),
-    .Mubi    (1'b0)
-  ) u_interval_time1_targ_bus_avail (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (interval_time1_we),
-    .wd     (interval_time1_targ_bus_avail_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.interval_time1.targ_bus_avail.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (interval_time1_targ_bus_avail_qs)
   );
 
 
@@ -18404,20 +18433,22 @@ module i3c_reg_top
   assign ctrl_time_fm_sclhi_div2_wd = reg_wdata[25:16];
   assign interval_time0_we = racl_addr_hit_write[23] & reg_we & !reg_error;
 
-  assign interval_time0_read_stalled_wd = reg_wdata[11:0];
+  assign interval_time0_targ_bus_avail_wd = reg_wdata[7:0];
 
-  assign interval_time0_ctrl_bus_avail_wd = reg_wdata[15:12];
+  assign interval_time0_read_stalled_wd = reg_wdata[15:8];
 
-  assign interval_time0_dead_bus_wd = reg_wdata[31:16];
+  assign interval_time0_ctrl_bus_avail_wd = reg_wdata[23:16];
+
+  assign interval_time0_dead_bus_wd = reg_wdata[31:24];
   assign interval_time1_we = racl_addr_hit_write[24] & reg_we & !reg_error;
 
-  assign interval_time1_targ_bus_idle_wd = reg_wdata[11:0];
+  assign interval_time1_command_retry_wd = reg_wdata[7:0];
 
-  assign interval_time1_te0_recov_wd = reg_wdata[23:12];
+  assign interval_time1_targ_bus_idle_wd = reg_wdata[15:8];
 
-  assign interval_time1_targ_trx_rst_wd = reg_wdata[27:24];
+  assign interval_time1_te0_recov_wd = reg_wdata[23:16];
 
-  assign interval_time1_targ_bus_avail_wd = reg_wdata[31:28];
+  assign interval_time1_targ_trx_rst_wd = reg_wdata[31:24];
   assign phy_config_we = racl_addr_hit_write[25] & reg_we & !reg_error;
 
   assign phy_config_scl_hk_en_wd = reg_wdata[0];
@@ -19692,16 +19723,17 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[23]: begin
-        reg_rdata_next[11:0] = interval_time0_read_stalled_qs;
-        reg_rdata_next[15:12] = interval_time0_ctrl_bus_avail_qs;
-        reg_rdata_next[31:16] = interval_time0_dead_bus_qs;
+        reg_rdata_next[7:0] = interval_time0_targ_bus_avail_qs;
+        reg_rdata_next[15:8] = interval_time0_read_stalled_qs;
+        reg_rdata_next[23:16] = interval_time0_ctrl_bus_avail_qs;
+        reg_rdata_next[31:24] = interval_time0_dead_bus_qs;
       end
 
       racl_addr_hit_read[24]: begin
-        reg_rdata_next[11:0] = interval_time1_targ_bus_idle_qs;
-        reg_rdata_next[23:12] = interval_time1_te0_recov_qs;
-        reg_rdata_next[27:24] = interval_time1_targ_trx_rst_qs;
-        reg_rdata_next[31:28] = interval_time1_targ_bus_avail_qs;
+        reg_rdata_next[7:0] = interval_time1_command_retry_qs;
+        reg_rdata_next[15:8] = interval_time1_targ_bus_idle_qs;
+        reg_rdata_next[23:16] = interval_time1_te0_recov_qs;
+        reg_rdata_next[31:24] = interval_time1_targ_trx_rst_qs;
       end
 
       racl_addr_hit_read[25]: begin

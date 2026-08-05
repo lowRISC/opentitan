@@ -460,13 +460,28 @@ Target data sink status.
 {"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}, {"name": "LENGTH", "bits": 11, "attr": ["ro"], "rotate": 0}, {"bits": 5}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:27  |        |         |        | Reserved                                                                                                                                                                                                                   |
-| 26:16  |   ro   |   0x0   | LENGTH | Reports the numbers of DWORDs still to be removed. In the event of an error, this value may be used to ascertain how much of the operation was performed.                                                                  |
-|  15:2  |        |         |        | Reserved                                                                                                                                                                                                                   |
-|   1    |   ro   |   0x0   | ERROR  | Indicates whether the data sink mechanism stopped prematurely. If the specified buffer did not contain sufficient data for the logic to remove the specified number of DWORDs it will set this bit when becoming inactive. |
-|   0    |   ro   |   0x0   | ACTIVE | Indicates whether the data sink logic is active. This bit becomes set when the operation is started and will be cleared at most a few tens of microseconds later when the operation is complete.                           |
+|  Bits  |  Type  |  Reset  | Name                                |
+|:------:|:------:|:-------:|:------------------------------------|
+| 31:27  |        |         | Reserved                            |
+| 26:16  |   ro   |   0x0   | [LENGTH](#targ_sink_status--length) |
+|  15:2  |        |         | Reserved                            |
+|   1    |   ro   |   0x0   | [ERROR](#targ_sink_status--error)   |
+|   0    |   ro   |   0x0   | [ACTIVE](#targ_sink_status--active) |
+
+### TARG_SINK_STATUS . LENGTH
+Reports the numbers of DWORDs still to be removed when `ERROR` is asserted.
+
+In the event of an error, this value may be used to ascertain how much of the operation was performed.
+When this field reports 'm', there are still 'm+1' DWORDs to be removed.
+In the event of successful completion ('ACTIVE' and 'ERROR' both reset) this field is not meaningful and the DWORDs were removed as expected.
+
+### TARG_SINK_STATUS . ERROR
+Indicates whether the data sink mechanism stopped prematurely.
+If the specified buffer did not contain sufficient data for the logic to remove the specified number of DWORDs it will set this bit when becoming inactive.
+
+### TARG_SINK_STATUS . ACTIVE
+Indicates whether the data sink logic is active.
+This bit becomes set when the operation is started and will be cleared at most a few tens of microseconds later when the operation is complete.
 
 ## RESET_DET_CTRL
 Reset detector control.
@@ -739,42 +754,62 @@ This register shall be modified only when the Controller is not connected to the
 
 ## INTERVAL_TIME0
 Interval Timers 0 register.
-Time intervals are specified in microseconds.
+Time intervals are specified as two's complement 8-bit signed offsets added to the default values calculated by the hardware:
+
+ - interval_clks = (hw_default_us * clks_per_us) + (signed_adj << shift)
+
+The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1us to 50ms.
+It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50MHz to 1.5GHz:
+
+Clock frequencies:
+ - 50MHz to 64MHz, both inclusive: base weighting applies.
+ - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting.
+ - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting.
+ - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
+ - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
+ - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting.
+
+This allows the default intervals (in microseconds) to be adjusted in terms of IP clock cycles to an accuracy of +/- 0.8% typically.
 - Offset: `0x5c`
-- Reset default: `0xc3501096`
+- Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "READ_STALLED", "bits": 12, "attr": ["rw"], "rotate": 0}, {"name": "CTRL_BUS_AVAIL", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "DEAD_BUS", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "TARG_BUS_AVAIL", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "READ_STALLED", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "CTRL_BUS_AVAIL", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "DEAD_BUS", "bits": 8, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                        |
-|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   | 0xc350  | DEAD_BUS       | Timer interval for the Dead Bus condition.                                                         |
-| 15:12  |   rw   |   0x1   | CTRL_BUS_AVAIL | Timer interval for the Controller Bus Available condition.                                         |
-|  11:0  |   rw   |  0x96   | READ_STALLED   | Timer interval for detection of SDA read stalls (no Controller SCL activity during Read Transfer). |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                         |
+|:------:|:------:|:-------:|:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:24  |   rw   |   0x0   | DEAD_BUS       | Adjustment to the interval of the Dead Bus timer. Default interval: 50 milliseconds. Base weighting: 0x4000 IP clock cycles.                                                        |
+| 23:16  |   rw   |   0x0   | CTRL_BUS_AVAIL | Adjustment to the interval of the Controller Bus Available timer. Default interval: 1 microsecond. Base weighting: 1 IP clock cycle.                                                |
+|  15:8  |   rw   |   0x0   | READ_STALLED   | Adjustment to the interval of the SDA read stall (no Controller SCL activity during Read Transfer) timer. Default interval: 150 microseconds. Base weighting: 0x40 IP clock cycles. |
+|  7:0   |   rw   |   0x0   | TARG_BUS_AVAIL | Adjustment to the interval of the Target Bus Available timer. Default interval: 1 microsecond. Base weighting: 1 IP clock cycle.                                                    |
 
 ## INTERVAL_TIME1
 Interval Timers 1 register.
-Time intervals are specified in microseconds.
+Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
+
+The granularity of the adjustment is timer-dependent and clock frequency-dependent.
+The weightings given here apply to the base case of an IP clock frequency up to 64MHz, inclusive.
+See `INTERVAL_TIME0` for details.
 - Offset: `0x60`
-- Reset default: `0x1503c0c8`
+- Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TARG_BUS_IDLE", "bits": 12, "attr": ["rw"], "rotate": 0}, {"name": "TE0_RECOV", "bits": 12, "attr": ["rw"], "rotate": 0}, {"name": "TARG_TRX_RST", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "TARG_BUS_AVAIL", "bits": 4, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "COMMAND_RETRY", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "TARG_BUS_IDLE", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "TE0_RECOV", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "TARG_TRX_RST", "bits": 8, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                    |
-|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------------------------------------------------------|
-| 31:28  |   rw   |   0x1   | TARG_BUS_AVAIL | Timer interval for the Target Bus Available condition.                                                         |
-| 27:24  |   rw   |   0x5   | TARG_TRX_RST   | Duration of the Target reset interval in microseconds.                                                         |
-| 23:12  |   rw   |  0x3c   | TE0_RECOV      | Duration of the interval before which the Target shall attempt recovery from a Target Error 0 (TE0) condition. |
-|  11:0  |   rw   |  0xc8   | TARG_BUS_IDLE  | Timer interval for the Target Bus Idle condition.                                                              |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                                                                                              |
+|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:24  |   rw   |   0x0   | TARG_TRX_RST  | Adjustment to the Target Reset timer. Default interval: 5 microseconds. Base weighting: 1 IP clock cycle.                                                                                |
+| 23:16  |   rw   |   0x0   | TE0_RECOV     | Adjustment to the interval after which the Target shall attempt recovery from a Target Error 0 (TE0) condition. Default interval: 60 microseconds. Base weighting: 0x10 IP clock cycles. |
+|  15:8  |   rw   |   0x0   | TARG_BUS_IDLE | Adjustment to the interval of the Target Bus Idle timer. Default interval: 200 microseconds. Base weighting: 0x40 IP clock cycles.                                                       |
+|  7:0   |   rw   |   0x0   | COMMAND_RETRY | Adjustment to the interval after which NACKed commands are retried. Default interval: 800 microseconds. Base weighting: 0x100 IP clock cycles.                                           |
 
 ## PHY_CONFIG
 PHY configuration

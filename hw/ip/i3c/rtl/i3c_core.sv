@@ -370,6 +370,10 @@ module i3c_core
   // Enable use of the half-cycle SCL extension?
   logic ctrl_enable_hc_scl;
 
+  // Retrying of NACKed commands within the Controller.
+  logic ctrl_cmd_nacked;
+  logic ctrl_cmd_retry;
+
   // Controller Error counting (CE[3:0], Table 44).
   logic [3:0] ctrl_error;
 
@@ -485,6 +489,10 @@ module i3c_core
 
     // Configuration signals to the transceiver logic.
     .enable_hc_scl_o   (ctrl_enable_hc_scl),
+
+    // Retrying of NACKed commands.
+    .cmd_nacked_o      (ctrl_cmd_nacked),
+    .cmd_retry_i       (ctrl_cmd_retry),
 
     // Request to the transceiver logic.
     .trx_dvalid_o      (ctrl_trx_dvalid),
@@ -1504,21 +1512,29 @@ module i3c_core
   // Interval timers driven by the IP block, reporting on timed events related to bus activity or
   // inactivity.
   i3c_timers #(
-    .ClkFreq    (ClkFreq),
-    .NumTimers  (7)
+    .ClkFreq     (ClkFreq),
+    .NumTimers   (8),
+    .MaxDefaultW (16),
+    // Shift distances, in bits, for each software-programmed override interval.
+    .TimerShifts (32'he_0_6_0_0_4_6_8),
+    // For each timer, the minimum interval to be measured is specified in microseconds,
+    // allocating 16 bits to each timer in turn.
+    //               50000, 1,  150, 1,   5,   60,  200, 800us
+    .DefaultInts (128'hc350_0001_0096_0001_0005_003c_00c8_0320)
   ) u_timers (
     .clk_i       (clk_i),
     .rst_ni      (rst_ni),
 
     // For each timer, the minimum interval to be measured is specified in microseconds,
     // allocating 16 bits to each timer in turn.
-    .tm_int_i    ({       reg2hw_i.interval_time0.dead_bus.q,
-                   12'b0, reg2hw_i.interval_time0.ctrl_bus_avail.q,
-                   4'b0,  reg2hw_i.interval_time0.read_stalled.q,
-                   12'b0, reg2hw_i.interval_time1.targ_bus_avail.q,
-                   12'b0, reg2hw_i.interval_time1.targ_trx_rst.q,
-                   4'b0,  reg2hw_i.interval_time1.te0_recov.q,
-                   4'b0,  reg2hw_i.interval_time1.targ_bus_idle.q}),
+    .tm_int_i    ({reg2hw_i.interval_time0.dead_bus.q,
+                   reg2hw_i.interval_time0.ctrl_bus_avail.q,
+                   reg2hw_i.interval_time0.read_stalled.q,
+                   reg2hw_i.interval_time0.targ_bus_avail.q,
+                   reg2hw_i.interval_time1.targ_trx_rst.q,
+                   reg2hw_i.interval_time1.te0_recov.q,
+                   reg2hw_i.interval_time1.targ_bus_idle.q,
+                   reg2hw_i.interval_time1.command_retry.q}),
 
     // Resets for interval timers.
     .tm_resets_i ({rst_dead_bus,
@@ -1527,7 +1543,9 @@ module i3c_core
                    targ_rst_bus_avail,
                    targ_reset_trx,
                    targ_bus_active,
-                   targ_bus_active}),
+                   targ_bus_active,
+                   ctrl_cmd_nacked}),
+
     // 'Time interval elapsed' signals.
     .tm_elapsed_o({dead_bus,
                    ctrl_bus_avail,
@@ -1535,7 +1553,8 @@ module i3c_core
                    targ_bus_avail,
                    targ_trx_rst_n,
                    te0_recov,
-                   targ_bus_idle})
+                   targ_bus_idle,
+                   ctrl_cmd_retry})
   );
 
   // I3C pattern detector:

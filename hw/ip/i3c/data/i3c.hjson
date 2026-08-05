@@ -440,8 +440,11 @@
       fields: [
         { bits:   "26:16",
           name:   "LENGTH",
-          desc:   '''Reports the numbers of DWORDs still to be removed.
+          desc:   '''Reports the numbers of DWORDs still to be removed when `ERROR` is asserted.
+
                   In the event of an error, this value may be used to ascertain how much of the operation was performed.
+                  When this field reports 'm', there are still 'm+1' DWORDs to be removed.
+                  In the event of successful completion ('ACTIVE' and 'ERROR' both reset) this field is not meaningful and the DWORDs were removed as expected.
                   ''',
           resval: "0"
         }
@@ -796,54 +799,110 @@
     }
     { name:     "INTERVAL_TIME0",
       desc:     '''Interval Timers 0 register.
-                Time intervals are specified in microseconds.
+                Time intervals are specified as two's complement 8-bit signed offsets added to the default values calculated by the hardware:
+
+                 - interval_clks = (hw_default_us * clks_per_us) + (signed_adj << shift)
+
+                The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1us to 50ms.
+                It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50MHz to 1.5GHz:
+
+                Clock frequencies:
+                 - 50MHz to 64MHz, both inclusive: base weighting applies.
+                 - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting.
+                 - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting.
+                 - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
+                 - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
+                 - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting.
+
+                This allows the default intervals (in microseconds) to be adjusted in terms of IP clock cycles to an accuracy of +/- 0.8% typically.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits:   "31:16",
+        { bits:   "31:24",
           name:   "DEAD_BUS",
-          desc:   "Timer interval for the Dead Bus condition.",
-          resval: "0xc350"
+          desc:   '''Adjustment to the interval of the Dead Bus timer.
+
+                  Default interval: 50 milliseconds.
+                  Base weighting: 0x4000 IP clock cycles.
+                  '''
+          resval: "0"
         }
-        { bits:   "15:12",
+        { bits:   "23:16",
           name:   "CTRL_BUS_AVAIL",
-          desc:   "Timer interval for the Controller Bus Available condition.",
-          resval: "1"
+          desc:   '''Adjustment to the interval of the Controller Bus Available timer.
+
+                  Default interval: 1 microsecond.
+                  Base weighting: 1 IP clock cycle.
+                  '''
+          resval: "0"
         }
-        { bits:   "11:0",
+        { bits:   "15:8",
           name:   "READ_STALLED",
-          desc:   "Timer interval for detection of SDA read stalls (no Controller SCL activity during Read Transfer)."
-          resval: "0x96"
+          desc:   '''Adjustment to the interval of the SDA read stall (no Controller SCL activity during Read Transfer) timer.
+
+                  Default interval: 150 microseconds.
+                  Base weighting: 0x40 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+        { bits:   "7:0",
+          name:   "TARG_BUS_AVAIL",
+          desc:   '''Adjustment to the interval of the Target Bus Available timer.
+
+                  Default interval: 1 microsecond.
+                  Base weighting: 1 IP clock cycle.
+                  '''
+          resval: "0"
         }
       ]
     }
     { name:     "INTERVAL_TIME1",
       desc:     '''Interval Timers 1 register.
-                Time intervals are specified in microseconds.
+                Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
+
+                The granularity of the adjustment is timer-dependent and clock frequency-dependent.
+                The weightings given here apply to the base case of an IP clock frequency up to 64MHz, inclusive.
+                See `INTERVAL_TIME0` for details.
                 '''
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits:   "31:28",
-          name:   "TARG_BUS_AVAIL",
-          desc:   "Timer interval for the Target Bus Available condition.",
-          resval: "1"
-        }
-        { bits:   "27:24",
+        { bits:   "31:24",
           name:   "TARG_TRX_RST",
-          desc:   "Duration of the Target reset interval in microseconds.",
-          resval: "5"
+          desc:   '''Adjustment to the Target Reset timer.
+
+                  Default interval: 5 microseconds.
+                  Base weighting: 1 IP clock cycle.
+                  '''
+          resval: "0"
         }
-        { bits:   "23:12",
+        { bits:   "23:16",
           name:   "TE0_RECOV",
-          desc:   "Duration of the interval before which the Target shall attempt recovery from a Target Error 0 (TE0) condition.",
-          resval: "0x3c"
+          desc:   '''Adjustment to the interval after which the Target shall attempt recovery from a Target Error 0 (TE0) condition.
+
+                  Default interval: 60 microseconds.
+                  Base weighting: 0x10 IP clock cycles.
+                  '''
+          resval: "0"
         }
-        { bits:   "11:0",
+        { bits:   "15:8",
           name:   "TARG_BUS_IDLE",
-          desc:   "Timer interval for the Target Bus Idle condition.",
-          resval: "0xc8"
+          desc:   '''Adjustment to the interval of the Target Bus Idle timer.
+
+                  Default interval: 200 microseconds.
+                  Base weighting: 0x40 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+        { bits:   "7:0",
+          name:   "COMMAND_RETRY",
+          desc:   '''Adjustment to the interval after which NACKed commands are retried.
+
+                  Default interval: 800 microseconds.
+                  Base weighting: 0x100 IP clock cycles.
+                  '''
+          resval: "0"
         }
       ]
     }

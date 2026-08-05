@@ -238,29 +238,32 @@ package i3c_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [15:0] q;
+      logic [7:0]  q;
     } dead_bus;
     struct packed {
-      logic [3:0]  q;
+      logic [7:0]  q;
     } ctrl_bus_avail;
     struct packed {
-      logic [11:0] q;
+      logic [7:0]  q;
     } read_stalled;
+    struct packed {
+      logic [7:0]  q;
+    } targ_bus_avail;
   } i3c_reg2hw_interval_time0_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } targ_bus_avail;
-    struct packed {
-      logic [3:0]  q;
+      logic [7:0]  q;
     } targ_trx_rst;
     struct packed {
-      logic [11:0] q;
+      logic [7:0]  q;
     } te0_recov;
     struct packed {
-      logic [11:0] q;
+      logic [7:0]  q;
     } targ_bus_idle;
+    struct packed {
+      logic [7:0]  q;
+    } command_retry;
   } i3c_reg2hw_interval_time1_reg_t;
 
   typedef struct packed {
