@@ -9,8 +9,8 @@ package i3c_target_pkg;
   import i3c_tti_pkg::*;
 
   // We need a small number of states here for tracking transfer framing, in particular CCCs
-  // in HDR-DDR mode. Most of the CCC handling is kept within the Target Core logic, operating on
-  // the IP block.
+  // in HDR-DDR mode if/when completed (HCI v1.2 does not support their use).
+  // Most of the CCC handling is kept within the Target Core logic, operating on the IP block.
   typedef enum logic [2:0] {
     CCC_Idle,
     CCC_Setup,    // Set up, including CCC and optional Defining Byte.
@@ -102,7 +102,7 @@ package i3c_target_pkg;
   typedef struct packed {
     logic                   sr;  // Repeated Start has precedence over the other fields.
     i3c_targ_ccc_state_e    ccc_state;
-    logic            [15:0] ccc_idx;
+    logic             [3:0] ccc_idx;
     logic                   rnw;
     // Response type.
     i3c_tti_rx_status_e     status;
