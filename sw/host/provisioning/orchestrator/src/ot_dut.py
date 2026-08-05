@@ -128,7 +128,8 @@ class OtDut():
                 host_flags += " --clear-bitstream"
                 host_flags += f" --bitstream={bitstream}"
                 host_flags += f" --load-memory ROM={rom}"
-                host_flags += f" --load-memory OTP={otp}"
+                # OTP lives inside the RRAM data array.
+                host_flags += f" --load-memory RRDA={otp}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")

@@ -15,6 +15,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "rram_otp_image",
     "scramble_rram",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -141,6 +142,17 @@ def _test_dispatch(ctx, exec_env, firmware):
         fail("verilator is not capable of executing RAM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
+
+    if "otp" in param:
+        # `otp` here (--verilator-otp={otp}) must be the RRAM-native layout: OTP lives in the
+        # tail pages of the RRAM data array now (see rram_ctrl_pkg.sv and chip_sim_tb.cc's
+        # `otp` MemArea), not otp_image()'s native 16b-word format.
+        otp_attr = get_fallback(ctx, "attr.otp", exec_env)
+        rram_otp = rram_otp_image(ctx, exec_env, otp_attr)
+        if rram_otp:
+            data_files.append(rram_otp)
+            param["otp"] = rram_otp.short_path
+            action_param["otp"] = rram_otp.path
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
