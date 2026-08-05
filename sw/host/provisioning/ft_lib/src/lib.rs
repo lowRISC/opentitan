@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use core::option::Option;
 use hmac::{Hmac, Mac};
+use perso_tlv_lib::PersoBlobBuilder;
+use perso_tlv_lib::PersoBlobParser;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -32,8 +35,7 @@ use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::CertFormat;
 use ot_certs::x509::parse_certificate;
-use perso_tlv_lib::perso_tlv_get_field;
-use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
+use perso_tlv_lib::ObjType;
 use ujson_lib::provisioning_data::{
     LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
 };
@@ -227,88 +229,6 @@ fn send_rma_unlock_token_hash(
     Ok(())
 }
 
-// Extract LTV object header from the input buffer.
-fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
-    let header_len = std::mem::size_of::<ObjHeaderType>();
-    // The header is 2 bytes in size.
-    if data.len() < header_len {
-        bail!(
-            "Insufficient amount of data ({} bytes) for object header",
-            data.len()
-        );
-    }
-
-    let typesize = u16::from_be_bytes([data[0], data[1]]);
-    let obj_size = perso_tlv_get_field!("obj", "size", typesize);
-    let obj_type = ObjType::from_usize(perso_tlv_get_field!("obj", "type", typesize))?;
-
-    if obj_size > data.len() {
-        bail!(
-            "Object {} length {} exceeds buffer size {}",
-            obj_type as u8,
-            obj_size,
-            data.len()
-        );
-    }
-    Ok(ObjHeader { obj_type, obj_size })
-}
-
-// Extract certificate payload header from the input buffer.
-fn get_cert(data: &[u8]) -> Result<CertHeader> {
-    let header_len = std::mem::size_of::<CertHeaderType>();
-
-    if data.len() < header_len {
-        bail!(
-            "Insufficient amount of data ({} bytes) for cert header",
-            data.len()
-        );
-    }
-
-    let header = u16::from_be_bytes([data[0], data[1]]);
-    let wrapped_size = perso_tlv_get_field!("crth", "size", header);
-    if wrapped_size > data.len() {
-        bail!(
-            "Cert object size {} exceeds buffer size {}",
-            wrapped_size,
-            data.len()
-        );
-    }
-
-    let name_len = perso_tlv_get_field!("crth", "name", header);
-    let cert_name = std::str::from_utf8(&data[header_len..header_len + name_len])?;
-    log::info!("processing cert {cert_name}");
-    let header_size = header_len + name_len;
-    let cert_body: Vec<u8> = data[header_size..wrapped_size].to_vec();
-
-    Ok(CertHeader {
-        wrapped_size,
-        cert_name,
-        cert_body,
-    })
-}
-
-fn push_endorsed_cert(
-    cert: &Vec<u8>,
-    ref_cert: &CertHeader,
-    output: &mut ArrayVec<u8, 5120>,
-) -> Result<()> {
-    // Need to wrap the new cert in CertHeader
-    let total_size = std::mem::size_of::<ObjHeaderType>()
-        + std::mem::size_of::<CertHeaderType>()
-        + ref_cert.cert_name.len()
-        + cert.len();
-
-    let obj_header = perso_tlv_lib::make_obj_header(total_size, ObjType::EndorsedX509Cert)?;
-    let cert_wrapper_header =
-        perso_tlv_lib::make_cert_wrapper_header(cert.len(), ref_cert.cert_name)?;
-    output.try_extend_from_slice(&obj_header.to_be_bytes())?;
-    output.try_extend_from_slice(&cert_wrapper_header.to_be_bytes())?;
-    output.try_extend_from_slice(ref_cert.cert_name.as_bytes())?;
-    output.try_extend_from_slice(cert.as_slice())?;
-
-    Ok(())
-}
-
 fn process_dev_seeds(seeds: &[u8]) -> Result<Vec<Vec<u8>>> {
     let expected_seed_num = 2usize;
     let seed_size = 64usize;
@@ -368,12 +288,9 @@ fn provision_certificates(
     //   3. collect the certs that were endorsed to verify their endorsement signatures with OpenSSL, and
     //   4. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
-    let mut start: usize = 0;
     let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
     let mut dice_cert_chain_cwt: Vec<EndorsedCert> = Vec::new();
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
-    let mut num_host_endorsed_certs = 0;
-    let mut endorsed_cert_concat = ArrayVec::<u8, 5120>::new();
     let mut device_was_hmac: Vec<u8> = Vec::new();
     let mut device_id: Vec<u8> = Vec::new();
     let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(wafer_auth_secret.as_slice())?;
@@ -386,140 +303,131 @@ fn provision_certificates(
     // DICE certificate names.
     let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
 
-    let t0 = Instant::now();
-    for _ in 0..perso_blob.num_objs {
-        let header = get_obj_header(&perso_blob.body[start..])?;
-        let obj_header_size = std::mem::size_of::<ObjHeaderType>();
+    let perso_blob_parser =
+        PersoBlobParser::new_with_version(perso_certgen_inputs.blob_version, perso_blob)?;
+    let mut perso_blob_builder =
+        PersoBlobBuilder::new_with_version(perso_certgen_inputs.blob_version)?;
 
-        if header.obj_size > (perso_blob.body.len() - start) {
-            bail!("Perso blob overflow!");
-        }
-        start += obj_header_size;
-        match header.obj_type {
-            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {}
+    let t0 = Instant::now();
+    for perso_obj in perso_blob_parser.iter() {
+        let perso_obj = perso_obj?;
+        log::info!("Perso blob object type {:?}", perso_obj.obj_header.obj_type);
+        match perso_obj.obj_header.obj_type {
+            ObjType::PersoBlobVersion => continue,
             ObjType::WasTbsHmac => {
-                let was_tbs_hmac_size = header.obj_size - obj_header_size;
-                device_was_hmac
-                    .extend_from_slice(&perso_blob.body[start..start + was_tbs_hmac_size]);
-                start += was_tbs_hmac_size;
+                device_was_hmac.extend_from_slice(perso_obj.data);
                 continue;
             }
             ObjType::DeviceId => {
-                let device_id_size = header.obj_size - obj_header_size;
-                device_id.extend_from_slice(&perso_blob.body[start..start + device_id_size]);
-                start += device_id_size;
+                device_id.extend_from_slice(perso_obj.data);
                 continue;
             }
             ObjType::DevSeed => {
-                let dev_seed_size = header.obj_size - obj_header_size;
-                let seeds = &perso_blob.body[start..start + dev_seed_size];
+                let seeds = perso_obj.data;
                 cert_hasher.update(seeds);
                 let r = process_dev_seeds(seeds)?;
-                start += dev_seed_size;
                 response.seeds.number += r.len();
                 response.seeds.seed.extend(r);
                 continue;
             }
             ObjType::GenericSeed => {
-                let generic_seed_size = header.obj_size - obj_header_size;
-                let generic_seed = &perso_blob.body[start..start + generic_seed_size];
+                let generic_seed = perso_obj.data;
                 log::info!(
                     "Generic Seed #{}: {}",
                     generic_seed_id,
                     hex::encode(generic_seed)
                 );
-                start += generic_seed_size;
                 generic_seed_id += 1;
                 continue;
             }
             ObjType::PersoSha256Hash => {
-                let hash_size = header.obj_size - obj_header_size;
-                let hash = &perso_blob.body[start..start + hash_size];
+                let hash = perso_obj.data;
                 log::info!(
                     "Personalization firmware SHA256 hash: {}",
                     hex::encode(hash)
                 );
-                start += hash_size;
                 continue;
             }
-        }
+            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {
+                // The next object is a cert, let's retrieve its properties (name, needs
+                // endorsement, etc.)
+                let cert = perso_blob_parser.get_cert(perso_obj.data)?;
 
-        // The next object is a cert, let's retrieve its properties (name, needs
-        // endorsement, etc.)
-        let cert = get_cert(&perso_blob.body[start..])?;
-        start += cert.wrapped_size;
+                // Extract the certificate bytes and endorse the cert if needed.
+                let cert_bytes = if perso_obj.obj_header.obj_type == ObjType::UnendorsedX509Cert {
+                    host_was_hmac.update(cert.cert_body.as_slice());
+                    // Endorse the cert and updates its size.
+                    let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
+                        log::info!("Endorsing cert {0}", cert.cert_name);
+                        parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
+                    } else {
+                        let ext_ca_key = &ca_keys["ext"];
+                        parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
+                    };
 
-        // Extract the certificate bytes and endorse the cert if needed.
-        let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
-            host_was_hmac.update(cert.cert_body.as_slice());
-            // Endorse the cert and updates its size.
-            let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
-                parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
-            } else {
-                let ext_ca_key = &ca_keys["ext"];
-                parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
-            };
+                    // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
+                    if !dice_cert_names.contains(cert.cert_name) {
+                        let ec = EndorsedCert {
+                            format: CertFormat::X509,
+                            name: cert.cert_name.to_string(),
+                            bytes: cert_bytes.clone(),
+                            ignore_critical: false,
+                        };
+                        response.certs.insert(ec.name.clone(), ec.clone());
+                        sku_specific_certs.push(ec);
+                    }
 
-            // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
-            if !dice_cert_names.contains(cert.cert_name) {
-                let ec = EndorsedCert {
-                    format: CertFormat::X509,
-                    name: cert.cert_name.to_string(),
-                    bytes: cert_bytes.clone(),
-                    ignore_critical: false,
+                    // Prepare the UJSON data payloads that will be sent back to the device.
+                    perso_blob_builder.push_endorsed_cert(cert.cert_name, &cert_bytes)?;
+                    cert_bytes
+                } else {
+                    cert.cert_body
                 };
-                response.certs.insert(ec.name.clone(), ec.clone());
-                sku_specific_certs.push(ec);
-            }
 
-            // Prepare the UJSON data payloads that will be sent back to the device.
-            push_endorsed_cert(&cert_bytes, &cert, &mut endorsed_cert_concat)?;
-            num_host_endorsed_certs += 1;
-            cert_bytes
-        } else {
-            cert.cert_body
-        };
+                // Collect all DICE certs to validate the chain.
+                if dice_cert_names.contains(cert.cert_name) {
+                    let (format, cert_chain) = match perso_obj.obj_header.obj_type {
+                        ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => {
+                            (CertFormat::X509, &mut dice_cert_chain)
+                        }
+                        ObjType::EndorsedCwtCert => (CertFormat::Cwt, &mut dice_cert_chain_cwt),
+                        ObjType::WasTbsHmac
+                        | ObjType::DeviceId
+                        | ObjType::DevSeed
+                        | ObjType::GenericSeed
+                        | ObjType::PersoSha256Hash
+                        | ObjType::PersoBlobVersion => unreachable!(),
+                    };
 
-        // Collect all DICE certs to validate the chain.
-        if dice_cert_names.contains(cert.cert_name) {
-            let (format, cert_chain) = match header.obj_type {
-                ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => {
-                    (CertFormat::X509, &mut dice_cert_chain)
+                    let ec = EndorsedCert {
+                        format,
+                        name: cert.cert_name.to_string(),
+                        bytes: cert_bytes.clone(),
+                        ignore_critical: true,
+                    };
+
+                    response.certs.insert(ec.name.clone(), ec.clone());
+                    cert_chain.push(ec);
                 }
-                ObjType::EndorsedCwtCert => (CertFormat::Cwt, &mut dice_cert_chain_cwt),
-                ObjType::WasTbsHmac
-                | ObjType::DeviceId
-                | ObjType::DevSeed
-                | ObjType::GenericSeed
-                | ObjType::PersoSha256Hash => unreachable!(),
-            };
 
-            let ec = EndorsedCert {
-                format,
-                name: cert.cert_name.to_string(),
-                bytes: cert_bytes.clone(),
-                ignore_critical: true,
-            };
-
-            response.certs.insert(ec.name.clone(), ec.clone());
-            cert_chain.push(ec);
+                // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
+                log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
+                // CWT certs are parsed and validated below.
+                if perso_obj.obj_header.obj_type != ObjType::EndorsedCwtCert {
+                    let _ = parse_certificate(&cert_bytes)?;
+                }
+                // Push the cert into the hasher so we can ensure the certs written to the device's flash
+                // info pages match those verified on the host.
+                log::info!("Hashing cert {} on host", cert.cert_name);
+                cert_hasher.update(cert_bytes);
+            }
         }
-
-        // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
-        log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
-        // CWT certs are parsed and validated below.
-        if header.obj_type != ObjType::EndorsedCwtCert {
-            let _ = parse_certificate(&cert_bytes)?;
-        }
-        // Push the cert into the hasher so we can ensure the certs written to the device's flash
-        // info pages match those verified on the host.
-        cert_hasher.update(cert_bytes);
     }
     response.stats.log_elapsed_time("perso-process-blobs", t0);
 
     // Execute extension hook.
     let t0 = Instant::now();
-    endorsed_cert_concat = ft_inject_certs_ext(endorsed_cert_concat, &mut num_host_endorsed_certs)?;
+    ft_inject_certs_ext(&mut perso_blob_builder)?;
     response.stats.log_elapsed_time("perso-ft-ext", t0);
 
     // Authenticate WAS HMAC.
@@ -531,11 +439,8 @@ fn provision_certificates(
     let host_computed_certs_hash = cert_hasher.finalize();
 
     // Send endorsed certificates back to the device.
-    let manuf_perso_data_back = PersoBlob {
-        num_objs: num_host_endorsed_certs,
-        next_free: endorsed_cert_concat.len(),
-        body: endorsed_cert_concat,
-    };
+    let manuf_perso_data_back: PersoBlob = perso_blob_builder.into();
+
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Importing endorsed certificates ...", timeout)?;
     ujson_payloads.dut_in.insert(

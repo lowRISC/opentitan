@@ -212,9 +212,14 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
  * Pushes the hash of the personalization firmware to the perso blob.
  */
 static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
+  perso_blob_version_t version = kPersoBlobVersionV0;
+  size_t offset = 0;
+  TRY(perso_tlv_get_blob_version(perso_blob_to_host->body,
+                                 perso_blob_to_host->next_free, &version,
+                                 &offset));
   TRY(perso_tlv_push_object_to_perso_blob(
       kPersoObjectTypePersoSha256Hash, boot_measurements.rom_ext.data,
-      sizeof(keymgr_binding_value_t), kPersoBlobVersionV0, perso_blob_to_host));
+      sizeof(keymgr_binding_value_t), version, perso_blob_to_host));
   return OK_STATUS();
 }
 
@@ -555,6 +560,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   perso_blob_version_t blob_version =
       (perso_blob_version_t)certgen_inputs.blob_version;
+  base_printf("Blob version: %u\n", blob_version);
   switch (blob_version) {
     case kPersoBlobVersionV1:
       TRY(perso_tlv_init_v1_blob(&perso_blob_to_host));

@@ -45,8 +45,8 @@ typedef enum perso_tlv_cert_header_fields_v0 {
 // transferred over wire.
 #define PERSO_TLV_SET_FIELD(type_name, field_name, full_value, field_value) \
   {                                                                         \
-    uint16_t mask = k##type_name##field_name##FieldMask;                    \
-    uint16_t shift = k##type_name##field_name##FieldShift;                  \
+    uint16_t mask = k##type_name##field_name##FieldMaskV0;                  \
+    uint16_t shift = k##type_name##field_name##FieldShiftV0;                \
     uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
     uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
     mask = (uint16_t)(mask << shift);                                       \
@@ -56,8 +56,8 @@ typedef enum perso_tlv_cert_header_fields_v0 {
 
 #define PERSO_TLV_GET_FIELD(type_name, field_name, full_value, field_value) \
   {                                                                         \
-    uint16_t mask = k##type_name##field_name##FieldMask;                    \
-    uint16_t shift = k##type_name##field_name##FieldShift;                  \
+    uint16_t mask = k##type_name##field_name##FieldMaskV0;                  \
+    uint16_t shift = k##type_name##field_name##FieldShiftV0;                \
     *(field_value) = (__builtin_bswap16(full_value) >> shift) & mask;       \
   }
 
