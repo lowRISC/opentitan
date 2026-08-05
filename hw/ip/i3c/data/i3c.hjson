@@ -2431,7 +2431,7 @@
     }
     { name:     "PIO_INTR_STATUS",
       desc:     "PIO Interrupt Status.",
-      swaccess: "rw1c",
+      swaccess: "ro",
       hwaccess: "hrw",
       fields: [
         { bits:     "9",
@@ -2561,7 +2561,6 @@
       desc:     "PIO Interrupt Force.",
       swaccess: "wo",
       hwaccess: "hro",
-      hwext:    "true",
       hwqe:     "true",
       fields: [
         { bits:   "9",
@@ -3440,7 +3439,7 @@
     }
     { name:     "TARG_INTR_STATUS",
       desc:     "Target Interrupt Status.",
-      swaccess: "rw1c",
+      swaccess: "ro",
       hwaccess: "hrw",
       fields: [
         { bits:     "31",
@@ -3719,7 +3718,6 @@
       desc:     "Target Interrupt Force.",
       swaccess: "wo",
       hwaccess: "hro",
-      hwext:    "true",
       hwqe:     "true",
       fields: [
         { bits:   "31",

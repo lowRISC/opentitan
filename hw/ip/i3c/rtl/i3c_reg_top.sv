@@ -731,15 +731,10 @@ module i3c_reg_top
   logic alt_queue_size_ext_ibi_queue_en_qs;
   logic pio_intr_status_we;
   logic pio_intr_status_tx_thld_stat_qs;
-  logic pio_intr_status_tx_thld_stat_wd;
   logic pio_intr_status_rx_thld_stat_qs;
-  logic pio_intr_status_rx_thld_stat_wd;
   logic pio_intr_status_ibi_status_thld_stat_qs;
-  logic pio_intr_status_ibi_status_thld_stat_wd;
   logic pio_intr_status_cmd_queue_ready_stat_qs;
-  logic pio_intr_status_cmd_queue_ready_stat_wd;
   logic pio_intr_status_resp_ready_stat_qs;
-  logic pio_intr_status_resp_ready_stat_wd;
   logic pio_intr_status_transfer_abort_stat_qs;
   logic pio_intr_status_transfer_abort_stat_wd;
   logic pio_intr_status_transfer_err_stat_qs;
@@ -981,39 +976,22 @@ module i3c_reg_top
   logic tti_extcap_header_re;
   logic [7:0] tti_extcap_header_cap_id_qs;
   logic [15:0] tti_extcap_header_cap_length_qs;
-  logic targ_intr_status_we;
   logic targ_intr_status_rx_desc_ready_stat_qs;
-  logic targ_intr_status_rx_desc_ready_stat_wd;
   logic targ_intr_status_ibi_status_thld_stat_qs;
-  logic targ_intr_status_ibi_status_thld_stat_wd;
   logic targ_intr_status_async_evt_ready_stat_qs;
-  logic targ_intr_status_async_evt_ready_stat_wd;
   logic targ_intr_status_transfer_abort_stat_qs;
-  logic targ_intr_status_transfer_abort_stat_wd;
   logic targ_intr_status_transfer_err_stat_qs;
-  logic targ_intr_status_transfer_err_stat_wd;
   logic targ_intr_status_rx_buffer_ovf_stat_qs;
-  logic targ_intr_status_rx_buffer_ovf_stat_wd;
   logic targ_intr_status_async_evt_ovf_stat_qs;
-  logic targ_intr_status_async_evt_ovf_stat_wd;
   logic targ_intr_status_tx0_thld_stat_qs;
-  logic targ_intr_status_tx0_thld_stat_wd;
   logic targ_intr_status_tx1_thld_stat_qs;
-  logic targ_intr_status_tx1_thld_stat_wd;
   logic targ_intr_status_tx2_thld_stat_qs;
-  logic targ_intr_status_tx2_thld_stat_wd;
   logic targ_intr_status_tx3_thld_stat_qs;
-  logic targ_intr_status_tx3_thld_stat_wd;
   logic targ_intr_status_tx0_desc_ready_stat_qs;
-  logic targ_intr_status_tx0_desc_ready_stat_wd;
   logic targ_intr_status_tx1_desc_ready_stat_qs;
-  logic targ_intr_status_tx1_desc_ready_stat_wd;
   logic targ_intr_status_tx2_desc_ready_stat_qs;
-  logic targ_intr_status_tx2_desc_ready_stat_wd;
   logic targ_intr_status_tx3_desc_ready_stat_qs;
-  logic targ_intr_status_tx3_desc_ready_stat_wd;
   logic targ_intr_status_te_stat_qs;
-  logic targ_intr_status_te_stat_wd;
   logic targ_intr_status_enable_we;
   logic targ_intr_status_enable_rx_desc_ready_stat_en_qs;
   logic targ_intr_status_enable_rx_desc_ready_stat_en_wd;
@@ -8052,7 +8030,7 @@ module i3c_reg_top
   //   F[tx_thld_stat]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_pio_intr_status_tx_thld_stat (
@@ -8060,8 +8038,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pio_intr_status_we),
-    .wd     (pio_intr_status_tx_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pio_intr_status.tx_thld_stat.de),
@@ -8079,7 +8057,7 @@ module i3c_reg_top
   //   F[rx_thld_stat]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_pio_intr_status_rx_thld_stat (
@@ -8087,8 +8065,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pio_intr_status_we),
-    .wd     (pio_intr_status_rx_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pio_intr_status.rx_thld_stat.de),
@@ -8106,7 +8084,7 @@ module i3c_reg_top
   //   F[ibi_status_thld_stat]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_pio_intr_status_ibi_status_thld_stat (
@@ -8114,8 +8092,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pio_intr_status_we),
-    .wd     (pio_intr_status_ibi_status_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pio_intr_status.ibi_status_thld_stat.de),
@@ -8133,7 +8111,7 @@ module i3c_reg_top
   //   F[cmd_queue_ready_stat]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_pio_intr_status_cmd_queue_ready_stat (
@@ -8141,8 +8119,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pio_intr_status_we),
-    .wd     (pio_intr_status_cmd_queue_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pio_intr_status.cmd_queue_ready_stat.de),
@@ -8160,7 +8138,7 @@ module i3c_reg_top
   //   F[resp_ready_stat]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_pio_intr_status_resp_ready_stat (
@@ -8168,8 +8146,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (pio_intr_status_we),
-    .wd     (pio_intr_status_resp_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pio_intr_status.resp_ready_stat.de),
@@ -8621,118 +8599,210 @@ module i3c_reg_top
   );
 
 
-  // R[pio_intr_force]: V(True)
+  // R[pio_intr_force]: V(False)
   logic pio_intr_force_qe;
   logic [6:0] pio_intr_force_flds_we;
-  assign pio_intr_force_qe = &pio_intr_force_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_pio_intr_force0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&pio_intr_force_flds_we),
+    .q_o(pio_intr_force_qe)
+  );
   //   F[tx_thld_force]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_tx_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_tx_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[0]),
     .q      (reg2hw.pio_intr_force.tx_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.tx_thld_force.qe = pio_intr_force_qe;
 
   //   F[rx_thld_force]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_rx_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_rx_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[1]),
     .q      (reg2hw.pio_intr_force.rx_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.rx_thld_force.qe = pio_intr_force_qe;
 
   //   F[ibi_thld_force]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_ibi_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_ibi_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[2]),
     .q      (reg2hw.pio_intr_force.ibi_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.ibi_thld_force.qe = pio_intr_force_qe;
 
   //   F[cmd_queue_ready_force]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_cmd_queue_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_cmd_queue_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[3]),
     .q      (reg2hw.pio_intr_force.cmd_queue_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.cmd_queue_ready_force.qe = pio_intr_force_qe;
 
   //   F[resp_ready_force]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_resp_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_resp_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[4]),
     .q      (reg2hw.pio_intr_force.resp_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.resp_ready_force.qe = pio_intr_force_qe;
 
   //   F[transfer_abort_force]: 5:5
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_transfer_abort_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_transfer_abort_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[5]),
     .q      (reg2hw.pio_intr_force.transfer_abort_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.transfer_abort_force.qe = pio_intr_force_qe;
 
   //   F[transfer_err_force]: 9:9
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_pio_intr_force_transfer_err_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (pio_intr_force_we),
     .wd     (pio_intr_force_transfer_err_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (pio_intr_force_flds_we[6]),
     .q      (reg2hw.pio_intr_force.transfer_err_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.pio_intr_force.transfer_err_force.qe = pio_intr_force_qe;
@@ -10892,7 +10962,7 @@ module i3c_reg_top
   //   F[rx_desc_ready_stat]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_rx_desc_ready_stat (
@@ -10900,8 +10970,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_rx_desc_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.rx_desc_ready_stat.de),
@@ -10919,7 +10989,7 @@ module i3c_reg_top
   //   F[ibi_status_thld_stat]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_ibi_status_thld_stat (
@@ -10927,8 +10997,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_ibi_status_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.ibi_status_thld_stat.de),
@@ -10946,7 +11016,7 @@ module i3c_reg_top
   //   F[async_evt_ready_stat]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_async_evt_ready_stat (
@@ -10954,8 +11024,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_async_evt_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.async_evt_ready_stat.de),
@@ -10973,7 +11043,7 @@ module i3c_reg_top
   //   F[transfer_abort_stat]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_transfer_abort_stat (
@@ -10981,8 +11051,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_transfer_abort_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.transfer_abort_stat.de),
@@ -11000,7 +11070,7 @@ module i3c_reg_top
   //   F[transfer_err_stat]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_transfer_err_stat (
@@ -11008,8 +11078,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_transfer_err_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.transfer_err_stat.de),
@@ -11027,7 +11097,7 @@ module i3c_reg_top
   //   F[rx_buffer_ovf_stat]: 5:5
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_rx_buffer_ovf_stat (
@@ -11035,8 +11105,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_rx_buffer_ovf_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.rx_buffer_ovf_stat.de),
@@ -11054,7 +11124,7 @@ module i3c_reg_top
   //   F[async_evt_ovf_stat]: 6:6
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_async_evt_ovf_stat (
@@ -11062,8 +11132,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_async_evt_ovf_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.async_evt_ovf_stat.de),
@@ -11081,7 +11151,7 @@ module i3c_reg_top
   //   F[tx0_thld_stat]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx0_thld_stat (
@@ -11089,8 +11159,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx0_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx0_thld_stat.de),
@@ -11108,7 +11178,7 @@ module i3c_reg_top
   //   F[tx1_thld_stat]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx1_thld_stat (
@@ -11116,8 +11186,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx1_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx1_thld_stat.de),
@@ -11135,7 +11205,7 @@ module i3c_reg_top
   //   F[tx2_thld_stat]: 10:10
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx2_thld_stat (
@@ -11143,8 +11213,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx2_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx2_thld_stat.de),
@@ -11162,7 +11232,7 @@ module i3c_reg_top
   //   F[tx3_thld_stat]: 11:11
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx3_thld_stat (
@@ -11170,8 +11240,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx3_thld_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx3_thld_stat.de),
@@ -11189,7 +11259,7 @@ module i3c_reg_top
   //   F[tx0_desc_ready_stat]: 16:16
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx0_desc_ready_stat (
@@ -11197,8 +11267,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx0_desc_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx0_desc_ready_stat.de),
@@ -11216,7 +11286,7 @@ module i3c_reg_top
   //   F[tx1_desc_ready_stat]: 17:17
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx1_desc_ready_stat (
@@ -11224,8 +11294,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx1_desc_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx1_desc_ready_stat.de),
@@ -11243,7 +11313,7 @@ module i3c_reg_top
   //   F[tx2_desc_ready_stat]: 18:18
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx2_desc_ready_stat (
@@ -11251,8 +11321,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx2_desc_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx2_desc_ready_stat.de),
@@ -11270,7 +11340,7 @@ module i3c_reg_top
   //   F[tx3_desc_ready_stat]: 19:19
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_tx3_desc_ready_stat (
@@ -11278,8 +11348,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_tx3_desc_ready_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.tx3_desc_ready_stat.de),
@@ -11297,7 +11367,7 @@ module i3c_reg_top
   //   F[te_stat]: 31:31
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_targ_intr_status_te_stat (
@@ -11305,8 +11375,8 @@ module i3c_reg_top
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (targ_intr_status_we),
-    .wd     (targ_intr_status_te_stat_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.targ_intr_status.te_stat.de),
@@ -12190,262 +12260,462 @@ module i3c_reg_top
   );
 
 
-  // R[targ_intr_force]: V(True)
+  // R[targ_intr_force]: V(False)
   logic targ_intr_force_qe;
   logic [15:0] targ_intr_force_flds_we;
-  assign targ_intr_force_qe = &targ_intr_force_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_targ_intr_force0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&targ_intr_force_flds_we),
+    .q_o(targ_intr_force_qe)
+  );
   //   F[rx_desc_ready_force]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_rx_desc_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_rx_desc_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[0]),
     .q      (reg2hw.targ_intr_force.rx_desc_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.rx_desc_ready_force.qe = targ_intr_force_qe;
 
   //   F[ibi_thld_force]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_ibi_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_ibi_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[1]),
     .q      (reg2hw.targ_intr_force.ibi_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.ibi_thld_force.qe = targ_intr_force_qe;
 
   //   F[async_evt_ready_force]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_async_evt_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_async_evt_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[2]),
     .q      (reg2hw.targ_intr_force.async_evt_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.async_evt_ready_force.qe = targ_intr_force_qe;
 
   //   F[transfer_abort_force]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_transfer_abort_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_transfer_abort_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[3]),
     .q      (reg2hw.targ_intr_force.transfer_abort_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.transfer_abort_force.qe = targ_intr_force_qe;
 
   //   F[transfer_err_force]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_transfer_err_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_transfer_err_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[4]),
     .q      (reg2hw.targ_intr_force.transfer_err_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.transfer_err_force.qe = targ_intr_force_qe;
 
   //   F[rx_buffer_ovf_force]: 5:5
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_rx_buffer_ovf_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_rx_buffer_ovf_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[5]),
     .q      (reg2hw.targ_intr_force.rx_buffer_ovf_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.rx_buffer_ovf_force.qe = targ_intr_force_qe;
 
   //   F[async_evt_ovf_force]: 6:6
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_async_evt_ovf_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_async_evt_ovf_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[6]),
     .q      (reg2hw.targ_intr_force.async_evt_ovf_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.async_evt_ovf_force.qe = targ_intr_force_qe;
 
   //   F[tx0_thld_force]: 8:8
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx0_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx0_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[7]),
     .q      (reg2hw.targ_intr_force.tx0_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx0_thld_force.qe = targ_intr_force_qe;
 
   //   F[tx1_thld_force]: 9:9
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx1_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx1_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[8]),
     .q      (reg2hw.targ_intr_force.tx1_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx1_thld_force.qe = targ_intr_force_qe;
 
   //   F[tx2_thld_force]: 10:10
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx2_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx2_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[9]),
     .q      (reg2hw.targ_intr_force.tx2_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx2_thld_force.qe = targ_intr_force_qe;
 
   //   F[tx3_thld_force]: 11:11
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx3_thld_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx3_thld_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[10]),
     .q      (reg2hw.targ_intr_force.tx3_thld_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx3_thld_force.qe = targ_intr_force_qe;
 
   //   F[tx0_desc_ready_force]: 16:16
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx0_desc_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx0_desc_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[11]),
     .q      (reg2hw.targ_intr_force.tx0_desc_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx0_desc_ready_force.qe = targ_intr_force_qe;
 
   //   F[tx1_desc_ready_force]: 17:17
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx1_desc_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx1_desc_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[12]),
     .q      (reg2hw.targ_intr_force.tx1_desc_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx1_desc_ready_force.qe = targ_intr_force_qe;
 
   //   F[tx2_desc_ready_force]: 18:18
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx2_desc_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx2_desc_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[13]),
     .q      (reg2hw.targ_intr_force.tx2_desc_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx2_desc_ready_force.qe = targ_intr_force_qe;
 
   //   F[tx3_desc_ready_force]: 19:19
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_tx3_desc_ready_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_tx3_desc_ready_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[14]),
     .q      (reg2hw.targ_intr_force.tx3_desc_ready_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.tx3_desc_ready_force.qe = targ_intr_force_qe;
 
   //   F[te_force]: 31:31
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_targ_intr_force_te_force (
-    .re     (1'b0),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
     .we     (targ_intr_force_we),
     .wd     (targ_intr_force_te_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
+
+    // to internal hardware
     .qe     (targ_intr_force_flds_we[15]),
     .q      (reg2hw.targ_intr_force.te_force.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.targ_intr_force.te_force.qe = targ_intr_force_qe;
@@ -18748,16 +19018,6 @@ module i3c_reg_top
   assign alt_queue_size_re = racl_addr_hit_read[91] & reg_re & !reg_error;
   assign pio_intr_status_we = racl_addr_hit_write[92] & reg_we & !reg_error;
 
-  assign pio_intr_status_tx_thld_stat_wd = reg_wdata[0];
-
-  assign pio_intr_status_rx_thld_stat_wd = reg_wdata[1];
-
-  assign pio_intr_status_ibi_status_thld_stat_wd = reg_wdata[2];
-
-  assign pio_intr_status_cmd_queue_ready_stat_wd = reg_wdata[3];
-
-  assign pio_intr_status_resp_ready_stat_wd = reg_wdata[4];
-
   assign pio_intr_status_transfer_abort_stat_wd = reg_wdata[5];
 
   assign pio_intr_status_transfer_err_stat_wd = reg_wdata[9];
@@ -18972,39 +19232,6 @@ module i3c_reg_top
 
   assign stby_cr_ccc_config_rstact_params_reset_dynamic_addr_wd = reg_wdata[31];
   assign tti_extcap_header_re = racl_addr_hit_read[123] & reg_re & !reg_error;
-  assign targ_intr_status_we = racl_addr_hit_write[124] & reg_we & !reg_error;
-
-  assign targ_intr_status_rx_desc_ready_stat_wd = reg_wdata[0];
-
-  assign targ_intr_status_ibi_status_thld_stat_wd = reg_wdata[1];
-
-  assign targ_intr_status_async_evt_ready_stat_wd = reg_wdata[2];
-
-  assign targ_intr_status_transfer_abort_stat_wd = reg_wdata[3];
-
-  assign targ_intr_status_transfer_err_stat_wd = reg_wdata[4];
-
-  assign targ_intr_status_rx_buffer_ovf_stat_wd = reg_wdata[5];
-
-  assign targ_intr_status_async_evt_ovf_stat_wd = reg_wdata[6];
-
-  assign targ_intr_status_tx0_thld_stat_wd = reg_wdata[8];
-
-  assign targ_intr_status_tx1_thld_stat_wd = reg_wdata[9];
-
-  assign targ_intr_status_tx2_thld_stat_wd = reg_wdata[10];
-
-  assign targ_intr_status_tx3_thld_stat_wd = reg_wdata[11];
-
-  assign targ_intr_status_tx0_desc_ready_stat_wd = reg_wdata[16];
-
-  assign targ_intr_status_tx1_desc_ready_stat_wd = reg_wdata[17];
-
-  assign targ_intr_status_tx2_desc_ready_stat_wd = reg_wdata[18];
-
-  assign targ_intr_status_tx3_desc_ready_stat_wd = reg_wdata[19];
-
-  assign targ_intr_status_te_stat_wd = reg_wdata[31];
   assign targ_intr_status_enable_we = racl_addr_hit_write[125] & reg_we & !reg_error;
 
   assign targ_intr_status_enable_rx_desc_ready_stat_en_wd = reg_wdata[0];
@@ -19525,7 +19752,7 @@ module i3c_reg_top
     reg_we_check[121] = stby_cr_ccc_config_getcaps_we;
     reg_we_check[122] = stby_cr_ccc_config_rstact_params_we;
     reg_we_check[123] = 1'b0;
-    reg_we_check[124] = targ_intr_status_we;
+    reg_we_check[124] = 1'b0;
     reg_we_check[125] = targ_intr_status_enable_we;
     reg_we_check[126] = targ_intr_signal_enable_we;
     reg_we_check[127] = targ_intr_force_we;
