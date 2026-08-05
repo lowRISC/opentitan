@@ -35,6 +35,20 @@ EARLGREY_SKUS = {
         "signature_prefix": None,
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation",
     },
+    "emulation_blob_v1": {
+        "otp": "em00",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+        "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
+        "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
+        "ecdsa_key": {},
+        "spx_key": {},
+        "signature_prefix": None,
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_blob_v1",
+    },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
         "otp": "em00",
