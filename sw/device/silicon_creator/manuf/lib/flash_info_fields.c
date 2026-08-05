@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
@@ -147,6 +148,32 @@ const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed = {
     .page = 4,
     .byte_offset = kFlashInfoFieldTpmEkKeySeedIdx * kAttestationSeedBytes,
 };
+
+const flash_info_field_t kFlashInfoFieldMldsaUdsAttestationKeySeed = {
+    .partition = 0,
+    .bank = 0,
+    .page = 4,
+    .byte_offset = kFlashInfoFieldMldsaUdsKeySeedIdx * kAttestationSeedBytes,
+};
+
+const flash_info_field_t kFlashInfoFieldMldsaCdi0AttestationKeySeed = {
+    .partition = 0,
+    .bank = 0,
+    .page = 4,
+    .byte_offset = kFlashInfoFieldMldsaCdi0KeySeedIdx * kAttestationSeedBytes,
+};
+
+const flash_info_field_t kFlashInfoFieldMldsaCdi1AttestationKeySeed = {
+    .partition = 0,
+    .bank = 0,
+    .page = 4,
+    .byte_offset = kFlashInfoFieldMldsaCdi1KeySeedIdx * kAttestationSeedBytes,
+};
+
+static_assert(((kFlashInfoFieldMldsaCdi1KeySeedIdx + 1) *
+               kAttestationSeedBytes) <=
+                  (FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(uint32_t)),
+              "Overlap between seed bytes and keygen version bytes");
 
 const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion = {
     .partition = 0,

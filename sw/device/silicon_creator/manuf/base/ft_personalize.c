@@ -404,9 +404,18 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     TRY(manuf_personalize_flash_asymm_key_seed(
         &flash_ctrl_state, kFlashInfoFieldCdi1AttestationKeySeed,
         kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldMldsaUdsAttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldMldsaCdi0AttestationKeySeed,
+        kAttestationSeedWords));
+    TRY(manuf_personalize_flash_asymm_key_seed(
+        &flash_ctrl_state, kFlashInfoFieldMldsaCdi1AttestationKeySeed,
+        kAttestationSeedWords));
     // Provision the attestation key generation version field (at the end of the
     // attestation seed info page).
-    uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
+    uint32_t kKeyGenVersion = kAttestationKeyGenVersion1;
     TRY(manuf_flash_info_field_write(
         &flash_ctrl_state, kFlashInfoFieldAttestationKeyGenVersion,
         /*data_in=*/&kKeyGenVersion, /*num_words=*/1,

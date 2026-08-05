@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdint.h>
+
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -59,7 +61,7 @@ static void sw_reset(void) {
 
 static status_t check_array_non_zero(uint32_t *array, size_t num_words) {
   for (size_t i = 0; i < num_words; ++i) {
-    if (array[i] == 0) {
+    if (array[i] == 0 || array[i] == UINT32_MAX) {
       return INTERNAL();
     }
   }
@@ -121,6 +123,15 @@ bool test_main(void) {
       CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
           &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldMldsaUdsAttestationKeySeed,
+          kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldMldsaCdi0AttestationKeySeed,
+          kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
+          &flash_state, kFlashInfoFieldMldsaCdi1AttestationKeySeed,
+          kAttestationSeedWords));
 
       // Read the attestation key seed fields to ensure they are non-zero.
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
@@ -141,6 +152,23 @@ bool test_main(void) {
           cdi_1_attestation_key_seed, kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
                                            kAttestationSeedWords));
+
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldMldsaUdsAttestationKeySeed,
+          uds_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldMldsaCdi0AttestationKeySeed,
+          cdi_0_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldMldsaCdi1AttestationKeySeed,
+          cdi_1_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
+                                           kAttestationSeedWords));
+
       LOG_INFO(
           "Finished provisioning OTP SECRET2 and keymgr flash info pages ...");
 
