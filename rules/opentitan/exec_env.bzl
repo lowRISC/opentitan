@@ -5,6 +5,7 @@
 load("@bazel_skylib//lib:types.bzl", "types")
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "rram_otp_image")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
@@ -495,6 +496,13 @@ def _memory_from_env_impl(ctx):
         src = getattr(exec_env, ctx.attr.memory)
     if ctx.attr.memory == "rom":
         src = get_one_binary_file(src, field = ctx.attr.memory, providers = [exec_env.provider])
+    elif ctx.attr.memory == "otp":
+        # exec_env.otp is otp_image()'s native-format output (also used for firmware
+        # scrambling-key derivation, which needs that format) - OTP lives inside the RRAM data
+        # array now, so backdoor-loading it needs the RRAM-native layout instead.
+        rram_otp = rram_otp_image(ctx, exec_env, src)
+        if rram_otp:
+            src = rram_otp
 
     out = ctx.actions.declare_file("{}.vmem".format(ctx.label.name))
     ctx.actions.symlink(

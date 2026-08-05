@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
                      ".u_flash_ctrl.u_eflash.u_flash."
                      "gen_prim_flash_banks[1].u_prim_flash_bank.u_mem",
                  0x80000 / 8, 8);
-  MemArea rram(top_scope + ".u_rram_macro.u_data_array", 0x100000 / 16, 16);
+  MemArea rram(top_scope + ".u_rram_macro.u_data_array", 0x200000 / 16, 16);
 
   // Start with the flash region erased. Future loads can overwrite.
   std::vector<uint8_t> all_ones(flash0.GetSizeBytes());
@@ -48,7 +48,10 @@ int main(int argc, char **argv) {
   std::fill(all_zeros.begin(), all_zeros.end(), 0x00u);
   rram.Write(/*word_offset=*/0, all_zeros);
 
-  MemArea otp(top_scope + ".u_otp_macro." + ram1p_adv_scope, 0x4000 / 4, 4);
+  // OTP occupies the last pages of the RRAM data array.
+  // The OTP vmem file's own @addr fields are already absolute RRAM word
+  // addresses (see gen-rram-img.py --out-otp-vmem).
+  MemArea otp(top_scope + ".u_rram_macro.u_data_array", 0x200000 / 16, 16);
 
   memutil.RegisterMemoryArea("rom0", 0x40000, &rom0);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
