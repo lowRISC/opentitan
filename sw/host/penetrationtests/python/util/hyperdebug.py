@@ -141,7 +141,9 @@ class HyperDebug:
         if rom_vmem:
             backdoor_writes += f" --write ROM={rom_vmem}"
         if otp_vmem:
-            backdoor_writes += f" --write OTP={otp_vmem}"
+            # There is no standalone "OTP" bkdr_loader target anymore: OTP lives inside the RRAM
+            # data array, so it's written via the "RRDA" target.
+            backdoor_writes += f" --write RRDA={otp_vmem}"
         openocd_opt = f"--openocd={openocd_bin}"
         adapter_cfg_opt = [f"--openocd-adapter-config={openocd_cfg}"] if openocd_cfg else []
 

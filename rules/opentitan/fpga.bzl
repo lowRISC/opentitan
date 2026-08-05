@@ -24,6 +24,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "rram_otp_image",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -208,7 +209,8 @@ def _get_test_commands(ctx, param, exec_env):
         backdoor_writes += " --write ROM={rom}"
         backdoor_writes += " --check-memory-hash ROM"
     if "otp" in param:
-        backdoor_writes += " --write OTP={otp}"
+        # OTP lives inside RRAM, so it's written into "RRDA".
+        backdoor_writes += " --write RRDA={otp}"
     test_setup_cmd.append('--exec="fpga backdoor {{jtag_test_cmd}} batch {backdoor_writes} --start"'.format(backdoor_writes = backdoor_writes))
 
     if _get_bool(param, "testopt_bootstrap") and "firmware" in param:
@@ -243,6 +245,14 @@ def _test_dispatch(ctx, exec_env, firmware):
         fail("FPGA is not capable of executing ROM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
+
+    if "otp" in param:
+        otp_attr = get_fallback(ctx, "attr.otp", exec_env)
+        rram_otp = rram_otp_image(ctx, exec_env, otp_attr)
+        if rram_otp:
+            data_files.append(rram_otp)
+            param["otp"] = rram_otp.short_path
+            action_param["otp"] = rram_otp.path
 
     # If the test requested an assembled image, then use opentitantool to
     # assemble the image.  Replace the firmware param with the newly assembled
