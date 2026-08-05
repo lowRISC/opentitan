@@ -33,6 +33,9 @@ module prim_alert_rxtx_assert_fpv
 
   import prim_mubi_pkg::mubi4_test_true_strict;
 
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
+
   logic error_present;
   assign error_present = ping_err_pi  | ping_err_ni |
                          ack_err_pi   | ack_err_ni  |
@@ -105,11 +108,6 @@ module prim_alert_rxtx_assert_fpv
       prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
       ##[1:9] ping_ok_o,
       clk_i, !rst_ni || error_present || init_pending)
-  `ASSERT(AlertPingIgnored_A, (prim_alert_rxtx_tb.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
-      ping_ok_o == 0 throughout ping_req_i [->1],
-      clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   // transmission of alerts in case of no collision with ping enable
   `ASSERT(AlertCheck0_A, !ping_req_i [*3] ##0 ($rose(alert_req_i) || $rose(alert_test_i)) &&
       (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
@@ -123,6 +121,21 @@ module prim_alert_rxtx_assert_fpv
       clk_i,
       !rst_ni || error_present || prim_alert_rxtx_tb.i_prim_alert_sender.alert_clr ||
       mubi4_test_true_strict(init_trig_i))
+
+  // Keep track of whether a ping has been requested since the last time ping_ok_o was asserted.
+  logic ping_requested_d, ping_requested_q;
+  assign ping_requested_d = ping_req_i || (ping_requested_q && !ping_ok_o);
+  always @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ping_requested_q <= 0;
+    end else begin
+      ping_requested_q <= ping_requested_d;
+    end
+  end
+
+  // The ping_ok_o signal (which means that a ping has had a response) should only be asserted after
+  // the ping has been requested.
+  NoSurprisingPingResponses_A: assert property (ping_ok_o |-> ping_requested_q);
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
