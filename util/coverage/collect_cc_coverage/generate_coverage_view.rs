@@ -15,6 +15,7 @@
 
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
+use core::iter::DoubleEndedIterator;
 use object::{Object, ObjectSection};
 use regex::Regex;
 use serde::Deserialize;
@@ -225,7 +226,7 @@ fn find_executable_regions(
 /// across translation units may have a filename prefix separated by a colon.
 /// This function returns the base function name.
 fn dedup_inline_copies(name: &str) -> Result<&str> {
-    name.split(':').last().context("Invalid function name")
+    name.split(':').next_back().context("Invalid function name")
 }
 
 /// Filters raw LCOV output to only include regions that exist in the binary.
