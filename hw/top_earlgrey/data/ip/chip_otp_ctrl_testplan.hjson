@@ -186,29 +186,6 @@
       bazel: []
     }
     {
-      name: chip_sw_otp_ctrl_vendor_test_csr_access
-      desc: '''
-            Verify the vendor test control access in raw, test_*, dev, prod, and rma LC states.
-
-            - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
-            - Verify that the SW is able to access the vendor test control and status registers in
-              raw, test_* and rma LC states.
-              In open source environment, this check is implemented by probing the OTP_CTRL's
-              `lc_otp_vendor_test_i` port.
-            - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
-              of what is programmed into the vendor test control register.
-            - Once VENDOR_TEST_READ_LOCK is 0, Try to read / write to see it triggered access error.
-            - For sival, real vendor test will be done by a silicon vendor and nothing need to be done
-              in the open source side.
-            '''
-      features: ["OTP_CTRL.PARTITION.VENDOR_TEST",
-                 "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
-                 "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"]
-      stage: V3
-      si_stage: NA
-      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
-    }
-    {
       name: chip_sw_otp_ctrl_escalation
       desc: '''Verify escalation from otp_ctrl macro fatal error.
 

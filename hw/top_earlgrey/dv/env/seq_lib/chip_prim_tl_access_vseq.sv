@@ -117,17 +117,11 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
   task body();
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
-      uvm_reg otp_prim_regs[$], flash_prim_regs[$];
+      uvm_reg flash_prim_regs[$];
 
       if (trans_i > 1 && $urandom_range(0, 4)) dut_init();
       `uvm_info(`gfn, $sformatf("Run iterations %0d/%0d with lc_state %0s", trans_i, num_trans,
                 lc_state.name), UVM_LOW)
-
-      if ($urandom_range(0, 1)) begin
-        `uvm_info(`gfn, "Check OTP prim_tl access", UVM_HIGH)
-        ral.otp_macro_prim.get_registers(otp_prim_regs);
-        rand_rw_prim_regs(otp_prim_regs, get_response_mode(1'b1));
-      end
 
       if ($urandom_range(0, 1)) begin
         `uvm_info(`gfn, "Check FLASH_CTRL prim_tl access", UVM_HIGH)

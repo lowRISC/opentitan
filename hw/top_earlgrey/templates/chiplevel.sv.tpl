@@ -84,10 +84,7 @@ module chip_${top["name"]}_${target["name"]} #(
 %       endif
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
-  // Path to a VMEM file containing the contents of the emulated OTP, which will be
-  // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
+  parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem"
 %     endif
 ) (
 %   else:
@@ -574,12 +571,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // observe interface
   logic [7:0] flash_obs;
-  logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  // otp power sequence
-  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
-  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -820,20 +812,17 @@ module chip_${top["name"]}_${target["name"]} #(
 % if top["name"] == "englishbreakfast":
 
   // Englishbreakfast doesn't use many AST signals
-  assign otp_macro_pwr_seq = '0;
   assign adc_req           = '0;
   assign es_rng_enable     = '0;
   assign es_rng_fips       = '0;
   assign ast_edn_rsp       = '0;
   assign ast_alert_rsp     = '0;
   assign lc_dft_en         = '0;
-  assign otp_obs           = '0;
 
   logic unused_ast;
 
   assign unused_ast = ^{
     ast_init_done,
-    otp_macro_pwr_seq_h,
     adc_rsp,
     es_rng_valid,
     es_rng_bit,
@@ -916,11 +905,11 @@ module chip_${top["name"]}_${target["name"]} #(
     // main regulator
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)/otp
+    // pdm control (flash)
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_macro_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
+    .otp_power_seq_i       ( '0 ),
+    .otp_power_seq_h_o     (    ),
     // system source clock
     .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
@@ -961,7 +950,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( flash_obs ),
-    .otp_obs_i             ( otp_obs ),
+    .otp_obs_i             ( '0 ),
     .otm_obs_i             ( '0 ),
 % if target["name"] == "asic":
     .usb_obs_i             ( usb_diff_rx_obs ),
@@ -1025,8 +1014,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
-  assign manual_out_otp_ext_volt = 1'b0;
-  assign manual_oe_otp_ext_volt = 1'b0;
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
@@ -1043,7 +1030,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
-  assign manual_attr_otp_ext_volt = '0;
   assign manual_attr_rram_analog = '0;
 
   logic unused_manual_sigs;
@@ -1053,7 +1039,6 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
     manual_in_flash_test_mode1,
-    manual_in_otp_ext_volt,
     manual_in_rram_analog
   };
 
@@ -1209,12 +1194,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   % endif
 
-  % if target["name"] == "cw305":
-  // TODO: follow-up later and hardwire all ast connects that do not
-  //       exist for this target
-  assign otp_obs_o = '0;
-  % endif
-
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
@@ -1248,7 +1227,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .UsbdevRcvrWakeTimeUs(10000),
     .SramCtrlRetInstrExec(0),

@@ -1493,14 +1493,6 @@
     // analog_sigs.csv     //
     /////////////////////////
     {
-      name: otp_ctrl_external_voltage
-      desc: "Verify the connectivity between the external voltage pad and otp_ctrl."
-      stage: V2
-      tests: ["otp_ext_volt"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
       name: flash_ctrl_test_voltage
       desc: "Verify the connectivity between the test voltage pad and flash_ctrl."
       stage: V2

@@ -21,11 +21,7 @@ _PREFIX = "../../../../../../../../../../.."
 
 _CW340_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw340_scr_vmem"
 
-_OTP_RMA = "//hw/top_earlgrey/data/otp:img_rma"
-
 _CW340_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_TESTROM)
-
-_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _OTP_RMA)
 
 _FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
@@ -36,13 +32,11 @@ fusesoc_build(
     srcs = [
         "//hw:rtl_files",
         _CW340_TESTROM,
-        _OTP_RMA,
     ],
     cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
-        "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],

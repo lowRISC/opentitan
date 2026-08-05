@@ -25,7 +25,6 @@ load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
-load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_earlgrey/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_earlgrey/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
 load("//hw/ip/rom_ctrl:defs.bzl", "ROM_CTRL")
@@ -63,7 +62,6 @@ EARLGREY_IPS = [
     LC_CTRL,
     OTBN,
     OTP_CTRL,
-    OTP_MACRO,
     PINMUX,
     PWRMGR,
     ROM_CTRL,

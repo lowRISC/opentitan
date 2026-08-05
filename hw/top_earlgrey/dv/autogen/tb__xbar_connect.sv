@@ -84,7 +84,6 @@ tl_if rstmgr_tl_if(clk_io_div4, rst_n);
 tl_if clkmgr_tl_if(clk_io_div4, rst_n);
 tl_if pinmux_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl__core_tl_if(clk_io_div4, rst_n);
-tl_if otp_macro__prim_tl_if(clk_io_div4, rst_n);
 tl_if lc_ctrl__regs_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if alert_handler_tl_if(clk_io_div4, rst_n);
@@ -169,7 +168,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(otp_macro__prim, otp_macro, prim_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl, aon)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl, main)

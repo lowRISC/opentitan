@@ -46,7 +46,6 @@
       clkmgr
       pinmux
       otp_ctrl.core
-      otp_macro.prim
       lc_ctrl.regs
       sensor_ctrl
       alert_handler
@@ -382,27 +381,6 @@
             hart: 0x40130000
           }
           size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: otp_macro.prim
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: otp_macro
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x40138000
-          }
-          size_byte: 0x20
         }
       ]
       xbar: false
@@ -819,19 +797,6 @@
       default: ""
       domain: Main
       top_signame: otp_ctrl_core_tl
-      index: -1
-    }
-    {
-      name: tl_otp_macro__prim
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: peri
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: otp_macro_prim_tl
       index: -1
     }
     {
