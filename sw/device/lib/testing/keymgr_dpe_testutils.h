@@ -119,7 +119,7 @@ static const dif_keymgr_dpe_generate_params_t kKeyVersionedParams = {
     .sideload_key = false,
     .salt = {0xb6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf, 0x9f89bc56,
              0x4bd127c7, 0x322288d8, 0xde919d54},
-    .version = 0x11,
+    .version = 0x0,
     .slot_src_sel = 1,
 };
 
