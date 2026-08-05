@@ -40,9 +40,10 @@ module bkdr_loader
     MISSION   = 2'h2
   } bkdr_state_t;
 
-  typedef enum logic {
-    IDLE  = 1'b0,
-    CLEAR = 1'b1
+  typedef enum logic [1:0] {
+    IDLE          = 2'h0,
+    CLEAR         = 2'h1,
+    CLEAR_SEGMENT = 2'h2
   } bkdr_clear_state_t;
 
 
@@ -170,9 +171,11 @@ module bkdr_loader
     clear_state_d = clear_state_q;
 
 
-    // Don't clear the start bit
-    hw2reg.control.clear_start.d  = 1'b0;
-    hw2reg.control.clear_start.de = 1'b0;
+    // Don't clear the start bits
+    hw2reg.control.clear_start.d          = 1'b0;
+    hw2reg.control.clear_start.de         = 1'b0;
+    hw2reg.control.clear_segment_start.d  = 1'b0;
+    hw2reg.control.clear_segment_start.de = 1'b0;
 
     unique case (clear_state_q)
       IDLE : begin
@@ -183,12 +186,28 @@ module bkdr_loader
           clear_state_d = CLEAR;
           clear_addr_d  = '0;
         end
+        // Clear segment operation starts
+        if (reg2hw.control.clear_segment_start.q && reg2hw.control.clear_segment_start.qe
+            && !tgt_idx_err) begin
+          // Clear start bit
+          hw2reg.control.clear_segment_start.de = 1'b1;
+          clear_state_d = CLEAR_SEGMENT;
+          clear_addr_d  = reg2hw.clear_index_start;
+        end
       end
 
       CLEAR : begin
         clear_idle   = 1'b0;
         clear_addr_d = clear_addr_q + 'd1;
         if (bkdr_rsp_i[tgt_idx_sel].param_depth - 'd1 == clear_addr_q) begin
+          clear_state_d = IDLE;
+        end
+      end
+
+      CLEAR_SEGMENT : begin
+        clear_idle   = 1'b0;
+        clear_addr_d = clear_addr_q + 'd1;
+        if (reg2hw.clear_index_end - 'd1 == clear_addr_q) begin
           clear_state_d = IDLE;
         end
       end
