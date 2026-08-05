@@ -16,28 +16,28 @@ typedef uint32_t perso_tlv_cert_header_v1_t;
 
 typedef enum perso_tlv_obj_header_fields_v1 {
   // Object size, total size, this header included.
-  kObjhV1SizeFieldShift = 0,
-  kObjhV1SizeFieldWidth = 24,
-  kObjhV1SizeFieldMask = (1 << kObjhV1SizeFieldWidth) - 1,
+  kObjhSizeFieldShiftV1 = 0,
+  kObjhSizeFieldWidthV1 = 24,
+  kObjhSizeFieldMaskV1 = (1 << kObjhSizeFieldWidthV1) - 1,
 
   // Object type, one of perso_tlv_object_type_t.
-  kObjhV1TypeFieldShift = kObjhV1SizeFieldWidth,
-  kObjhV1TypeFieldWidth =
-      sizeof(perso_tlv_object_header_v1_t) * 8 - kObjhV1SizeFieldWidth,
-  kObjhV1TypeFieldMask = (1 << kObjhV1TypeFieldWidth) - 1,
+  kObjhTypeFieldShiftV1 = kObjhSizeFieldWidthV1,
+  kObjhTypeFieldWidthV1 =
+      sizeof(perso_tlv_object_header_v1_t) * 8 - kObjhSizeFieldWidthV1,
+  kObjhTypeFieldMaskV1 = (1 << kObjhTypeFieldWidthV1) - 1,
 } perso_tlv_obj_header_fields_v1_t;
 
 typedef enum perso_tlv_cert_header_fields_v1 {
   // Certificate size, total size, this header and name length included.
-  kCrthV1SizeFieldShift = 0,
-  kCrthV1SizeFieldWidth = 24,
-  kCrthV1SizeFieldMask = (1 << kCrthV1SizeFieldWidth) - 1,
+  kCrthSizeFieldShiftV1 = 0,
+  kCrthSizeFieldWidthV1 = 24,
+  kCrthSizeFieldMaskV1 = (1 << kCrthSizeFieldWidthV1) - 1,
 
   // Length of the certificate name immediately following the header.
-  kCrthV1NameSizeFieldShift = kCrthV1SizeFieldWidth,
-  kCrthV1NameSizeFieldWidth =
-      sizeof(perso_tlv_cert_header_v1_t) * 8 - kCrthV1SizeFieldWidth,
-  kCrthV1NameSizeFieldMask = (1 << kCrthV1NameSizeFieldWidth) - 1,
+  kCrthNameSizeFieldShiftV1 = kCrthSizeFieldWidthV1,
+  kCrthNameSizeFieldWidthV1 =
+      sizeof(perso_tlv_cert_header_v1_t) * 8 - kCrthSizeFieldWidthV1,
+  kCrthNameSizeFieldMaskV1 = (1 << kCrthNameSizeFieldWidthV1) - 1,
 } perso_tlv_cert_header_fields_v1_t;
 
 // Helper macros allowing set or get various object and certificate header
@@ -45,8 +45,8 @@ typedef enum perso_tlv_cert_header_fields_v1 {
 // transferred over wire.
 #define PERSO_TLV_SET_FIELD_V1(type_name, field_name, full_value, field_value) \
   {                                                                            \
-    uint32_t mask = k##type_name##field_name##FieldMask;                       \
-    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    uint32_t mask = k##type_name##field_name##FieldMaskV1;                     \
+    uint32_t shift = k##type_name##field_name##FieldShiftV1;                   \
     uint32_t fieldv = (uint32_t)(field_value)&mask;                            \
     uint32_t fullv = __builtin_bswap32((uint32_t)(full_value));                \
     mask = (uint32_t)(mask << shift);                                          \
@@ -56,8 +56,8 @@ typedef enum perso_tlv_cert_header_fields_v1 {
 
 #define PERSO_TLV_GET_FIELD_V1(type_name, field_name, full_value, field_value) \
   {                                                                            \
-    uint32_t mask = k##type_name##field_name##FieldMask;                       \
-    uint32_t shift = k##type_name##field_name##FieldShift;                     \
+    uint32_t mask = k##type_name##field_name##FieldMaskV1;                     \
+    uint32_t shift = k##type_name##field_name##FieldShiftV1;                   \
     *(field_value) = (__builtin_bswap32(full_value) >> shift) & mask;          \
   }
 
