@@ -161,6 +161,9 @@ def main():
                 otp_mem_img.override_data(cfg)
             log.info('')
 
+        # Checks that can only run once every configuration has been merged.
+        otp_mem_img.validate_secrets_valid()
+
     except RuntimeError as err:
         log.error(err)
         exit(1)
