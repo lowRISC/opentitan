@@ -867,6 +867,24 @@ cryptotest(
     test_vectors = SPHINCSPLUS_TESTVECTOR_TARGETS,
 )
 
+MLDSA_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mldsa_87_sign_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mldsa_87_verify_json",
+]
+
+MLDSA_TESTVECTOR_ARGS = " ".join([
+    "--mldsa-json=\"$(rootpath {})\"".format(target)
+    for target in MLDSA_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "mldsa_kat",
+    slow_test = True,
+    test_args = MLDSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mldsa_kat:harness",
+    test_vectors = MLDSA_TESTVECTOR_TARGETS,
+)
+
 # Use the following command to run the entire test suite in a given target:
 # $ export OT_EXEC_ENV=silicon_owner_sival_rom_ext
 # $ bazel test --//signing:token=//signing/tokens:cloud_kms \
@@ -889,6 +907,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":mldsa_kat",
         ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",

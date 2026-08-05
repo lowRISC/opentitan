@@ -963,3 +963,39 @@ NIST_CAVP_AES_KAT_TESTVECTORS = [
     )
     for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
 ]
+
+run_binary(
+    name = "wycheproof_mldsa_87_sign_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+        "@wycheproof//testvectors_v1:mldsa_87_sign_seed_test.json",
+    ],
+    outs = [":wycheproof_mldsa_87_sign.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mldsa_87_sign_seed_test.json)",
+        "--dst",
+        "$(location :wycheproof_mldsa_87_sign.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mldsa_parser",
+)
+
+run_binary(
+    name = "wycheproof_mldsa_87_verify_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+        "@wycheproof//testvectors_v1:mldsa_87_verify_test.json",
+    ],
+    outs = [":wycheproof_mldsa_87_verify.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mldsa_87_verify_test.json)",
+        "--dst",
+        "$(location :wycheproof_mldsa_87_verify.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mldsa_parser",
+)
