@@ -52,9 +52,9 @@ module bkdr_loader_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [81:0] reg_we_check;
+  logic [83:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(82)
+    .OneHotWidth(84)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -131,6 +131,8 @@ module bkdr_loader_regs_reg_top (
   logic control_write_ena_wd;
   logic control_clear_start_qs;
   logic control_clear_start_wd;
+  logic control_clear_segment_start_qs;
+  logic control_clear_segment_start_wd;
   logic control_auto_incr_qs;
   logic control_auto_incr_wd;
   logic [7:0] control_target_idx_qs;
@@ -140,6 +142,12 @@ module bkdr_loader_regs_reg_top (
   logic mission_mode_switch_delay_we;
   logic [31:0] mission_mode_switch_delay_qs;
   logic [31:0] mission_mode_switch_delay_wd;
+  logic clear_index_start_we;
+  logic [31:0] clear_index_start_qs;
+  logic [31:0] clear_index_start_wd;
+  logic clear_index_end_we;
+  logic [31:0] clear_index_end_qs;
+  logic [31:0] clear_index_end_wd;
   logic usr_access_timestamp_re;
   logic [31:0] usr_access_timestamp_qs;
   logic target_info_0_re;
@@ -375,7 +383,7 @@ module bkdr_loader_regs_reg_top (
 
   // R[control]: V(False)
   logic control_qe;
-  logic [4:0] control_flds_we;
+  logic [5:0] control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -469,7 +477,35 @@ module bkdr_loader_regs_reg_top (
   );
   assign reg2hw.control.clear_start.qe = control_qe;
 
-  //   F[auto_incr]: 3:3
+  //   F[clear_segment_start]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_clear_segment_start (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_clear_segment_start_wd),
+
+    // from internal hardware
+    .de     (hw2reg.control.clear_segment_start.de),
+    .d      (hw2reg.control.clear_segment_start.d),
+
+    // to internal hardware
+    .qe     (control_flds_we[3]),
+    .q      (reg2hw.control.clear_segment_start.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_clear_segment_start_qs)
+  );
+  assign reg2hw.control.clear_segment_start.qe = control_qe;
+
+  //   F[auto_incr]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -488,7 +524,7 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (control_flds_we[3]),
+    .qe     (control_flds_we[4]),
     .q      (reg2hw.control.auto_incr.q),
     .ds     (),
 
@@ -516,7 +552,7 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (control_flds_we[4]),
+    .qe     (control_flds_we[5]),
     .q      (reg2hw.control.target_idx.q),
     .ds     (),
 
@@ -567,6 +603,62 @@ module bkdr_loader_regs_reg_top (
 
     // to register interface (read)
     .qs     (mission_mode_switch_delay_qs)
+  );
+
+
+  // R[clear_index_start]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_clear_index_start (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_index_start_we),
+    .wd     (clear_index_start_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_index_start.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_index_start_qs)
+  );
+
+
+  // R[clear_index_end]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h1),
+    .Mubi    (1'b0)
+  ) u_clear_index_end (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_index_end_we),
+    .wd     (clear_index_end_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_index_end.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_index_end_qs)
   );
 
 
@@ -2171,90 +2263,92 @@ module bkdr_loader_regs_reg_top (
 
 
 
-  logic [81:0] addr_hit;
+  logic [83:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == BKDR_LOADER_STATUS_OFFSET);
     addr_hit[ 1] = (reg_addr == BKDR_LOADER_CONTROL_OFFSET);
     addr_hit[ 2] = (reg_addr == BKDR_LOADER_NUM_BKDR_TARGETS_OFFSET);
     addr_hit[ 3] = (reg_addr == BKDR_LOADER_MISSION_MODE_SWITCH_DELAY_OFFSET);
-    addr_hit[ 4] = (reg_addr == BKDR_LOADER_USR_ACCESS_TIMESTAMP_OFFSET);
-    addr_hit[ 5] = (reg_addr == BKDR_LOADER_TARGET_INFO_0_OFFSET);
-    addr_hit[ 6] = (reg_addr == BKDR_LOADER_TARGET_INFO_1_OFFSET);
-    addr_hit[ 7] = (reg_addr == BKDR_LOADER_TARGET_INFO_2_OFFSET);
-    addr_hit[ 8] = (reg_addr == BKDR_LOADER_TARGET_INFO_3_OFFSET);
-    addr_hit[ 9] = (reg_addr == BKDR_LOADER_TARGET_INFO_4_OFFSET);
-    addr_hit[10] = (reg_addr == BKDR_LOADER_TARGET_INFO_5_OFFSET);
-    addr_hit[11] = (reg_addr == BKDR_LOADER_TARGET_INFO_6_OFFSET);
-    addr_hit[12] = (reg_addr == BKDR_LOADER_TARGET_INFO_7_OFFSET);
-    addr_hit[13] = (reg_addr == BKDR_LOADER_TARGET_INFO_8_OFFSET);
-    addr_hit[14] = (reg_addr == BKDR_LOADER_TARGET_INFO_9_OFFSET);
-    addr_hit[15] = (reg_addr == BKDR_LOADER_TARGET_INFO_10_OFFSET);
-    addr_hit[16] = (reg_addr == BKDR_LOADER_TARGET_INFO_11_OFFSET);
-    addr_hit[17] = (reg_addr == BKDR_LOADER_TARGET_INFO_12_OFFSET);
-    addr_hit[18] = (reg_addr == BKDR_LOADER_TARGET_INFO_13_OFFSET);
-    addr_hit[19] = (reg_addr == BKDR_LOADER_TARGET_INFO_14_OFFSET);
-    addr_hit[20] = (reg_addr == BKDR_LOADER_WIDTH_INFO_0_OFFSET);
-    addr_hit[21] = (reg_addr == BKDR_LOADER_WIDTH_INFO_1_OFFSET);
-    addr_hit[22] = (reg_addr == BKDR_LOADER_WIDTH_INFO_2_OFFSET);
-    addr_hit[23] = (reg_addr == BKDR_LOADER_WIDTH_INFO_3_OFFSET);
-    addr_hit[24] = (reg_addr == BKDR_LOADER_WIDTH_INFO_4_OFFSET);
-    addr_hit[25] = (reg_addr == BKDR_LOADER_WIDTH_INFO_5_OFFSET);
-    addr_hit[26] = (reg_addr == BKDR_LOADER_WIDTH_INFO_6_OFFSET);
-    addr_hit[27] = (reg_addr == BKDR_LOADER_WIDTH_INFO_7_OFFSET);
-    addr_hit[28] = (reg_addr == BKDR_LOADER_WIDTH_INFO_8_OFFSET);
-    addr_hit[29] = (reg_addr == BKDR_LOADER_WIDTH_INFO_9_OFFSET);
-    addr_hit[30] = (reg_addr == BKDR_LOADER_WIDTH_INFO_10_OFFSET);
-    addr_hit[31] = (reg_addr == BKDR_LOADER_WIDTH_INFO_11_OFFSET);
-    addr_hit[32] = (reg_addr == BKDR_LOADER_WIDTH_INFO_12_OFFSET);
-    addr_hit[33] = (reg_addr == BKDR_LOADER_WIDTH_INFO_13_OFFSET);
-    addr_hit[34] = (reg_addr == BKDR_LOADER_WIDTH_INFO_14_OFFSET);
-    addr_hit[35] = (reg_addr == BKDR_LOADER_DEPTH_INFO_0_OFFSET);
-    addr_hit[36] = (reg_addr == BKDR_LOADER_DEPTH_INFO_1_OFFSET);
-    addr_hit[37] = (reg_addr == BKDR_LOADER_DEPTH_INFO_2_OFFSET);
-    addr_hit[38] = (reg_addr == BKDR_LOADER_DEPTH_INFO_3_OFFSET);
-    addr_hit[39] = (reg_addr == BKDR_LOADER_DEPTH_INFO_4_OFFSET);
-    addr_hit[40] = (reg_addr == BKDR_LOADER_DEPTH_INFO_5_OFFSET);
-    addr_hit[41] = (reg_addr == BKDR_LOADER_DEPTH_INFO_6_OFFSET);
-    addr_hit[42] = (reg_addr == BKDR_LOADER_DEPTH_INFO_7_OFFSET);
-    addr_hit[43] = (reg_addr == BKDR_LOADER_DEPTH_INFO_8_OFFSET);
-    addr_hit[44] = (reg_addr == BKDR_LOADER_DEPTH_INFO_9_OFFSET);
-    addr_hit[45] = (reg_addr == BKDR_LOADER_DEPTH_INFO_10_OFFSET);
-    addr_hit[46] = (reg_addr == BKDR_LOADER_DEPTH_INFO_11_OFFSET);
-    addr_hit[47] = (reg_addr == BKDR_LOADER_DEPTH_INFO_12_OFFSET);
-    addr_hit[48] = (reg_addr == BKDR_LOADER_DEPTH_INFO_13_OFFSET);
-    addr_hit[49] = (reg_addr == BKDR_LOADER_DEPTH_INFO_14_OFFSET);
-    addr_hit[50] = (reg_addr == BKDR_LOADER_READ_DATA_0_OFFSET);
-    addr_hit[51] = (reg_addr == BKDR_LOADER_READ_DATA_1_OFFSET);
-    addr_hit[52] = (reg_addr == BKDR_LOADER_READ_DATA_2_OFFSET);
-    addr_hit[53] = (reg_addr == BKDR_LOADER_READ_DATA_3_OFFSET);
-    addr_hit[54] = (reg_addr == BKDR_LOADER_READ_DATA_4_OFFSET);
-    addr_hit[55] = (reg_addr == BKDR_LOADER_READ_DATA_5_OFFSET);
-    addr_hit[56] = (reg_addr == BKDR_LOADER_READ_DATA_6_OFFSET);
-    addr_hit[57] = (reg_addr == BKDR_LOADER_READ_DATA_7_OFFSET);
-    addr_hit[58] = (reg_addr == BKDR_LOADER_WRITE_DATA_0_OFFSET);
-    addr_hit[59] = (reg_addr == BKDR_LOADER_WRITE_DATA_1_OFFSET);
-    addr_hit[60] = (reg_addr == BKDR_LOADER_WRITE_DATA_2_OFFSET);
-    addr_hit[61] = (reg_addr == BKDR_LOADER_WRITE_DATA_3_OFFSET);
-    addr_hit[62] = (reg_addr == BKDR_LOADER_WRITE_DATA_4_OFFSET);
-    addr_hit[63] = (reg_addr == BKDR_LOADER_WRITE_DATA_5_OFFSET);
-    addr_hit[64] = (reg_addr == BKDR_LOADER_WRITE_DATA_6_OFFSET);
-    addr_hit[65] = (reg_addr == BKDR_LOADER_WRITE_DATA_7_OFFSET);
-    addr_hit[66] = (reg_addr == BKDR_LOADER_INDEX_OFFSET);
-    addr_hit[67] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_0_OFFSET);
-    addr_hit[68] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_1_OFFSET);
-    addr_hit[69] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_2_OFFSET);
-    addr_hit[70] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_3_OFFSET);
-    addr_hit[71] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_4_OFFSET);
-    addr_hit[72] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_5_OFFSET);
-    addr_hit[73] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_6_OFFSET);
-    addr_hit[74] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_7_OFFSET);
-    addr_hit[75] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_8_OFFSET);
-    addr_hit[76] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_9_OFFSET);
-    addr_hit[77] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_10_OFFSET);
-    addr_hit[78] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_11_OFFSET);
-    addr_hit[79] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_12_OFFSET);
-    addr_hit[80] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_13_OFFSET);
-    addr_hit[81] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_14_OFFSET);
+    addr_hit[ 4] = (reg_addr == BKDR_LOADER_CLEAR_INDEX_START_OFFSET);
+    addr_hit[ 5] = (reg_addr == BKDR_LOADER_CLEAR_INDEX_END_OFFSET);
+    addr_hit[ 6] = (reg_addr == BKDR_LOADER_USR_ACCESS_TIMESTAMP_OFFSET);
+    addr_hit[ 7] = (reg_addr == BKDR_LOADER_TARGET_INFO_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == BKDR_LOADER_TARGET_INFO_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == BKDR_LOADER_TARGET_INFO_2_OFFSET);
+    addr_hit[10] = (reg_addr == BKDR_LOADER_TARGET_INFO_3_OFFSET);
+    addr_hit[11] = (reg_addr == BKDR_LOADER_TARGET_INFO_4_OFFSET);
+    addr_hit[12] = (reg_addr == BKDR_LOADER_TARGET_INFO_5_OFFSET);
+    addr_hit[13] = (reg_addr == BKDR_LOADER_TARGET_INFO_6_OFFSET);
+    addr_hit[14] = (reg_addr == BKDR_LOADER_TARGET_INFO_7_OFFSET);
+    addr_hit[15] = (reg_addr == BKDR_LOADER_TARGET_INFO_8_OFFSET);
+    addr_hit[16] = (reg_addr == BKDR_LOADER_TARGET_INFO_9_OFFSET);
+    addr_hit[17] = (reg_addr == BKDR_LOADER_TARGET_INFO_10_OFFSET);
+    addr_hit[18] = (reg_addr == BKDR_LOADER_TARGET_INFO_11_OFFSET);
+    addr_hit[19] = (reg_addr == BKDR_LOADER_TARGET_INFO_12_OFFSET);
+    addr_hit[20] = (reg_addr == BKDR_LOADER_TARGET_INFO_13_OFFSET);
+    addr_hit[21] = (reg_addr == BKDR_LOADER_TARGET_INFO_14_OFFSET);
+    addr_hit[22] = (reg_addr == BKDR_LOADER_WIDTH_INFO_0_OFFSET);
+    addr_hit[23] = (reg_addr == BKDR_LOADER_WIDTH_INFO_1_OFFSET);
+    addr_hit[24] = (reg_addr == BKDR_LOADER_WIDTH_INFO_2_OFFSET);
+    addr_hit[25] = (reg_addr == BKDR_LOADER_WIDTH_INFO_3_OFFSET);
+    addr_hit[26] = (reg_addr == BKDR_LOADER_WIDTH_INFO_4_OFFSET);
+    addr_hit[27] = (reg_addr == BKDR_LOADER_WIDTH_INFO_5_OFFSET);
+    addr_hit[28] = (reg_addr == BKDR_LOADER_WIDTH_INFO_6_OFFSET);
+    addr_hit[29] = (reg_addr == BKDR_LOADER_WIDTH_INFO_7_OFFSET);
+    addr_hit[30] = (reg_addr == BKDR_LOADER_WIDTH_INFO_8_OFFSET);
+    addr_hit[31] = (reg_addr == BKDR_LOADER_WIDTH_INFO_9_OFFSET);
+    addr_hit[32] = (reg_addr == BKDR_LOADER_WIDTH_INFO_10_OFFSET);
+    addr_hit[33] = (reg_addr == BKDR_LOADER_WIDTH_INFO_11_OFFSET);
+    addr_hit[34] = (reg_addr == BKDR_LOADER_WIDTH_INFO_12_OFFSET);
+    addr_hit[35] = (reg_addr == BKDR_LOADER_WIDTH_INFO_13_OFFSET);
+    addr_hit[36] = (reg_addr == BKDR_LOADER_WIDTH_INFO_14_OFFSET);
+    addr_hit[37] = (reg_addr == BKDR_LOADER_DEPTH_INFO_0_OFFSET);
+    addr_hit[38] = (reg_addr == BKDR_LOADER_DEPTH_INFO_1_OFFSET);
+    addr_hit[39] = (reg_addr == BKDR_LOADER_DEPTH_INFO_2_OFFSET);
+    addr_hit[40] = (reg_addr == BKDR_LOADER_DEPTH_INFO_3_OFFSET);
+    addr_hit[41] = (reg_addr == BKDR_LOADER_DEPTH_INFO_4_OFFSET);
+    addr_hit[42] = (reg_addr == BKDR_LOADER_DEPTH_INFO_5_OFFSET);
+    addr_hit[43] = (reg_addr == BKDR_LOADER_DEPTH_INFO_6_OFFSET);
+    addr_hit[44] = (reg_addr == BKDR_LOADER_DEPTH_INFO_7_OFFSET);
+    addr_hit[45] = (reg_addr == BKDR_LOADER_DEPTH_INFO_8_OFFSET);
+    addr_hit[46] = (reg_addr == BKDR_LOADER_DEPTH_INFO_9_OFFSET);
+    addr_hit[47] = (reg_addr == BKDR_LOADER_DEPTH_INFO_10_OFFSET);
+    addr_hit[48] = (reg_addr == BKDR_LOADER_DEPTH_INFO_11_OFFSET);
+    addr_hit[49] = (reg_addr == BKDR_LOADER_DEPTH_INFO_12_OFFSET);
+    addr_hit[50] = (reg_addr == BKDR_LOADER_DEPTH_INFO_13_OFFSET);
+    addr_hit[51] = (reg_addr == BKDR_LOADER_DEPTH_INFO_14_OFFSET);
+    addr_hit[52] = (reg_addr == BKDR_LOADER_READ_DATA_0_OFFSET);
+    addr_hit[53] = (reg_addr == BKDR_LOADER_READ_DATA_1_OFFSET);
+    addr_hit[54] = (reg_addr == BKDR_LOADER_READ_DATA_2_OFFSET);
+    addr_hit[55] = (reg_addr == BKDR_LOADER_READ_DATA_3_OFFSET);
+    addr_hit[56] = (reg_addr == BKDR_LOADER_READ_DATA_4_OFFSET);
+    addr_hit[57] = (reg_addr == BKDR_LOADER_READ_DATA_5_OFFSET);
+    addr_hit[58] = (reg_addr == BKDR_LOADER_READ_DATA_6_OFFSET);
+    addr_hit[59] = (reg_addr == BKDR_LOADER_READ_DATA_7_OFFSET);
+    addr_hit[60] = (reg_addr == BKDR_LOADER_WRITE_DATA_0_OFFSET);
+    addr_hit[61] = (reg_addr == BKDR_LOADER_WRITE_DATA_1_OFFSET);
+    addr_hit[62] = (reg_addr == BKDR_LOADER_WRITE_DATA_2_OFFSET);
+    addr_hit[63] = (reg_addr == BKDR_LOADER_WRITE_DATA_3_OFFSET);
+    addr_hit[64] = (reg_addr == BKDR_LOADER_WRITE_DATA_4_OFFSET);
+    addr_hit[65] = (reg_addr == BKDR_LOADER_WRITE_DATA_5_OFFSET);
+    addr_hit[66] = (reg_addr == BKDR_LOADER_WRITE_DATA_6_OFFSET);
+    addr_hit[67] = (reg_addr == BKDR_LOADER_WRITE_DATA_7_OFFSET);
+    addr_hit[68] = (reg_addr == BKDR_LOADER_INDEX_OFFSET);
+    addr_hit[69] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_0_OFFSET);
+    addr_hit[70] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_1_OFFSET);
+    addr_hit[71] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_2_OFFSET);
+    addr_hit[72] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_3_OFFSET);
+    addr_hit[73] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_4_OFFSET);
+    addr_hit[74] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_5_OFFSET);
+    addr_hit[75] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_6_OFFSET);
+    addr_hit[76] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_7_OFFSET);
+    addr_hit[77] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_8_OFFSET);
+    addr_hit[78] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_9_OFFSET);
+    addr_hit[79] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_10_OFFSET);
+    addr_hit[80] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_11_OFFSET);
+    addr_hit[81] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_12_OFFSET);
+    addr_hit[82] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_13_OFFSET);
+    addr_hit[83] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_14_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2343,7 +2437,9 @@ module bkdr_loader_regs_reg_top (
                (addr_hit[78] & (|(BKDR_LOADER_REGS_PERMIT[78] & ~reg_be))) |
                (addr_hit[79] & (|(BKDR_LOADER_REGS_PERMIT[79] & ~reg_be))) |
                (addr_hit[80] & (|(BKDR_LOADER_REGS_PERMIT[80] & ~reg_be))) |
-               (addr_hit[81] & (|(BKDR_LOADER_REGS_PERMIT[81] & ~reg_be)))));
+               (addr_hit[81] & (|(BKDR_LOADER_REGS_PERMIT[81] & ~reg_be))) |
+               (addr_hit[82] & (|(BKDR_LOADER_REGS_PERMIT[82] & ~reg_be))) |
+               (addr_hit[83] & (|(BKDR_LOADER_REGS_PERMIT[83] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2356,152 +2452,160 @@ module bkdr_loader_regs_reg_top (
 
   assign control_clear_start_wd = reg_wdata[2];
 
-  assign control_auto_incr_wd = reg_wdata[3];
+  assign control_clear_segment_start_wd = reg_wdata[3];
+
+  assign control_auto_incr_wd = reg_wdata[4];
 
   assign control_target_idx_wd = reg_wdata[15:8];
   assign num_bkdr_targets_re = addr_hit[2] & reg_re & !reg_error;
   assign mission_mode_switch_delay_we = addr_hit[3] & reg_we & !reg_error;
 
   assign mission_mode_switch_delay_wd = reg_wdata[31:0];
-  assign usr_access_timestamp_re = addr_hit[4] & reg_re & !reg_error;
-  assign target_info_0_re = addr_hit[5] & reg_re & !reg_error;
-  assign target_info_1_re = addr_hit[6] & reg_re & !reg_error;
-  assign target_info_2_re = addr_hit[7] & reg_re & !reg_error;
-  assign target_info_3_re = addr_hit[8] & reg_re & !reg_error;
-  assign target_info_4_re = addr_hit[9] & reg_re & !reg_error;
-  assign target_info_5_re = addr_hit[10] & reg_re & !reg_error;
-  assign target_info_6_re = addr_hit[11] & reg_re & !reg_error;
-  assign target_info_7_re = addr_hit[12] & reg_re & !reg_error;
-  assign target_info_8_re = addr_hit[13] & reg_re & !reg_error;
-  assign target_info_9_re = addr_hit[14] & reg_re & !reg_error;
-  assign target_info_10_re = addr_hit[15] & reg_re & !reg_error;
-  assign target_info_11_re = addr_hit[16] & reg_re & !reg_error;
-  assign target_info_12_re = addr_hit[17] & reg_re & !reg_error;
-  assign target_info_13_re = addr_hit[18] & reg_re & !reg_error;
-  assign target_info_14_re = addr_hit[19] & reg_re & !reg_error;
-  assign width_info_0_re = addr_hit[20] & reg_re & !reg_error;
-  assign width_info_1_re = addr_hit[21] & reg_re & !reg_error;
-  assign width_info_2_re = addr_hit[22] & reg_re & !reg_error;
-  assign width_info_3_re = addr_hit[23] & reg_re & !reg_error;
-  assign width_info_4_re = addr_hit[24] & reg_re & !reg_error;
-  assign width_info_5_re = addr_hit[25] & reg_re & !reg_error;
-  assign width_info_6_re = addr_hit[26] & reg_re & !reg_error;
-  assign width_info_7_re = addr_hit[27] & reg_re & !reg_error;
-  assign width_info_8_re = addr_hit[28] & reg_re & !reg_error;
-  assign width_info_9_re = addr_hit[29] & reg_re & !reg_error;
-  assign width_info_10_re = addr_hit[30] & reg_re & !reg_error;
-  assign width_info_11_re = addr_hit[31] & reg_re & !reg_error;
-  assign width_info_12_re = addr_hit[32] & reg_re & !reg_error;
-  assign width_info_13_re = addr_hit[33] & reg_re & !reg_error;
-  assign width_info_14_re = addr_hit[34] & reg_re & !reg_error;
-  assign depth_info_0_re = addr_hit[35] & reg_re & !reg_error;
-  assign depth_info_1_re = addr_hit[36] & reg_re & !reg_error;
-  assign depth_info_2_re = addr_hit[37] & reg_re & !reg_error;
-  assign depth_info_3_re = addr_hit[38] & reg_re & !reg_error;
-  assign depth_info_4_re = addr_hit[39] & reg_re & !reg_error;
-  assign depth_info_5_re = addr_hit[40] & reg_re & !reg_error;
-  assign depth_info_6_re = addr_hit[41] & reg_re & !reg_error;
-  assign depth_info_7_re = addr_hit[42] & reg_re & !reg_error;
-  assign depth_info_8_re = addr_hit[43] & reg_re & !reg_error;
-  assign depth_info_9_re = addr_hit[44] & reg_re & !reg_error;
-  assign depth_info_10_re = addr_hit[45] & reg_re & !reg_error;
-  assign depth_info_11_re = addr_hit[46] & reg_re & !reg_error;
-  assign depth_info_12_re = addr_hit[47] & reg_re & !reg_error;
-  assign depth_info_13_re = addr_hit[48] & reg_re & !reg_error;
-  assign depth_info_14_re = addr_hit[49] & reg_re & !reg_error;
-  assign read_data_0_re = addr_hit[50] & reg_re & !reg_error;
-  assign read_data_1_re = addr_hit[51] & reg_re & !reg_error;
-  assign read_data_2_re = addr_hit[52] & reg_re & !reg_error;
-  assign read_data_3_re = addr_hit[53] & reg_re & !reg_error;
-  assign read_data_4_re = addr_hit[54] & reg_re & !reg_error;
-  assign read_data_5_re = addr_hit[55] & reg_re & !reg_error;
-  assign read_data_6_re = addr_hit[56] & reg_re & !reg_error;
-  assign read_data_7_re = addr_hit[57] & reg_re & !reg_error;
-  assign write_data_0_we = addr_hit[58] & reg_we & !reg_error;
+  assign clear_index_start_we = addr_hit[4] & reg_we & !reg_error;
+
+  assign clear_index_start_wd = reg_wdata[31:0];
+  assign clear_index_end_we = addr_hit[5] & reg_we & !reg_error;
+
+  assign clear_index_end_wd = reg_wdata[31:0];
+  assign usr_access_timestamp_re = addr_hit[6] & reg_re & !reg_error;
+  assign target_info_0_re = addr_hit[7] & reg_re & !reg_error;
+  assign target_info_1_re = addr_hit[8] & reg_re & !reg_error;
+  assign target_info_2_re = addr_hit[9] & reg_re & !reg_error;
+  assign target_info_3_re = addr_hit[10] & reg_re & !reg_error;
+  assign target_info_4_re = addr_hit[11] & reg_re & !reg_error;
+  assign target_info_5_re = addr_hit[12] & reg_re & !reg_error;
+  assign target_info_6_re = addr_hit[13] & reg_re & !reg_error;
+  assign target_info_7_re = addr_hit[14] & reg_re & !reg_error;
+  assign target_info_8_re = addr_hit[15] & reg_re & !reg_error;
+  assign target_info_9_re = addr_hit[16] & reg_re & !reg_error;
+  assign target_info_10_re = addr_hit[17] & reg_re & !reg_error;
+  assign target_info_11_re = addr_hit[18] & reg_re & !reg_error;
+  assign target_info_12_re = addr_hit[19] & reg_re & !reg_error;
+  assign target_info_13_re = addr_hit[20] & reg_re & !reg_error;
+  assign target_info_14_re = addr_hit[21] & reg_re & !reg_error;
+  assign width_info_0_re = addr_hit[22] & reg_re & !reg_error;
+  assign width_info_1_re = addr_hit[23] & reg_re & !reg_error;
+  assign width_info_2_re = addr_hit[24] & reg_re & !reg_error;
+  assign width_info_3_re = addr_hit[25] & reg_re & !reg_error;
+  assign width_info_4_re = addr_hit[26] & reg_re & !reg_error;
+  assign width_info_5_re = addr_hit[27] & reg_re & !reg_error;
+  assign width_info_6_re = addr_hit[28] & reg_re & !reg_error;
+  assign width_info_7_re = addr_hit[29] & reg_re & !reg_error;
+  assign width_info_8_re = addr_hit[30] & reg_re & !reg_error;
+  assign width_info_9_re = addr_hit[31] & reg_re & !reg_error;
+  assign width_info_10_re = addr_hit[32] & reg_re & !reg_error;
+  assign width_info_11_re = addr_hit[33] & reg_re & !reg_error;
+  assign width_info_12_re = addr_hit[34] & reg_re & !reg_error;
+  assign width_info_13_re = addr_hit[35] & reg_re & !reg_error;
+  assign width_info_14_re = addr_hit[36] & reg_re & !reg_error;
+  assign depth_info_0_re = addr_hit[37] & reg_re & !reg_error;
+  assign depth_info_1_re = addr_hit[38] & reg_re & !reg_error;
+  assign depth_info_2_re = addr_hit[39] & reg_re & !reg_error;
+  assign depth_info_3_re = addr_hit[40] & reg_re & !reg_error;
+  assign depth_info_4_re = addr_hit[41] & reg_re & !reg_error;
+  assign depth_info_5_re = addr_hit[42] & reg_re & !reg_error;
+  assign depth_info_6_re = addr_hit[43] & reg_re & !reg_error;
+  assign depth_info_7_re = addr_hit[44] & reg_re & !reg_error;
+  assign depth_info_8_re = addr_hit[45] & reg_re & !reg_error;
+  assign depth_info_9_re = addr_hit[46] & reg_re & !reg_error;
+  assign depth_info_10_re = addr_hit[47] & reg_re & !reg_error;
+  assign depth_info_11_re = addr_hit[48] & reg_re & !reg_error;
+  assign depth_info_12_re = addr_hit[49] & reg_re & !reg_error;
+  assign depth_info_13_re = addr_hit[50] & reg_re & !reg_error;
+  assign depth_info_14_re = addr_hit[51] & reg_re & !reg_error;
+  assign read_data_0_re = addr_hit[52] & reg_re & !reg_error;
+  assign read_data_1_re = addr_hit[53] & reg_re & !reg_error;
+  assign read_data_2_re = addr_hit[54] & reg_re & !reg_error;
+  assign read_data_3_re = addr_hit[55] & reg_re & !reg_error;
+  assign read_data_4_re = addr_hit[56] & reg_re & !reg_error;
+  assign read_data_5_re = addr_hit[57] & reg_re & !reg_error;
+  assign read_data_6_re = addr_hit[58] & reg_re & !reg_error;
+  assign read_data_7_re = addr_hit[59] & reg_re & !reg_error;
+  assign write_data_0_we = addr_hit[60] & reg_we & !reg_error;
 
   assign write_data_0_wd = reg_wdata[31:0];
-  assign write_data_1_we = addr_hit[59] & reg_we & !reg_error;
+  assign write_data_1_we = addr_hit[61] & reg_we & !reg_error;
 
   assign write_data_1_wd = reg_wdata[31:0];
-  assign write_data_2_we = addr_hit[60] & reg_we & !reg_error;
+  assign write_data_2_we = addr_hit[62] & reg_we & !reg_error;
 
   assign write_data_2_wd = reg_wdata[31:0];
-  assign write_data_3_we = addr_hit[61] & reg_we & !reg_error;
+  assign write_data_3_we = addr_hit[63] & reg_we & !reg_error;
 
   assign write_data_3_wd = reg_wdata[31:0];
-  assign write_data_4_we = addr_hit[62] & reg_we & !reg_error;
+  assign write_data_4_we = addr_hit[64] & reg_we & !reg_error;
 
   assign write_data_4_wd = reg_wdata[31:0];
-  assign write_data_5_we = addr_hit[63] & reg_we & !reg_error;
+  assign write_data_5_we = addr_hit[65] & reg_we & !reg_error;
 
   assign write_data_5_wd = reg_wdata[31:0];
-  assign write_data_6_we = addr_hit[64] & reg_we & !reg_error;
+  assign write_data_6_we = addr_hit[66] & reg_we & !reg_error;
 
   assign write_data_6_wd = reg_wdata[31:0];
-  assign write_data_7_we = addr_hit[65] & reg_we & !reg_error;
+  assign write_data_7_we = addr_hit[67] & reg_we & !reg_error;
 
   assign write_data_7_wd = reg_wdata[31:0];
-  assign index_we = addr_hit[66] & reg_we & !reg_error;
+  assign index_we = addr_hit[68] & reg_we & !reg_error;
 
   assign index_wd = reg_wdata[31:0];
-  assign hash_last_loaded_0_re = addr_hit[67] & reg_re & !reg_error;
-  assign hash_last_loaded_0_we = addr_hit[67] & reg_we & !reg_error;
+  assign hash_last_loaded_0_re = addr_hit[69] & reg_re & !reg_error;
+  assign hash_last_loaded_0_we = addr_hit[69] & reg_we & !reg_error;
 
   assign hash_last_loaded_0_wd = reg_wdata[31:0];
-  assign hash_last_loaded_1_re = addr_hit[68] & reg_re & !reg_error;
-  assign hash_last_loaded_1_we = addr_hit[68] & reg_we & !reg_error;
+  assign hash_last_loaded_1_re = addr_hit[70] & reg_re & !reg_error;
+  assign hash_last_loaded_1_we = addr_hit[70] & reg_we & !reg_error;
 
   assign hash_last_loaded_1_wd = reg_wdata[31:0];
-  assign hash_last_loaded_2_re = addr_hit[69] & reg_re & !reg_error;
-  assign hash_last_loaded_2_we = addr_hit[69] & reg_we & !reg_error;
+  assign hash_last_loaded_2_re = addr_hit[71] & reg_re & !reg_error;
+  assign hash_last_loaded_2_we = addr_hit[71] & reg_we & !reg_error;
 
   assign hash_last_loaded_2_wd = reg_wdata[31:0];
-  assign hash_last_loaded_3_re = addr_hit[70] & reg_re & !reg_error;
-  assign hash_last_loaded_3_we = addr_hit[70] & reg_we & !reg_error;
+  assign hash_last_loaded_3_re = addr_hit[72] & reg_re & !reg_error;
+  assign hash_last_loaded_3_we = addr_hit[72] & reg_we & !reg_error;
 
   assign hash_last_loaded_3_wd = reg_wdata[31:0];
-  assign hash_last_loaded_4_re = addr_hit[71] & reg_re & !reg_error;
-  assign hash_last_loaded_4_we = addr_hit[71] & reg_we & !reg_error;
+  assign hash_last_loaded_4_re = addr_hit[73] & reg_re & !reg_error;
+  assign hash_last_loaded_4_we = addr_hit[73] & reg_we & !reg_error;
 
   assign hash_last_loaded_4_wd = reg_wdata[31:0];
-  assign hash_last_loaded_5_re = addr_hit[72] & reg_re & !reg_error;
-  assign hash_last_loaded_5_we = addr_hit[72] & reg_we & !reg_error;
+  assign hash_last_loaded_5_re = addr_hit[74] & reg_re & !reg_error;
+  assign hash_last_loaded_5_we = addr_hit[74] & reg_we & !reg_error;
 
   assign hash_last_loaded_5_wd = reg_wdata[31:0];
-  assign hash_last_loaded_6_re = addr_hit[73] & reg_re & !reg_error;
-  assign hash_last_loaded_6_we = addr_hit[73] & reg_we & !reg_error;
+  assign hash_last_loaded_6_re = addr_hit[75] & reg_re & !reg_error;
+  assign hash_last_loaded_6_we = addr_hit[75] & reg_we & !reg_error;
 
   assign hash_last_loaded_6_wd = reg_wdata[31:0];
-  assign hash_last_loaded_7_re = addr_hit[74] & reg_re & !reg_error;
-  assign hash_last_loaded_7_we = addr_hit[74] & reg_we & !reg_error;
+  assign hash_last_loaded_7_re = addr_hit[76] & reg_re & !reg_error;
+  assign hash_last_loaded_7_we = addr_hit[76] & reg_we & !reg_error;
 
   assign hash_last_loaded_7_wd = reg_wdata[31:0];
-  assign hash_last_loaded_8_re = addr_hit[75] & reg_re & !reg_error;
-  assign hash_last_loaded_8_we = addr_hit[75] & reg_we & !reg_error;
+  assign hash_last_loaded_8_re = addr_hit[77] & reg_re & !reg_error;
+  assign hash_last_loaded_8_we = addr_hit[77] & reg_we & !reg_error;
 
   assign hash_last_loaded_8_wd = reg_wdata[31:0];
-  assign hash_last_loaded_9_re = addr_hit[76] & reg_re & !reg_error;
-  assign hash_last_loaded_9_we = addr_hit[76] & reg_we & !reg_error;
+  assign hash_last_loaded_9_re = addr_hit[78] & reg_re & !reg_error;
+  assign hash_last_loaded_9_we = addr_hit[78] & reg_we & !reg_error;
 
   assign hash_last_loaded_9_wd = reg_wdata[31:0];
-  assign hash_last_loaded_10_re = addr_hit[77] & reg_re & !reg_error;
-  assign hash_last_loaded_10_we = addr_hit[77] & reg_we & !reg_error;
+  assign hash_last_loaded_10_re = addr_hit[79] & reg_re & !reg_error;
+  assign hash_last_loaded_10_we = addr_hit[79] & reg_we & !reg_error;
 
   assign hash_last_loaded_10_wd = reg_wdata[31:0];
-  assign hash_last_loaded_11_re = addr_hit[78] & reg_re & !reg_error;
-  assign hash_last_loaded_11_we = addr_hit[78] & reg_we & !reg_error;
+  assign hash_last_loaded_11_re = addr_hit[80] & reg_re & !reg_error;
+  assign hash_last_loaded_11_we = addr_hit[80] & reg_we & !reg_error;
 
   assign hash_last_loaded_11_wd = reg_wdata[31:0];
-  assign hash_last_loaded_12_re = addr_hit[79] & reg_re & !reg_error;
-  assign hash_last_loaded_12_we = addr_hit[79] & reg_we & !reg_error;
+  assign hash_last_loaded_12_re = addr_hit[81] & reg_re & !reg_error;
+  assign hash_last_loaded_12_we = addr_hit[81] & reg_we & !reg_error;
 
   assign hash_last_loaded_12_wd = reg_wdata[31:0];
-  assign hash_last_loaded_13_re = addr_hit[80] & reg_re & !reg_error;
-  assign hash_last_loaded_13_we = addr_hit[80] & reg_we & !reg_error;
+  assign hash_last_loaded_13_re = addr_hit[82] & reg_re & !reg_error;
+  assign hash_last_loaded_13_we = addr_hit[82] & reg_we & !reg_error;
 
   assign hash_last_loaded_13_wd = reg_wdata[31:0];
-  assign hash_last_loaded_14_re = addr_hit[81] & reg_re & !reg_error;
-  assign hash_last_loaded_14_we = addr_hit[81] & reg_we & !reg_error;
+  assign hash_last_loaded_14_re = addr_hit[83] & reg_re & !reg_error;
+  assign hash_last_loaded_14_we = addr_hit[83] & reg_we & !reg_error;
 
   assign hash_last_loaded_14_wd = reg_wdata[31:0];
 
@@ -2511,8 +2615,8 @@ module bkdr_loader_regs_reg_top (
     reg_we_check[1] = control_we;
     reg_we_check[2] = 1'b0;
     reg_we_check[3] = mission_mode_switch_delay_we;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = 1'b0;
+    reg_we_check[4] = clear_index_start_we;
+    reg_we_check[5] = clear_index_end_we;
     reg_we_check[6] = 1'b0;
     reg_we_check[7] = 1'b0;
     reg_we_check[8] = 1'b0;
@@ -2565,30 +2669,32 @@ module bkdr_loader_regs_reg_top (
     reg_we_check[55] = 1'b0;
     reg_we_check[56] = 1'b0;
     reg_we_check[57] = 1'b0;
-    reg_we_check[58] = write_data_0_we;
-    reg_we_check[59] = write_data_1_we;
-    reg_we_check[60] = write_data_2_we;
-    reg_we_check[61] = write_data_3_we;
-    reg_we_check[62] = write_data_4_we;
-    reg_we_check[63] = write_data_5_we;
-    reg_we_check[64] = write_data_6_we;
-    reg_we_check[65] = write_data_7_we;
-    reg_we_check[66] = index_we;
-    reg_we_check[67] = hash_last_loaded_0_we;
-    reg_we_check[68] = hash_last_loaded_1_we;
-    reg_we_check[69] = hash_last_loaded_2_we;
-    reg_we_check[70] = hash_last_loaded_3_we;
-    reg_we_check[71] = hash_last_loaded_4_we;
-    reg_we_check[72] = hash_last_loaded_5_we;
-    reg_we_check[73] = hash_last_loaded_6_we;
-    reg_we_check[74] = hash_last_loaded_7_we;
-    reg_we_check[75] = hash_last_loaded_8_we;
-    reg_we_check[76] = hash_last_loaded_9_we;
-    reg_we_check[77] = hash_last_loaded_10_we;
-    reg_we_check[78] = hash_last_loaded_11_we;
-    reg_we_check[79] = hash_last_loaded_12_we;
-    reg_we_check[80] = hash_last_loaded_13_we;
-    reg_we_check[81] = hash_last_loaded_14_we;
+    reg_we_check[58] = 1'b0;
+    reg_we_check[59] = 1'b0;
+    reg_we_check[60] = write_data_0_we;
+    reg_we_check[61] = write_data_1_we;
+    reg_we_check[62] = write_data_2_we;
+    reg_we_check[63] = write_data_3_we;
+    reg_we_check[64] = write_data_4_we;
+    reg_we_check[65] = write_data_5_we;
+    reg_we_check[66] = write_data_6_we;
+    reg_we_check[67] = write_data_7_we;
+    reg_we_check[68] = index_we;
+    reg_we_check[69] = hash_last_loaded_0_we;
+    reg_we_check[70] = hash_last_loaded_1_we;
+    reg_we_check[71] = hash_last_loaded_2_we;
+    reg_we_check[72] = hash_last_loaded_3_we;
+    reg_we_check[73] = hash_last_loaded_4_we;
+    reg_we_check[74] = hash_last_loaded_5_we;
+    reg_we_check[75] = hash_last_loaded_6_we;
+    reg_we_check[76] = hash_last_loaded_7_we;
+    reg_we_check[77] = hash_last_loaded_8_we;
+    reg_we_check[78] = hash_last_loaded_9_we;
+    reg_we_check[79] = hash_last_loaded_10_we;
+    reg_we_check[80] = hash_last_loaded_11_we;
+    reg_we_check[81] = hash_last_loaded_12_we;
+    reg_we_check[82] = hash_last_loaded_13_we;
+    reg_we_check[83] = hash_last_loaded_14_we;
   end
 
   // Read data return
@@ -2604,7 +2710,8 @@ module bkdr_loader_regs_reg_top (
         reg_rdata_next[0] = control_done_qs;
         reg_rdata_next[1] = control_write_ena_qs;
         reg_rdata_next[2] = control_clear_start_qs;
-        reg_rdata_next[3] = control_auto_incr_qs;
+        reg_rdata_next[3] = control_clear_segment_start_qs;
+        reg_rdata_next[4] = control_auto_incr_qs;
         reg_rdata_next[15:8] = control_target_idx_qs;
       end
 
@@ -2617,314 +2724,322 @@ module bkdr_loader_regs_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[31:0] = usr_access_timestamp_qs;
+        reg_rdata_next[31:0] = clear_index_start_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[31:0] = target_info_0_qs;
+        reg_rdata_next[31:0] = clear_index_end_qs;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = target_info_1_qs;
+        reg_rdata_next[31:0] = usr_access_timestamp_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = target_info_2_qs;
+        reg_rdata_next[31:0] = target_info_0_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[31:0] = target_info_3_qs;
+        reg_rdata_next[31:0] = target_info_1_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[31:0] = target_info_4_qs;
+        reg_rdata_next[31:0] = target_info_2_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[31:0] = target_info_5_qs;
+        reg_rdata_next[31:0] = target_info_3_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[31:0] = target_info_6_qs;
+        reg_rdata_next[31:0] = target_info_4_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = target_info_7_qs;
+        reg_rdata_next[31:0] = target_info_5_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[31:0] = target_info_8_qs;
+        reg_rdata_next[31:0] = target_info_6_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[31:0] = target_info_9_qs;
+        reg_rdata_next[31:0] = target_info_7_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = target_info_10_qs;
+        reg_rdata_next[31:0] = target_info_8_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[31:0] = target_info_11_qs;
+        reg_rdata_next[31:0] = target_info_9_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = target_info_12_qs;
+        reg_rdata_next[31:0] = target_info_10_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = target_info_13_qs;
+        reg_rdata_next[31:0] = target_info_11_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = target_info_14_qs;
+        reg_rdata_next[31:0] = target_info_12_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = width_info_0_qs;
+        reg_rdata_next[31:0] = target_info_13_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[31:0] = width_info_1_qs;
+        reg_rdata_next[31:0] = target_info_14_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = width_info_2_qs;
+        reg_rdata_next[31:0] = width_info_0_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = width_info_3_qs;
+        reg_rdata_next[31:0] = width_info_1_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = width_info_4_qs;
+        reg_rdata_next[31:0] = width_info_2_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = width_info_5_qs;
+        reg_rdata_next[31:0] = width_info_3_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = width_info_6_qs;
+        reg_rdata_next[31:0] = width_info_4_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = width_info_7_qs;
+        reg_rdata_next[31:0] = width_info_5_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = width_info_8_qs;
+        reg_rdata_next[31:0] = width_info_6_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = width_info_9_qs;
+        reg_rdata_next[31:0] = width_info_7_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[31:0] = width_info_10_qs;
+        reg_rdata_next[31:0] = width_info_8_qs;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = width_info_11_qs;
+        reg_rdata_next[31:0] = width_info_9_qs;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[31:0] = width_info_12_qs;
+        reg_rdata_next[31:0] = width_info_10_qs;
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[31:0] = width_info_13_qs;
+        reg_rdata_next[31:0] = width_info_11_qs;
       end
 
       addr_hit[34]: begin
-        reg_rdata_next[31:0] = width_info_14_qs;
+        reg_rdata_next[31:0] = width_info_12_qs;
       end
 
       addr_hit[35]: begin
-        reg_rdata_next[31:0] = depth_info_0_qs;
+        reg_rdata_next[31:0] = width_info_13_qs;
       end
 
       addr_hit[36]: begin
-        reg_rdata_next[31:0] = depth_info_1_qs;
+        reg_rdata_next[31:0] = width_info_14_qs;
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[31:0] = depth_info_2_qs;
+        reg_rdata_next[31:0] = depth_info_0_qs;
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[31:0] = depth_info_3_qs;
+        reg_rdata_next[31:0] = depth_info_1_qs;
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[31:0] = depth_info_4_qs;
+        reg_rdata_next[31:0] = depth_info_2_qs;
       end
 
       addr_hit[40]: begin
-        reg_rdata_next[31:0] = depth_info_5_qs;
+        reg_rdata_next[31:0] = depth_info_3_qs;
       end
 
       addr_hit[41]: begin
-        reg_rdata_next[31:0] = depth_info_6_qs;
+        reg_rdata_next[31:0] = depth_info_4_qs;
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[31:0] = depth_info_7_qs;
+        reg_rdata_next[31:0] = depth_info_5_qs;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[31:0] = depth_info_8_qs;
+        reg_rdata_next[31:0] = depth_info_6_qs;
       end
 
       addr_hit[44]: begin
-        reg_rdata_next[31:0] = depth_info_9_qs;
+        reg_rdata_next[31:0] = depth_info_7_qs;
       end
 
       addr_hit[45]: begin
-        reg_rdata_next[31:0] = depth_info_10_qs;
+        reg_rdata_next[31:0] = depth_info_8_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[31:0] = depth_info_11_qs;
+        reg_rdata_next[31:0] = depth_info_9_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[31:0] = depth_info_12_qs;
+        reg_rdata_next[31:0] = depth_info_10_qs;
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = depth_info_13_qs;
+        reg_rdata_next[31:0] = depth_info_11_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = depth_info_14_qs;
+        reg_rdata_next[31:0] = depth_info_12_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[31:0] = read_data_0_qs;
+        reg_rdata_next[31:0] = depth_info_13_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[31:0] = read_data_1_qs;
+        reg_rdata_next[31:0] = depth_info_14_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = read_data_2_qs;
+        reg_rdata_next[31:0] = read_data_0_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = read_data_3_qs;
+        reg_rdata_next[31:0] = read_data_1_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[31:0] = read_data_4_qs;
+        reg_rdata_next[31:0] = read_data_2_qs;
       end
 
       addr_hit[55]: begin
-        reg_rdata_next[31:0] = read_data_5_qs;
+        reg_rdata_next[31:0] = read_data_3_qs;
       end
 
       addr_hit[56]: begin
-        reg_rdata_next[31:0] = read_data_6_qs;
+        reg_rdata_next[31:0] = read_data_4_qs;
       end
 
       addr_hit[57]: begin
-        reg_rdata_next[31:0] = read_data_7_qs;
+        reg_rdata_next[31:0] = read_data_5_qs;
       end
 
       addr_hit[58]: begin
-        reg_rdata_next[31:0] = write_data_0_qs;
+        reg_rdata_next[31:0] = read_data_6_qs;
       end
 
       addr_hit[59]: begin
-        reg_rdata_next[31:0] = write_data_1_qs;
+        reg_rdata_next[31:0] = read_data_7_qs;
       end
 
       addr_hit[60]: begin
-        reg_rdata_next[31:0] = write_data_2_qs;
+        reg_rdata_next[31:0] = write_data_0_qs;
       end
 
       addr_hit[61]: begin
-        reg_rdata_next[31:0] = write_data_3_qs;
+        reg_rdata_next[31:0] = write_data_1_qs;
       end
 
       addr_hit[62]: begin
-        reg_rdata_next[31:0] = write_data_4_qs;
+        reg_rdata_next[31:0] = write_data_2_qs;
       end
 
       addr_hit[63]: begin
-        reg_rdata_next[31:0] = write_data_5_qs;
+        reg_rdata_next[31:0] = write_data_3_qs;
       end
 
       addr_hit[64]: begin
-        reg_rdata_next[31:0] = write_data_6_qs;
+        reg_rdata_next[31:0] = write_data_4_qs;
       end
 
       addr_hit[65]: begin
-        reg_rdata_next[31:0] = write_data_7_qs;
+        reg_rdata_next[31:0] = write_data_5_qs;
       end
 
       addr_hit[66]: begin
-        reg_rdata_next[31:0] = index_qs;
+        reg_rdata_next[31:0] = write_data_6_qs;
       end
 
       addr_hit[67]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_0_qs;
+        reg_rdata_next[31:0] = write_data_7_qs;
       end
 
       addr_hit[68]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_1_qs;
+        reg_rdata_next[31:0] = index_qs;
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_2_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_0_qs;
       end
 
       addr_hit[70]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_3_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_1_qs;
       end
 
       addr_hit[71]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_4_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_2_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_5_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_3_qs;
       end
 
       addr_hit[73]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_6_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_4_qs;
       end
 
       addr_hit[74]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_7_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_5_qs;
       end
 
       addr_hit[75]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_8_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_6_qs;
       end
 
       addr_hit[76]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_9_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_7_qs;
       end
 
       addr_hit[77]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_10_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_8_qs;
       end
 
       addr_hit[78]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_11_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_9_qs;
       end
 
       addr_hit[79]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_12_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_10_qs;
       end
 
       addr_hit[80]: begin
-        reg_rdata_next[31:0] = hash_last_loaded_13_qs;
+        reg_rdata_next[31:0] = hash_last_loaded_11_qs;
       end
 
       addr_hit[81]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_12_qs;
+      end
+
+      addr_hit[82]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_13_qs;
+      end
+
+      addr_hit[83]: begin
         reg_rdata_next[31:0] = hash_last_loaded_14_qs;
       end
 
