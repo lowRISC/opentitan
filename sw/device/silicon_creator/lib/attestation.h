@@ -29,6 +29,8 @@ enum {
  */
 enum {
   kAttestationKeyGenVersion0 = 0,
+  // v1 has ML-DSA attestation seeds populated in the page
+  kAttestationKeyGenVersion1 = 1,
 };
 
 #ifdef __cplusplus
