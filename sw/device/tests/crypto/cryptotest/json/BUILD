@@ -18,6 +18,7 @@ cc_library(
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
+        ":mldsa_commands",
         ":rsa_commands",
         ":x25519_commands",
         "//sw/device/lib/ujson",
@@ -85,6 +86,13 @@ cc_library(
     name = "kmac_commands",
     srcs = ["kmac_commands.c"],
     hdrs = ["kmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "mldsa_commands",
+    srcs = ["mldsa_commands.c"],
+    hdrs = ["mldsa_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

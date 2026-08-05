@@ -58,6 +58,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "mldsa_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:mldsa_commands"],
+)
+
+ujson_rust(
     name = "rsa_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:rsa_commands"],
 )
@@ -91,6 +96,7 @@ rust_library(
         "src/hmac_commands.rs",
         "src/kmac_commands.rs",
         "src/lib.rs",
+        "src/mldsa_commands.rs",
         "src/rsa_commands.rs",
         "src/sha_commands.rs",
         "src/sphincsplus_commands.rs",
@@ -107,6 +113,7 @@ rust_library(
         ":hash_commands_rust",
         ":hmac_commands_rust",
         ":kmac_commands_rust",
+        ":mldsa_commands_rust",
         ":rsa_commands_rust",
         ":sha_commands_rust",
         ":sphincsplus_commands_rust",
@@ -123,6 +130,7 @@ rust_library(
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
         "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
+        "mldsa_commands_loc": "$(execpath :mldsa_commands_rust)",
         "rsa_commands_loc": "$(execpath :rsa_commands_rust)",
         "sha_commands_loc": "$(execpath :sha_commands_rust)",
         "sphincsplus_commands_loc": "$(execpath :sphincsplus_commands_rust)",

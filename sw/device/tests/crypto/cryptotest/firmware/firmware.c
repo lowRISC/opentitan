@@ -38,6 +38,7 @@
 #include "hash.h"
 #include "hmac.h"
 #include "kmac.h"
+#include "mldsa.h"
 #include "rsa.h"
 #include "sha.h"
 #include "sphincsplus.h"
@@ -78,6 +79,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
+        break;
+      case kCryptotestCommandMldsa:
+        RESP_ERR(uj, handle_mldsa(uj));
         break;
       case kCryptotestCommandQuit:
         return OK_STATUS(0);
