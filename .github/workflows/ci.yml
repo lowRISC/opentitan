@@ -364,6 +364,26 @@ jobs:
         with:
           artifact-name: verilator_earlgrey-test-results
 
+  verilator_eg_sanity:
+    name: Earl Grey Sanity Check (FPGA Gate)
+    runs-on: ubuntu-22.04
+    needs: quick_lint
+    if: ${{ github.event_name != 'merge_group' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Run Verilator test
+        run: ./ci/scripts/run-verilator-tests.sh --sanity
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: verilator_eg_sanity-test-results
+
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
     needs: [quick_lint, gate]
@@ -456,6 +476,9 @@ jobs:
       - schedule_fpga_jobs
       - quick_lint
       - chip_earlgrey_cw340
+      # Don't run any FPGA jobs if we can't even pass a basic sanity test in Verilator,
+      # even if the quick lint passes and the bitstream builds.
+      - verilator_eg_sanity
       - gate
     strategy:
       fail-fast: false
