@@ -1591,7 +1591,8 @@ module i3c_core
   // - CE[3:0] (Table 44), DBR, TE[6:0] (Table 43).
   i3c_counters #(
     .Counters(12),
-    .CntW(4)
+    .CntW(4),
+    .EdgeTrig(12'b0000_1_0000001)
   ) u_error_cnts (
     // Clock and reset.
     .clk_i   (clk_i),
@@ -1660,10 +1661,7 @@ module i3c_core
   );
 
   // General Host Controller interrupts.
-  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .EdgeTrig('0)) u_hc_intr (  // TODO: Set interrupt types.
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-
+  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .Event('1)) u_hc_intr (  // TODO: Check interrupt types.
     .event_i    (hc_interrupts),
 
     .status_en_i({reg2hw_i.intr_status_enable.sched_cmd_missed_tick_stat_en.q,
@@ -1681,6 +1679,7 @@ module i3c_core
                   hw2reg_o.intr_status.hc_warn_cmd_seq_stall_stat.d,
                   hw2reg_o.intr_status.hc_seq_cancel_stat.d,
                   hw2reg_o.intr_status.hc_internal_err_stat.d}),
+    // These are all Event-type interrupts, so forcing just requires a pulse.
     .force_i    ({reg2hw_i.intr_force.sched_cmd_missed_tick_force.qe &
                   reg2hw_i.intr_force.sched_cmd_missed_tick_force.q,
                   reg2hw_i.intr_force.hc_err_cmd_seq_timeout_force.qe &
@@ -1706,11 +1705,8 @@ module i3c_core
   );
 
   // PIO interrupts.
-  // TODO: Set interrupt types.
-  i3c_intr #(.Width($bits(i3c_pio_intr_t)), .EdgeTrig('0)) u_pio_intr (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-
+  // TODO: Check interrupt types.
+  i3c_intr #(.Width($bits(i3c_pio_intr_t)), .Event(7'b11_00000)) u_pio_intr (
     .event_i    (pio_interrupts),
 
     .status_en_i({reg2hw_i.pio_intr_status_enable.transfer_err_stat_en.q,
@@ -1734,17 +1730,14 @@ module i3c_core
                   hw2reg_o.pio_intr_status.ibi_status_thld_stat.d,
                   hw2reg_o.pio_intr_status.rx_thld_stat.d,
                   hw2reg_o.pio_intr_status.tx_thld_stat.d}),
-    .force_i    ({reg2hw_i.pio_intr_force.transfer_err_force.qe &
+    .force_i    ({reg2hw_i.pio_intr_force.transfer_err_force.qe &  // Event type; generate a pulse.
                   reg2hw_i.pio_intr_force.transfer_err_force.q,
-                  reg2hw_i.pio_intr_force.transfer_abort_force.qe &
+                  reg2hw_i.pio_intr_force.transfer_abort_force.qe &  // Event type; pulse.
                   reg2hw_i.pio_intr_force.transfer_abort_force.q,
-                  reg2hw_i.pio_intr_force.resp_ready_force.qe &
+                  // The remainder are level-sensitive, so the force is continuous until removed.
                   reg2hw_i.pio_intr_force.resp_ready_force.q,
-                  reg2hw_i.pio_intr_force.cmd_queue_ready_force.qe &
                   reg2hw_i.pio_intr_force.cmd_queue_ready_force.q,
-                  reg2hw_i.pio_intr_force.ibi_thld_force.qe &
                   reg2hw_i.pio_intr_force.ibi_thld_force.q,
-                  reg2hw_i.pio_intr_force.rx_thld_force.qe &
                   reg2hw_i.pio_intr_force.rx_thld_force.q,
                   reg2hw_i.pio_intr_force.tx_thld_force.q}),
     .status_i   ({reg2hw_i.pio_intr_status.transfer_err_stat.q,
@@ -1766,11 +1759,8 @@ module i3c_core
   );
 
   // Secondary Controller interrupts.
-  // TODO: Set interrupt types.
-  i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .EdgeTrig('0)) u_stby_cr_intr (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-
+  // TODO: Check interrupt types.
+  i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .Event('1)) u_stby_cr_intr (
     .event_i    (stby_cr_interrupts),
 
     .status_en_i('1),  // No INTR_STATUS_ENABLE for these interrupts.
@@ -1800,6 +1790,7 @@ module i3c_core
                   hw2reg_o.stby_cr_intr_status.acr_handoff_err_fail_stat.d,
                   hw2reg_o.stby_cr_intr_status.acr_handoff_ok_primed_stat.d,
                   hw2reg_o.stby_cr_intr_status.acr_handoff_ok_remain_stat.d}),
+    // These are all Event-type interrupts, so forcing just requires a pulse.
     .force_i    ({reg2hw_i.stby_cr_intr_force.ccc_fatal_rstdaa_err_force.qe &
                   reg2hw_i.stby_cr_intr_force.ccc_fatal_rstdaa_err_force.q,
                   reg2hw_i.stby_cr_intr_force.ccc_unhandled_nack_force.qe &
@@ -1850,11 +1841,8 @@ module i3c_core
   );
 
   // Target-side interrupts; these are additional to those of the Standby Controller.
-  // TODO: Set interrupt types.
-  i3c_intr #(.Width($bits(i3c_targ_intr_t)), .EdgeTrig('0)) u_targ_intr (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-
+  // TODO: Check interrupt types.
+  i3c_intr #(.Width($bits(i3c_targ_intr_t)), .Event('0)) u_targ_intr (
     .event_i    (targ_interrupts),
 
     .status_en_i({reg2hw_i.targ_intr_status_enable.te_stat_en.q,
@@ -1905,37 +1893,22 @@ module i3c_core
                   hw2reg_o.targ_intr_status.async_evt_ready_stat.d,
                   hw2reg_o.targ_intr_status.ibi_status_thld_stat.d,
                   hw2reg_o.targ_intr_status.rx_desc_ready_stat.d}),
-    .force_i    ({reg2hw_i.targ_intr_force.te_force.qe &
-                  reg2hw_i.targ_intr_force.te_force.q,
-                  reg2hw_i.targ_intr_force.tx3_desc_ready_force.qe &
+    // These are all Status-type (level-sensitive), so the force is continuous until removed.
+    .force_i    ({reg2hw_i.targ_intr_force.te_force.q,
                   reg2hw_i.targ_intr_force.tx3_desc_ready_force.q,
-                  reg2hw_i.targ_intr_force.tx2_desc_ready_force.qe &
                   reg2hw_i.targ_intr_force.tx2_desc_ready_force.q,
-                  reg2hw_i.targ_intr_force.tx1_desc_ready_force.qe &
                   reg2hw_i.targ_intr_force.tx1_desc_ready_force.q,
-                  reg2hw_i.targ_intr_force.tx0_desc_ready_force.qe &
                   reg2hw_i.targ_intr_force.tx0_desc_ready_force.q,
-                  reg2hw_i.targ_intr_force.tx3_thld_force.qe &
                   reg2hw_i.targ_intr_force.tx3_thld_force.q,
-                  reg2hw_i.targ_intr_force.tx2_thld_force.qe &
                   reg2hw_i.targ_intr_force.tx2_thld_force.q,
-                  reg2hw_i.targ_intr_force.tx1_thld_force.qe &
                   reg2hw_i.targ_intr_force.tx1_thld_force.q,
-                  reg2hw_i.targ_intr_force.tx0_thld_force.qe &
                   reg2hw_i.targ_intr_force.tx0_thld_force.q,
-                  reg2hw_i.targ_intr_force.async_evt_ovf_force.qe &
                   reg2hw_i.targ_intr_force.async_evt_ovf_force.q,
-                  reg2hw_i.targ_intr_force.rx_buffer_ovf_force.qe &
                   reg2hw_i.targ_intr_force.rx_buffer_ovf_force.q,
-                  reg2hw_i.targ_intr_force.transfer_err_force.qe &
                   reg2hw_i.targ_intr_force.transfer_err_force.q,
-                  reg2hw_i.targ_intr_force.transfer_abort_force.qe &
                   reg2hw_i.targ_intr_force.transfer_abort_force.q,
-                  reg2hw_i.targ_intr_force.async_evt_ready_force.qe &
                   reg2hw_i.targ_intr_force.async_evt_ready_force.q,
-                  reg2hw_i.targ_intr_force.ibi_thld_force.qe &
                   reg2hw_i.targ_intr_force.ibi_thld_force.q,
-                  reg2hw_i.targ_intr_force.rx_desc_ready_force.qe &
                   reg2hw_i.targ_intr_force.rx_desc_ready_force.q}),
     .status_i   ({reg2hw_i.targ_intr_status.te_stat.q,
                   reg2hw_i.targ_intr_status.tx3_desc_ready_stat.q,

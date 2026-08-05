@@ -2024,7 +2024,7 @@ PIO Interrupt Status.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TX_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "RX_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "CMD_QUEUE_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "RESP_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 3}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "TX_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_QUEUE_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RESP_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 3}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                      |
@@ -2033,11 +2033,11 @@ PIO Interrupt Status.
 |   9    |  rw1c  |   0x0   | TRANSFER_ERR_STAT    | Transfer Error Status.           |
 |  8:6   |        |         |                      | Reserved                         |
 |   5    |  rw1c  |   0x0   | TRANSFER_ABORT_STAT  | Transfer Abort Status.           |
-|   4    |  rw1c  |   0x0   | RESP_READY_STAT      | Response Ready Status.           |
-|   3    |  rw1c  |   0x0   | CMD_QUEUE_READY_STAT | Command Queue Ready Status.      |
-|   2    |  rw1c  |   0x0   | IBI_STATUS_THLD_STAT | IBI Status Threshold Status.     |
-|   1    |  rw1c  |   0x0   | RX_THLD_STAT         | Rx Data Buffer Threshold Status. |
-|   0    |  rw1c  |   0x0   | TX_THLD_STAT         | Tx Data Buffer Threshold Status. |
+|   4    |   ro   |   0x0   | RESP_READY_STAT      | Response Ready Status.           |
+|   3    |   ro   |   0x0   | CMD_QUEUE_READY_STAT | Command Queue Ready Status.      |
+|   2    |   ro   |   0x0   | IBI_STATUS_THLD_STAT | IBI Status Threshold Status.     |
+|   1    |   ro   |   0x0   | RX_THLD_STAT         | Rx Data Buffer Threshold Status. |
+|   0    |   ro   |   0x0   | TX_THLD_STAT         | Tx Data Buffer Threshold Status. |
 
 ## PIO_INTR_STATUS_ENABLE
 PIO Interrupt Status Enable.
@@ -2739,30 +2739,30 @@ Target Interrupt Status.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["rw1c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                              |
 |:------:|:------:|:-------:|:---------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |  rw1c  |   0x0   | TE_STAT              | Target Error Status.                                                                                                                                                     |
+|   31   |   ro   |   0x0   | TE_STAT              | Target Error Status.                                                                                                                                                     |
 | 30:20  |        |         |                      | Reserved                                                                                                                                                                 |
-|   19   |  rw1c  |   0x0   | TX3_DESC_READY_STAT  | Target 3 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
-|   18   |  rw1c  |   0x0   | TX2_DESC_READY_STAT  | Target 2 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
-|   17   |  rw1c  |   0x0   | TX1_DESC_READY_STAT  | Target 1 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
-|   16   |  rw1c  |   0x0   | TX0_DESC_READY_STAT  | Target 0 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
+|   19   |   ro   |   0x0   | TX3_DESC_READY_STAT  | Target 3 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
+|   18   |   ro   |   0x0   | TX2_DESC_READY_STAT  | Target 2 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
+|   17   |   ro   |   0x0   | TX1_DESC_READY_STAT  | Target 1 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
+|   16   |   ro   |   0x0   | TX0_DESC_READY_STAT  | Target 0 Tx Descriptor Queue Ready Status. Asserted when the Tx Descriptor Queue has at least the requested amount of space, see `TARG_TX_THLD_CTRL.TX_DESC_EMPTY_THLD`. |
 | 15:12  |        |         |                      | Reserved                                                                                                                                                                 |
-|   11   |  rw1c  |   0x0   | TX3_THLD_STAT        | Target 3 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
-|   10   |  rw1c  |   0x0   | TX2_THLD_STAT        | Target 2 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
-|   9    |  rw1c  |   0x0   | TX1_THLD_STAT        | Target 1 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
-|   8    |  rw1c  |   0x0   | TX0_THLD_STAT        | Target 0 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
+|   11   |   ro   |   0x0   | TX3_THLD_STAT        | Target 3 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
+|   10   |   ro   |   0x0   | TX2_THLD_STAT        | Target 2 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
+|   9    |   ro   |   0x0   | TX1_THLD_STAT        | Target 1 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
+|   8    |   ro   |   0x0   | TX0_THLD_STAT        | Target 0 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
 |   7    |        |         |                      | Reserved                                                                                                                                                                 |
-|   6    |  rw1c  |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
-|   5    |  rw1c  |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
-|   4    |  rw1c  |   0x0   | TRANSFER_ERR_STAT    | Transfer Error Status.                                                                                                                                                   |
-|   3    |  rw1c  |   0x0   | TRANSFER_ABORT_STAT  | Transfer Abort Status.                                                                                                                                                   |
-|   2    |  rw1c  |   0x0   | ASYNC_EVT_READY_STAT | Asynchronous Event Queue Ready Status.                                                                                                                                   |
-|   1    |  rw1c  |   0x0   | IBI_STATUS_THLD_STAT | IBI Status Threshold Status.                                                                                                                                             |
-|   0    |  rw1c  |   0x0   | RX_DESC_READY_STAT   | Rx Descriptor Queue Ready Status.                                                                                                                                        |
+|   6    |   ro   |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
+|   5    |   ro   |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
+|   4    |   ro   |   0x0   | TRANSFER_ERR_STAT    | Transfer Error Status.                                                                                                                                                   |
+|   3    |   ro   |   0x0   | TRANSFER_ABORT_STAT  | Transfer Abort Status.                                                                                                                                                   |
+|   2    |   ro   |   0x0   | ASYNC_EVT_READY_STAT | Asynchronous Event Queue Ready Status.                                                                                                                                   |
+|   1    |   ro   |   0x0   | IBI_STATUS_THLD_STAT | IBI Status Threshold Status.                                                                                                                                             |
+|   0    |   ro   |   0x0   | RX_DESC_READY_STAT   | Rx Descriptor Queue Ready Status.                                                                                                                                        |
 
 ## TARG_INTR_STATUS_ENABLE
 Target Interrupt Status Enable.
