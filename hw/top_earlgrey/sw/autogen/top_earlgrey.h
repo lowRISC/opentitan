@@ -229,24 +229,6 @@ extern "C" {
 #define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for prim device on otp_macro in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR 0x40138000u
-
-/**
- * Peripheral size for prim device on otp_macro in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR and
- * `TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR + TOP_EARLGREY_OTP_MACRO_PRIM_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_OTP_MACRO_PRIM_SIZE_BYTES 0x20u
-
-/**
  * Peripheral base address for regs device on lc_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1592,14 +1574,13 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 59, /**< Peripheral Output 56 */
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 60, /**< Peripheral Output 57 */
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 61, /**< Peripheral Output 58 */
-  kTopEarlgreyPinmuxOutselOtpMacroTest0 = 62, /**< Peripheral Output 59 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 63, /**< Peripheral Output 60 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 64, /**< Peripheral Output 61 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 65, /**< Peripheral Output 62 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 66, /**< Peripheral Output 63 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 67, /**< Peripheral Output 64 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 68, /**< Peripheral Output 65 */
-  kTopEarlgreyPinmuxOutselLast = 68, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 62, /**< Peripheral Output 59 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 63, /**< Peripheral Output 60 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 64, /**< Peripheral Output 61 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 65, /**< Peripheral Output 62 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 66, /**< Peripheral Output 63 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 67, /**< Peripheral Output 64 */
+  kTopEarlgreyPinmuxOutselLast = 67, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

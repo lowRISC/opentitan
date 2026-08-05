@@ -61,8 +61,6 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast_pkg
-      - "fileset_partner  ? (partner:ip:otp_macro)"
-      - "!fileset_partner ? (lowrisc:ip:otp_macro)"
     files:
       - rtl/autogen/top_earlgrey.sv
       - rtl/autogen/earlgrey_pd_main.sv

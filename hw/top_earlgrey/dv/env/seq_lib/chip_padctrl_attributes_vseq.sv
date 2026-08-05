@@ -210,7 +210,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // all tests asserting a reset.
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
-        cfg.chip_vif.otp_ext_volt_if.disconnect();
         cfg.chip_vif.flash_test_mode_if.disconnect();
         cfg.chip_vif.flash_test_volt_if.disconnect();
         cfg.chip_vif.cc_if.disconnect();
@@ -612,9 +611,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   task check_manual_dios_pull();
     string obs_strength;
 
-    // Pads `OTP_EXT_VOLT` and `FLASH_TEST_VOLT` are always high impedance.
-    obs_strength = $sformatf("%v", cfg.chip_vif.otp_ext_volt_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
+    // Pad `FLASH_TEST_VOLT` is always high impedance.
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_volt_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_VOLT")
 

@@ -23,8 +23,6 @@ module top_earlgrey #(
   parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
   parameter int I2c2InputDelayCycles = 0,
-  // parameters for otp_macro
-  parameter OtpMacroMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter bit LcCtrlUseDmiInterface = 0,
@@ -231,10 +229,6 @@ module top_earlgrey #(
   output logic       usb_dn_pullup_en_o,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
-  output otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_o,
-  input  otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_h_i,
-  inout         otp_ext_voltage_h_io,
-  output logic [7:0] otp_obs_o,
   inout         rram_test_analog_io,
   input  logic [1:0] por_n_i,
   output rstmgr_pkg::rstmgr_out_t       rstmgr_resets_o,
@@ -346,7 +340,6 @@ module top_earlgrey #(
   .I2c0InputDelayCycles(I2c0InputDelayCycles),
   .I2c1InputDelayCycles(I2c1InputDelayCycles),
   .I2c2InputDelayCycles(I2c2InputDelayCycles),
-  .OtpMacroMemInitFile(OtpMacroMemInitFile),
   .SecLcCtrlVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
   .LcCtrlUseDmiInterface(LcCtrlUseDmiInterface),
   .LcCtrlSiliconCreatorId(LcCtrlSiliconCreatorId),
@@ -590,10 +583,6 @@ module top_earlgrey #(
     .dft_hold_tap_sel_i,
     .usb_dp_pullup_en_o,
     .usb_dn_pullup_en_o,
-    .otp_macro_pwr_seq_o,
-    .otp_macro_pwr_seq_h_i,
-    .otp_ext_voltage_h_io,
-    .otp_obs_o,
     .rram_test_analog_io,
     .fpga_info_i,
     .sck_monitor_o,

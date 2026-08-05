@@ -275,12 +275,7 @@ module chip_earlgrey_verilator (
 
   // observe interface
   logic [7:0] flash_obs;
-  logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  // otp power sequence
-  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
-  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -513,11 +508,11 @@ module chip_earlgrey_verilator (
     // main regulator
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)/otp
+    // pdm control (flash)
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_macro_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
+    .otp_power_seq_i       ( '0 ),
+    .otp_power_seq_h_o     (    ),
     // system source clock
     .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
@@ -558,7 +553,7 @@ module chip_earlgrey_verilator (
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( flash_obs ),
-    .otp_obs_i             ( otp_obs ),
+    .otp_obs_i             ( '0 ),
     .otm_obs_i             ( '0 ),
     .usb_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
@@ -679,10 +674,6 @@ module chip_earlgrey_verilator (
     .usb_dn_pullup_en_o                    (usb_dn_pullup_en         ),
     .pwrmgr_ast_req_o                      (pwrmgr_ast_req           ),
     .pwrmgr_ast_rsp_i                      (pwrmgr_ast_rsp           ),
-    .otp_macro_pwr_seq_o                   (otp_macro_pwr_seq        ),
-    .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
-    .otp_ext_voltage_h_io                  (                         ),
-    .otp_obs_o                             (otp_obs                  ),
     .rram_test_analog_io                   (                         ),
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),

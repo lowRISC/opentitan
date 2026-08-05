@@ -111,12 +111,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_otp_macro__prim"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_lc_ctrl__regs"
       act:    "req"
       package: "tlul_pkg"
