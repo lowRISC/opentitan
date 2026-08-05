@@ -19,7 +19,6 @@
 `define KEYMGR_HIER           `PD_MAIN_HIER.u_keymgr
 `define LC_CTRL_HIER          `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `PD_MAIN_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER        `PD_MAIN_HIER.u_otp_macro
 `define RAM_MAIN_HIER         `PD_MAIN_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
 `define RAM_RET_HIER          `PD_AON_HIER.u_sram_ctrl_ret.u_prim_ram_1p_scr
 `define ROM_CTRL_HIER         `PD_MAIN_HIER.u_rom_ctrl
@@ -61,7 +60,6 @@
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
-`define OTP_MEM_HIER          `OTP_MACRO_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define USBDEV_BUF_HIER       `USBDEV_HIER.gen_no_stubbed_memory.u_memory_1p.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
