@@ -433,20 +433,19 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 5    | FLASH_TEST_VOLT  | VCC    | AnalogIn0    | manual            | Flash test voltage input                   |
 | 6    | FLASH_TEST_MODE0 | VCC    | InputStd     | manual            | Flash test mode signal                     |
 | 7    | FLASH_TEST_MODE1 | VCC    | InputStd     | manual            | Flash test mode signal                     |
-| 8    | OTP_EXT_VOLT     | VCC    | AnalogIn1    | manual            | OTP external voltage input                 |
-| 9    | RRAM_ANALOG      | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
-| 10   | SPI_HOST_D0      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 11   | SPI_HOST_D1      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 12   | SPI_HOST_D2      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 13   | SPI_HOST_D3      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 14   | SPI_HOST_CLK     | VIOA   | BidirStd     | direct            | SPI host clock                             |
-| 15   | SPI_HOST_CS_L    | VIOA   | BidirStd     | direct            | SPI host chip select                       |
-| 16   | SPI_DEV_D0       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 17   | SPI_DEV_D1       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 18   | SPI_DEV_D2       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 19   | SPI_DEV_D3       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 20   | SPI_DEV_CLK      | VIOA   | InputStd     | direct            | SPI device clock                           |
-| 21   | SPI_DEV_CS_L     | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 8    | RRAM_ANALOG      | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
+| 9    | SPI_HOST_D0      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 10   | SPI_HOST_D1      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 11   | SPI_HOST_D2      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 12   | SPI_HOST_D3      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 13   | SPI_HOST_CLK     | VIOA   | BidirStd     | direct            | SPI host clock                             |
+| 14   | SPI_HOST_CS_L    | VIOA   | BidirStd     | direct            | SPI host chip select                       |
+| 15   | SPI_DEV_D0       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 16   | SPI_DEV_D1       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 17   | SPI_DEV_D2       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 18   | SPI_DEV_D3       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 19   | SPI_DEV_CLK      | VIOA   | InputStd     | direct            | SPI device clock                           |
+| 20   | SPI_DEV_CS_L     | VIOA   | InputStd     | direct            | SPI device chip select                     |
 | 0    | IOA0             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 1    | IOA1             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 2    | IOA2             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
@@ -490,8 +489,8 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 40   | IOR5             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 41   | IOR6             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 42   | IOR7             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 22   | IOR8             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 23   | IOR9             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 21   | IOR8             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 22   | IOR9             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
 | 43   | IOR10            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 44   | IOR11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 45   | IOR12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |

@@ -2037,286 +2037,6 @@
       domain: Main
     }
     {
-      name: otp_macro
-      type: otp_macro
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: Main
-        }
-      }
-      base_addrs:
-      {
-        prim:
-        {
-          hart: 0x40138000
-        }
-      }
-      param_decl:
-      {
-        Width: otp_ctrl_macro_pkg::OtpWidth
-        Depth: otp_ctrl_macro_pkg::OtpDepth
-        SizeWidth: otp_ctrl_macro_pkg::OtpSizeWidth
-        VendorTestOffset: otp_ctrl_reg_pkg::VendorTestOffset
-        VendorTestSize: otp_ctrl_reg_pkg::VendorTestSize
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks_i.clk_io_div4_secure
-      }
-      memory: {}
-      param_list:
-      [
-        {
-          name: Width
-          desc: Size of storage words in bits
-          type: int
-          default: otp_ctrl_macro_pkg::OtpWidth
-          local: "false"
-          expose: "false"
-          name_top: OtpMacroWidth
-        }
-        {
-          name: Depth
-          desc: Number of words
-          type: int
-          default: otp_ctrl_macro_pkg::OtpDepth
-          local: "false"
-          expose: "false"
-          name_top: OtpMacroDepth
-        }
-        {
-          name: SizeWidth
-          desc: Number of words transferred per access
-          type: int
-          default: otp_ctrl_macro_pkg::OtpSizeWidth
-          local: "false"
-          expose: "false"
-          name_top: OtpMacroSizeWidth
-        }
-        {
-          name: MemInitFile
-          desc: ""
-          type: ""
-          default: '''""'''
-          local: "false"
-          expose: "true"
-          name_top: OtpMacroMemInitFile
-        }
-        {
-          name: VendorTestOffset
-          desc: ""
-          type: int
-          default: otp_ctrl_reg_pkg::VendorTestOffset
-          local: "false"
-          expose: "false"
-          name_top: OtpMacroVendorTestOffset
-        }
-        {
-          name: VendorTestSize
-          desc: ""
-          type: int
-          default: otp_ctrl_reg_pkg::VendorTestSize
-          local: "false"
-          expose: "false"
-          name_top: OtpMacroVendorTestSize
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: obs_ctrl
-          desc: AST observability control signals.
-          struct: ast_obs_ctrl
-          package: ast_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: otp_macro
-          default: ""
-          domain: Main
-          top_signame: ast_obs_ctrl
-          index: -1
-        }
-        {
-          name: otp_obs
-          desc: AST observability bus.
-          struct: logic
-          type: uni
-          act: req
-          width: 8
-          inst_name: otp_macro
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: otp_obs
-        }
-        {
-          name: pwr_seq
-          desc: Power sequencing signals to AST (VDD domain).
-          struct: pwr_seq
-          package: otp_macro_pkg
-          type: uni
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: otp_macro_pwr_seq
-        }
-        {
-          name: pwr_seq_h
-          desc: Power sequencing signals coming from AST (VCC domain).
-          struct: pwr_seq
-          package: otp_macro_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: otp_macro_pwr_seq_h
-        }
-        {
-          name: ext_voltage_h
-          struct: ""
-          type: io
-          act: none
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: otp_ext_voltage_h
-        }
-        {
-          name: lc_dft_en
-          desc:
-            '''
-            Test enable qualifier coming from life cycle controller.
-            This signals enables the TL-UL access port.
-            '''
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: lc_ctrl_pkg::Off
-          inst_name: otp_macro
-          domain: Main
-          top_signame: lc_ctrl_lc_dft_en
-          index: -1
-        }
-        {
-          name: test
-          desc: Vendor test control signals from/to the life cycle TAP.
-          struct: otp_test
-          package: otp_macro_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          domain: Main
-          top_signame: lc_ctrl_lc_otp_vendor_test
-          index: -1
-        }
-        {
-          name: otp
-          desc: Data interface for the OTP macro.
-          struct: otp_ctrl_macro
-          package: otp_ctrl_macro_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          domain: Main
-          top_signame: otp_ctrl_otp_macro
-          index: -1
-        }
-        {
-          name: cfg
-          struct: otp_cfg
-          package: otp_macro_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          index: -1
-        }
-        {
-          name: cfg_rsp
-          struct: otp_cfg_rsp
-          package: otp_macro_pkg
-          type: uni
-          act: req
-          width: 1
-          default: "'0"
-          inst_name: otp_macro
-          index: -1
-        }
-        {
-          name: racl_policies
-          desc:
-            '''
-            Incoming RACL policy vector from a racl_ctrl instance.
-            The policy selection vector (parameter) selects the policy for each register.
-            '''
-          struct: racl_policy_vec
-          package: top_racl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: otp_macro
-          index: -1
-        }
-        {
-          name: racl_error
-          desc: RACL error log information of this module.
-          struct: racl_error_log
-          package: top_racl_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: otp_macro
-          index: -1
-        }
-        {
-          name: prim_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: otp_macro
-          default: ""
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: otp_macro_prim_tl
-          index: -1
-        }
-      ]
-      generate_dif: true
-      domain: Main
-    }
-    {
       name: lc_ctrl
       type: lc_ctrl
       clock_srcs:
@@ -2546,9 +2266,6 @@
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: lc_ctrl_lc_otp_vendor_test
           index: -1
         }
         {
@@ -6531,6 +6248,8 @@
           width: 1
           default: "'0"
           inst_name: rram_ctrl
+          domain: Main
+          top_signame: otp_ctrl_otp_macro
           index: -1
         }
         {
@@ -10615,7 +10334,6 @@
       ast.obs_ctrl:
       [
         flash_ctrl.obs_ctrl
-        otp_macro.obs_ctrl
         rram_macro.obs_ctrl
       ]
       alert_handler.crashdump:
@@ -10818,10 +10536,6 @@
       [
         otp_ctrl.lc_otp_program
       ]
-      lc_ctrl.lc_otp_vendor_test:
-      [
-        otp_macro.test
-      ]
       lc_ctrl.lc_keymgr_div:
       [
         keymgr.lc_keymgr_div
@@ -10832,7 +10546,6 @@
       ]
       lc_ctrl.lc_dft_en:
       [
-        otp_macro.lc_dft_en
         pinmux.lc_dft_en
         ast.lc_dft_en
         pwrmgr.lc_dft_en
@@ -10930,7 +10643,7 @@
       ]
       otp_ctrl.otp_macro:
       [
-        otp_macro.otp
+        rram_ctrl.otp_macro
       ]
       rv_plic.msip:
       [
@@ -11170,10 +10883,6 @@
       [
         peri.tl_otp_ctrl__core
       ]
-      otp_macro.prim_tl:
-      [
-        peri.tl_otp_macro__prim
-      ]
       lc_ctrl.regs_tl:
       [
         peri.tl_lc_ctrl__regs
@@ -11279,10 +10988,6 @@
       pinmux.usb_dppullup_en: usb_dp_pullup_en
       pinmux.usb_dnpullup_en: usb_dn_pullup_en
       pwrmgr.pwr_ast: pwrmgr_ast
-      otp_macro.pwr_seq: ""
-      otp_macro.pwr_seq_h: ""
-      otp_macro.ext_voltage_h: otp_ext_voltage_h
-      otp_macro.otp_obs: otp_obs
       rram_macro.rram_test_analog: rram_test_analog
       rstmgr.por_n: por_n
       rstmgr.resets: ""
@@ -12585,7 +12290,6 @@
           clkmgr
           pinmux
           otp_ctrl.core
-          otp_macro.prim
           lc_ctrl.regs
           sensor_ctrl
           alert_handler
@@ -12921,27 +12625,6 @@
                 hart: 0x40130000
               }
               size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: otp_macro.prim
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: otp_macro
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x40138000
-              }
-              size_byte: 0x20
             }
           ]
           xbar: false
@@ -13361,19 +13044,6 @@
           index: -1
         }
         {
-          name: tl_otp_macro__prim
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: peri
-          width: 1
-          default: ""
-          domain: Main
-          top_signame: otp_macro_prim_tl
-          index: -1
-        }
-        {
           name: tl_lc_ctrl__regs
           struct: tl
           package: tlul_pkg
@@ -13590,21 +13260,12 @@
         port_type: inout
       }
       {
-        name: OTP_EXT_VOLT
-        type: AnalogIn1
-        bank: VCC
-        connection: manual
-        desc: OTP external voltage input
-        idx: 8
-        port_type: inout
-      }
-      {
         name: RRAM_ANALOG
         type: AnalogIn0
         bank: VCC
         connection: manual
         desc: RRAM analog test signal
-        idx: 9
+        idx: 8
         port_type: inout
       }
       {
@@ -13613,7 +13274,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 10
+        idx: 9
         port_type: inout
       }
       {
@@ -13622,7 +13283,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 11
+        idx: 10
         port_type: inout
       }
       {
@@ -13631,7 +13292,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 12
+        idx: 11
         port_type: inout
       }
       {
@@ -13640,7 +13301,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 13
+        idx: 12
         port_type: inout
       }
       {
@@ -13649,7 +13310,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host clock
-        idx: 14
+        idx: 13
         port_type: inout
       }
       {
@@ -13658,7 +13319,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
-        idx: 15
+        idx: 14
         port_type: inout
       }
       {
@@ -13667,7 +13328,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 16
+        idx: 15
         port_type: inout
       }
       {
@@ -13676,7 +13337,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 17
+        idx: 16
         port_type: inout
       }
       {
@@ -13685,7 +13346,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 18
+        idx: 17
         port_type: inout
       }
       {
@@ -13694,7 +13355,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 19
+        idx: 18
         port_type: inout
       }
       {
@@ -13703,7 +13364,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
-        idx: 20
+        idx: 19
         port_type: inout
       }
       {
@@ -13712,7 +13373,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
-        idx: 21
+        idx: 20
         port_type: inout
       }
       {
@@ -14108,7 +13769,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 22
+        idx: 21
         port_type: inout
       }
       {
@@ -14117,7 +13778,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
-        idx: 23
+        idx: 22
         port_type: inout
       }
       {
@@ -14373,14 +14034,6 @@
       {
         instance: sensor_ctrl
         port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: otp_macro
-        port: test[0]
         connection: muxed
         pad: ""
         desc: ""
@@ -15630,18 +15283,6 @@
         glob_idx: 58
       }
       {
-        name: otp_macro_test
-        width: 8
-        type: output
-        idx: 0
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 59
-      }
-      {
         name: sysrst_ctrl_bat_disable
         width: 1
         type: output
@@ -15651,7 +15292,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 60
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_key0_out
@@ -15663,7 +15304,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 61
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_key1_out
@@ -15675,7 +15316,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 62
+        glob_idx: 61
       }
       {
         name: sysrst_ctrl_key2_out
@@ -15687,7 +15328,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 63
+        glob_idx: 62
       }
       {
         name: sysrst_ctrl_pwrb_out
@@ -15699,7 +15340,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 64
+        glob_idx: 63
       }
       {
         name: sysrst_ctrl_z3_wakeup
@@ -15711,7 +15352,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 65
+        glob_idx: 64
       }
     ]
     io_counts:
@@ -15721,13 +15362,13 @@
         inouts: 12
         inputs: 2
         outputs: 2
-        pads: 24
+        pads: 23
       }
       muxed:
       {
         inouts: 42
         inputs: 18
-        outputs: 24
+        outputs: 23
         pads: 47
       }
     }
@@ -15763,10 +15404,6 @@
           flash_ctrl.flash_test_voltage_h:
           {
             signal: FLASH_TEST_VOLT
-          }
-          otp_macro.ext_voltage_h:
-          {
-            signal: OTP_EXT_VOLT
           }
           rram_macro.rram_test_analog:
           {
@@ -15921,11 +15558,6 @@
             tie_value: ""
           }
           flash_ctrl.flash_test_voltage_h:
-          {
-            unused: true
-            tie_value: ""
-          }
-          otp_macro.ext_voltage_h:
           {
             unused: true
             tie_value: ""
@@ -16142,10 +15774,6 @@
           {
             unused: true
           }
-          otp_macro.ext_voltage_h:
-          {
-            unused: true
-          }
           rram_macro.rram_test_analog:
           {
             unused: true
@@ -16177,7 +15805,6 @@
           CC1
           CC2
           FLASH_TEST_VOLT
-          OTP_EXT_VOLT
           RRAM_ANALOG
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
@@ -22229,187 +21856,6 @@
         index: -1
       }
       {
-        name: obs_ctrl
-        desc: AST observability control signals.
-        struct: ast_obs_ctrl
-        package: ast_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: otp_macro
-        default: ""
-        domain: Main
-        top_signame: ast_obs_ctrl
-        index: -1
-      }
-      {
-        name: otp_obs
-        desc: AST observability bus.
-        struct: logic
-        type: uni
-        act: req
-        width: 8
-        inst_name: otp_macro
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: otp_obs
-      }
-      {
-        name: pwr_seq
-        desc: Power sequencing signals to AST (VDD domain).
-        struct: pwr_seq
-        package: otp_macro_pkg
-        type: uni
-        act: req
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: otp_macro_pwr_seq
-      }
-      {
-        name: pwr_seq_h
-        desc: Power sequencing signals coming from AST (VCC domain).
-        struct: pwr_seq
-        package: otp_macro_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: otp_macro_pwr_seq_h
-      }
-      {
-        name: ext_voltage_h
-        struct: ""
-        type: io
-        act: none
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: otp_ext_voltage_h
-      }
-      {
-        name: lc_dft_en
-        desc:
-          '''
-          Test enable qualifier coming from life cycle controller.
-          This signals enables the TL-UL access port.
-          '''
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: lc_ctrl_pkg::Off
-        inst_name: otp_macro
-        domain: Main
-        top_signame: lc_ctrl_lc_dft_en
-        index: -1
-      }
-      {
-        name: test
-        desc: Vendor test control signals from/to the life cycle TAP.
-        struct: otp_test
-        package: otp_macro_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        domain: Main
-        top_signame: lc_ctrl_lc_otp_vendor_test
-        index: -1
-      }
-      {
-        name: otp
-        desc: Data interface for the OTP macro.
-        struct: otp_ctrl_macro
-        package: otp_ctrl_macro_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        domain: Main
-        top_signame: otp_ctrl_otp_macro
-        index: -1
-      }
-      {
-        name: cfg
-        struct: otp_cfg
-        package: otp_macro_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        index: -1
-      }
-      {
-        name: cfg_rsp
-        struct: otp_cfg_rsp
-        package: otp_macro_pkg
-        type: uni
-        act: req
-        width: 1
-        default: "'0"
-        inst_name: otp_macro
-        index: -1
-      }
-      {
-        name: racl_policies
-        desc:
-          '''
-          Incoming RACL policy vector from a racl_ctrl instance.
-          The policy selection vector (parameter) selects the policy for each register.
-          '''
-        struct: racl_policy_vec
-        package: top_racl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: otp_macro
-        index: -1
-      }
-      {
-        name: racl_error
-        desc: RACL error log information of this module.
-        struct: racl_error_log
-        package: top_racl_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: otp_macro
-        index: -1
-      }
-      {
-        name: prim_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: otp_macro
-        default: ""
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: otp_macro_prim_tl
-        index: -1
-      }
-      {
         name: jtag
         struct: jtag
         package: jtag_pkg
@@ -22498,9 +21944,6 @@
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: lc_ctrl_lc_otp_vendor_test
         index: -1
       }
       {
@@ -25283,6 +24726,8 @@
         width: 1
         default: "'0"
         inst_name: rram_ctrl
+        domain: Main
+        top_signame: otp_ctrl_otp_macro
         index: -1
       }
       {
@@ -28188,19 +27633,6 @@
         default: ""
         domain: Main
         top_signame: otp_ctrl_core_tl
-        index: -1
-      }
-      {
-        name: tl_otp_macro__prim
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: peri
-        width: 1
-        default: ""
-        domain: Main
-        top_signame: otp_macro_prim_tl
         index: -1
       }
       {
@@ -31466,86 +30898,6 @@
         netname: pwrmgr_ast_rsp
       }
       {
-        package: otp_macro_pkg
-        struct: pwr_seq
-        domain: Main
-        inter_pd: false
-        signame: otp_macro_pwr_seq_o
-        signame_chip:
-        {
-          asic: otp_macro_pwr_seq
-          verilator: otp_macro_pwr_seq
-          cw340: otp_macro_pwr_seq
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: otp_macro_pwr_seq
-      }
-      {
-        package: otp_macro_pkg
-        struct: pwr_seq
-        domain: Main
-        inter_pd: false
-        signame: otp_macro_pwr_seq_h_i
-        signame_chip:
-        {
-          asic: otp_macro_pwr_seq_h
-          verilator: otp_macro_pwr_seq_h
-          cw340: otp_macro_pwr_seq_h
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: otp_macro_pwr_seq_h
-      }
-      {
-        package: ""
-        struct: ""
-        domain: Main
-        inter_pd: false
-        signame: otp_ext_voltage_h_io
-        signame_chip:
-        {
-          asic: OTP_EXT_VOLT
-          verilator: ""
-          cw340: "'0"
-        }
-        width: 1
-        type: io
-        default: "'0"
-        direction: inout
-        conn_type: false
-        index: -1
-        netname: otp_ext_voltage_h
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: otp_obs_o
-        signame_chip:
-        {
-          asic: otp_obs
-          verilator: otp_obs
-          cw340: otp_obs
-        }
-        width: 8
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: otp_obs
-      }
-      {
         package: ""
         struct: ""
         domain: Main
@@ -33605,30 +32957,6 @@
         default: "'0"
       }
       {
-        package: otp_macro_pkg
-        struct: otp_test_req
-        domain: Main
-        signame: lc_ctrl_lc_otp_vendor_test_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: otp_macro_pkg
-        struct: otp_test_rsp
-        domain: Main
-        signame: lc_ctrl_lc_otp_vendor_test_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
         package: lc_ctrl_pkg
         struct: lc_keymgr_div
         domain: Main
@@ -35025,30 +34353,6 @@
         struct: tl_d2h
         domain: Main
         signame: otp_ctrl_core_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        signame: otp_macro_prim_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        signame: otp_macro_prim_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

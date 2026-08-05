@@ -108,12 +108,6 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "otp_macro.prim",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
     { name:      "lc_ctrl.regs",
       type:      "device",
       clock:     "clk_peri_i",
@@ -174,7 +168,7 @@
       "uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2",
       "gpio", "spi_device", "rv_timer",
       "pwrmgr", "rstmgr", "clkmgr", "pinmux",
-      "otp_ctrl.core", "otp_macro.prim", "lc_ctrl.regs", "sensor_ctrl",
+      "otp_ctrl.core", "lc_ctrl.regs", "sensor_ctrl",
       "alert_handler", "ast", "sram_ctrl_ret.ram", "sram_ctrl_ret.regs",
       "aon_timer", "adc_ctrl", "sysrst_ctrl"
     ],

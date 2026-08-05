@@ -120,16 +120,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for prim device on otp_macro in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR = 32'h40138000;
-
-  /**
-   * Peripheral size in bytes for prim device on otp_macro in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_OTP_MACRO_PRIM_SIZE_BYTES = 32'h20;
-
-  /**
    * Peripheral base address for regs device on lc_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR = 32'h40140000;
@@ -991,14 +981,13 @@ package top_earlgrey_pkg;
     MioOutSensorCtrlAstDebugOut6 = 56,
     MioOutSensorCtrlAstDebugOut7 = 57,
     MioOutSensorCtrlAstDebugOut8 = 58,
-    MioOutOtpMacroTest0 = 59,
-    MioOutSysrstCtrlBatDisable = 60,
-    MioOutSysrstCtrlKey0Out = 61,
-    MioOutSysrstCtrlKey1Out = 62,
-    MioOutSysrstCtrlKey2Out = 63,
-    MioOutSysrstCtrlPwrbOut = 64,
-    MioOutSysrstCtrlZ3Wakeup = 65,
-    MioOutCount = 66
+    MioOutSysrstCtrlBatDisable = 59,
+    MioOutSysrstCtrlKey0Out = 60,
+    MioOutSysrstCtrlKey1Out = 61,
+    MioOutSysrstCtrlKey2Out = 62,
+    MioOutSysrstCtrlPwrbOut = 63,
+    MioOutSysrstCtrlZ3Wakeup = 64,
+    MioOutCount = 65
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
@@ -1091,22 +1080,21 @@ package top_earlgrey_pkg;
     DioPadFlashTestVolt = 5,
     DioPadFlashTestMode0 = 6,
     DioPadFlashTestMode1 = 7,
-    DioPadOtpExtVolt = 8,
-    DioPadRramAnalog = 9,
-    DioPadSpiHostD0 = 10,
-    DioPadSpiHostD1 = 11,
-    DioPadSpiHostD2 = 12,
-    DioPadSpiHostD3 = 13,
-    DioPadSpiHostClk = 14,
-    DioPadSpiHostCsL = 15,
-    DioPadSpiDevD0 = 16,
-    DioPadSpiDevD1 = 17,
-    DioPadSpiDevD2 = 18,
-    DioPadSpiDevD3 = 19,
-    DioPadSpiDevClk = 20,
-    DioPadSpiDevCsL = 21,
-    DioPadIor8 = 22,
-    DioPadIor9 = 23,
+    DioPadRramAnalog = 8,
+    DioPadSpiHostD0 = 9,
+    DioPadSpiHostD1 = 10,
+    DioPadSpiHostD2 = 11,
+    DioPadSpiHostD3 = 12,
+    DioPadSpiHostClk = 13,
+    DioPadSpiHostCsL = 14,
+    DioPadSpiDevD0 = 15,
+    DioPadSpiDevD1 = 16,
+    DioPadSpiDevD2 = 17,
+    DioPadSpiDevD3 = 18,
+    DioPadSpiDevClk = 19,
+    DioPadSpiDevCsL = 20,
+    DioPadIor8 = 21,
+    DioPadIor9 = 22,
     DioPadCount
   } dio_pad_e;
 
@@ -1133,7 +1121,6 @@ package top_earlgrey_pkg;
     PeripheralLcCtrl,
     PeripheralOtbn,
     PeripheralOtpCtrl,
-    PeripheralOtpMacro,
     PeripheralPinmux,
     PeripheralPwrmgr,
     PeripheralRomCtrl,

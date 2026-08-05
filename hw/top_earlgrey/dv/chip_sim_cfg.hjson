@@ -863,12 +863,6 @@
       run_opts: ["+use_otp_image=OtpTypeLcStRma", "+otp_clear_secret2=1"]
     }
     {
-      name: chip_sw_otp_ctrl_vendor_test_csr_access
-      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_csr_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
       name: chip_sw_otp_ctrl_escalation
       uvm_test_seq: chip_sw_otp_ctrl_escalation_vseq
       sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:1:new_rules"]
@@ -900,12 +894,6 @@
       ]
       reseed: 1
       run_timeout_mins: 240
-    }
-    {
-      name: chip_sw_otp_ctrl_ecc_error_vendor_test
-      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_ecc_error_vseq
-      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_ecc_error_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_otp_ctrl_descrambling

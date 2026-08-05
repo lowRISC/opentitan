@@ -30,7 +30,6 @@ package pad_orient_pkg;
   parameter pad_orient_e DioPadFlashTestVoltPadOrient  = OrientH;
   parameter pad_orient_e DioPadFlashTestMode0PadOrient = OrientH;
   parameter pad_orient_e DioPadFlashTestMode1PadOrient = OrientH;
-  parameter pad_orient_e DioPadOtpExtVoltPadOrient     = OrientH;
   parameter pad_orient_e DioPadRramAnalogPadOrient     = OrientH;
   parameter pad_orient_e DioPadIor8PadOrient           = OrientV;
   parameter pad_orient_e DioPadIor9PadOrient           = OrientV;
