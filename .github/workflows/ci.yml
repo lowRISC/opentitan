@@ -139,6 +139,11 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build documentation
         run: util/site/build-docs.sh build
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opentitan-documentation-${{ github.sha }}
+          path: build-site/
       - name: Upload files
         if: ${{ github.event_name != 'pull_request' && github.ref_name == 'earlgrey_1.0.0' }}
         run: |
