@@ -22,8 +22,13 @@ EARLGREY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = EARLGREY_OTP_SIGVERIFY_FAK
 
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
+#
+# `otp_json_secret2_lock_by_lc_state` provisions the SECRET2 items but leaves
+# the decision of whether to lock the partition to the life cycle state of the
+# image, since a locked SECRET2 partition marks the device as personalized and
+# is only legal in DEV, PROD, PROD_END and RMA.
 EARLGREY_STD_OTP_OVERLAYS = EARLGREY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
     "@//hw/top_earlgrey/data/otp:otp_json_secret0",
     "@//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "@//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
+    "@//hw/top_earlgrey/data/otp:otp_json_secret2_lock_by_lc_state",
 ]
