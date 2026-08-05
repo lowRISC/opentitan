@@ -247,6 +247,11 @@
                             "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson",
                             "--top-secret-cfg {gen_otp_top_secret_cfg}"]
 
+  // OTP lives in the tail pages of the RRAM data array: rram_ctrl_otp_bkdr_util expects each
+  // otp_ctrl_img_*.vmem above reformatted in place into that RRAM-native layout.
+  gen_rram_otp_img_cmd: "{proj_root}/util/design/gen-rram-img.py"
+  gen_rram_otp_img_cmd_opts: ["--top-secret-cfg {gen_otp_top_secret_cfg}"]
+
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
@@ -262,11 +267,21 @@
               --out {run_dir}/otp_ctrl_img_raw.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_raw.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_raw.vmem \
+              {gen_rram_otp_img_cmd_opts}
+        ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked0.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
               {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
+              {gen_rram_otp_img_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked1.hjson \
@@ -274,11 +289,21 @@
               --out {run_dir}/otp_ctrl_img_test_unlocked1.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked1.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked1.vmem \
+              {gen_rram_otp_img_cmd_opts}
+        ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked2.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked2.vmem \
               {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked2.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_test_unlocked2.vmem \
+              {gen_rram_otp_img_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked0.hjson \
@@ -286,11 +311,21 @@
               --out {run_dir}/otp_ctrl_img_test_locked0.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_test_locked0.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_test_locked0.vmem \
+              {gen_rram_otp_img_cmd_opts}
+        ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked1.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_test_locked1.vmem \
               {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_test_locked1.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_test_locked1.vmem \
+              {gen_rram_otp_img_cmd_opts}
         ''',
          '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
@@ -300,6 +335,11 @@
               --out {run_dir}/otp_ctrl_img_dev.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_dev.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_dev.vmem \
+              {gen_rram_otp_img_cmd_opts}
+        ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_prod.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
@@ -308,6 +348,11 @@
               --out {run_dir}/otp_ctrl_img_prod.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_prod.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_prod.vmem \
+              {gen_rram_otp_img_cmd_opts}
+        ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
@@ -315,6 +360,11 @@
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_rma.vmem \
               {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_rram_otp_img_cmd} \
+              --in-otp-vmem {run_dir}/otp_ctrl_img_rma.vmem \
+              --out-otp-vmem {run_dir}/otp_ctrl_img_rma.vmem \
+              {gen_rram_otp_img_cmd_opts}
         ''',
       ]
     }
