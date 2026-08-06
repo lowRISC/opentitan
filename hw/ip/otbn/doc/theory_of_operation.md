@@ -86,6 +86,35 @@ In normal operation, the PRNG state is advanced every cycle when OTBN is running
 OTBN SW can stop and restore the PRNG via the URND control interface.
 See the section [below](#urnd-control-interface).
 
+`URND` is also used by certain hardware parts to mask circuits and destroy any data during a secure wipe.
+To provide `URND` as a glitch free signal to all its consumers, the URND value is the registered version of the PRNG output.
+Due to this, the URND value lacks one cycle behind the PRNG output.
+There is also a permutation based on a netlist secret to further obfuscate the state of the PRNG.
+
+```
+                +--------+
+                | State  |
+   +------------| Update |<-+
+   |            | (comb) |  |
+   |            +--------+  |
+   |                        |
+   |  +---------------------o
+   |  |                     |
+   |  |         +-------+   |   +------------+   +-------------+   +-------+
+   |  +->|0\    | State |   |   | Keystream  |   |             |   | URND  |
+   |     | |--->| Flop  |---o-->| Generation |-->| Permutation |-->| Flop  |--> URND
+   + --->|1/    |       |       | (comb)     |   |             |   |       |
+          ^     +---^---+       +------------+   +-------------+   +---^---+
+          |
+advance --+
+```
+
+The following diagram shows all `URND` consumers and which bits they use.
+The permutations are there to avoid a simultaneous use of `URND` bits at more than one location.
+This makes it harder to recover the `urnd_data` signal if an adversary can break one consumer of `URND`.
+
+![Consumers of URND](./otbn_urnd_usage.svg)
+
 The PRNG has a long cycle length but has a fixed point: the sequence of numbers will get stuck if the state ever happens to become zero.
 This will never happen in normal operation.
 If a fault causes the state to become zero, OTBN raises a `BAD_INTERNAL_STATE` fatal error.
@@ -113,27 +142,7 @@ If enabled, the PRNG can be manipulated in the following ways:
 - The PRNG can be resumed by writing a 1 to `URND_CTRL.START`.
   This is also possible whilst a restore process is ongoing.
 
-To provide URND as a glitch free signal to all its consumers (URND is used for hardware based masking), the URND value is the registered version of the PRNG output.
-Due to this, the URND value lacks one cycle behind the PRNG state.
-```
-                +--------+
-                | State  |
-   +------------| Update |<-+
-   |            | (comb) |  |
-   |            +--------+  |
-   |                        |
-   |  +---------------------o
-   |  |                     |
-   |  |         +-------+   |    +------------+       +-------+
-   |  +->|0\    | State |   |    | Keystream  |       | URND  |
-   |     | |--->| Flop  |---o--->| Generation |------>| Flop  |----> URND
-   + --->|1/    |       |        | (comb)     |       |       |
-          ^     +---^---+        +------------+       +---^---+
-          |
-advance --+
-```
-
-This registering has implications when issuing a start or stop command.
+As the URND value is the registered PRNG output (see above), there are some implications when issuing a start or stop command.
 When a stop command is issued, URND is still advanced in the cycle immediately afterwards.
 When a start command is issued, URND changes only in the 2nd cycle.
 The following diagram illustrates this:
