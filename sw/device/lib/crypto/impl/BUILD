@@ -195,6 +195,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:crc32_device_library",  # force non-mock version in unit tests
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:cryptolib_build_info_hdrs",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
