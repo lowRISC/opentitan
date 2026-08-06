@@ -95,6 +95,19 @@ Full build information, including release status and truncated Git commit hash, 
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
 
+### Key Structure Migration and Version Verification
+
+Secret keys (`otcrypto_blinded_key_t`) are masked/blinded in memory to protect against side-channel attacks.
+Because internal keyblob layouts and masking representations may evolve across library releases, blinded key configurations store the library version under which they were generated (`config.version`).
+When performing integrity checks on secret keys (`otcrypto_integrity_blinded_key_check`), the library strictly verifies that `key->config.version` matches the current library version (`kCryptoLibVersion`).
+Only secret keys matching the current library version are accepted; keys with a different version fail integrity checks and are rejected with `OTCRYPTO_BAD_ARGS`.
+
+To migrate key structures across library releases, the cryptolib provides dedicated key migration functions:
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_blinded_key_migrate }}
+
+Hardware-backed keys cannot be migrated using these functions, due to their version being used as diversifier.
+
 ## FIPS Build & Position-Independent Code (PIC)
 
 In addition to the default development build (`crypto_dev` which builds a standard static library), the cryptolib can be built as a **position-independent binary blob** for FIPS compliance.
