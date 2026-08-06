@@ -292,11 +292,23 @@ typedef struct otcrypto_interface_t {
                                 const otcrypto_hash_digest_t,
                                 otcrypto_rsa_padding_t,
                                 otcrypto_word32_buf_t *);
+  otcrypto_status_t (*rsa_hash_sign_verify)(const otcrypto_blinded_key_t *,
+                                            const otcrypto_unblinded_key_t *,
+                                            otcrypto_hash_mode_t,
+                                            const otcrypto_const_byte_buf_t *,
+                                            otcrypto_rsa_padding_t,
+                                            otcrypto_word32_buf_t *);
   otcrypto_status_t (*rsa_verify)(const otcrypto_unblinded_key_t *,
                                   const otcrypto_hash_digest_t,
                                   otcrypto_rsa_padding_t,
                                   const otcrypto_const_word32_buf_t *,
                                   hardened_bool_t *);
+  otcrypto_status_t (*rsa_hash_verify)(const otcrypto_unblinded_key_t *,
+                                       otcrypto_hash_mode_t,
+                                       const otcrypto_const_byte_buf_t *,
+                                       otcrypto_rsa_padding_t,
+                                       const otcrypto_const_word32_buf_t *,
+                                       hardened_bool_t *);
   otcrypto_status_t (*rsa_encrypt)(const otcrypto_unblinded_key_t *,
                                    const otcrypto_hash_mode_t,
                                    const otcrypto_const_byte_buf_t *,
@@ -347,6 +359,10 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdsa_p256_sign)(const otcrypto_blinded_key_t *,
                                        const otcrypto_hash_digest_t,
                                        otcrypto_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_sign_verify)(
+      const otcrypto_blinded_key_t *, const otcrypto_unblinded_key_t *,
+      otcrypto_hash_mode_t, const otcrypto_const_byte_buf_t *,
+      otcrypto_word32_buf_t *);
   otcrypto_status_t (*ecdsa_p256_sign_verify)(const otcrypto_blinded_key_t *,
                                               const otcrypto_unblinded_key_t *,
                                               const otcrypto_hash_digest_t,
@@ -355,6 +371,10 @@ typedef struct otcrypto_interface_t {
                                          const otcrypto_hash_digest_t,
                                          const otcrypto_const_word32_buf_t *,
                                          hardened_bool_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_verify)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_mode_t,
+      const otcrypto_const_byte_buf_t *, const otcrypto_const_word32_buf_t *,
+      hardened_bool_t *);
   otcrypto_status_t (*ecdh_p256_keygen)(otcrypto_blinded_key_t *,
                                         otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecdh_p256)(const otcrypto_blinded_key_t *,
@@ -417,6 +437,10 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdsa_p384_sign)(const otcrypto_blinded_key_t *,
                                        const otcrypto_hash_digest_t,
                                        otcrypto_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_sign_verify)(
+      const otcrypto_blinded_key_t *, const otcrypto_unblinded_key_t *,
+      otcrypto_hash_mode_t, const otcrypto_const_byte_buf_t *,
+      otcrypto_word32_buf_t *);
   otcrypto_status_t (*ecdsa_p384_sign_config_k)(const otcrypto_blinded_key_t *,
                                                 const otcrypto_blinded_key_t *,
                                                 const otcrypto_hash_digest_t,
@@ -429,6 +453,10 @@ typedef struct otcrypto_interface_t {
                                          const otcrypto_hash_digest_t,
                                          const otcrypto_const_word32_buf_t *,
                                          hardened_bool_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_verify)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_mode_t,
+      const otcrypto_const_byte_buf_t *, const otcrypto_const_word32_buf_t *,
+      hardened_bool_t *);
   otcrypto_status_t (*ecdh_p384_keygen)(otcrypto_blinded_key_t *,
                                         otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecdh_p384)(const otcrypto_blinded_key_t *,

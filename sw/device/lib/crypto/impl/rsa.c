@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
@@ -456,6 +457,49 @@ otcrypto_status_t otcrypto_rsa_verify(
                                             verification_result);
 }
 
+otcrypto_status_t otcrypto_rsa_hash_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  HARDENED_TRY(otcrypto_rsa_sign(private_key, digest, padding_mode, signature));
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, padding_mode,
+                                   &signature_check, &verification_result));
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  if (verification_result != kHardenedBoolTrue) {
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL) {
+      state->locked_state = kHardenedBoolTrue;
+    }
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_rsa_hash_verify(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result) {
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  status_t res = otcrypto_rsa_verify(public_key, digest, padding_mode,
+                                     signature, verification_result);
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  return res;
+}
+
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode,
@@ -480,17 +524,16 @@ otcrypto_status_t otcrypto_rsa_decrypt(
 #ifdef FIPS_MODE
 /**
  * Perform Pairwise Consistency Test (PCT) for RSA key generation.
- * Signs a dummy digest with the generated private key and verifies the
+ * Signs a dummy message with the generated private key and verifies the
  * signature with the generated public key.
  */
 static otcrypto_status_t rsa_pct_verify(
     otcrypto_rsa_size_t size, const otcrypto_unblinded_key_t *public_key,
     const otcrypto_blinded_key_t *private_key) {
-  uint32_t dummy_digest_data[8] = {0};
-  otcrypto_hash_digest_t digest = {
-      .data = dummy_digest_data,
-      .len = ARRAYSIZE(dummy_digest_data),
-      .mode = kOtcryptoHashModeSha256,
+  uint8_t dummy_msg_data[32] = {0};
+  otcrypto_const_byte_buf_t msg = {
+      .data = dummy_msg_data,
+      .len = sizeof(dummy_msg_data),
   };
 
   uint32_t sig_data[128];
@@ -512,27 +555,15 @@ static otcrypto_status_t rsa_pct_verify(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  otcrypto_word32_buf_t sig = otcrypto_make_word32_buf(sig_data, sig_words);
-
-  HARDENED_TRY(
-      otcrypto_rsa_sign(private_key, digest, kOtcryptoRsaPaddingPkcs, &sig));
-
-  otcrypto_const_word32_buf_t sig_const =
-      otcrypto_make_const_word32_buf(sig_data, sig_words);
-  hardened_bool_t result;
-  HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, kOtcryptoRsaPaddingPkcs,
-                                   &sig_const, &result));
-
-  if (result != kHardenedBoolTrue) {
-    crypto_state_t *state = NULL;
-    if (status_ok(read_state_pointer(&state)) && state != NULL) {
-      state->locked_state = kHardenedBoolTrue;
-    }
-    return OTCRYPTO_FATAL_ERR;
+  otcrypto_rsa_padding_t padding_mode = kOtcryptoRsaPaddingPkcs;
+  if (launder32(private_key->config.key_mode) == kOtcryptoKeyModeRsaSignPss) {
+    padding_mode = kOtcryptoRsaPaddingPss;
   }
 
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
-  return OTCRYPTO_OK;
+  otcrypto_word32_buf_t sig = otcrypto_make_word32_buf(sig_data, sig_words);
+  return otcrypto_rsa_hash_sign_verify(private_key, public_key,
+                                       kOtcryptoHashModeSha256, &msg,
+                                       padding_mode, &sig);
 }
 #endif
 
