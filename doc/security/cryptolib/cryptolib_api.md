@@ -83,6 +83,31 @@ Building with `--stamp` also automatically marks the build as a release build (s
 | `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
 | `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
 
+## Build Information and Versioning
+
+The cryptolib provides functions to query the library version and build information (such as the Git commit hash of `sw/device/lib/crypto`).
+
+Callers can check the current library version using `otcrypto_lib_version`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_lib_version }}
+
+Full build information, including release status and truncated Git commit hash, can be queried with `otcrypto_build_info`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
+
+### Key Structure Migration and Version Verification
+
+Secret keys (`otcrypto_blinded_key_t`) are masked/blinded in memory to protect against side-channel attacks.
+Because internal keyblob layouts and masking representations may evolve across library releases, blinded key configurations store the library version under which they were generated (`config.version`).
+When performing integrity checks on secret keys (`otcrypto_integrity_blinded_key_check`), the library strictly verifies that `key->config.version` matches the current library version (`kCryptoLibVersion`).
+Only secret keys matching the current library version are accepted; keys with a different version fail integrity checks and are rejected with `OTCRYPTO_BAD_ARGS`.
+
+To migrate key structures across library releases, the cryptolib provides dedicated key migration functions:
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_blinded_key_migrate }}
+
+Hardware-backed keys cannot be migrated using these functions, due to their version being used as diversifier.
+
 ## FIPS Build & Position-Independent Code (PIC)
 
 In addition to the default development build (`crypto_dev` which builds a standard static library), the cryptolib can be built as a **position-independent binary blob** for FIPS compliance.
@@ -335,7 +360,7 @@ bool aes_encrypt_decrypt_example(void) {
 
   // --- Build the blinded AES-ECB key ---
   otcrypto_key_config_t key_config = {
-    .version        = kOtcryptoLibVersion1,
+    .version        = otcrypto_lib_version(),
     .key_mode       = kOtcryptoKeyModeAesEcb,
     .key_length     = 16,
     .hw_backed      = kHardenedBoolFalse,

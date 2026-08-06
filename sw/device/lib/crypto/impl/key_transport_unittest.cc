@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -26,8 +27,8 @@ using ::testing::ElementsAreArray;
 #define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR hardware-backed key).
-constexpr otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolTrue,
@@ -36,8 +37,8 @@ constexpr otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
 };
 
 // Invalid RSA key configuration for testing (sideloaded RSA-2048 key).
-constexpr otcrypto_key_config_t kConfigRsaInvalid = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigRsaInvalid = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeRsaSignPkcs,
     .key_length = 2048 / 8,
     .hw_backed = kHardenedBoolTrue,
@@ -46,8 +47,8 @@ constexpr otcrypto_key_config_t kConfigRsaInvalid = {
 };
 
 // Key configuration for testing (128-bit AES-CTR exportable key).
-constexpr otcrypto_key_config_t kConfigExportableAesCtr128 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigExportableAesCtr128 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
@@ -56,8 +57,8 @@ constexpr otcrypto_key_config_t kConfigExportableAesCtr128 = {
 };
 
 // Key configuration for testing (128-bit AES-CTR non-exportable key).
-constexpr otcrypto_key_config_t kConfigNonExportableAesCtr128 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigNonExportableAesCtr128 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
@@ -66,8 +67,8 @@ constexpr otcrypto_key_config_t kConfigNonExportableAesCtr128 = {
 };
 
 // Key configuration for testing (256-bit AES-KWP key).
-constexpr otcrypto_key_config_t kConfigAesKwp256 = {
-    .version = kOtcryptoLibVersion1,
+const otcrypto_key_config_t kConfigAesKwp256 = {
+    .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
@@ -370,6 +371,37 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   // Bad KEK mode
   EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_mode, &success,
                                     &target_key));
+}
+
+TEST(KeyTransport, BlindedKeyMigrate) {
+  uint32_t keyblob[8] = {0};
+  otcrypto_blinded_key_t old_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = 16,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  otcrypto_blinded_key_t new_key = old_key;
+
+  EXPECT_OK(otcrypto_blinded_key_migrate(&old_key, &new_key));
+
+  // Modify version to something other than Version1.
+  otcrypto_blinded_key_t bad_version_key = old_key;
+  *(otcrypto_lib_version_t *)&bad_version_key.config.version =
+      kOtcryptoLibVersion2;
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&bad_version_key, &new_key));
+
+  // Hardware-backed keys cannot be migrated.
+  otcrypto_blinded_key_t hw_backed_key = old_key;
+  *(hardened_bool_t *)&hw_backed_key.config.hw_backed = kHardenedBoolTrue;
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&hw_backed_key, &new_key));
 }
 
 }  // namespace

@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
@@ -30,7 +31,7 @@ status_t test_stateful_kat_execution(void) {
   otcrypto_state_t initial_state = test_cryptolib_state;
 
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesEcb,
       .key_length = 16,
       .hw_backed = kHardenedBoolFalse,

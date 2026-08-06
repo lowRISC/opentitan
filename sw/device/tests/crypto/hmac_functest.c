@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -31,6 +32,8 @@ static hmac_test_vector_t *current_test_vector = NULL;
  * Run the test pointed to by `current_test_vector`.
  */
 static status_t run_test_vector(void) {
+  *(otcrypto_lib_version_t *)&current_test_vector->key.config.version =
+      otcrypto_lib_version();
   // Populate `checksum` and `config.security_level` fields.
   current_test_vector->key.checksum =
       otcrypto_integrity_blinded_checksum(&current_test_vector->key);
@@ -79,7 +82,7 @@ static status_t run_negative_tests(void) {
 
   // Base valid config
   otcrypto_key_config_t valid_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,

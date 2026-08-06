@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -27,13 +28,14 @@ enum {
   kP256SignatureWords = 512 / 32,
 };
 
-static const otcrypto_key_config_t kPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = kP256PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kPrivateKeyConfig                             \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP256,          \
+      .key_length = kP256PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 static const char kMessage[] = "test message";
 

@@ -247,6 +247,18 @@ otcrypto_status_t otcrypto_export_blinded_key(
     const otcrypto_blinded_key_t *blinded_key,
     otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1);
 
+/**
+ * Migrates a blinded key from an older cryptolib version to the current
+ * version.
+ *
+ * @param old_key The blinded key to migrate.
+ * @param[out] new_key The migrated blinded key.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_blinded_key_migrate(
+    const otcrypto_blinded_key_t *old_key, otcrypto_blinded_key_t *new_key);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

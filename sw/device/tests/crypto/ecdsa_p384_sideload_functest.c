@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -30,13 +31,14 @@ enum {
 // Message
 static const char kMessage[] = "test message";
 
-static const otcrypto_key_config_t kPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP384,
-    .key_length = kP384PrivateKeyBytes,
-    .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kPrivateKeyConfig                             \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP384,          \
+      .key_length = kP384PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolTrue,                 \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 static const uint32_t kPrivateKeySalt[7] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
                                             0xdeadbeef, 0xdeadbeef, 0xdeadbeef,

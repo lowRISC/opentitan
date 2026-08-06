@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -86,22 +87,24 @@ static const uint32_t kPrivateKeyBSalt[7] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
                                              0xb8b9babb};
 
 // Configuration for the private key.
-static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeX25519,
-    .key_length = kCurve25519KeyBytes,
-    .hw_backed = kHardenedBoolTrue,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kX25519PrivateKeyConfig                       \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeX25519,             \
+      .key_length = kCurve25519KeyBytes,              \
+      .hw_backed = kHardenedBoolTrue,                 \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Configuration for the X25519 shared (symmetric) key.
-static const otcrypto_key_config_t kX25519SharedKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesCtr,
-    .key_length = kCurve25519KeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kX25519SharedKeyConfig                        \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesCtr,             \
+      .key_length = kCurve25519KeyBytes,              \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 status_t key_exchange_test(void) {
   uint32_t keyblobA[keyblob_num_words(kX25519PrivateKeyConfig)];
