@@ -31,10 +31,10 @@ sudo ip netns exec airgapped sudo -u "$USER" \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
     OT_AIRGAPPED="true"                                              \
     BITSTREAM="--offline latest"                                     \
-  "${PWD}/bazel-airgapped/bazel" build                               \
-    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
+   "${PWD}/bazel-airgapped/bazel" build                              \
     --vendor_dir="${PWD}/bazel-airgapped/bazel-vendor"               \
     --define DISABLE_VERILATOR_BUILD=true                            \
-    //sw/device/silicon_creator/rom:mask_rom
+    //sw/device/silicon_creator/rom:mask_rom                         \
+    //sw/device/tests:uart_smoketest_fpga_cw340_sival
 
 exit 0
