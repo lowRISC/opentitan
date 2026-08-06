@@ -52,7 +52,7 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
     --define "$fpga"=lowrisc \
     --test_output=all \
     --build_tests_only \
-    //sw/device/tests:fpga_priming_test_fpga_cw340_sival "$@" \
+    //sw/device/tests:fpga_priming_test_fpga_${fpga}_sival "$@" \
     --cache_test_results=no
 
 ./bazelisk.sh test \
