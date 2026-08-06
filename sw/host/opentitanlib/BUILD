@@ -364,6 +364,7 @@ rust_library(
         "@crate_index//:serialport",
         "@crate_index//:sha2",
         "@crate_index//:shellwords",
+        "@crate_index//:slh-dsa",
         "@crate_index//:strum",
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
