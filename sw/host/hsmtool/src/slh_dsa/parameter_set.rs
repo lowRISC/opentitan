@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use der::asn1::ObjectIdentifier;
+
 use crate::slh_dsa::SlhDsaError;
 use crate::util::attribute::AttrData;
-use asn1::{ObjectIdentifier, oid};
 
 #[derive(
     Clone,
@@ -61,18 +62,30 @@ impl From<SlhDsaParameterSet> for AttrData {
 
 impl SlhDsaParameterSet {
     // Object Identifiers for SLH-DSA parameter sets.
-    const OID_SLHDSA_SHA2_128S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 20);
-    const OID_SLHDSA_SHA2_128F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 21);
-    const OID_SLHDSA_SHA2_192S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 22);
-    const OID_SLHDSA_SHA2_192F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 23);
-    const OID_SLHDSA_SHA2_256S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 24);
-    const OID_SLHDSA_SHA2_256F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 25);
-    const OID_SLHDSA_SHAKE128S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 26);
-    const OID_SLHDSA_SHAKE128F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 27);
-    const OID_SLHDSA_SHAKE192S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 28);
-    const OID_SLHDSA_SHAKE192F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 29);
-    const OID_SLHDSA_SHAKE256S: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 30);
-    const OID_SLHDSA_SHAKE256F: ObjectIdentifier = oid!(2, 16, 840, 1, 101, 3, 4, 3, 31);
+    const OID_SLHDSA_SHA2_128S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.20");
+    const OID_SLHDSA_SHA2_128F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.21");
+    const OID_SLHDSA_SHA2_192S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.22");
+    const OID_SLHDSA_SHA2_192F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.23");
+    const OID_SLHDSA_SHA2_256S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.24");
+    const OID_SLHDSA_SHA2_256F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.25");
+    const OID_SLHDSA_SHAKE128S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.26");
+    const OID_SLHDSA_SHAKE128F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.27");
+    const OID_SLHDSA_SHAKE192S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.28");
+    const OID_SLHDSA_SHAKE192F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.29");
+    const OID_SLHDSA_SHAKE256S: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.30");
+    const OID_SLHDSA_SHAKE256F: ObjectIdentifier =
+        ObjectIdentifier::new_unwrap("2.16.840.1.101.3.4.3.31");
 }
 
 impl TryFrom<ObjectIdentifier> for SlhDsaParameterSet {
@@ -103,8 +116,8 @@ impl SlhDsaParameterSet {
     const KEY_LENGTH_SLHDSA_256: usize = 64;
 
     /// Public Key length for given parameter set.
-    pub fn pk_bytes(parameter_set: Self) -> usize {
-        match parameter_set {
+    pub fn pk_bytes(&self) -> usize {
+        match self {
             Self::Sha2_128S | Self::Sha2_128F | Self::Shake128S | Self::Shake128F => {
                 Self::KEY_LENGTH_SLHDSA_128
             }

@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::slh_dsa::{SlhDsaError, SlhDsaParameterSet};
-use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
+use der;
+use der::asn1::{ObjectIdentifier, OctetString};
+use der::{Decode, Sequence};
+use rsa::pkcs8;
+use rsa::pkcs8::DecodePrivateKey;
 
-use asn1::ParseResult;
-use std::path::Path;
+use crate::slh_dsa::SlhDsaParameterSet;
+use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 
 #[derive(Clone)]
 #[allow(dead_code)]
@@ -49,7 +52,7 @@ impl From<SlhDsaPublicKey> for AttributeMap {
 impl From<&SlhDsaPrivateKey> for SlhDsaPublicKey {
     fn from(pk: &SlhDsaPrivateKey) -> Self {
         // The private key contains a copy of the public key.
-        let n = SlhDsaParameterSet::pk_bytes(pk.parameter_set);
+        let n = pk.parameter_set.pk_bytes();
         SlhDsaPublicKey {
             parameter_set: pk.parameter_set,
             key: pk.key[n..].to_vec(),
@@ -57,60 +60,45 @@ impl From<&SlhDsaPrivateKey> for SlhDsaPublicKey {
     }
 }
 
-impl SlhDsaPrivateKey {
-    fn from_bytes(parameter_set: SlhDsaParameterSet, bytes: &[u8]) -> Result<Self, SlhDsaError> {
-        // An SLH-DSA private key consists of the secret key and the public key,
-        // both of which are the same size.
-        if bytes.len() != 2 * SlhDsaParameterSet::pk_bytes(parameter_set) {
-            return Err(SlhDsaError::BadKeyLength(bytes.len()));
+#[derive(Sequence)]
+pub struct AlgorithmIdentifier {
+    algorithm: ObjectIdentifier,
+}
+
+#[derive(Sequence)]
+pub struct PrivateKey {
+    version: u64,
+    algorithm_identifier: AlgorithmIdentifier,
+    private_key: OctetString,
+}
+
+impl Into<(u64, ObjectIdentifier, Vec<u8>)> for PrivateKey {
+    fn into(self) -> (u64, ObjectIdentifier, Vec<u8>) {
+        (
+            self.version,
+            self.algorithm_identifier.algorithm,
+            self.private_key.into_bytes(),
+        )
+    }
+}
+
+impl DecodePrivateKey for SlhDsaPrivateKey {
+    fn from_pkcs8_der(bytes: &[u8]) -> pkcs8::Result<Self> {
+        let (version, oid, key) = PrivateKey::from_der(bytes)?.into();
+
+        if version != 0 {
+            return Err(pkcs8::Error::ParametersMalformed);
         }
-        Ok(Self {
-            parameter_set,
-            key: bytes.to_vec(),
-        })
-    }
 
-    pub fn from_pem_file<P: AsRef<Path>>(filename: P) -> Result<Self, SlhDsaError> {
-        let s = std::fs::read_to_string(filename).map_err(SlhDsaError::Io)?;
-        Self::from_pem(&s)
-    }
+        let parameter_set =
+            SlhDsaParameterSet::try_from(oid).map_err(|_| pkcs8::Error::ParametersMalformed)?;
 
-    /// Decode an SLH-DSA private key from a PEM encoded string.
-    fn from_pem(s: &str) -> Result<Self, SlhDsaError> {
-        let (label, bytes) = pem_rfc7468::decode_vec(s.as_bytes()).map_err(SlhDsaError::Pem)?;
+        if key.len() != 2 * parameter_set.pk_bytes() {
+            return Err(pkcs8::Error::KeyMalformed);
+        }
 
-        // OpenSSL generates SLH-DSA private keys with this ASN.1 structure:
-        //
-        // SEQUENCE (PrivateKeyInfo)
-        // |- INTEGER (Version) = 0
-        // |- SEQUENCE (AlgorithmIdentifier)
-        // |  +- OBJECT IDENTIFIER
-        // +- OCTET STRING (PrivateKey)
-        let parse: ParseResult<(asn1::ObjectIdentifier, u64, &[u8])> =
-            asn1::parse(bytes.as_ref(), |d| {
-                let seq: asn1::Sequence<'_> = d.read_element::<asn1::Sequence>()?;
-                let inner = seq.parse(|d| {
-                    let version = d.read_element::<u64>()?;
-                    let seq: asn1::Sequence<'_> = d.read_element::<asn1::Sequence>()?;
-                    let oid = seq.parse(|d| {
-                        let oid = d.read_element::<asn1::ObjectIdentifier>()?;
-                        Ok(oid)
-                    })?;
-                    let bytes = d.read_element::<&[u8]>()?;
-                    Ok((oid, version, bytes))
-                })?;
-                Ok(inner)
-            });
+        let sk = Self { parameter_set, key };
 
-        let (oid, bytes) = match parse {
-            Ok(x) => match x {
-                (oid, 0, bytes) => Ok((oid, bytes)),
-                _ => Err(SlhDsaError::ParseError("Unexpected version".to_string())),
-            },
-            Err(_) => Err(SlhDsaError::ParseError("Failed to parse".to_string())),
-        }?;
-
-        let parameter_set = SlhDsaParameterSet::try_from(oid)?;
-        Self::from_bytes(parameter_set, bytes)
+        Ok(sk)
     }
 }

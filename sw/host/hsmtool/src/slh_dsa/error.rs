@@ -22,5 +22,5 @@ pub enum SlhDsaError {
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    Pem(#[from] pem_rfc7468::Error),
+    Pkcs8(#[from] rsa::pkcs8::Error),
 }

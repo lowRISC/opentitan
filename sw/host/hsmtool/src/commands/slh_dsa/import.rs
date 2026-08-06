@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use cryptoki::session::Session;
+use rsa::pkcs8::DecodePrivateKey;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::path::PathBuf;
@@ -60,7 +61,8 @@ impl Dispatch for Import {
         let session = session.ok_or(HsmError::SessionRequired)?;
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
 
-        let sk = SlhDsaPrivateKey::from_pem_file(&self.filename)?;
+        let data = std::fs::read_to_string(&self.filename)?;
+        let sk = SlhDsaPrivateKey::from_pkcs8_pem(&data)?;
         let pk = SlhDsaPublicKey::from(&sk);
 
         let mut private_attrs =
@@ -78,6 +80,9 @@ impl Dispatch for Import {
         public_attrs.insert(AttributeType::Id, id.clone());
         public_attrs.insert(AttributeType::Label, label.clone());
         public_attrs.merge(pk.into());
+
+        let _sk = session.create_object(&private_attrs.to_vec()?)?;
+        let _pk = session.create_object(&public_attrs.to_vec()?)?;
 
         Ok(Box::new(BasicResult {
             success: true,
