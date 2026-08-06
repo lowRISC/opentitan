@@ -84,21 +84,26 @@ typedef struct otcrypto_interface_t {
                                                    size_t *);
 
   // AES-GCM
-  otcrypto_status_t (*aes_gcm_encrypt)(otcrypto_blinded_key_t *,
-                                       const otcrypto_const_byte_buf_t *,
-                                       const otcrypto_const_word32_buf_t *,
-                                       const otcrypto_const_byte_buf_t *,
-                                       otcrypto_aes_gcm_tag_len_t,
-                                       otcrypto_byte_buf_t *,
-                                       otcrypto_word32_buf_t *);
+  otcrypto_status_t (*aes_gcm_encrypt)(
+      otcrypto_blinded_key_t *, const otcrypto_const_byte_buf_t *,
+      const otcrypto_const_byte_buf_t *, otcrypto_aes_gcm_tag_len_t,
+      otcrypto_word32_buf_t *, otcrypto_byte_buf_t *, otcrypto_word32_buf_t *);
+  otcrypto_status_t (*aes_gcm_encrypt_manual_iv)(
+      otcrypto_blinded_key_t *, const otcrypto_const_byte_buf_t *,
+      const otcrypto_const_word32_buf_t *, const otcrypto_const_byte_buf_t *,
+      otcrypto_aes_gcm_tag_len_t, otcrypto_byte_buf_t *,
+      otcrypto_word32_buf_t *);
   otcrypto_status_t (*aes_gcm_decrypt)(
       otcrypto_blinded_key_t *, const otcrypto_const_byte_buf_t *,
       const otcrypto_const_word32_buf_t *, const otcrypto_const_byte_buf_t *,
       otcrypto_aes_gcm_tag_len_t, const otcrypto_const_word32_buf_t *,
       otcrypto_byte_buf_t *, hardened_bool_t *);
   otcrypto_status_t (*aes_gcm_encrypt_init)(otcrypto_blinded_key_t *,
-                                            const otcrypto_const_word32_buf_t *,
+                                            otcrypto_word32_buf_t *,
                                             otcrypto_aes_gcm_context_t *);
+  otcrypto_status_t (*aes_gcm_encrypt_init_manual_iv)(
+      otcrypto_blinded_key_t *, const otcrypto_const_word32_buf_t *,
+      otcrypto_aes_gcm_context_t *);
   otcrypto_status_t (*aes_gcm_decrypt_init)(otcrypto_blinded_key_t *,
                                             const otcrypto_const_word32_buf_t *,
                                             otcrypto_aes_gcm_context_t *);

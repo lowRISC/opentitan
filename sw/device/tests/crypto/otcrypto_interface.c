@@ -59,10 +59,12 @@ volatile otcrypto_interface_t otcrypto = {
 
     // AES-GCM (one-shot).
     .aes_gcm_encrypt = &otcrypto_aes_gcm_encrypt,
+    .aes_gcm_encrypt_manual_iv = &otcrypto_aes_gcm_encrypt_manual_iv,
     .aes_gcm_decrypt = &otcrypto_aes_gcm_decrypt,
 
     // AES-GCM (streaming).
     .aes_gcm_encrypt_init = &otcrypto_aes_gcm_encrypt_init,
+    .aes_gcm_encrypt_init_manual_iv = &otcrypto_aes_gcm_encrypt_init_manual_iv,
     .aes_gcm_decrypt_init = &otcrypto_aes_gcm_decrypt_init,
     .aes_gcm_update_aad = &otcrypto_aes_gcm_update_aad,
     .aes_gcm_update_encrypted_data = &otcrypto_aes_gcm_update_encrypted_data,
