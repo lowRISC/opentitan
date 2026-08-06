@@ -68,9 +68,8 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
     ],
@@ -91,5 +90,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:hash",
     ],
 )

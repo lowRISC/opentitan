@@ -140,6 +140,39 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
     hardened_bool_t *verification_result);
 
 /**
+ * Generates an ECDSA signature with curve P-384 and verifies it before output.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param hash_mode Hash algorithm to use for message hashing.
+ * @param message Message data to be hashed and signed.
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message, otcrypto_word32_buf_t *signature);
+
+/**
+ * Verifies an ECDSA/P-384 signature by hashing the message first.
+ *
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param hash_mode Hash algorithm to use for message hashing.
+ * @param message Message data to be hashed and verified.
+ * @param signature Pointer to the signature to be verified.
+ * @param[out] verification_result Whether the signature passed verification.
+ * @return Result of the ECDSA verification operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result);
+
+/**
  * Generates a key pair for ECDH with curve P-384.
  *
  * The caller should allocate and partially populate the blinded key struct,
