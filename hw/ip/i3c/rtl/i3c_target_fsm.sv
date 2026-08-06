@@ -476,15 +476,27 @@ module i3c_target_fsm
   wire ccc_active  = state_q inside {CCC, CCC_Tx, CCC_P};
   wire ccc_enabled = enable_i & ccc_active;
 
+
+  logic ccc_rready, prv_rready;
+
   // Data received from the transceiver logic may be destined for either the Rx buffer or the
   // CCC handling.
-  wire ccc_rvalid_i = trx_rvalid_i & |{// Just starting CCC handling.
-                                       state_q == Inactive && trx_rxd_i.ccc_state == CCC_Setup,
-                                       // CCC handling is ongoing.
-                                       ccc_active};
-  wire prv_rvalid_i = trx_rvalid_i & !ccc_rvalid_i;
-  logic ccc_rready_o, prv_rready_o;
-  assign trx_rready_o = ccc_rready_o | prv_rready_o;
+  wire ccc_rvalid = trx_rvalid_i & |{// Just starting CCC handling.
+                                     state_q == Inactive && trx_rxd_i.ccc_state == CCC_Setup,
+                                     // CCC handling is ongoing.
+                                     ccc_active};
+  wire prv_rvalid = trx_rvalid_i & !ccc_rvalid;
+
+  // Accept responses immediately.
+  // TODO: we should still be detecting and reporting any data loss here, e.g. unresponsive
+  // Rx data buffer. Buffer may be full, in particular.
+  assign prv_rready = prv_rvalid;
+
+  // TODO: May need to handle buffer full conditions here; async event queue, perhaps rx buffer
+  // for some very specific CCCs with large payloads such as DEFTGTS?
+  assign ccc_rready = ccc_rvalid;
+
+  assign trx_rready_o = ccc_rready | prv_rready;
 
   // Entering CCC Tx in response to a Direct Read request?
   logic ccc_tx_start;
@@ -524,10 +536,6 @@ module i3c_target_fsm
       default: begin end
     endcase
   end
-
-  // TODO: May need to handle buffer full conditions here; async event queue, perhaps rx buffer
-  // for some very specific CCCs with large payloads such as DEFTGTS?
-  assign ccc_rready_o = ccc_rvalid_i;
 
   // Target core state machine.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -765,16 +773,11 @@ module i3c_target_fsm
 
   wire dtype_crc  = (trx_rxd_i.dtype == I3CDType_CRCWord);
   wire dtype_data = (trx_rxd_i.dtype inside {I3CDType_DataWord, I3CDType_SDRBytes});
-  wire rx_accepted = &{prv_rvalid_i, trx_rready_o, dtype_data, !rx_drop};
-
-  // Accept responses immediately.
-  // TODO: we should still be detecting and reporting any data loss here, e.g. unresponsive
-  // Rx data buffer. Buffer may be full, in particular.
-  assign prv_rready_o = prv_rvalid_i;
+  wire rx_accepted = &{prv_rvalid, trx_rready_o, dtype_data, !rx_drop};
 
   // Flooding error has actually occurred.
   logic rx_flood_q;
-  wire rx_flood = &{prv_rvalid_i, dtype_data, rx_drop};
+  wire rx_flood = &{prv_rvalid, dtype_data, rx_drop};
 
   // Construction of TTI Rx Descriptors.
   // - an initial descriptor informs the driver of the addressing information, setting `start.`
@@ -805,7 +808,7 @@ module i3c_target_fsm
                      rx_flood_q, &rx_data_len};     // Persistent until the end of the transfer.
 
   wire rx_flush = (stop_det_i & |rx_data_len) ||  // SDR
-                  (prv_rvalid_i & trx_rready_o & dtype_crc); // HDR-DDR
+                  (prv_rvalid & trx_rready_o & dtype_crc); // HDR-DDR
   // TODO: rx_data_len will always have even values if trx_rxd_i.dtype != I3CDType_SDRBytes, so
   //       &rx_data_len will never fire in the DDR case: We therefore need to check for
   //       &rx_data_len[13:1] in DDR mode instead.
