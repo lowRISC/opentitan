@@ -358,7 +358,7 @@ module otbn_core
 
   logic mai_software_error;
   logic mai_reg_intg_violation_err;
-  logic mai_state_err;
+  logic mai_state_err, mai_state_err_d;
 
   logic kmac_sec_wipe_err;
   logic kmac_reg_intg_violation_err;
@@ -734,6 +734,7 @@ module otbn_core
       non_controller_reg_intg_violation <= '0;
       insn_addr_err                     <= '0;
       mac_bignum_state_error            <= '0;
+      mai_state_err                     <= '0;
       kmac_state_err                    <= '0;
     end else begin
       urnd_all_zero                     <= urnd_all_zero_d;
@@ -743,6 +744,7 @@ module otbn_core
       non_controller_reg_intg_violation <= non_controller_reg_intg_violation_d;
       insn_addr_err                     <= insn_addr_err_d;
       mac_bignum_state_error            <= mac_bignum_state_error_d;
+      mai_state_err                     <= mai_state_err_d;
       kmac_state_err                    <= kmac_state_err_d;
     end
   end
@@ -1177,7 +1179,7 @@ module otbn_core
       .ispr_mod_intg_i             (ispr_mod_intg),
       .mai_software_error_o        (mai_software_error),
       .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
-      .mai_state_err_o             (mai_state_err),
+      .mai_state_err_o             (mai_state_err_d),
       .urnd_data_i                 (urnd_data)
     );
   end
