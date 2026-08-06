@@ -99,6 +99,11 @@ BAZEL_STARLARK_QUERY_RULE_KIND = {
     "opentitan_test": BAZEL_STARLARK_FILE_DATA_RUNFILES_FILES_QUERY,
     "opentitan_binary": BAZEL_STARLARK_FILE_FILES_QUERY,
     "alias": BAZEL_STARLARK_FILE_FILES_QUERY,
+    # otp_image() targets: FILES_QUERY.cquery also picks up their `rram_otp` output group (see
+    # rules/otp.bzl), needed to backdoor-load OTP images selected via the `SwTypeOtp`
+    # `sw_images` mechanism (see chip_env_cfg.sv) on tops that store OTP inside the RRAM data
+    # array.
+    "otp_image": BAZEL_STARLARK_FILE_FILES_QUERY,
 }
 
 ENV = os.environ.copy()
@@ -366,10 +371,12 @@ def _deploy_software_collateral(args) -> None:
 
     logger.info("Image query parameters determined.\n")
 
-    # Build all the software artifacts
+    # Build all the software artifacts. `+rram_otp` opportunistically also builds otp_image()
+    # targets' RRAM-reformatted output group (see rules/otp.bzl) alongside their default
+    # outputs; targets without that group (i.e. everything except otp_image()) are unaffected.
     bazel_labels = [v.label for v in image_query_map.values()]
     logger.info("Building all labels...")
-    bazel_runner.build(bazel_labels)
+    bazel_runner.build(bazel_labels, opts=["--output_groups=+rram_otp"])
     logger.info("All labels built.\n")
 
     # Now the build is complete, deploy the files for each target
