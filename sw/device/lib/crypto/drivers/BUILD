@@ -37,6 +37,12 @@ CRYPTO_EXEC_ENVS = dicts.add(
 
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
+cc_library(
+    name = "cryptolib_build_info_hdrs",
+    hdrs = ["cryptolib_build_info.h"],
+    deps = ["//sw/device/lib/crypto/include:datatypes"],
+)
+
 dual_cc_library(
     name = "alert",
     srcs = dual_inputs(
