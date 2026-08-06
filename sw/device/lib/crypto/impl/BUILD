@@ -147,6 +147,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":hash",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -162,6 +163,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":hash",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
@@ -410,6 +412,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":hash",
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
@@ -521,6 +524,20 @@ dual_cc_library(
             "//sw/device/lib/crypto/include:datatypes",
         ],
     ),
+)
+
+cc_library(
+    name = "hash",
+    srcs = ["hash.c"],
+    hdrs = ["hash.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":sha2",
+        ":sha3",
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
 )
 
 cc_library(
