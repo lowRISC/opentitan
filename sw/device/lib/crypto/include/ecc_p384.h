@@ -207,6 +207,28 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
                                      otcrypto_blinded_key_t *shared_secret);
 
 /**
+ * Performs P-384 ECDH key agreement followed by HKDF key derivation.
+ *
+ * Computes the shared secret Z internally, immediately passes Z into HKDF along
+ * with optional salt and info strings to derive `okm`, and securely wipes Z
+ * from internal memory before returning. Satisfies NIST SP 800-56A Section 5.8
+ * and SP 800-56C key-establishment requirements.
+ *
+ * @param private_key Blinded private key (d).
+ * @param public_key Unblinded public key (Q).
+ * @param salt Salt value for HKDF (optional, may be empty).
+ * @param info Context-specific string for HKDF (optional, may be empty).
+ * @param[out] okm Blinded output keying material.
+ * @return Result of the ECDH + KDF key agreement operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_kdf(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_const_byte_buf_t *salt,
+    const otcrypto_const_byte_buf_t *info, otcrypto_blinded_key_t *okm);
+
+/**
  * Starts asynchronous key generation for ECDSA/P-384.
  *
  * See `otcrypto_ecdsa_p384_keygen` for requirements on input values.

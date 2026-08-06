@@ -214,6 +214,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDH P-256 (blocking).
     .ecdh_p256_keygen = &otcrypto_ecdh_p256_keygen,
     .ecdh_p256 = &otcrypto_ecdh_p256,
+    .ecdh_p256_kdf = &otcrypto_ecdh_p256_kdf,
 
     // ECDSA P-256 (async).
     .ecdsa_p256_keygen_async_start = &otcrypto_ecdsa_p256_keygen_async_start,
@@ -264,6 +265,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDH P-384 (blocking).
     .ecdh_p384_keygen = &otcrypto_ecdh_p384_keygen,
     .ecdh_p384 = &otcrypto_ecdh_p384,
+    .ecdh_p384_kdf = &otcrypto_ecdh_p384_kdf,
 
     // ECDSA P-384 (async).
     .ecdsa_p384_keygen_async_start = &otcrypto_ecdsa_p384_keygen_async_start,

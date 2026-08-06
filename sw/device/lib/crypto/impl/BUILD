@@ -144,6 +144,7 @@ cc_library(
     deps = [
         ":config",
         ":hash",
+        ":hkdf",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -159,6 +160,7 @@ cc_library(
     deps = [
         ":config",
         ":hash",
+        ":hkdf",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",

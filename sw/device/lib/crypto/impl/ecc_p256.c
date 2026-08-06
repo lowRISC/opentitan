@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hkdf.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
@@ -410,6 +411,36 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
   return otcrypto_ecdh_p256_async_finalize(shared_secret);
+}
+
+otcrypto_status_t otcrypto_ecdh_p256_kdf(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_const_byte_buf_t *salt,
+    const otcrypto_const_byte_buf_t *info, otcrypto_blinded_key_t *okm) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || public_key == NULL || okm == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  uint32_t shared_secret_keyblob[kP256CoordWords * 2];
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .key_mode = kOtcryptoKeyModeHmacSha256,
+              .key_length = kP256CoordBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = private_key->config.security_level,
+          },
+      .keyblob_length = sizeof(shared_secret_keyblob),
+      .keyblob = shared_secret_keyblob,
+  };
+
+  HARDENED_TRY(otcrypto_ecdh_p256(private_key, public_key, &shared_secret));
+  otcrypto_status_t status = otcrypto_hkdf(&shared_secret, salt, info, okm);
+  HARDENED_TRY(hardened_memshred(shared_secret_keyblob,
+                                 ARRAYSIZE(shared_secret_keyblob)));
+  return status;
 }
 
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(

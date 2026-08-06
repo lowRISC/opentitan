@@ -383,6 +383,11 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdh_p256)(const otcrypto_blinded_key_t *,
                                  const otcrypto_unblinded_key_t *,
                                  otcrypto_blinded_key_t *);
+  otcrypto_status_t (*ecdh_p256_kdf)(const otcrypto_blinded_key_t *,
+                                     const otcrypto_unblinded_key_t *,
+                                     const otcrypto_const_byte_buf_t *,
+                                     const otcrypto_const_byte_buf_t *,
+                                     otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdsa_p256_keygen_async_start)(
       const otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdsa_p256_keygen_async_finalize)(
@@ -465,6 +470,11 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecdh_p384)(const otcrypto_blinded_key_t *,
                                  const otcrypto_unblinded_key_t *,
                                  otcrypto_blinded_key_t *);
+  otcrypto_status_t (*ecdh_p384_kdf)(const otcrypto_blinded_key_t *,
+                                     const otcrypto_unblinded_key_t *,
+                                     const otcrypto_const_byte_buf_t *,
+                                     const otcrypto_const_byte_buf_t *,
+                                     otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdsa_p384_keygen_async_start)(
       const otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdsa_p384_keygen_async_finalize)(
