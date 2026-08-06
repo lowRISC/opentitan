@@ -268,6 +268,9 @@ decode_h:
   /* Calculate the number of iterations end - start. */
   sub x7, x7, x6
 
+  /* This is the edge case where the entire hint is 0. */
+  beq x7, x0, _decode_h_end
+
   /* Constant coefficient 1. */
   addi x8, x0, 1
 
@@ -285,6 +288,8 @@ decode_h:
 
     addi x6, x6, 1
     /* End of loop */
+
+_decode_h_end:
 
   /* Restore clobbered general-purpose registers. */
   .irp reg, x9, x8, x7, x6, x5, x4
