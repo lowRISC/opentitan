@@ -11,6 +11,12 @@
       "alias_of": "CN10_29"
     },
     {
+      "name": "TRST",
+      "mode": "OpenDrain",
+      "pull_mode": "PullUp",
+      "alias_of": "IOR4"
+    },
+    {
       "name": "DFT_STRAP0",
       "mode": "Alternate",
       "alias_of": "IOC3"
@@ -269,6 +275,15 @@
         {
           "name": "DFT_STRAP1",
           "mode": "PushPull",
+          "level": false
+        }
+      ]
+    },
+    {
+      "name": "TRST",
+      "pins": [
+        {
+          "name": "TRST",
           "level": false
         }
       ]
