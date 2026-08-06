@@ -46,12 +46,14 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
 
 # Run a minimal, dedicated test before the rest of the batch. Its setup already loads the
 # bitstream and preloads the ROM/OTP like any other FPGA test.
+# Never cache the priming test, regardless of the supplied bazel test options.
 ./bazelisk.sh test \
     --define DISABLE_VERILATOR_BUILD=true \
     --define "$fpga"=lowrisc \
     --test_output=all \
     --build_tests_only \
-    //sw/device/tests:fpga_priming_test_fpga_cw340_sival "$@"
+    //sw/device/tests:fpga_priming_test_fpga_cw340_sival "$@" \
+    --cache_test_results=no
 
 ./bazelisk.sh test \
     --run_under=//ci/scripts:run_test \
