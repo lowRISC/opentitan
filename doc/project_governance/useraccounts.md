@@ -15,13 +15,16 @@
 ### Partner Individuals
 
 Partner Individuals are those working for an OpenTitan Project Partner and designated by that Project Partner as one of its contributors to the OpenTitan project.
-No separate legal agreement beyond the partner agreement is required.
 
-Partners may identify individuals as Partner Individuals by requesting an [OpenTitan account](./useraccounts.md#requesting-a-partner-individual-account).
-A number of OpenTitan accounts are available according to the Partnership agreement.
-By identifying an individual as a Partner Individual, the Partner authorises them to agree to the terms in the OpenTitan CLA when making contributions.
+By identifying an individual as a Partner Individual, the Partner authorises them to agree to the terms in the OpenTitan Contributor License Agreement (CLA) when making contributions.
+See [CONTRIBUTING.md](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md) for more information on the CLA.
+No separate Corporate Contributor License Agreement beyond the partner agreement is required.
 
 If a Partner Individual leaves the employment of a Project Partner, the Project Partner must notify lowRISC C.I.C. promptly so that they can be removed from the Project.
+
+Partners may identify individuals as Partner Individuals up to the limit specified in their Partnership agreement.
+If you have more people wishing to get involved than the free entitlement from your partner membership, further user accounts can be purchased.
+If an account is not needed, it can be closed by contacting get-involved@opentitan.org and the account entitlement reused.
 
 ### Individual Collaborators
 
@@ -36,50 +39,6 @@ In most cases where an individual is associated with an organisation, the organi
 If an individual is contributing as an individual collaborator, and is associated with an organisation which is not a Partner, as the individual is assigning licenses to the project,
 the associated organisation will need to sign a [corporate contributor license agreement](./corporate_cla.txt).
 
-## Account Management
+## Requesting a user account
 
-### Requesting a partner individual account
-User accounts are available through partner membership.
-Accounts are requested from get-involved@opentitan.org.
-If you have more people wishing to get involved than the free entitlement from your partner membership, further user accounts can be purchased.
-
-The limit on OpenTitan accounts according to your partnership level is applied to **open** accounts.
-If an account is not needed, it can be closed by contacting get-involved@opentitan.org and the account entitlement reused.
-
-### Requesting other accounts
-Individual Collaborators should be proposed by lowRISC or a Project Partner, a decision by the Governing Board and approval by lowRISC after an Individual Collaborator agreement is signed.
-
-### Using an OpenTitan account
-All communications using your OpenTitan account are as part of the OpenTitan community.
-Please be aware of, and comply with, the [code of conduct](./code_of_conduct.md).
-
-OpenTitan accounts are for individuals, and should not be shared between individuals, even within the same Partner organisation.
-
-The OpenTitan account is intended for managing communications within OpenTitan.
-The associated storage ("OpenTitan workspaces") are not intended for long-term storage and there is no guarantee that data will not be deleted.
-- OpenTitan workspaces should not be used as general storage space to store non-OpenTitan material.
-- Company confidential material and non-OpenTitan IP should not be stored in OpenTitan workspaces.
-- lowRISC, as stewards of OpenTitan, are not responsible for management and backup of OpenTitan workspaces.
-- If OpenTitan accounts are closed, associated workspace data is deleted.
-
-### Maintenance of OpenTitan accounts
-If you no longer need your OpenTitan account, please notify get-involved@opentitan.org and the account can be closed.
-
-If a Partner Individual leaves the employment of a Project Partner:
-- the Project Partner must notify lowRISC C.I.C. promptly so that they can be removed from the project
-- a nominated company representative should be specified for account data to be transferred as described in the next section
-
-If an OpenTitan account is not being used, it will eventually be closed, following the process below:
-- OpenTitan account usage will be monitored quarterly
-- Using an account is considered any of the following:
-  - Signing in to the account
-  - Sending a slack message
-  - Any GitHub activity using the account
-- If an account has not been used for **6 months** it is considered **inactive**
-- If an account is **inactive** the owner will be sent a warning that the account may be deleted
-- If there is no response and the account remains **inactive** the account will be **closed** after **one month**
-
-### Management of OpenTitan account data on closure
-When a user account is closed, the account is deleted including all other data stored in the associated personal Google workspace (e.g. Calendar, Gmail, etc).
-
-If lowRISC C.I.C. is notified of a Partner Individual leaving the Project Partner, user files on MyDrive are transferred to the nominated company representative.
+To request and set up a new user account for a Partner Individual or an Individual Contributor, please contact [get-involved@opentitan](mailto:get-involved@opentitan).
