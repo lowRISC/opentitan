@@ -951,9 +951,9 @@ static status_t kat_aes_gcm_256_encrypt(void) {
   uint32_t tag_act[4];
   otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(tag_act, 4);
 
-  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, &pt_buf, &iv_buf, &aad_buf,
-                                        kOtcryptoAesGcmTagLen128, &ct_buf,
-                                        &tag_buf));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt_manual_iv(
+      &key, &pt_buf, &iv_buf, &aad_buf, kOtcryptoAesGcmTagLen128, &ct_buf,
+      &tag_buf));
 
   if (memcmp(ct_act, aes_gcm_256_ct, sizeof(aes_gcm_256_ct))) {
     return OTCRYPTO_BAD_ARGS;
