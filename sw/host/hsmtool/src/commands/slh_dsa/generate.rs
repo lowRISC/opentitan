@@ -12,6 +12,7 @@ use std::str::FromStr;
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
+use crate::slh_dsa::SlhDsaParameterSet;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType};
 use crate::util::helper;
 
@@ -51,59 +52,6 @@ impl Generate {
         "CKA_DECRYPT": false,
         "CKA_SIGN": true,
     }"#;
-}
-
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    PartialEq,
-    Eq,
-    Hash,
-    num_enum::IntoPrimitive,
-    clap::ValueEnum,
-    serde::Serialize,
-    serde::Deserialize,
-)]
-// #[value(rename_all = "lower")]
-#[repr(u64)]
-enum SlhDsaParameterSet {
-    #[serde(rename = "CKP_SLH_DSA_SHA2_128S")]
-    Sha2_128S = cryptoki_sys::CKP_SLH_DSA_SHA2_128S,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_128S")]
-    #[value(name = "shake-128s")]
-    Shake128S = cryptoki_sys::CKP_SLH_DSA_SHAKE_128S,
-    #[serde(rename = "CKP_SLH_DSA_SHA2_128F")]
-    Sha2_128F = cryptoki_sys::CKP_SLH_DSA_SHA2_128F,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_128F")]
-    #[value(name = "shake-128f")]
-    Shake128F = cryptoki_sys::CKP_SLH_DSA_SHAKE_128F,
-    #[serde(rename = "CKP_SLH_DSA_SHA2_192S")]
-    Sha2_192S = cryptoki_sys::CKP_SLH_DSA_SHA2_192S,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_192S")]
-    #[value(name = "shake-192s")]
-    Shake192S = cryptoki_sys::CKP_SLH_DSA_SHAKE_192S,
-    #[serde(rename = "CKP_SLH_DSA_SHA2_192F")]
-    Sha2_192F = cryptoki_sys::CKP_SLH_DSA_SHA2_192F,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_192F")]
-    #[value(name = "shake-192f")]
-    Shake192F = cryptoki_sys::CKP_SLH_DSA_SHAKE_192F,
-    #[serde(rename = "CKP_SLH_DSA_SHA2_256S")]
-    Sha2_256S = cryptoki_sys::CKP_SLH_DSA_SHA2_256S,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_256S")]
-    #[value(name = "shake-256s")]
-    Shake256S = cryptoki_sys::CKP_SLH_DSA_SHAKE_256S,
-    #[serde(rename = "CKP_SLH_DSA_SHA2_256F")]
-    Sha2_256F = cryptoki_sys::CKP_SLH_DSA_SHA2_256F,
-    #[serde(rename = "CKP_SLH_DSA_SHAKE_256F")]
-    #[value(name = "shake-256f")]
-    Shake256F = cryptoki_sys::CKP_SLH_DSA_SHAKE_256F,
-}
-
-impl From<SlhDsaParameterSet> for AttrData {
-    fn from(val: SlhDsaParameterSet) -> Self {
-        AttrData::Ulong(val.into())
-    }
 }
 
 #[typetag::serde(name = "slh-dsa-generate")]

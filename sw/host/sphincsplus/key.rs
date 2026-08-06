@@ -4,6 +4,8 @@
 
 use crate::{DecodeKey, EncodeKey, SphincsPlus, SpxError};
 use asn1::{BitString, ObjectIdentifier, ParseResult};
+use cryptoki::mechanism::dsa::{HashSignAdditionalContext, HedgeType, SignAdditionalContext};
+use cryptoki::mechanism::{Mechanism, MechanismType};
 use pem_rfc7468::LineEnding;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
@@ -60,6 +62,23 @@ impl SpxDomain {
                 assert_eq!(message.len(), 32);
                 [&Self::SHA256_DOMAIN, message].concat().into()
             }
+        }
+    }
+
+    pub fn slh_dsa_mechanism(&self) -> Mechanism {
+        match self {
+            SpxDomain::None | SpxDomain::Pure => {
+                Mechanism::SlhDsa(SignAdditionalContext::new(HedgeType::Preferred, None))
+            }
+            // In PKCS#11, there are separate CKM_HASH_SLH_DSA and CKM_HASH_SLH_DSA_*
+            // mechanisms, where the latter expect the full message and performs the hashing
+            // on token. Since our data is pre-hashed for this domain, use the former
+            // and specify SHA-256 as the hash already used.
+            SpxDomain::PreHashedSha256 => Mechanism::HashSlhDsa(HashSignAdditionalContext::new(
+                HedgeType::Preferred,
+                None,
+                MechanismType::SHA256,
+            )),
         }
     }
 }
