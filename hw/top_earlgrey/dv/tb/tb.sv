@@ -586,7 +586,10 @@ module tb;
           .path  (`DV_STRINGIFY(`RRAM_DATA_MEM_HIER)),
           .depth ($size(`RRAM_DATA_MEM_HIER)),
           .n_bits($bits(`RRAM_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+          .system_base_addr(top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR +
+              (rram_ctrl_pkg::OtpStartPage <<
+               (rram_ctrl_pkg::BusAddrByteW - rram_ctrl_pkg::PageW))));
       m_mem_bkdr_util[Otp] = otp;
       // No `MEM_BKDR_UTIL_FILE_OP: rram_ctrl_otp_bkdr_util parses the OTP image itself instead
       // of using $readmemh (to handle the integrity page), so there's no event to hook up here.
