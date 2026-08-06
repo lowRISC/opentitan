@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -486,5 +487,21 @@ otcrypto_status_t otcrypto_export_blinded_key(
       hardened_memcpy(key_share0->data, keyblob_share0, key_share0->len));
   HARDENED_TRY(
       hardened_memcpy(key_share1->data, keyblob_share1, key_share1->len));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_blinded_key_migrate(
+    const otcrypto_blinded_key_t *old_key, otcrypto_blinded_key_t *new_key) {
+  if (launder32((uint32_t)old_key->config.version) !=
+      (uint32_t)kCryptoLibVersion) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(old_key->config.version, kCryptoLibVersion);
+
+  if (launder32(old_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(old_key->config.hw_backed, kHardenedBoolFalse);
+
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

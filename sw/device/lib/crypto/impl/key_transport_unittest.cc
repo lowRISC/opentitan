@@ -373,5 +373,36 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
                                     &target_key));
 }
 
+TEST(KeyTransport, BlindedKeyMigrate) {
+  uint32_t keyblob[8] = {0};
+  otcrypto_blinded_key_t old_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = 16,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  otcrypto_blinded_key_t new_key = old_key;
+
+  EXPECT_OK(otcrypto_blinded_key_migrate(&old_key, &new_key));
+
+  // Modify version to something other than Version1.
+  otcrypto_blinded_key_t bad_version_key = old_key;
+  *(otcrypto_lib_version_t *)&bad_version_key.config.version =
+      kOtcryptoLibVersion2;
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&bad_version_key, &new_key));
+
+  // Hardware-backed keys cannot be migrated.
+  otcrypto_blinded_key_t hw_backed_key = old_key;
+  *(hardened_bool_t *)&hw_backed_key.config.hw_backed = kHardenedBoolTrue;
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&hw_backed_key, &new_key));
+}
+
 }  // namespace
 }  // namespace key_transport_unittest
