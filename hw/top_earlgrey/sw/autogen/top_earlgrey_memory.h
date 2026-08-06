@@ -36,6 +36,16 @@
 #define TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x1000
 
 /**
+ * Memory base for mem memory on flash_ctrl in top earlgrey.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR 0x20000000
+
+/**
+ * Memory size for mem memory on flash_ctrl in top earlgrey.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000
+
+/**
  * Memory base for host memory on rram_ctrl in top earlgrey.
  */
 #define TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR 0x30000000
@@ -535,6 +545,40 @@
  * `TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_REGS_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_SRAM_CTRL_RET_REGS_SIZE_BYTES 0x40
+/**
+ * Peripheral base address for core device on flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR 0x41000000
+
+/**
+ * Peripheral size for core device on flash_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES 0x200
+/**
+ * Peripheral base address for prim device on flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000
+
+/**
+ * Peripheral size for prim device on flash_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
 /**
  * Peripheral base address for core device on rram_ctrl in top earlgrey.
  *

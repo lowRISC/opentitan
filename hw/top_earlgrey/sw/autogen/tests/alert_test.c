@@ -18,6 +18,7 @@
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
@@ -60,6 +61,7 @@ static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
+static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
@@ -123,6 +125,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
@@ -386,6 +391,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = (int)kTopEarlgreyAlertIdEntropySrcRecovAlert + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write flash_ctrl's alert_test reg and check alert_cause.
+  for (dif_flash_ctrl_alert_t i = 0; i < 5; ++i) {
+    CHECK_DIF_OK(dif_flash_ctrl_alert_force(&flash_ctrl, kDifFlashCtrlAlertRecovErr + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdFlashCtrlRecovErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

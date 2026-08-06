@@ -822,6 +822,13 @@ def is_inst(module: ConfigT) -> bool:
     """Returns an indication where a particular module should be instantiated
        in the top level
     """
+    # Independent of `attr` (which also selects the generation flow, e.g.
+    # "ipgen"): a module can need reggen/ipgen to still run -- so its
+    # register block keeps building -- while not actually existing as
+    # hardware on this top, and thus must not be instantiated.
+    if module.get('no_top_inst', False):
+        return False
+
     top_level_module = False
     top_level_mem = False
 

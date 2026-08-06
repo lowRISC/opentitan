@@ -16,7 +16,7 @@
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[64] = {
+    top_earlgrey_alert_for_peripheral[69] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
@@ -50,6 +50,11 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdSensorCtrlRecovAlert] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlFatalAlert] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSramCtrlRetFatalError] = kTopEarlgreyAlertPeripheralSramCtrlRet,
+  [kTopEarlgreyAlertIdFlashCtrlRecovErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlFatalStdErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlFatalErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlRecovPrimFlashAlert] = kTopEarlgreyAlertPeripheralFlashCtrl,
   [kTopEarlgreyAlertIdRramCtrlRecovErr] = kTopEarlgreyAlertPeripheralRramCtrl,
   [kTopEarlgreyAlertIdRramCtrlFatalStdErr] = kTopEarlgreyAlertPeripheralRramCtrl,
   [kTopEarlgreyAlertIdRramCtrlFatalErr] = kTopEarlgreyAlertPeripheralRramCtrl,
@@ -90,7 +95,7 @@ const top_earlgrey_alert_peripheral_t
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[184] = {
+    top_earlgrey_plic_interrupt_for_peripheral[190] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -249,6 +254,12 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark] = kTopEarlgreyPlicPeripheralAonTimer,
   [kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange] = kTopEarlgreyPlicPeripheralSensorCtrl,
   [kTopEarlgreyPlicIrqIdSensorCtrlInitStatusChange] = kTopEarlgreyPlicPeripheralSensorCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty] = kTopEarlgreyPlicPeripheralFlashCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlProgLvl] = kTopEarlgreyPlicPeripheralFlashCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlRdFull] = kTopEarlgreyPlicPeripheralFlashCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlRdLvl] = kTopEarlgreyPlicPeripheralFlashCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlOpDone] = kTopEarlgreyPlicPeripheralFlashCtrl,
+  [kTopEarlgreyPlicIrqIdFlashCtrlCorrErr] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdRramCtrlWrEmpty] = kTopEarlgreyPlicPeripheralRramCtrl,
   [kTopEarlgreyPlicIrqIdRramCtrlWrLvl] = kTopEarlgreyPlicPeripheralRramCtrl,
   [kTopEarlgreyPlicIrqIdRramCtrlRdFull] = kTopEarlgreyPlicPeripheralRramCtrl,
