@@ -298,13 +298,13 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
         `uvm_error("extra_pwrmgr_data", "Data is being sent to pwrmgr for a second time.")
       end
       if (cfg.rom_ctrl_vif.cb.pwrmgr_data.good != digest_good) begin
+        string pwrmgr_good_name = cfg.rom_ctrl_vif.cb.pwrmgr_data.good.name();
+        string digest_good_name = digest_good.name();
         `uvm_error("wrong_pwrmgr_good",
                    $sformatf({"rom_ctrl is reporting good=%0h (%0s) to the pwrmgr, ",
                               "but we expected %0h (%0s)."},
-                             cfg.rom_ctrl_vif.cb.pwrmgr_data.good,
-                             cfg.rom_ctrl_vif.cb.pwrmgr_data.good.name(),
-                             digest_good,
-                             digest_good.name()))
+                             cfg.rom_ctrl_vif.cb.pwrmgr_data.good, pwrmgr_good_name,
+                             digest_good, digest_good_name))
       end
       pwrmgr_complete = 1'b1;
     end
