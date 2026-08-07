@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for an SRAM variant with a non-power-of-2 size
+{
+  // Name of the sim cfg variant
+  variant: exec_48kB
+
+  // Import the base sram_ctrl sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
+
+  // vRefine file generated using UNR with dvsim's --cov-unr option
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/sram_ctrl/dv/cov/main_unr.vRefine"]
+
+  // These parameters are used for top_earlgrey main sram
+  build_opts: ["+define+SRAM_SIZE_BYTES=49152",
+               "+define+INSTR_EXEC=1",
+               "+define+NUM_PRINCE_ROUNDS_HALF=2"]
+}
