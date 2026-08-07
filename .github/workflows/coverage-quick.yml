@@ -21,7 +21,11 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Execute tests
         run: |
-          ./bazelisk.sh coverage --config=ot_coverage --test_tag_filters=-nightly \
+          mkdir -p "/tmp/bazel-exec-log"
+          exec_log_file="$(mktemp /tmp/bazel-exec-log/exec-XXXXXX.log)"
+          ./bazelisk.sh coverage --config=ot_coverage       \
+            --test_tag_filters=-nightly                     \
+            --execution_log_compact_file="${exec_log_file}" \
             //sw/otbn/crypto/...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
@@ -76,6 +80,8 @@ jobs:
             >> "$target_pattern_file"
       - name: Run software unit tests coverage
         run: |
+          mkdir -p "/tmp/bazel-exec-log"
+          exec_log_file="$(mktemp /tmp/bazel-exec-log/exec-XXXXXX.log)"
           ./bazelisk.sh coverage                             \
             --build_tests_only                               \
             --keep_going                                     \
@@ -83,6 +89,7 @@ jobs:
             --test_output=errors                             \
             --define DISABLE_VERILATOR_BUILD=true            \
             --target_pattern_file="$target_pattern_file"     \
+            --execution_log_compact_file="${exec_log_file}"  \
             --test_tag_filters=-broken,-coverage_broken,-cw310,-verilator,-dv,-silicon,-qemu
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
