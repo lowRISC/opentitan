@@ -68,33 +68,16 @@ class DpiMemUtil {
   /**
    * Register a memory as instantiated by generic ram
    *
-   * The |name| must be a unique identifier. The constructor will
-   * throw a std::runtime_error if |name| is already used.
-   *
-   * |base| gives the base address of the memory in a logical address
-   * space that corresponds to LMAs in an ELF file. If this overlaps
-   * with some other registered memory, the constructor throws a
-   * std::runtime_error.
-   *
-   * The |mem_area| argument describes the memory area to be registered and
-   * must not be null. This function does not take ownership of the object,
-   * which must survive at least as long as the DpiMemutil object.
-   *
-   * Memories must be registered before command arguments are parsed by
-   * ParseCommandArgs() in order for them to be known.
+   * Returns false and prints to stderr if |name| is already used or
+   * if |base| overlaps with some other registered memory. Returns true on success.
    */
-  void RegisterMemoryArea(const std::string &name, uint32_t base,
+  bool RegisterMemoryArea(const std::string &name, uint32_t base,
                           const MemArea *mem_area);
 
   /**
    * Guess the type of the file at |path|.
    *
-   * If |type| is non-null, it is the name of an image type and will be used.
-   * Otherwise, the check is based on |path|. If |type| is not a valid name or
-   * if the function can't guess from the path, throws a std::runtime_error
-   * with a message about what went wrong.
-   *
-   * Never returns kMemImageUnknown.
+   * Returns kMemImageUnknown and prints to stderr if the type is invalid or cannot be guessed.
    */
   static MemImageType GetMemImageType(const std::string &path,
                                       const char *type);
@@ -121,13 +104,11 @@ class DpiMemUtil {
   void LoadElfToMemories(bool verbose, const std::string &filepath);
 
   /**
-   * Load an ELF file into a staging area in this object, which can then be
-   * accessed with GetMemoryData().
+   * Load an ELF file into a staging area in this object.
    *
-   * If the load fails, raises a std::exception with information about what
-   * happened.
+   * Returns true on success. Returns false and prints to stderr on failure.
    */
-  void StageElf(bool verbose, const std::string &path);
+  bool StageElf(bool verbose, const std::string &path);
 
   /**
    * Get the contents of the staging area by memory name
