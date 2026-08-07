@@ -162,6 +162,11 @@ class OtbnModel {
   // Set the contents of the ISS's memory
   void set_sim_memory(bool is_imem, const Ecc32MemArea::EccWords &words);
 
+  // Update an ISS memory with the current model's memory content. Used at
+  // Execute start and when resuming from a WFI pause, where the host may have
+  // written to DMEM while OTBN was paused.
+  void send_mem_to_iss(ISSWrapper *iss, bool is_imem);
+
   // Grab contents of dmem from the model and compare them with the RTL. Prints
   // messages to stderr on failure or mismatch. Returns true on success; false
   // on mismatch. Throws a std::runtime_error on failure.
