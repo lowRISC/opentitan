@@ -330,8 +330,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_START);
   pentest_set_trigger_high();
-  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, &plaintext, &iv, &aad, tag_len,
-                                        &actual_ciphertext, &actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt_manual_iv(
+      &key, &plaintext, &iv, &aad, tag_len, &actual_ciphertext, &actual_tag));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_END);
 

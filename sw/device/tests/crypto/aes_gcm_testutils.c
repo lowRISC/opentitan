@@ -174,7 +174,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   if (streaming) {
     uint64_t t_start = profile_start();
     otcrypto_aes_gcm_context_t ctx;
-    TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+    TRY(otcrypto_aes_gcm_encrypt_init_manual_iv(&key, &iv, &ctx));
     size_t ciphertext_bytes_written;
     TRY(stream_gcm(&ctx, aad, plaintext, actual_ciphertext,
                    &ciphertext_bytes_written));
@@ -187,7 +187,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   } else {
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
-    otcrypto_status_t err = otcrypto_aes_gcm_encrypt(
+    otcrypto_status_t err = otcrypto_aes_gcm_encrypt_manual_iv(
         &key, &plaintext, &iv, &aad, tag_len, &actual_ciphertext, &actual_tag);
     *cycles = profile_end(t_start);
 
