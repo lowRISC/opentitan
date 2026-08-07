@@ -13,6 +13,7 @@ module otbn_instruction_fetch
   import otbn_pkg::*;
 #(
   parameter int ImemSizeByte = 4096,
+  parameter bit SecFixMacOpSeq = 1'b0,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
 ) (
@@ -63,7 +64,9 @@ module otbn_instruction_fetch
   input logic [4:0]               sec_wipe_wdr_addr_i,
   input logic                     sec_wipe_mac_urnd_i,
 
-  input logic                     zero_flags_i
+  input logic zero_flags_i,
+
+  input logic [1:0] mac_bignum_shuffle_offset_i
 );
 
   function automatic logic insn_is_branch(logic [31:0] insn_data);
@@ -166,7 +169,8 @@ module otbn_instruction_fetch
     // forwarded immediately or during a later state. Therefore, we can ignore the state error
     // here. This ensures that all multi-cycle multiplications escalate at the earliest when they
     // are executed.
-    .EnableAlertTriggerSVA(0)
+    .EnableAlertTriggerSVA(0),
+    .SecFixMacOpSeq(SecFixMacOpSeq)
   ) u_mac_bignum_fsm (
     .clk_i,
     .rst_ni,
@@ -184,6 +188,7 @@ module otbn_instruction_fetch
     .op_a_qw_sel_i    (mac_bignum_predec_to_fsm.op_a_qw_sel),
     .op_b_elem0_sel_i (mac_bignum_predec_to_fsm.op_b_elem0_sel),
     .op_b_elem1_sel_i (mac_bignum_predec_to_fsm.op_b_elem1_sel),
+    .shuffle_offset_i (mac_bignum_shuffle_offset_i),
 
     .contrl_o (/* unused here */),
     .predec_o (mac_bignum_predec),
@@ -207,7 +212,8 @@ module otbn_instruction_fetch
     mac_bignum_predec_to_fsm.mul_shift_en,
     mac_bignum_predec_to_fsm.mul_merger_en,
     mac_bignum_predec_to_fsm.add_res_en,
-    mac_bignum_predec_to_fsm.operation_valid_raw
+    mac_bignum_predec_to_fsm.operation_valid_raw,
+    mac_bignum_predec_to_fsm.shuffle_offset
   };
 
   prim_onehot_enc #(

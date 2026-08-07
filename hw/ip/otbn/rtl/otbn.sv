@@ -28,6 +28,9 @@ module otbn
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
   parameter bit SecFixMaiOpSeq = 1'b0,
+  // BN MAC will not randomize the order in which the vector elements are processed for vectorized
+  // multiplication instructions.
+  parameter bit SecFixMacOpSeq = 1'b0,
 
   // Masking accelerator is not present. Useful for resource-bound targets only.
   parameter bit FeatStubMai = 1'b0,
@@ -1171,6 +1174,7 @@ module otbn
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
     .SecFixMaiOpSeq(SecFixMaiOpSeq),
+    .SecFixMacOpSeq(SecFixMacOpSeq),
     .FeatStubMai(FeatStubMai),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
     .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)

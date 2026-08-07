@@ -5515,6 +5515,20 @@
           name_top: SecOtbnFixMaiOpSeq
         }
         {
+          name: SecFixMacOpSeq
+          desc:
+            '''
+            If enabled (1), the BN MAC will not randomize the order in which the vector elements are processed for vectorized multiplication instructions.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecOtbnFixMacOpSeq
+        }
+        {
           name: SecSkipUrndReseedAtStart
           desc:
             '''

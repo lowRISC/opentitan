@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import IntEnum, unique
+import re
+from typing import Optional, Tuple
 
 
 class Cmd(IntEnum):
@@ -108,3 +110,62 @@ class WsrAddrs(IntEnum):
     MAI_IN0_S1 = 13
     MAI_IN1_S0 = 14
     MAI_IN1_S1 = 15
+
+
+def sv_perm_to_tuple(num_elems: int, literal: str) -> Tuple[int, ...]:
+    '''Convert a string of a system verilog permutation literal into a tuple of indices pairs.
+
+    literal is the raw string of a permutation of type:
+    logic [num_elems-1:0][$clog2(num_elems)-1:0].
+    This packed representation is expected to have the first index in the least significant bits.
+
+    Each entry of the returned permutation gives the index of the bit to be picked, i.e. bit i of
+    the permutation is bit perm[i] of data.
+    '''
+    elem_width = (num_elems - 1).bit_length()
+    # Drop the "<width>'h" prefixes and everything that is not a hex digit.
+    value = int(re.sub(r"\d+'h|[^0-9a-fA-F]", '', literal), 16)
+    assert value.bit_length() <= num_elems * elem_width
+    # Extract the indexes from the packed value. The first index is in the least significant bits.
+    mask = (1 << elem_width) - 1
+    perm = tuple((value >> (i * elem_width)) & mask for i in range(num_elems))
+    assert sorted(perm) == list(range(num_elems))
+    return perm
+
+
+def permute(perm: Tuple[int, ...], data: int,
+            num_bits: Optional[int] = None,
+            first_bit: int = 0) -> int:
+    '''Permute the bits of the data according to the given permutation.
+
+    data is the to be permuted value.
+
+    num_bits and first_bit select a slice of the permutation: permutation[first_bit +: num_bits].
+    The returned slice is right aligned, so bit first_bit of the permutation ends up in bit 0 of
+    the result. The bits are zero-indexed.
+    By default the full permutation is returned.
+    '''
+    if num_bits is None:
+        num_bits = len(perm)
+    assert num_bits <= len(perm)
+    assert data.bit_length() <= len(perm)
+    assert first_bit >= 0
+    assert first_bit + num_bits <= len(perm)
+    result = 0
+    for i in range(first_bit, first_bit + num_bits):
+        result |= ((data >> perm[i]) & 1) << (i - first_bit)
+    return result
+
+
+# Default permutation for the URND permutation in BN MAC. Given as tuple where each entry gives the
+# index of the to be picked element. Keep in sync with otbn_pkg.sv::RndCnstBnMacUrndPermDefault.
+BN_MAC_PERMUTATION = sv_perm_to_tuple(256, '''
+    256'h5883853c_f22faef4_c975ab18_050bfc6b_b9193e1b_450d686e_5de1cdb5_a02a1532,
+    256'ha3e9dd76_8278f6d4_33f74bd9_edbabd7f_721c5a4e_0c23a6f0_34a477db_84947998,
+    256'h6d0affec_df12e025_0fb41ab3_3bdc90e5_ce279907_91227bf1_e4505bcc_2b4c31be,
+    256'h562047c5_9df5fd21_73acadc3_b1438b53_bc8e87a1_d7b02e88_16de0e97_6c354669,
+    256'he89657fe_2662402d_03e3a849_1f6ff839_668c5574_54e2bf14_9cbb8dd3_d5d1ea81,
+    256'h92c73f60_6402b793_52b68911_5161cb7a_09aacab2_0604865f_4dd8d201_101e08c1,
+    256'h7c95a23a_ef177de6_d65c418f_daa96a70_5929c83d_fafb9f37_8a4436af_a5a71d13,
+    256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
+''')
