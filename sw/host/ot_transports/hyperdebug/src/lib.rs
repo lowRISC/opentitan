@@ -928,13 +928,14 @@ impl<T: Flavor> FpgaOps for Hyperdebug<T> {
     fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
         // device and only re-enable it after loading.
-        self.enable_dut_usb_port(false)?;
+        //self.enable_dut_usb_port(false)?;
         T::load_bitstream(bitstream, progress)?;
-        self.enable_dut_usb_port(true)
+        //self.enable_dut_usb_port(true)
+        Ok(())
     }
 
     fn clear_bitstream(&self) -> Result<()> {
-        self.enable_dut_usb_port(false)?;
+        //self.enable_dut_usb_port(false)?;
         T::clear_bitstream()
     }
 }
