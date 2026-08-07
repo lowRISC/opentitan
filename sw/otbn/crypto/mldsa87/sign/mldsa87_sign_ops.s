@@ -956,25 +956,26 @@ compress_hint:
    *       Slot[index * 4] = j
    *       index += 1
    *   endfor
-   *  Slot[(75 + i) * 4] = index
+   *   Slot[(75 + i) * 4] = index
    * endfor
    */
-  loopi 8, 17
-    loopi 256, 9
+  loopi 8, 16
+    loopi 256, 8
       /* x8 = H[i][j]. */
       lw x8, 0(x2)
 
-      /* x9 = j if H[i][j] == 1, else 0. */
-      sub x9, x0, x8
-      and x9, x9, x6
+      /* Skip if H[i][j] == 0. */
+      beq x8, x0, _compress_hint_skip_coeff
 
       /* Slot[index * 4] = x9. */
       slli x10, x7, 2
       add x10, x4, x10
-      sw x9, 0(x10)
+      sw x6, 0(x10)
 
       /* index += H[i][j]. */
       add x7, x7, x8
+
+_compress_hint_skip_coeff:
 
       /* Increment j and H address pointer. */
       addi x6, x6, 1
