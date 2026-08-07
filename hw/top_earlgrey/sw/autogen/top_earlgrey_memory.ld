@@ -19,7 +19,7 @@ MEMORY {
   rram(rx) : ORIGIN = 0x30000000, LENGTH = 0x200000
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x20000
   ram_secondary(rwx) : ORIGIN = 0x10020000, LENGTH = 0x10000
-  rom(rx) : ORIGIN = 0x00040000, LENGTH = 0xc000
+  rom(rx) : ORIGIN = 0x00040000, LENGTH = 0x30000
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x80000
 }

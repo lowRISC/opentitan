@@ -38,18 +38,18 @@ enum {
  *    report.
  */
 
-const size_t kGoldenRomSizeBytes = 49152 - sizeof(build_info_t);
+const size_t kGoldenRomSizeBytes = 196608 - sizeof(build_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x1315e4ca, 0x3b1da3c7, 0x7491bd42, 0x1987e1d6,
-    0xb453a371, 0xe92492be, 0x4f970f78, 0x8ba6d31a,
+    0x554d4951, 0x56c9aeec, 0x181dbe59, 0x7fd61677,
+    0xb00c633c, 0xdf17c236, 0x48cf38da, 0xbecd8a0d,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xef5a6046, 0x60259ea0, 0xf6a0410b, 0xf589598f,
-    0x0e865aac, 0x92a49b06, 0x1eacc920, 0xd0824322,
+    0x1a533275, 0x72f277e5, 0x0b461e54, 0xb9afde68,
+    0x02b385db, 0x6daf272e, 0xa681de06, 0xe74636b7,
 };
 const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x7e848236, 0xbb8d3f56, 0x1834212e, 0x7ebb699e,
-    0x71e52b2e, 0xce037bca, 0x6edf1f2e, 0xddfcaa7c,
+    0x3c95d887, 0xe56620bd, 0xe40d8f45, 0xe36439a3,
+    0x72b7b7e0, 0x357ea91e, 0x9e71ac58, 0x938c33c0,
 };
 
 extern const char _rom_chip_info_start[];
