@@ -45,7 +45,12 @@ module otbn_start_stop_control
   output logic urnd_reseed_req_o,
   input  logic urnd_reseed_ack_i,
   output logic urnd_reseed_err_o,
+  // The urnd advance signal controls whether the URND PRNG should advance its state in this cycle.
+  // This can be over-steered by SW using the URND control feature / CSR. However, during secure
+  // wipes we must ensure that this control logic is disabled / the PRNG is always advanced. This
+  // is controlled via the must advance signal.
   output logic urnd_advance_o,
+  output logic urnd_must_advance_o,
 
   input   logic secure_wipe_req_i,
   output  logic secure_wipe_ack_o,
@@ -89,6 +94,7 @@ module otbn_start_stop_control
   logic state_error_q, state_error_d;
   logic mubi_err_q, mubi_err_d;
   logic urnd_reseed_err_q, urnd_reseed_err_d;
+  logic urnd_control_allowed;
   logic secure_wipe_error_q, secure_wipe_error_d;
   logic secure_wipe_running_q, secure_wipe_running_d;
   logic skip_reseed_q;
@@ -164,6 +170,7 @@ module otbn_start_stop_control
   always_comb begin
     urnd_reseed_req_o            = 1'b0;
     urnd_advance_o               = 1'b0;
+    urnd_control_allowed         = 1'b0;
     state_d                      = state_q;
     ispr_init_o                  = 1'b0;
     state_reset_o                = 1'b0;
@@ -271,8 +278,9 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateRunning: begin
-        urnd_advance_o    = ~SecMuteUrnd;
-        allow_secure_wipe = 1'b1;
+        urnd_advance_o       = ~SecMuteUrnd;
+        urnd_control_allowed = 1'b1;
+        allow_secure_wipe    = 1'b1;
 
         if (stop) begin
           secure_wipe_running_d = 1'b1;
@@ -501,6 +509,9 @@ module otbn_start_stop_control
   assign urnd_reseed_err_d = spurious_urnd_ack_error ? 1'b1 // set
                                                      : urnd_reseed_err_q; // hold
   assign urnd_reseed_err_o = urnd_reseed_err_d;
+
+  // Enforce that URND is advanced when URND control is not allowed, i.e., during a secure wipe.
+  assign urnd_must_advance_o = !urnd_control_allowed && urnd_advance_o;
 
   assign fatal_error_o = urnd_reseed_err_o | state_error_d | secure_wipe_error_q | mubi_err_q;
 

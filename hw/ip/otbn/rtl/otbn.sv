@@ -1214,6 +1214,8 @@ module otbn
     .wfi_pending_o               (wfi_pending),
     .wfi_resume_i                (wfi_resume_q),
 
+    .urnd_ctrl_enabled_i         (urnd_ctrl_enabled_q),
+
     .insn_cnt_o                  (insn_cnt),
     .insn_cnt_clear_i            (insn_cnt_clear),
 

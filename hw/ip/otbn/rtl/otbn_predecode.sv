@@ -18,6 +18,8 @@ module otbn_predecode
   input  logic                     imem_rvalid_i,
   input  logic [ImemAddrWidth-1:0] imem_raddr_i,
 
+  input  logic urnd_ctrl_enabled_i,
+
   output rf_bignum_predec_t        rf_bignum_predec_o,
   output alu_bignum_predec_t       alu_bignum_predec_o,
   output ispr_bignum_predec_t      ispr_bignum_predec_o,
@@ -761,6 +763,8 @@ module otbn_predecode
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
+        CsrUrndCtrl:                        ispr_addr = IsprUrndCtrl;
+        CsrUrndStatus:                      ispr_addr = IsprUrndStatus;
         CsrKmacStatus:                      ispr_addr = IsprKmacStatus;
         CsrKmacCtrl:                        ispr_addr = IsprKmacCtrl;
         CsrKmacCfg:                         ispr_addr = IsprKmacCfg;
@@ -788,6 +792,7 @@ module otbn_predecode
         WsrMaiIn0S1:   ispr_addr = IsprMaiIn0S1;
         WsrMaiIn1S0:   ispr_addr = IsprMaiIn1S0;
         WsrMaiIn1S1:   ispr_addr = IsprMaiIn1S1;
+        WsrUrndState:  ispr_addr = IsprUrndState;
         default: ;
       endcase
     end
@@ -882,11 +887,13 @@ module otbn_predecode
     .out_o (rf_bignum_predec_o.rf_we)
   );
 
+  // Suppress any read of URND_STATE if URND_CTRL is not enabled. By not enabling the read blanker
+  // any read will just return '0 if the feature is disabled.
   prim_onehot_enc #(
     .OneHotWidth(NIspr)
   ) ispr_rd_en_onehot_enc (
     .in_i  (ispr_addr),
-    .en_i  (ispr_rd_en),
+    .en_i  (ispr_rd_en && !(ispr_addr == IsprUrndState && !urnd_ctrl_enabled_i)),
     .out_o (ispr_bignum_predec_o.ispr_rd_en)
   );
 

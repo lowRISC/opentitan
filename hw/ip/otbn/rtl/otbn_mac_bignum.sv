@@ -119,9 +119,9 @@ module otbn_mac_bignum
   input  logic            sec_wipe_running_i,
   output logic            sec_wipe_err_o,
 
-  // Signals whenever the URND input is used to clear any of the internal registers. This is
-  // required to advance the URND PRNG if the SecMuteUrnd parameter is set.
-  output logic urnd_used_o,
+  // Signals whenever the URND PRNG is advanced in this cycle. This must be the case when clearing
+  // any of the internal registers.
+  input  logic urnd_advancing_i,
 
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
@@ -686,8 +686,15 @@ module otbn_mac_bignum
   assign acc_clear_en  = contrl.acc_clear_en;
 
   // We must signal that we used URND so the PRNG is advanced even if the SecMuteUrnd parameter is
-  // set.
-  assign urnd_used_o = tmp_clear_en || c_clear_en || acc_clear_en;
+  // set. This is factored into the predec error because the FSM in the predecoder must advance the
+  // PRNG properly. This is implemented in HW and not as an assertion to detect attacks on the PRNG
+  // advance signal.
+  logic urnd_must_advance;
+  logic urnd_not_advanced_err;
+
+  assign urnd_must_advance = tmp_clear_en || c_clear_en || acc_clear_en;
+
+  assign urnd_not_advanced_err = urnd_must_advance ? urnd_advancing_i == 1'b1 : 1'b0;
 
   //////////////////////
   // Result selection //
@@ -729,7 +736,7 @@ module otbn_mac_bignum
   // Redundancy check //
   //////////////////////
   // SEC_CM: CTRL.REDUN
-  assign predec_error_o = expected_predec != predec_i;
+  assign predec_error_o = (expected_predec != predec_i) || urnd_not_advanced_err;
 
   /////////////////////////////////////
   // Register and secure wipe output //
