@@ -17,16 +17,16 @@
     {
       name: smoke
       desc: '''
-            Smoke test, running a single fixed binary
+            Smoke tests running two fixed binaries
 
-            This runs the binary from otbn/dv/smoke/smoke_test.s, which is
+            This runs the binaries from otbn/dv/smoke/*.s, which are
             designed to check most of the implemented instructions. The
-            unchanging binary should mean this basic test is particularly
+            unchanging binaries should mean this basic test is particularly
             appropriate for CI.
 
             '''
       stage: V1
-      tests: ["otbn_smoke"]
+      tests: ["otbn_smoke", "otbn_smoke_vectorized"]
     }
     {
       name: single_binary
