@@ -88,6 +88,11 @@ module kmac_reduced_tb #(
                                        // 48'h4341_4D4B_2001 ("KMAC") for CShake
     .msg_strb_i({MsgStrbW{1'b1}}),     // drive to all-1
 
+    // State write
+    .state_we_i('0),                   // drive to 0
+    .state_waddr_i('0),                // drive to 0
+    .state_wdata_i('0),                // drive to 0
+
     // Entropy configuration
     .msg_mask_en_i(1'b1),            // drive to 1
     .entropy_mode_i(EntropyModeEdn), // drive to kmac_pkg::EntropyModeEdn

@@ -204,6 +204,18 @@ module kmac
   logic reg_state_valid;
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
+  // SW state restore, driven by u_staterdwr
+  // The state is written one bus word at a time.
+  localparam int unsigned StateWrWidth   = top_pkg::TL_DW;
+  localparam int unsigned StateWrEntries = sha3_pkg::StateW / StateWrWidth;
+  localparam int unsigned StateWrAddrW   = $clog2(StateWrEntries);
+
+  logic                    reg_state_write_en;
+  logic                    state_write_en;
+  logic [Share-1:0]        state_we;
+  logic [StateWrAddrW-1:0] state_waddr;
+  logic [StateWrWidth-1:0] state_wdata;
+
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_early, sha3_rand_update, sha3_rand_consumed;
   logic [sha3_pkg::StateW/2-1:0] sha3_rand_data;
@@ -479,6 +491,10 @@ module kmac
 
   // SEC_CM: CFG_SHADOWED.CONFIG.REGWEN
   assign hw2reg.cfg_regwen.d = engine_stable;
+
+  // SW can write the state when the engine is idle and no HW app interface is
+  // active.
+  assign state_write_en = engine_stable & reg_state_write_en;
 
   // Secret Key
   // Secret key is defined as external register. So the logic latches when SW
@@ -926,7 +942,8 @@ module kmac
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
   end
   sha3 #(
-    .EnMasking (EnMasking)
+    .EnMasking    (EnMasking),
+    .StateWrWidth (StateWrWidth)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -970,6 +987,11 @@ module kmac
 
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]
+
+    // State write, used to restore the state
+    .state_we_i    (state_we),
+    .state_waddr_i (state_waddr),
+    .state_wdata_i (state_wdata),
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o (     ), // Not used
@@ -1099,9 +1121,10 @@ module kmac
     .keccak_state_valid_i (state_valid),
     .keccak_state_i       (state),
 
-    // to STATE TL Window
+    // State SW write
     .reg_state_valid_o    (reg_state_valid),
     .reg_state_o          (reg_state),
+    .reg_state_write_en_o (reg_state_write_en),
 
     // Configuration: Sideloaded Key
     .keymgr_key_en_i      (reg2hw.cfg_shadowed.sideload.q),
@@ -1175,11 +1198,12 @@ module kmac
     end
   end
 
-  // State (Digest) reader
-  kmac_staterd #(
-    .AddrW     (9), // 512B
-    .EnMasking (EnMasking)
-  ) u_staterd (
+  // State (Digest) reader and writer
+  kmac_staterdwr #(
+    .AddrW        (9), // 512B
+    .StateWrWidth (StateWrWidth),
+    .EnMasking    (EnMasking)
+  ) u_staterdwr (
     .clk_i,
     .rst_ni,
 
@@ -1187,6 +1211,11 @@ module kmac
     .tl_o (tl_win_d2h[WinState]),
 
     .state_i (reg_state_tl),
+
+    .state_write_en_i (state_write_en),
+    .state_we_o       (state_we),
+    .state_waddr_o    (state_waddr),
+    .state_wdata_o    (state_wdata),
 
     .endian_swap_i (reg2hw.cfg_shadowed.state_endianness.q)
   );

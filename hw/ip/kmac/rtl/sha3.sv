@@ -13,8 +13,12 @@ module sha3
 #(
   // Enable Masked Keccak if 1
   parameter  bit EnMasking = 0,
-  // derived parameter
-  localparam int Share = (EnMasking) ? 2 : 1
+  // Width of a single state write. The state is restored one bus word at a time.
+  parameter  int StateWrWidth = 32,
+  // derived parameters
+  localparam int Share          = (EnMasking) ? 2 : 1,
+  localparam int StateWrEntries = StateW / StateWrWidth,
+  localparam int StateWrAddrW   = $clog2(StateWrEntries)
 ) (
   input clk_i,
   input rst_ni,
@@ -65,6 +69,11 @@ module sha3
   // leakage.
   output logic              state_valid_o,
   output logic [StateW-1:0] state_o [Share],
+
+  // State write used to restore the state.
+  input [Share-1:0]         state_we_i,
+  input [StateWrAddrW-1:0]  state_waddr_i,
+  input [StateWrWidth-1:0]  state_wdata_i,
 
   // REQ/ACK interface for the Keccak core. This can be used to delay the
   // processing e.g. to avoid power spikes at the chip level due to too many
@@ -130,8 +139,15 @@ module sha3
   sha3_st_sparse_e st, st_d;
 
   // Keccak control signal (filtered by State Machine)
-  logic keccak_start, keccak_process;
-  prim_mubi_pkg::mubi4_t keccak_done;
+  logic keccak_process;
+  prim_mubi_pkg::mubi4_t keccak_start, keccak_done;
+
+  // Clear the keccak state when an operation is completed. Also clear it
+  // when a new operation is started. This is needed to avoid that when
+  // SW has written to the state register and an app interface starts a new
+  // operation afterwards it accidentially uses that written state.
+  prim_mubi_pkg::mubi4_t keccak_clear;
+  assign keccak_clear = prim_mubi_pkg::mubi4_or_hi(keccak_start, keccak_done);
 
   // alert signals
   logic round_count_error, msg_count_error;
@@ -237,7 +253,7 @@ module sha3
     st_d = st;
 
     // default output values
-    keccak_start = 1'b 0;
+    keccak_start = prim_mubi_pkg::MuBi4False;
     keccak_process = 1'b 0;
     sw_keccak_run = 1'b 0;
     keccak_done = prim_mubi_pkg::MuBi4False;
@@ -254,7 +270,7 @@ module sha3
         if (start_i) begin
           st_d = StAbsorb_sparse;
 
-          keccak_start = 1'b 1;
+          keccak_start = prim_mubi_pkg::MuBi4True;
         end else begin
           st_d = StIdle_sparse;
         end
@@ -444,7 +460,7 @@ module sha3
     .lc_escalate_en_i (lc_escalate_en_i),
 
     // controls
-    .start_i   (keccak_start),
+    .start_i   (prim_mubi_pkg::mubi4_test_true_strict(keccak_start)),
     .process_i (keccak_process),
     .done_i    (keccak_done),
 
@@ -456,10 +472,11 @@ module sha3
 
   // Keccak round logic
   keccak_round #(
-    .Width    (sha3_pkg::StateW),
-    .DInWidth (sha3_pkg::MsgWidth),
+    .Width        (sha3_pkg::StateW),
+    .DInWidth     (sha3_pkg::MsgWidth),
+    .StateWrWidth (StateWrWidth),
 
-    .EnMasking  (EnMasking)
+    .EnMasking    (EnMasking)
   ) u_keccak (
     .clk_i,
     .rst_ni,
@@ -481,6 +498,10 @@ module sha3
 
     .state_o    (state),
 
+    .state_we_i    (state_we_i),
+    .state_waddr_i (state_waddr_i),
+    .state_wdata_i (state_wdata_i),
+
     // LC
     .lc_escalate_en_i (lc_escalate_en_i),
 
@@ -488,7 +509,7 @@ module sha3
     .round_count_error_o (round_count_error),
     .rst_storage_error_o (keccak_storage_rst_error),
 
-    .clear_i    (keccak_done)
+    .clear_i    (keccak_clear)
   );
 
   ////////////////
