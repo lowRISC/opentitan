@@ -181,6 +181,7 @@ class IpBlock:
     inter_signals: list[InterSignal]
     bus_interfaces: BusInterfaces
     clocking: Clocking
+    # Tuple with (InOut, In, Out) signals.
     xputs: tuple[Sequence[Signal], Sequence[Signal], Sequence[Signal]]
     wakeups: Sequence[Signal]
     reset_requests: Sequence[Signal]
