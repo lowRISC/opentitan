@@ -4,7 +4,7 @@
 
 #include "third_party/embedpqc/ports/mldsa_caller_common.h"
 
-// Assumes RISC-V ABI calling conventions for passing integers and pointer arguments in a0-a7 
+// Assumes RISC-V ABI calling conventions for passing integers and pointer arguments in a0-a7
 
 MLDSA_CALLER_WITH_STACK(mldsa87_tiny_pub_from_seed, a2)
 MLDSA_CALLER_WITH_STACK(mldsa87_tiny_sign, a5)
