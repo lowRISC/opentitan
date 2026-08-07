@@ -41,3 +41,15 @@ cc_library(
         "//third_party/embedpqc/ports:shake",
     ],
 )
+
+cc_library(
+    name = "mldsa87_tiny",
+    srcs = ["mldsa87_tiny.c"],
+    hdrs = ["mldsa87_tiny.h"],
+    deps = [
+        ":ct",
+        ":mldsa_mu",
+        ":mldsa_tiny_common",
+        "//third_party/embedpqc/ports:shake",
+    ],
+)

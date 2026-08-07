@@ -529,7 +529,7 @@ impl<'a> TransportCommandHandler<'a> {
                 }
             }
             Request::Proxy(command) => match command {
-                ProxyRequest::Provides {} => {
+                ProxyRequest::Provides => {
                     let provides_map = self.transport.provides_map()?.clone();
                     Ok(Response::Proxy(ProxyResponse::Provides { provides_map }))
                 }
