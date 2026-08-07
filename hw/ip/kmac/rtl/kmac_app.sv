@@ -84,6 +84,9 @@ module kmac_app
   output logic                        reg_state_valid_o,
   output logic [sha3_pkg::StateW-1:0] reg_state_o[Share],
 
+  // The keccak state can be written by software if no HW application interface is active.
+  output logic reg_state_write_en_o,
+
   // Controls for SW whether to take the key from the KeyMgr sideload interface or registers. For
   // KMAC operations initiated by an app interface, we always take the sideloaded key.
   // If 1, the key for KMAC is taken from the KeyMgr sideload interface.
@@ -1099,6 +1102,19 @@ module kmac_app
     .in_i(reg_state_valid),
     .out_o(reg_state_valid_o)
   );
+
+  // SEC_CM: LOGIC.INTEGRITY
+  logic reg_state_write_en;
+  prim_sec_anchor_buf #(
+    .Width(1)
+  ) u_prim_buf_state_write_en (
+    .in_i(reg_state_write_en),
+    .out_o(reg_state_write_en_o)
+  );
+
+  // Software can write the keccak state.
+  assign reg_state_write_en = !app_active_o &&
+                              lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i);
 
   // Keccak state Demux
   // The state is only exposed to the registers if SW is active.
