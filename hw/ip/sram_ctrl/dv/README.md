@@ -46,13 +46,15 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
-Three compile-time configurations can be tested:
+Four compile-time configurations can be tested:
 * `sram_ctrl_main` - this configuration uses a 128 KiB memory to emulate the main SRAM used in Earl Grey and enables parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
 * `sram_ctrl_ret` - this configuration uses a 4 KiB memory to emulate the retention SRAM used in Earl Grey and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
 * `sram_ctrl_exec_64kB` - this configuration uses a 64 KiB memory to emulate both the secondary SRAM used in Earl Grey and the main SRAM used in Darjeeling.
   It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
+* `sram_ctrl_exec_48kB` - this is an example configuration for a memory with a non-power-of-2 size of 48 KiB.
+  It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
 
-A macro-define `SRAM_SIZE_BYTES` is defined as a build option in the per-variant configuration files (`sram_ctrl_main_sim_cfg.hjson`, `sram_ctrl_ret_sim_cfg.hjson`, `sram_ctrl_exec_64kB_sim_cfg.hjson`).
+A macro-define `SRAM_SIZE_BYTES` is defined as a build option in the per-variant configuration files (`sram_ctrl_main_sim_cfg.hjson`, `sram_ctrl_ret_sim_cfg.hjson`, `sram_ctrl_exec_64kB_sim_cfg.hjson`, `sram_ctrl_exec_48kB_sim_cfg.hjson`).
 The memory size can be a non-power-of-2 value (e.g. for non-power-of-2 SRAM sizes) but must be a multiple of 16 KiB when address scrambling is enabled.
 
 ### Global types & methods
