@@ -26,6 +26,11 @@ enum {
   kDiceMeasurementSizeInBytes = kDiceMeasurementSizeInBits / 8,
 };
 
+enum {
+  // Shared scratch buffer to use for ML-DSA operations
+  kDiceMldsaAttestationScratchBufferSize = 32 * 1024,
+};
+
 extern const dice_cert_format_t kDiceCertFormat;
 /**
  * DICE ECC key descriptors.
