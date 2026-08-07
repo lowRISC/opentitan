@@ -8,7 +8,9 @@ module otbn_mai
   import otbn_pkg::*;
 #(
   // Masking accelerator interface will not randomize operand start indexes
-  parameter bit SecFixMaiOpSeq = 1'b0
+  parameter bit SecFixMaiOpSeq = 1'b0,
+  // Compile-time permutation for URND permutation used to clear the MAI's WSRs
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault
 )(
   input  logic clk_i,
   input  logic rst_ni,
@@ -199,8 +201,17 @@ module otbn_mai
   // mask_0  ( 32b): remask_rand_i[0], per-handshake re-masking word for adder input share 0
   // mask_1  ( 32b): remask_rand_i[1], per-handshake re-masking word for adder input share 1
   // cnt     (  3b): seeds the batch-counter start offset
-  assign mai_ma_urnd   = urnd_data_i;
-  assign mai_ispr_urnd = urnd_data_i;
+  //
+  // Both mai_ma_urnd and mai_ispr_urnd are derived from a permutation of urnd_data_i rather than
+  // from urnd_data_i directly, so that neither one corresponds bit-for-bit to the raw URND wire
+  // positions.
+  logic [UrndLen-1:0] urnd_permutation;
+  for (genvar i = 0; i < UrndLen; i++) begin : gen_urnd_perm
+    assign urnd_permutation[i] = urnd_data_i[RndCnstMaiUrndPerm[i]];
+  end
+
+  assign mai_ma_urnd   = urnd_permutation;
+  assign mai_ispr_urnd = urnd_permutation;
   assign unused_urnd   = ^mai_ispr_urnd.rsvd;
 
 
