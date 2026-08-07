@@ -386,6 +386,8 @@ module otbn_top_sim (
     .cmd_i                 ( otbn_pkg::CmdExecute ),
     .cmd_en_i              ( otbn_start ),
 
+    .wfi_enabled_i         ( 1'b1 ),
+
     .lc_escalate_en_i      ( lc_ctrl_pkg::Off ),
     .lc_rma_req_i          ( lc_ctrl_pkg::Off ),
 

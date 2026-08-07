@@ -32,6 +32,9 @@ module otbn_core_model
   input  logic [7:0]         cmd_i,    // CMD register for OTBN commands
   input  logic               cmd_en_i, // CMD register enable for OTBN commands
 
+  // Configuration from the CTRL register
+  input  logic               wfi_enabled_i,
+
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_rma_req_i,
 
@@ -329,6 +332,7 @@ module otbn_core_model
   // initial block (see declaration of the variable above)
   bit failed_reset, failed_lc_escalate, failed_keymgr_value, failed_lc_rma_req;
   bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
+  bit failed_set_wfi_enabled;
   bit failed_initial_secure_wipe, initial_secure_wipe_started;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -344,6 +348,7 @@ module otbn_core_model
       failed_urnd_cdc <= 0;
       failed_rnd_cdc <= 0;
       failed_otp_key_cdc <= 0;
+      failed_set_wfi_enabled <= 0;
       failed_initial_secure_wipe <= 0;
       initial_secure_wipe_started <= 0;
       model_state <= 0;
@@ -367,6 +372,10 @@ module otbn_core_model
                                                             keymgr_key_i.key[0],
                                                             keymgr_key_i.key[1],
                                                             keymgr_key_i.valid) != 0);
+      end
+      if (!$stable(wfi_enabled_i) || $rose(rst_ni)) begin
+        failed_set_wfi_enabled <= (otbn_model_set_wfi_enabled(model_handle,
+                                                              wfi_enabled_i) != 0);
       end
       if (edn_urnd_cdc_done_i) begin
         failed_urnd_cdc <= (otbn_model_urnd_cdc_done(model_handle) != 0);
@@ -447,6 +456,7 @@ module otbn_core_model
                    failed_reset, failed_lc_escalate, failed_keymgr_value,
                    failed_edn_flush, failed_rnd_step, failed_urnd_step,
                    failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc,
+                   failed_set_wfi_enabled,
                    failed_initial_secure_wipe, failed_lc_rma_req};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.

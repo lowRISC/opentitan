@@ -51,6 +51,13 @@ module otbn_idle_checker
 
   assign do_start = start_req && (hw2reg.status.d == otbn_pkg::StatusIdle);
 
+  // Detect a RESUME command. It only takes effect if we are currently paused on a WFI instruction.
+  logic resume_req, do_resume;
+
+  assign resume_req = reg2hw.cmd.qe && (reg2hw.cmd.q == otbn_pkg::CmdResume);
+
+  assign do_resume = resume_req && (hw2reg.status.d == otbn_pkg::StatusPaused);
+
   // Track whether OTBN has completed its initial secure wipe.
   logic init_sec_wipe_done;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -63,10 +70,11 @@ module otbn_idle_checker
     end
   end
 
-  // Our model of whether OTBN is running or not. We start on `do_start` once the initial secure
-  // wipe is done, and we stop on `done` of an ecall instruction. The `done` interrupt also fires
-  // when OTBN pauses on a WFI instruction, but a pause does not end the operation. So we must not
-  // clear on the pause-entry `done`.
+  // Our model of whether the core is actively occupying its memories. It is high during execution
+  // and secure wipe, and low when idle or paused on a WFI instruction. We set on do_start once the
+  // initial secure wipe is done and on do_resume. We clear on the done that fires at completion
+  // or at pause entry. A secure wipe forces it high so that a wipe entered from a pause
+  // (escalation) is still modelled as running.
   logic running_qq, running_q, running_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -77,15 +85,29 @@ module otbn_idle_checker
       running_qq <= running_q;
     end
   end
-  assign running_d = do_start & init_sec_wipe_done ? 1'b1 : // set
-                     done & (status_q_i != otbn_pkg::StatusPaused) ? 1'b0 : // clear on completion
+  assign running_d = busy_secure_wipe                        ? 1'b1 : // any wipe or escalation
+                     do_start & init_sec_wipe_done           ? 1'b1 : // execute / commanded wipe
+                     do_resume                               ? 1'b1 : // resume from WFI pause
+                     done                                    ? 1'b0 : // pause-entry or completion
                      ~init_sec_wipe_done & ~busy_secure_wipe ? 1'b0 : // clear
-                     running_q; // keep
+                     running_q;                                       // keep
 
-  // We should never see done when we're not already running. The converse assertion, that we never
-  // see cmd_start when we are running, need not be true: the host can do that if it likes and OTBN
-  // will ignore it. But we should never see do_start when we think we're running.
-  `ASSERT(RunningIfDone_A, done |-> running_q)
+  // Track whether the previous cycle was paused. The only done that can fire immediately after a
+  // paused cycle is the direct pause-to-locked transition (an escalation while paused).
+  logic was_paused_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      was_paused_q <= 1'b0;
+    end else begin
+      was_paused_q <= (status_q_i == otbn_pkg::StatusPaused);
+    end
+  end
+
+  // We should never see done when we're not already running (except the direct pause-to-locked
+  // done noted above). The converse assertion, that we never see cmd_start when we are running,
+  // need not be true: the host can do that if it likes and OTBN will ignore it. But we should never
+  // see do_start when we think we're running.
+  `ASSERT(RunningIfDone_A, done && !was_paused_q |-> running_q)
   `ASSERT(IdleIfStart_A, do_start |-> !running_q)
 
   // Key rotation (used in the logic below) can delay the idle signal. This signal is flopped an
@@ -139,7 +161,8 @@ module otbn_idle_checker
   logic missing_idle_d, missing_idle_q;
   assign running_or_locked = running_qq ||
                              busy_secure_wipe ||
-                             status_q_i == otbn_pkg::StatusLocked;
+                             status_q_i == otbn_pkg::StatusLocked ||
+                             status_q_i == otbn_pkg::StatusPaused;
   assign missing_idle_d = !running_or_locked && (idle_o_i != prim_mubi_pkg::MuBi4True);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
