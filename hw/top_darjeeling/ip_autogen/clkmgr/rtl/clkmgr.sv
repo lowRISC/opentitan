@@ -304,7 +304,11 @@
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .mubi_i(MuBi4False),
+    // Without a calibration-ready input there is nothing that could invalidate the clock
+    // frequencies, so the clocks are always considered calibrated. Tying this to MuBi4False
+    // instead would permanently force measure_ctrl_regwen to 1 and permanently clear the
+    // measurement enables, disabling the frequency measurement feature altogether.
+    .mubi_i(MuBi4True),
     .mubi_o({calib_rdy})
   );
 
