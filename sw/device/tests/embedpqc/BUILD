@@ -6,6 +6,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "opentitan_test",
+    "qemu_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -29,6 +30,7 @@ cc_library(
     hdrs = ["mldsa_testvectors.h"],
     deps = [
         "//third_party/embedpqc:mldsa44_tiny",
+        "//third_party/embedpqc:mldsa87_tiny",
     ],
 )
 
@@ -43,5 +45,22 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//third_party/embedpqc:mldsa44_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa87_tiny_test",
+    srcs = ["mldsa87_tiny_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    qemu = qemu_params(timeout = "long"),
+    deps = [
+        ":mldsa_test_utils",
+        ":mldsa_testvectors",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//third_party/embedpqc:mldsa87_tiny",
+        "//third_party/embedpqc/ports:mldsa87_tiny_caller",
     ],
 )
