@@ -195,6 +195,7 @@ otp_image(
             slot_b = SLOTS["b"],
             # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
             # https://github.com/lowRISC/opentitan/issues/30897
+            # TODO(#30957): Adapt tests for keymgr_dpe bootflow
             tags = ["skip_in_ci"],
         ),
     )

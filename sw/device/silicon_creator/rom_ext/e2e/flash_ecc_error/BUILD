@@ -183,6 +183,7 @@ opentitan_binary(
             # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
             # https://github.com/lowRISC/opentitan/issues/30897
             tags = ["skip_in_ci"],
+            # TODO(#30957): Adapt tests for keymgr_dpe bootflow
             test_cmd = """
                 # First run the setup program to make sure the keymgr secrets are configured.
                 # This is required to allow the ROM_EXT to run.
