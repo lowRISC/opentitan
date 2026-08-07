@@ -963,3 +963,39 @@ NIST_CAVP_AES_KAT_TESTVECTORS = [
     )
     for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
 ]
+
+run_binary(
+    name = "wycheproof_mlkem_1024_encaps_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+        "@wycheproof//testvectors_v1:mlkem_1024_encaps_test.json",
+    ],
+    outs = [":wycheproof_mlkem_1024_encaps.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mlkem_1024_encaps_test.json)",
+        "--dst",
+        "$(location :wycheproof_mlkem_1024_encaps.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mlkem_parser",
+)
+
+run_binary(
+    name = "wycheproof_mlkem_1024_decaps_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+        "@wycheproof//testvectors_v1:mlkem_1024_semi_expanded_decaps_test.json",
+    ],
+    outs = [":wycheproof_mlkem_1024_decaps.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mlkem_1024_semi_expanded_decaps_test.json)",
+        "--dst",
+        "$(location :wycheproof_mlkem_1024_decaps.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mlkem_parser",
+)

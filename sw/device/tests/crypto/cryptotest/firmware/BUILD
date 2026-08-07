@@ -218,6 +218,21 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mlkem",
+    srcs = ["mlkem.c"],
+    hdrs = ["mlkem.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mlkem_commands",
+    ],
+)
+
 FIRMWARE_DEPS = [
     ":aes",
     ":aes_gcm",
@@ -228,6 +243,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hmac",
     ":kmac",
+    ":mlkem",
     ":rsa",
     ":sha",
     ":sphincsplus",

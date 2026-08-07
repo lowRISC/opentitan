@@ -108,9 +108,6 @@ poly_mul:
   addi x10, x0, 1
   addi x11, x0, 2
 
-  /* Zero w31 to guarantee zero register for mask generation */
-  bn.xor      w31, w31, w31
-
   /* Generate mask w9 = (0x00000000_ffffffff, ...) for selecting even slots */
   bn.not      w9, w31
   bn.trn1.8S  w9, w9, w31

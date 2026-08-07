@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/mlkem_schema.json",
+  "title": "Cryptotest ML-KEM Test Vector",
+  "description": "A list of testvectors for ML-KEM testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID number (used for debugging)",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be ml-kem",
+        "type": "string",
+        "enum": ["ml-kem"]
+      },
+      "operation": {
+        "description": "ML-KEM operation",
+        "type": "string",
+        "enum": ["encaps", "decaps"]
+      },
+      "parameter_set": {
+        "description": "ML-KEM parameter set",
+        "type": "string",
+        "enum": ["ml-kem-1024"]
+      },
+      "public_key": {
+        "description": "Public key bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "secret_key": {
+        "description": "Secret key bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "message": {
+        "description": "Random message m bytes for encaps",
+        "$ref": "#/$defs/byte_array"
+      },
+      "ciphertext": {
+        "description": "Ciphertext bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "shared_secret": {
+        "description": "Shared secret K bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected result of operation",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "vendor",
+      "test_case_id",
+      "algorithm",
+      "operation",
+      "parameter_set",
+      "result"
+    ]
+  }
+}
