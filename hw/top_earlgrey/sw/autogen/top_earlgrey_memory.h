@@ -274,23 +274,6 @@
  */
 #define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for prim device on otp_macro in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR 0x40138000
-
-/**
- * Peripheral size for prim device on otp_macro in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR and
- * `TOP_EARLGREY_OTP_MACRO_PRIM_BASE_ADDR + TOP_EARLGREY_OTP_MACRO_PRIM_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_OTP_MACRO_PRIM_SIZE_BYTES 0x20
-/**
  * Peripheral base address for regs device on lc_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -896,8 +879,8 @@
 #define TOP_EARLGREY_MMIO_BASE_ADDR 0x40000000
 #define TOP_EARLGREY_MMIO_SIZE_BYTES 0x10000000
 
-#define TOP_EARLGREY_NVM_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
-#define TOP_EARLGREY_NVM_SIZE_BYTES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
+#define TOP_EARLGREY_NVM_BASE_ADDR TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR
+#define TOP_EARLGREY_NVM_SIZE_BYTES TOP_EARLGREY_RRAM_CTRL_HOST_SIZE_BYTES
 
 #endif  // __ASSEMBLER__
 

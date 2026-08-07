@@ -238,7 +238,18 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_timing_functest",
     srcs = ["aes_gcm_timing_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
+    exec_env = dicts.add(
+        CRYPTOTEST_EXEC_ENVS,
+        {
+            # This test expects constant cycle count which cannot be guaranteed # on the RRAM.
+            # see https://github.com/lowRISC/opentitan/issues/30895
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_sival_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_sival_skip_ci",
+        },
+    ),
+    fpga_sival_skip_ci = fpga_params(
+        tags = ["skip_in_ci"],
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],

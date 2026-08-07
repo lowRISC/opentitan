@@ -57,9 +57,9 @@ module rram_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [64:0] reg_we_check;
+  logic [70:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(65)
+    .OneHotWidth(71)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -130,8 +130,8 @@ module rram_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[260:263]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[264:267]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[284:287]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[288:291]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -257,6 +257,12 @@ module rram_ctrl_core_reg_top (
   logic region_cfg_regwen_7_we;
   logic region_cfg_regwen_7_qs;
   logic region_cfg_regwen_7_wd;
+  logic region_cfg_regwen_8_we;
+  logic region_cfg_regwen_8_qs;
+  logic region_cfg_regwen_8_wd;
+  logic region_cfg_regwen_9_we;
+  logic region_cfg_regwen_9_qs;
+  logic region_cfg_regwen_9_wd;
   logic mp_region_cfg_0_we;
   logic [3:0] mp_region_cfg_0_en_0_qs;
   logic [3:0] mp_region_cfg_0_en_0_wd;
@@ -345,6 +351,28 @@ module rram_ctrl_core_reg_top (
   logic [3:0] mp_region_cfg_7_scramble_en_7_wd;
   logic [3:0] mp_region_cfg_7_ecc_en_7_qs;
   logic [3:0] mp_region_cfg_7_ecc_en_7_wd;
+  logic mp_region_cfg_8_we;
+  logic [3:0] mp_region_cfg_8_en_8_qs;
+  logic [3:0] mp_region_cfg_8_en_8_wd;
+  logic [3:0] mp_region_cfg_8_rd_en_8_qs;
+  logic [3:0] mp_region_cfg_8_rd_en_8_wd;
+  logic [3:0] mp_region_cfg_8_wr_en_8_qs;
+  logic [3:0] mp_region_cfg_8_wr_en_8_wd;
+  logic [3:0] mp_region_cfg_8_scramble_en_8_qs;
+  logic [3:0] mp_region_cfg_8_scramble_en_8_wd;
+  logic [3:0] mp_region_cfg_8_ecc_en_8_qs;
+  logic [3:0] mp_region_cfg_8_ecc_en_8_wd;
+  logic mp_region_cfg_9_we;
+  logic [3:0] mp_region_cfg_9_en_9_qs;
+  logic [3:0] mp_region_cfg_9_en_9_wd;
+  logic [3:0] mp_region_cfg_9_rd_en_9_qs;
+  logic [3:0] mp_region_cfg_9_rd_en_9_wd;
+  logic [3:0] mp_region_cfg_9_wr_en_9_qs;
+  logic [3:0] mp_region_cfg_9_wr_en_9_wd;
+  logic [3:0] mp_region_cfg_9_scramble_en_9_qs;
+  logic [3:0] mp_region_cfg_9_scramble_en_9_wd;
+  logic [3:0] mp_region_cfg_9_ecc_en_9_qs;
+  logic [3:0] mp_region_cfg_9_ecc_en_9_wd;
   logic mp_region_0_we;
   logic [11:0] mp_region_0_base_0_qs;
   logic [11:0] mp_region_0_base_0_wd;
@@ -385,6 +413,16 @@ module rram_ctrl_core_reg_top (
   logic [11:0] mp_region_7_base_7_wd;
   logic [11:0] mp_region_7_size_7_qs;
   logic [11:0] mp_region_7_size_7_wd;
+  logic mp_region_8_we;
+  logic [11:0] mp_region_8_base_8_qs;
+  logic [11:0] mp_region_8_base_8_wd;
+  logic [11:0] mp_region_8_size_8_qs;
+  logic [11:0] mp_region_8_size_8_wd;
+  logic mp_region_9_we;
+  logic [11:0] mp_region_9_base_9_qs;
+  logic [11:0] mp_region_9_base_9_wd;
+  logic [11:0] mp_region_9_size_9_qs;
+  logic [11:0] mp_region_9_size_9_wd;
   logic default_region_we;
   logic [3:0] default_region_rd_en_qs;
   logic [3:0] default_region_rd_en_wd;
@@ -1602,6 +1640,64 @@ module rram_ctrl_core_reg_top (
   );
 
 
+  // Subregister 8 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_8]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_region_cfg_regwen_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (region_cfg_regwen_8_we),
+    .wd     (region_cfg_regwen_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_9]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_region_cfg_regwen_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (region_cfg_regwen_9_we),
+    .wd     (region_cfg_regwen_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_9_qs)
+  );
+
+
   // Subregister 0 of Multireg mp_region_cfg
   // R[mp_region_cfg_0]: V(False)
   // Create REGWEN-gated WE signal
@@ -2730,6 +2826,288 @@ module rram_ctrl_core_reg_top (
   );
 
 
+  // Subregister 8 of Multireg mp_region_cfg
+  // R[mp_region_cfg_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_8_gated_we;
+  assign mp_region_cfg_8_gated_we = mp_region_cfg_8_we & region_cfg_regwen_8_qs;
+  //   F[en_8]: 3:0
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_8_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_8_gated_we),
+    .wd     (mp_region_cfg_8_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[8].en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_8_en_8_qs)
+  );
+
+  //   F[rd_en_8]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_8_rd_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_8_gated_we),
+    .wd     (mp_region_cfg_8_rd_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[8].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_8_rd_en_8_qs)
+  );
+
+  //   F[wr_en_8]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_8_wr_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_8_gated_we),
+    .wd     (mp_region_cfg_8_wr_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[8].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_8_wr_en_8_qs)
+  );
+
+  //   F[scramble_en_8]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_8_scramble_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_8_gated_we),
+    .wd     (mp_region_cfg_8_scramble_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[8].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_8_scramble_en_8_qs)
+  );
+
+  //   F[ecc_en_8]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_8_ecc_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_8_gated_we),
+    .wd     (mp_region_cfg_8_ecc_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[8].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_8_ecc_en_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg mp_region_cfg
+  // R[mp_region_cfg_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_cfg_9_gated_we;
+  assign mp_region_cfg_9_gated_we = mp_region_cfg_9_we & region_cfg_regwen_9_qs;
+  //   F[en_9]: 3:0
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_9_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_9_gated_we),
+    .wd     (mp_region_cfg_9_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[9].en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_9_en_9_qs)
+  );
+
+  //   F[rd_en_9]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_9_rd_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_9_gated_we),
+    .wd     (mp_region_cfg_9_rd_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[9].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_9_rd_en_9_qs)
+  );
+
+  //   F[wr_en_9]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_9_wr_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_9_gated_we),
+    .wd     (mp_region_cfg_9_wr_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[9].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_9_wr_en_9_qs)
+  );
+
+  //   F[scramble_en_9]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_9_scramble_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_9_gated_we),
+    .wd     (mp_region_cfg_9_scramble_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[9].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_9_scramble_en_9_qs)
+  );
+
+  //   F[ecc_en_9]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_mp_region_cfg_9_ecc_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_cfg_9_gated_we),
+    .wd     (mp_region_cfg_9_ecc_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[9].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_9_ecc_en_9_qs)
+  );
+
+
   // Subregister 0 of Multireg mp_region
   // R[mp_region_0]: V(False)
   // Create REGWEN-gated WE signal
@@ -3207,6 +3585,126 @@ module rram_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_7_size_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg mp_region
+  // R[mp_region_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_8_gated_we;
+  assign mp_region_8_gated_we = mp_region_8_we & region_cfg_regwen_8_qs;
+  //   F[base_8]: 11:0
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_mp_region_8_base_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_8_gated_we),
+    .wd     (mp_region_8_base_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region[8].base.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_8_base_8_qs)
+  );
+
+  //   F[size_8]: 23:12
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_mp_region_8_size_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_8_gated_we),
+    .wd     (mp_region_8_size_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region[8].size.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_8_size_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg mp_region
+  // R[mp_region_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mp_region_9_gated_we;
+  assign mp_region_9_gated_we = mp_region_9_we & region_cfg_regwen_9_qs;
+  //   F[base_9]: 11:0
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_mp_region_9_base_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_9_gated_we),
+    .wd     (mp_region_9_base_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region[9].base.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_9_base_9_qs)
+  );
+
+  //   F[size_9]: 23:12
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_mp_region_9_size_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mp_region_9_gated_we),
+    .wd     (mp_region_9_size_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region[9].size.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mp_region_9_size_9_qs)
   );
 
 
@@ -6121,7 +6619,7 @@ module rram_ctrl_core_reg_top (
 
 
 
-  logic [64:0] addr_hit;
+  logic [70:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
@@ -6141,53 +6639,59 @@ module rram_ctrl_core_reg_top (
     addr_hit[15] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_5_OFFSET);
     addr_hit[16] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_6_OFFSET);
     addr_hit[17] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_7_OFFSET);
-    addr_hit[18] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_0_OFFSET);
-    addr_hit[19] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_1_OFFSET);
-    addr_hit[20] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_2_OFFSET);
-    addr_hit[21] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_3_OFFSET);
-    addr_hit[22] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_4_OFFSET);
-    addr_hit[23] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_5_OFFSET);
-    addr_hit[24] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_6_OFFSET);
-    addr_hit[25] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_7_OFFSET);
-    addr_hit[26] = (reg_addr == RRAM_CTRL_MP_REGION_0_OFFSET);
-    addr_hit[27] = (reg_addr == RRAM_CTRL_MP_REGION_1_OFFSET);
-    addr_hit[28] = (reg_addr == RRAM_CTRL_MP_REGION_2_OFFSET);
-    addr_hit[29] = (reg_addr == RRAM_CTRL_MP_REGION_3_OFFSET);
-    addr_hit[30] = (reg_addr == RRAM_CTRL_MP_REGION_4_OFFSET);
-    addr_hit[31] = (reg_addr == RRAM_CTRL_MP_REGION_5_OFFSET);
-    addr_hit[32] = (reg_addr == RRAM_CTRL_MP_REGION_6_OFFSET);
-    addr_hit[33] = (reg_addr == RRAM_CTRL_MP_REGION_7_OFFSET);
-    addr_hit[34] = (reg_addr == RRAM_CTRL_DEFAULT_REGION_OFFSET);
-    addr_hit[35] = (reg_addr == RRAM_CTRL_INFO_REGWEN_0_OFFSET);
-    addr_hit[36] = (reg_addr == RRAM_CTRL_INFO_REGWEN_1_OFFSET);
-    addr_hit[37] = (reg_addr == RRAM_CTRL_INFO_REGWEN_2_OFFSET);
-    addr_hit[38] = (reg_addr == RRAM_CTRL_INFO_REGWEN_3_OFFSET);
-    addr_hit[39] = (reg_addr == RRAM_CTRL_INFO_REGWEN_4_OFFSET);
-    addr_hit[40] = (reg_addr == RRAM_CTRL_INFO_REGWEN_5_OFFSET);
-    addr_hit[41] = (reg_addr == RRAM_CTRL_INFO_REGWEN_6_OFFSET);
-    addr_hit[42] = (reg_addr == RRAM_CTRL_INFO_REGWEN_7_OFFSET);
-    addr_hit[43] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
-    addr_hit[44] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
-    addr_hit[45] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
-    addr_hit[46] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
-    addr_hit[47] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
-    addr_hit[48] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
-    addr_hit[49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
-    addr_hit[50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET);
-    addr_hit[51] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
-    addr_hit[52] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
-    addr_hit[53] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
-    addr_hit[54] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
-    addr_hit[55] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
-    addr_hit[56] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[57] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[58] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
-    addr_hit[59] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
-    addr_hit[60] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[61] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
-    addr_hit[62] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[63] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
-    addr_hit[64] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[18] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_8_OFFSET);
+    addr_hit[19] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_9_OFFSET);
+    addr_hit[20] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_0_OFFSET);
+    addr_hit[21] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_1_OFFSET);
+    addr_hit[22] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_2_OFFSET);
+    addr_hit[23] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_3_OFFSET);
+    addr_hit[24] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_4_OFFSET);
+    addr_hit[25] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_5_OFFSET);
+    addr_hit[26] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_6_OFFSET);
+    addr_hit[27] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_7_OFFSET);
+    addr_hit[28] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_8_OFFSET);
+    addr_hit[29] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_9_OFFSET);
+    addr_hit[30] = (reg_addr == RRAM_CTRL_MP_REGION_0_OFFSET);
+    addr_hit[31] = (reg_addr == RRAM_CTRL_MP_REGION_1_OFFSET);
+    addr_hit[32] = (reg_addr == RRAM_CTRL_MP_REGION_2_OFFSET);
+    addr_hit[33] = (reg_addr == RRAM_CTRL_MP_REGION_3_OFFSET);
+    addr_hit[34] = (reg_addr == RRAM_CTRL_MP_REGION_4_OFFSET);
+    addr_hit[35] = (reg_addr == RRAM_CTRL_MP_REGION_5_OFFSET);
+    addr_hit[36] = (reg_addr == RRAM_CTRL_MP_REGION_6_OFFSET);
+    addr_hit[37] = (reg_addr == RRAM_CTRL_MP_REGION_7_OFFSET);
+    addr_hit[38] = (reg_addr == RRAM_CTRL_MP_REGION_8_OFFSET);
+    addr_hit[39] = (reg_addr == RRAM_CTRL_MP_REGION_9_OFFSET);
+    addr_hit[40] = (reg_addr == RRAM_CTRL_DEFAULT_REGION_OFFSET);
+    addr_hit[41] = (reg_addr == RRAM_CTRL_INFO_REGWEN_0_OFFSET);
+    addr_hit[42] = (reg_addr == RRAM_CTRL_INFO_REGWEN_1_OFFSET);
+    addr_hit[43] = (reg_addr == RRAM_CTRL_INFO_REGWEN_2_OFFSET);
+    addr_hit[44] = (reg_addr == RRAM_CTRL_INFO_REGWEN_3_OFFSET);
+    addr_hit[45] = (reg_addr == RRAM_CTRL_INFO_REGWEN_4_OFFSET);
+    addr_hit[46] = (reg_addr == RRAM_CTRL_INFO_REGWEN_5_OFFSET);
+    addr_hit[47] = (reg_addr == RRAM_CTRL_INFO_REGWEN_6_OFFSET);
+    addr_hit[48] = (reg_addr == RRAM_CTRL_INFO_REGWEN_7_OFFSET);
+    addr_hit[49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
+    addr_hit[50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
+    addr_hit[51] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
+    addr_hit[52] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
+    addr_hit[53] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
+    addr_hit[54] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
+    addr_hit[55] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
+    addr_hit[56] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET);
+    addr_hit[57] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
+    addr_hit[58] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
+    addr_hit[59] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
+    addr_hit[60] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
+    addr_hit[61] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[62] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[63] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[64] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
+    addr_hit[65] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
+    addr_hit[66] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[67] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
+    addr_hit[68] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[69] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
+    addr_hit[70] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -6259,7 +6763,13 @@ module rram_ctrl_core_reg_top (
                (addr_hit[61] & (|(RRAM_CTRL_CORE_PERMIT[61] & ~reg_be))) |
                (addr_hit[62] & (|(RRAM_CTRL_CORE_PERMIT[62] & ~reg_be))) |
                (addr_hit[63] & (|(RRAM_CTRL_CORE_PERMIT[63] & ~reg_be))) |
-               (addr_hit[64] & (|(RRAM_CTRL_CORE_PERMIT[64] & ~reg_be)))));
+               (addr_hit[64] & (|(RRAM_CTRL_CORE_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(RRAM_CTRL_CORE_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(RRAM_CTRL_CORE_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(RRAM_CTRL_CORE_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(RRAM_CTRL_CORE_PERMIT[68] & ~reg_be))) |
+               (addr_hit[69] & (|(RRAM_CTRL_CORE_PERMIT[69] & ~reg_be))) |
+               (addr_hit[70] & (|(RRAM_CTRL_CORE_PERMIT[70] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -6353,7 +6863,13 @@ module rram_ctrl_core_reg_top (
   assign region_cfg_regwen_7_we = addr_hit[17] & reg_we & !reg_error;
 
   assign region_cfg_regwen_7_wd = reg_wdata[0];
-  assign mp_region_cfg_0_we = addr_hit[18] & reg_we & !reg_error;
+  assign region_cfg_regwen_8_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign region_cfg_regwen_8_wd = reg_wdata[0];
+  assign region_cfg_regwen_9_we = addr_hit[19] & reg_we & !reg_error;
+
+  assign region_cfg_regwen_9_wd = reg_wdata[0];
+  assign mp_region_cfg_0_we = addr_hit[20] & reg_we & !reg_error;
 
   assign mp_region_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -6364,7 +6880,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_0_scramble_en_0_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_0_ecc_en_0_wd = reg_wdata[19:16];
-  assign mp_region_cfg_1_we = addr_hit[19] & reg_we & !reg_error;
+  assign mp_region_cfg_1_we = addr_hit[21] & reg_we & !reg_error;
 
   assign mp_region_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -6375,7 +6891,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_1_scramble_en_1_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_1_ecc_en_1_wd = reg_wdata[19:16];
-  assign mp_region_cfg_2_we = addr_hit[20] & reg_we & !reg_error;
+  assign mp_region_cfg_2_we = addr_hit[22] & reg_we & !reg_error;
 
   assign mp_region_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -6386,7 +6902,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_2_scramble_en_2_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_2_ecc_en_2_wd = reg_wdata[19:16];
-  assign mp_region_cfg_3_we = addr_hit[21] & reg_we & !reg_error;
+  assign mp_region_cfg_3_we = addr_hit[23] & reg_we & !reg_error;
 
   assign mp_region_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -6397,7 +6913,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_3_scramble_en_3_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_3_ecc_en_3_wd = reg_wdata[19:16];
-  assign mp_region_cfg_4_we = addr_hit[22] & reg_we & !reg_error;
+  assign mp_region_cfg_4_we = addr_hit[24] & reg_we & !reg_error;
 
   assign mp_region_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -6408,7 +6924,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_4_scramble_en_4_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_4_ecc_en_4_wd = reg_wdata[19:16];
-  assign mp_region_cfg_5_we = addr_hit[23] & reg_we & !reg_error;
+  assign mp_region_cfg_5_we = addr_hit[25] & reg_we & !reg_error;
 
   assign mp_region_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -6419,7 +6935,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_5_scramble_en_5_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_5_ecc_en_5_wd = reg_wdata[19:16];
-  assign mp_region_cfg_6_we = addr_hit[24] & reg_we & !reg_error;
+  assign mp_region_cfg_6_we = addr_hit[26] & reg_we & !reg_error;
 
   assign mp_region_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -6430,7 +6946,7 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_6_scramble_en_6_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_6_ecc_en_6_wd = reg_wdata[19:16];
-  assign mp_region_cfg_7_we = addr_hit[25] & reg_we & !reg_error;
+  assign mp_region_cfg_7_we = addr_hit[27] & reg_we & !reg_error;
 
   assign mp_region_cfg_7_en_7_wd = reg_wdata[3:0];
 
@@ -6441,47 +6957,79 @@ module rram_ctrl_core_reg_top (
   assign mp_region_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
 
   assign mp_region_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
-  assign mp_region_0_we = addr_hit[26] & reg_we & !reg_error;
+  assign mp_region_cfg_8_we = addr_hit[28] & reg_we & !reg_error;
+
+  assign mp_region_cfg_8_en_8_wd = reg_wdata[3:0];
+
+  assign mp_region_cfg_8_rd_en_8_wd = reg_wdata[7:4];
+
+  assign mp_region_cfg_8_wr_en_8_wd = reg_wdata[11:8];
+
+  assign mp_region_cfg_8_scramble_en_8_wd = reg_wdata[15:12];
+
+  assign mp_region_cfg_8_ecc_en_8_wd = reg_wdata[19:16];
+  assign mp_region_cfg_9_we = addr_hit[29] & reg_we & !reg_error;
+
+  assign mp_region_cfg_9_en_9_wd = reg_wdata[3:0];
+
+  assign mp_region_cfg_9_rd_en_9_wd = reg_wdata[7:4];
+
+  assign mp_region_cfg_9_wr_en_9_wd = reg_wdata[11:8];
+
+  assign mp_region_cfg_9_scramble_en_9_wd = reg_wdata[15:12];
+
+  assign mp_region_cfg_9_ecc_en_9_wd = reg_wdata[19:16];
+  assign mp_region_0_we = addr_hit[30] & reg_we & !reg_error;
 
   assign mp_region_0_base_0_wd = reg_wdata[11:0];
 
   assign mp_region_0_size_0_wd = reg_wdata[23:12];
-  assign mp_region_1_we = addr_hit[27] & reg_we & !reg_error;
+  assign mp_region_1_we = addr_hit[31] & reg_we & !reg_error;
 
   assign mp_region_1_base_1_wd = reg_wdata[11:0];
 
   assign mp_region_1_size_1_wd = reg_wdata[23:12];
-  assign mp_region_2_we = addr_hit[28] & reg_we & !reg_error;
+  assign mp_region_2_we = addr_hit[32] & reg_we & !reg_error;
 
   assign mp_region_2_base_2_wd = reg_wdata[11:0];
 
   assign mp_region_2_size_2_wd = reg_wdata[23:12];
-  assign mp_region_3_we = addr_hit[29] & reg_we & !reg_error;
+  assign mp_region_3_we = addr_hit[33] & reg_we & !reg_error;
 
   assign mp_region_3_base_3_wd = reg_wdata[11:0];
 
   assign mp_region_3_size_3_wd = reg_wdata[23:12];
-  assign mp_region_4_we = addr_hit[30] & reg_we & !reg_error;
+  assign mp_region_4_we = addr_hit[34] & reg_we & !reg_error;
 
   assign mp_region_4_base_4_wd = reg_wdata[11:0];
 
   assign mp_region_4_size_4_wd = reg_wdata[23:12];
-  assign mp_region_5_we = addr_hit[31] & reg_we & !reg_error;
+  assign mp_region_5_we = addr_hit[35] & reg_we & !reg_error;
 
   assign mp_region_5_base_5_wd = reg_wdata[11:0];
 
   assign mp_region_5_size_5_wd = reg_wdata[23:12];
-  assign mp_region_6_we = addr_hit[32] & reg_we & !reg_error;
+  assign mp_region_6_we = addr_hit[36] & reg_we & !reg_error;
 
   assign mp_region_6_base_6_wd = reg_wdata[11:0];
 
   assign mp_region_6_size_6_wd = reg_wdata[23:12];
-  assign mp_region_7_we = addr_hit[33] & reg_we & !reg_error;
+  assign mp_region_7_we = addr_hit[37] & reg_we & !reg_error;
 
   assign mp_region_7_base_7_wd = reg_wdata[11:0];
 
   assign mp_region_7_size_7_wd = reg_wdata[23:12];
-  assign default_region_we = addr_hit[34] & reg_we & !reg_error;
+  assign mp_region_8_we = addr_hit[38] & reg_we & !reg_error;
+
+  assign mp_region_8_base_8_wd = reg_wdata[11:0];
+
+  assign mp_region_8_size_8_wd = reg_wdata[23:12];
+  assign mp_region_9_we = addr_hit[39] & reg_we & !reg_error;
+
+  assign mp_region_9_base_9_wd = reg_wdata[11:0];
+
+  assign mp_region_9_size_9_wd = reg_wdata[23:12];
+  assign default_region_we = addr_hit[40] & reg_we & !reg_error;
 
   assign default_region_rd_en_wd = reg_wdata[3:0];
 
@@ -6490,31 +7038,31 @@ module rram_ctrl_core_reg_top (
   assign default_region_scramble_en_wd = reg_wdata[11:8];
 
   assign default_region_ecc_en_wd = reg_wdata[15:12];
-  assign info_regwen_0_we = addr_hit[35] & reg_we & !reg_error;
+  assign info_regwen_0_we = addr_hit[41] & reg_we & !reg_error;
 
   assign info_regwen_0_wd = reg_wdata[0];
-  assign info_regwen_1_we = addr_hit[36] & reg_we & !reg_error;
+  assign info_regwen_1_we = addr_hit[42] & reg_we & !reg_error;
 
   assign info_regwen_1_wd = reg_wdata[0];
-  assign info_regwen_2_we = addr_hit[37] & reg_we & !reg_error;
+  assign info_regwen_2_we = addr_hit[43] & reg_we & !reg_error;
 
   assign info_regwen_2_wd = reg_wdata[0];
-  assign info_regwen_3_we = addr_hit[38] & reg_we & !reg_error;
+  assign info_regwen_3_we = addr_hit[44] & reg_we & !reg_error;
 
   assign info_regwen_3_wd = reg_wdata[0];
-  assign info_regwen_4_we = addr_hit[39] & reg_we & !reg_error;
+  assign info_regwen_4_we = addr_hit[45] & reg_we & !reg_error;
 
   assign info_regwen_4_wd = reg_wdata[0];
-  assign info_regwen_5_we = addr_hit[40] & reg_we & !reg_error;
+  assign info_regwen_5_we = addr_hit[46] & reg_we & !reg_error;
 
   assign info_regwen_5_wd = reg_wdata[0];
-  assign info_regwen_6_we = addr_hit[41] & reg_we & !reg_error;
+  assign info_regwen_6_we = addr_hit[47] & reg_we & !reg_error;
 
   assign info_regwen_6_wd = reg_wdata[0];
-  assign info_regwen_7_we = addr_hit[42] & reg_we & !reg_error;
+  assign info_regwen_7_we = addr_hit[48] & reg_we & !reg_error;
 
   assign info_regwen_7_wd = reg_wdata[0];
-  assign info_page_cfg_0_we = addr_hit[43] & reg_we & !reg_error;
+  assign info_page_cfg_0_we = addr_hit[49] & reg_we & !reg_error;
 
   assign info_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -6525,7 +7073,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_0_scramble_en_0_wd = reg_wdata[15:12];
 
   assign info_page_cfg_0_ecc_en_0_wd = reg_wdata[19:16];
-  assign info_page_cfg_1_we = addr_hit[44] & reg_we & !reg_error;
+  assign info_page_cfg_1_we = addr_hit[50] & reg_we & !reg_error;
 
   assign info_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -6536,7 +7084,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_1_scramble_en_1_wd = reg_wdata[15:12];
 
   assign info_page_cfg_1_ecc_en_1_wd = reg_wdata[19:16];
-  assign info_page_cfg_2_we = addr_hit[45] & reg_we & !reg_error;
+  assign info_page_cfg_2_we = addr_hit[51] & reg_we & !reg_error;
 
   assign info_page_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -6547,7 +7095,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_2_scramble_en_2_wd = reg_wdata[15:12];
 
   assign info_page_cfg_2_ecc_en_2_wd = reg_wdata[19:16];
-  assign info_page_cfg_3_we = addr_hit[46] & reg_we & !reg_error;
+  assign info_page_cfg_3_we = addr_hit[52] & reg_we & !reg_error;
 
   assign info_page_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -6558,7 +7106,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_3_scramble_en_3_wd = reg_wdata[15:12];
 
   assign info_page_cfg_3_ecc_en_3_wd = reg_wdata[19:16];
-  assign info_page_cfg_4_we = addr_hit[47] & reg_we & !reg_error;
+  assign info_page_cfg_4_we = addr_hit[53] & reg_we & !reg_error;
 
   assign info_page_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -6569,7 +7117,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_4_scramble_en_4_wd = reg_wdata[15:12];
 
   assign info_page_cfg_4_ecc_en_4_wd = reg_wdata[19:16];
-  assign info_page_cfg_5_we = addr_hit[48] & reg_we & !reg_error;
+  assign info_page_cfg_5_we = addr_hit[54] & reg_we & !reg_error;
 
   assign info_page_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -6580,7 +7128,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_5_scramble_en_5_wd = reg_wdata[15:12];
 
   assign info_page_cfg_5_ecc_en_5_wd = reg_wdata[19:16];
-  assign info_page_cfg_6_we = addr_hit[49] & reg_we & !reg_error;
+  assign info_page_cfg_6_we = addr_hit[55] & reg_we & !reg_error;
 
   assign info_page_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -6591,7 +7139,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_6_scramble_en_6_wd = reg_wdata[15:12];
 
   assign info_page_cfg_6_ecc_en_6_wd = reg_wdata[19:16];
-  assign info_page_cfg_7_we = addr_hit[50] & reg_we & !reg_error;
+  assign info_page_cfg_7_we = addr_hit[56] & reg_we & !reg_error;
 
   assign info_page_cfg_7_en_7_wd = reg_wdata[3:0];
 
@@ -6602,17 +7150,17 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
 
   assign info_page_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
-  assign hw_info_cfg_override_we = addr_hit[51] & reg_we & !reg_error;
+  assign hw_info_cfg_override_we = addr_hit[57] & reg_we & !reg_error;
 
   assign hw_info_cfg_override_scramble_dis_wd = reg_wdata[3:0];
 
   assign hw_info_cfg_override_ecc_dis_wd = reg_wdata[7:4];
-  assign op_status_we = addr_hit[52] & reg_we & !reg_error;
+  assign op_status_we = addr_hit[58] & reg_we & !reg_error;
 
   assign op_status_done_wd = reg_wdata[0];
 
   assign op_status_err_wd = reg_wdata[1];
-  assign err_code_we = addr_hit[54] & reg_we & !reg_error;
+  assign err_code_we = addr_hit[60] & reg_we & !reg_error;
 
   assign err_code_op_err_wd = reg_wdata[0];
 
@@ -6621,26 +7169,26 @@ module rram_ctrl_core_reg_top (
   assign err_code_rd_err_wd = reg_wdata[2];
 
   assign err_code_wr_err_wd = reg_wdata[3];
-  assign fault_status_we = addr_hit[56] & reg_we & !reg_error;
+  assign fault_status_we = addr_hit[62] & reg_we & !reg_error;
 
   assign fault_status_phy_relbl_err_wd = reg_wdata[9];
-  assign corr_err_cnt_we = addr_hit[58] & reg_we & !reg_error;
+  assign corr_err_cnt_we = addr_hit[64] & reg_we & !reg_error;
 
   assign corr_err_cnt_wd = reg_wdata[7:0];
-  assign scratch_we = addr_hit[61] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[67] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[62] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[68] & reg_we & !reg_error;
 
   assign fifo_lvl_wr_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_clr_we = addr_hit[63] & reg_we & !reg_error;
+  assign fifo_clr_we = addr_hit[69] & reg_we & !reg_error;
 
   assign fifo_clr_wr_wd = reg_wdata[0];
 
   assign fifo_clr_rd_wd = reg_wdata[1];
-  assign curr_fifo_lvl_re = addr_hit[64] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[70] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -6662,53 +7210,59 @@ module rram_ctrl_core_reg_top (
     reg_we_check[15] = region_cfg_regwen_5_we;
     reg_we_check[16] = region_cfg_regwen_6_we;
     reg_we_check[17] = region_cfg_regwen_7_we;
-    reg_we_check[18] = mp_region_cfg_0_gated_we;
-    reg_we_check[19] = mp_region_cfg_1_gated_we;
-    reg_we_check[20] = mp_region_cfg_2_gated_we;
-    reg_we_check[21] = mp_region_cfg_3_gated_we;
-    reg_we_check[22] = mp_region_cfg_4_gated_we;
-    reg_we_check[23] = mp_region_cfg_5_gated_we;
-    reg_we_check[24] = mp_region_cfg_6_gated_we;
-    reg_we_check[25] = mp_region_cfg_7_gated_we;
-    reg_we_check[26] = mp_region_0_gated_we;
-    reg_we_check[27] = mp_region_1_gated_we;
-    reg_we_check[28] = mp_region_2_gated_we;
-    reg_we_check[29] = mp_region_3_gated_we;
-    reg_we_check[30] = mp_region_4_gated_we;
-    reg_we_check[31] = mp_region_5_gated_we;
-    reg_we_check[32] = mp_region_6_gated_we;
-    reg_we_check[33] = mp_region_7_gated_we;
-    reg_we_check[34] = default_region_we;
-    reg_we_check[35] = info_regwen_0_we;
-    reg_we_check[36] = info_regwen_1_we;
-    reg_we_check[37] = info_regwen_2_we;
-    reg_we_check[38] = info_regwen_3_we;
-    reg_we_check[39] = info_regwen_4_we;
-    reg_we_check[40] = info_regwen_5_we;
-    reg_we_check[41] = info_regwen_6_we;
-    reg_we_check[42] = info_regwen_7_we;
-    reg_we_check[43] = info_page_cfg_0_gated_we;
-    reg_we_check[44] = info_page_cfg_1_gated_we;
-    reg_we_check[45] = info_page_cfg_2_gated_we;
-    reg_we_check[46] = info_page_cfg_3_gated_we;
-    reg_we_check[47] = info_page_cfg_4_gated_we;
-    reg_we_check[48] = info_page_cfg_5_gated_we;
-    reg_we_check[49] = info_page_cfg_6_gated_we;
-    reg_we_check[50] = info_page_cfg_7_gated_we;
-    reg_we_check[51] = hw_info_cfg_override_we;
-    reg_we_check[52] = op_status_we;
-    reg_we_check[53] = 1'b0;
-    reg_we_check[54] = err_code_we;
-    reg_we_check[55] = 1'b0;
-    reg_we_check[56] = fault_status_we;
-    reg_we_check[57] = 1'b0;
-    reg_we_check[58] = corr_err_cnt_we;
+    reg_we_check[18] = region_cfg_regwen_8_we;
+    reg_we_check[19] = region_cfg_regwen_9_we;
+    reg_we_check[20] = mp_region_cfg_0_gated_we;
+    reg_we_check[21] = mp_region_cfg_1_gated_we;
+    reg_we_check[22] = mp_region_cfg_2_gated_we;
+    reg_we_check[23] = mp_region_cfg_3_gated_we;
+    reg_we_check[24] = mp_region_cfg_4_gated_we;
+    reg_we_check[25] = mp_region_cfg_5_gated_we;
+    reg_we_check[26] = mp_region_cfg_6_gated_we;
+    reg_we_check[27] = mp_region_cfg_7_gated_we;
+    reg_we_check[28] = mp_region_cfg_8_gated_we;
+    reg_we_check[29] = mp_region_cfg_9_gated_we;
+    reg_we_check[30] = mp_region_0_gated_we;
+    reg_we_check[31] = mp_region_1_gated_we;
+    reg_we_check[32] = mp_region_2_gated_we;
+    reg_we_check[33] = mp_region_3_gated_we;
+    reg_we_check[34] = mp_region_4_gated_we;
+    reg_we_check[35] = mp_region_5_gated_we;
+    reg_we_check[36] = mp_region_6_gated_we;
+    reg_we_check[37] = mp_region_7_gated_we;
+    reg_we_check[38] = mp_region_8_gated_we;
+    reg_we_check[39] = mp_region_9_gated_we;
+    reg_we_check[40] = default_region_we;
+    reg_we_check[41] = info_regwen_0_we;
+    reg_we_check[42] = info_regwen_1_we;
+    reg_we_check[43] = info_regwen_2_we;
+    reg_we_check[44] = info_regwen_3_we;
+    reg_we_check[45] = info_regwen_4_we;
+    reg_we_check[46] = info_regwen_5_we;
+    reg_we_check[47] = info_regwen_6_we;
+    reg_we_check[48] = info_regwen_7_we;
+    reg_we_check[49] = info_page_cfg_0_gated_we;
+    reg_we_check[50] = info_page_cfg_1_gated_we;
+    reg_we_check[51] = info_page_cfg_2_gated_we;
+    reg_we_check[52] = info_page_cfg_3_gated_we;
+    reg_we_check[53] = info_page_cfg_4_gated_we;
+    reg_we_check[54] = info_page_cfg_5_gated_we;
+    reg_we_check[55] = info_page_cfg_6_gated_we;
+    reg_we_check[56] = info_page_cfg_7_gated_we;
+    reg_we_check[57] = hw_info_cfg_override_we;
+    reg_we_check[58] = op_status_we;
     reg_we_check[59] = 1'b0;
-    reg_we_check[60] = 1'b0;
-    reg_we_check[61] = scratch_we;
-    reg_we_check[62] = fifo_lvl_we;
-    reg_we_check[63] = fifo_clr_we;
-    reg_we_check[64] = 1'b0;
+    reg_we_check[60] = err_code_we;
+    reg_we_check[61] = 1'b0;
+    reg_we_check[62] = fault_status_we;
+    reg_we_check[63] = 1'b0;
+    reg_we_check[64] = corr_err_cnt_we;
+    reg_we_check[65] = 1'b0;
+    reg_we_check[66] = 1'b0;
+    reg_we_check[67] = scratch_we;
+    reg_we_check[68] = fifo_lvl_we;
+    reg_we_check[69] = fifo_clr_we;
+    reg_we_check[70] = 1'b0;
   end
 
   // Read data return
@@ -6811,6 +7365,14 @@ module rram_ctrl_core_reg_top (
       end
 
       addr_hit[18]: begin
+        reg_rdata_next[0] = region_cfg_regwen_8_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[0] = region_cfg_regwen_9_qs;
+      end
+
+      addr_hit[20]: begin
         reg_rdata_next[3:0] = mp_region_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = mp_region_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = mp_region_cfg_0_wr_en_0_qs;
@@ -6818,7 +7380,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_0_ecc_en_0_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[21]: begin
         reg_rdata_next[3:0] = mp_region_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = mp_region_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = mp_region_cfg_1_wr_en_1_qs;
@@ -6826,7 +7388,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_1_ecc_en_1_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[22]: begin
         reg_rdata_next[3:0] = mp_region_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = mp_region_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = mp_region_cfg_2_wr_en_2_qs;
@@ -6834,7 +7396,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_2_ecc_en_2_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[23]: begin
         reg_rdata_next[3:0] = mp_region_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = mp_region_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = mp_region_cfg_3_wr_en_3_qs;
@@ -6842,7 +7404,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_3_ecc_en_3_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[24]: begin
         reg_rdata_next[3:0] = mp_region_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = mp_region_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = mp_region_cfg_4_wr_en_4_qs;
@@ -6850,7 +7412,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_4_ecc_en_4_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[25]: begin
         reg_rdata_next[3:0] = mp_region_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = mp_region_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = mp_region_cfg_5_wr_en_5_qs;
@@ -6858,7 +7420,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_5_ecc_en_5_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[26]: begin
         reg_rdata_next[3:0] = mp_region_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = mp_region_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = mp_region_cfg_6_wr_en_6_qs;
@@ -6866,7 +7428,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_6_ecc_en_6_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[27]: begin
         reg_rdata_next[3:0] = mp_region_cfg_7_en_7_qs;
         reg_rdata_next[7:4] = mp_region_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = mp_region_cfg_7_wr_en_7_qs;
@@ -6874,86 +7436,112 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = mp_region_cfg_7_ecc_en_7_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[28]: begin
+        reg_rdata_next[3:0] = mp_region_cfg_8_en_8_qs;
+        reg_rdata_next[7:4] = mp_region_cfg_8_rd_en_8_qs;
+        reg_rdata_next[11:8] = mp_region_cfg_8_wr_en_8_qs;
+        reg_rdata_next[15:12] = mp_region_cfg_8_scramble_en_8_qs;
+        reg_rdata_next[19:16] = mp_region_cfg_8_ecc_en_8_qs;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[3:0] = mp_region_cfg_9_en_9_qs;
+        reg_rdata_next[7:4] = mp_region_cfg_9_rd_en_9_qs;
+        reg_rdata_next[11:8] = mp_region_cfg_9_wr_en_9_qs;
+        reg_rdata_next[15:12] = mp_region_cfg_9_scramble_en_9_qs;
+        reg_rdata_next[19:16] = mp_region_cfg_9_ecc_en_9_qs;
+      end
+
+      addr_hit[30]: begin
         reg_rdata_next[11:0] = mp_region_0_base_0_qs;
         reg_rdata_next[23:12] = mp_region_0_size_0_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[31]: begin
         reg_rdata_next[11:0] = mp_region_1_base_1_qs;
         reg_rdata_next[23:12] = mp_region_1_size_1_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[32]: begin
         reg_rdata_next[11:0] = mp_region_2_base_2_qs;
         reg_rdata_next[23:12] = mp_region_2_size_2_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[33]: begin
         reg_rdata_next[11:0] = mp_region_3_base_3_qs;
         reg_rdata_next[23:12] = mp_region_3_size_3_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[34]: begin
         reg_rdata_next[11:0] = mp_region_4_base_4_qs;
         reg_rdata_next[23:12] = mp_region_4_size_4_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[35]: begin
         reg_rdata_next[11:0] = mp_region_5_base_5_qs;
         reg_rdata_next[23:12] = mp_region_5_size_5_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[36]: begin
         reg_rdata_next[11:0] = mp_region_6_base_6_qs;
         reg_rdata_next[23:12] = mp_region_6_size_6_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[37]: begin
         reg_rdata_next[11:0] = mp_region_7_base_7_qs;
         reg_rdata_next[23:12] = mp_region_7_size_7_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[38]: begin
+        reg_rdata_next[11:0] = mp_region_8_base_8_qs;
+        reg_rdata_next[23:12] = mp_region_8_size_8_qs;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[11:0] = mp_region_9_base_9_qs;
+        reg_rdata_next[23:12] = mp_region_9_size_9_qs;
+      end
+
+      addr_hit[40]: begin
         reg_rdata_next[3:0] = default_region_rd_en_qs;
         reg_rdata_next[7:4] = default_region_wr_en_qs;
         reg_rdata_next[11:8] = default_region_scramble_en_qs;
         reg_rdata_next[15:12] = default_region_ecc_en_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[41]: begin
         reg_rdata_next[0] = info_regwen_0_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[42]: begin
         reg_rdata_next[0] = info_regwen_1_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[43]: begin
         reg_rdata_next[0] = info_regwen_2_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[44]: begin
         reg_rdata_next[0] = info_regwen_3_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[45]: begin
         reg_rdata_next[0] = info_regwen_4_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[46]: begin
         reg_rdata_next[0] = info_regwen_5_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[47]: begin
         reg_rdata_next[0] = info_regwen_6_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[48]: begin
         reg_rdata_next[0] = info_regwen_7_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[49]: begin
         reg_rdata_next[3:0] = info_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = info_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = info_page_cfg_0_wr_en_0_qs;
@@ -6961,7 +7549,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_0_ecc_en_0_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[50]: begin
         reg_rdata_next[3:0] = info_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = info_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = info_page_cfg_1_wr_en_1_qs;
@@ -6969,7 +7557,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_1_ecc_en_1_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[51]: begin
         reg_rdata_next[3:0] = info_page_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = info_page_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = info_page_cfg_2_wr_en_2_qs;
@@ -6977,7 +7565,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_2_ecc_en_2_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[52]: begin
         reg_rdata_next[3:0] = info_page_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = info_page_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = info_page_cfg_3_wr_en_3_qs;
@@ -6985,7 +7573,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_3_ecc_en_3_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[53]: begin
         reg_rdata_next[3:0] = info_page_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = info_page_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = info_page_cfg_4_wr_en_4_qs;
@@ -6993,7 +7581,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_4_ecc_en_4_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[54]: begin
         reg_rdata_next[3:0] = info_page_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = info_page_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = info_page_cfg_5_wr_en_5_qs;
@@ -7001,7 +7589,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_5_ecc_en_5_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[55]: begin
         reg_rdata_next[3:0] = info_page_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = info_page_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = info_page_cfg_6_wr_en_6_qs;
@@ -7009,7 +7597,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_6_ecc_en_6_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[56]: begin
         reg_rdata_next[3:0] = info_page_cfg_7_en_7_qs;
         reg_rdata_next[7:4] = info_page_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = info_page_cfg_7_wr_en_7_qs;
@@ -7017,17 +7605,17 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_7_ecc_en_7_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[57]: begin
         reg_rdata_next[3:0] = hw_info_cfg_override_scramble_dis_qs;
         reg_rdata_next[7:4] = hw_info_cfg_override_ecc_dis_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[58]: begin
         reg_rdata_next[0] = op_status_done_qs;
         reg_rdata_next[1] = op_status_err_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[59]: begin
         reg_rdata_next[0] = status_rd_full_qs;
         reg_rdata_next[1] = status_rd_empty_qs;
         reg_rdata_next[2] = status_wr_full_qs;
@@ -7036,14 +7624,14 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[5] = status_keys_valid_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[60]: begin
         reg_rdata_next[0] = err_code_op_err_qs;
         reg_rdata_next[1] = err_code_mp_err_qs;
         reg_rdata_next[2] = err_code_rd_err_qs;
         reg_rdata_next[3] = err_code_wr_err_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[61]: begin
         reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
         reg_rdata_next[1] = std_fault_status_lcmgr_err_qs;
         reg_rdata_next[2] = std_fault_status_lcmgr_intg_err_qs;
@@ -7059,7 +7647,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[12] = std_fault_status_ctrl_fifo_err_qs;
       end
 
-      addr_hit[56]: begin
+      addr_hit[62]: begin
         reg_rdata_next[0] = fault_status_lcmgr_op_err_qs;
         reg_rdata_next[1] = fault_status_lcmgr_mp_err_qs;
         reg_rdata_next[2] = fault_status_lcmgr_rd_err_qs;
@@ -7076,39 +7664,39 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[13] = fault_status_host_gnt_err_qs;
       end
 
-      addr_hit[57]: begin
+      addr_hit[63]: begin
         reg_rdata_next[20:0] = err_addr_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[64]: begin
         reg_rdata_next[7:0] = corr_err_cnt_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[65]: begin
         reg_rdata_next[20:0] = corr_err_loc_addr_qs;
         reg_rdata_next[24] = corr_err_loc_part_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[66]: begin
         reg_rdata_next[0] = phy_status_wr_busy_qs;
         reg_rdata_next[1] = phy_status_init_done_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[67]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[68]: begin
         reg_rdata_next[4:0] = fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[69]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[64]: begin
+      addr_hit[70]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

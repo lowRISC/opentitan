@@ -184,10 +184,6 @@ cc_library(
         "test_rom_start.S",
     ],
     local_defines = opentitan_if_ip(
-        "flash_ctrl",
-        ["HAS_FLASH_CTRL"],
-        [],
-    ) + opentitan_if_ip(
         "otp_ctrl",
         ["HAS_OTP_CTRL"],
         [],

@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -115,12 +115,25 @@ static status_t patch_ast_config_value(void) {
       kNvmInfoFieldAstIndividPatchVal, &ast_patch_value,
       kNvmInfoFieldAstIndividPatchValSizeIn32BitWords));
 
+  // Read the CRC32 that wafer-test equipment should have written alongside
+  // the two fields above, if a patch is present. If it doesn't match, treat
+  // the patch as absent.
+  uint32_t ast_patch_crc;
+  static_assert(kNvmInfoFieldAstIndividPatchCrcSizeIn32BitWords == 1,
+                "AST patch CRC should fit in <32bits.");
+  TRY(manuf_nvm_info_field_read(
+      kNvmInfoFieldAstIndividPatchCrc, &ast_patch_crc,
+      kNvmInfoFieldAstIndividPatchCrcSizeIn32BitWords));
+  const uint32_t ast_patch_words[] = {ast_patch_addr_offset, ast_patch_value};
+  if (crc32(ast_patch_words, sizeof(ast_patch_words)) != ast_patch_crc) {
+    ast_patch_value = 0;
+  }
+
   // Only patch AST if the patch value is present.
   if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
     // Check the address is within range before programming.
-    if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
-      TRY_CHECK(ast_patch_addr_offset <= AST_REGAL_REG_OFFSET);
-    }
+    TRY_CHECK(ast_patch_addr_offset * sizeof(uint32_t) <= AST_REGAL_REG_OFFSET,
+              "AST patch address offset out of range.");
     // Write patch value.
     abs_mmio_write32(
         TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),

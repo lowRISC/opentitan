@@ -217,13 +217,13 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         }
     ));
 
-    // Flash execution: mapped by ROM when choosing a ROM_EXT.
+    // NVM execution: mapped by ROM when choosing a ROM_EXT.
     assert!(matches!(
         epmp.entry[4],
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x2000_0400, _)
+            range: EpmpAddressRange(0x3000_0400, _)
         }
     ));
     assert!(matches!(
@@ -231,7 +231,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
             kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x2000_0000, 0x2010_0000)
+            range: EpmpAddressRange(0x3000_0000, 0x3020_0000)
         }
     ));
     // Debug: only enabled for Test, Dev and RMA states:

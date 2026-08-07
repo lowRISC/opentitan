@@ -65,7 +65,6 @@ interface chip_if;
 `define KEYMGR_HIER         `PD_MAIN_HIER.u_keymgr
 `define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER      `PD_MAIN_HIER.u_otp_macro
 `define OTBN_HIER           `PD_MAIN_HIER.u_otbn
 `define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
 `define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
@@ -204,11 +203,6 @@ interface chip_if;
   // Functional (dedicated) interface (input): flash test mode0.
   pins_if #(.Width(2), .PullStrength("Weak")) flash_test_mode_if(
     .pins(dios[top_earlgrey_pkg::DioPadFlashTestMode1:top_earlgrey_pkg::DioPadFlashTestMode0])
-  );
-
-  // Functional (dedicated) interface (analog input): OTP ext volt.
-  pins_if #(.Width(1), .PullStrength("Weak")) otp_ext_volt_if(
-    .pins(dios[top_earlgrey_pkg::DioPadOtpExtVolt])
   );
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
@@ -658,6 +652,8 @@ interface chip_if;
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
   wire adc_data_valid = `AST_HIER.u_ast_aon.u_adc.adc_d_val_o;
+  wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
+                           (|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_wip));
 
   task static force_adc_d_o(input bit [9:0] channel_val);
     force `AST_HIER.u_ast_aon.adc_d_o = channel_val;
@@ -967,7 +963,6 @@ interface chip_if;
     cc_if.disconnect();
     flash_test_volt_if.disconnect();
     flash_test_mode_if.disconnect();
-    otp_ext_volt_if.disconnect();
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
@@ -1145,16 +1140,6 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
       `PINMUX_HIER.periph_to_dio_oe_i)
 
-  // Signal probe function for `vendor_test_ctrl` request from LC_CTRL to OTP_CTRL.
-`ifdef GATE_LEVEL
-  import otp_ctrl_pkg::*;
-  bit dummy_signal_probe_otp_vendor_test_ctrl;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      dummy_signal_probe_otp_vendor_test_ctrl)
-`else
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_MACRO_HIER.test_i)
-`endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
    * during the max power epoch of the power_virus test.
@@ -1301,7 +1286,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 `undef KEYMGR_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
-`undef OTP_MACRO_HIER
 `undef OTBN_HIER
 `undef PINMUX_HIER
 `undef PWRMGR_HIER

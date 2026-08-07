@@ -50,6 +50,15 @@ enum {
   kNvmInfoFieldWaferYCoordSizeIn32BitWords = 1,
 
   /**
+   * Wafer Info CRC Start / Size - Bank 0, Page 0
+   *
+   * CRC32 of the LotName, WaferNumber, WaferXCoord and WaferYCoord fields
+   * above.
+   */
+  kNvmInfoFieldWaferInfoCrcStartOffset = 108,
+  kNvmInfoFieldWaferInfoCrcSizeIn32BitWords = 1,
+
+  /**
    * Process Data Start / Size - Bank 0, Page 0
    */
   kNvmInfoFieldProcessDataStartOffset = 112,
@@ -94,6 +103,15 @@ enum {
   kNvmInfoFieldAstIndividPatchValStartOffset = 404,
   kNvmInfoFieldAstIndividPatchValSizeIn32BitWords = 1,
 
+  /**
+   * AST Individualize Patch CRC Start / Size - Bank 0, Page 0
+   *
+   * CRC32 (see `sw/device/lib/base/crc32.h`) of the AstIndividPatchAddr and
+   * AstIndividPatchVal fields above, in that order.
+   */
+  kNvmInfoFieldAstIndividPatchCrcStartOffset = 408,
+  kNvmInfoFieldAstIndividPatchCrcSizeIn32BitWords = 1,
+
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kNvmInfoFieldKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
 
@@ -112,12 +130,14 @@ extern const nvm_info_field_t kNvmInfoFieldLotName;
 extern const nvm_info_field_t kNvmInfoFieldWaferNumber;
 extern const nvm_info_field_t kNvmInfoFieldWaferXCoord;
 extern const nvm_info_field_t kNvmInfoFieldWaferYCoord;
+extern const nvm_info_field_t kNvmInfoFieldWaferInfoCrc;
 extern const nvm_info_field_t kNvmInfoFieldProcessData;
 extern const nvm_info_field_t kNvmInfoFieldAstCalibrationData;
 extern const nvm_info_field_t kNvmInfoFieldAstCfgVersion;
 extern const nvm_info_field_t kNvmInfoFieldCpDeviceId;
 extern const nvm_info_field_t kNvmInfoFieldAstIndividPatchAddr;
 extern const nvm_info_field_t kNvmInfoFieldAstIndividPatchVal;
+extern const nvm_info_field_t kNvmInfoFieldAstIndividPatchCrc;
 
 // Info Page 1 fields.
 extern const nvm_info_field_t kNvmInfoFieldCreatorSeed;

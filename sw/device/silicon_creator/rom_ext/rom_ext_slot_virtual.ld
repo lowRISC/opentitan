@@ -21,7 +21,11 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _rom_ext_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_size <= (LENGTH(nvm) / 2)), "Error: rom ext NVM is bigger than slot");
+/*
+ * Bounded to leave `_nvm_slot_reserved_bytes` empty at the end of whichever
+ * physical slot this virtual image ends up mapped into.
+ */
+ASSERT((_rom_ext_size <= (LENGTH(nvm) / 2 - _nvm_slot_reserved_bytes)), "Error: rom ext NVM is bigger than slot");
 
 REGION_ALIAS("rom_ext_nvm", rom_ext_virtual);
 

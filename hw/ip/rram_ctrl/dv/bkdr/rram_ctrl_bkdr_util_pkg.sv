@@ -17,4 +17,5 @@ package rram_ctrl_bkdr_util_pkg;
 
   // sources
   `include "rram_ctrl_bkdr_util.sv"
+  `include "rram_ctrl_otp_bkdr_util.sv"
 endpackage

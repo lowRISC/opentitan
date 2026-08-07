@@ -23,8 +23,6 @@ module earlgrey_pd_main #(
   parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
   parameter int I2c2InputDelayCycles = 0,
-  // parameters for otp_macro
-  parameter OtpMacroMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter bit LcCtrlUseDmiInterface = 0,
@@ -226,10 +224,6 @@ module earlgrey_pd_main #(
   input  logic       dft_hold_tap_sel_i,
   output logic       usb_dp_pullup_en_o,
   output logic       usb_dn_pullup_en_o,
-  output otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_o,
-  input  otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_h_i,
-  inout         otp_ext_voltage_h_io,
-  output logic [7:0] otp_obs_o,
   inout         rram_test_analog_io,
   input  logic [31:0] fpga_info_i,
   output logic       sck_monitor_o,
@@ -337,8 +331,8 @@ module earlgrey_pd_main #(
 
   // Signals
   logic [59:0] mio_p2d;
-  logic [65:0] mio_d2p;
-  logic [65:0] mio_en_d2p;
+  logic [64:0] mio_d2p;
+  logic [64:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -392,9 +386,6 @@ module earlgrey_pd_main #(
   logic        cio_i2c2_scl_en_d2p;
   // rv_timer
   // otp_ctrl
-  // otp_macro
-  logic [7:0]  cio_otp_macro_test_d2p;
-  logic [7:0]  cio_otp_macro_test_en_d2p;
   // lc_ctrl
   // alert_handler
   // spi_host0
@@ -642,9 +633,8 @@ module earlgrey_pd_main #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
-  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
-  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
   lc_ctrl_pkg::lc_nvm_rma_seed_t       lc_ctrl_lc_nvm_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
@@ -679,8 +669,6 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
-  otp_macro_pkg::otp_test_req_t       lc_ctrl_lc_otp_vendor_test_req;
-  otp_macro_pkg::otp_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
@@ -795,8 +783,6 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       pinmux_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       otp_macro_prim_tl_req;
-  tlul_pkg::tl_d2h_t       otp_macro_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_regs_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
@@ -804,8 +790,10 @@ module earlgrey_pd_main #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
-  otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
-  otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  rram_ctrl_pkg::keymgr_rram_t       rram_ctrl_keymgr;
+  flash_ctrl_pkg::keymgr_flash_t       keymgr_flash;
   jtag_pkg::jtag_req_t       pinmux_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
@@ -869,12 +857,15 @@ module earlgrey_pd_main #(
     otp_ctrl_keymgr_owner_seed
   };
 
-  // TODO: remove once RRAM is connected to OTP
-  assign rram_ctrl_otp_key_rsp.data_ack = rram_ctrl_otp_key_req.data_req;
-  assign rram_ctrl_otp_key_rsp.addr_ack = rram_ctrl_otp_key_req.addr_req;
-  assign rram_ctrl_otp_key_rsp.key = '0;
-  assign rram_ctrl_otp_key_rsp.rand_key = '0;
-  assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+  // TODO: remove once flash_ctrl is removed
+  assign flash_ctrl_otp_rsp.data_ack = flash_ctrl_otp_req.data_req;
+  assign flash_ctrl_otp_rsp.addr_ack = flash_ctrl_otp_req.addr_req;
+  assign flash_ctrl_otp_rsp.key = '0;
+  assign flash_ctrl_otp_rsp.rand_key = '0;
+  assign flash_ctrl_otp_rsp.seed_valid = 1'b0;
+
+  // TODO: remove once keymgr has been updated
+  assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
 
   // Ibex-specific assignments
   // TODO: This should be further automated in the future.
@@ -1544,8 +1535,8 @@ module earlgrey_pd_main #(
     .keymgr_creator_root_key_o(otp_ctrl_keymgr_creator_root_key),
     .keymgr_creator_seed_o(otp_ctrl_keymgr_creator_seed),
     .keymgr_owner_seed_o(otp_ctrl_keymgr_owner_seed),
-    .nvm_otp_key_i(flash_ctrl_otp_req),
-    .nvm_otp_key_o(flash_ctrl_otp_rsp),
+    .nvm_otp_key_i(rram_ctrl_otp_key_req),
+    .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
     .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
     .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
@@ -1555,47 +1546,6 @@ module earlgrey_pd_main #(
     .otp_macro_i(otp_ctrl_otp_macro_rsp),
     .core_tl_i(otp_ctrl_core_tl_req),
     .core_tl_o(otp_ctrl_core_tl_rsp)
-  );
-
-  otp_macro #(
-    .Width(otp_ctrl_macro_pkg::OtpWidth),
-    .Depth(otp_ctrl_macro_pkg::OtpDepth),
-    .SizeWidth(otp_ctrl_macro_pkg::OtpSizeWidth),
-    .MemInitFile(OtpMacroMemInitFile),
-    .VendorTestOffset(otp_ctrl_reg_pkg::VendorTestOffset),
-    .VendorTestSize(otp_ctrl_reg_pkg::VendorTestSize)
-  ) u_otp_macro (
-    // Clock and reset connections
-    .clk_i(clkmgr_clocks_i.clk_io_div4_secure),
-    .rst_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-
-    // DFT/scan connections
-    .scanmode_i,
-    .scan_rst_ni,
-    .scan_en_i,
-
-
-    // CIO outputs
-    .cio_test_o   (cio_otp_macro_test_d2p),
-    .cio_test_en_o(cio_otp_macro_test_en_d2p),
-
-    // Inter-module signals
-    .obs_ctrl_i(ast_obs_ctrl),
-    .otp_obs_o(otp_obs_o),
-    .pwr_seq_o(otp_macro_pwr_seq_o),
-    .pwr_seq_h_i(otp_macro_pwr_seq_h_i),
-    .ext_voltage_h_io(otp_ext_voltage_h_io),
-    .lc_dft_en_i(lc_ctrl_lc_dft_en),
-    .test_i(lc_ctrl_lc_otp_vendor_test_req),
-    .test_o(lc_ctrl_lc_otp_vendor_test_rsp),
-    .otp_i(otp_ctrl_otp_macro_req),
-    .otp_o(otp_ctrl_otp_macro_rsp),
-    .cfg_i('0),
-    .cfg_rsp_o(),
-    .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
-    .racl_error_o(),
-    .prim_tl_i(otp_macro_prim_tl_req),
-    .prim_tl_o(otp_macro_prim_tl_rsp)
   );
 
   lc_ctrl #(
@@ -1642,8 +1592,8 @@ module earlgrey_pd_main #(
     .esc_scrap_state1_rx_o(alert_handler_esc_rx[2]),
     .pwr_lc_i(pwrmgr_pwr_lc_req_i),
     .pwr_lc_o(pwrmgr_pwr_lc_rsp_o),
-    .lc_otp_vendor_test_o(lc_ctrl_lc_otp_vendor_test_req),
-    .lc_otp_vendor_test_i(lc_ctrl_lc_otp_vendor_test_rsp),
+    .lc_otp_vendor_test_o(),
+    .lc_otp_vendor_test_i('0),
     .otp_lc_data_i(otp_ctrl_otp_lc_data),
     .lc_otp_program_o(lc_ctrl_lc_otp_program_req),
     .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
@@ -2002,10 +1952,10 @@ module earlgrey_pd_main #(
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
     .rma_req_i(lc_ctrl_lc_nvm_rma_req),
-    .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
+    .rma_ack_o(),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
-    .pwrmgr_o(pwrmgr_pwr_nvm_o),
-    .keymgr_o(flash_ctrl_keymgr),
+    .pwrmgr_o(),
+    .keymgr_o(),
     .obs_ctrl_i(ast_obs_ctrl),
     .fla_obs_o(flash_obs_o),
     .core_tl_i(flash_ctrl_core_tl_req),
@@ -2055,8 +2005,8 @@ module earlgrey_pd_main #(
     .rram_macro_i(rram_ctrl_rram_macro_rsp),
     .otp_key_o(rram_ctrl_otp_key_req),
     .otp_key_i(rram_ctrl_otp_key_rsp),
-    .otp_macro_i('0),
-    .otp_macro_o(),
+    .otp_macro_i(otp_ctrl_otp_macro_req),
+    .otp_macro_o(otp_ctrl_otp_macro_rsp),
     .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
     .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
     .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
@@ -2064,10 +2014,10 @@ module earlgrey_pd_main #(
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
     .rma_req_i(lc_ctrl_lc_nvm_rma_req),
-    .rma_ack_o(),
+    .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
-    .pwrmgr_o(),
-    .keymgr_o(),
+    .pwrmgr_o(pwrmgr_pwr_nvm_o),
+    .keymgr_o(rram_ctrl_keymgr),
     .core_tl_i(rram_ctrl_core_tl_req),
     .core_tl_o(rram_ctrl_core_tl_rsp),
     .host_tl_i(rram_ctrl_host_tl_req),
@@ -2391,7 +2341,7 @@ module earlgrey_pd_main #(
     .kmac_data_i(kmac_app_rsp[0]),
     .otp_key_i(keymgr_otp_key),
     .otp_device_id_i(keymgr_otp_device_id),
-    .flash_i(flash_ctrl_keymgr),
+    .flash_i(keymgr_flash),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
     .rom_digest_i(rom_ctrl_keymgr_data),
@@ -3123,10 +3073,6 @@ module earlgrey_pd_main #(
     .tl_otp_ctrl__core_o(otp_ctrl_core_tl_req),
     .tl_otp_ctrl__core_i(otp_ctrl_core_tl_rsp),
 
-    // port: tl_otp_macro__prim
-    .tl_otp_macro__prim_o(otp_macro_prim_tl_req),
-    .tl_otp_macro__prim_i(otp_macro_prim_tl_rsp),
-
     // port: tl_lc_ctrl__regs
     .tl_lc_ctrl__regs_o(lc_ctrl_regs_tl_req),
     .tl_lc_ctrl__regs_i(lc_ctrl_regs_tl_rsp),
@@ -3290,7 +3236,6 @@ module earlgrey_pd_main #(
   assign mio_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_d2p_i[6];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_d2p_i[7];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_d2p_i[8];
-  assign mio_d2p[MioOutOtpMacroTest0] = cio_otp_macro_test_d2p[0];
   assign mio_d2p[MioOutSysrstCtrlBatDisable] = cio_sysrst_ctrl_bat_disable_d2p_i;
   assign mio_d2p[MioOutSysrstCtrlKey0Out] = cio_sysrst_ctrl_key0_out_d2p_i;
   assign mio_d2p[MioOutSysrstCtrlKey1Out] = cio_sysrst_ctrl_key1_out_d2p_i;
@@ -3358,7 +3303,6 @@ module earlgrey_pd_main #(
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[6];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[7];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[8];
-  assign mio_en_d2p[MioOutOtpMacroTest0] = cio_otp_macro_test_en_d2p[0];
   assign mio_en_d2p[MioOutSysrstCtrlBatDisable] = cio_sysrst_ctrl_bat_disable_en_d2p_i;
   assign mio_en_d2p[MioOutSysrstCtrlKey0Out] = cio_sysrst_ctrl_key0_out_en_d2p_i;
   assign mio_en_d2p[MioOutSysrstCtrlKey1Out] = cio_sysrst_ctrl_key1_out_en_d2p_i;

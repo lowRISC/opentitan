@@ -555,8 +555,10 @@ module rram_ctrl_lcmgr
       // If error status indicates error, jump to invalid terminal state
       // Otherwise assign output to error status;
       StRmaRsp: begin
-        phase            = PhaseRma;
-        rma_dis_access_o = lc_ctrl_pkg::On;
+        phase            = PhaseNone;
+        // The original idea was to disable access but this does not work because lc_ctrl tries to
+        // access the OTP after an RMA operation: https://github.com/lowRISC/opentitan/issues/30948
+        // rma_dis_access_o = lc_ctrl_pkg::On;
         if (lc_ctrl_pkg::lc_tx_test_false_loose(err_sts_q)) begin
           state_d = StInvalid;
         end else begin

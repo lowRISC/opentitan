@@ -128,7 +128,6 @@ module tb;
     .FLASH_TEST_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestVolt]),
     .FLASH_TEST_MODE0(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode0]),
     .FLASH_TEST_MODE1(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode1]),
-    .OTP_EXT_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadOtpExtVolt]),
     .SPI_HOST_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD0]),
     .SPI_HOST_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD1]),
     .SPI_HOST_D2(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD2]),
@@ -463,6 +462,7 @@ module tb;
       // Unfortunately xcelium does not understand typed constructors so we must assign to local
       // variables first.
       rram_ctrl_bkdr_util data, info;
+      rram_ctrl_otp_bkdr_util otp;
       flash_ctrl_bkdr_util data0, info0, data1, info1;
       sram_ctrl_bkdr_util ram_main0, ram_ret0;
       rom_ctrl_bkdr_util rom;
@@ -470,11 +470,14 @@ module tb;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RRAM data", UVM_MEDIUM)
+      // The last pages are reserved for OTP storage and are excluded from depth and n_bits.
+      // Otherwise clear_mem(), set_mem() or load_mem_from_file() could overwrite the OTP partition.
       data = new(
           .name  ("mem_bkdr_util[RramData]"),
           .path  (`DV_STRINGIFY(`RRAM_DATA_MEM_HIER)),
-          .depth ($size(`RRAM_DATA_MEM_HIER)),
-          .n_bits($bits(`RRAM_DATA_MEM_HIER)),
+          .depth (rram_ctrl_pkg::DataPages * rram_ctrl_pkg::WordsPerPage),
+          .n_bits(rram_ctrl_pkg::DataPages * rram_ctrl_pkg::WordsPerPage *
+                  rram_ctrl_pkg::DataWidth),
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
       m_mem_bkdr_util[RramData] = data;
@@ -577,14 +580,19 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay1Data], `ICACHE1_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTP", UVM_MEDIUM)
-      m_mem_bkdr_util[Otp] = new(
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTP (in RRAM)", UVM_MEDIUM)
+      otp = new(
           .name  ("mem_bkdr_util[Otp]"),
-          .path  (`DV_STRINGIFY(`OTP_MEM_HIER)),
-          .depth ($size(`OTP_MEM_HIER)),
-          .n_bits($bits(`OTP_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
+          .path  (`DV_STRINGIFY(`RRAM_DATA_MEM_HIER)),
+          .depth ($size(`RRAM_DATA_MEM_HIER)),
+          .n_bits($bits(`RRAM_DATA_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+          .system_base_addr(top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR +
+              (rram_ctrl_pkg::OtpStartPage <<
+               (rram_ctrl_pkg::BusAddrByteW - rram_ctrl_pkg::PageW))));
+      m_mem_bkdr_util[Otp] = otp;
+      // No `MEM_BKDR_UTIL_FILE_OP: rram_ctrl_otp_bkdr_util parses the OTP image itself instead
+      // of using $readmemh (to handle the integrity page), so there's no event to hook up here.
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM", UVM_MEDIUM)
       ram_main0 = new(

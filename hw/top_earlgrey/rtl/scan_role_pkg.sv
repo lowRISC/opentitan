@@ -30,7 +30,6 @@ package scan_role_pkg;
   parameter scan_role_e DioPadFlashTestVoltScanRole   = NoScan;
   parameter scan_role_e DioPadFlashTestMode0ScanRole  = NoScan;
   parameter scan_role_e DioPadFlashTestMode1ScanRole  = NoScan;
-  parameter scan_role_e DioPadOtpExtVoltScanRole      = NoScan;
   parameter scan_role_e DioPadRramAnalogScanRole      = NoScan;
   parameter scan_role_e DioPadIor8ScanRole            = NoScan;
   parameter scan_role_e DioPadIor9ScanRole            = NoScan;

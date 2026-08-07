@@ -82,21 +82,14 @@ static status_t extract_public_key_from_der(const uint8_t *der_bytes,
 }
 
 static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
-  if (kDeviceType != kDeviceSilicon) {
-    // When not on silicon, we use a zeroized attestation seed as it was not
-    // personalized.
-    LOG_INFO("Using zeroed attestation seed.");
-    memset(attestation_data, 0, 10 * sizeof(uint32_t));
-    return OK_STATUS();
-  }
-
   uint32_t kAttestationSeedWords = 10;
   uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
   uint32_t seed_nvm_offset =
       kNvmInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
 
-  TRY(nvm_ctrl_info_read(kNvmInfoPageAttestationKeySeeds, seed_nvm_offset,
-                         kAttestationSeedWords, attestation_data));
+  TRY(nvm_ctrl_info_read_zeros_on_read_error(
+      kNvmInfoPageAttestationKeySeeds, seed_nvm_offset, kAttestationSeedWords,
+      attestation_data));
 
   return OK_STATUS();
 }

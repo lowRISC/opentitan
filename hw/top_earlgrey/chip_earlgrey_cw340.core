@@ -58,11 +58,6 @@ parameters:
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
     default: ""
     paramtype: vlogparam
-  OtpMacroMemInitFile:
-    datatype: str
-    description: OTP initialization file in vmem hex format
-    default: ""
-    paramtype: vlogparam
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
@@ -85,7 +80,6 @@ targets:
     toplevel: chip_earlgrey_cw340
     parameters:
       - BootRomInitFile
-      - OtpMacroMemInitFile
       - AST_BYPASS_CLK=true
     tools:
       vivado:

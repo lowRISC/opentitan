@@ -15,10 +15,7 @@ module chip_earlgrey_cw340 #(
   parameter bit BkdrLoaderEn = 1'b1,
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "test_rom_fpga_cw340.32.vmem",
-  // Path to a VMEM file containing the contents of the emulated OTP, which will be
-  // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_cw340.vmem"
+  parameter BootRomInitFile = "test_rom_fpga_cw340.32.vmem"
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
@@ -327,7 +324,7 @@ module chip_earlgrey_cw340 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [70:0] unused_sig;
+  logic [69:0] unused_sig;
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -725,12 +722,7 @@ module chip_earlgrey_cw340 #(
 
   // observe interface
   logic [7:0] flash_obs;
-  logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  // otp power sequence
-  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
-  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -942,11 +934,11 @@ module chip_earlgrey_cw340 #(
     // main regulator
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)/otp
+    // pdm control (flash)
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_macro_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
+    .otp_power_seq_i       ( '0 ),
+    .otp_power_seq_h_o     (    ),
     // system source clock
     .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
@@ -987,7 +979,7 @@ module chip_earlgrey_cw340 #(
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( flash_obs ),
-    .otp_obs_i             ( otp_obs ),
+    .otp_obs_i             ( '0 ),
     .otm_obs_i             ( '0 ),
     .usb_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
@@ -1113,7 +1105,6 @@ module chip_earlgrey_cw340 #(
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
-
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
@@ -1131,7 +1122,6 @@ module chip_earlgrey_cw340 #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .UsbdevRcvrWakeTimeUs(10000),
     .SramCtrlRetInstrExec(0),
@@ -1229,10 +1219,6 @@ module chip_earlgrey_cw340 #(
     .usb_dn_pullup_en_o                    (                         ),
     .pwrmgr_ast_req_o                      (pwrmgr_ast_req           ),
     .pwrmgr_ast_rsp_i                      (pwrmgr_ast_rsp           ),
-    .otp_macro_pwr_seq_o                   (otp_macro_pwr_seq        ),
-    .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
-    .otp_ext_voltage_h_io                  ('0                       ),
-    .otp_obs_o                             (otp_obs                  ),
     .rram_test_analog_io                   ('0                       ),
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),

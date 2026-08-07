@@ -367,6 +367,56 @@ def scramble_rram(ctx, **kwargs):
     )
     return output
 
+def rram_otp_image(ctx, exec_env, otp_attr):
+    """Reformats an exec_env's `otp` attribute into the RRAM-native layout that backdoor-loading
+    OTP into the RRAM data array expects (OTP lives in the tail pages of the RRAM data array now,
+    see rram_ctrl_pkg.sv - there's no standalone OTP array to backdoor-load into any more).
+
+    If `otp_attr` is an otp_image() target, it already carries this reformatted output in its
+    `rram_otp` output group (see rules/otp.bzl) - reuse that instead of reformatting again, so
+    this is a single gen-rram-img.py invocation per otp_image() target rather than one per
+    consumer, and backdoor loading uses the exact same OTP content the rest of this exec_env is
+    configured for (e.g. for scrambling-key derivation). Falls back to reformatting `otp_attr`
+    itself only if it isn't an otp_image() output (e.g. some other override).
+
+    Args:
+      ctx: The rule context.
+      exec_env: The ExecEnvInfo for this environment.
+      otp_attr: The unresolved `otp` attribute (a File, or a Target with DefaultInfo).
+    Returns:
+      File: the reformatted OTP image, or None if there's nothing to reformat (no `otp_attr`,
+      or this exec_env has no rram_scramble_tool configured).
+    """
+    if not otp_attr:
+        return None
+    if type(otp_attr) == "File":
+        otp_file = otp_attr
+    else:
+        if OutputGroupInfo in otp_attr and "rram_otp" in otp_attr[OutputGroupInfo]:
+            existing = otp_attr[OutputGroupInfo].rram_otp.to_list()
+            if existing:
+                return existing[0]
+        files = otp_attr[DefaultInfo].files.to_list()
+        if len(files) != 1:
+            fail("Expected exactly one file in", otp_attr, ", but got", files)
+        otp_file = files[0]
+
+    if not exec_env.rram_scramble_tool:
+        return None
+
+    output = ctx.actions.declare_file(ctx.attr.name + ".otp.rram.vmem")
+    args = ctx.actions.args()
+    args.add("--in-otp-vmem", otp_file)
+    args.add("--out-otp-vmem", output)
+    args.add("--top-secret-cfg", exec_env.top_secret_cfg)
+    ctx.actions.run(
+        outputs = [output],
+        inputs = [otp_file, exec_env.top_secret_cfg],
+        arguments = [args],
+        executable = exec_env.rram_scramble_tool.files_to_run,
+    )
+    return output
+
 def extract_software_logs(ctx, **kwargs):
     """Extract the software logs database from an ELF file.
 

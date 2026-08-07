@@ -17,8 +17,17 @@
 extern "C" {
 #endif
 
+// `DiceCerts` and `FactoryCerts` share one `dice_page_t` buffer type/format,
+// which only works correctly if they're actually the same size -- see the
+// comment on their table entries in rram_ctrl.h's
+// `RRAM_CTRL_INFO_PAGES_DEFINE`. If a future change gives them different page
+// counts again, this catches it at compile time instead of silently
+// reintroducing an over-read/overflow.
+static_assert(kNvmInfoPageDiceCertsSize == kNvmInfoPageFactoryCertsSize,
+              "DiceCerts and FactoryCerts must be the same size");
+
 enum {
-  kDicePageDataSize = NVM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
+  kDicePageDataSize = kNvmInfoPageDiceCertsSize - sizeof(hmac_digest_t),
 };
 
 /**
@@ -29,7 +38,7 @@ typedef struct dice_page {
   hmac_digest_t digest;
 } dice_page_t;
 
-static_assert(sizeof(dice_page_t) == NVM_BYTES_PER_PAGE,
+static_assert(sizeof(dice_page_t) == kNvmInfoPageDiceCertsSize,
               "Invalid dice page size");
 
 /**

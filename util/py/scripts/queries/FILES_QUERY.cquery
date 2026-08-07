@@ -1,2 +1,10 @@
 def format(target):
-    return "\n".join([f.path for f in target.files.to_list()])
+    files = list(target.files.to_list())
+    # otp_image() targets (see rules/otp.bzl) carry an extra RRAM-reformatted file in this
+    # output group, needed to backdoor-load OTP images selected via the `SwTypeOtp` `sw_images`
+    # mechanism (see chip_env_cfg.sv) on tops that store OTP inside the RRAM data array. Other
+    # rule kinds using this query don't have this group, so this is a no-op for them.
+    p = providers(target)
+    if p and "OutputGroupInfo" in p and "rram_otp" in p["OutputGroupInfo"]:
+        files += p["OutputGroupInfo"].rram_otp.to_list()
+    return "\n".join([f.path for f in files])

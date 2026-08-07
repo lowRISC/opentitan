@@ -175,20 +175,6 @@ pub const OTP_CTRL_CORE_BASE_ADDR: usize = 0x40130000;
 /// `OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CORE_SIZE_BYTES`.
 pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for prim device on otp_macro in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const OTP_MACRO_PRIM_BASE_ADDR: usize = 0x40138000;
-
-/// Peripheral size for prim device on otp_macro in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #OTP_MACRO_PRIM_BASE_ADDR and
-/// `OTP_MACRO_PRIM_BASE_ADDR + OTP_MACRO_PRIM_SIZE_BYTES`.
-pub const OTP_MACRO_PRIM_SIZE_BYTES: usize = 0x20;
-
 /// Peripheral base address for regs device on lc_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -2925,19 +2911,17 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 58
     SensorCtrlAstDebugOut8 = 61,
     /// Peripheral Output 59
-    OtpMacroTest0 = 62,
+    SysrstCtrlBatDisable = 62,
     /// Peripheral Output 60
-    SysrstCtrlBatDisable = 63,
+    SysrstCtrlKey0Out = 63,
     /// Peripheral Output 61
-    SysrstCtrlKey0Out = 64,
+    SysrstCtrlKey1Out = 64,
     /// Peripheral Output 62
-    SysrstCtrlKey1Out = 65,
+    SysrstCtrlKey2Out = 65,
     /// Peripheral Output 63
-    SysrstCtrlKey2Out = 66,
+    SysrstCtrlPwrbOut = 66,
     /// Peripheral Output 64
-    SysrstCtrlPwrbOut = 67,
-    /// Peripheral Output 65
-    SysrstCtrlZ3Wakeup = 68,
+    SysrstCtrlZ3Wakeup = 67,
 }
 
 impl TryFrom<u32> for PinmuxOutsel {
@@ -3006,13 +2990,12 @@ impl TryFrom<u32> for PinmuxOutsel {
             59 => Ok(Self::SensorCtrlAstDebugOut6),
             60 => Ok(Self::SensorCtrlAstDebugOut7),
             61 => Ok(Self::SensorCtrlAstDebugOut8),
-            62 => Ok(Self::OtpMacroTest0),
-            63 => Ok(Self::SysrstCtrlBatDisable),
-            64 => Ok(Self::SysrstCtrlKey0Out),
-            65 => Ok(Self::SysrstCtrlKey1Out),
-            66 => Ok(Self::SysrstCtrlKey2Out),
-            67 => Ok(Self::SysrstCtrlPwrbOut),
-            68 => Ok(Self::SysrstCtrlZ3Wakeup),
+            62 => Ok(Self::SysrstCtrlBatDisable),
+            63 => Ok(Self::SysrstCtrlKey0Out),
+            64 => Ok(Self::SysrstCtrlKey1Out),
+            65 => Ok(Self::SysrstCtrlKey2Out),
+            66 => Ok(Self::SysrstCtrlPwrbOut),
+            67 => Ok(Self::SysrstCtrlZ3Wakeup),
             _ => Err(val),
         }
     }
