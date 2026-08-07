@@ -783,12 +783,20 @@ region. Unlike MSG_FIFO, STATE memory space sees the addr[9:0].
 If Masking feature is enabled, the software reads two shares from
 this memory space.
 
+Software can write to the register when the module is idle and is
+not used by a hardware application interface. Otherwise, the
+write is ignored.
+
+Writes must be full 32-bit word writes. Sub-word writes are
+answered with a bus error, as a partial write cannot be applied
+to the Keccak state.
+
 0x400 - 0x4C7: State share
 0x500 - 0x5C7: Mask share of the state, 0 if EnMasking = 0
 
 - Word Aligned Offset Range: `0x400`to`0x5fc`
 - Size (words): `128`
-- Access: `ro`
+- Access: `rw`
 - Byte writes are *not* supported.
 
 ## MSG_FIFO

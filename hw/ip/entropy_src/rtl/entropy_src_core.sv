@@ -2620,6 +2620,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .state_valid_o (sha3_state_vld),
     .state_o       (sha3_state),
 
+    // State write - not used, no context save and restore support
+    .state_we_i    ('0),
+    .state_waddr_i ('0),
+    .state_wdata_i ('0),
+
     // REQ/ACK interface to avoid power spikes
     .run_req_o(sha3_block_busy),
     .run_ack_i(1'b1),

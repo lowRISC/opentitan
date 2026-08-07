@@ -237,6 +237,11 @@ module kmac_reduced
     .state_valid_o(state_valid_o),
     .state_o      (state_o),
 
+    // State write. Not used in the reduced version.
+    .state_we_i   ('0),
+    .state_waddr_i('0),
+    .state_wdata_i('0),
+
     // REQ/ACK interface to avoid power spikes
     .run_req_o(),     // Not used
     .run_ack_i(1'b1), // The SHA3 core is always allowed to process.

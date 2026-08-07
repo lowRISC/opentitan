@@ -2,21 +2,28 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Keccak state read
+// Keccak state read and write
 
 `include "prim_assert.sv"
 
-module kmac_staterd
+module kmac_staterdwr
   import kmac_pkg::*;
 #(
   // TL-UL Address Width. Should be bigger than
-  // $clog2(kmac_pkg::StateW) * Share
+  // $clog2(StateW) * Share
   parameter int AddrW = 9,
+
+  // Keccak state width and the width of a single state write from the bus.
+  parameter int unsigned StateW       = 1600,
+  parameter int unsigned StateWrWidth = 32,
 
   // EnMasking: Enable masking security hardening inside keccak_round
   // If it is enabled, the result digest will be two set of 1600bit.
   parameter  bit EnMasking = 1'b0,
-  localparam int Share = (EnMasking) ? 2 : 1  // derived parameter
+  // derived parameters
+  localparam int          Share          = (EnMasking) ? 2 : 1,
+  localparam int unsigned StateWrEntries = StateW / StateWrWidth,
+  localparam int unsigned StateWrAddrW   = $clog2(StateWrEntries)
 ) (
   input clk_i,
   input rst_ni,
@@ -25,14 +32,19 @@ module kmac_staterd
   output tlul_pkg::tl_d2h_t tl_o,
 
   // State in
-  input [sha3_pkg::StateW-1:0] state_i [Share],
+  input [StateW-1:0] state_i [Share],
+
+  // State out, used to restore the state
+  input                           state_write_en_i,
+  output logic [Share-1:0]        state_we_o,
+  output logic [StateWrAddrW-1:0] state_waddr_o,
+  output logic [StateWrWidth-1:0] state_wdata_o,
 
   // Config
   input endian_swap_i
 );
 
-  localparam int StateAddrW = $clog2(sha3_pkg::StateW/32);
-  localparam int SelAddrW   = AddrW-2-StateAddrW;
+  localparam int SelAddrW = AddrW-2-StateWrAddrW;
 
   /////////////
   // Signals //
@@ -43,7 +55,7 @@ module kmac_staterd
   logic             tlram_gnt;
   logic             tlram_we;
   logic [AddrW-3:0] tlram_addr;   // Word base
-  logic [31:0]      unused_tlram_wdata;
+  logic [31:0]      tlram_wdata;
   logic [31:0]      unused_tlram_wmask;
   logic [31:0]      tlram_rdata;
   logic             tlram_rvalid;
@@ -55,8 +67,8 @@ module kmac_staterd
     .SramAw (AddrW-2),
     .SramDw (32),
     .Outstanding (1),
-    .ByteAccess  (1),
-    .ErrOnWrite  (1),
+    .ByteAccess  (0),
+    .ErrOnWrite  (0),
     .ErrOnRead   (0)
   ) u_tlul_adapter (
     .clk_i,
@@ -70,7 +82,7 @@ module kmac_staterd
     .gnt_i                      (tlram_gnt),
     .we_o                       (tlram_we ),
     .addr_o                     (tlram_addr),
-    .wdata_o                    (unused_tlram_wdata),
+    .wdata_o                    (tlram_wdata),
     .wmask_o                    (unused_tlram_wmask),
     .intg_error_o               (),
     .user_rsvd_o                (),
@@ -93,7 +105,7 @@ module kmac_staterd
   end
 
   // Always grant
-  assign tlram_gnt = tlram_req & ~tlram_we;
+  assign tlram_gnt = 1'b1;
 
   // always no error on reading
   assign tlram_rerror = '0;
@@ -108,23 +120,42 @@ module kmac_staterd
 
   for (genvar i = 0 ; i < Share ; i++) begin : gen_slicer
     prim_slicer #(
-      .InW (sha3_pkg::StateW),
+      .InW (StateW),
       .OutW (32),
-      .IndexW (StateAddrW)
+      .IndexW (StateWrAddrW)
     ) u_state_slice (
-      .sel_i (tlram_addr[StateAddrW-1:0]),
+      .sel_i (tlram_addr[StateWrAddrW-1:0]),
       .data_i (state_i[i]),
       .data_o (muxed_state[i])
     );
   end : gen_slicer
 
   logic [SelAddrW-1:0] addr_sel;
-  assign addr_sel = tlram_addr[StateAddrW+:SelAddrW];
+  assign addr_sel = tlram_addr[StateWrAddrW+:SelAddrW];
 
   if (EnMasking) begin : gen_state_sel_masked
     assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[addr_sel] : 0;
   end else begin : gen_state_sel_unmasked
     assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[0] : 0;
   end
+
+  /////////////////
+  // State write //
+  /////////////////
+
+  // Writes that are not allowed are acked on the bus and dropped.
+  logic state_wr;
+  assign state_wr = tlram_req & tlram_we & state_write_en_i;
+
+  // Only the first StateWrEntries words of a share map to the Keccak state.
+  logic state_waddr_valid;
+  assign state_waddr_valid = tlram_addr[StateWrAddrW-1:0] < StateWrEntries;
+
+  for (genvar i = 0 ; i < Share ; i++) begin : gen_state_we
+    assign state_we_o[i] = state_wr & state_waddr_valid & (int'(addr_sel) == i);
+  end : gen_state_we
+
+  assign state_waddr_o = tlram_addr[StateWrAddrW-1:0];
+  assign state_wdata_o = conv_endian32(tlram_wdata, endian_swap_i);
 
 endmodule

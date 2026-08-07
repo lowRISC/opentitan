@@ -51,6 +51,11 @@ module keccak_round
   localparam int DInEntry = Width / DInWidth,
   localparam int DInAddr  = $clog2(DInEntry),
 
+  // State write parameters. The state is restored one bus word at a time.
+  parameter  int StateWrWidth = 32,
+  localparam int StateWrEntry = Width / StateWrWidth,
+  localparam int StateWrAddr  = $clog2(StateWrEntry),
+
   // Control parameters
   parameter  bit EnMasking    = 1'b0,  // Enable SCA hardening, requires Width >= 50
   parameter  bit ForceRandExt = 1'b0,  // 1: Always forward externally provided randomness.
@@ -80,6 +85,11 @@ module keccak_round
 
   // State out. This can be used as Digest
   output logic [Width-1:0] state_o [Share],
+
+  // State write used to restore the state.
+  input [Share-1:0]        state_we_i,
+  input [StateWrAddr-1:0]  state_waddr_i,
+  input [StateWrWidth-1:0] state_wdata_i,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -462,6 +472,9 @@ module keccak_round
     .out_o(rst_n)
   );
 
+  logic [Share-1:0] state_we;
+  assign state_we = state_we_i & {Share{keccak_st == KeccakStIdle}};
+
   logic [Width-1:0] storage   [Share];
   logic [Width-1:0] storage_d [Share];
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -469,7 +482,7 @@ module keccak_round
       storage <= '{default:'0};
     end else if (rst_storage) begin
       storage <= '{default:'0};
-    end else if (update_storage) begin
+    end else if (update_storage || |state_we) begin
       storage <= storage_d;
     end
   end
@@ -480,6 +493,8 @@ module keccak_round
   // The incoming message is XORed with the existing storage registers.
   // The logic can accept not a block size incoming message chunk but
   // the size defined in `DInWidth` parameter with its position.
+  //
+  // Software writes a saved context back one entry at a time.
 
   always_comb begin
     storage_d = keccak_out;
@@ -494,6 +509,17 @@ module keccak_round
               storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
           end else begin
             storage_d[j][i*DInWidth+:DInWidth] = storage[j][i*DInWidth+:DInWidth];
+          end
+        end // for i
+      end // for j
+    end else if (|state_we) begin
+      for (int j = 0 ; j < Share ; j++) begin
+        for (int unsigned i = 0 ; i < StateWrEntry ; i++) begin
+          if (state_we[j] && (state_waddr_i == i[StateWrAddr-1:0])) begin
+            storage_d[j][i*StateWrWidth+:StateWrWidth] = state_wdata_i;
+          end else begin
+            storage_d[j][i*StateWrWidth+:StateWrWidth] =
+              storage[j][i*StateWrWidth+:StateWrWidth];
           end
         end // for i
       end // for j
@@ -586,11 +612,15 @@ module keccak_round
   // Only allow `DInWidth` that `Width` is integer divisible by `DInWidth`
   `ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
 
+  // The state write-back port addresses the storage in `StateWrWidth` chunks,
+  // so partial chunks at the top of the state are not supported.
+  `ASSERT_INIT(WidthDivisableByStateWrWidth_A, (Width % StateWrWidth) == 0)
+
   // If `run_i` triggered, it shall complete
   //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
 
-  // valid_i and run_i cannot be asserted at the same time
-  `ASSUME(OneHot0ValidAndRun_A, $onehot0({valid_i, run_i}), clk_i, !rst_ni)
+  // Message feed, manual run and state write-back are mutually exclusive
+  `ASSUME(OneHot0ValidRunStateWr_A, $onehot0({valid_i, run_i, |state_we_i}), clk_i, !rst_ni)
 
   // valid_i, run_i only asserted in Idle state
   `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
