@@ -38,7 +38,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     tl_sba_d_chan_fifo = new("tl_sba_d_chan_fifo", this);
     // TODO: remove once support alert checking
     do_alert_check = 0;
-    selected_dtm_csr = cfg.m_jtag_agent_cfg.jtag_dtm_ral.default_map.get_reg_by_offset(0);
+    selected_dtm_csr = cfg.m_jtag_dtm_ral.default_map.get_reg_by_offset(0);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -65,7 +65,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("Received jtag non-DMI DTM item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
       if (item.ir_len) begin
-        selected_dtm_csr = cfg.m_jtag_agent_cfg.jtag_dtm_ral.default_map.get_reg_by_offset(item.ir);
+        selected_dtm_csr = cfg.m_jtag_dtm_ral.default_map.get_reg_by_offset(item.ir);
         continue;
       end
 
@@ -94,7 +94,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           // design (dmi_jtag module) is probed. Instead of doing that, checking the correctness of
           // dmistat field can be offloaded to a directed test that generates DMI busy scenarios.
           uvm_reg_data_t mask = ~dv_base_reg_pkg::get_mask_from_fields(
-              {cfg.m_jtag_agent_cfg.jtag_dtm_ral.dtmcs.dmistat});
+              {cfg.m_jtag_dtm_ral.dtmcs.dmistat});
           `DV_CHECK_EQ(item.dout & mask, selected_dtm_csr.get_mirrored_value() & mask)
           void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
@@ -400,8 +400,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     jtag_non_sba_dmi_fifo.flush();
     tl_sba_a_chan_fifo.flush();
     tl_sba_d_chan_fifo.flush();
-    selected_dtm_csr = cfg.m_jtag_agent_cfg.jtag_dtm_ral.idcode;
+    selected_dtm_csr = cfg.m_jtag_dtm_ral.idcode;
     cfg.jtag_dmi_ral.reset(kind);
+    cfg.m_jtag_dtm_ral.reset(kind);
   endfunction
 
   function void check_phase(uvm_phase phase);

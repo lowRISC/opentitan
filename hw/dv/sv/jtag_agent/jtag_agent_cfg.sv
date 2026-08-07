@@ -17,9 +17,6 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // Length of IR register. Update this field based on the actual width used in the design.
   uint ir_len = JTAG_IRW;
 
-  // JTAG debug transport module (DTM) RAL model based off of RISCV spec 0.13.2 (section 6.1.2).
-  jtag_dtm_reg_block jtag_dtm_ral;
-
   // Option to minimize Run-Test/Idle duration
   // Current RVDM has hardcoded dtmcs.idle = 1, which requires a single cycle of Run-Test/Idle duration.
   // This knob can bypass default 1 cycle initial delay of 'driver.drive_jtag_req()' task.
@@ -34,21 +31,10 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
   // between the JTAG clock and a system clock. This only works when TCK is running!
   int unsigned rtc_length = 0;
 
-
-  `uvm_object_utils_begin(jtag_agent_cfg)
-    `uvm_field_object(jtag_dtm_ral, UVM_DEFAULT)
-  `uvm_object_utils_end
+  `uvm_object_utils(jtag_agent_cfg)
 
   function new (string name = "");
     super.new(name);
     jtag_if_connected = new();
-    // Create the JTAG DTM RAL.
-    jtag_dtm_ral = jtag_dtm_reg_block::type_id::create("jtag_dtm_ral");
-    jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
-    jtag_dtm_ral.set_supports_byte_enable(1'b0);
-    jtag_dtm_ral.lock_model();
-    jtag_dtm_ral.set_base_addr(0);
-    // TODO: fix the computation of mapped and unmapped ranges.
   endfunction : new
-
 endclass

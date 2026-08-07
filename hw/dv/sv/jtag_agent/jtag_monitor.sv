@@ -179,11 +179,7 @@ class jtag_monitor extends dv_base_monitor #(
   virtual protected task monitor_reset();
     forever begin
       @(cfg.vif.trst_n);
-
       cfg.in_reset = !cfg.vif.trst_n;
-      if (cfg.in_reset) begin
-        cfg.jtag_dtm_ral.reset("HARD");
-      end
     end
   endtask
 
