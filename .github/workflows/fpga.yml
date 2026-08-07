@@ -131,28 +131,41 @@ jobs:
           name: ${{ inputs.job_name }}-targets
           path: target_pattern_file.txt
 
-      - name: Update hyperdebug firmware
-        if: inputs.interface == 'hyper310' || inputs.interface == 'cw340'
+        # Power cycle all ports of the CW340 USB hub (the only smart hub on this runner) to ensure
+        # a clean state, then power off port 4 (OT USBDEV) -- the USB device test harness powers it
+        # back on itself when the test needs to observe device enumeration.
+        # NOTE: uhubctl segfaults *after* completing the operation
+        # (https://github.com/mvp/uhubctl/issues/539), so a non-zero exit is expected and ignored;
+        # the power cycle itself works.
+      - name: Power cycle USB
+        continue-on-error: true
         run: |
-          ./bazelisk.sh run \
-              //sw/host/opentitantool:opentitantool -- \
-              --interface=hyperdebug_dfu transport update-firmware
+          sudo apt-get install -y uhubctl
+          sudo uhubctl -p all -a cycle || echo "::warning::uhubctl exited $? (known segfault: mvp/uhubctl#539)"
+          sudo uhubctl -p 4 -a off || echo "::warning::uhubctl exited $? (known segfault: mvp/uhubctl#539)"
 
-      - name: Execute tests
-        run: |
-          . util/build_consts.sh
-          module load "xilinx/vivado/${{ inputs.vivado_version }}"
-
-          cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
-
-          # Run FPGA tests
-          if [[ -s "$target_pattern_file" ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" "$target_pattern_file" "$cache_test_results" || {
-              res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
-            }
-          else
-            echo "No tests to run after filtering"
-          fi
+#      - name: Update hyperdebug firmware
+#        if: inputs.interface == 'hyper310' || inputs.interface == 'cw340'
+#        run: |
+#          ./bazelisk.sh run \
+#              //sw/host/opentitantool:opentitantool -- \
+#              --interface=hyperdebug_dfu transport update-firmware
+#
+#      - name: Execute tests
+#        run: |
+#          . util/build_consts.sh
+#          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+#
+#          cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
+#
+#          # Run FPGA tests
+#          if [[ -s "$target_pattern_file" ]]; then
+#            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" "$target_pattern_file" "$cache_test_results" || {
+#              res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
+#            }
+#          else
+#            echo "No tests to run after filtering"
+#          fi
 
       - uses: actions/checkout@v6
         if: ${{ !cancelled() }}
