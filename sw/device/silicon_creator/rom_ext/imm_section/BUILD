@@ -44,6 +44,8 @@ cc_library(
         ":imm_section_epmp",
         ":imm_section_start",
         ":imm_section_version_def",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",

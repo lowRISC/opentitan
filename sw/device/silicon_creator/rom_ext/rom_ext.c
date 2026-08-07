@@ -269,6 +269,10 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
       &sealing_binding, key->key_domain));
 
+  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
+  // keys with boot stage set to BootStageRuntime (3). (Note: Current bootstage
+  // + 1)
+
   // Write the DICE certs to flash if they have been updated.
   HARDENED_RETURN_IF_ERROR(dice_chain_flush_nvm());
 
@@ -468,7 +472,7 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   // Forbid SRAM execution.
   rom_ext_sram_exec(kOwnerSramExecModeDisabledLocked);
   // Set the keymgr to disabled and clear all sideloaded keys.
-  sc_keymgr_disable();
+  OT_DISCARD(sc_keymgr_dpe_disable());
   // Lock out OTP.
   otp_creator_sw_cfg_lockdown();
   // Lock the ePMP so it cannot be changed.
