@@ -51,13 +51,13 @@ waive -rules INTEGER  -location {otbn_mac_bignum_fsm.sv}
       -msg {'cycle' of type int used as a non-constant value} \
       -comment "This assigns int cycle (unsigned) to a multibit logic variable (unsigned), which is fine because it is used as static value for control signal progression generation."
 
+waive -rules {LOOP_VAR_OP} -location {otbn_mac_bignum_fsm.sv}
+      -regexp {Loop variable 'cycle' is in arithmetic expression '.*' with non-constant terms}
+      -comment "The cycle variable is used in combination with randomness to randomize the start index for processing vector element. This is expected to be non-constant."
+
 waive -rules {DIVIDE} -location {otbn_mac_bignum_fsm.sv}
       -regexp {Divide operation '.*cycle / LatencyMontgMul.*' encountered} \
       -comment "Divide allowed to compute static values for control signal progression generation. The regexp captures the case with ( and without ( around the expression."
-
-waive -rules {ARITH_CONTEXT} -location {otbn_mac_bignum_fsm.sv}
-      -regexp {Bitlength of arithmetic operation '.*cycle / LatencyMontgMul.*' is self-determined in this context} \
-      -comment "We prefer explicit casts over implicit bit width casts."
 
 waive -rules {PARAM_NOT_USED} -location {otbn_mac_bignum_fsm.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The parameter is just used to control assertions in DV / FPV."

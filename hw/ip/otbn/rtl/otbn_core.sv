@@ -31,6 +31,8 @@ module otbn_core
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
   parameter bit SecFixMaiOpSeq = 1'b0,
+  // MAC bignum instruction will not randomize operand start indexes.
+  parameter bit SecFixMacOpSeq = 1'b0,
 
   // Masking accelerator is not present. Useful for resource-bound targets only.
   parameter bit FeatStubMai = 1'b0,
@@ -231,6 +233,7 @@ module otbn_core
   logic                  mac_bignum_reg_intg_violation_err;
   logic                  mac_bignum_sec_wipe_err;
   logic                  mac_bignum_urnd_used;
+  logic [1:0]            mac_bignum_shuffle_offset;
 
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
@@ -430,7 +433,8 @@ module otbn_core
 
   // Instruction fetch unit
   otbn_instruction_fetch #(
-    .ImemSizeByte(ImemSizeByte)
+    .ImemSizeByte(ImemSizeByte),
+    .SecFixMacOpSeq(SecFixMacOpSeq)
   ) u_otbn_instruction_fetch (
     .clk_i,
     .rst_ni,
@@ -478,7 +482,9 @@ module otbn_core
     .sec_wipe_wdr_addr_i(sec_wipe_addr),
     .sec_wipe_mac_urnd_i(sec_wipe_mac_urnd),
 
-    .zero_flags_i(zero_flags)
+    .zero_flags_i(zero_flags),
+
+    .mac_bignum_shuffle_offset_i(mac_bignum_shuffle_offset)
   );
 
   // Instruction decoder
@@ -1074,7 +1080,8 @@ module otbn_core
   );
 
   otbn_mac_bignum #(
-    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm),
+    .SecFixMacOpSeq(SecFixMacOpSeq)
   ) u_otbn_mac_bignum (
     .clk_i,
     .rst_ni,
@@ -1093,6 +1100,7 @@ module otbn_core
     .sec_wipe_urnd_i   (sec_wipe_mac_urnd),
     .sec_wipe_running_i(secure_wipe_running_o),
     .sec_wipe_err_o    (mac_bignum_sec_wipe_err),
+    .shuffle_offset_o  (mac_bignum_shuffle_offset),
 
     .urnd_used_o(mac_bignum_urnd_used),
 

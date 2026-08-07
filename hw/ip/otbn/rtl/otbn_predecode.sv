@@ -853,6 +853,7 @@ module otbn_predecode
   assign mac_bignum_predec_raw_o.mul_merger_en       = '0;
   assign mac_bignum_predec_raw_o.add_res_en          = '0;
   assign mac_bignum_predec_raw_o.operation_valid_raw = '0;
+  assign mac_bignum_predec_raw_o.shuffle_offset      = '0;
 
   assign insn_rs1 = imem_rdata_i[19:15];
   assign insn_rs2 = imem_rdata_i[24:20];
