@@ -258,7 +258,7 @@ class HyperDebug:
         print("Target not found!")
         return None
 
-    def reset_target(self, com_reset=False, reset_delay=0.005):
+    def reset_target(self, com_reset=False, reset_delay=0.2):
         """Resets the target."""
         reset_process = (
             [self.opentitantool] +
