@@ -8,11 +8,22 @@
 #include <stdint.h>
 
 #include "third_party/embedpqc/mldsa44_tiny.h"
+#include "third_party/embedpqc/mldsa87_tiny.h"
+#include "third_party/embedpqc/mldsa_mu.h"
 
 // ML-DSA-44 vectors
 extern const uint8_t kMldsa44KeygenSeed[MLDSA44_PRIVATE_SEED_BYTES];
 extern const uint8_t kMldsa44ExpectedPublicKey[MLDSA44_PUBLIC_KEY_BYTES];
 extern const uint8_t kMldsa44Message[11];
 extern const uint8_t kMldsa44ExpectedSignature[MLDSA44_SIGNATURE_BYTES];
+
+extern const uint8_t kMldsa87PrivateSeed[MLDSA87_PRIVATE_SEED_BYTES];
+extern const uint8_t kMldsa87ExpectedPublicKey[MLDSA87_PUBLIC_KEY_BYTES];
+extern const uint8_t kMldsa87Message[11];
+extern const uint8_t kMldsa87ExpectedSignature[MLDSA87_SIGNATURE_BYTES];
+extern const uint8_t kMldsa87Mu[K_MU_BYTES];
+extern const uint8_t kMldsa87Randomizer[MLDSA87_RANDOMIZER_BYTES];
+extern const uint8_t
+    kMldsa87RandomizedExpectedSignature[MLDSA87_SIGNATURE_BYTES];
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_EMBEDPQC_MLDSA_TESTVECTORS_H_
