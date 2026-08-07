@@ -5,7 +5,7 @@
 # waiver file for KMAC
 
 waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} -regexp {'reg_state_valid' in module .* is not read} \
-      -comment "state values are guarded by the FSM, so kmac_staterd does not use the valid signal"
+      -comment "state values are guarded by the FSM, so kmac_staterdwr does not use the valid signal"
 
 waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} \
     -regexp {'tlram_addr' is not read} \

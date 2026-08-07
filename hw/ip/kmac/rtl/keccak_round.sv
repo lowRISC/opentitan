@@ -51,6 +51,11 @@ module keccak_round
   localparam int DInEntry = Width / DInWidth,
   localparam int DInAddr  = $clog2(DInEntry),
 
+  // State write parameters. The state is restored one bus word at a time.
+  parameter  int StateWrWidth = 32,
+  localparam int StateWrEntry = Width / StateWrWidth,
+  localparam int StateWrAddr  = $clog2(StateWrEntry),
+
   // Control parameters
   parameter  bit EnMasking    = 1'b0,  // Enable SCA hardening, requires Width >= 50
   parameter  bit ForceRandExt = 1'b0,  // 1: Always forward externally provided randomness.
@@ -80,6 +85,11 @@ module keccak_round
 
   // State out. This can be used as Digest
   output logic [Width-1:0] state_o [Share],
+
+  // State write used to restore the state.
+  input [Share-1:0]        state_we_i,
+  input [StateWrAddr-1:0]  state_waddr_i,
+  input [StateWrWidth-1:0] state_wdata_i,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -207,8 +217,9 @@ module keccak_round
 
     unique case (keccak_st)
       KeccakStIdle: begin
-        if (valid_i) begin
-          // State machine allows Sponge Absorbing only in Idle state.
+        if (valid_i || |state_we_i) begin
+          // State machine allows Sponge Absorbing only in Idle state. A state write from SW
+          // reuses the same datapath.
           keccak_st_d = KeccakStIdle;
 
           xor_message    = 1'b 1;
@@ -462,6 +473,26 @@ module keccak_round
     .out_o(rst_n)
   );
 
+  // The state write reuses the message XOR datapath. Before writing to the state, the state
+  // needs to be cleared, which is taken care of by the hardware.
+  logic [DInAddr-1:0]  xor_addr;
+  logic [DInWidth-1:0] xor_data[Share];
+
+  always_comb begin : xor_data_mux
+    xor_addr = addr_i;
+    xor_data = data_i;
+
+    if (|state_we_i) begin
+      xor_addr = state_waddr_i[StateWrAddr-1:1];
+      for (int j = 0 ; j < Share ; j++) begin
+        xor_data[j] = '0;
+        if (state_we_i[j]) begin
+          xor_data[j][state_waddr_i[0]*StateWrWidth+:StateWrWidth] = state_wdata_i;
+        end
+      end
+    end
+  end : xor_data_mux
+
   logic [Width-1:0] storage   [Share];
   logic [Width-1:0] storage_d [Share];
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -489,9 +520,9 @@ module keccak_round
           // ICEBOX(#18029): handle If Width is not integer divisible by DInWidth
           // Currently it is not allowed to have partial write
           // Please see the Assertion `WidthDivisableByDInWidth_A`
-          if (addr_i == i[DInAddr-1:0]) begin
+          if (xor_addr == i[DInAddr-1:0]) begin
             storage_d[j][i*DInWidth+:DInWidth] =
-              storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
+              storage[j][i*DInWidth+:DInWidth] ^ xor_data[j];
           end else begin
             storage_d[j][i*DInWidth+:DInWidth] = storage[j][i*DInWidth+:DInWidth];
           end
@@ -586,11 +617,20 @@ module keccak_round
   // Only allow `DInWidth` that `Width` is integer divisible by `DInWidth`
   `ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
 
+  // The state write-back port addresses the storage in `StateWrWidth` chunks,
+  // so partial chunks at the top of the state are not supported.
+  `ASSERT_INIT(WidthDivisableByStateWrWidth_A, (Width % StateWrWidth) == 0)
+
+  // The state write is placed into one half of a DInWidth lane. `xor_addr` drops a single address
+  // bit and `state_waddr_i[0]` selects the half, so the two widths must differ by exactly a factor
+  // of two.
+  `ASSERT_INIT(DInWidthTwiceStateWrWidth_A, DInWidth == 2 * StateWrWidth)
+
   // If `run_i` triggered, it shall complete
   //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
 
-  // valid_i and run_i cannot be asserted at the same time
-  `ASSUME(OneHot0ValidAndRun_A, $onehot0({valid_i, run_i}), clk_i, !rst_ni)
+  // Message feed, manual run and state write-back are mutually exclusive
+  `ASSUME(OneHot0ValidRunStateWr_A, $onehot0({valid_i, run_i, |state_we_i}), clk_i, !rst_ni)
 
   // valid_i, run_i only asserted in Idle state
   `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
