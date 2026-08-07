@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
-// UDS (Creator) attestation key diverisfier constants.
+// UDS (Creator) attestation key diversifier constants.
 // Note: versions are always set to 0 so these keys are always valid from the
 // perspective of the keymgr hardware.
-const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
+const sc_keymgr_dpe_diversification_t kUdsKeymgrDiversifier = {
     .salt =
         {
             0xabffa6a9,
@@ -21,9 +21,13 @@ const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
             0x77b248d2,
         },
     .version = 0,
+    // TODO(#30777): Replace the hard-coded slot number
+    // Note: The sel_src_slot has to match the const var
+    // kKeymgrDPEAttestSlot in dice_chain.c
+    .sel_src_slot = 1,
 };
-// CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
+// CDI_0 (OwnerIntermediate) attestation key diversifier constants.
+const sc_keymgr_dpe_diversification_t kCdi0KeymgrDiversifier = {
     .salt =
         {
             0x3e5913c7,
@@ -36,9 +40,13 @@ const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
             0xfb8852dc,
         },
     .version = 0,
+    // TODO(#30777): Replace the hard-coded slot number
+    // Note: The sel_src_slot has to match the const var
+    // kKeymgrDPEAttestSlot in dice_chain.c
+    .sel_src_slot = 1,
 };
-// CDI_1 (Owner) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
+// CDI_1 (Owner) attestation key diversifier constants.
+const sc_keymgr_dpe_diversification_t kCdi1KeymgrDiversifier = {
     .salt =
         {
             0x2d12c2e3,
@@ -51,25 +59,26 @@ const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
             0xbbdefa29,
         },
     .version = 0,
+    // TODO(#30777): Replace the hard-coded slot number
+    // Note: The sel_src_slot has to match the const var
+    // kKeymgrDPEAttestSlot in dice_chain.c
+    .sel_src_slot = 1,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyUds = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyUds = {
     .keygen_seed_idx = kNvmInfoFieldUdsKeySeedIdx,
-    .keymgr_diversifier = &kUdsKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateCreatorRootKey,
+    .keymgr_dpe_diversifier = &kUdsKeymgrDiversifier,
+    .required_keymgr_dpe_state = kScKeymgrDPEStateAvailable,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi0 = {
     .keygen_seed_idx = kNvmInfoFieldCdi0KeySeedIdx,
-    .keymgr_diversifier = &kCdi0KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
+    .keymgr_dpe_diversifier = &kCdi0KeymgrDiversifier,
+    .required_keymgr_dpe_state = kScKeymgrDPEStateAvailable,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi1 = {
     .keygen_seed_idx = kNvmInfoFieldCdi1KeySeedIdx,
-    .keymgr_diversifier = &kCdi1KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
+    .keymgr_dpe_diversifier = &kCdi1KeymgrDiversifier,
+    .required_keymgr_dpe_state = kScKeymgrDPEStateAvailable,
 };

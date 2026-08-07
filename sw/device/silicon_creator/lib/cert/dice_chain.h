@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -33,6 +33,16 @@ static_assert(sizeof(dice_page_t) == NVM_BYTES_PER_PAGE,
               "Invalid dice page size");
 
 /**
+ * Configure the entropy complex in continuous mode for the attestation keys.
+ *
+ * OTBN reads `RND` from EDN1, which the ROM leaves disabled in boot-time mode.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_entropy_complex_init(void);
+
+/**
  * Initialize the dice chain builder with data from the flash pages.
  *
  * @return errors encountered during the operation.
@@ -49,6 +59,18 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_silicon(void);
 
 /**
+ * Generate the creator keys for the dice chain
+ *
+ * @param rom_measurement Pointer to the measurements to attest.
+ * @param rom_manifest Pointer to the current rom manifest.
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_attestation_creator(
+    keymgr_dpe_binding_value_t *rom_measurement,
+    const manifest_t *rom_manifest);
+
+/**
  * Check the CDI_0 certificate and regenerate if invalid.
  *
  * @param rom_ext_measurement Pointer to the measurements to attest.
@@ -56,8 +78,8 @@ rom_error_t dice_chain_attestation_silicon(void);
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_attestation_creator(
-    keymgr_binding_value_t *rom_ext_measurement,
+rom_error_t dice_chain_attestation_owner_int(
+    keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest);
 
 /**
@@ -73,9 +95,10 @@ rom_error_t dice_chain_attestation_creator(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
-    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    const manifest_t *owner_manifest,
+    keymgr_dpe_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
-    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
+    keymgr_dpe_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
 
 /**
  * Write back the certificate chain to flash if changed.

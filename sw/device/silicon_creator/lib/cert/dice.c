@@ -146,8 +146,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-      *kDiceKeyCdi0.keymgr_diversifier));
+      kDiceKeyCdi0.keygen_seed_idx, *kDiceKeyCdi0.keymgr_dpe_diversifier));
 
   return kErrorOk;
 }
@@ -215,8 +214,7 @@ rom_error_t dice_cdi_1_cert_build(
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-      *kDiceKeyCdi1.keymgr_diversifier));
+      kDiceKeyCdi1.keygen_seed_idx, *kDiceKeyCdi1.keymgr_dpe_diversifier));
 
   return kErrorOk;
 }
