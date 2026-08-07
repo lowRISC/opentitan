@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use cryptoki::mechanism::Mechanism;
+use cryptoki::mechanism::dsa::{HedgeType, SignAdditionalContext};
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -97,6 +98,15 @@ impl SignData {
                 // Data is a slice of plaintext: hash.
                 SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
             },
+            KeyType::SlhDsa => match self {
+                // For SlhDsa, the data format determines the mechanism (SLH-DSA or HashSLH-DSA).
+                // The data is passed as-is.
+                SignData::PlainText | SignData::Sha256Hash | SignData::Raw => {
+                    Self::data_raw(input, false)
+                }
+                SignData::Sha256HashReversed => Self::data_raw(input, true),
+                SignData::Slice(a, b) => Self::data_raw(&input[*a..*b], false),
+            },
             _ => Err(HsmError::Unsupported(format!("SignData prepare for {keytype:?}")).into()),
         }
     }
@@ -154,6 +164,14 @@ impl SignData {
                 SignData::Sha256HashReversed => Ok(Mechanism::Ecdsa),
                 SignData::Raw => Ok(Mechanism::Ecdsa),
                 SignData::Slice(_, _) => Ok(Mechanism::Ecdsa),
+            },
+            KeyType::SlhDsa => match self {
+                SignData::PlainText | SignData::Raw | SignData::Slice(_, _) => Ok(
+                    Mechanism::SlhDsa(SignAdditionalContext::new(HedgeType::Preferred, None)),
+                ),
+                SignData::Sha256Hash | Self::Sha256HashReversed => Ok(Mechanism::HashSlhDsaSha256(
+                    SignAdditionalContext::new(HedgeType::Preferred, None),
+                )),
             },
             _ => Err(HsmError::Unsupported(format!("No mechanism for {keytype:?}")).into()),
         }

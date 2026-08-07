@@ -11,14 +11,14 @@ sh_library(
 
 [
     sh_test(
-        name = "slh_dsa_test_{}".format(parameter_set),
+        name = "slh_dsa_generate_test_{}".format(parameter_set),
         srcs = ["hsmtool_runner.sh"],
         args = [
             "--module=$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
             "--token=fake_keys -u user -p 123456",
             "slh-dsa",
             "generate",
-            "--label fake",
+            "--label fake-test",
             "--parameter-set {}".format(parameter_set),
         ],
         data = [
@@ -30,6 +30,7 @@ sh_library(
         env = {
             "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
         },
+        deps = [":test_lib"],
     )
     for parameter_set in [
         "sha2-128s",
@@ -46,6 +47,24 @@ sh_library(
         "shake-256f",
     ]
 ]
+
+sh_test(
+    name = "slh_dsa_roundtrip_test",
+    srcs = ["hsmtool_roundtrip_runner.sh"],
+    args = ["$(rootpath :tqbf.txt)"],
+    data = [
+        "tqbf.txt",
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "//sw/host/hsmtool",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
+    deps = [":test_lib"],
+)
 
 sh_test(
     name = "token_exists_test",
@@ -65,6 +84,7 @@ sh_test(
     env = {
         "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
     },
+    deps = [":test_lib"],
 )
 
 genrule(
