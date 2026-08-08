@@ -84,7 +84,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     foreach (cfg.ral_models[ral_name]) begin
       bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
       bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
-      bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
+      bit has_mem       = (cfg.ral_models[ral_name].get_num_memories() > 0);
       bit has_mem_byte_access_err;
       bit has_wo_mem;
       bit has_ro_mem;
@@ -468,7 +468,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Return true if the normalised version of addr is a memory address in the given reg block.
   protected virtual function bit is_mem_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
-    addr_range_t   loc_mem_ranges[$] = block.mem_ranges;
+    addr_range_t   loc_mem_ranges[$];
+
+    block.get_mem_ranges(loc_mem_ranges);
+
     foreach (loc_mem_ranges[i]) begin
       if (norm_addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
         return 1;
