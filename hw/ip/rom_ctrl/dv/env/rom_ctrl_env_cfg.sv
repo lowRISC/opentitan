@@ -6,8 +6,6 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   `uvm_object_utils(rom_ctrl_env_cfg)
 
-  string rom_ral_name = "rom_ctrl_prim_reg_block";
-
   // ext component cfgs
   rand kmac_app_agent_cfg m_kmac_agent_cfg;
 
@@ -23,6 +21,14 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;
+
+  // For block-level testing, there's a parameterized reg_block class that was added manually to
+  // allow the testbench infrastructure to support memories with configurable size. Top-level
+  // testing is much easier: there, the top-level has configured the size of the memory for us.
+  //
+  // These are the names of the RAL to use for block-level and chip-level tests, respectively.
+  local string m_block_level_rom_ral_name = "rom_ctrl_prim_reg_block";
+  local string m_chip_level_rom_ral_name  = "rom_ctrl_rom_reg_block";
 
   // An interface bound into the rom_ctrl_compare module
   virtual rom_ctrl_compare_if compare_vif;
@@ -43,12 +49,19 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   extern function new (string name="");
   extern function void post_randomize();
 
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
   // Retrieve the flag that says whether we should skip reading the middle of ROM. If true, this was
   // set with the +skip_middle plusarg.
   extern function bit get_skip_middle();
+
+  // Return true if ral_name is the name of the RAL for the ROM itself
+  extern function bit is_rom_ral_name(string ral_name);
+
+  // Return a uvm_mem representing the ROM itself (from either the RAL called
+  // m_block_level_rom_ral_name or the one called m_chip_level_rom_ral_name).
+  extern function uvm_mem get_rom_ral();
 
   // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
   // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
@@ -64,10 +77,6 @@ function rom_ctrl_env_cfg::new (string name="");
 
   list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
   tl_intg_alert_name = "fatal";
-
-  // Add rom_ctrl_prim_reg_block to the set of known model names. The associated value has no
-  // meaning.
-  ral_model_names["rom_ctrl_prim_reg_block"] = 1'b0;
 
   num_interrupts = 0;
 
@@ -98,8 +107,17 @@ function void rom_ctrl_env_cfg::post_randomize();
   m_kmac_agent_cfg.rsp_delay_max = m_kmac_rsp_delay_max;
 endfunction
 
-function void rom_ctrl_env_cfg::initialize();
-  super.initialize();
+function void rom_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
+  // Infer the name where the ROM interface will be defined from the inherit_ral_models argument. If
+  // it is false, this is a block-level test and we should use "rom_ctrl_prim_reg_block" (the
+  // manually defined block in the environment). If it is true, this is a chip-level test and it
+  // should already have an instance of "rom_ctrl_rom_reg_block" (but we need to add that name to
+  // ral_model_names so that it can be found)
+  string rom_ral_name = inherit_ral_models ? m_chip_level_rom_ral_name : m_block_level_rom_ral_name;
+
+  ral_model_names[rom_ral_name] = 1'b0;
+
+  super.initialize(inherit_ral_models);
 
   // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
   m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
@@ -129,8 +147,8 @@ endfunction
 function dv_base_reg_block rom_ctrl_env_cfg::create_ral_by_name(string name);
   if (name == RAL_T::type_name) begin
     return super.create_ral_by_name(name);
-  end else if (name == rom_ral_name) begin
-    return rom_ctrl_prim_reg_block#(ROM_SIZE_WORDS)::type_id::create(rom_ral_name);
+  end else if (name == m_block_level_rom_ral_name) begin
+    return rom_ctrl_prim_reg_block#(ROM_SIZE_WORDS)::type_id::create(m_block_level_rom_ral_name);
   end else begin
     `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
   end
@@ -138,6 +156,33 @@ endfunction
 
 function bit rom_ctrl_env_cfg::get_skip_middle();
   return m_skip_middle;
+endfunction
+
+function bit rom_ctrl_env_cfg::is_rom_ral_name(string ral_name);
+  return (ral_name inside {m_block_level_rom_ral_name, m_chip_level_rom_ral_name});
+endfunction
+
+function uvm_mem rom_ctrl_env_cfg::get_rom_ral();
+  uvm_reg_block block;
+  uvm_mem       mems[$];
+
+  if (ral_models.exists(m_block_level_rom_ral_name)) begin
+    block = ral_models[m_block_level_rom_ral_name];
+  end else if (ral_models.exists(m_chip_level_rom_ral_name)) begin
+    block = ral_models[m_chip_level_rom_ral_name];
+  end else begin
+    `uvm_fatal("no_ral", "Cannot find a RAL for the interface with ROM.")
+  end
+
+  block.get_memories(mems);
+
+  if (mems.size() != 1) begin
+    `uvm_error("not_one_mem",
+               $sformatf("The set of memories for block %0s has size %0d (not 1).",
+                         block.get_name(), mems.size()))
+  end
+
+  return mems[0];
 endfunction
 
 constraint rom_ctrl_env_cfg::rsp_delay_max_c {

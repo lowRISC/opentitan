@@ -23,9 +23,9 @@ class rstmgr_env_cfg extends cip_base_env_cfg #(
   virtual rstmgr_cascading_sva_if rstmgr_cascading_sva_vif;
   virtual rstmgr_if rstmgr_vif;
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = rstmgr_env_pkg::LIST_OF_ALERTS;
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     tl_intg_alert_fields[ral.err_code.reg_intg_err] = 1;
     m_tl_agent_cfg.max_outstanding_req = 1;

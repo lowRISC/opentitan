@@ -61,11 +61,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name = "fatal_state_error";
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     // Find parameters on config db
     if (!uvm_config_db#(lc_ctrl_parameters_cfg)::get(
