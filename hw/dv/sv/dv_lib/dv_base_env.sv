@@ -19,9 +19,15 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     string ral_models[$];
 
     super.build_phase(phase);
-    // get dv_base_env_cfg object from uvm_config_db
-    if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
-      `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
+
+    // Get an env_cfg. This may have actually already been supplied before this environment's
+    // build_phase. That might be done by the test or by higher-level environment (if this
+    // environment represents a block that is being used in a larger subsystem- or chip-level
+    // environment). If the cfg has not been supplied, it up uvm_config_db.
+    if (cfg == null) begin
+      if (!uvm_config_db#(CFG_T)::get(this, "", "cfg", cfg)) begin
+        `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
+      end
     end
 
     // Make sure the map in cfg from RAL name to clk_rst_if is populated. Copy the clock frequencies

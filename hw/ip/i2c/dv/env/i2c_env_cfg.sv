@@ -88,9 +88,9 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = i2c_env_pkg::LIST_OF_ALERTS;
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     m_i2c_agent_cfg = i2c_agent_cfg::type_id::create("m_i2c_agent_cfg");
     m_i2c_agent_cfg.if_mode = Device;
