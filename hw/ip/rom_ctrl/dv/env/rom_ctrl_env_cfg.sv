@@ -43,7 +43,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   extern function new (string name="");
   extern function void post_randomize();
 
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
   // Retrieve the flag that says whether we should skip reading the middle of ROM. If true, this was
@@ -98,8 +98,8 @@ function void rom_ctrl_env_cfg::post_randomize();
   m_kmac_agent_cfg.rsp_delay_max = m_kmac_rsp_delay_max;
 endfunction
 
-function void rom_ctrl_env_cfg::initialize();
-  super.initialize();
+function void rom_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
+  super.initialize(inherit_ral_models);
 
   // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
   m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;

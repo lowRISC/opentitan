@@ -4,7 +4,7 @@
 //
 // base register block class which will be used to generate the reg blocks
 class dv_base_reg_block extends uvm_reg_block;
-  `uvm_object_utils(dv_base_reg_block)
+  `m_uvm_get_type_name_func(dv_base_reg_block)
 
   // The default addr, data and byte widths.
   //
@@ -15,10 +15,11 @@ class dv_base_reg_block extends uvm_reg_block;
   // these runtime settings below instead, to perform associated computations. Values retrieved
   // for comparisons, such as uvm_reg::get_mirrored_value() may return data that is wider than
   // needed. It would then be upto the testbench to cast it to the appropriate width if necessary.
-  // TODO: These are ideally passed via `build` method.
-  uint addr_width = `UVM_REG_ADDR_WIDTH;
-  uint data_width = `UVM_REG_DATA_WIDTH;
-  uint be_width = `UVM_REG_BYTENABLE_WIDTH;
+  //
+  // These are configured with build() function.
+  protected int unsigned m_addr_width;
+  protected int unsigned m_data_width;
+  protected int unsigned m_be_width;
 
   // Since an IP may contains more than one reg block we construct reg_block name as
   // {ip_name}_{reg_interface_name}.
@@ -147,8 +148,13 @@ class dv_base_reg_block extends uvm_reg_block;
 
   // provide build function to supply base addr
   virtual function void build(uvm_reg_addr_t base_addr,
-                              csr_excl_item csr_excl = null);
-    `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+                              csr_excl_item  csr_excl,
+                              int unsigned   addr_width,
+                              int unsigned   data_width,
+                              int unsigned   be_width);
+    m_addr_width = addr_width;
+    m_data_width = data_width;
+    m_be_width = be_width;
   endfunction
 
   // This function is invoked at the end of `build` method in uvm_reg_base.sv template to create
@@ -410,10 +416,10 @@ class dv_base_reg_block extends uvm_reg_block;
     if (randomize_base_addr) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_addr,
                                          (base_addr & mask) == '0;
-                                         base_addr >> addr_width == 0;)
+                                         base_addr >> m_addr_width == 0;)
     end else begin
       `DV_CHECK_FATAL((base_addr & mask) == '0)
-      `DV_CHECK_FATAL((base_addr >> addr_width) == '0)
+      `DV_CHECK_FATAL((base_addr >> m_addr_width) == '0)
     end
 
     `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
@@ -429,7 +435,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is useful if you have a possibly misaligned address and you want to know whether it hits a
   // register (since get_reg_by_offset needs the aligned address for the start of the register).
   function uvm_reg_addr_t get_word_aligned_addr(uvm_reg_addr_t byte_addr);
-    uvm_reg_addr_t shift = $clog2(be_width);
+    uvm_reg_addr_t shift = $clog2(m_be_width);
     return (byte_addr >> shift) << shift;
   endfunction
 

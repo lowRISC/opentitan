@@ -44,7 +44,11 @@ class jtag_agent_cfg extends dv_base_agent_cfg;
     jtag_if_connected = new();
     // Create the JTAG DTM RAL.
     jtag_dtm_ral = jtag_dtm_reg_block::type_id::create("jtag_dtm_ral");
-    jtag_dtm_ral.build(.base_addr(0), .csr_excl(null));
+    jtag_dtm_ral.build(.base_addr(0),
+                       .csr_excl(null),
+                       .addr_width(32),
+                       .data_width(32),
+                       .be_width(4));
     jtag_dtm_ral.set_supports_byte_enable(1'b0);
     jtag_dtm_ral.lock_model();
     jtag_dtm_ral.set_base_addr(0);

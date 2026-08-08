@@ -130,7 +130,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     dv_base_reg_block soc_dbg_base_reg_block;
     dv_base_reg_block soc_mbx_base_reg_block;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
@@ -147,7 +147,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // array; the values have no meaning)
     ral_model_names["chip_soc_dbg_reg_block"] = 1'b0;
     ral_model_names["chip_soc_mbx_reg_block"] = 1'b0;
-    super.initialize();
+    super.initialize(inherit_ral_models);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
     soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];
     `downcast(chip_soc_dbg_ral, soc_dbg_base_reg_block);
