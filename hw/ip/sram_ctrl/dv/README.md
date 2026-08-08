@@ -47,11 +47,12 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Compile-time configurations
 Two compile-time configurations are tested:
-* `sram_ctrl_main` - this configuration uses a 15-bit wide address space to emulate the main SRAM used in the full design and enables parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
-* `sram_ctrl_ret` - this configuration uses a 10-bit-wide address space to emulate the retention SRAM used in the full design and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
+* `sram_ctrl_main` - this configuration uses a 128 KiB memory to emulate the main SRAM used in the full design and enables parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
+* `sram_ctrl_ret` - this configuration uses a 4 KiB memory to emulate the retention SRAM used in the full design and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
 
 
-A macro-define `SRAM_WORD_ADDR_WIDTH` is defined as a build option in `hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson`, which is used to set the correct compile-time settings for each configuration.
+A macro-define `SRAM_SIZE_BYTES` is defined as a build option in `hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson`, which is used to set the correct compile-time settings for each configuration.
+The memory size can be a non-power-of-2 value (e.g. for non-power-of-2 SRAM sizes).
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in

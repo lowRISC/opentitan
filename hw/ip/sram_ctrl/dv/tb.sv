@@ -60,15 +60,16 @@ module tb;
 
   // DUT
 
-  // The exact number of word address bits.
-  // Will be set to 10 for retention SRAM and 14 for main SRAM.
-`ifndef SRAM_WORD_ADDR_WIDTH
-  `define SRAM_WORD_ADDR_WIDTH 32
+  // The exact SRAM size in bytes.
+  // Will be set to 4 KiB for retention SRAM and 128 KiB for main SRAM.
+  // Can be a non-power-of-2 size.
+`ifndef SRAM_SIZE_BYTES
+  `define SRAM_SIZE_BYTES 2**17
 `endif
 
   sram_ctrl #(
     // memory size in bytes
-    .MemSizeRam(4 * 2 ** `SRAM_WORD_ADDR_WIDTH),
+    .MemSizeRam(`SRAM_SIZE_BYTES),
     .InstrExec(`INSTR_EXEC),
     // number of PRINCE half rounds for the SRAM scrambling feature
     .NumPrinceRoundsHalf(`NUM_PRINCE_ROUNDS_HALF)

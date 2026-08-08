@@ -17,11 +17,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_sram_ctrl",
-  version:            "1.1.0",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+      {
+          version:            "1.1.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+          commit_id:          "11988f61b91d9e89fd34ead3a9da6a340ce0315d",
+      },
+      {
+          version:            "1.2.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+      }
+  ],
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_otp_i", reset: "rst_otp_ni"}

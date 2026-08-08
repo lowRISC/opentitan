@@ -529,6 +529,7 @@ module sram_ctrl
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
+    .SramDepth(Depth),
     .Outstanding(Outstanding),
     .ByteAccess(1),
     .CmdIntgCheck(1),
