@@ -7,7 +7,6 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "hw/top/dt/flash_ctrl.h"
 #include "hw/top/dt/lc_ctrl.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "hw/top/dt/rv_core_ibex.h"
@@ -26,6 +25,7 @@
 #include "hw/top/lc_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace shutdown_unittest {
 
@@ -44,7 +44,7 @@ class MockShutdownImpl : public ::global_mock::GlobalMock<MockShutdownImpl> {
   MOCK_METHOD(void, shutdown_software_escalate, ());
   MOCK_METHOD(void, shutdown_keymgr_kill, ());
   MOCK_METHOD(void, shutdown_reset, ());
-  MOCK_METHOD(void, shutdown_flash_kill, ());
+  MOCK_METHOD(void, shutdown_nvm_kill, ());
   MOCK_METHOD(void, shutdown_hang, ());
 };
 
@@ -63,15 +63,15 @@ void shutdown_keymgr_kill(void) {
 void shutdown_reset(void) {
   return MockShutdownImpl::Instance().shutdown_reset();
 }
-void shutdown_flash_kill(void) {
-  return MockShutdownImpl::Instance().shutdown_flash_kill();
+void shutdown_nvm_kill(void) {
+  return MockShutdownImpl::Instance().shutdown_nvm_kill();
 }
 void shutdown_hang(void) {
   return MockShutdownImpl::Instance().shutdown_hang();
 }
 
 // Real implementations of the above mocks.
-extern void unmocked_shutdown_flash_kill(void);
+extern void unmocked_shutdown_nvm_kill(void);
 extern void unmocked_shutdown_software_escalate(void);
 }  // extern "C"
 
@@ -357,7 +357,7 @@ class ShutdownTest : public rom_test::RomTest {
     EXPECT_CALL(shutdown_, shutdown_software_escalate());
     EXPECT_CALL(shutdown_, shutdown_keymgr_kill());
     EXPECT_CALL(shutdown_, shutdown_reset());
-    EXPECT_CALL(shutdown_, shutdown_flash_kill());
+    EXPECT_CALL(shutdown_, shutdown_nvm_kill());
     EXPECT_CALL(shutdown_, shutdown_hang());
   }
 
@@ -592,11 +592,13 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
   shutdown_finalize(kErrorUnknown);
 }
 
-TEST_F(ShutdownTest, FlashKill) {
-  const uint32_t flash_ctrl_base =
-      dt_flash_ctrl_reg_block(kDtFlashCtrl, kDtFlashCtrlRegBlockCore);
-  EXPECT_ABS_WRITE32(flash_ctrl_base + FLASH_CTRL_DIS_REG_OFFSET, 0);
-  unmocked_shutdown_flash_kill();
+TEST_F(ShutdownTest, NvmKill) {
+  // Host tests always build nvm_ctrl against the flash backend (USE_FLASH),
+  // independent of the selected top, so shutdown_nvm_kill() disables the
+  // flash controller here.
+  EXPECT_ABS_WRITE32(
+      TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 0);
+  unmocked_shutdown_nvm_kill();
 }
 
 TEST_F(ShutdownTest, ShutdownIfErrorOk) { SHUTDOWN_IF_ERROR(kErrorOk); }

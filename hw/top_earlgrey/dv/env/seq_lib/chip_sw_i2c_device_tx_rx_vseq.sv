@@ -71,7 +71,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     super.cpu_init();
 
     // Pass the symbols to test software via the backdoor
-
+    wait_rram_rd_buf_rdy();
     sw_symbol_backdoor_overwrite("kClockPeriodNanos", clock_period_nanos_arr);
     sw_symbol_backdoor_overwrite("kI2cRiseFallNanos", rise_fall_nanos_arr);
     sw_symbol_backdoor_overwrite("kI2cClockPeriodNanos", i2c_clock_period_nanos_arr);

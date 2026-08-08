@@ -32,9 +32,9 @@ static void print_boot_data(const boot_data_t *boot_data) {
 
 static void increment_flash_counter(void) {
   CHECK_STATUS_OK(nv_counter_testutils_counter_increment(kFlashCounterId));
-  // Disable default region access after the counter operation.
+  // Disable default region write access after the counter operation.
   CHECK_STATUS_OK(nvm_testutils_default_region_setup(
-      (nvm_page_perms_t){.read = kMultiBitBool4False,
+      (nvm_page_perms_t){.read = kMultiBitBool4True,
                          .write = kMultiBitBool4False,
                          .erase = kMultiBitBool4False},
       (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,

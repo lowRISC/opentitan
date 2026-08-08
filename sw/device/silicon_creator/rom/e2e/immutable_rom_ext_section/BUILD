@@ -321,7 +321,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        assemble = "{invalid}@0 {valid}@0x80000",
+        assemble = "{invalid}@0 {valid}@0x100000",
         binaries = {
             ":imm_section_invalid": "invalid",
             ":imm_section_valid": "valid",
@@ -340,7 +340,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        assemble = "{invalid}@0 {invalid}@0x80000",
+        assemble = "{invalid}@0 {invalid}@0x100000",
         binaries = {
             ":imm_section_invalid": "invalid",
         },

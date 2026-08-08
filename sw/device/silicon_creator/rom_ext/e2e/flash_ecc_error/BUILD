@@ -180,6 +180,9 @@ opentitan_binary(
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             slot_a = "0x10000",
             slot_b = "0x90000",
+            # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+            # https://github.com/lowRISC/opentitan/issues/30897
+            tags = ["skip_in_ci"],
             test_cmd = """
                 # First run the setup program to make sure the keymgr secrets are configured.
                 # This is required to allow the ROM_EXT to run.
@@ -224,6 +227,9 @@ opentitan_test(
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         slot_a = "0x10000",
         slot_b = "0x90000",
+        # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+        # https://github.com/lowRISC/opentitan/issues/30897
+        tags = ["skip_in_ci"],
         test_cmd = """
             # First run the setup program to make sure the keymgr secrets are configured.
             # This is required to allow the ROM_EXT to run.

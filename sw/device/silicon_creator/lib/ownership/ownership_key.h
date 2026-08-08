@@ -107,9 +107,13 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
 /**
  * Retrieve the owner history digest from the OwnerSecret page.
  *
+ * @param ownership_transfers Number of ownership transfers this chip has had
+ * (from `boot_data_t`), used to tell whether the OwnerSecret page has ever
+ * actually been provisioned
  * @param history Digest of all previous owner keys.
  * @return Success or error code.
  */
-rom_error_t ownership_history_get(hmac_digest_t *history);
+rom_error_t ownership_history_get(uint32_t ownership_transfers,
+                                  hmac_digest_t *history);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_

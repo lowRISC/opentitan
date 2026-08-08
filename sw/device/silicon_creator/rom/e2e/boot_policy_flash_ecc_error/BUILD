@@ -193,6 +193,9 @@ otp_image(
             otp = ":otp_img_boot_policy_flash_ecc_error",
             slot_a = SLOTS["a"],
             slot_b = SLOTS["b"],
+            # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+            # https://github.com/lowRISC/opentitan/issues/30897
+            tags = ["skip_in_ci"],
         ),
     )
     for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
@@ -217,6 +220,9 @@ opentitan_test(
         otp = ":otp_img_flash_exc_handler_disabled",
         slot_a = SLOTS["a"],
         slot_b = SLOTS["b"],
+        # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+        # https://github.com/lowRISC/opentitan/issues/30897
+        tags = ["skip_in_ci"],
     ),
 )
 

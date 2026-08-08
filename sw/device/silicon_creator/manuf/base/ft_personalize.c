@@ -446,18 +446,18 @@ static status_t hash_certificate(nvm_info_page_t page, size_t offset,
   if (obj_size == 0) {
     LOG_ERROR(
         "Inconsistent certificate perso LTV object header %02x %02x at "
-        "page:offset %d:%zu",
-        cert_buffer[0], cert_buffer[1], (int)page, offset);
+        "page:offset %d:%u",
+        cert_buffer[0], cert_buffer[1], (int)page, (unsigned)offset);
     return DATA_LOSS();
   }
   if (obj_size > sizeof(cert_buffer)) {
-    LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %d:%zu",
-              obj_size, (int)page, offset);
+    LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %d:%u",
+              obj_size, (int)page, (unsigned)offset);
     return DATA_LOSS();
   }
-  if ((obj_size + offset) > NVM_BYTES_PER_PAGE) {
-    LOG_ERROR("Cert size overflow (%d + %zu) page %d", obj_size, offset,
-              (int)page);
+  if ((obj_size + offset) > kNvmInfoPageDiceCertsSize) {
+    LOG_ERROR("Cert size overflow (%d + %u) page %d", obj_size,
+              (unsigned)offset, (int)page);
     return DATA_LOSS();
   }
 

@@ -22,19 +22,21 @@ owner_block_t owner_page[2];
 owner_page_status_t owner_page_valid[2];
 
 enum {
-  kNvmBankSize = NVM_PAGES_PER_BANK,
+  // Page count of one firmware slot (A or B). Each NVM bank holds
+  // `NVM_NUM_BANKS == 1 ? 2 : 1` slot(s); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
   kNvmPageSize = NVM_BYTES_PER_PAGE,
-  kNvmTotalSize = NVM_NUM_BANKS * kNvmBankSize,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
   kNvmSlotAStart = 0,
-  kNvmSlotAEnd = kNvmSlotAStart + kNvmBankSize,
-  kNvmSlotBStart = kNvmBankSize,
-  kNvmSlotBEnd = kNvmSlotBStart + kNvmBankSize,
+  kNvmSlotAEnd = kNvmSlotAStart + kNvmSlotSize,
+  kNvmSlotBStart = kNvmSlotSize,
+  kNvmSlotBEnd = kNvmSlotBStart + kNvmSlotSize,
 
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
   kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kNvmBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 
   kRomExtRegions = 2,
@@ -179,7 +181,7 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
     return kErrorOwnershipInvalidTagLength;
   }
   uint32_t end = rescue->start + rescue->size;
-  if (rescue->start < kRomExtSizeInPages || end > kNvmBankSize) {
+  if (rescue->start < kRomExtSizeInPages || end > kNvmSlotSize) {
     return kErrorOwnershipInvalidRescueBounds;
   }
   return kErrorOk;
@@ -304,11 +306,11 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   return kErrorOk;
 }
 
-static hardened_bool_t in_nvm_slot(uint32_t bank_start, uint32_t start,
+static hardened_bool_t in_nvm_slot(uint32_t slot_start, uint32_t start,
                                    uint32_t end) {
-  uint32_t bank_end = bank_start + kNvmBankSize;
-  return (bank_start <= start && start < bank_end && bank_start < end &&
-          end <= bank_end)
+  uint32_t slot_end = slot_start + kNvmSlotSize;
+  return (slot_start <= start && start < slot_end && slot_start < end &&
+          end <= slot_end)
              ? kHardenedBoolTrue
              : kHardenedBoolFalse;
 }
@@ -391,10 +393,10 @@ rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
   // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
   // kHardenedBoolFalse.
   uint32_t start = config_side == kBootSlotA   ? 0
-                   : config_side == kBootSlotB ? kNvmBankSize
+                   : config_side == kBootSlotB ? kNvmSlotSize
                                                : 0xFFFFFFFF;
-  uint32_t end = config_side == kBootSlotA   ? kNvmBankSize
-                 : config_side == kBootSlotB ? 2 * kNvmBankSize
+  uint32_t end = config_side == kBootSlotA   ? kNvmSlotSize
+                 : config_side == kBootSlotB ? 2 * kNvmSlotSize
                                              : 0;
   size_t len = (nvm->header.length - sizeof(owner_nvm_config_t)) /
                sizeof(owner_nvm_region_t);

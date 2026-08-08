@@ -18,7 +18,8 @@ IBEX_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi_ibex(
     name = "fi_ibex",
-    tags = [],
+    # needs to be ported to RRAM: https://github.com/lowRISC/opentitan/issues/30896
+    tags = ["skip_in_ci"],
     test_args = IBEX_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_ibex:harness",
     test_vectors = IBEX_FI_TESTVECTOR_TARGETS,
