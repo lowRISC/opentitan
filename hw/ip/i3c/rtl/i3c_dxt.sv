@@ -50,8 +50,8 @@ module i3c_dxt
   output [EntryWidth-1:0] b_rdata_o,
   output   [OOBWidth-1:0] b_oob_o,
 
-  input  ram_1p_cfg_t     cfg_i,
-  output ram_1p_cfg_rsp_t cfg_rsp_o
+  input  ram_1p_cfg_req_t cfg_i,
+  output ram_1p_cfg_rsp_t cfg_o
 );
 
   localparam int unsigned DataBitsPerMask = EntryWidth / MaskWidth;
@@ -74,18 +74,18 @@ module i3c_dxt
     .Depth            (NumEntries),
     .DataBitsPerMask  (DataBitsPerMask)
   ) u_dxt (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
 
-    .req_i      (a_req | b_req_i),
-    .write_i    (a_req ? a_we_i    : b_we_i),
-    .addr_i     (a_req ? a_idx_i   : b_idx_i),
-    .wdata_i    (a_req ? a_wdata_i : b_wdata_i),
-    .wmask_i    (wmask_full),
-    .rdata_o    (rdata_full),
+    .req_i  (a_req | b_req_i),
+    .write_i(a_req ? a_we_i    : b_we_i),
+    .addr_i (a_req ? a_idx_i   : b_idx_i),
+    .wdata_i(a_req ? a_wdata_i : b_wdata_i),
+    .wmask_i(wmask_full),
+    .rdata_o(rdata_full),
 
-    .cfg_i      (cfg_i),
-    .cfg_rsp_o  (cfg_rsp_o)
+    .cfg_i  (cfg_i),
+    .cfg_o  (cfg_o)
   );
 
   logic [OOBWidth-1:0] b_oob;
