@@ -348,7 +348,12 @@ class jtag_dtm_reg_block extends dv_base_reg_block;
   endfunction : new
 
   virtual function void build(uvm_reg_addr_t base_addr,
-                              csr_excl_item csr_excl = null);
+                              csr_excl_item  csr_excl,
+                              int unsigned   addr_width,
+                              int unsigned   data_width,
+                              int unsigned   be_width);
+    super.build(base_addr, csr_excl, addr_width, data_width, be_width);
+
     // create default map
     this.default_map = create_map(.name("default_map"),
                                   .base_addr(base_addr),

@@ -114,6 +114,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // and skip cpu_init in chip_sw_base_vseq::body
   bit early_cpu_init = 0;
 
+  // An env_cfg for a passive bound-in rom_ctrl environment
+  rom_ctrl_env_pkg::rom_ctrl_env_cfg m_rom_ctrl_env_cfg;
+
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
@@ -125,7 +128,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (clk_freqs_mhz[i]) clk_freqs_mhz[i] == clk_freq_mhz;
   }
 
-  `uvm_object_new
+  function new (string name = "");
+    super.new(name);
+    m_rom_ctrl_env_cfg = rom_ctrl_env_pkg::rom_ctrl_env_cfg::type_id::create("m_rom_ctrl_env_cfg");
+    m_rom_ctrl_env_cfg.set_is_active(1'b0);
+  endfunction
 
   `uvm_object_param_utils_begin(chip_env_cfg#(RAL_T))
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
@@ -135,7 +142,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
     is_chip = 1;
 
@@ -146,7 +153,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // User can read `loc_alert_cause` to check ping timeout.
     en_scb_ping_chk = 0;
 
-    super.initialize();
+    super.initialize(inherit_ral_models);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
@@ -213,6 +220,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     num_ram_main_tiles = 1;
     num_ram_ret_tiles = 1;
     num_otbn_dmem_tiles = 1;
+
+    // Copy handles to rom_ctrl's register blocks into its block-level environment config
+    m_rom_ctrl_env_cfg.ral_models["rom_ctrl_regs_reg_block"] = ral.rom_ctrl_regs;
+    m_rom_ctrl_env_cfg.ral_models["rom_ctrl_rom_reg_block"] = ral.rom_ctrl_rom;
+
+    // Set up the config for the bound-in rom_ctrl environment, passing inherit_ral_models=1 so that
+    // it uses the register blocks whose handles we just copied.
+    m_rom_ctrl_env_cfg.initialize(1'b1);
   endfunction
 
   // Configure the environment to run a DMI agent over a JTAG connection.

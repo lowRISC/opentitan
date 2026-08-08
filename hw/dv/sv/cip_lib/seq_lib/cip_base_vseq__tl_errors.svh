@@ -130,13 +130,16 @@ task tl_write_mem_less_than_word(string            ral_name,
                                  dv_base_reg_block block,
                                  addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory
   // doesn't support partial writes. These track addresses relative to the base address of the
   // block.
   foreach (rel_mem_ranges[i]) begin
     dv_base_mem mem;
-    `downcast(mem, get_mem_by_addr(block, block.mem_ranges[i].start_addr))
+    `downcast(mem, get_mem_by_addr(block, block_mem_ranges[i].start_addr))
     if (!mem.get_mem_partial_write_support()) rel_tgt_ranges.push_back(rel_mem_ranges[i]);
   end
 
@@ -169,11 +172,14 @@ task tl_read_wo_mem_err(string            ral_name,
                         dv_base_reg_block block,
                         addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory is
   // write-only. These track addresses relative to the base address of the block.
   foreach (rel_mem_ranges[i]) begin
-    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "WO") begin
+    if (get_mem_access_by_addr(block, block_mem_ranges[i].start_addr) == "WO") begin
       rel_tgt_ranges.push_back(rel_mem_ranges[i]);
     end
   end
@@ -205,11 +211,14 @@ task tl_write_ro_mem_err(string            ral_name,
                          dv_base_reg_block block,
                          addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory is
   // read-only. These track addresses relative to the base address of the block.
   foreach (rel_mem_ranges[i]) begin
-    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "RO") begin
+    if (get_mem_access_by_addr(block, block_mem_ranges[i].start_addr) == "RO") begin
       rel_tgt_ranges.push_back(rel_mem_ranges[i]);
     end
   end
@@ -233,9 +242,19 @@ task tl_write_ro_mem_err(string            ral_name,
 endtask
 
 // Return the address of the csr at a random index
-virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (string ral_name, dv_base_reg_block block);
-  int index = $urandom_range(0, block.csr_addrs.size() - 1);
-  return block.csr_addrs[index];
+virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (dv_base_reg_block block);
+  uvm_reg regs[$];
+  uvm_reg chosen_reg;
+  block.get_registers(regs, UVM_HIER);
+
+  if (regs.size() == 0) begin
+    `uvm_fatal(get_name(),
+               $sformatf("Cannot pick a random address: block %0s has no CSRs.", block.get_name()))
+  end
+
+  chosen_reg = regs[$urandom_range(0, regs.size() - 1)];
+
+  return chosen_reg.get_address();
 endfunction
 
 // Generate a stream of transactions that trigger errors connected with instr_type. This is either
@@ -246,8 +265,7 @@ endfunction
 // reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
-  bit has_nofetch_csrs = ((ral_model.csr_addrs.size() > 0) &&
-                          !ral_model.get_allows_csr_fetch());
+  bit has_nofetch_csrs = ral_model.has_csrs() && !ral_model.get_allows_csr_fetch();
 
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
@@ -276,7 +294,7 @@ virtual task tl_instr_type_err(string ral_name);
       has_nofetch_csrs: begin
         write = 1'b0;
         instr_type = MuBi4True;
-        addr = pick_rand_csr_addr(ral_name, ral_model);
+        addr = pick_rand_csr_addr(ral_model);
       end
     endcase
 
@@ -301,8 +319,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
   bit [BUS_AW-1:0]  csr_base_addr = ral_model.default_map.get_base_addr();
   bit               has_mem_byte_access_err, has_wo_mem, has_ro_mem;
-
-  bit has_csr_addrs = (ral_model.csr_addrs.size() > 0);
+  bit               has_csrs = ral_model.has_csrs();
 
   // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
   // in address map. The difference btw them is unmapped address
@@ -312,7 +329,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   csr_addr_mask[ral_name][1:0] = 0;
 
   if (updated_mem_ranges[ral_name].size == 0) begin
-    addr_range_t loc_mem_range[$] = ral_model.mem_ranges;
+    addr_range_t loc_mem_range[$];
+    ral_model.get_mem_ranges(loc_mem_range);
     foreach (loc_mem_range[i]) begin
       updated_mem_ranges[ral_name].push_back(addr_range_t'{
           loc_mem_range[i].start_addr - csr_base_addr,
@@ -334,7 +352,7 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
               1: tl_protocol_err(ral_name);
 
               // If there are CSRs, send writes with invalid byte enable masks to all of them
-              has_csr_addrs: tl_write_less_than_csr_width(ral_name, ral_model);
+              has_csrs: tl_write_less_than_csr_width(ral_name, ral_model);
 
               // If there are some unmapped addresses, generate transactions that access them.
               ral_model.has_unmapped_addrs: tl_access_unmapped_addr(ral_name, ral_model);
@@ -429,7 +447,11 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
   bit [BUS_DW-1:0] data = $urandom;
   bit              write = $urandom_range(0, 1);
   tl_intg_err_e    tl_intg_err_type;
-  bit              has_mem = cfg.ral_models[ral_name].mem_ranges.size > 0;
+  addr_range_t     mem_ranges[$];
+  bit              has_mem;
+
+  cfg.ral_models[ral_name].get_mem_ranges(mem_ranges);
+  has_mem = (mem_ranges.size() > 0);
 
   #($urandom_range(10, 1000) * 1ns);
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
@@ -439,9 +461,8 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
     1: addr = $urandom;
     // mem address
     has_mem: begin
-      int mem_idx = $urandom_range(0, cfg.ral_models[ral_name].mem_ranges.size - 1);
-      addr = $urandom_range(cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr,
-                            cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
+      int mem_idx = $urandom_range(0, mem_ranges.size - 1);
+      addr = $urandom_range(mem_ranges[mem_idx].start_addr, mem_ranges[mem_idx].end_addr);
     end
   endcase
   tl_access(.addr(addr), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type),

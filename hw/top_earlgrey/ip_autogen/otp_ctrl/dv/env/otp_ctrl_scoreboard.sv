@@ -585,17 +585,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       bit data_phase_read, bit data_phase_write);
 
     bit         do_read_check = 1;
-    uvm_reg     csr;
+    uvm_reg     csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
     dv_base_reg dv_reg;
     string      csr_name;
 
     `uvm_info(`gfn, $sformatf("sw state %d, reg state %d", direct_access_regwen_state,
                              `gmv(ral.direct_access_regwen)), UVM_LOW);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
+    if (csr != null) begin
       `downcast(dv_reg, csr)
     // SW CFG window
     end else if ((csr_addr & addr_mask) inside
@@ -1693,22 +1690,22 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit mem_access_allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err,
                                                             mem_wo_err, mem_ro_err, custom_err);
 
+    addr_range_t mem_ranges[$];
+    block.get_mem_ranges(mem_ranges);
+
     if (block.get_name() == "otp_macro_prim_reg_block") return mem_access_allowed;
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
-    if (addr inside {
-        [block.mem_ranges[0].start_addr :
-         block.mem_ranges[0].end_addr]} &&
-        mem_access_allowed) begin
+    if (mem_access_allowed &&
+        mem_ranges[0].start_addr <= addr && addr <= mem_ranges[0].end_addr) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
       if (`gmv(ral.vendor_test_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + VendorTestOffset :
-             block.mem_ranges[0].start_addr + VendorTestOffset +
-             VendorTestSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + VendorTestOffset;
+        uvm_reg_addr_t partition_end   = partition_start + VendorTestSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionVendorTestIdx,
                       OtpAccessError);
@@ -1722,10 +1719,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.creator_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + CreatorSwCfgOffset :
-             block.mem_ranges[0].start_addr + CreatorSwCfgOffset +
-             CreatorSwCfgSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + CreatorSwCfgOffset;
+        uvm_reg_addr_t partition_end   = partition_start + CreatorSwCfgSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionCreatorSwCfgIdx,
                       OtpAccessError);
@@ -1739,10 +1735,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + OwnerSwCfgOffset :
-             block.mem_ranges[0].start_addr + OwnerSwCfgOffset +
-             OwnerSwCfgSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + OwnerSwCfgOffset;
+        uvm_reg_addr_t partition_end   = partition_start + OwnerSwCfgSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionOwnerSwCfgIdx,
                       OtpAccessError);
@@ -1756,10 +1751,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.rot_creator_auth_codesign_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
-             RotCreatorAuthCodesignSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset;
+        uvm_reg_addr_t partition_end   = partition_start + RotCreatorAuthCodesignSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionRotCreatorAuthCodesignIdx,
                       OtpAccessError);
@@ -1773,10 +1767,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.rot_creator_auth_state_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
-             RotCreatorAuthStateSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + RotCreatorAuthStateOffset;
+        uvm_reg_addr_t partition_end   = partition_start + RotCreatorAuthStateSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionRotCreatorAuthStateIdx,
                       OtpAccessError);

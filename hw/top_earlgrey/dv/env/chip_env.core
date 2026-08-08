@@ -36,6 +36,7 @@ filesets:
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:dv:top_earlgrey_chip_ral
       - lowrisc:systems:ast_pkg
+      - lowrisc:dv:rom_ctrl_env
     files:
       - chip_common_pkg.sv
       - chip_if.sv

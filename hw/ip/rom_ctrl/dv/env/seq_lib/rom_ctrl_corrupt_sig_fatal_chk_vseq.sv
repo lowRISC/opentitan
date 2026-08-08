@@ -133,7 +133,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1
   bit inject_after_done = ($urandom & 1) && !force_early;
 
   if(inject_after_done) begin
-    wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+    wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
     wait_clks = 10;
   end
   else begin
@@ -145,7 +145,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1
   end
   wait_with_bound(wait_clks);
 
-  if (!inject_after_done) `DV_CHECK(cfg.rom_ctrl_vif.pwrmgr_data.done != MuBi4True)
+  if (!inject_after_done) `DV_CHECK(cfg.rom_ctrl_vif.pwrmgr_data_o_i.done != MuBi4True)
 endtask
 
 function prim_mubi_pkg::mubi4_t rom_ctrl_corrupt_sig_fatal_chk_vseq::get_invalid_mubi4();
@@ -217,7 +217,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
   int unsigned addr = $urandom_range(0, RomSizeWords - 1);
 
   // Wait until rom_ctrl says that it has finished computing the ROM checksum.
-  wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
+  wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data_o_i.done));
 
   // Now wait slightly longer (so we're not messing around with stuff at exactly the moment it
   // finishes)
@@ -336,33 +336,34 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_mux_select_signals();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_select_from_bus_to_checker();
-  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
   wait_with_bound(10);
   cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
   wait_for_fatal_alert(.check_fsm_state(1'b0));
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
-  addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
-  bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
-  bit [TL_AW-1:0] addr;
-  int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
-  bit [12:0]      bus_rom_rom_index_val;
-  bit [12:0]      corr_bus_rom_rom_index_val;
-  bit [TL_AW-1:0] tgt_addr;
-  cip_tl_seq_item tl_access_rsp;
-  bit             completed, saw_err;
-  string          path;
+  dv_base_reg_block blk;
+  addr_range_t      mem_ranges[$];
+  addr_range_t      mem_range;
+  bit [TL_AW-1:0]   addr, tgt_addr;
+  bit [TL_DW-1:0]   rdata, rdata_tgt, corr_data;
+  bit [12:0]        bus_rom_rom_index_val;
+  bit [12:0]        corr_bus_rom_rom_index_val;
+  cip_tl_seq_item   tl_access_rsp;
+  bit               completed, saw_err;
 
-  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  blk = cfg.ral_models["rom_ctrl_prim_reg_block"];
+  blk.get_mem_ranges(mem_ranges);
+  mem_range = mem_ranges[$urandom_range(0, mem_ranges.size() - 1)];
+
+  wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
   wait_with_bound(10);
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                                     addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};)
+                                     addr inside {[mem_range.start_addr : mem_range.end_addr]};)
   bus_rom_rom_index_val = addr[2 +: RomIndexWidth];
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tgt_addr,
-                                     tgt_addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};
+                                     tgt_addr inside {[mem_range.start_addr : mem_range.end_addr]};
                                      (tgt_addr != addr);)
   corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
   tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),

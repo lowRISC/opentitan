@@ -5,6 +5,9 @@ CAPI=2:
 name: "lowrisc:dv:top_darjeeling_chip_ral:0.1"
 description: "UVM register model for the chip"
 
+virtual:
+    - lowrisc:dv:chip_ral
+
 filesets:
   ral_dep:
     depend:

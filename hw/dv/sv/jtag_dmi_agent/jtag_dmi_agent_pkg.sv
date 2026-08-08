@@ -44,7 +44,11 @@ package jtag_dmi_agent_pkg;
     jtag_dtm_reg_dmi   dmi_reg      = jtag_dtm_ral.dmi;
     jtag_dtm_reg_dtmcs dtmcs_reg    = jtag_dtm_ral.dtmcs;
 
-    jtag_dmi_ral.build(.base_addr(0), .csr_excl(null));
+    jtag_dmi_ral.build(.base_addr(0),
+                       .csr_excl(null),
+                       .addr_width(32),
+                       .data_width(32),
+                       .be_width(4));
     jtag_dmi_ral.set_supports_byte_enable(1'b0);
     jtag_dmi_ral.lock_model();
     jtag_dmi_ral.set_base_addr(0);

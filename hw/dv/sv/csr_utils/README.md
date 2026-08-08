@@ -77,7 +77,6 @@ This reset information is tracked by `dv_base_scoreboard` (using its
 ##### Global methods for CSR and MEM attributes
 This package provides methods to access CSR or Memory attributes, such as address,
 value, etc. Examples are:
- * `get_csr_addrs`
  * `get_mem_addr_ranges`
  * `decode_csr_or_field`
 

@@ -4,7 +4,7 @@
 //
 // base register block class which will be used to generate the reg blocks
 class dv_base_reg_block extends uvm_reg_block;
-  `uvm_object_utils(dv_base_reg_block)
+  `m_uvm_get_type_name_func(dv_base_reg_block)
 
   // The default addr, data and byte widths.
   //
@@ -15,10 +15,11 @@ class dv_base_reg_block extends uvm_reg_block;
   // these runtime settings below instead, to perform associated computations. Values retrieved
   // for comparisons, such as uvm_reg::get_mirrored_value() may return data that is wider than
   // needed. It would then be upto the testbench to cast it to the appropriate width if necessary.
-  // TODO: These are ideally passed via `build` method.
-  uint addr_width = `UVM_REG_ADDR_WIDTH;
-  uint data_width = `UVM_REG_DATA_WIDTH;
-  uint be_width = `UVM_REG_BYTENABLE_WIDTH;
+  //
+  // These are configured with build() function.
+  protected int unsigned m_addr_width;
+  protected int unsigned m_data_width;
+  protected int unsigned m_be_width;
 
   // Since an IP may contains more than one reg block we construct reg_block name as
   // {ip_name}_{reg_interface_name}.
@@ -37,17 +38,13 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is set by compute_addr_mask(), which must run after locking the model.
   protected uvm_reg_addr_t addr_mask[uvm_reg_map];
 
-  // A list of all CSR addresses
-  //
-  // This is populated by compute_csr_addrs, which iterates over the registers in the block and adds
-  // each register's address in turn.
-  uvm_reg_addr_t csr_addrs[$];
-
   // A list of all ranges associated with memories
   //
-  // This is populated by compute_mem_addr_ranges, which iterates over the memories and adds each
-  // memory's range in turn.
-  addr_range_t mem_ranges[$];
+  // To get the list of memory ranges, use get_mem_ranges (which is memoized).
+  local addr_range_t m_mem_ranges[$];
+
+  // A flag showing that m_mem_ranges has been computed by a previous call to get_mem_ranges
+  local bit m_mem_ranges_known;
 
   // A list of all ranges that are associated with either a memory or a register
   //
@@ -147,8 +144,13 @@ class dv_base_reg_block extends uvm_reg_block;
 
   // provide build function to supply base addr
   virtual function void build(uvm_reg_addr_t base_addr,
-                              csr_excl_item csr_excl = null);
-    `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+                              csr_excl_item  csr_excl,
+                              int unsigned   addr_width,
+                              int unsigned   data_width,
+                              int unsigned   be_width);
+    m_addr_width = addr_width;
+    m_data_width = data_width;
+    m_be_width = be_width;
   endfunction
 
   // This function is invoked at the end of `build` method in uvm_reg_base.sv template to create
@@ -243,34 +245,52 @@ class dv_base_reg_block extends uvm_reg_block;
     `DV_CHECK_FATAL(addr_mask[map])
   endfunction
 
-  // Internal function, used to get a list of all valid CSR addresses.
-  //
-  // This is idempotent and will re-calculate the same list if called a second time.
-  local function void compute_csr_addrs();
-    uvm_reg csrs[$];
-    get_registers(csrs);
-    csr_addrs.delete();
-    foreach (csrs[i]) begin
-      csr_addrs.push_back(csrs[i].get_address());
+  // Ensure there is a list of ranges associated with memory stored in the m_mem_ranges variable.
+  local function void ensure_mem_ranges();
+    uvm_mem mems[$];
+
+    if (m_mem_ranges_known) return;
+
+    get_memories(mems);
+
+    m_mem_ranges.delete();
+    foreach (mems[i]) begin
+      addr_range_t range;
+      range.start_addr = mems[i].get_address();
+      range.end_addr   = range.start_addr + mems[i].get_size() * mems[i].get_n_bytes() - 1;
+      m_mem_ranges.push_back(range);
     end
-    `uvm_info(`gfn, $sformatf("csr_addrs: %0p", csr_addrs), UVM_HIGH)
+
+    m_mem_ranges_known = 1;
+
+    if (uvm_report_enabled(UVM_HIGH, UVM_INFO, "ensure_mem_ranges")) begin
+      `uvm_info("ensure_mem_ranges",
+                $sformatf("Computed %0d mem_ranges in %0s%0s",
+                          m_mem_ranges.size(), get_name(), (m_mem_ranges.size() > 0) ? ":" : ""),
+                UVM_HIGH)
+      foreach(m_mem_ranges[i]) begin
+        `uvm_info("ensure_mem_ranges",
+                  $sformatf("   Range %2d: 0x%08h .. 0x%08h",
+                            i, m_mem_ranges[i].start_addr, m_mem_ranges[i].end_addr),
+                  UVM_HIGH)
+      end
+    end
   endfunction
 
-  // Internal function, used to get a list of all valid memory ranges
+  // Write the list of address ranges associated with memory to the ranges output argument.
   //
-  // This is idempotent and will re-calculate the same list if called a second time.
-  local function void compute_mem_addr_ranges();
-    uvm_mem mems[$];
-    get_memories(mems);
-    mem_ranges.delete();
-    foreach (mems[i]) begin
-      addr_range_t mem_range;
-      mem_range.start_addr = mems[i].get_address();
-      mem_range.end_addr   = mem_range.start_addr +
-                             mems[i].get_size() * mems[i].get_n_bytes() - 1;
-      mem_ranges.push_back(mem_range);
-    end
-    `uvm_info(`gfn, $sformatf("mem_ranges: %0p", mem_ranges), UVM_HIGH)
+  // This result is memoized.
+  function void get_mem_ranges(output addr_range_t ranges[$]);
+    ensure_mem_ranges();
+    ranges = m_mem_ranges;
+  endfunction
+
+  // Return the number of memories in this reg_block.
+  //
+  // This is quick because it uses the same memoization as get_mem_ranges.
+  function int unsigned get_num_memories();
+    ensure_mem_ranges();
+    return m_mem_ranges.size();
   endfunction
 
   // Compute CSR addresses, memory address ranges, and the list of all address ranges used by either
@@ -279,11 +299,10 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is idempotent and will re-calculate the same lists if called a second time.
   local function void compute_mapped_addr_ranges();
     uvm_reg csrs[$];
-    get_registers(csrs);
+    addr_range_t mem_ranges[$];
 
-    // Compute all CSR addresses and mem ranges known to this reg block
-    compute_csr_addrs();
-    compute_mem_addr_ranges();
+    get_registers(csrs);
+    get_mem_ranges(mem_ranges);
 
     // Convert each CSR into an address range
     mapped_addr_ranges.delete();
@@ -397,7 +416,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // randomize_base_addr arg is set, then the base_addr arg is ignored - the function randomizes and
   // sets the base_addr itself.
   //
-  // After setting the base address, this function updates csr_addrs, mem_ranges, mapped_addr_ranges
+  // After setting the base address, this function updates mem_ranges and mapped_addr_ranges
   // and unmapped_addr_ranges.
   function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null,
                               bit randomize_base_addr = 0);
@@ -410,10 +429,10 @@ class dv_base_reg_block extends uvm_reg_block;
     if (randomize_base_addr) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_addr,
                                          (base_addr & mask) == '0;
-                                         base_addr >> addr_width == 0;)
+                                         base_addr >> m_addr_width == 0;)
     end else begin
       `DV_CHECK_FATAL((base_addr & mask) == '0)
-      `DV_CHECK_FATAL((base_addr >> addr_width) == '0)
+      `DV_CHECK_FATAL((base_addr >> m_addr_width) == '0)
     end
 
     `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
@@ -429,7 +448,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is useful if you have a possibly misaligned address and you want to know whether it hits a
   // register (since get_reg_by_offset needs the aligned address for the start of the register).
   function uvm_reg_addr_t get_word_aligned_addr(uvm_reg_addr_t byte_addr);
-    uvm_reg_addr_t shift = $clog2(be_width);
+    uvm_reg_addr_t shift = $clog2(m_be_width);
     return (byte_addr >> shift) << shift;
   endfunction
 
@@ -498,6 +517,17 @@ class dv_base_reg_block extends uvm_reg_block;
 
   function bit get_en_dv_reg_cov();
     return en_dv_reg_cov;
+  endfunction
+
+  // Return true if there is at least one register in this reg block or a child block
+  //
+  // This is equivalent to calling get_registers with hier=UVM_HIER (so that it recurses). It is no
+  // more efficient, but is slightly more convenient because the call-site doesn't need to create a
+  // queue to be passed as a reference.
+  function bit has_csrs();
+    uvm_reg regs[$];
+    get_registers(regs, UVM_HIER);
+    return regs.size() > 0;
   endfunction
 
 endclass
