@@ -51,7 +51,7 @@
  *  - I2C0 FatalFault [Case 20]
  *  - I2C1 FatalFault [Case 21]
  *  - I2C2 FatalFault [Case 22]
- * KEYMGR: recoverable and fatal key manager errors.
+ * KEYMGR_DPE: recoverable and fatal key manager errors.
  *  - RecovOperationErr [Case 23]
  *  - FatalFaultErr [Case 24]
  * KMAC: recoverable and fatal KMAC errors.

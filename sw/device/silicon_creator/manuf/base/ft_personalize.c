@@ -37,7 +37,7 @@
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -113,10 +113,26 @@ OTTF_DEFINE_TEST_CONFIG(
             kGpioPinSpiConsoleTxReady);
 
 /**
- * Keymgr binding values.
+ * Keymgr dpe binding values.
  */
-static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t sealing_binding_value = {.data = {0}};
+
+/**
+ * Keymgr dpe slot assignment and slot policy.
+ *
+ * These must match the values used by the ROM and by `dice_chain.c`, and the
+ * `sel_src_slot` fields in `dice_keys.c`, otherwise the DICE keys are derived
+ * from the wrong DPE context.
+ */
+// TODO(#30777): Replace the hard-coded slot numbers.
+static const uint32_t kKeymgrDPESealSlot = 0;
+static const uint32_t kKeymgrDPEAttestSlot = 1;
+static const sc_keymgr_dpe_policies_t kKeymgrDPEDefaultPolicy = {
+    .child = kScKeymgrDPESlotPolAllowChild,
+    .expo = kScKeymgrDPESlotPolNoExport,
+    .parent = kScKeymgrDPESlotPolEraseParent,
+};
 
 /**
  * Certificate data.
@@ -211,7 +227,8 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
   TRY(perso_tlv_push_object_to_perso_blob(
       kPersoObjectTypePersoSha256Hash, boot_measurements.rom_ext.data,
-      sizeof(keymgr_binding_value_t), kPersoBlobVersionV0, perso_blob_to_host));
+      sizeof(keymgr_dpe_binding_value_t), kPersoBlobVersionV0,
+      perso_blob_to_host));
   return OK_STATUS();
 }
 
@@ -346,7 +363,7 @@ static status_t measure_otp_partition(otp_partition_t partition,
 }
 
 /**
- * Provision OTP SECRET{1,2} partitions, keymgr NVM info pages, enable NVM
+ * Provision OTP SECRET{1,2} partitions, keymgr dpe NVM info pages, enable NVM
  * scrambling, and reboot.
  */
 static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
@@ -364,8 +381,8 @@ static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
     wait_for_interrupt();
   }
 
-  // Provision OTP Secret2 partition and NVM info pages 1, 2, and 4 (keymgr
-  // and DICE keygen seeds).
+  // Provision OTP Secret2 partition and NVM info pages 1, 2, and 4
+  // (keymgr dpe and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     lc_token_hash_t token_hash;
     // Wait for the host to send the RMA unlock token hash over the console.
@@ -404,7 +421,7 @@ static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
  * The attestation binding (and subsequently CDI_0) will be updated later when
  * the ROM_EXT boots for the first time.
  */
-static void compute_keymgr_owner_int_binding(void) {
+static void compute_keymgr_dpe_owner_int_binding(void) {
   memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // In the silicon_creator stage, we set the sealing binding to the
   // manifest->identifier of the ROM_EXT stage.
@@ -418,12 +435,38 @@ static void compute_keymgr_owner_int_binding(void) {
  *
  * The sealing binding value is set to the PROD application key domain.
  */
-static void compute_keymgr_owner_binding(void) {
+static void compute_keymgr_dpe_owner_binding(void) {
   memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // We expect the owner to use a Application Key binding  of
   // {`prod`, 0, ... }.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   sealing_binding_value.data[0] = kOwnerAppDomainProd;
+}
+
+/**
+ * Builds the sealing / attestation advance data from the binding values set by
+ * the `compute_keymgr_dpe_*_binding()` helpers.
+ *
+ * The sealing and attestation key chains each live in their own DPE slot, so
+ * both advances derive in place (src slot == dst slot).
+ */
+static void keymgr_dpe_advance_data_get(
+    sc_keymgr_dpe_advance_data_t *sealing,
+    sc_keymgr_dpe_advance_data_t *attestation) {
+  *sealing = (sc_keymgr_dpe_advance_data_t){
+      .binding_value = &sealing_binding_value,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .sel_src_slot = kKeymgrDPESealSlot,
+      .sel_dst_slot = kKeymgrDPESealSlot,
+      .version = 0,
+  };
+  *attestation = (sc_keymgr_dpe_advance_data_t){
+      .binding_value = &attestation_binding_value,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .sel_src_slot = kKeymgrDPEAttestSlot,
+      .sel_dst_slot = kKeymgrDPEAttestSlot,
+      .version = 0,
+  };
 }
 
 /**
@@ -513,7 +556,7 @@ static status_t hash_all_certs(void) {
 }
 
 /**
- * Crank the keymgr to produce the DICE attestation keys and certificates.
+ * Crank the keymgr dpe to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
@@ -554,11 +597,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(entropy_complex_init(kHardenedBoolFalse));
   TRY(kmac_keymgr_configure());
 
-  // Advance keymgr to CreatorRootKey state.
-  TRY(sc_keymgr_state_check(kScKeymgrStateReset));
-  sc_keymgr_advance_state();
-  TRY(sc_keymgr_state_check(kScKeymgrStateInit));
-  sc_keymgr_advance_state();
+  // The ROM has already loaded the UDS into `kKeymgrDPESealSlot` and advanced
+  // both key chains to the CreatorRootKey stage.
+  TRY(sc_keymgr_dpe_state_check(kScKeymgrDPEStateAvailable));
 
   // Measure OTP partitions.
   //
@@ -592,8 +633,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                      &curr_pubkey));
   memcpy(&uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
-                                     kDiceKeyUds.type,
-                                     *kDiceKeyUds.keymgr_diversifier));
+                                     *kDiceKeyUds.keymgr_dpe_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
   TRY(dice_uds_tbs_cert_build(
@@ -616,10 +656,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
-  compute_keymgr_owner_int_binding();
-  TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
-                                  &attestation_binding_value,
-                                  /*max_key_version=*/0));
+  compute_keymgr_dpe_owner_int_binding();
+  sc_keymgr_dpe_advance_data_t adv_sealing_data;
+  sc_keymgr_dpe_advance_data_t adv_attestation_data;
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                      &curr_pubkey));
 
@@ -636,10 +677,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
-  compute_keymgr_owner_binding();
-  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
-                              &attestation_binding_value,
-                              /*max_key_version=*/0));
+  compute_keymgr_dpe_owner_binding();
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_owner(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, &kZeroDigest, 0,

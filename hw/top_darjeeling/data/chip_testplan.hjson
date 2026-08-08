@@ -1713,7 +1713,7 @@
               "chip_sw_kmac_mode_kmac_jitter_en"]
     }
     {
-      name: chip_sw_kmac_app_keymgr
+      name: chip_sw_kmac_app_keymgr_dpe
       desc: '''Verify the keymgr interface to KMAC.
 
             - Configure the keymgr to start sending known message data to the KMAC.
@@ -2732,7 +2732,7 @@
             as well.
             '''
       stage: V2
-      tests: ["rom_keymgr_functest"]
+      tests: ["rom_keymgr_dpe_functest"]
     }
     {
       name: chip_sw_signed

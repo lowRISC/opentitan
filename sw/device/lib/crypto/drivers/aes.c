@@ -368,6 +368,7 @@ uint32_t aes_key_integrity_checksum(const aes_key_t *key) {
   crc32_add32(&ctx, key->mode);
   crc32_add32(&ctx, key->sideload);
   crc32_add32(&ctx, key->key_len);
+  crc32_add32(&ctx, key->keymgr_dpe_slot_idx);
   // Compute the checksum only over a single share to avoid side-channel
   // leakage. From a FI perspective only covering one key share is fine as
   // (a) manipulating the second share with FI has only limited use to an

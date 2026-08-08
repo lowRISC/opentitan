@@ -462,6 +462,10 @@ typedef struct otcrypto_key_config {
   /// If this is set to `true`, the keyblob must be exactly 8 words long, where
   /// the first word is the version and the remaining 7 words are the salt.
   hardened_bool_t hw_backed;
+  /// Determines which keymgr DPE slot (see `slot_src_sel` in
+  /// `keymgr_dpe_diversification_t`) is used as the parent for key generation.
+  /// Only applicable if `hw_backed` is `kHardenedBoolTrue`.
+  uint32_t keymgr_dpe_slot_idx;
   /// Whether the key can be exported (always false if `hw_backed` is true).
   hardened_bool_t exportable;
   /// Key security level.

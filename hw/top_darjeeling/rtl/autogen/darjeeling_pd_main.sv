@@ -557,7 +557,7 @@ module darjeeling_pd_main #(
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
-  rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_dpe_rom_digest;
+  rom_ctrl_pkg::keymgr_data_t [KeymgrDpeNumRomDigestInputs-1:0] keymgr_dpe_rom_digest;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   edn_pkg::edn_req_t [Edn0NumEndPoints-1:0] edn0_edn_req;

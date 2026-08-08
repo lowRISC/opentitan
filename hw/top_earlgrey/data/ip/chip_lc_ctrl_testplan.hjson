@@ -139,14 +139,14 @@
     }
     {
       name: chip_sw_lc_ctrl_key_div
-      desc: '''Verify the keymgr div output to keymgr.
+      desc: '''Verify the keymgr div output to keymgr dpe.
 
-            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
-            - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
+            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr dpe.
+            - Verify that the keymgr dpe uses the given `key_div_o` value to compute the keys.
             '''
       stage: V2
       si_stage: NA
-      tests: ["chip_sw_keymgr_key_derivation_prod"]
+      tests: ["chip_sw_keymgr_dpe_key_derivation_prod"]
     }
     {
       name: chip_sw_lc_ctrl_broadcast
@@ -158,7 +158,7 @@
               respective IPs that consume them:
               - lc_dft_en_o: impacts pinmux, pwrmgr, otp_ctrl, AST
               - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
-              - lc_keymgr_en_o: impacts keymgr
+              - lc_keymgr_en_o: impacts keymgr dpe
               - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
               - lc_nvm_rma_req_o: impacts flash_ctrl (handshake with lc_nvm_rma_ack_i)
               - lc_nvm_rma_seed_o: impacts flash_ctrl
@@ -195,7 +195,7 @@
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
+        "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr_dpe
         "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
         "chip_sw_flash_rma_unlocked",                  // lc_nvm_rma_req_o, lc_nvm_rma_seed_o: flash_ctrl
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl

@@ -342,7 +342,7 @@
       name: chip_sw_aes_sideload
       desc: '''Verify the AES sideload mechanism.
 
-            - Configure the keymgr to generate an aes key.
+            - Configure the keymgr dpe to generate an aes key.
             - Configure the AES to use the sideloaded key.
             - Load the plaintext into the AES.
             - Trigger the AES encryption and wait for it to complete.
@@ -350,7 +350,7 @@
             - Load the ciphertext into the AES.
             - Trigger the AES decryption and wait for it to complete.
             - Verify that the output is equal to the plain text.
-            - Clear the key in the keymgr and decrypt the ciphertext again.
+            - Clear the key in the keymgr dpe and decrypt the ciphertext again.
             - Verify that output is not equal to the plain text.
             '''
       features: [
@@ -360,11 +360,11 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD", "DEV"]
-      tests: ["chip_sw_keymgr_sideload_aes"]
+      tests: ["chip_sw_keymgr_dpe_sideload_aes"]
       bazel: [
         "//sw/device/tests/crypto:aes_sideload_functest",
         "//sw/device/tests/crypto:aes_kwp_sideload_functest",
-        "//sw/device/tests:keymgr_sideload_aes_test",
+        "//sw/device/tests:keymgr_dpe_sideload_aes_test",
       ]
     }
     {

@@ -73,7 +73,7 @@ tl_device_t xbar_devices[$] = '{
     '{"otbn", '{
         '{32'h41130000, 32'h4113ffff}
     }},
-    '{"keymgr", '{
+    '{"keymgr_dpe", '{
         '{32'h41140000, 32'h411400ff}
     }},
     '{"rv_core_ibex__cfg", '{
@@ -226,7 +226,7 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "otbn",
-        "keymgr",
+        "keymgr_dpe",
         "kmac",
         "sram_ctrl_main__regs",
         "sram_ctrl_sec__regs",
@@ -281,7 +281,7 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "otbn",
-        "keymgr",
+        "keymgr_dpe",
         "kmac",
         "sram_ctrl_main__regs",
         "sram_ctrl_sec__regs",

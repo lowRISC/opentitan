@@ -210,7 +210,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "keymgr",
+    { name:      "keymgr_dpe",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
@@ -261,7 +261,7 @@
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
+      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
       "rv_core_ibex.cfg"
     ],
     rv_dm.sba: [
@@ -270,7 +270,7 @@
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
+      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
       "rv_core_ibex.cfg",
     ],
   },

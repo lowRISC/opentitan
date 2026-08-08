@@ -33,7 +33,7 @@
 #include "hw/top/edn_regs.h"
 #include "hw/top/entropy_src_regs.h"
 #include "hw/top/hmac_regs.h"
-#include "hw/top/keymgr_regs.h"
+#include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
@@ -2351,10 +2351,11 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
       TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
       uj_data.ref_values[2]);
   abs_mmio_write32(
-      TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
+      TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR + KEYMGR_DPE_SW_BINDING_7_REG_OFFSET,
       uj_data.ref_values[3]);
-  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET,
-                   uj_data.ref_values[4]);
+  abs_mmio_write32(
+      TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR + KEYMGR_DPE_SALT_0_REG_OFFSET,
+      uj_data.ref_values[4]);
   abs_mmio_write32(
       TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_RESEED_INTERVAL_REG_OFFSET,
       uj_data.ref_values[5]);
@@ -2366,8 +2367,8 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   abs_mmio_write32_shadowed(
       TOP_EARLGREY_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
       uj_data.ref_values[8]);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                                KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+  abs_mmio_write32_shadowed(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR +
+                                KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                             uj_data.ref_values[9]);
   abs_mmio_write32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET,
                    uj_data.ref_values[10]);
@@ -2407,10 +2408,10 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
       abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET);
   read_csrs[2] = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
                                  HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
-  read_csrs[3] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                                 KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET);
-  read_csrs[4] =
-      abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET);
+  read_csrs[3] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR +
+                                 KEYMGR_DPE_SW_BINDING_7_REG_OFFSET);
+  read_csrs[4] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR +
+                                 KEYMGR_DPE_SALT_0_REG_OFFSET);
 
   read_csrs[5] = abs_mmio_read32(TOP_EARLGREY_CSRNG_BASE_ADDR +
                                  CSRNG_RESEED_INTERVAL_REG_OFFSET);
@@ -2420,8 +2421,9 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
                                  SRAM_CTRL_READBACK_REG_OFFSET);
   read_csrs[8] = abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR +
                                  AES_CTRL_SHADOWED_REG_OFFSET);
-  read_csrs[9] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                                 KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET);
+  read_csrs[9] =
+      abs_mmio_read32(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR +
+                      KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET);
   read_csrs[10] =
       abs_mmio_read32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET);
   read_csrs[11] =

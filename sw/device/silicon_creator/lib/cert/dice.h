@@ -10,7 +10,7 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
@@ -28,9 +28,9 @@ extern const dice_cert_format_t kDiceCertFormat;
 /**
  * DICE ECC key descriptors.
  */
-extern const sc_keymgr_ecc_key_t kDiceKeyUds;
-extern const sc_keymgr_ecc_key_t kDiceKeyCdi0;
-extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
+extern const sc_keymgr_dpe_ecc_key_t kDiceKeyUds;
+extern const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi0;
+extern const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi1;
 
 /**
  * Generates the UDS attestation keypair and (unendorsed) X.509 TBS certificate.

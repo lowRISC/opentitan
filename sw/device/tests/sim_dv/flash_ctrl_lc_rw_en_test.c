@@ -5,19 +5,20 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_flash_ctrl_state_t flash;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
@@ -35,13 +36,13 @@ enum {
 
 // Random data to read/write to flash partitions.
 
-const uint32_t kCreatorSecret[kPartSize] = {
+const uint32_t kCreatorSecretTest[kPartSize] = {
     0xb295d21b, 0xecdfbdcd, 0x67e7ab2d, 0x6f660b08, 0x273bf65c, 0xe80f1695,
     0x586b80db, 0xc3dba27e, 0xdc124c5d, 0xb01ccd52, 0x815713e1, 0x31a141b2,
     0x2124be3b, 0x299a6f2a, 0x1f2a4741, 0x1a073cc0,
 };
 
-const uint32_t kOwnerSecret[kPartSize] = {
+const uint32_t kOwnerSecretTest[kPartSize] = {
     0x69e705a0, 0x65c2ec6b, 0x04b0b634, 0x59313526, 0x1858aee1, 0xd49f3ba9,
     0x230bcd38, 0xc1eb6b3e, 0x68c15e3b, 0x024d02a9, 0x0b062ae4, 0x334dd155,
     0x53fdbf8a, 0x3792f1e2, 0xee317161, 0x33b19bf3,
@@ -96,7 +97,7 @@ static const partition_check_cfg_t kTest[] = {
         {
             .check_id = kCheckIdUnprovisionedCreatorSeed,
             .page_id = kFlashInfoPageIdCreatorSecret,
-            .data = kCreatorSecret,
+            .data = kCreatorSecretTest,
             .size = kPartSize,
             .do_write = true,
             .expect_write_ok = true,
@@ -107,7 +108,7 @@ static const partition_check_cfg_t kTest[] = {
         {
             .check_id = kCheckIdUnprovisonedOwnerSeed,
             .page_id = kFlashInfoPageIdOwnerSecret,
-            .data = kOwnerSecret,
+            .data = kOwnerSecretTest,
             .size = kPartSize,
             .do_write = true,
             .expect_write_ok = true,
@@ -129,7 +130,7 @@ static const partition_check_cfg_t kTest[] = {
         {
             .check_id = kCheckIdProvisionedCreatorSeed,
             .page_id = kFlashInfoPageIdCreatorSecret,
-            .data = kCreatorSecret,
+            .data = kCreatorSecretTest,
             .size = kPartSize,
             .do_write = true,
             .expect_write_ok = false,
@@ -140,7 +141,7 @@ static const partition_check_cfg_t kTest[] = {
         {
             .check_id = kCheckIdProvisionedOwnerSeed,
             .page_id = kFlashInfoPageIdOwnerSecret,
-            .data = kOwnerSecret,
+            .data = kOwnerSecretTest,
             .size = kPartSize,
             .do_write = true,
             .expect_write_ok = true,
@@ -164,8 +165,8 @@ static const partition_check_cfg_t kTest[] = {
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR), &keymgr_dpe));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(
@@ -209,24 +210,6 @@ static void partition_check(const partition_check_cfg_t cfg) {
   }
 }
 
-// Advance the keymgr state to the expected state.
-static void keymgr_advance_state(dif_keymgr_t *keymgr,
-                                 dif_keymgr_state_params_t *params,
-                                 dif_keymgr_state_t expected_state) {
-  CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
-  dif_keymgr_status_codes_t keymgr_status_codes;
-  do {
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &keymgr_status_codes));
-  } while (!(keymgr_status_codes & kDifKeymgrStatusCodeIdle));
-
-  dif_keymgr_state_t keymgr_state;
-  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &keymgr_state));
-  LOG_INFO("Keymgr state: 0x%x", keymgr_state);
-  CHECK(keymgr_state == expected_state,
-        "Expected keymgr state not reached. got: %d, expected: %d",
-        keymgr_state, expected_state);
-}
-
 // Provision the creator secrets in the OTP. This signals the DUT that the
 // creator secrets are provisioned and the DUT will not allow further writes to
 // the creator secrets.
@@ -242,10 +225,9 @@ static void dut_provision_creator_secrets(void) {
 bool test_main(void) {
   init_peripheral_handles();
 
-  CHECK_DIF_OK(
-      dif_keymgr_configure(&keymgr, (dif_keymgr_config_t){
-                                        .entropy_reseed_interval = 0xFFFF,
-                                    }));
+  CHECK_DIF_OK(dif_keymgr_dpe_configure(
+      &keymgr_dpe,
+      (dif_keymgr_dpe_config_t){.entropy_reseed_interval = 0xFFFF}));
 
   CHECK_DIF_OK(
       dif_kmac_configure(&kmac, (dif_kmac_config_t){
@@ -270,19 +252,31 @@ bool test_main(void) {
     partition_check(kTest[kCheckIdUnprovisonedOwnerSeed]);
     partition_check(kTest[kCheckIdLcDevIsoPartAccess]);
 
-    // The DUT has not been personalized, so we expect this to fail.
-    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInvalid);
+    // The DUT has not been personalized (OTP SECRET2 not locked), so loading
+    // the UDS will silently move keymgr_dpe to the Invalid state rather than
+    // Available. No OP_DONE_ERROR is raised in this case.
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_initial_load_uds(&keymgr_dpe, &kInitialParams));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+        &keymgr_dpe, kDifKeymgrDpeStateInvalid));
+
     dut_provision_creator_secrets();
   } else if (curr_state == kDifLcCtrlStateProd) {
     partition_check(kTest[kCheckIdProvisionedCreatorSeed]);
     partition_check(kTest[kCheckIdProvisionedOwnerSeed]);
     partition_check(kTest[kCheckIdLcProdIsoPartAccess]);
-    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInitialized);
 
-    dif_keymgr_state_params_t params = {
-        .binding_value = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
-        .max_key_version = 0xFFFFFFFF};
-    keymgr_advance_state(&keymgr, &params, kDifKeymgrStateCreatorRootKey);
+    // OTP SECRET2 is locked; load UDS and expect Available state.
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_initial_load_uds(&keymgr_dpe, &kInitialParams));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+        &keymgr_dpe, kDifKeymgrDpeStateAvailable));
+
+    // Advance to derive the CreatorRootKey context.
+    CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(&keymgr_dpe,
+                                                       &kCreatorRootKeyParams));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+        &keymgr_dpe, kDifKeymgrDpeStateAvailable));
   }
 
   test_status_set(kTestStatusInWfi);

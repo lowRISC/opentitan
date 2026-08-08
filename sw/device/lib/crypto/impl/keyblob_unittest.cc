@@ -20,6 +20,9 @@ using ::testing::ElementsAreArray;
 #define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
 #define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
+// Define a keymgr_dpe source slot common for all tests
+const uint32_t kKeymgrDpeSrcSlot = 3;
+
 // Key configuration for testing (128-bit AES-CTR software key).
 constexpr otcrypto_key_config_t kConfigCtr128 = {
     .version = kOtcryptoLibVersion1,
@@ -73,6 +76,7 @@ constexpr otcrypto_key_config_t kConfigCtrSideloaded = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
+    .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
@@ -82,6 +86,7 @@ constexpr otcrypto_key_config_t kConfigOfbSideloaded = {
     .key_mode = kOtcryptoKeyModeAesOfb,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
+    .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
@@ -224,7 +229,7 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   }
 }
 
-TEST(Keyblob, ToKeymgrDiversificationSimple) {
+TEST(Keyblob, ToKeymgrDpeDiversificationSimple) {
   // Salt and version for the hardware-backed key.
   std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
@@ -247,8 +252,8 @@ TEST(Keyblob, ToKeymgrDiversificationSimple) {
   };
 
   // Extract the keymgr diversification data.
-  keymgr_diversification_t diversification;
-  EXPECT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+  keymgr_dpe_diversification_t diversification;
+  EXPECT_OK(keyblob_to_keymgr_dpe_diversification(&key, &diversification));
 
   // Check that the version and salt match expectations.
   EXPECT_EQ(diversification.version, test_version);
@@ -256,9 +261,10 @@ TEST(Keyblob, ToKeymgrDiversificationSimple) {
     EXPECT_EQ(diversification.salt[i], test_salt[i]);
   }
   EXPECT_EQ(diversification.salt[test_salt.size()], key.config.key_mode);
+  EXPECT_EQ(diversification.slot_src_sel, kKeymgrDpeSrcSlot);
 }
 
-TEST(Keyblob, ToKeymgrDiversificationBadlength) {
+TEST(Keyblob, ToKeymgrDpeDiversificationBadlength) {
   // Salt and version for the hardware-backed keys.
   std::array<uint32_t, 6> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f};
@@ -280,11 +286,11 @@ TEST(Keyblob, ToKeymgrDiversificationBadlength) {
   };
 
   // Try to extract the keymgr diversification data.
-  keymgr_diversification_t diversification;
-  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+  keymgr_dpe_diversification_t diversification;
+  EXPECT_NOT_OK(keyblob_to_keymgr_dpe_diversification(&key, &diversification));
 }
 
-TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
+TEST(Keyblob, ToKeymgrDpeDiversificationDifferentModes) {
   // Salt for the hardware-backed key (one word too short).
   std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
@@ -315,10 +321,10 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   };
 
   // Extract the keymgr diversification data for both keys.
-  keymgr_diversification_t diversification1;
-  EXPECT_OK(keyblob_to_keymgr_diversification(&key1, &diversification1));
-  keymgr_diversification_t diversification2;
-  EXPECT_OK(keyblob_to_keymgr_diversification(&key2, &diversification2));
+  keymgr_dpe_diversification_t diversification1;
+  EXPECT_OK(keyblob_to_keymgr_dpe_diversification(&key1, &diversification1));
+  keymgr_dpe_diversification_t diversification2;
+  EXPECT_OK(keyblob_to_keymgr_dpe_diversification(&key2, &diversification2));
 
   // Expect different salts.
   bool salts_equal = true;
@@ -414,8 +420,8 @@ TEST(Keyblob, ShareNumWordsRsa) {
   EXPECT_EQ(share_words, kConfigRsa2048.key_length / sizeof(uint32_t));
 }
 
-TEST(Keyblob, ToKeymgrDiversificationNegative) {
-  keymgr_diversification_t div;
+TEST(Keyblob, ToKeymgrDpeDiversificationNegative) {
+  keymgr_dpe_diversification_t div;
   uint32_t keyblob[8] = {0};
 
   // hw_backed is false
@@ -425,9 +431,10 @@ TEST(Keyblob, ToKeymgrDiversificationNegative) {
       .keyblob = keyblob,
       .checksum = 0,
   };
-  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_not_hw_backed, &div));
   EXPECT_NOT_OK(
-      keyblob_to_keymgr_attestation_diversification(&key_not_hw_backed, &div));
+      keyblob_to_keymgr_dpe_diversification(&key_not_hw_backed, &div));
+  EXPECT_NOT_OK(keyblob_to_keymgr_dpe_attestation_diversification(
+      &key_not_hw_backed, &div));
 
   // keyblob is NULL
   otcrypto_blinded_key_t key_null_blob = {
@@ -436,9 +443,9 @@ TEST(Keyblob, ToKeymgrDiversificationNegative) {
       .keyblob = nullptr,
       .checksum = 0,
   };
-  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_null_blob, &div));
+  EXPECT_NOT_OK(keyblob_to_keymgr_dpe_diversification(&key_null_blob, &div));
   EXPECT_NOT_OK(
-      keyblob_to_keymgr_attestation_diversification(&key_null_blob, &div));
+      keyblob_to_keymgr_dpe_attestation_diversification(&key_null_blob, &div));
 
   // Bad keyblob_length
   otcrypto_blinded_key_t key_bad_length = {
@@ -447,9 +454,9 @@ TEST(Keyblob, ToKeymgrDiversificationNegative) {
       .keyblob = keyblob,
       .checksum = 0,
   };
-  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key_bad_length, &div));
+  EXPECT_NOT_OK(keyblob_to_keymgr_dpe_diversification(&key_bad_length, &div));
   EXPECT_NOT_OK(
-      keyblob_to_keymgr_attestation_diversification(&key_bad_length, &div));
+      keyblob_to_keymgr_dpe_attestation_diversification(&key_bad_length, &div));
 }
 
 TEST(Keyblob, EnsureXorMaskedNegative) {

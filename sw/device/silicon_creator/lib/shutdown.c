@@ -34,8 +34,8 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #endif
 
-#ifdef HAS_KEYMGR
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#ifdef HAS_KEYMGR_DPE
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #endif
 
 #include "hw/top/alert_handler_regs.h"
@@ -456,9 +456,9 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 #endif
 }
 
-SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
-#ifdef HAS_KEYMGR
-  sc_keymgr_disable();
+SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_dpe_kill(void)) {
+#ifdef HAS_KEYMGR_DPE
+  OT_DISCARD(sc_keymgr_dpe_disable());
 #endif
 }
 
@@ -536,7 +536,7 @@ void shutdown_finalize(rom_error_t reason) {
   // In a normal build, this function inlines to nothing.
   stack_utilization_print();
   shutdown_software_escalate();
-  shutdown_keymgr_kill();
+  shutdown_keymgr_dpe_kill();
   // Report coverage again to ensure the calls above are reported.
   coverage_report();
   // Reset before killing the flash to be able to use this also in flash.

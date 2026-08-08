@@ -32,7 +32,7 @@ filesets:
       - lowrisc:ip:rram_ctrl
       - lowrisc:ip:rram_macro
       - lowrisc:ip:sram_ctrl
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe
       - lowrisc:earlgrey_constants:top_pkg
       - lowrisc:constants:top_earlgrey_jtag_id_pkg
       - lowrisc:constants:top_earlgrey_ibex_pmp_reset_pkg

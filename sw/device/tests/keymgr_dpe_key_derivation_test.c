@@ -22,56 +22,28 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static void init_kmac_for_keymgr(void) {
-  dif_kmac_t kmac;
-  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
+static dif_kmac_t kmac;
+static dif_keymgr_dpe_t keymgr_dpe;
 
-  // Configure KMAC hardware using software entropy.
-  dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_fast_process = false,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
-      .sideload = true,
-      .msg_mask = true,
-  };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
-}
-
-// Perform an advance operation with the given parameters, check that all DIF
-// statuses are OK, and await completion of the operation.
-void advance(dif_keymgr_dpe_t *keymgr_dpe,
-             dif_keymgr_dpe_advance_params_t *params) {
-  CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(keymgr_dpe, params));
+// Perform an advance operation with the given parameters and check if the
+// keymgr dpe state is correct.
+void advance(dif_keymgr_dpe_advance_params_t *params) {
+  CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(&keymgr_dpe, params));
   CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
-      keymgr_dpe, kDifKeymgrDpeStateAvailable));
-  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(keymgr_dpe));
+      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 }
 
-// Perform a generate operation with the given parameters, check that all DIF
-// statuses are OK, and await completion of the operation.
-void generate(dif_keymgr_dpe_t *keymgr_dpe,
-              dif_keymgr_dpe_generate_params_t *params) {
-  CHECK_DIF_OK(dif_keymgr_dpe_generate(keymgr_dpe, params));
-  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(keymgr_dpe));
+// Perform a generate operation with the given parameters.
+void generate(dif_keymgr_dpe_generate_params_t *params) {
+  CHECK_STATUS_OK(keymgr_dpe_testutils_generate_key(&keymgr_dpe, params));
 }
 
-bool test_main(void) {
-  dif_keymgr_dpe_t keymgr_dpe;
+bool key_derivation_test(void) {
   dif_keymgr_dpe_advance_params_t adv_params;
   dif_keymgr_dpe_generate_params_t gen_params;
 
-  // Start keymgr_dpe, letting it derive the boot stage 0 key into slot 1.
-  CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe,
-                                               /*slot_dst_sel=*/1));
-  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
-      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
-  LOG_INFO("KeymgrDpe derived boot stage 0 key");
-
-  init_kmac_for_keymgr();
-
-  // Generate OTBN output from the boot stage 0 key.
-  gen_params.slot_src_sel = 1;
+  // Generate OTBN output from the CreatorRootKey.
+  gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
   gen_params.version = 0;
@@ -83,11 +55,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x80f1a9de;
   gen_params.salt[1] = 0x481eae40;
   gen_params.salt[0] = 0x45e2c7f0;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 0");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from CreatorRootKey");
 
-  // Generate SW output from boot stage 0 key.
-  gen_params.slot_src_sel = 1;
+  // Generate SW output from the CreatorRootKey.
+  gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
   gen_params.sideload_key = false;  // SW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
   gen_params.version = 0;
@@ -99,11 +72,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x6dea4fb9;
   gen_params.salt[1] = 0x77fa328a;
   gen_params.salt[0] = 0x15779805;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated SW output from boot stage 0");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from CreatorRootKey");
 
-  // Generate KMAC output from the boot stage 0 key.
-  gen_params.slot_src_sel = 1;
+  // Generate KMAC output the from CreatorRootKey.
+  gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestKmac;
   gen_params.version = 0;
@@ -115,11 +89,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x77cf81a3;
   gen_params.salt[1] = 0xd63d89bd;
   gen_params.salt[0] = 0x88fd3697;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated KMAC output from boot stage 0");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated KMAC output from CreatorRootKey");
 
-  // Generate AES output from the boot stage 0 key.
-  gen_params.slot_src_sel = 1;
+  // Generate AES output from the from CreatorRootKey.
+  gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
   gen_params.version = 0;
@@ -131,29 +106,25 @@ bool test_main(void) {
   gen_params.salt[2] = 0x0d9f1f0d;
   gen_params.salt[1] = 0x45eff95b;
   gen_params.salt[0] = 0xb1ad6ba7;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated AES output from boot stage 0");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated AES output from CreatorRootKey");
 
-  // Derive a boot stage 1 key from the boot stage 0 key.
-  adv_params.slot_src_sel = 1;
-  adv_params.slot_dst_sel = 1;
-  adv_params.max_key_version = 0x100;
-  adv_params.binding_value[7] = 0x4ec9c6d6;
-  adv_params.binding_value[6] = 0x19f5cff7;
-  adv_params.binding_value[5] = 0x426dc745;
-  adv_params.binding_value[4] = 0xb8a8379d;
-  adv_params.binding_value[3] = 0xe92f76e2;
-  adv_params.binding_value[2] = 0xcb68ff71;
-  adv_params.binding_value[1] = 0xaf36e268;
-  adv_params.binding_value[0] = 0xdc96c23d;
-  // Set policy to *Allow Child* and *Retain Parent* (*Exportable* not
-  // implemented yet).
-  adv_params.slot_policy = 0x5;
-  advance(&keymgr_dpe, &adv_params);
-  LOG_INFO("KeymgrDpe derived boot stage 1 key");
+  // Advance the DPE context with the parameter defined in kOwnerIntKeyParams
+  // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
+  adv_params.slot_src_sel = kOwnerIntKeyParams.slot_src_sel;
+  adv_params.slot_dst_sel = kOwnerIntKeyParams.slot_dst_sel;
+  adv_params.max_key_version = kOwnerIntKeyParams.max_key_version;
+  for (uint32_t i = 0; i < 8; i++) {
+    adv_params.binding_value[i] = kOwnerIntKeyParams.binding_value[i];
+  }
+  adv_params.slot_policy = kOwnerIntKeyParams.slot_policy;
+  advance(&adv_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe derived OwnerIntKey");
 
-  // Generate KMAC output from the boot stage 1 key.
-  gen_params.slot_src_sel = 1;
+  // Generate KMAC output from the OwnerIntKey key.
+  gen_params.slot_src_sel = kOwnerIntKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestKmac;
   gen_params.version = 0;
@@ -165,11 +136,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x26691553;
   gen_params.salt[1] = 0x7189202b;
   gen_params.salt[0] = 0x5e560c86;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated KMAC output from boot stage 1");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated KMAC output from OwnerIntKey");
 
-  // Generate AES output from the boot stage 1 key.
-  gen_params.slot_src_sel = 1;
+  // Generate AES output from the OwnerIntKey.
+  gen_params.slot_src_sel = kOwnerIntKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
   gen_params.version = 1;
@@ -181,11 +153,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x4b38fdec;
   gen_params.salt[1] = 0x3d56d980;
   gen_params.salt[0] = 0x25314e07;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated AES output from boot stage 1");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated AES output from OwnerIntKey");
 
-  // Generate SW output from the boot stage 1 key.
-  gen_params.slot_src_sel = 1;
+  // Generate SW output from the OwnerIntKey.
+  gen_params.slot_src_sel = kOwnerIntKeyParams.slot_dst_sel;
   gen_params.sideload_key = false;  // SW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
   gen_params.version = 2;
@@ -197,11 +170,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x6dea4fb9;
   gen_params.salt[1] = 0x77fa328a;
   gen_params.salt[0] = 0x15779805;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated SW output from boot stage 1");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from OwnerIntKey");
 
-  // Generate OTBN output from the boot stage 1 key.
-  gen_params.slot_src_sel = 1;
+  // Generate OTBN output from the OwnerIntKey.
+  gen_params.slot_src_sel = kOwnerIntKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
   gen_params.version = 3;
@@ -213,24 +187,25 @@ bool test_main(void) {
   gen_params.salt[2] = 0x876930f2;
   gen_params.salt[1] = 0x593b54d4;
   gen_params.salt[0] = 0xa75e231b;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 1");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from OwnerIntKey");
 
-  // Derive a boot stage 2 key from the boot stage 1 key.
-  adv_params.slot_dst_sel = 2;
-  adv_params.binding_value[7] = 0x17eae937;
-  adv_params.binding_value[6] = 0x73008c5a;
-  adv_params.binding_value[5] = 0x181b7a2c;
-  adv_params.binding_value[4] = 0x605c8d2f;
-  adv_params.binding_value[3] = 0x99f93c05;
-  adv_params.binding_value[2] = 0x064b6b7d;
-  adv_params.binding_value[1] = 0x766be38a;
-  adv_params.binding_value[0] = 0xfe7c4f9b;
-  advance(&keymgr_dpe, &adv_params);
-  LOG_INFO("KeymgrDpe derived boot stage 2 key");
+  // Advance the DPE context with the parameter defined in kOwnerKeyParams
+  // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
+  adv_params.slot_src_sel = kOwnerKeyParams.slot_src_sel;
+  adv_params.slot_dst_sel = kOwnerKeyParams.slot_dst_sel;
+  adv_params.max_key_version = kOwnerKeyParams.max_key_version;
+  for (uint32_t i = 0; i < 8; i++) {
+    adv_params.binding_value[i] = kOwnerKeyParams.binding_value[i];
+  }
+  adv_params.slot_policy = kOwnerKeyParams.slot_policy;
+  advance(&adv_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe derived OwnerKey");
 
-  // Generate SW output from the boot stage 2 key.
-  gen_params.slot_src_sel = 2;
+  // Generate SW output from the OwnerKey.
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = false;  // SW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
   gen_params.version = 0;
@@ -242,10 +217,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x69ce2d2f;
   gen_params.salt[1] = 0x8a60fd60;
   gen_params.salt[0] = 0x5307745c;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated SW output from boot stage 2");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from OwnerKey");
 
   dif_keymgr_dpe_output_t key;
+  LOG_INFO("KeymgrDpe read the generated SW out");
   CHECK_DIF_OK(dif_keymgr_dpe_read_output(&keymgr_dpe, &key));
   for (size_t i = 0; i < ARRAYSIZE(key.value); i++) {
     for (size_t j = 0; j < ARRAYSIZE(key.value[0]); j++) {
@@ -253,8 +230,8 @@ bool test_main(void) {
     }
   }
 
-  // Generate AES output from the boot stage 2 key.
-  gen_params.slot_src_sel = 2;
+  // Generate AES output from the OwnerKey.
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
   gen_params.version = 1;
@@ -266,11 +243,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0xe7482b04;
   gen_params.salt[1] = 0xed12d4ee;
   gen_params.salt[0] = 0xa34fba3c;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated AES output from boot stage 2");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated AES output from OwnerKey");
 
-  // Generate KMAC output from the boot stage 2 key.
-  gen_params.slot_src_sel = 2;
+  // Generate KMAC output from the OwnerKey.
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestKmac;
   gen_params.version = 2;
@@ -282,11 +260,12 @@ bool test_main(void) {
   gen_params.salt[2] = 0x8f8f8cda;
   gen_params.salt[1] = 0xb697609d;
   gen_params.salt[0] = 0x122eb3b7;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated KMAC output from boot stage 2");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated KMAC output from OwnerKey");
 
-  // Generate OTBN output from the boot stage 2 key.
-  gen_params.slot_src_sel = 2;
+  // Generate OTBN output from the OwnerKey.
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
   gen_params.version = 3;
@@ -298,11 +277,13 @@ bool test_main(void) {
   gen_params.salt[2] = 0xf5bf3e01;
   gen_params.salt[1] = 0x6a961bc2;
   gen_params.salt[0] = 0xec932d64;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 2");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from OwnerKey");
 
-  // Derive a boot stage 3 key from the boot stage 2 key.
-  adv_params.slot_src_sel = 2;
+  // Derive a DPE context from the OwnerKey without overwriting the
+  // OwnerKey.
+  adv_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   adv_params.slot_dst_sel = 3;
   adv_params.binding_value[7] = 0x952b5a35;
   adv_params.binding_value[6] = 0x28b4520e;
@@ -312,8 +293,13 @@ bool test_main(void) {
   adv_params.binding_value[2] = 0x0668dc27;
   adv_params.binding_value[1] = 0xa226160d;
   adv_params.binding_value[0] = 0x45790409;
-  advance(&keymgr_dpe, &adv_params);
-  LOG_INFO("KeymgrDpe derived boot stage 3 key");
+  adv_params.max_key_version = 0x100;
+  // Children allowed without retaining the partent slot
+  adv_params.slot_policy = 1;
+  // Generate a new (derived from OwnerKey) DPE context
+  advance(&adv_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe derived new DPE context from OwnerKey");
 
   // Generate AES output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
@@ -328,8 +314,10 @@ bool test_main(void) {
   gen_params.salt[2] = 0x78000277;
   gen_params.salt[1] = 0x423025af;
   gen_params.salt[0] = 0x732e53a9;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated AES output from boot stage 3");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated AES output from DPE context in slot %0d",
+           adv_params.slot_dst_sel);
 
   // Generate OTBN output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
@@ -344,8 +332,10 @@ bool test_main(void) {
   gen_params.salt[2] = 0x0043f9b4;
   gen_params.salt[1] = 0x413a2212;
   gen_params.salt[0] = 0xc2dcfbc8;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 3");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from DPE context in slot %0d",
+           adv_params.slot_dst_sel);
 
   // Generate SW output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
@@ -360,8 +350,10 @@ bool test_main(void) {
   gen_params.salt[2] = 0xda1269fc;
   gen_params.salt[1] = 0xc8611986;
   gen_params.salt[0] = 0xf129041f;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated SW output from boot stage 3");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from DPE context in slot %0d",
+           adv_params.slot_dst_sel);
 
   // Generate KMAC output from the boot stage 3 key.
   gen_params.slot_src_sel = 3;
@@ -376,12 +368,14 @@ bool test_main(void) {
   gen_params.salt[2] = 0xb6ae40fc;
   gen_params.salt[1] = 0xa65d1375;
   gen_params.salt[0] = 0x6ee7be64;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated KMAC output from boot stage 3");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated KMAC output from DPE context in slot %0d",
+           adv_params.slot_dst_sel);
 
-  // Generate some additional outputs from the boot stage 1 and 2 keys, which
+  // Generate some additional outputs from the owner root keys, which
   // should still be available.
-  gen_params.slot_src_sel = 1;
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = false;  // SW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
   gen_params.version = 42;
@@ -393,9 +387,11 @@ bool test_main(void) {
   gen_params.salt[2] = 0xb28b9fc7;
   gen_params.salt[1] = 0x69ab6f9d;
   gen_params.salt[0] = 0xfb11f188;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated SW output from boot stage 1");
-  gen_params.slot_src_sel = 2;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from OwnerKey");
+
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
   gen_params.version = 7;
@@ -407,8 +403,22 @@ bool test_main(void) {
   gen_params.salt[2] = 0x589544ce;
   gen_params.salt[1] = 0xee7790c4;
   gen_params.salt[0] = 0x0de6bdcf;
-  generate(&keymgr_dpe, &gen_params);
-  LOG_INFO("KeymgrDpe generated OTBN output from boot stage 2");
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from OwnerKey");
 
   return true;
+}
+
+bool test_main(void) {
+  // Start keymgr_dpe, generating CreatorRootKey into the slot defined by
+  // kCreatorRootKeyParams(/sw/device/lib/testing/keymgr_dpe_testutils.h)
+  CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe derived CreatorRootKey and removed the UDS");
+
+  // run the specific test sequence with CreatorRootKey
+  return key_derivation_test();
 }

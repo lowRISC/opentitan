@@ -51,7 +51,7 @@ module ${top["name"]}_pd_${domain.lower()} #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_otp_device_id =
+  assign keymgr_dpe_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
@@ -61,15 +61,6 @@ module ${top["name"]}_pd_${domain.lower()} #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
-
-  // Connect the keymaterial from the OTP manually
-  // TODO: resolve this manual fix
-  assign keymgr_otp_key = {
-    otp_ctrl_keymgr_creator_root_key,
-    otp_ctrl_keymgr_creator_seed,
-    otp_ctrl_keymgr_owner_seed
-  };
-
   % endif
   % if m.get("name") == "rram_ctrl":
   // TODO: remove once RRAM is connected to OTP
@@ -99,6 +90,32 @@ module ${top["name"]}_pd_${domain.lower()} #(
   % endif
 % endif
 
+<%
+  keymgr_dpe_seed_selector = top.get("keymgr_dpe_seed_selector", "none")
+%>\
+  % if keymgr_dpe_seed_selector == "otp_ctrl":
+  // Otp_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign keymgr_dpe_owner_seed = otp_ctrl_keymgr_owner_seed;
+  assign unused_keymgr_creator_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::CreatorSeedIdx], 1'b1};
+  assign unused_keymgr_owner_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::OwnerSeedIdx], 1'b1};
+
+  % elif keymgr_dpe_seed_selector == "flash_ctrl":
+  // Flash_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::CreatorSeedIdx], 1'b1};
+  assign keymgr_dpe_owner_seed =
+      {flash_ctrl_keymgr.seeds[flash_ctrl_pkg::OwnerSeedIdx], 1'b1};
+  assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
+
+  % endif
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
     .req_i    (pinmux_dft_jtag_req),

@@ -5,6 +5,7 @@
 // This #if define ... ensures backwards compatibility with darjeeling. Either
 // both tops will get their own testutils or this define guard can be
 // implemented at a more granular level (i.e. at function level).
+// TODO(#30919): Split the keymgr_dpe_testutil on a finer level.
 #if defined(OPENTITAN_IS_DARJEELING)
 
 #include "sw/device/lib/testing/keymgr_dpe_testutils.h"
@@ -262,9 +263,11 @@ status_t keymgr_dpe_testutils_try_startup(
   // the initialization process.
   TRY(dif_keymgr_dpe_get_state(keymgr_dpe, keymgr_dpe_state));
 
-  TRY_CHECK(*keymgr_dpe_state == kDifKeymgrDpeStateInvalid ||
-                *keymgr_dpe_state == kDifKeymgrDpeStateDisabled,
-            "Unexpected keymgr dpe state: 0x%x", *keymgr_dpe_state);
+  if (*keymgr_dpe_state == kDifKeymgrDpeStateInvalid ||
+      *keymgr_dpe_state == kDifKeymgrDpeStateDisabled) {
+    LOG_INFO("Unexpected keymgr state: 0x%x", *keymgr_dpe_state);
+    return INTERNAL();
+  }
 
   if (*keymgr_dpe_state == kDifKeymgrDpeStateReset) {
     TRY(keymgr_dpe_testutils_startup(keymgr_dpe, kmac));
@@ -336,21 +339,22 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER;
 
-  TRY(keymgr_dpe_testutils_init_nvm_then_reset());
+  // Only init NVM when run from the test_rom. Real ROM should already
+  // have loaded all necessary secrets.
+  if (is_using_test_rom) {
+    TRY(keymgr_dpe_testutils_init_nvm_then_reset());
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
-                      &rstmgr));
-  const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
+    TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
+                        &rstmgr));
+    const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
 
-  TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
-            info);
+    TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
+              info);
+  }
 
   LOG_INFO("Initializing entropy complex in Auto mode");
 
   TRY(entropy_testutils_auto_mode_init());
-
-  LOG_INFO(
-      "Powered up for the second time, actuate keymgr dpe and perform test.");
 
   TRY(dif_init(keymgr_dpe, kmac));
 
@@ -362,6 +366,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
     TRY(keymgr_dpe_testutils_initial_load_uds(keymgr_dpe, &kInitialParams));
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe,
                                          kDifKeymgrDpeStateAvailable));
+    // DV sync message (keymgr_dpe_key_derivation_vseq)
     LOG_INFO("Keymgr DPE loaded the UDS and entered Available state.");
 
     // Generate the creator root key
@@ -370,7 +375,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
   } else {
     LOG_INFO("Using ROM");
     LOG_INFO(
-        "The keymgr DPE should already contain the derived CreatorRootKey");
+        "The Keymgr DPE should already contain the derived CreatorRootKey");
   }
 
   // Key generation is not really necessary for all tests, but it is

@@ -17,7 +17,6 @@ filesets:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ip:aes
       - lowrisc:ip:csrng_pkg
-      - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otbn_pkg

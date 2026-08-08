@@ -145,9 +145,9 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::I2C_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "keymgr",
-            top_earlgrey::KEYMGR_BASE_ADDR,
-            dif::KEYMGR_INTR_ENABLE_REG_OFFSET,
+            "keymgr_dpe",
+            top_earlgrey::KEYMGR_DPE_BASE_ADDR,
+            dif::KEYMGR_DPE_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "kmac",
