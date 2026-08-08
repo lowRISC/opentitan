@@ -31,7 +31,7 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   extern function new(string name="");
 
   // Class specific methods
-  extern function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
 endclass : hmac_env_cfg
 
 
@@ -39,9 +39,9 @@ function hmac_env_cfg::new(string name="");
   super.new(name);
 endfunction : new
 
-function void hmac_env_cfg::initialize();
+function void hmac_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = hmac_env_pkg::LIST_OF_ALERTS;
-  super.initialize();
+  super.initialize(inherit_ral_models);
   // set num_interrupts & num_alerts which will be used to create coverage and more
   num_interrupts = ral.intr_state.get_n_used_bits();
 
