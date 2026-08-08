@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:rom_ctrl_ifs:0.1"
+description: "DV interfaces used in rom_ctrl tests"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:rom_ctrl_pkg
+    files:
+      - tb/rom_ctrl_if.sv
+      - tb/rom_ctrl_bound_if.sv
+      - tb/rom_ctrl_compare_if.sv
+      - tb/rom_ctrl_compare_bound_if.sv
+      - tb/rom_ctrl_fsm_if.sv
+      - tb/rom_ctrl_fsm_bound_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    toplevel: tb
+    filesets:
+      - files_dv
+    default_tool: vcs
+
+  lint:
+    <<: *default_target

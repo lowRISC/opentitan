@@ -35,7 +35,7 @@ task rom_ctrl_throughput_vseq::body();
   for (int i = 0; i <= num_trans; i++) begin
     `uvm_info(`gfn, $sformatf("iterating %0d/%0d", i, num_trans), UVM_LOW)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_mem_reads)
-    wait (cfg.rom_ctrl_vif  .pwrmgr_data.done == prim_mubi_pkg::MuBi4True);
+    wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == prim_mubi_pkg::MuBi4True);
     `DV_SPINWAIT_EXIT(
          // thread 1 to count cycles
          forever begin
