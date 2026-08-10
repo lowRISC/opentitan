@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import IntEnum, unique
+import re
+from typing import Optional, Tuple
 
 
 class Cmd(IntEnum):
@@ -108,3 +110,48 @@ class WsrAddrs(IntEnum):
     MAI_IN0_S1 = 13
     MAI_IN1_S0 = 14
     MAI_IN1_S1 = 15
+
+
+def sv_perm_to_tuple(num_elems: int, literal: str) -> Tuple[int, ...]:
+    '''Convert a string of a system verilog permutation literal into a tuple of indices pairs.
+
+    literal is the raw string of a permutation of type:
+    logic [num_elems-1:0][$clog2(num_elems)-1:0].
+    This packed representation is expected to have the first index in the least significant bits.
+
+    Each entry of the returned permutation gives the index of the bit to be picked, i.e. bit i of
+    the permutation is bit perm[i] of data.
+    '''
+    elem_width = (num_elems - 1).bit_length()
+    # Drop the "<width>'h" prefixes and everything that is not a hex digit.
+    value = int(re.sub(r"\d+'h|[^0-9a-fA-F]", '', literal), 16)
+    assert value.bit_length() <= num_elems * elem_width
+    # Extract the indexes from the packed value. The first index is in the least significant bits.
+    mask = (1 << elem_width) - 1
+    perm = tuple((value >> (i * elem_width)) & mask for i in range(num_elems))
+    assert sorted(perm) == list(range(num_elems))
+    return perm
+
+
+def permute(perm: Tuple[int, ...], data: int,
+            num_bits: Optional[int] = None,
+            first_bit: int = 0) -> int:
+    '''Permute the bits of the data according to the given permutation.
+
+    data is the to be permuted value.
+
+    num_bits and first_bit select a slice of the permutation: permutation[first_bit +: num_bits].
+    The returned slice is right aligned, so bit first_bit of the permutation ends up in bit 0 of
+    the result. The bits are zero-indexed.
+    By default the full permutation is returned.
+    '''
+    if num_bits is None:
+        num_bits = len(perm)
+    assert num_bits <= len(perm)
+    assert data.bit_length() <= len(perm)
+    assert first_bit >= 0
+    assert first_bit + num_bits <= len(perm)
+    result = 0
+    for i in range(first_bit, first_bit + num_bits):
+        result |= ((data >> perm[i]) & 1) << (i - first_bit)
+    return result
