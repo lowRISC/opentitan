@@ -86,7 +86,7 @@
 # OpenTitan Hardware
 
 - [Introduction](./hw/README.md)
-- [Top Earlgrey](./hw/top_earlgrey/README.md)
+- [Earl Grey Top-Level Design](./hw/top_earlgrey/README.md)
   - [Datasheet](./hw/top_earlgrey/doc/datasheet.md)
   - [Memory Map](./hw/top_earlgrey/doc/memory_map.md)
   - [Design](./hw/top_earlgrey/doc/design/README.md)
@@ -193,7 +193,7 @@
     - [Checklist](./hw/top_earlgrey/ip/sensor_ctrl/doc/checklist.md)
   - [TL-UL Checklist](./hw/top_earlgrey/ip/xbar/doc/checklist.md)
 
-- [Top Darjeeling](./hw/top_darjeeling/README.md)
+- [Darjeeling Top-Level Design](./hw/top_darjeeling/README.md)
   - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
   - [Memory Map](./hw/top_darjeeling/doc/memory_map.md)
   - [Pinout / Pinmux Tables](./hw/top_darjeeling/ip_autogen/pinmux/doc/targets.md)
