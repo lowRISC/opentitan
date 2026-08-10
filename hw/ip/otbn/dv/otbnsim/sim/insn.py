@@ -1442,12 +1442,16 @@ class BNMULV(BnVecVecMul):
         # processed. We first compute the results and then emulate the register updates.
         result = map_elems(op, size, vec_a, vec_b)
 
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
+
         # Emulate the register updates by reading the ACC and write current quarter word result to
         # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
         for cycle in range(3):
+            chunk = (cycle + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (cycle * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
@@ -1490,12 +1494,16 @@ class BNMULVL(BnVecVecMul):
 
         result = map_elems(op, size, vec_a, lane_vec)
 
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
+
         # Emulate the register updates by reading the ACC and write current quarter word result to
         # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
         for cycle in range(3):
+            chunk = (cycle + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (cycle * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
@@ -1578,6 +1586,9 @@ class BNMULVM(BnVecVecMul):
         #
         # We now repeat these 3 cycles for all four 64b chunks (quarter words).
         # In cycle 12 ACC is cleared and the result is written to the destination WDR.
+        #
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
         qword_mask = (1 << 64) - 1
         for qword in range(4):
             # For the first QWord the first cycle is the one when the loop starts.
@@ -1585,8 +1596,9 @@ class BNMULVM(BnVecVecMul):
                 yield None
             yield None
             yield None
+            chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (qword * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             if qword < 3:
@@ -1635,6 +1647,8 @@ class BNMULVML(BnVecVecMul):
         result = map_elems(lambda a, b: op(a, b, mod_q, mod_mu, size), size, vec_a, lane_vec)
 
         # Emulate the register updates. See BN.MULVM for details.
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
         qword_mask = (1 << 64) - 1
         for qword in range(4):
             # For the first QWord the first cycle is the one when the loop starts.
@@ -1642,8 +1656,9 @@ class BNMULVML(BnVecVecMul):
                 yield None
             yield None
             yield None
+            chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (qword * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             if qword < 3:

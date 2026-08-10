@@ -70,6 +70,7 @@ module top_darjeeling #(
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnFixMaiOpSeq = 0,
+  parameter bit SecOtbnFixMacOpSeq = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   parameter bit OtbnFeatStubMai = 0,
   // parameters for keymgr_dpe
@@ -380,6 +381,7 @@ module top_darjeeling #(
   .OtbnRegFile(OtbnRegFile),
   .SecOtbnMuteUrnd(SecOtbnMuteUrnd),
   .SecOtbnFixMaiOpSeq(SecOtbnFixMaiOpSeq),
+  .SecOtbnFixMacOpSeq(SecOtbnFixMacOpSeq),
   .SecOtbnSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
   .OtbnFeatStubMai(OtbnFeatStubMai),
   .KeymgrDpeKmacEnMasking(KeymgrDpeKmacEnMasking),

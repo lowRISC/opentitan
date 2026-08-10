@@ -654,6 +654,7 @@ package otbn_pkg;
     logic                  is_lane;
     logic [2:0]            lane_index;
     mac_elen_e             elen;
+    logic [1:0]            shuffle_offset;
     logic [VLEN/QWLEN-1:0] adder_carry_sel;
     logic                  acc_add_en;
     logic [1:0]            op_a_qw_sel;      // Both (a, b) are predecoded to optimize timing
@@ -839,7 +840,8 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
   typedef logic [63:0] otbn_dmem_nonce_t;
   typedef logic [63:0] otbn_imem_nonce_t;
 
-  // Permutation for the URND permutation in BN MAC used for register clearing.
+  // Permutation for the URND permutation in BN MAC used for register clearing and shuffling.
+  // Keep in sync with dv/otbnsim/sim/constants.py::BN_MAC_PERMUTATION.
   // These parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 3357506447 --prefix "BnMac"
   // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
