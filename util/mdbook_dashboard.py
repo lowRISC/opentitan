@@ -23,6 +23,7 @@ DASHBOARDS: Dict[str, List[Path]] = {
     'comportable': [
         REPO_TOP / "hw/ip/aes/data/aes.hjson",
         REPO_TOP / "hw/ip/aon_timer/data/aon_timer.hjson",
+        REPO_TOP / "hw/ip/cheriot/data/cheriot.hjson",
         REPO_TOP / "hw/ip/entropy_src/data/entropy_src.hjson",
         REPO_TOP / "hw/ip/csrng/data/csrng.hjson",
         REPO_TOP / "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
