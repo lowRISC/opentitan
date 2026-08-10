@@ -41,6 +41,26 @@ filegroup(
 )
 
 filegroup(
+    name = "uds_ecdsa_tbs_input_golden_data",
+    srcs = ["tests/uds_ecdsa_tbs_input_golden.json"],
+)
+
+filegroup(
+    name = "uds_ecdsa_tbs_golden_data",
+    srcs = ["tests/uds_ecdsa_tbs_golden.der"],
+)
+
+filegroup(
+    name = "uds_ecdsa_endorsed_cert_input_golden_data",
+    srcs = ["tests/uds_ecdsa_endorsed_cert_input_golden.json"],
+)
+
+filegroup(
+    name = "uds_ecdsa_endorsed_cert_golden_data",
+    srcs = ["tests/uds_ecdsa_endorsed_cert_golden.der"],
+)
+
+filegroup(
     name = "fw_ids_raw_test_files",
     srcs = [
         "tests/example_fw_ids_raw_data.json",
@@ -117,9 +137,14 @@ rust_test_suite(
         ":generic_cert",
         ":example_cert",
         ":example_data",
+        ":uds_ecdsa_tbs_input_golden_data",
+        ":uds_ecdsa_tbs_golden_data",
+        ":uds_ecdsa_endorsed_cert_golden_data",
+        ":uds_ecdsa_endorsed_cert_input_golden_data",
         ":mldsa_certs",
         ":fw_ids_raw_test_files",
         "tests/variants.hjson",
+        "//sw/device/silicon_creator/lib/cert:uds_template_file",
     ],
     edition = "2024",
     deps = [
