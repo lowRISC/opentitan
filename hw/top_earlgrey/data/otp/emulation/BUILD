@@ -220,6 +220,21 @@ otp_json(
     ],
 )
 
+# Create an overlay that leaves the SECRET2 partition explicitly unprovisioned
+# and unlocked.
+#
+# `otp_json_{dev,prod,prod_end,rma}` lock SECRET2, since a device in a mission
+# mode life cycle state is expected to be personalized.
+otp_json(
+    name = "otp_json_secret2_unprovisioned",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            lock = False,
+        ),
+    ],
+)
+
 # The `LC_MISSION_STATES` object contains the set of mission mode life cycle
 # states. A device is considered to be mission mode configured if it has a
 # matching `MANUF_PERSONALIZED` OTP configuration.
@@ -324,12 +339,13 @@ otp_image(
 # well as DEV, PROD, PROD_END and RMA. This configuration has flash scrambling
 # disabled. See the personalized OTP configuration for targets requiring flash
 # scrambling enabled.
+# The SECRET2 partition is explicitly left unprovisioned and unlocked.
 # See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
         name = "otp_img_{}_manuf_individualized".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
-        overlays = MANUF_INDIVIDUALIZED,
+        overlays = MANUF_INDIVIDUALIZED + [":otp_json_secret2_unprovisioned"],
     )
     for lc_state, _ in get_lc_items(
         CONST.LCV.TEST_UNLOCKED1,
