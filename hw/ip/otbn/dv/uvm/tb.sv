@@ -214,6 +214,10 @@ module tb;
     .cmd_i   (model_if.cmd_q),
     .cmd_en_i(model_if.cmd_qe),
 
+    // These control bits are driven dynamically through the model agent by snooping CTRL
+    // register writes.
+    .wfi_enabled_i      (1'b0),
+
     .lc_escalate_en_i(escalate_if.enable),
     .lc_rma_req_i    (escalate_if.req),
 
