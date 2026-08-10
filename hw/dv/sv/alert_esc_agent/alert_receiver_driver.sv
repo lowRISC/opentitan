@@ -386,18 +386,17 @@ task alert_receiver_driver::ack_alert(int unsigned ack_delay, int unsigned ack_s
 
   m_ack_semaphore.get();
 
-  // Wait for the alert to appear (up to cfg.handshake_timeout_cycle cycles)
+  // Wait for the alert to appear (but stop early if a reset is asserted)
   fork : isolation_fork1 begin
     fork
       wait(cfg.in_reset);
-      repeat(cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
       wait(cfg.vif.receiver_cb.alert_tx.alert_p);
     join_any
     disable fork;
   end join
 
-  // If there has been a reset or no alert came out, there is nothing more to do.
-  if (cfg.in_reset || (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b1)) begin
+  // If there has been a reset, there is nothing more to do.
+  if (cfg.in_reset) begin
     m_ack_semaphore.put();
     return;
   end
@@ -418,11 +417,10 @@ task alert_receiver_driver::ack_alert(int unsigned ack_delay, int unsigned ack_s
     return;
   end
 
-  // Finally, wait for the alert to be cleared again (up to cfg.handshake_timeout_cycle cycles)
+  // Finally, wait for the alert to be cleared again, stopping early on reset.
   fork : isolation_fork3 begin
     fork
       wait(cfg.in_reset);
-      repeat(cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
       begin
         wait(!cfg.vif.receiver_cb.alert_tx.alert_p);
         repeat (ack_stable) @(cfg.vif.receiver_cb);
