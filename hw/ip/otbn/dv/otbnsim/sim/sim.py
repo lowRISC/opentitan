@@ -4,7 +4,7 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import ErrBits, LcTx, Status, read_lc_tx_t
+from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t, permute
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
@@ -302,6 +302,14 @@ class OTBNSim:
         assert self.state.init_sec_wipe_is_done()
 
         self.state.wsrs.URND.step()
+
+        # The predecoder samples URND one cycle before a vectorized multiply reaches the execute
+        # stage. Advance the sampled offset by one cycle, then resample from the current URND
+        # value.
+        self.state.mac_rnd_offset = self.state.mac_rnd_offset_predec
+        self.state.mac_rnd_offset_predec = permute(BN_MAC_PERMUTATION,
+                                                   self.state.wsrs.URND.read_unsigned(),
+                                                   2, 192)
 
         insn = self._next_insn
         if insn is None:

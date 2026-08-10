@@ -80,21 +80,23 @@
  * As described, the ACC WSR and the two hidden registers are cleared using randomness. The ACC WSR
  * is directly cleared by writing the current value of URND to it. The two hidden registers are
  * cleared with a permutation of URND as shown below. The permutation is based on a netlist secret.
+ * The remaining permuted bits are used as shuffling index which the predecoding logic samples.
  *
  *              +-------------+
- * URND --+---->| Permutation |-----+----------+
- *        |     +-------------+     |          |
- *        |                      [127:0]   [192:128]
- *        v                         v          v
- *     +-----+                   +-----+    +-----+
- *     | ACC |                   |  C  |    | TMP |
- *     +-----+                   +-----+    +-----+
+ * URND --+---->| Permutation |-----+----------+----------+
+ *        |     +-------------+     |          |          |
+ *        |                      [127:0]   [192:128]   [194:193]
+ *        v                         v          v           v
+ *     +-----+                   +-----+    +-----+     Used as
+ *     | ACC |                   |  C  |    | TMP |    shuffling
+ *     +-----+                   +-----+    +-----+      index
  */
 module otbn_mac_bignum
   import otbn_pkg::*;
 #(
   // Compile-time permutation for URND permutation
-  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+  parameter bit SecFixMacOpSeq = 1'b0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -118,6 +120,7 @@ module otbn_mac_bignum
   input  logic            sec_wipe_urnd_i,
   input  logic            sec_wipe_running_i,
   output logic            sec_wipe_err_o,
+  output logic [1:0]      shuffle_offset_o,
 
   // Signals whenever the URND input is used to clear any of the internal registers. This is
   // required to advance the URND PRNG if the SecMuteUrnd parameter is set.
@@ -144,11 +147,12 @@ module otbn_mac_bignum
     assign urnd_permutation[i] = urnd_data_i[RndCnstBnMacUrndPerm[i]];
   end
 
-  assign acc_clear_data = urnd_data_i;
-  assign c_clear_data   = urnd_permutation[HWLEN-1:0];
-  assign tmp_clear_data = urnd_permutation[HWLEN+:QWLEN];
+  assign acc_clear_data   = urnd_data_i;
+  assign c_clear_data     = urnd_permutation[HWLEN-1:0];
+  assign tmp_clear_data   = urnd_permutation[HWLEN         +: QWLEN];
+  assign shuffle_offset_o = urnd_permutation[HWLEN + QWLEN +: 2];
 
-  assign unused_urnd_permutation = ^urnd_permutation[HWLEN + QWLEN +: QWLEN];
+  assign unused_urnd_permutation = ^urnd_permutation[HWLEN + QWLEN + 2 +: QWLEN - 2];
 
   //////////////////
   // ACC Register //
@@ -640,7 +644,9 @@ module otbn_mac_bignum
   mac_bignum_contrl_t contrl;
   mac_bignum_predec_t expected_predec;
 
-  otbn_mac_bignum_fsm u_mac_bignum_fsm (
+  otbn_mac_bignum_fsm #(
+    .SecFixMacOpSeq(SecFixMacOpSeq)
+  ) u_mac_bignum_fsm (
     .clk_i,
     .rst_ni,
 
@@ -658,6 +664,12 @@ module otbn_mac_bignum
     .op_a_qw_sel_i    (operation_i.op_a_qw_sel_raw),
     .op_b_elem0_sel_i (operation_i.op_b_elem0_sel_raw),
     .op_b_elem1_sel_i (operation_i.op_b_elem1_sel_raw),
+    // We cannot recompute the shuffling index here because we don't have the URND bits from the
+    // last cycle. Instead we just use the value from the predecoder. This means deterministic URND
+    // bits in the predecoder (e.g., when attacked) will make the shuffling deterministic. But that
+    // is acceptable as the shuffling is a SCA countermeasure on top of the masking expected to be
+    // implemented in software.
+    .shuffle_offset_i (predec_i.shuffle_offset),
 
     .sec_wipe_i(sec_wipe_urnd_i),
 
