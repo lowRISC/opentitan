@@ -189,11 +189,15 @@
                      "+urg+lic+wait",
                      // Lists all the tests that covered a given object.
                      "-show tests",
+                     // Show covered/total object counts alongside each score.
+                     "-show ratios",
+                     // Show full hierarchy, including zero-coverage instances.
+                     "-show fullhier",
                      // Enable test grading using the "index" scheme, and the
                      // generation of the list of contributing tests with
                      // "testfile".
                      "-grade index testfile",
-                     // Use simple ratio of total covered bins over total bins across cps & crs,
+                     // Use simple ratio of total covered bins over total bins across cps & crs.
                      "-group ratio",
                      // Follow LRM naming conventions for array bins.
                      "-group lrm_bin_name",
@@ -202,6 +206,12 @@
                      "-group instcov_for_score",
                      "-dir {cov_merge_db_dir}",
                      "-line nocasedef",
+                     // Report all code coverage metric types explicitly.
+                     "-metric line+branch+cond+tgl+fsm+assert+group",
+                     // Expand toggle MDA (multi-dimensional array) reports instead of
+                     // compressing them into a single entry.
+                     "-nomdacmp",
+                     // Generate both HTML and text summary reports.
                      "-format both",
                      // Prepend each el file with `-elfile`.
                      "{eval_cmd} echo {vcs_cov_excl_files} | sed -E 's/(\\S+)/-elfile \\1/g'",
