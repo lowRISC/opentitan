@@ -199,8 +199,9 @@ To this end:
 1. If you are connecting a HyperDebug board to your CW340 base board, follow instructions in the [HyperDebug Board](#hyperdebug-board) section.
 1. Afterwards, depending on your use case, do the following::
    - If you want to run SPI host tests, make sure a compatible flash chip is inserted in the U29 socket (right of the SW4).
-     Without a flash you will most likely see the error `SFDP signature is 0xffffffff. CHECK-fail: Expected to find the SFDP signature!`, see below.
+     Without a flash you will most likely see the error `SFDP signature is 0xffffffff. CHECK-fail: Expected to find the SFDP signature!`, see the [troubleshooting](#troubleshooting) section.
    - If you want to run USB host tests, make sure to connect the device USB port on J9 to the CW340's internal downstream USB hub port 4 on J8 (some test assume this connection).
+     A bug on CW340 can lead to USB enumeration errors when no bitstream is loaded, see the [troubleshooting](#troubleshooting) section.
 1. Finally, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
 
 After completing the rest of the FPGA setup process, you can confirm that these DIP switches are configured correctly by running the following test targets:
@@ -219,19 +220,6 @@ Find below the top view and a bottom view photos of a fully configured CW340 boa
 [![top view of the CW340 board](cw340-top-lowres.webp)](cw340-top.webp)
 
 [![bottom view of the CW340 board](cw340-bottom-lowres.webp)](cw340-bottom.webp)
-
-#### SFDP signature error
-If a test fails with
-```
-SFDP signature is 0xffffffff.
-CHECK-fail: Expected to find the SFDP signature!
-```
-most likely something is wrong with the flash in U29.
-Check that there is a flash chip inserted and that it is properly mounted.
-This error can happen when the flash chip is not properly connected, leaving the data pin pulled high and causing the system to read a continuous '1.
-
-Note that SPI errors during bootstrapping where the ROM uses the SPI can result in similar SFDP errors.
-In this case, such an error indicates that opentitantool cannot communicate with the ROM via HyperDebug (which could be due to many causes, including a wrong bitstream or a connection issue).
 
 #### HyperDebug Board
 
@@ -322,11 +310,40 @@ bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}
 
 ### Troubleshooting
 
-If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`) then try adding `--rcfile=` to the `set-pll` command:
+If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`, see also below) then try adding `--rcfile=` to the `set-pll` command:
 ```sh
 bazel run //sw/host/opentitantool -- --rcfile= --interface=${INTERFACE} fpga set-pll
 ```
 It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if you face continued errors.
+
+#### USB enumeration errors of the device port (J9)
+The USB port on J9 is controlled by the FPGA and is also referred to as the device USB port.
+This port can give USB enumeration errors due to a CW340 hardware bug if no bitstream is loaded which defines this port properly.
+If no bitstream is loaded, the USB transceiver wrongly signals that a device is connected.
+Any USB host then tries to enumerate this port but obviously fails as no device is behind the transceiver.
+If there are many USB devices on the same root hub, then this can delay USB enumeration by several seconds (the kernel retries several times for each device before giving up).
+
+The root cause for this is that the CW341 (the board hosting the FPGA connected to the CW340) configures the FPGA such that all IO pins are pulled up to 1.8V as long as no bitstream is loaded (controlled by the PUDB pin of the FPGA).
+As a consequence, the SOFTCON pin of U17 on CW340 is HIGH.
+This in turn pulls D+ to 3.3V (via the VPU_33 pin) which indicates to the host that a device is connected.
+
+Adding a reasonable pull down resistor to the SOFTCON net does not pull it low enough (it would require ~ <1k which would draw too much current).
+Thus, any USB host must be able to handle enumeration errors or disable the USB port until a suitable bitstream is loaded.
+
+Note that in the setup described above J9 / the device port is connected to the USB hub on the CW340 (via J8 to J28).
+
+#### SFDP signature error
+If a test fails with
+```
+SFDP signature is 0xffffffff.
+CHECK-fail: Expected to find the SFDP signature!
+```
+most likely something is wrong with the flash in U29.
+Check that there is a flash chip inserted and that it is properly mounted.
+This error can happen when the flash chip is not properly connected, leaving the data pin pulled high and causing the system to read a continuous '1.
+
+Note that SPI errors during bootstrapping where the ROM uses the SPI can result in similar SFDP errors.
+In this case, such an error indicates that opentitantool cannot communicate with the ROM via HyperDebug (which could be due to many causes, including a wrong bitstream or a connection issue).
 
 ## Flash the bitstream onto the FPGA and bootstrap software into flash
 
