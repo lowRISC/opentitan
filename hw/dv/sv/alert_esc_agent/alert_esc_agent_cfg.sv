@@ -60,9 +60,7 @@ class alert_esc_agent_cfg extends dv_reactive_agent_cfg;
   // When this bit is set, alert agent responds to alert without delay
   // This is set by plusarg "+fast_rcvr_{alert_name}"
   bit          fast_rcvr = 0;
-  // this timeout is to ensure handshake protocol did not hang, this timeout is not implemented in
-  // design. In design, if protocol hangs, the period ping check will catch the issue
-  int unsigned handshake_timeout_cycle = 100_000;
+
   int unsigned ping_timeout_cycle = 32;
 
   // Incremented by the monitor on each ping
