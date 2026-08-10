@@ -24,6 +24,11 @@ certificate_template(
     template = "//sw/host/ot_certs:example_cert",
 )
 
+filegroup(
+    name = "uds_template_file",
+    srcs = ["uds.hjson"],
+)
+
 certificate_template(
     name = "uds_template",
     template = "uds.hjson",
