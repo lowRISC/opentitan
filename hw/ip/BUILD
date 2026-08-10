@@ -70,6 +70,7 @@ filegroup(
         "//hw/ip/aes:doc_files",
         "//hw/ip/aon_timer:doc_files",
         "//hw/ip/ascon:doc_files",
+        "//hw/ip/cheriot:doc_files",
         "//hw/ip/csrng:doc_files",
         "//hw/ip/dma:doc_files",
         "//hw/ip/edn:doc_files",
