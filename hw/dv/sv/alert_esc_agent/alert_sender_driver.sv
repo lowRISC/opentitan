@@ -215,7 +215,6 @@ task alert_sender_driver::reset_alert_pins(int ack_delay);
   fork : isolation_fork begin
     fork
       wait (cfg.en_alert_lpg);
-      wait_sender_clk(cfg.handshake_timeout_cycle);
       begin : wait_alert_handshake
         wait (cfg.vif.alert_rx.ack_p == 1'b1);
         wait_sender_clk(1 + ack_delay);
