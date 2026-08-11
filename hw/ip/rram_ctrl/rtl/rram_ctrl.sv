@@ -1289,6 +1289,12 @@ module rram_ctrl
   // Assertions //
   ////////////////
 
+  // Check that the regtool-generated `NumOtpPages` (from rram_ctrl.hjson,
+  // via rram_ctrl_reg_pkg) agrees with rram_ctrl_pkg's independently-
+  // computed `OtpPages`.
+  `ASSERT_INIT(NumOtpPagesMatch_A,
+               rram_ctrl_reg_pkg::NumOtpPages == rram_ctrl_pkg::OtpPages)
+
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
                                                u_to_rd_fifo.u_rspfifo,

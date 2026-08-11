@@ -613,7 +613,7 @@ module rram_ctrl_lcmgr
   ///////////////////////////////
   // RMA wiping Mechanism      //
   ///////////////////////////////
-  localparam int unsigned PageCntWidth = prim_util_pkg::vbits(TotalPages + 1);
+  localparam int unsigned PageCntWidth = prim_util_pkg::vbits(TotalDataPages + 1);
   localparam int unsigned WordCntWidth = prim_util_pkg::vbits(BusWordsPerPage + 1);
 
   logic                    page_cnt_ld;

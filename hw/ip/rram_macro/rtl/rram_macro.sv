@@ -9,7 +9,7 @@
 // Operations have random execution time which is achieved with a LFSR and a cycle counter.
 
 module rram_macro #(
-  parameter int unsigned TotalPages     = 4096, // Total number of pages
+  parameter int unsigned TotalDataPages = 4096, // Total number of data pages
   parameter int unsigned DataWidth      = 128,  // RRAM word data width
   parameter int unsigned WordsPerPage   = 32,   // Number of words per page
   parameter int unsigned TotalInfoPages = 8,    // Total number of info pages
@@ -104,7 +104,7 @@ module rram_macro #(
 
   localparam int StoreBufWidth  = DataWidth + prim_util_pkg::vbits(WordsPerPage);
 
-  localparam int DataAddrW = prim_util_pkg::vbits(TotalPages * WordsPerPage);
+  localparam int DataAddrW = prim_util_pkg::vbits(TotalDataPages * WordsPerPage);
   localparam int InfoAddrW = prim_util_pkg::vbits(TotalInfoPages * WordsPerPage);
 
   // Latencies of the individual operations in clock cycles (to be refined later)
@@ -430,7 +430,7 @@ module rram_macro #(
 
   prim_ram_1p #(
     .Width(DataWidth),
-    .Depth(TotalPages*WordsPerPage),
+    .Depth(TotalDataPages*WordsPerPage),
     .DataBitsPerMask(DataWidth)
   ) u_data_array (
     .clk_i,

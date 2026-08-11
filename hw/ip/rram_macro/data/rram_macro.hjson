@@ -51,7 +51,7 @@
 
   param_list: [
     // written by topgen
-    { name:    "TotalPages",
+    { name:    "TotalDataPages",
       desc:    "Total number of data pages",
       type:    "int"
       default: "4096",

@@ -150,7 +150,7 @@ module tb;
   end
 
   rram_macro #(
-    .TotalPages(rram_ctrl_pkg::TotalPages),
+    .TotalDataPages(rram_ctrl_pkg::TotalDataPages),
     .DataWidth(rram_ctrl_pkg::DataWidth),
     .WordsPerPage(rram_ctrl_pkg::WordsPerPage),
     .TotalInfoPages(rram_ctrl_pkg::TotalInfoPages),
