@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod ecdsa;
 pub mod rsa;
+pub mod slhdsa;
 
 #[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KeyEncoding {
