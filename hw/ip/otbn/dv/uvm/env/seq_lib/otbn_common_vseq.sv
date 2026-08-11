@@ -275,12 +275,12 @@ class otbn_common_vseq extends otbn_base_vseq;
         if_proxy.inject_fault();
       end
       begin
-        bit [31:0] err_val = 32'd1 << 20;
+        err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
         `uvm_info(`gfn, "injecting fsm error into ISS", UVM_HIGH)
         if (!uvm_re_match("*u_otbn_start_stop_control*", if_proxy.path)) begin
-          cfg.model_agent_cfg.vif.lock_immediately(err_val);
+          cfg.model_agent_cfg.vif.lock_immediately(err_bits);
         end else begin
-          cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+          cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
         end
       end
     join

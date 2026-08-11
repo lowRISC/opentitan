@@ -27,7 +27,7 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
     bit [BUS_DW-1:0] data;
     // Pick either dmem or imem to access randomly
     bit is_imem;
-    bit [31:0] err_val = 32'd1 << 21;
+    err_bits_reg_t err_bits = '{illegal_bus_access: 1'b1, default: 1'b0};
 
 
     `DV_CHECK_STD_RANDOMIZE_FATAL(is_imem)
@@ -54,7 +54,7 @@ class otbn_illegal_mem_acc_vseq extends otbn_single_vseq;
             // This will actually take half-cycle since we are already at a negedge
             cfg.clk_rst_vif.wait_clks(1);
             // Let model know we have the fatal error.
-            cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+            cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
             break;
           end
           cfg.clk_rst_vif.wait_n_clks(1);

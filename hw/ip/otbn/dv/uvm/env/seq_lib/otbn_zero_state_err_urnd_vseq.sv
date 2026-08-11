@@ -21,7 +21,7 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
         super.body();
       end
       begin
-        bit [31:0] err_val = 32'd1 << 20;
+        err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
         string prng_path = "tb.dut.u_otbn_core.u_otbn_rnd.u_prim_trivium.state_q";
 
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 1000));
@@ -30,7 +30,7 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
         `DV_CHECK_FATAL(uvm_hdl_release(prng_path) == 1);
         `uvm_info(`gfn,"string released", UVM_HIGH)
         `uvm_info(`gfn,"injecting zero state error into ISS", UVM_HIGH)
-        cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+        cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
         cfg.clk_rst_vif.wait_clks(1);
         cfg.model_agent_cfg.vif.otbn_set_no_sec_wipe_chk();
         wait (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
