@@ -175,7 +175,8 @@ enum {
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
-  kFlashCtrlSecMmioDataRegionProtect = 1,
+  // 2 writes: MP_REGION_${region} and MP_REGION_CFG_${region}.
+  kFlashCtrlSecMmioDataRegionProtect = 2,
   kFlashCtrlSecMmioDataRegionProtectLock = 1,
 };
 
@@ -606,8 +607,8 @@ void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page);
  * bits) and the cfg_wen register (preventing further writes to cfg).
  *
  * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoLockdown)` when sec_mmio is
- * being used to check expectations.
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPageLockdown)` when sec_mmio
+ * is being used to check expectations.
  *
  * @param info_page An information page.
  */

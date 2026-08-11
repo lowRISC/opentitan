@@ -583,7 +583,7 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
   mp_region_cfg = bitfield_field32_write(
       mp_region_cfg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD, kMultiBitBool4True);
 
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 1);
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 2);
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtectLock, 1);
   sec_mmio_write32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region,
                    mp_region_cfg);
