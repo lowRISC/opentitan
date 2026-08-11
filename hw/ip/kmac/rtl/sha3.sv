@@ -45,8 +45,10 @@ module sha3
   input keccak_strength_e strength_i, // see sha3pad for details
 
   // controls
-  input start_i,   // see sha3pad for details
-  input process_i, // see sha3pad for details
+  input start_i,    // see sha3pad for details
+  input process_i,  // see sha3pad for details
+  input stop_i,     // see sha3pad for details
+  input continue_i, // see sha3pad for details
 
   // run_i is a pulse signal to trigger the keccak_round manually by SW.
   // It is used to run additional keccak_f after sponge absorbing is completed.
@@ -56,6 +58,14 @@ module sha3
 
   output prim_mubi_pkg::mubi4_t absorbed_o,
   output logic                  squeezing_o,
+
+  // Indication that the absorb was stopped and the keccak state holds a context
+  // that SW can save.
+  output prim_mubi_pkg::mubi4_t stopped_o,
+  output logic                  stop_error_o,
+
+  // SW has restored a context, so we can absorb.
+  output logic                  state_restored_o,
 
   // Indicate of one block processed. KMAC main state tracks the progression
   // based on this signal.
@@ -74,6 +84,7 @@ module sha3
   input [Share-1:0]         state_we_i,
   input [StateWrAddrW-1:0]  state_waddr_i,
   input [StateWrWidth-1:0]  state_wdata_i,
+  input                     state_write_start_i,
 
   // REQ/ACK interface for the Keccak core. This can be used to delay the
   // processing e.g. to avoid power spikes at the chip level due to too many
@@ -124,6 +135,11 @@ module sha3
   // is completed, which is the `done_i` pulse signal.
   prim_mubi_pkg::mubi4_t absorbed;
 
+  // stopped is a pulse signal that indicates the absorb has been ended without
+  // padding for a context save. After this, the state is exposed to SW until
+  // the `done_i` pulse signal is raised.
+  prim_mubi_pkg::mubi4_t stopped;
+
   // `squeezing` is a status indicator that SHA3 core is in sponge squeezing
   // stage. In this stage, the state output is valid, and software can manually
   // trigger keccak_round logic to get more digest outputs in case the output
@@ -139,15 +155,31 @@ module sha3
   sha3_st_sparse_e st, st_d;
 
   // Keccak control signal (filtered by State Machine)
-  logic keccak_start, keccak_process;
+  logic keccak_start, keccak_process, keccak_stop, keccak_continue;
   prim_mubi_pkg::mubi4_t keccak_done;
 
   // Clear the keccak state when an operation is completed. Also clear it
   // when a new operation is started. This is needed to avoid that when
   // SW has written to the state register and an app interface starts a new
   // operation afterwards it accidentially uses that written state.
+  // The state is cleared as well when SW claims the block to restore a
+  // context, so that a restore always starts from a known state.
   prim_mubi_pkg::mubi4_t keccak_clear;
-  assign keccak_clear = keccak_start ? prim_mubi_pkg::MuBi4True : keccak_done;
+  assign keccak_clear = (keccak_start || state_write_start_i)
+                        ? prim_mubi_pkg::MuBi4True : keccak_done;
+
+  // Track if SW has restored a context since the keccak state was cleared.
+  logic state_restored_d, state_restored_q;
+  assign state_restored_d =
+      prim_mubi_pkg::mubi4_test_true_strict(keccak_clear) ? 1'b 0 :
+      |state_we_i                                         ? 1'b 1 : state_restored_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) state_restored_q <= 1'b 0;
+    else         state_restored_q <= state_restored_d;
+  end
+
+  assign state_restored_o = state_restored_q;
 
   // alert signals
   logic round_count_error, msg_count_error;
@@ -215,14 +247,23 @@ module sha3
     else         absorbed_o <= absorbed;
   end
 
+  // Stopped output, latched like `absorbed_o`
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) stopped_o <= prim_mubi_pkg::MuBi4False;
+    else         stopped_o <= stopped;
+  end
+
   // Squeezing output
   assign squeezing_o = squeezing;
 
   // processing
+  // A context switch also consumes `process_i`, as it uses the same path to
+  // flush the message FIFO. It ends with `stopped` instead of `absorbed`.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)        processing <= 1'b 0;
     else if (process_i) processing <= 1'b 1;
-    else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed)) begin
+    else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed) ||
+             prim_mubi_pkg::mubi4_test_true_strict(stopped)) begin
       processing <= 1'b 0;
     end
   end
@@ -255,6 +296,8 @@ module sha3
     // default output values
     keccak_start = 1'b 0;
     keccak_process = 1'b 0;
+    keccak_stop = 1'b 0;
+    keccak_continue = 1'b 0;
     sw_keccak_run = 1'b 0;
     keccak_done = prim_mubi_pkg::MuBi4False;
 
@@ -271,20 +314,48 @@ module sha3
           st_d = StAbsorb_sparse;
 
           keccak_start = 1'b 1;
+        end else if (continue_i) begin
+          // Resume a previously saved context. The keccak state has been
+          // restored by SW, so no prefix or key is needed.
+          st_d = StAbsorb_sparse;
+
+          keccak_continue = 1'b 1;
         end else begin
           st_d = StIdle_sparse;
         end
       end
 
       StAbsorb_sparse: begin
-        if (process_i && !processing) begin
+        if (stop_i) begin
+          st_d = StAbsorb_sparse;
+
+          keccak_stop = 1'b 1;
+        end else if (process_i && !processing) begin
           st_d = StAbsorb_sparse;
 
           keccak_process = 1'b 1;
         end else if (prim_mubi_pkg::mubi4_test_true_strict(absorbed)) begin
           st_d = StSqueeze_sparse;
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(stopped)) begin
+          st_d = StStop_sparse;
         end else begin
           st_d = StAbsorb_sparse;
+        end
+      end
+
+      StStop_sparse: begin
+        // The absorb has been stopped at a block boundary. Expose the state so
+        // that SW can save it, but do not indicate squeezing as this is not a
+        // digest. Only `done_i` is accepted, which clears the state.
+        state_valid = 1'b 1;
+        mux_sel = MuxRelease;
+
+        if (prim_mubi_pkg::mubi4_test_true_strict(done_i)) begin
+          st_d = StFlush_sparse;
+
+          keccak_done = done_i;
+        end else begin
+          st_d = StStop_sparse;
         end
       end
 
@@ -359,6 +430,8 @@ module sha3
   //   info[ 1]: process_i set
   //   info[ 2]: run_i set
   //   info[ 3]: done_i set
+  //   info[ 4]: stop_i set
+  //   info[ 5]: continue_i set
   //  - Sw set process_i, run_i, done_i without start_i
 
   always_comb begin
@@ -366,55 +439,66 @@ module sha3
 
     unique case (st)
       StIdle_sparse: begin
-        if (process_i || run_i ||
+        if (process_i || run_i || stop_i ||
           prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: 24'({done_i, run_i, process_i, start_i})
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
           };
         end
       end
 
       StAbsorb_sparse: begin
-        if (start_i || run_i || prim_mubi_pkg::mubi4_test_true_loose(done_i)
+        if (start_i || run_i || continue_i
+          || prim_mubi_pkg::mubi4_test_true_loose(done_i)
           || (process_i && processing)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: 24'({done_i, run_i, process_i, start_i})
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
+          };
+        end
+      end
+
+      StStop_sparse: begin
+        if (start_i || process_i || run_i || stop_i || continue_i) begin
+          error_o = '{
+            valid: 1'b 1,
+            code: ErrSha3SwControl,
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
           };
         end
       end
 
       StSqueeze_sparse: begin
-        if (start_i || process_i) begin
+        if (start_i || process_i || stop_i || continue_i) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: 24'({done_i, run_i, process_i, start_i})
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
           };
         end
       end
 
       StManualRun_sparse: begin
-        if (start_i || process_i || run_i ||
+        if (start_i || process_i || run_i || stop_i || continue_i ||
           prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: 24'({done_i, run_i, process_i, start_i})
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
           };
         end
       end
 
       StFlush_sparse: begin
-        if (start_i || process_i || run_i ||
+        if (start_i || process_i || run_i || stop_i || continue_i ||
           prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: 24'({done_i, run_i, process_i, start_i})
+            info: 24'({continue_i, stop_i, done_i, run_i, process_i, start_i})
           };
         end
       end
@@ -460,12 +544,16 @@ module sha3
     .lc_escalate_en_i (lc_escalate_en_i),
 
     // controls
-    .start_i   (keccak_start),
-    .process_i (keccak_process),
-    .done_i    (keccak_done),
+    .start_i    (keccak_start),
+    .process_i  (keccak_process),
+    .stop_i     (keccak_stop),
+    .continue_i (keccak_continue),
+    .done_i     (keccak_done),
 
     // output
     .absorbed_o         (absorbed),
+    .stopped_o          (stopped),
+    .stop_error_o       (stop_error_o),
     .sparse_fsm_error_o (sha3pad_state_error),
     .msg_count_error_o  (msg_count_error)
   );
@@ -527,7 +615,7 @@ module sha3
 
   // Unknown check for case statement
   `ASSERT(MuxSelKnown_A, mux_sel inside {MuxGuard, MuxRelease})
-  `ASSERT(FsmKnown_A, st inside {StIdle_sparse, StAbsorb_sparse, StSqueeze_sparse,
+  `ASSERT(FsmKnown_A, st inside {StIdle_sparse, StAbsorb_sparse, StStop_sparse, StSqueeze_sparse,
                                  StManualRun_sparse, StFlush_sparse, StTerminalError_sparse})
 
   // `state` shall be 0 in invalid
@@ -547,7 +635,7 @@ module sha3
 
   // If control received but not propagated into submodules, it is error condition
   `ASSERT(ErrDetection_A, error_o.valid
-    |-> {start_i,      process_i,      run_i,         done_i}
-     != {keccak_start, keccak_process, sw_keccak_run, keccak_done})
+    |-> {start_i,      process_i,      run_i,         done_i,      stop_i,      continue_i}
+     != {keccak_start, keccak_process, sw_keccak_run, keccak_done, keccak_stop, keccak_continue})
 
 endmodule

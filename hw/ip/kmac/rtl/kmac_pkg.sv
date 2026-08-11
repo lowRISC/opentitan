@@ -74,34 +74,37 @@ package kmac_pkg;
   // multiple commands at once. Additionally they are sparse encoded to harden
   // against FI attacks
   //
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
-  //      -s 1891656028 --language=sv
+  // Encoding generated at commit 88ec88cefa using Python 3.12.13 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv --avoid-zero \
+  //     --seed 1891656028 --distance 3 --states 7 --bits 6
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (50.00%)
-  //  4: |||||||||||||||| (40.00%)
-  //  5: |||| (10.00%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 4
   //
-  typedef enum logic [5:0] {
-    //CmdNone      = 6'b001011, // dec 10
+  localparam int CmdStateWidth = 6;
+  typedef enum logic [CmdStateWidth-1:0] {
+    CmdNone       = 6'b000000, // dec  0
     // CmdNone is manually set to all zero by design!
     // The minimum Hamming distance is still 3
-    CmdNone      = 6'b000000, // dec  0
-    CmdStart     = 6'b011101, // dec 29
-    CmdProcess   = 6'b101110, // dec 46
-    CmdManualRun = 6'b110001, // dec 49
-    CmdDone      = 6'b010110  // dec 22
+    CmdStart      = 6'b000111, // dec  7
+    CmdProcess    = 6'b110010, // dec 50
+    CmdManualRun  = 6'b101110, // dec 46
+    CmdDone       = 6'b110101, // dec 53
+    CmdStop       = 6'b011100, // dec 28
+    CmdContinue   = 6'b101001, // dec 41
+    CmdStateWrite = 6'b011011  // dec 27
   } kmac_cmd_e;
 
   // Timer
@@ -354,62 +357,68 @@ package kmac_pkg;
     SelSw     = 5'b01111
   } app_mux_sel_e ;
 
-  // Encoding generated at commit 77aa3fcc58 using Python 3.10.19 with:
+  // Encoding generated at commit 6852a91493 using Python 3.12.13 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 3362063275 --distance 3 --states 18 --bits 10
+  //     --seed 404110924 --distance 3 --states 19 --bits 10
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||| (13.07%)
-  //  4: |||||||||||||||||||| (26.14%)
-  //  5: ||||||||||||||||||| (24.84%)
-  //  6: |||||||||||||| (18.30%)
-  //  7: |||||||| (10.46%)
-  //  8: |||| (5.23%)
-  //  9: | (1.96%)
+  //  3: ||||||||||| (14.04%)
+  //  4: ||||||||||||||||||| (22.81%)
+  //  5: ||||||||||||||||| (20.47%)
+  //  6: |||||||||||||||||||| (23.98%)
+  //  7: ||||||||||| (13.45%)
+  //  8: ||| (4.09%)
+  //  9:  (1.17%)
   // 10: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 9
   // Minimum Hamming weight: 3
-  // Maximum Hamming weight: 7
+  // Maximum Hamming weight: 8
   //
   localparam int AppStateWidth = 10;
   typedef enum logic [AppStateWidth-1:0] {
-    StIdle = 10'b0110100101,
+    StIdle = 10'b1011100011,
 
     // In StAppCfg state, it latches the cfg from AppCfg parameter to determine the kmac_mode,
     // sha3_mode, and keccak strength.
     // In StAppOutLen, the app interface pushes encoded output length into the core.
-    StAppCfg        = 10'b1000001010,
-    StAppMsg        = 10'b1011100000,
-    StAppOutLen     = 10'b0011101110,
-    StAppProcess    = 10'b0100111111,
-    StAppWait       = 10'b0100010001,
-    StAppPushDigest = 10'b1100100011,
-    StAppFinish     = 10'b1001110010,
+    StAppCfg        = 10'b0111000011,
+    StAppMsg        = 10'b1110000000,
+    StAppOutLen     = 10'b0100110011,
+    StAppProcess    = 10'b1101111101,
+    StAppWait       = 10'b1111110000,
+    StAppPushDigest = 10'b0001011001,
+    StAppFinish     = 10'b1111101100,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
     // requests from apps will be stalled.
-    StSw = 10'b1101000010,
+    StSw = 10'b0000110110,
+
+    // SW claimed the block to restore a previously saved Keccak state. Writes
+    // to the state window are only accepted here. SW leaves this state with
+    // the Continue command, or with the Done command to release the block
+    // again.
+    StStateWrite = 10'b1101101011,
 
     // Error KeyNotValid triggers if key is used but it is not valid at the time.
-    StErrorKeyNotValid = 10'b0000001111,
+    StErrorKeyNotValid = 10'b1000011011,
 
-    StErrorAwaitMsg         = 10'b1100100100,
-    StErrorNotify           = 10'b0111100010,
-    StErrorAwaitTermination = 10'b0101101000,
-    StErrorFinish           = 10'b0011111101,
-    StErrorAwaitSw          = 10'b0100001100,
-    StErrorAwaitAbsorbed    = 10'b1110001111,
-    StErrorPush             = 10'b0010110100,
+    StErrorAwaitMsg         = 10'b1010001100,
+    StErrorNotify           = 10'b0010001011,
+    StErrorAwaitTermination = 10'b0011111000,
+    StErrorFinish           = 10'b0101100111,
+    StErrorAwaitSw          = 10'b0011010100,
+    StErrorAwaitAbsorbed    = 10'b0011101101,
+    StErrorPush             = 10'b1110010011,
 
     // This state is used for terminal errors
-    StTerminalError = 10'b1101111001
+    StTerminalError = 10'b0110011101
   } st_e;
 
   // MsgWidth : 64
@@ -506,6 +515,15 @@ package kmac_pkg;
     // ErrSwHashingWithoutEntropyReady
     //  - Sw issues KMAC op without Entropy setting.
     ErrSwHashingWithoutEntropyReady = 8'h 09,
+
+    // ErrSwStopNotBlockAligned
+    ErrSwStopNotBlockAligned = 8'h 0A,
+
+    // ErrSwSaveRestoreSideload
+    ErrSwSaveRestoreSideload = 8'h 0B,
+
+    // ErrSwContinueWithoutContext
+    ErrSwContinueWithoutContext = 8'h 0C,
 
     // Error due to lc_escalation_en_i or fatal fault
     ErrFatalError = 8'h C1,
