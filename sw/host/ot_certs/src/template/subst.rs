@@ -25,6 +25,8 @@ use crate::template::{
 #[serde(untagged)]
 pub enum SubstValue {
     ByteArray(Vec<u8>),
+    #[serde(skip)]
+    TweakedByteArray(Vec<u8>),
     Uint32(u32),
     String(String),
     Boolean(bool),
@@ -67,7 +69,7 @@ impl SubstValue {
     // type. If the type specified size is zero then any size is accepted, otherwise
     // the size constraint will be enforced.
     pub fn parse(&self, var_type: &VariableType) -> Result<SubstValue> {
-        match *var_type {
+        let parsed = match *var_type {
             VariableType::ByteArray { .. } => {
                 let (min_size, max_size) = var_type.array_size();
                 self.parse_as_byte_array(min_size, max_size)
@@ -76,12 +78,19 @@ impl SubstValue {
             VariableType::String { .. } => self.parse_as_string(var_type.size()),
             VariableType::Boolean => self.parse_as_boolean(),
             VariableType::Selector { num_choices } => self.parse_as_selector(num_choices),
+        }?;
+
+        if var_type.use_msb_tweak() {
+            if let SubstValue::ByteArray(bytes) = parsed {
+                return Ok(SubstValue::TweakedByteArray(bytes));
+            }
         }
+        Ok(parsed)
     }
 
     fn parse_as_byte_array(&self, min_size: usize, max_size: usize) -> Result<SubstValue> {
         match self {
-            SubstValue::ByteArray(bytes) => {
+            SubstValue::ByteArray(bytes) | SubstValue::TweakedByteArray(bytes) => {
                 ensure!(
                     (min_size == 0 && max_size == 0)
                         || (bytes.len() >= min_size && bytes.len() <= max_size),
@@ -109,7 +118,7 @@ impl SubstValue {
 
     fn parse_as_integer(&self, size: usize) -> Result<SubstValue> {
         match self {
-            SubstValue::ByteArray(bytes) => {
+            SubstValue::ByteArray(bytes) | SubstValue::TweakedByteArray(bytes) => {
                 // Integer are represented as byte arrays.
                 ensure!(
                     size == 0 || bytes.len() <= size,
@@ -251,8 +260,9 @@ impl ConvertValue<Vec<u8>> for SubstValue {
             tweak_msb: None,
         })?;
         // The only supported conversion to byte array is from a byte array.
-        let SubstValue::ByteArray(bytes) = val else {
-            bail!("cannot substitute a byte-array field with value {:?}", self);
+        let bytes = match val {
+            SubstValue::ByteArray(bytes) | SubstValue::TweakedByteArray(bytes) => bytes,
+            _ => bail!("cannot substitute a byte-array field with value {:?}", self),
         };
         ensure!(
             convert.is_none(),
@@ -283,6 +293,18 @@ impl ConvertValue<BigUint> for SubstValue {
                     ),
                 }
             }
+            SubstValue::TweakedByteArray(mut bytes) => {
+                if !bytes.is_empty() {
+                    bytes[0] |= 0x80;
+                }
+                match convert {
+                    None | Some(Conversion::BigEndian) => Ok(BigUint::from_bytes_be(&bytes)),
+                    _ => bail!(
+                        "substitution of an integer field with a byte-array cannot specify conversion {:?}",
+                        convert
+                    ),
+                }
+            }
             _ => bail!("cannot substitute an integer field with value {:?}", self),
         }
     }
@@ -304,7 +326,7 @@ impl ConvertValue<String> for SubstValue {
                 );
                 Ok(x.clone())
             }
-            SubstValue::ByteArray(bytes) => match convert {
+            SubstValue::ByteArray(bytes) | SubstValue::TweakedByteArray(bytes) => match convert {
                 Some(Conversion::LowercaseHex) => Ok(bytes.encode_hex::<String>()),
                 _ => bail!(
                     "substitution of a string field with a byte-array cannot specify conversion {:?}",
