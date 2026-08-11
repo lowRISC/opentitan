@@ -42,6 +42,7 @@ rust_library(
         "src/commands/rsa/sign.rs",
         "src/commands/rsa/verify.rs",
         "src/commands/slh_dsa/generate.rs",
+        "src/commands/slh_dsa/import.rs",
         "src/commands/slh_dsa/mod.rs",
         "src/commands/slh_dsa/sign.rs",
         "src/commands/slh_dsa/verify.rs",
