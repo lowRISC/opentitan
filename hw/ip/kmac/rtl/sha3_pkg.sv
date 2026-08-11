@@ -138,13 +138,9 @@ package sha3_pkg;
     // completed. The main indicator is `absorbed` signal.
     StAbsorb_sparse = 6'b100001,
 
-    // Reserved state for context-switching. See #3479.
-    // Abort stage can be moved from StAbsorb stage. It basically holds the
-    // keccak round operation and opens up the internal state variable to the
-    // software. This stage is for the software to pause current operation and
-    // store the internal state elsewhere then initiates new KMAC/SHA3 process.
-    // StAbort only can be moved to _StFlush_.
-    //StAbort_sparse = 6'b011101,
+    // The absorb has been stopped at a block boundary for a context save. The
+    // Keccak state is exposed to SW and only the Done command is accepted.
+    StStop_sparse = 6'b011101,
 
     // Squeeze stage allows the software to read the internal state.
     // If `EnMasking`, it opens the read permission of two share of the state.
@@ -169,18 +165,18 @@ package sha3_pkg;
   typedef enum logic [StateWidthLogic-1:0] {
     StIdle,
     StAbsorb,
-    //StAbort,
     StSqueeze,
     StManualRun,
     StFlush,
-    StError
+    StError,
+    StStop
   } sha3_st_e;
 
   function automatic sha3_st_e sparse2logic(sha3_st_sparse_e st);
     unique case (st)
       StIdle_sparse      : return StIdle;
       StAbsorb_sparse    : return StAbsorb;
-      //StAbort_sparse   : return StAbort;
+      StStop_sparse      : return StStop;
       StSqueeze_sparse   : return StSqueeze;
       StManualRun_sparse : return StManualRun;
       StFlush_sparse     : return StFlush;
