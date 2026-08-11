@@ -315,7 +315,7 @@ module earlgrey_pd_main #(
   // local parameters for spi_host1
   localparam int SpiHost1NumCS = 1;
   // local parameters for rram_macro
-  localparam int RramMacroTotalPages = rram_ctrl_pkg::TotalPages;
+  localparam int RramMacroTotalDataPages = rram_ctrl_pkg::TotalDataPages;
   localparam int RramMacroDataWidth = rram_ctrl_pkg::DataWidth;
   localparam int RramMacroWordsPerPage = rram_ctrl_pkg::WordsPerPage;
   localparam int RramMacroTotalInfoPages = rram_ctrl_pkg::TotalInfoPages;
@@ -2076,7 +2076,7 @@ module earlgrey_pd_main #(
   );
 
   rram_macro #(
-    .TotalPages(RramMacroTotalPages),
+    .TotalDataPages(RramMacroTotalDataPages),
     .DataWidth(RramMacroDataWidth),
     .WordsPerPage(RramMacroWordsPerPage),
     .TotalInfoPages(RramMacroTotalInfoPages),

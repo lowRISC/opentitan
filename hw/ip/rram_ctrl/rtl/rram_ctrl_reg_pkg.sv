@@ -11,6 +11,7 @@ package rram_ctrl_reg_pkg;
   parameter int NumRegions = 10;
   parameter int NumInfoPages = 8;
   parameter int NumDataPages = 4096;
+  parameter int NumOtpPages = 5;
   parameter int WordsPerPage = 32;
   parameter int BytesPerWord = 16;
   parameter int BytesPerPage = 512;

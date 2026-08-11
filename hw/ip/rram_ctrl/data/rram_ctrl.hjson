@@ -387,6 +387,12 @@
       default:   "4096",
       local:     "true"
     },
+    { name:      "NumOtpPages",
+      desc:      "Number of data pages reserved for OTP",
+      type:      "int",
+      default:   "5",
+      local:     "true"
+    },
     { name:      "WordsPerPage",
       desc:      "Number of words per page",
       type:      "int",

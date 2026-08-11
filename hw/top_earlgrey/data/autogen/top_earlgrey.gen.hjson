@@ -6736,7 +6736,7 @@
       }
       param_decl:
       {
-        TotalPages: rram_ctrl_pkg::TotalPages
+        TotalDataPages: rram_ctrl_pkg::TotalDataPages
         DataWidth: rram_ctrl_pkg::DataWidth
         WordsPerPage: rram_ctrl_pkg::WordsPerPage
         TotalInfoPages: rram_ctrl_pkg::TotalInfoPages
@@ -6750,13 +6750,13 @@
       param_list:
       [
         {
-          name: TotalPages
+          name: TotalDataPages
           desc: Total number of data pages
           type: int
-          default: rram_ctrl_pkg::TotalPages
+          default: rram_ctrl_pkg::TotalDataPages
           local: "true"
           expose: "true"
-          name_top: RramMacroTotalPages
+          name_top: RramMacroTotalDataPages
         }
         {
           name: DataWidth

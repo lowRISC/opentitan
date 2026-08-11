@@ -94,7 +94,7 @@ module rram_ctrl_mp
   // Address is invalid if:
   // - The address extends beyond the end of the partition in question
   // - The address overflowed the control counters
-  assign end_addr = data_part_sel ? TotalPages - 1 : TotalInfoPages - 1;
+  assign end_addr = data_part_sel ? TotalDataPages - 1 : TotalInfoPages - 1;
 
   assign addr_invalid = (ctrl_req & (page_addr > end_addr)) |
                         (ctrl_rd_req_i & ctrl_rd_addr_ovfl_i) |

@@ -39,7 +39,11 @@ static ptrdiff_t get_data_region_lock_reg_offset(uint32_t region) {
 // generated parameters from hjson
 enum {
   kNumInfoPages = RRAM_CTRL_PARAM_NUM_INFO_PAGES,
+  // The full physical data partition, OTP tail included.
   kNumDataPages = RRAM_CTRL_PARAM_NUM_DATA_PAGES,
+  // Excludes the OTP tail (unlike `kNumDataPages` above).
+  kNumUsableDataPages =
+      RRAM_CTRL_PARAM_NUM_DATA_PAGES - RRAM_CTRL_PARAM_NUM_OTP_PAGES,
   kBytesPerWord = RRAM_CTRL_PARAM_BYTES_PER_WORD,
   kBytesPerPage = RRAM_CTRL_PARAM_BYTES_PER_PAGE,
   kExecEn = RRAM_CTRL_PARAM_EXEC_EN,
@@ -604,7 +608,7 @@ dif_result_t dif_rram_ctrl_get_default_region_properties(
 dif_result_t dif_rram_ctrl_set_data_region_properties(
     dif_rram_ctrl_state_t *handle, uint32_t region,
     dif_rram_ctrl_data_region_properties_t config) {
-  const uint32_t page_limit = kNumDataPages;
+  const uint32_t page_limit = kNumUsableDataPages;
   if (handle == NULL || region >= kNumRegions ||
       config.base + config.size > page_limit) {
     return kDifBadArg;

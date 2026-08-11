@@ -114,7 +114,7 @@ module rram_ctrl_region_cfg
 
   // Default region applies if no other region matched
   assign region_cfgs_o[MpRegions+1].base            = '0;
-  assign region_cfgs_o[MpRegions+1].size            = TotalPages - 1;
+  assign region_cfgs_o[MpRegions+1].size            = TotalDataPages - 1;
   assign region_cfgs_o[MpRegions+1].cfg.en          = prim_mubi_pkg::MuBi4True;
   assign region_cfgs_o[MpRegions+1].cfg.rd_en       = mubi4_t'(default_cfg_i.rd_en.q);
   assign region_cfgs_o[MpRegions+1].cfg.wr_en       = mubi4_t'(default_cfg_i.wr_en.q);
