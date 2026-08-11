@@ -322,7 +322,7 @@ package csr_utils_pkg;
       csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                  .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
     end else begin
-      `DV_CHECK_EQ(backdoor, 0, "Don't enable backdoor with blocking = 0", error, $sformatf("%m"))
+      if (backdoor) `uvm_error($sformatf("%m"), "Non-blocking backdoor access doesn't make sense.")
       fork
         csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                    .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
