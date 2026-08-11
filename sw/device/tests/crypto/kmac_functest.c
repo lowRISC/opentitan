@@ -205,6 +205,64 @@ static status_t run_kmac(otcrypto_word32_buf_t tag) {
 }
 
 /**
+ * Call KMAC through the streaming API to compute the authentication tag.
+ *
+ * Should only be called when `current_test_vector` is a KMAC-128 operation.
+ * The input message is passed to `otcrypto_kmac_update` in small chunks that
+ * are not aligned to word or Keccak block boundaries.
+ *
+ * @param[out] tag Computed tag (digest).
+ * @return OK or error.
+ */
+static status_t run_kmac_streamed(otcrypto_word32_buf_t tag) {
+  current_test_vector->key.checksum =
+      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
+  otcrypto_const_byte_buf_t cust_str = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->cust_str.data,
+      current_test_vector->cust_str.len);
+
+  otcrypto_kmac_context_t ctx;
+  TRY(otcrypto_kmac_init(&ctx, &current_test_vector->key, &cust_str));
+
+  const int kStreamChunkBytes = 9;
+
+  // Iterate over the message in chunks.
+  for (size_t offset = 0; offset < current_test_vector->input_msg.len;) {
+    size_t chunk_len = current_test_vector->input_msg.len - offset;
+    if (chunk_len > kStreamChunkBytes) {
+      chunk_len = kStreamChunkBytes;
+    }
+    otcrypto_const_byte_buf_t chunk = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, current_test_vector->input_msg.data + offset,
+        chunk_len);
+    TRY(otcrypto_kmac_update(&ctx, &chunk));
+    offset += chunk_len;
+  }
+
+  return otcrypto_kmac_final(&ctx, current_test_vector->digest.len, &tag);
+}
+
+/**
+ * Run the KMAC-128 test pointed to by `current_test_vector` through the
+ * streaming API.
+ */
+static status_t run_streaming_test_vector(void) {
+  size_t digest_num_words = current_test_vector->digest.len / sizeof(uint32_t);
+  if (current_test_vector->digest.len % sizeof(uint32_t) != 0) {
+    digest_num_words++;
+  }
+  uint32_t tag_data[digest_num_words];
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, digest_num_words);
+
+  TRY(run_kmac_streamed(tag));
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)tag.data,
+                      current_test_vector->digest.data,
+                      current_test_vector->digest.len);
+  return OTCRYPTO_OK;
+}
+
+/**
  * Run the test pointed to by `current_test_vector`.
  */
 static status_t run_test_vector(void) {
@@ -505,6 +563,11 @@ bool test_main(void) {
              ARRAYSIZE(kKmacTestVectors),
              current_test_vector->vector_identifier);
     EXECUTE_TEST(test_result, run_test_vector);
+    // Only test the streaming for KMAC-128.
+    if (current_test_vector->test_operation == kKmacTestOperationKmac &&
+        current_test_vector->security_strength == 128) {
+      EXECUTE_TEST(test_result, run_streaming_test_vector);
+    }
   }
   EXECUTE_TEST(test_result, run_negative_tests);
   return status_ok(test_result);
