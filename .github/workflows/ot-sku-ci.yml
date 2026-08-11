@@ -1,0 +1,18 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This empty file is needed to satisfy Github Actions' rule that a workflow
+# must exist on the default (master) branch in order to run on other branches.
+# The primary use case for this workflow is the earlgrey_1.0.0 branch.
+
+name: OT SKU CI
+on: workflow_dispatch
+
+obs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+        echo '::error::This workflow cannot be run on the master branch'
+        exit 1
