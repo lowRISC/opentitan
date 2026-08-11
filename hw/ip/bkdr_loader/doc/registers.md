@@ -9,7 +9,9 @@
 | bkdr_loader.[`CONTROL`](#control)                                     | 0x4      |        4 | Control register                                                                    |
 | bkdr_loader.[`NUM_BKDR_TARGETS`](#num_bkdr_targets)                   | 0x8      |        4 | Number of bkdr targets available.                                                   |
 | bkdr_loader.[`MISSION_MODE_SWITCH_DELAY`](#mission_mode_switch_delay) | 0xc      |        4 | Number of SoC clock cycles to wait before executing switch to mission mode          |
-| bkdr_loader.[`USR_ACCESS_TIMESTAMP`](#usr_access_timestamp)           | 0x10     |        4 | TIMESTAMP value written to the USR_ACCESS register during bitstream generation.     |
+| bkdr_loader.[`CLEAR_INDEX_START`](#clear_index_start)                 | 0x10     |        4 | Word index the segment to be cleared running a segment clear operation by asserting |
+| bkdr_loader.[`CLEAR_INDEX_END`](#clear_index_end)                     | 0x14     |        4 | Word index the segment to be cleared running a segment clear operation by asserting |
+| bkdr_loader.[`USR_ACCESS_TIMESTAMP`](#usr_access_timestamp)           | 0x18     |        4 | TIMESTAMP value written to the USR_ACCESS register during bitstream generation.     |
 | bkdr_loader.[`TARGET_INFO_0`](#target_info)                           | 0x100    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
 | bkdr_loader.[`TARGET_INFO_1`](#target_info)                           | 0x104    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
 | bkdr_loader.[`TARGET_INFO_2`](#target_info)                           | 0x108    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
@@ -110,23 +112,24 @@ Status register
 Control register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xff0f`
+- Reset mask: `0xff1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DONE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "AUTO_INCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TARGET_IDX", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "DONE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_SEGMENT_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "AUTO_INCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "TARGET_IDX", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                 |
-|:------:|:------:|:-------:|:-------------------------------------|
-| 31:16  |        |         | Reserved                             |
-|  15:8  |   rw   |   0x0   | [TARGET_IDX](#control--target_idx)   |
-|  7:4   |        |         | Reserved                             |
-|   3    |   rw   |   0x0   | [AUTO_INCR](#control--auto_incr)     |
-|   2    |   rw   |   0x0   | [CLEAR_START](#control--clear_start) |
-|   1    |   rw   |   0x0   | [WRITE_ENA](#control--write_ena)     |
-|   0    |   rw   |   0x0   | [DONE](#control--done)               |
+|  Bits  |  Type  |  Reset  | Name                                                 |
+|:------:|:------:|:-------:|:-----------------------------------------------------|
+| 31:16  |        |         | Reserved                                             |
+|  15:8  |   rw   |   0x0   | [TARGET_IDX](#control--target_idx)                   |
+|  7:5   |        |         | Reserved                                             |
+|   4    |   rw   |   0x0   | [AUTO_INCR](#control--auto_incr)                     |
+|   3    |   rw   |   0x0   | [CLEAR_SEGMENT_START](#control--clear_segment_start) |
+|   2    |   rw   |   0x0   | [CLEAR_START](#control--clear_start)                 |
+|   1    |   rw   |   0x0   | [WRITE_ENA](#control--write_ena)                     |
+|   0    |   rw   |   0x0   | [DONE](#control--done)                               |
 
 ### CONTROL . TARGET_IDX
 The bkdr memory index to access.
@@ -144,6 +147,14 @@ effect, whereas writing `WRITE_DATA[1]` launches the bkdr write and `INDEX`
 increment. Writing to `WRITE_DATA[0]` and `WRITE_DATA[1]` can be repeated until
 the memory block has been written. Deasserting `AUTO_INCR` returns to the manual
 mode.
+
+### CONTROL . CLEAR_SEGMENT_START
+Write 1 to trigger the bkdr_loader to clear a memory segment defined by
+[`CLEAR_INDEX_START`, `CLEAR_INDEX_END`) in the target, which is currently
+selected by `TARGET_IDX`. Register self-clears and always reads
+back 0. The word that is cleared with is selected by `WRITE_DATA`.
+Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
+bkdr writes will not have any effects during an active clear operation.
 
 ### CONTROL . CLEAR_START
 Write 1 to trigger the bkdr_loader to clear the entire target memory
@@ -198,9 +209,43 @@ after writing CONTROL.DONE register.
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:0  |   rw   | 0x61a8  | VAL    |               |
 
+## CLEAR_INDEX_START
+Word index the segment to be cleared running a segment clear operation by asserting
+`CLEAR_SEGMENT_START` begins. Inclusive.
+- Offset: `0x10`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | VAL    |               |
+
+## CLEAR_INDEX_END
+Word index the segment to be cleared running a segment clear operation by asserting
+`CLEAR_SEGMENT_START` ends. Exclusive.
+- Offset: `0x14`
+- Reset default: `0x1`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x1   | VAL    |               |
+
 ## USR_ACCESS_TIMESTAMP
 TIMESTAMP value written to the USR_ACCESS register during bitstream generation.
-- Offset: `0x10`
+- Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

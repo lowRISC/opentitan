@@ -15,7 +15,7 @@ package bkdr_loader_reg_pkg;
   parameter int RegsAw = 11;
 
   // Number of registers for every interface
-  parameter int NumRegsRegs = 82;
+  parameter int NumRegsRegs = 84;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
@@ -33,6 +33,10 @@ package bkdr_loader_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } clear_segment_start;
+    struct packed {
+      logic        q;
+      logic        qe;
     } clear_start;
     struct packed {
       logic        q;
@@ -47,6 +51,14 @@ package bkdr_loader_reg_pkg;
   typedef struct packed {
     logic [31:0] q;
   } bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } bkdr_loader_reg2hw_clear_index_start_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } bkdr_loader_reg2hw_clear_index_end_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -78,6 +90,10 @@ package bkdr_loader_reg_pkg;
   } bkdr_loader_hw2reg_status_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } clear_segment_start;
     struct packed {
       logic        d;
       logic        de;
@@ -119,8 +135,10 @@ package bkdr_loader_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    bkdr_loader_reg2hw_control_reg_t control; // [1104:1088]
-    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [1087:1056]
+    bkdr_loader_reg2hw_control_reg_t control; // [1170:1152]
+    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [1151:1120]
+    bkdr_loader_reg2hw_clear_index_start_reg_t clear_index_start; // [1119:1088]
+    bkdr_loader_reg2hw_clear_index_end_reg_t clear_index_end; // [1087:1056]
     bkdr_loader_reg2hw_read_data_mreg_t [7:0] read_data; // [1055:792]
     bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [791:528]
     bkdr_loader_reg2hw_index_reg_t index; // [527:495]
@@ -129,8 +147,8 @@ package bkdr_loader_reg_pkg;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    bkdr_loader_hw2reg_status_reg_t status; // [2276:2275]
-    bkdr_loader_hw2reg_control_reg_t control; // [2274:2273]
+    bkdr_loader_hw2reg_status_reg_t status; // [2278:2277]
+    bkdr_loader_hw2reg_control_reg_t control; // [2276:2273]
     bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [2272:2241]
     bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [2240:2209]
     bkdr_loader_hw2reg_target_info_mreg_t [14:0] target_info; // [2208:1729]
@@ -146,7 +164,9 @@ package bkdr_loader_reg_pkg;
   parameter logic [RegsAw-1:0] BKDR_LOADER_CONTROL_OFFSET = 11'h 4;
   parameter logic [RegsAw-1:0] BKDR_LOADER_NUM_BKDR_TARGETS_OFFSET = 11'h 8;
   parameter logic [RegsAw-1:0] BKDR_LOADER_MISSION_MODE_SWITCH_DELAY_OFFSET = 11'h c;
-  parameter logic [RegsAw-1:0] BKDR_LOADER_USR_ACCESS_TIMESTAMP_OFFSET = 11'h 10;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_CLEAR_INDEX_START_OFFSET = 11'h 10;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_CLEAR_INDEX_END_OFFSET = 11'h 14;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_USR_ACCESS_TIMESTAMP_OFFSET = 11'h 18;
   parameter logic [RegsAw-1:0] BKDR_LOADER_TARGET_INFO_0_OFFSET = 11'h 100;
   parameter logic [RegsAw-1:0] BKDR_LOADER_TARGET_INFO_1_OFFSET = 11'h 104;
   parameter logic [RegsAw-1:0] BKDR_LOADER_TARGET_INFO_2_OFFSET = 11'h 108;
@@ -312,6 +332,8 @@ package bkdr_loader_reg_pkg;
     BKDR_LOADER_CONTROL,
     BKDR_LOADER_NUM_BKDR_TARGETS,
     BKDR_LOADER_MISSION_MODE_SWITCH_DELAY,
+    BKDR_LOADER_CLEAR_INDEX_START,
+    BKDR_LOADER_CLEAR_INDEX_END,
     BKDR_LOADER_USR_ACCESS_TIMESTAMP,
     BKDR_LOADER_TARGET_INFO_0,
     BKDR_LOADER_TARGET_INFO_1,
@@ -393,89 +415,91 @@ package bkdr_loader_reg_pkg;
   } bkdr_loader_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] BKDR_LOADER_REGS_PERMIT [82] = '{
+  parameter logic [3:0] BKDR_LOADER_REGS_PERMIT [84] = '{
     4'b 0001, // index[ 0] BKDR_LOADER_STATUS
     4'b 0011, // index[ 1] BKDR_LOADER_CONTROL
     4'b 1111, // index[ 2] BKDR_LOADER_NUM_BKDR_TARGETS
     4'b 1111, // index[ 3] BKDR_LOADER_MISSION_MODE_SWITCH_DELAY
-    4'b 1111, // index[ 4] BKDR_LOADER_USR_ACCESS_TIMESTAMP
-    4'b 1111, // index[ 5] BKDR_LOADER_TARGET_INFO_0
-    4'b 1111, // index[ 6] BKDR_LOADER_TARGET_INFO_1
-    4'b 1111, // index[ 7] BKDR_LOADER_TARGET_INFO_2
-    4'b 1111, // index[ 8] BKDR_LOADER_TARGET_INFO_3
-    4'b 1111, // index[ 9] BKDR_LOADER_TARGET_INFO_4
-    4'b 1111, // index[10] BKDR_LOADER_TARGET_INFO_5
-    4'b 1111, // index[11] BKDR_LOADER_TARGET_INFO_6
-    4'b 1111, // index[12] BKDR_LOADER_TARGET_INFO_7
-    4'b 1111, // index[13] BKDR_LOADER_TARGET_INFO_8
-    4'b 1111, // index[14] BKDR_LOADER_TARGET_INFO_9
-    4'b 1111, // index[15] BKDR_LOADER_TARGET_INFO_10
-    4'b 1111, // index[16] BKDR_LOADER_TARGET_INFO_11
-    4'b 1111, // index[17] BKDR_LOADER_TARGET_INFO_12
-    4'b 1111, // index[18] BKDR_LOADER_TARGET_INFO_13
-    4'b 1111, // index[19] BKDR_LOADER_TARGET_INFO_14
-    4'b 1111, // index[20] BKDR_LOADER_WIDTH_INFO_0
-    4'b 1111, // index[21] BKDR_LOADER_WIDTH_INFO_1
-    4'b 1111, // index[22] BKDR_LOADER_WIDTH_INFO_2
-    4'b 1111, // index[23] BKDR_LOADER_WIDTH_INFO_3
-    4'b 1111, // index[24] BKDR_LOADER_WIDTH_INFO_4
-    4'b 1111, // index[25] BKDR_LOADER_WIDTH_INFO_5
-    4'b 1111, // index[26] BKDR_LOADER_WIDTH_INFO_6
-    4'b 1111, // index[27] BKDR_LOADER_WIDTH_INFO_7
-    4'b 1111, // index[28] BKDR_LOADER_WIDTH_INFO_8
-    4'b 1111, // index[29] BKDR_LOADER_WIDTH_INFO_9
-    4'b 1111, // index[30] BKDR_LOADER_WIDTH_INFO_10
-    4'b 1111, // index[31] BKDR_LOADER_WIDTH_INFO_11
-    4'b 1111, // index[32] BKDR_LOADER_WIDTH_INFO_12
-    4'b 1111, // index[33] BKDR_LOADER_WIDTH_INFO_13
-    4'b 1111, // index[34] BKDR_LOADER_WIDTH_INFO_14
-    4'b 1111, // index[35] BKDR_LOADER_DEPTH_INFO_0
-    4'b 1111, // index[36] BKDR_LOADER_DEPTH_INFO_1
-    4'b 1111, // index[37] BKDR_LOADER_DEPTH_INFO_2
-    4'b 1111, // index[38] BKDR_LOADER_DEPTH_INFO_3
-    4'b 1111, // index[39] BKDR_LOADER_DEPTH_INFO_4
-    4'b 1111, // index[40] BKDR_LOADER_DEPTH_INFO_5
-    4'b 1111, // index[41] BKDR_LOADER_DEPTH_INFO_6
-    4'b 1111, // index[42] BKDR_LOADER_DEPTH_INFO_7
-    4'b 1111, // index[43] BKDR_LOADER_DEPTH_INFO_8
-    4'b 1111, // index[44] BKDR_LOADER_DEPTH_INFO_9
-    4'b 1111, // index[45] BKDR_LOADER_DEPTH_INFO_10
-    4'b 1111, // index[46] BKDR_LOADER_DEPTH_INFO_11
-    4'b 1111, // index[47] BKDR_LOADER_DEPTH_INFO_12
-    4'b 1111, // index[48] BKDR_LOADER_DEPTH_INFO_13
-    4'b 1111, // index[49] BKDR_LOADER_DEPTH_INFO_14
-    4'b 1111, // index[50] BKDR_LOADER_READ_DATA_0
-    4'b 1111, // index[51] BKDR_LOADER_READ_DATA_1
-    4'b 1111, // index[52] BKDR_LOADER_READ_DATA_2
-    4'b 1111, // index[53] BKDR_LOADER_READ_DATA_3
-    4'b 1111, // index[54] BKDR_LOADER_READ_DATA_4
-    4'b 1111, // index[55] BKDR_LOADER_READ_DATA_5
-    4'b 1111, // index[56] BKDR_LOADER_READ_DATA_6
-    4'b 1111, // index[57] BKDR_LOADER_READ_DATA_7
-    4'b 1111, // index[58] BKDR_LOADER_WRITE_DATA_0
-    4'b 1111, // index[59] BKDR_LOADER_WRITE_DATA_1
-    4'b 1111, // index[60] BKDR_LOADER_WRITE_DATA_2
-    4'b 1111, // index[61] BKDR_LOADER_WRITE_DATA_3
-    4'b 1111, // index[62] BKDR_LOADER_WRITE_DATA_4
-    4'b 1111, // index[63] BKDR_LOADER_WRITE_DATA_5
-    4'b 1111, // index[64] BKDR_LOADER_WRITE_DATA_6
-    4'b 1111, // index[65] BKDR_LOADER_WRITE_DATA_7
-    4'b 1111, // index[66] BKDR_LOADER_INDEX
-    4'b 1111, // index[67] BKDR_LOADER_HASH_LAST_LOADED_0
-    4'b 1111, // index[68] BKDR_LOADER_HASH_LAST_LOADED_1
-    4'b 1111, // index[69] BKDR_LOADER_HASH_LAST_LOADED_2
-    4'b 1111, // index[70] BKDR_LOADER_HASH_LAST_LOADED_3
-    4'b 1111, // index[71] BKDR_LOADER_HASH_LAST_LOADED_4
-    4'b 1111, // index[72] BKDR_LOADER_HASH_LAST_LOADED_5
-    4'b 1111, // index[73] BKDR_LOADER_HASH_LAST_LOADED_6
-    4'b 1111, // index[74] BKDR_LOADER_HASH_LAST_LOADED_7
-    4'b 1111, // index[75] BKDR_LOADER_HASH_LAST_LOADED_8
-    4'b 1111, // index[76] BKDR_LOADER_HASH_LAST_LOADED_9
-    4'b 1111, // index[77] BKDR_LOADER_HASH_LAST_LOADED_10
-    4'b 1111, // index[78] BKDR_LOADER_HASH_LAST_LOADED_11
-    4'b 1111, // index[79] BKDR_LOADER_HASH_LAST_LOADED_12
-    4'b 1111, // index[80] BKDR_LOADER_HASH_LAST_LOADED_13
-    4'b 1111  // index[81] BKDR_LOADER_HASH_LAST_LOADED_14
+    4'b 1111, // index[ 4] BKDR_LOADER_CLEAR_INDEX_START
+    4'b 1111, // index[ 5] BKDR_LOADER_CLEAR_INDEX_END
+    4'b 1111, // index[ 6] BKDR_LOADER_USR_ACCESS_TIMESTAMP
+    4'b 1111, // index[ 7] BKDR_LOADER_TARGET_INFO_0
+    4'b 1111, // index[ 8] BKDR_LOADER_TARGET_INFO_1
+    4'b 1111, // index[ 9] BKDR_LOADER_TARGET_INFO_2
+    4'b 1111, // index[10] BKDR_LOADER_TARGET_INFO_3
+    4'b 1111, // index[11] BKDR_LOADER_TARGET_INFO_4
+    4'b 1111, // index[12] BKDR_LOADER_TARGET_INFO_5
+    4'b 1111, // index[13] BKDR_LOADER_TARGET_INFO_6
+    4'b 1111, // index[14] BKDR_LOADER_TARGET_INFO_7
+    4'b 1111, // index[15] BKDR_LOADER_TARGET_INFO_8
+    4'b 1111, // index[16] BKDR_LOADER_TARGET_INFO_9
+    4'b 1111, // index[17] BKDR_LOADER_TARGET_INFO_10
+    4'b 1111, // index[18] BKDR_LOADER_TARGET_INFO_11
+    4'b 1111, // index[19] BKDR_LOADER_TARGET_INFO_12
+    4'b 1111, // index[20] BKDR_LOADER_TARGET_INFO_13
+    4'b 1111, // index[21] BKDR_LOADER_TARGET_INFO_14
+    4'b 1111, // index[22] BKDR_LOADER_WIDTH_INFO_0
+    4'b 1111, // index[23] BKDR_LOADER_WIDTH_INFO_1
+    4'b 1111, // index[24] BKDR_LOADER_WIDTH_INFO_2
+    4'b 1111, // index[25] BKDR_LOADER_WIDTH_INFO_3
+    4'b 1111, // index[26] BKDR_LOADER_WIDTH_INFO_4
+    4'b 1111, // index[27] BKDR_LOADER_WIDTH_INFO_5
+    4'b 1111, // index[28] BKDR_LOADER_WIDTH_INFO_6
+    4'b 1111, // index[29] BKDR_LOADER_WIDTH_INFO_7
+    4'b 1111, // index[30] BKDR_LOADER_WIDTH_INFO_8
+    4'b 1111, // index[31] BKDR_LOADER_WIDTH_INFO_9
+    4'b 1111, // index[32] BKDR_LOADER_WIDTH_INFO_10
+    4'b 1111, // index[33] BKDR_LOADER_WIDTH_INFO_11
+    4'b 1111, // index[34] BKDR_LOADER_WIDTH_INFO_12
+    4'b 1111, // index[35] BKDR_LOADER_WIDTH_INFO_13
+    4'b 1111, // index[36] BKDR_LOADER_WIDTH_INFO_14
+    4'b 1111, // index[37] BKDR_LOADER_DEPTH_INFO_0
+    4'b 1111, // index[38] BKDR_LOADER_DEPTH_INFO_1
+    4'b 1111, // index[39] BKDR_LOADER_DEPTH_INFO_2
+    4'b 1111, // index[40] BKDR_LOADER_DEPTH_INFO_3
+    4'b 1111, // index[41] BKDR_LOADER_DEPTH_INFO_4
+    4'b 1111, // index[42] BKDR_LOADER_DEPTH_INFO_5
+    4'b 1111, // index[43] BKDR_LOADER_DEPTH_INFO_6
+    4'b 1111, // index[44] BKDR_LOADER_DEPTH_INFO_7
+    4'b 1111, // index[45] BKDR_LOADER_DEPTH_INFO_8
+    4'b 1111, // index[46] BKDR_LOADER_DEPTH_INFO_9
+    4'b 1111, // index[47] BKDR_LOADER_DEPTH_INFO_10
+    4'b 1111, // index[48] BKDR_LOADER_DEPTH_INFO_11
+    4'b 1111, // index[49] BKDR_LOADER_DEPTH_INFO_12
+    4'b 1111, // index[50] BKDR_LOADER_DEPTH_INFO_13
+    4'b 1111, // index[51] BKDR_LOADER_DEPTH_INFO_14
+    4'b 1111, // index[52] BKDR_LOADER_READ_DATA_0
+    4'b 1111, // index[53] BKDR_LOADER_READ_DATA_1
+    4'b 1111, // index[54] BKDR_LOADER_READ_DATA_2
+    4'b 1111, // index[55] BKDR_LOADER_READ_DATA_3
+    4'b 1111, // index[56] BKDR_LOADER_READ_DATA_4
+    4'b 1111, // index[57] BKDR_LOADER_READ_DATA_5
+    4'b 1111, // index[58] BKDR_LOADER_READ_DATA_6
+    4'b 1111, // index[59] BKDR_LOADER_READ_DATA_7
+    4'b 1111, // index[60] BKDR_LOADER_WRITE_DATA_0
+    4'b 1111, // index[61] BKDR_LOADER_WRITE_DATA_1
+    4'b 1111, // index[62] BKDR_LOADER_WRITE_DATA_2
+    4'b 1111, // index[63] BKDR_LOADER_WRITE_DATA_3
+    4'b 1111, // index[64] BKDR_LOADER_WRITE_DATA_4
+    4'b 1111, // index[65] BKDR_LOADER_WRITE_DATA_5
+    4'b 1111, // index[66] BKDR_LOADER_WRITE_DATA_6
+    4'b 1111, // index[67] BKDR_LOADER_WRITE_DATA_7
+    4'b 1111, // index[68] BKDR_LOADER_INDEX
+    4'b 1111, // index[69] BKDR_LOADER_HASH_LAST_LOADED_0
+    4'b 1111, // index[70] BKDR_LOADER_HASH_LAST_LOADED_1
+    4'b 1111, // index[71] BKDR_LOADER_HASH_LAST_LOADED_2
+    4'b 1111, // index[72] BKDR_LOADER_HASH_LAST_LOADED_3
+    4'b 1111, // index[73] BKDR_LOADER_HASH_LAST_LOADED_4
+    4'b 1111, // index[74] BKDR_LOADER_HASH_LAST_LOADED_5
+    4'b 1111, // index[75] BKDR_LOADER_HASH_LAST_LOADED_6
+    4'b 1111, // index[76] BKDR_LOADER_HASH_LAST_LOADED_7
+    4'b 1111, // index[77] BKDR_LOADER_HASH_LAST_LOADED_8
+    4'b 1111, // index[78] BKDR_LOADER_HASH_LAST_LOADED_9
+    4'b 1111, // index[79] BKDR_LOADER_HASH_LAST_LOADED_10
+    4'b 1111, // index[80] BKDR_LOADER_HASH_LAST_LOADED_11
+    4'b 1111, // index[81] BKDR_LOADER_HASH_LAST_LOADED_12
+    4'b 1111, // index[82] BKDR_LOADER_HASH_LAST_LOADED_13
+    4'b 1111  // index[83] BKDR_LOADER_HASH_LAST_LOADED_14
   };
 
 endpackage
