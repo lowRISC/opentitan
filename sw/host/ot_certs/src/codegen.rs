@@ -288,7 +288,7 @@ fn generate_test_case(
     // Generate constants holding the data.
     for (var_name, data) in unittest_data.values {
         match data {
-            SubstValue::ByteArray(bytes) => {
+            SubstValue::ByteArray(bytes) | SubstValue::TweakedByteArray(bytes) => {
                 writeln!(
                     source_unittest,
                     "static uint8_t g_{var_name}[] = {{ {} }};",
