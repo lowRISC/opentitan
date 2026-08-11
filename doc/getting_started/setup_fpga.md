@@ -393,6 +393,32 @@ Alternatively, if you would like to instruct Bazel to skip loading any bitstream
 bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
+#### Running tests on a multi-board workstation
+
+If you have multiple debug interface boards (e.g. HyperDebug) connected to the same workstation, `opentitantool` will fail to run tests by default because it cannot automatically determine which board to target.
+
+To target a specific board, you must provide its USB serial number to Bazel using the `--test_arg=--usb-serial=<serial>` flag:
+
+```sh
+bazel test --test_arg=--usb-serial=123456789012 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+```
+
+You can list the serial numbers of all connected HyperDebug boards by running `lsusb -v -d 18d1:520e | grep iSerial`.
+
+To avoid typing the serial number every time, you can define shortcut configurations in your user `~/.bazelrc` file:
+
+```text
+# ~/.bazelrc
+test:fpga --test_arg=--usb-serial=123456789012
+test:a2 --test_arg=--usb-serial=987654321098
+```
+
+Then run the test with the corresponding config:
+
+```sh
+bazel test --config=fpga --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+```
+
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
 
 Some on-device software targets are defined using the custom `opentitan_binary` Bazel macro.
