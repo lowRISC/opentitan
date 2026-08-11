@@ -50,7 +50,7 @@
                 type: "dice_tcb_info",
                 vendor: "lowRISC",
                 model: "OpenTitan",
-                svn: "0",
+                svn: "0x80000000",
                 layer: "42",
                 fw_ids: [
                     { hash_algorithm: "sha256", digest: "465644d935385783658357583758c593583b6537" },
