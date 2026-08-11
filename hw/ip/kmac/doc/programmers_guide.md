@@ -204,9 +204,100 @@ If the error occurred while the KMAC HW IP was being used from SW (i.e., not via
 
 ## KMAC/SHA3 context switching
 
-This version of KMAC/SHA3 HWIP _does not_ support context switching.
-A context switching scheme would allow software to save the current hashing engine state and initiate a new high priority hashing operation.
-It could restore the previous hashing state later and continue the operation.
+This version of KMAC/SHA3 HWIP does support context switching enabling software to save the current hashing engine state and initiate a new high priority hashing operation.
+The IP enables software to restore the previous hashing state later and continue the operation.
+
+Context switching is supported for all hashing modes.
+
+### The context
+
+The context is the internal Keccak state that is exposed over [`STATE`](registers.md#state).
+If `EnMasking` is enabled, the state is kept in two shares and both of them are part of the context.
+Software does not need to unmask the state, saving and restoring both shares as they are is sufficient.
+If `EnMasking` is disabled, the second share reads as zero and writes to it are ignored.
+
+The secret key is _not_ directly part of the context.
+It has been absorbed into the Keccak state when the operation was started, so the [`KEY_SHARE0`](registers.md#key_share0) and [`KEY_SHARE1`](registers.md#key_share1) registers do not need to be restored.
+Software must, however, restore [`CFG_SHADOWED`](registers.md#cfg_shadowed) to the value that was used when the context was saved.
+[`CFG_SHADOWED.kstrength`](registers.md#cfg_shadowed) determines the block size of the remaining message and [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) the padding that terminates the operation.
+
+### Message block alignment
+
+Saving a context is only possible in the absorb phase at the boundary of complete message blocks.
+A message block is complete when the message written since the last Start or Continue command is a multiple of the Keccak rate.
+The Keccak rate depends on the configured mode and security strength:
+
+| [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) | [`CFG_SHADOWED.kstrength`](registers.md#cfg_shadowed) | Block size |
+|---------------|-----|-----------|
+| SHA3          | 224 | 144 bytes |
+| SHA3          | 256 | 136 bytes |
+| SHA3          | 384 | 104 bytes |
+| SHA3          | 512 | 72 bytes  |
+| SHAKE, cSHAKE | 128 | 168 bytes |
+| SHAKE, cSHAKE | 256 | 136 bytes |
+
+Bytes that have been written but not yet absorbed are not part of the Keccak state and can therefore not be saved.
+
+### Saving a context
+
+To save a context, software needs to follow this procedure:
+1. Write the `stop` command into [`CMD`](registers.md#cmd).
+1. Poll [`STATUS.sha3_stopped`](registers.md#status--sha3_stopped) or wait for the `kmac_done` interrupt.
+1. Read [`STATE`](registers.md#state).
+1. Write the `done` command into [`CMD`](registers.md#cmd).
+
+The last step clears the Keccak state.
+It prevents the context of one message stream from leaking into another one and it returns the engine into the idle state, which is required before a context can be restored.
+
+If the message is not block aligned when the `stop` command is issued, `ErrSwStopNotBlockAligned` is reported and the absorbed data of the incomplete block is discarded.
+The KMAC HWIP still enters the stopped state, so software releases it with the `done` command and starts the message from the beginning.
+No other command is accepted in that state.
+
+### Restoring a context
+
+To resume a previously saved context, KMAC HWIP must be idle, and software needs to follow this procedure:
+1. Restore [`CFG_SHADOWED`](registers.md#cfg_shadowed) to the configuration that was used when the context was saved.
+1. Write the `state_write` command into [`CMD`](registers.md#cmd).
+1. Poll [`STATUS.state_write`](registers.md#status--state_write).
+1. Write the saved context back into [`STATE`](registers.md#state).
+1. Write the `continue` command into [`CMD`](registers.md#cmd).
+
+The `state_write` command claims the KMAC/SHA3 HWIP for software, preventing that an application interface takes the block over during the restore and clears the Keccak state.
+Hence, writes to the [`STATE`](registers.md#state) register are only accepted when the IP block was claimed using this command.
+The command also clears the Keccak state itself, so a restore always starts from a known state and the `continue` command resumes only the context written after the claim.
+
+Software needs to poll the [`STATUS.state_write`](registers.md#status--state_write) register before writing to the [`STATE`](registers.md#state) register.
+The block must be idle to restore a context, but the `state_write` command is only granted when it is.
+
+When the application interface already claims the HWIP block, [`ERR_CODE`](registers.md#err_code) reports `ErrSwIssuedCmdInAppActive`.
+
+If software decides not to resume a context after claiming the block, it can release the HWIP with the `done` command.
+That does not clear the Keccak state, but the state is not readable and the next `state_write` or `start` command clears it.
+
+In contrast to the `start` command, the `continue` command does not process the prefix and the secret key block again, as both are already part of the restored context.
+Afterwards software writes further message blocks and either saves the context again, or finalizes the operation with the `process` command as described in [Software Initiated KMAC/SHA3 process](#software-initiated-kmacsha3-process).
+The final message block does not need to be complete.
+
+### Restrictions
+
+Context switching is not available when a sideloaded key is used.
+The Keccak function is public and invertible, so software can undo the absorb of every message block it wrote itself, one inversion per block, until it reaches the state after the secret key and recovers a key it is not supposed to know.
+Saving later in the message does not help, as every state in the absorbing stage leads back to the key.
+The `stop`, `state_write`, and `continue` commands are discarded while [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) is set.
+
+Requests from the hardware application interfaces are stalled while software holds the block through the `state_write` command, until it issues the `done` command.
+The `continue` command does not release it.
+Software must therefore also issue `done` on its error paths.
+
+The following errors are reported in [`ERR_CODE`](registers.md#err_code) if the procedures above are not followed:
+
+| Error | Description |
+|-------|-------------|
+| `ErrSwStopNotBlockAligned` | The `stop` command was issued but the message is not a multiple of the block size. The absorb is ended anyway and the incomplete block is discarded, so the operation cannot be resumed and has to be started again. |
+| `ErrSwSaveRestoreSideload` | The `stop`, `state_write` or `continue` command was issued while a sideloaded key is selected. |
+| `ErrSwContinueWithoutContext` | The `continue` command was issued without a context having been restored before. |
+| `ErrSwIssuedCmdInAppActive` | A command, for example `state_write`, was issued while a hardware application interface was using the block. |
+| `ErrSwCmdSequence` | A command was issued that is not allowed in the current state, e.g. `run` after the `stop` command, or `continue` without a preceding `state_write` command. |
 
 ## Device Interface Functions (DIFs)
 
