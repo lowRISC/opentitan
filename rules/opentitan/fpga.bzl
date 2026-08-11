@@ -48,9 +48,11 @@ set -e
 
 export RUST_BACKTRACE=1
 
+SCRIPT_ARGS=("$@")
+
 function cleanup {{
   {post_test_harness} "${{POST_TEST_CMD[@]}}"
-  {opentitantool} {args} "${{TEST_CLEANUP_CMD[@]}}" no-op
+  {opentitantool} {args} "${{SCRIPT_ARGS[@]}}" "${{TEST_CLEANUP_CMD[@]}}" no-op
 }}
 
 # Bazel will send a SIGTERM when the timeout expires and will
@@ -61,7 +63,7 @@ trap cleanup EXIT
 
 set -x
 
-{opentitantool} {args} "${{TEST_SETUP_CMD[@]}}" no-op
+{opentitantool} {args} "${{SCRIPT_ARGS[@]}}" "${{TEST_SETUP_CMD[@]}}" no-op
 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
