@@ -1,8 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
+//
 // I3C Target core.
+
+`include "prim_assert.sv"
+
 module i3c_target
   import i3c_consts_pkg::*;
   import i3c_pkg::*;
@@ -21,7 +24,7 @@ module i3c_target
   input                     clk_i,
   input                     rst_ni,
 
-  // I3C clock signal from the Active Controller.
+  // I3C clock signal from the Active Controller, inverted.
   input                     scl_ni,
   // Reset for transceiver logic.
   input                     trx_rst_ni,
@@ -31,7 +34,7 @@ module i3c_target
   input                     stby_cr_enabled_i,
   input                     sw_reset_i,
   input                     async_evt_rst_i,
-
+  // TODO: These two signals are currently unused
   input                     hdr_exit_det_i,
   input                     hdr_restart_det_i,
 
@@ -96,7 +99,7 @@ module i3c_target
   // Target device descriptions to the transceiver.
   output i3c_targ_dev_t     targ_dev_o[NumTargets],
   // Group address descriptions to the transceiver.
-  output i3c_grp_addr_t     grp_addr_o[MaxGroups],
+  output i3c_grp_addr_t     grp_addr_o[NumGroups],
 
   // Start request to the transceiver.
   // - SDA lowered to request Start signaling, and partial address phase.
@@ -104,7 +107,7 @@ module i3c_target
   output                    sreq_sda_o,
   // TODO: Handoff of the address arbitration to the transceiver logic.
 
-  // Status indications from the transceiver.
+  // Status indications from the transceiver. Originates in SCL domain, must be glitch free.
   input                     rep_start_det_i,
   input                     stop_det_i,
   input                     ddr_mode_i,
@@ -175,7 +178,7 @@ module i3c_target
   output                    buf_wvalid_o,
   output    [DataWidth-1:0] buf_wdata_o,
   input                     buf_wready_i,
-  input      [FIFODepthW:0] buf_wused_i,
+  input      [FIFODepthW:0] buf_wused_i,  // TODO: Unused, possibly not needed
   input      [FIFODepthW:0] buf_wavail_i,
 
   // Asynchronous Event Queue.
@@ -212,7 +215,7 @@ module i3c_target
   input  i3c_reg2targ_ext_t ext_reg2hw_i,
   output i3c_targ_ext2reg_t ext_hw2reg_o,
 
-  // Diagnostic visibiliy into Target core state.
+  // Diagnostic visibility into Target core state.
   output              [7:0] fsm_state_o
 );
 
@@ -221,17 +224,18 @@ module i3c_target
   // I3C address of Standby Controller when enabled.
   // Note: the `d` fields are that persistent state (rather than `q`) because this register is
   // declared as `hwext` and implemented in `i3c_stby_cr_regs`.
-  wire stby_cr_stataddr_valid = stby_cr_staddr_i[7];  // MSB indicates the validity of the address.
-  wire stby_cr_dynaddr_valid = stby_cr_dynaddr_i[7];
+  logic stby_cr_staddr_valid, stby_cr_dynaddr_valid;
+  assign stby_cr_staddr_valid = stby_cr_staddr_i[7];  // MSB indicates the validity of the address.
+  assign stby_cr_dynaddr_valid = stby_cr_dynaddr_i[7];
   logic [6:0] stby_cr_addr;
   // Use a valid static address only until a valid dynamic address has been supplied.
   assign stby_cr_addr = stby_cr_dynaddr_valid ? stby_cr_dynaddr_i[6:0] :
-                 ({7{stby_cr_stataddr_valid}} & stby_cr_staddr_i[6:0]);
+                                                {7{stby_cr_staddr_valid}} & stby_cr_staddr_i[6:0];
 
   // Device description for each Target in turn.
   i3c_targ_dev_t targ_dev[NumTargets];
   always_comb begin
-    // Ensure that all target desciptions have been initialized.
+    // Ensure that all target descriptions have been initialized.
     // - use a valid static address only until a valid dynamic address has been supplied.
     for (int unsigned t = 0; t < NumTargets; t++) begin
       logic dynaddr_valid, stataddr_valid;
@@ -254,18 +258,19 @@ module i3c_target
     if (stby_cr_enabled_i) begin
       targ_dev[0].en            = reg2hw_i.targ_control.stby_cr_support.q;
       targ_dev[0].addr          = stby_cr_addr;
-      targ_dev[0].addr_valid    = stby_cr_dynaddr_valid | stby_cr_stataddr_valid;
+      targ_dev[0].addr_valid    = stby_cr_dynaddr_valid | stby_cr_staddr_valid;
       targ_dev[0].addr_dynamic  = stby_cr_dynaddr_valid;
     end
   end
   assign targ_dev_o = targ_dev;
 
   // Group membership description for each group in turn.
-  always_comb begin
-    for (int unsigned g = 0; g < NumGroups; g++) begin
-      grp_addr_o[g].addr    = reg2hw_i.targ_group[g].group_addr.q;
-      grp_addr_o[g].targets = reg2hw_i.targ_group[g].targets.q;
-    end
+  for (genvar g = 0; g < NumGroups; g++) begin : g_assign_grp_addr
+    assign grp_addr_o[g] = '{
+      addr:       reg2hw_i.targ_group[g].group_addr.q,
+      addr_valid: |reg2hw_i.targ_group[g].targets.q[NumTargets-1:0],
+      targets:    reg2hw_i.targ_group[g].targets.q[NumTargets-1:0]
+    };
   end
 
   // This module handles the CDC transitions between the Core FSM which operates on the main IP
@@ -274,49 +279,56 @@ module i3c_target
   // It is important to note that the SCL clock does not run continuously, operates with variable
   // timing and frequency, and will be gated off at times that the transceiver logic must not be
   // sensitive to activity on the I3C bus. A maximum sustained frequency of 12.5MHz may be assumed.
+  // For short bursts, up to 12.9MHz may occur (Table 50).
 
   // Some independent level-sensitive signals may be synchronized in the conventional fashion.
   // - response from the Target Reset Detector; multiple, but independent bits.
+  // TODO: `rstdet_rsp_sync` is currently unused (unread)
   i3c_rstdet_rsp_t rstdet_rsp_sync;
   // - HDR-DDR mode indication, on/off.
   logic ddr_mode_sync;
-  // - propagation of Target Error signals into the IP core; these are expected to be asserted for
-  //   just a single cycle in the SCL clock domain but the IP clock is at least 4 times faster which
-  //   means that the pulse will not be missed.
-  prim_flop_2sync #(.Width(8 + $bits(i3c_rstdet_rsp_t))) u_in_sync (
+  prim_flop_2sync #(
+    .Width(1 + $bits(i3c_rstdet_rsp_t))
+  ) u_in_sync (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
-    .d_i   ({trx_te_i,     ddr_mode_i,    rstdet_rsp_i}),
-    .q_o   ({targ_error_o, ddr_mode_sync, rstdet_rsp_sync})
+    .d_i   ({ddr_mode_i,    rstdet_rsp_i}),
+    .q_o   ({ddr_mode_sync, rstdet_rsp_sync})
   );
 
-  // Synchronize status signals from the transceiver logic and produce single-cycle pulses
-  // on the any rising edge. (`stop_det_i`) in particular remains asserted for a long time because
-  // the I3C bus is becoming idle at that point).
+  // Synchronize status signals from the transceiver logic and produce single-cycle pulses on the
+  // rising edge (`stop_det_i` in particular remains asserted for a long time because the I3C bus is
+  // becoming idle at that point).
   // - repeated start (Sr) detected.
   logic rep_start_det;
   // - stop (P) detected.
   logic stop_det;
-  prim_edge_detector #(.Width(2), .ResetValue('0), .EnSync(1'b1)) u_edge_det (
+  // - propagation of Target Error signals into the IP core; these are expected to be asserted for
+  //   just a single cycle in the SCL clock domain but the IP clock is sufficiently faster (at least
+  //   50MHz / 12.9MHz = 3.88 times) which means that the pulse will not be missed. We also need an
+  //   edge detector in the system clock domain to ensure every TE pulse from the SCL domain
+  //   registers as a single tick in the connected error counters.
+  prim_edge_detector #(
+    .Width     ($bits(trx_te_i) + 2),
+    .ResetValue('0),
+    .EnSync    (1'b1)
+  ) u_edge_det (
     .clk_i,
     .rst_ni,
-    .d_i              ({stop_det_i, rep_start_det_i}),
+    .d_i              ({trx_te_i,     stop_det_i, rep_start_det_i}),
     .q_sync_o         (),  // Not used
-    .q_posedge_pulse_o({stop_det,   rep_start_det}),
+    .q_posedge_pulse_o({targ_error_o, stop_det,   rep_start_det}),
     .q_negedge_pulse_o()  // Not used
   );
 
   // Target Reset Detector request.
   // TODO: Needs to interact with the RSTACT CCC handling when that exists.
-  always_comb begin : gen_rstdet_req
-    rstdet_req_o = '0;
-    rstdet_req_o.activate   = enable_i;  // TODO: This is incomplete.
-    rstdet_req_o.deep_sleep = reg2hw_i.reset_det_ctrl.sleep_req.q;
-    rstdet_req_o.rst_periph = reg2hw_i.reset_det_ctrl.rst_target_en.q &
-                             (rstact_i == RstAct_ResetPeripheral);
-    rstdet_req_o.rst_target = reg2hw_i.reset_det_ctrl.rst_periph_en.q &
-                             (rstact_i == RstAct_ResetTarget);
-  end
+  assign rstdet_req_o = '{
+    activate:   enable_i, // TODO: This is incomplete.
+    deep_sleep: reg2hw_i.reset_det_ctrl.sleep_req.q,
+    rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
+    rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
+  };
 
   // Present read data and status information to the transceiver logic for each Target in turn.
   // - this must be done preemptively because Private Read data must be returned by the transceiver
@@ -350,11 +362,11 @@ module i3c_target
 
   // Target Core state machine.
   i3c_target_fsm #(
-    .NumTargets (NumTargets),
-    .DataWidth  (DataWidth),
-    .FIFODepthW (FIFODepthW),
-    .TargetExt  (TargetExt)
-  ) u_targ_fsm (
+    .NumTargets(NumTargets),
+    .DataWidth (DataWidth),
+    .FIFODepthW(FIFODepthW),
+    .TargetExt (TargetExt)
+  ) u_target_fsm (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),
 
@@ -532,12 +544,12 @@ module i3c_target
   );
 
   // Present Transmit data and status information for each supported target.
-  for (genvar t = 0; t < NumTargets; t++) begin : gen_trx_data
+  for (genvar t = 0; t < NumTargets; t++) begin : gen_targ_txd_sync
     // Private Transfers.
     i3c_sync_data #(
-      .Width          ($bits(i3c_targ_trx_txd_t)),
-      .EnSrcToggleOut (1)
-    ) u_targ_txd (
+      .Width         ($bits(i3c_targ_trx_txd_t)),
+      .EnSrcToggleOut(1)
+    ) u_targ_txd_sync (
       // IP block domain.
       .clk_src_i   (clk_i),
       .rst_src_ni  (trx_rst_ni),
@@ -556,9 +568,9 @@ module i3c_target
   // Direct Read CCCs; all targets share a single synchronizer so that there is no skew amongst
   // the targets, complicating the FSM/CCC logic.
   i3c_sync_data #(
-    .Width          ($bits(i3c_targ_trx_txc_t)),
-    .EnSrcToggleOut (1)
-  ) u_targ_txc (
+    .Width         ($bits(i3c_targ_trx_txc_t)),
+    .EnSrcToggleOut(1)
+  ) u_targ_txc_sync (
     // IP block domain.
     .clk_src_i   (clk_i),
     .rst_src_ni  (trx_rst_ni),
@@ -575,12 +587,12 @@ module i3c_target
 
   // Send arbitration requests to the transceiver.
   i3c_sync_data #(
-    .Width          ($bits(i3c_targ_trx_arb_t)),
-    .EnSrcToggleOut (1)
+    .Width         ($bits(i3c_targ_trx_arb_t)),
+    .EnSrcToggleOut(1)
   ) u_arb_sync (
     // IP block domain.
     .clk_src_i   (clk_i),
-    .rst_src_ni  (rst_ni),
+    .rst_src_ni  (trx_rst_ni),
     .src_toggle_i(arb_toggle_out),
     .src_toggle_o(arb_toggle_in),
     .src_data_i  (arb_data),
@@ -593,7 +605,7 @@ module i3c_target
   );
 
   // Synchronize the received data into the IP clock domain.
-  i3c_sync_data #(.Width($bits(i3c_targ_trx_rxd_t))) u_trx_rxd (
+  i3c_sync_data #(.Width($bits(i3c_targ_trx_rxd_t))) u_trx_rxd_sync (
     // Source clock domain.
     .clk_src_i   (1'b0),  // Not used.
     .rst_src_ni  (1'b1),  // Not used.
@@ -602,27 +614,21 @@ module i3c_target
     .src_data_i  (trx_rxd_i),
     // Destination clock domain.
     .clk_dst_i   (clk_i),
-    .rst_dst_ni  (rst_ni),
+    .rst_dst_ni  (trx_rst_ni),
     .dst_valid_o (trx_rvalid),
     .dst_ready_i (trx_rready),
     .dst_data_o  (trx_rxd)
   );
 
   // Interrupt generation.
+  // Gate all interrupts that depend on a threshold value with the threshold value being non-zero.
   always_comb begin
     // Reception uses a single buffer for all Targets.
-    logic rx_desc_ready;
-    logic ibi_stat_thld;
-    logic rx_thld;
-
-    rx_desc_ready = |reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q &&  // Field valid?
-           (rx_desc_wused_i >= reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q);
-    ibi_stat_thld = |reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q &&  // Field valid?
-           (ibi_desc_ravail_i >= reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q);
-
     intr_o = '0;  // Note: this provides drivers for non-extant Virtual Targets.
-    intr_o.rx_desc_ready   = rx_desc_ready;
-    intr_o.ibi_status_thld = ibi_stat_thld;
+    intr_o.rx_desc_ready   = |reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q &&
+                             (rx_desc_wused_i >= reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q);
+    intr_o.ibi_status_thld = |reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q &&
+                             (ibi_desc_ravail_i >= reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q);
     intr_o.async_evt_ready = !async_empty_i;  // TODO: Need to reconsider if CCC becomes multi-desc?
     intr_o.transfer_abort  = transfer_aborted;
     intr_o.transfer_err    = transfer_err;
@@ -631,10 +637,10 @@ module i3c_target
 
     // Transmission requires per-Target buffers.
     for (int unsigned t = 0; t < NumTargets; t++) begin
-      intr_o.tx_thld[t]  = |reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q &&  // Field valid?
-             (buf_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q);
+      intr_o.tx_thld[t] = |reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q &&
+        (buf_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q);
       intr_o.tx_desc_ready[t] = |reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q &&
-             (tx_desc_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q);
+        (tx_desc_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q);
     end
 
     // Raise an interrupt to software when any of the Target Error counts is non-zero.
@@ -653,9 +659,12 @@ module i3c_target
   // TODO: We cannot yet issue a Hot-Join request.
   assign hj_request_clear_o = 1'b0;
 
-  // TTI Data Structures.
-  if ($bits(i3c_tti_tx_desc_t) != 32)    $fatal(1, "TTI Tx Descriptor has incorrect size.");
-  if ($bits(i3c_tti_rx_desc_t) != 32)    $fatal(1, "TTI Rx Descriptor has incorrect size.");
-  if ($bits(i3c_tti_ibi_status_t) != 32) $fatal(1, "TTI IBI Status Descriptor has incorrect size.");
+  // TTI Data Structures that must fit into one buffer data word (currently fixed to 32b).
+  if ($bits(i3c_tti_tx_desc_t) != DataWidth)    $fatal(1, "TTI Tx Descriptor has incorrect size.");
+  if ($bits(i3c_tti_rx_desc_t) != DataWidth)    $fatal(1, "TTI Rx Descriptor has incorrect size.");
+  if ($bits(i3c_tti_ibi_status_t) != DataWidth) $fatal(1, "TTI IBI Status Descriptor has incorrect size.");
+
+  // Assertions.
+  `ASSERT_INIT(NumTargetsLegal, NumTargets <= MaxTargets)
 
 endmodule
