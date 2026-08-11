@@ -645,10 +645,10 @@ module i3c_core
   logic           [15:0] targ_mrl_d;
   logic            [7:0] targ_ibi_d;
   // Group Addressing.
-  logic                  targ_grp_addr_de[NumGroups];
-  logic                  targ_grp_targ_de[NumGroups];
-  logic            [6:0] targ_grp_addr_d[NumGroups];
-  logic [NumTargets-1:0] targ_grp_targ_d[NumGroups];
+  logic                  targ_grp_addr_de[MaxGroups];
+  logic                  targ_grp_targ_de[MaxGroups];
+  logic            [6:0] targ_grp_addr_d[MaxGroups];
+  logic [NumTargets-1:0] targ_grp_targ_d[MaxGroups];
 
   // Enable/disable Events for a set of Virtual Targets.
   i3c_endis_event_t targ_endis_evt;

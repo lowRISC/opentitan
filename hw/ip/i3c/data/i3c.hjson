@@ -3922,7 +3922,7 @@
         { bits:   "31:24",
           name:   "IBI_STATUS_THLD",
           desc:   '''IBI Status Threshold.
-                  Interrupt is issued when the IBI Status Descriptor Queue contains at least N entries.
+                  Interrupt is issued when the IBI Status Descriptor Queue has space available for at least N entries.
                   0: Do not raise any interrupts.
                   ''',
           resval: "1"

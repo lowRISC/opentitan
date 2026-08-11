@@ -2935,12 +2935,12 @@ Target-side control register for setting queue interrupt thresholds.
 {"reg": [{"bits": 8}, {"name": "RX_DESC_THLD", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 8}, {"name": "IBI_STATUS_THLD", "bits": 8, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                                                      |
-|:------:|:------:|:-------:|:----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:24  |   rw   |   0x1   | IBI_STATUS_THLD | IBI Status Threshold. Interrupt is issued when the IBI Status Descriptor Queue contains at least N entries. 0: Do not raise any interrupts.      |
-| 23:16  |        |         |                 | Reserved                                                                                                                                         |
-|  15:8  |   rw   |   0x1   | RX_DESC_THLD    | Rx Descriptor Queue Threshold. Interrupt is issued when the Rx Descriptor Queue contains at least N descriptors. 0: Do not raise any interrupts. |
-|  7:0   |        |         |                 | Reserved                                                                                                                                         |
+|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                                                                |
+|:------:|:------:|:-------:|:----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:24  |   rw   |   0x1   | IBI_STATUS_THLD | IBI Status Threshold. Interrupt is issued when the IBI Status Descriptor Queue has space available for at least N entries. 0: Do not raise any interrupts. |
+| 23:16  |        |         |                 | Reserved                                                                                                                                                   |
+|  15:8  |   rw   |   0x1   | RX_DESC_THLD    | Rx Descriptor Queue Threshold. Interrupt is issued when the Rx Descriptor Queue contains at least N descriptors. 0: Do not raise any interrupts.           |
+|  7:0   |        |         |                 | Reserved                                                                                                                                                   |
 
 ## TARG_QUEUE_STATUS_LEVEL
 Target-side queue levels.
