@@ -2607,6 +2607,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .run_i      (1'b0             ), // For software application
     .done_i     (sha3_done        ),
 
+    .stop_i       (1'b0),
+    .continue_i   (1'b0),
+    .stopped_o    (),
+    .stop_error_o (),
+
     // LC escalation
     .lc_escalate_en_i (lc_ctrl_pkg::Off),
 
@@ -2621,9 +2626,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .state_o       (sha3_state),
 
     // State write - not used, no context save and restore support
-    .state_we_i    ('0),
-    .state_waddr_i ('0),
-    .state_wdata_i ('0),
+    .state_we_i          ('0),
+    .state_waddr_i       ('0),
+    .state_wdata_i       ('0),
+    .state_clear_i       (prim_mubi_pkg::MuBi4False),
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o(sha3_block_busy),

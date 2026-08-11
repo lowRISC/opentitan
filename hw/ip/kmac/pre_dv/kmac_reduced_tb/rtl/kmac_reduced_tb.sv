@@ -65,9 +65,13 @@ module kmac_reduced_tb #(
                                // message
     .process_i(sha3_process),  // 1 pulse after loading message into SHA3
     .run_i(1'b0),              // drive to 0
+    .stop_i(1'b0),             // drive to 0
+    .continue_i(1'b0),         // drive to 0
     .done_i(done),             // drive to MuBi4True after
                                // absorbed_o == MuBi4True
     .absorbed_o(absorbed),
+    .stopped_o(),
+    .stop_error_o(),
     .squeezing_o(),
     .block_processed_o(),
     .sha3_fsm_o(sha3_fsm),
@@ -92,6 +96,7 @@ module kmac_reduced_tb #(
     .state_we_i('0),                   // drive to 0
     .state_waddr_i('0),                // drive to 0
     .state_wdata_i('0),                // drive to 0
+    .state_clear_i(prim_mubi_pkg::MuBi4False), // drive to MuBi4False
 
     // Entropy configuration
     .msg_mask_en_i(1'b1),            // drive to 1

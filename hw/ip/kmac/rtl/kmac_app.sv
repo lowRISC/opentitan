@@ -84,8 +84,12 @@ module kmac_app
   output logic                        reg_state_valid_o,
   output logic [sha3_pkg::StateW-1:0] reg_state_o[Share],
 
-  // The keccak state can be written by software if no HW application interface is active.
+  // The keccak state can be written by software once the StateWrite command has been issued.
   output logic reg_state_write_en_o,
+
+  // Pulsed when SW claims the KMAC HWIP with the StateWrite command and when it releases the
+  // block again with the Done command.
+  output prim_mubi_pkg::mubi4_t state_clear_o,
 
   // Controls for SW whether to take the key from the KeyMgr sideload interface or registers. For
   // KMAC operations initiated by an app interface, we always take the sideloaded key.
@@ -337,9 +341,9 @@ module kmac_app
       sha3_mode_d       = app_ses_cfg_pending.mode == AppSHA3  ? sha3_pkg::Sha3  :
                           app_ses_cfg_pending.mode == AppShake ? sha3_pkg::Shake : sha3_pkg::CShake;
       keccak_strength_d = app_ses_cfg_pending.kstrength;
-    end else if (st == StIdle) begin
-      // In idle always propagate the latest CSR values as there is no latch trigger when SW starts
-      // a hashing operation.
+    end else if (st inside {StIdle, StStateWrite}) begin
+      // In idle/write always propagate the latest CSR values as there is no latch trigger when SW
+      // starts a hashing operation.
       app_ses_cfg_d     = AppSesCfgDefault;
       kmac_en_d         = reg_kmac_en_i;
       sha3_mode_d       = reg_sha3_mode_i;
@@ -462,6 +466,8 @@ module kmac_app
   /////////
   logic clear_app_trackers;
 
+  logic state_write_allowed;
+
   logic any_request_outstanding;
   logic last_req_pending;
   logic process_cmd_pending;
@@ -539,6 +545,8 @@ module kmac_app
     clear_app_trackers             = 1'b0;
     app_error_req_ready            = 1'b0;
     app_error_rsp_valid            = 1'b0;
+    state_write_allowed            = 1'b0;
+    state_clear_o                  = prim_mubi_pkg::MuBi4False;
 
     disable_entropy_fast_process = 1'b0;
 
@@ -551,9 +559,13 @@ module kmac_app
           st_d = StAppCfg;
           set_appid = 1'b1;
         end else if (sw_cmd_i == CmdStart) begin
-          // Software initiates the sequence
+          // Software initiates the sequence from scratch.
           st_d = StSw;
           cmd_o = CmdStart;
+        end else if (sw_cmd_i == CmdStateWrite) begin
+          // Software claims the block to restore a previously saved context.
+          st_d          = StStateWrite;
+          state_clear_o = prim_mubi_pkg::MuBi4True;
         end
       end
 
@@ -688,6 +700,24 @@ module kmac_app
               end
             end
          end
+        end
+      end
+
+      StStateWrite: begin
+        // SW has claimed the interface to restore the state. Any app interface cannot claim the
+        // KMAC HWIP anymore.
+        state_write_allowed = 1'b 1;
+
+        if (sw_cmd_i == CmdContinue) begin
+          st_d  = StSw;
+          cmd_o = CmdContinue;
+        end else if (sw_cmd_i == CmdDone) begin
+          // The Done command always clears the Keccak state, also when SW releases the block
+          // without restoring a context.
+          st_d          = StIdle;
+          state_clear_o = prim_mubi_pkg::MuBi4True;
+        end else begin
+          st_d = StStateWrite;
         end
       end
 
@@ -1112,8 +1142,8 @@ module kmac_app
     .out_o(reg_state_write_en_o)
   );
 
-  // Software can write the keccak state.
-  assign reg_state_write_en = !app_active_o &&
+  // Software can write the keccak state while it holds the block. Gate on exception.
+  assign reg_state_write_en = state_write_allowed &&
                               lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i);
 
   // Keccak state Demux
