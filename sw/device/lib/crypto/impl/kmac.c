@@ -15,12 +15,92 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
 /**
+ * Ensure that the KMAC context is large enough. It holds the key mode, the
+ * sideload flag and the driver-level context.
+ */
+static_assert(sizeof(otcrypto_kmac_context_t) >=
+                  sizeof(kmac_ctx_t) + 2 * sizeof(uint32_t),
+              "`otcrypto_kmac_context_t` must hold a `kmac_ctx_t` plus two "
+              "words.");
+
+enum {
+  // Slot 0: KMAC key mode (otcrypto_key_mode_t cast to uint32_t).
+  kCtxKeyModeOffset = 0,
+  // Slot 1: whether the key is sideloaded (hardened_bool_t).
+  kCtxHwBackedOffset = 1,
+  // Slots 2+: driver-level context (kmac_ctx_t).
+  kCtxDriverOffset = 2,
+};
+
+/**
  * Sideload cleanup guard.
  */
 static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
     (void)keymgr_sideload_clear_kmac();
   }
+}
+
+/**
+ * Construct the driver-level KMAC key from the blinded key.
+ *
+ * Checks the key length and integrity. For hardware-backed keys, the sideload
+ * key is generated from the keymgr; the caller is responsible for clearing it
+ * again after use. For software keys, the keyblob is remasked and split into
+ * shares.
+ *
+ * @param key The blinded input key.
+ * @param[out] kmac_key Destination driver-level key struct.
+ * @return Result of the operation.
+ */
+static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
+                                   kmac_blinded_key_t *kmac_key) {
+  size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
+
+  // Check `key_len` is valid/supported by KMAC HWIP.
+  HARDENED_TRY(kmac_key_length_check(key_len));
+
+  // Check the integrity of the blinded key.
+  if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
+      kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
+                    kHardenedBoolTrue);
+
+  kmac_key->share0 = NULL;
+  kmac_key->share1 = NULL;
+  kmac_key->hw_backed = key->config.hw_backed;
+  kmac_key->len = key_len;
+
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    if (key_len != kKmacSideloadKeyLength / 8) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+
+    // Configure keymgr with diversification input and then generate the
+    // sideload key.
+    keymgr_diversification_t diversification;
+    // Diversification call also checks that `key->keyblob_length` is 8 words
+    // long.
+    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+  } else if (key->config.hw_backed == kHardenedBoolFalse) {
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key));
+
+    // Check `key_len` matches `keyblob_length`.
+    if (key->keyblob_length != 2 * key->config.key_length) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_TRY(keyblob_to_shares(key, &kmac_key->share0, &kmac_key->share1));
+    // Set the checksum of the key.
+    kmac_key->checksum = kmac_key_integrity_checksum(kmac_key);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_kmac(
@@ -50,6 +130,9 @@ otcrypto_status_t otcrypto_kmac(
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    is_sideloaded = kHardenedBoolTrue;
+  }
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {
@@ -62,53 +145,8 @@ otcrypto_status_t otcrypto_kmac(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
-
-  // Check `key_len` is valid/supported by KMAC HWIP.
-  HARDENED_TRY(kmac_key_length_check(key_len));
-
-  // Check the integrity of the blinded key.
-  if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
-      kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
-                    kHardenedBoolTrue);
-
-  kmac_blinded_key_t kmac_key = {
-      .share0 = NULL,
-      .share1 = NULL,
-      .hw_backed = key->config.hw_backed,
-      .len = key_len,
-  };
-
-  if (key->config.hw_backed == kHardenedBoolTrue) {
-    if (key_len != kKmacSideloadKeyLength / 8) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    is_sideloaded = kHardenedBoolTrue;
-
-    // Configure keymgr with diversification input and then generate the
-    // sideload key.
-    keymgr_diversification_t diversification;
-    // Diversification call also checks that `key->keyblob_length` is 8 words
-    // long.
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
-  } else if (key->config.hw_backed == kHardenedBoolFalse) {
-    // Remask the key.
-    HARDENED_TRY(keyblob_remask(key));
-
-    // Check `key_len` matches `keyblob_length`.
-    if (key->keyblob_length != 2 * key->config.key_length) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    HARDENED_TRY(keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));
-    // Set the checksum of the key.
-    kmac_key.checksum = kmac_key_integrity_checksum(&kmac_key);
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  kmac_blinded_key_t kmac_key;
+  HARDENED_TRY(kmac_key_construct(key, &kmac_key));
 
   otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key->config.key_mode)) {
@@ -138,6 +176,154 @@ otcrypto_status_t otcrypto_kmac(
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue,
                     OTCRYPTO_CHECK_BUF(customization_string));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_kmac_init(
+    otcrypto_kmac_context_t *ctx, otcrypto_blinded_key_t *key,
+    const otcrypto_const_byte_buf_t *customization_string) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  // Check for null pointers.
+  if (ctx == NULL || key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check for null customization string with nonzero length.
+  if (customization_string == NULL ||
+      (customization_string->data == NULL && customization_string->len != 0)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Clear the sideload key again if the initialization fails; on success it
+  // must remain loaded until `otcrypto_kmac_final()`.
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    is_sideloaded = kHardenedBoolTrue;
+  }
+
+  kmac_blinded_key_t kmac_key;
+  HARDENED_TRY(kmac_key_construct(key, &kmac_key));
+
+  otcrypto_key_mode_t key_mode_used = launder32(0);
+  switch (launder32(key->config.key_mode)) {
+    case kOtcryptoKeyModeKmac128:
+      HARDENED_TRY(kmac_kmac_128_init(
+          &kmac_key, customization_string->data, customization_string->len,
+          (kmac_ctx_t *)&ctx->data[kCtxDriverOffset]));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
+      break;
+    case kOtcryptoKeyModeKmac256:
+      HARDENED_TRY(kmac_kmac_256_init(
+          &kmac_key, customization_string->data, customization_string->len,
+          (kmac_ctx_t *)&ctx->data[kCtxDriverOffset]));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
+
+  ctx->data[kCtxKeyModeOffset] = (uint32_t)key->config.key_mode;
+  ctx->data[kCtxHwBackedOffset] = (uint32_t)key->config.hw_backed;
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue,
+                    OTCRYPTO_CHECK_BUF(customization_string));
+
+  // Disarm the sideload cleanup guard.
+  is_sideloaded = kHardenedBoolFalse;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_kmac_update(
+    otcrypto_kmac_context_t *const ctx,
+    const otcrypto_const_byte_buf_t *input_message) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  // Check for null pointers.
+  if (ctx == NULL || input_message == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check for null input message with nonzero length.
+  if (input_message->data == NULL && input_message->len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
+  HARDENED_TRY(
+      kmac_update((kmac_ctx_t *)&ctx->data[kCtxDriverOffset], input_message));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_kmac_final(otcrypto_kmac_context_t *const ctx,
+                                      size_t required_output_len,
+                                      otcrypto_word32_buf_t *tag) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  // Check for null pointers.
+  if (ctx == NULL || tag == NULL || tag->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Clear the sideload key on exit if the operation was keyed by the keymgr.
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      (hardened_bool_t)ctx->data[kCtxHwBackedOffset];
+
+  // Ensure that tag buffer length and `required_output_len` match each other.
+  if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  size_t required_output_words =
+      (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
+  if (tag->len != required_output_words || required_output_len == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  otcrypto_key_mode_t key_mode_used = launder32(0);
+  switch (launder32(ctx->data[kCtxKeyModeOffset])) {
+    case kOtcryptoKeyModeKmac128:
+      HARDENED_TRY(
+          kmac_kmac_128_final((kmac_ctx_t *)&ctx->data[kCtxDriverOffset],
+                              /*masked_digest=*/kHardenedBoolFalse, tag->data,
+                              required_output_len));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
+      break;
+    case kOtcryptoKeyModeKmac256:
+      HARDENED_TRY(
+          kmac_kmac_256_final((kmac_ctx_t *)&ctx->data[kCtxDriverOffset],
+                              /*masked_digest=*/kHardenedBoolFalse, tag->data,
+                              required_output_len));
+      key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(key_mode_used), ctx->data[kCtxKeyModeOffset]);
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
