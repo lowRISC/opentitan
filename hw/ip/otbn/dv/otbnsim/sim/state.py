@@ -447,8 +447,7 @@ class OTBNState:
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        should_lock = (((self._err_bits >> 16) != 0) or
-                       ((self._err_bits >> 10) & 1 != 0) or
+        should_lock = ((self._err_bits & ErrBits.FATAL_MASK) != 0 or
                        (self._err_bits != 0 and self.software_errs_fatal) or
                        self.rma_req == LcTx.ON)
         # Make any error bits visible

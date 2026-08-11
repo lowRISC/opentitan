@@ -103,7 +103,7 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
     string                     elf_path;
     bit [BaseWordsPerWLEN-1:0] corrupted_words;
     bit [ExtWLEN-1:0]          new_data;
-    otbn_pkg::err_bits_t err_bits;
+    err_bits_reg_t             err_bits;
 
     elf_path = pick_elf_path();
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)

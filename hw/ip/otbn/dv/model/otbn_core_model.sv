@@ -419,10 +419,27 @@ module otbn_core_model
   `ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
   // Assertion to ensure that keymgr key values are never unknown if valid is high.
   `ASSERT_KNOWN_IF(KeyIsKnownChk_A, {keymgr_key_i.key[0], keymgr_key_i.key[1]}, keymgr_key_i.valid)
-  assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
+  assign unused_raw_err_bits = ^{raw_err_bits_q[31:24], raw_err_bits_q[15:9]};
   assign unused_edn_rsp_fips = edn_urnd_i.edn_fips;
 
-  assign err_bits_o = raw_err_bits_q[$bits(err_bits_t)-1:0];
+  // Convert the error bits to the representation used in ERR_BITS.
+  assign err_bits_o = '{bad_data_addr:        raw_err_bits_q[0],
+                        bad_insn_addr:        raw_err_bits_q[1],
+                        call_stack:           raw_err_bits_q[2],
+                        illegal_insn:         raw_err_bits_q[3],
+                        loop:                 raw_err_bits_q[4],
+                        key_invalid:          raw_err_bits_q[5],
+                        rnd_rep_chk_fail:     raw_err_bits_q[6],
+                        rnd_fips_chk_fail:    raw_err_bits_q[7],
+                        mai_error:            raw_err_bits_q[8],
+                        imem_intg_violation:  raw_err_bits_q[16],
+                        dmem_intg_violation:  raw_err_bits_q[17],
+                        reg_intg_violation:   raw_err_bits_q[18],
+                        bus_intg_violation:   raw_err_bits_q[19],
+                        bad_internal_state:   raw_err_bits_q[20],
+                        illegal_bus_access:   raw_err_bits_q[21],
+                        lifecycle_escalation: raw_err_bits_q[22],
+                        fatal_software:       raw_err_bits_q[23]};
 
   assign status_o = status_q;
   assign insn_cnt_o = insn_cnt_q;

@@ -97,7 +97,7 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
     // Notify the model about the integrity violation error.
     // The HW escalation must happen on the rising edge. Otherwise the model is informed too late.
     if (|(corrupted_words & used_words)) begin
-      otbn_pkg::err_bits_t err_bits;
+      err_bits_reg_t err_bits;
       err_bits = '{reg_intg_violation: 1'b1, default: 1'b0};
       cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
     end

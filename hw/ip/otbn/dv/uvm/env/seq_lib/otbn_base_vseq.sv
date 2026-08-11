@@ -962,7 +962,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   // This task may not be used to check if an injection leads to a SW error as the error monitoring
   // directly depends on the RTL model!
   task handle_sw_error_during_delayed_hw_escalation();
-    otbn_pkg::err_bits_t err_bits;
+    err_bits_reg_t err_bits;
     // Isolation_fork prevents "disable fork" from killing parent processes.
     fork begin : isolation_fork
       fork

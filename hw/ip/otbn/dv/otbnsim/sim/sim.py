@@ -581,8 +581,15 @@ class OTBNSim:
 
     def send_err_escalation(self,
                             err_val: int, lock_immediately: bool) -> None:
-        '''React to an error escalation'''
-        assert err_val & ~ErrBits.MASK == 0
+        '''React to an error escalation
+
+        err_val uses the layout of the ERR_BITS register.
+
+        '''
+        assert err_val & ~ErrBits.MASK == 0, \
+            ('Injected error 0x{:x} sets bits (0x{:x}) that are not defined in '
+             'the ERR_BITS register.'
+             .format(err_val, err_val & ~ErrBits.MASK))
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 

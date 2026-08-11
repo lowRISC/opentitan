@@ -24,7 +24,7 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
     bit req;
     bit choose_mem;
     string gnt_path;
-    bit [31:0] err_val = 32'd1 << 20;
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
 
     `DV_CHECK_STD_RANDOMIZE_FATAL(choose_mem)
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
@@ -58,7 +58,7 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
     endcase
       `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
       @(cfg.clk_rst_vif.cb);
-      cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+      cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
       `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
       `DV_CHECK_FATAL(uvm_hdl_release(gnt_path) == 1);
       reset_if_locked();

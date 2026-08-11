@@ -20,7 +20,6 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
     bit [BUS_DW-1:0] rdata;
     logic [127:0]    key;
     logic [63:0]     nonce;
-    bit [31:0] err_val = 32'd1 << 21;
     logic [DmemAddrWidth-1:0] offset;
     // The scratchpad starts after the visible DMEM
     logic [DmemAddrWidth-1:0] ScratchStartAddr = otbn_reg_pkg::OTBN_DMEM_OFFSET +

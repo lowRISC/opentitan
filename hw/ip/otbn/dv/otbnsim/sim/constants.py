@@ -45,7 +45,16 @@ class ErrBits(IntEnum):
     ILLEGAL_BUS_ACCESS = 1 << 21
     LIFECYCLE_ESCALATION = 1 << 22
     FATAL_SOFTWARE = 1 << 23
-    MASK = (1 << 24) - 1
+
+    # The errors that make OTBN lock instead of just finishing the operation.
+    FATAL_MASK = (IMEM_INTG_VIOLATION | DMEM_INTG_VIOLATION |
+                  REG_INTG_VIOLATION | BUS_INTG_VIOLATION | BAD_INTERNAL_STATE |
+                  ILLEGAL_BUS_ACCESS | LIFECYCLE_ESCALATION | FATAL_SOFTWARE)
+
+    # Every bit that is defined in the ERR_BITS register.
+    MASK = (BAD_DATA_ADDR | BAD_INSN_ADDR | CALL_STACK | ILLEGAL_INSN | LOOP |
+            KEY_INVALID | RND_REP_CHK_FAIL | RND_FIPS_CHK_FAIL | MAI_ERROR |
+            FATAL_MASK)
 
 
 class LcTx(IntEnum):

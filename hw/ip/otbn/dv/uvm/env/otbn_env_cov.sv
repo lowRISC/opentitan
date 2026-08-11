@@ -493,10 +493,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   // ERR_BITS external CSR
   covergroup ext_csr_err_bits_cg
-    with function sample(otbn_pkg::err_bits_t value,
-                         logic [31:0]         old_value,
-                         access_e             access_type,
-                         operational_state_e  state);
+    with function sample(err_bits_reg_t      value,
+                         logic [31:0]        old_value,
+                         access_e            access_type,
+                         operational_state_e state);
     // We want to read every error bit at least once.
 `define DEF_ERR_BIT_CP(NAME) \
   `DEF_SEEN_IF_CP(err_bits_``NAME``_cp, value.NAME, access_type == AccessSoftwareRead)
@@ -509,6 +509,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_ERR_BIT_CP(key_invalid)
     `DEF_ERR_BIT_CP(rnd_rep_chk_fail)
     `DEF_ERR_BIT_CP(rnd_fips_chk_fail)
+    `DEF_ERR_BIT_CP(mai_software_error)
     `DEF_ERR_BIT_CP(imem_intg_violation)
     `DEF_ERR_BIT_CP(dmem_intg_violation)
     `DEF_ERR_BIT_CP(reg_intg_violation)
@@ -2482,7 +2483,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       end
       "err_bits": begin
         last_err_bits = data;
-        ext_csr_err_bits_cg.sample(otbn_pkg::err_bits_t'(data),
+        ext_csr_err_bits_cg.sample(err_bits_reg_t'(data),
                                    csr.get_mirrored_value(), access_type, state);
       end
       "fatal_alert_cause": begin
