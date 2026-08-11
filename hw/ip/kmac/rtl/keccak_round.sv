@@ -626,6 +626,10 @@ module keccak_round
   // of two.
   `ASSERT_INIT(DInWidthTwiceStateWrWidth_A, DInWidth == 2 * StateWrWidth)
 
+  // `xor_addr` drops the LSB of `state_waddr_i` to index the DInWidth lane. This follows from
+  // DInWidthTwiceStateWrWidth_A but is checked explicitly as the state write path relies on it.
+  `ASSERT_INIT(StateWrAddrOneBitWiderThanDInAddr_A, StateWrAddr == DInAddr + 1)
+
   // If `run_i` triggered, it shall complete
   //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
 
