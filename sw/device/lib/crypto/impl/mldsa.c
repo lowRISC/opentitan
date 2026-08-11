@@ -23,9 +23,6 @@ enum {
   // Size of the message hash mu.
   kOtcryptoMldsaMuBytes = 64,
   kOtcryptoMldsaMuWords = kOtcryptoMldsaMuBytes / sizeof(uint32_t),
-  // Size of the M' buffer.
-  kOtCryptoMldsaBufferBytes = 10240,
-  kOtCryptoMldsaBufferWords = kOtCryptoMldsaBufferBytes / sizeof(uint32_t),
   // Maximum size of a pre-hash message digest.
   kOtcryptoMldsaPhMaxWords = 16,
   // Size of the rnd string.
@@ -158,43 +155,14 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
                              const otcrypto_const_byte_buf_t *message,
                              otcrypto_mldsa_hash_mode_t hash_mode,
                              otcrypto_hash_digest_t *mu) {
-  // Allocate the M' buffer (10 KiB).
-  // TODO: This is only temporary until we have a SHA3 streaming mode.
-  uint8_t m[kOtCryptoMldsaBufferBytes];
+  // In pre-hash mode, first compute ph = H(msg).
+  uint32_t ph_data[kOtcryptoMldsaPhMaxWords];
+  uint8_t oid_suf = 0;
+  uint8_t dig_len = 0;
+  if (hash_mode != kOtcryptoMldsaHashModePure) {
+    oid_suf = EXTRACT_HASH_OID(hash_mode);
+    dig_len = EXTRACT_HASH_LEN(hash_mode);
 
-  // Effective size of M'.
-  size_t m_len = 0;
-
-  // Copy tr into M'[0:64].
-  HARDENED_TRY(randomized_bytecopy(m, tr->data, kOtcryptoMldsaTrBytes));
-  m_len += kOtcryptoMldsaTrBytes;
-
-  if (hash_mode == kOtcryptoMldsaHashModePure) {
-    HARDENED_CHECK_EQ(hash_mode, kOtcryptoMldsaHashModePure);
-
-    // M'[64] = 0.
-    m[m_len] = 0;
-    m_len += 1;
-
-    // M'[65] = len(ctx).
-    m[m_len] = (uint8_t)context->len;
-    m_len += 1;
-
-    // M'[66 : 66 + len(ctx)] = ctx
-    HARDENED_TRY(randomized_bytecopy(m + m_len, context->data, context->len));
-    m_len += context->len;
-
-    // M'[66 + len(ctx) : 66 + len(ctx) + len(msg)] = msg.
-    HARDENED_TRY(randomized_bytecopy(m + m_len, message->data, message->len));
-    m_len += message->len;
-
-  } else {
-    HARDENED_CHECK_NE(hash_mode, kOtcryptoMldsaHashModePure);
-
-    uint8_t oid_suf = EXTRACT_HASH_OID(hash_mode);
-    uint8_t dig_len = EXTRACT_HASH_LEN(hash_mode);
-
-    // Perform the hash function lookup twice and compare.
     otcrypto_status_t (*hash)(const otcrypto_const_byte_buf_t *,
                               otcrypto_hash_digest_t *) = hashes[oid_suf];
     if (hash == NULL) {
@@ -202,8 +170,6 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
     }
     HARDENED_CHECK_NE(hash, NULL);
 
-    // Allocate the pre-hash buffer ph.
-    uint32_t ph_data[kOtcryptoMldsaPhMaxWords];
     otcrypto_hash_digest_t ph = {
         .data = ph_data,
         .len = dig_len / sizeof(uint32_t),
@@ -211,36 +177,54 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
 
     // ph = hash(msg).
     HARDENED_TRY(hash(message, &ph));
-
-    // M'[64] = 1.
-    m[m_len] = 1;
-    m_len += 1;
-
-    // M'[65] = len(ctx).
-    m[m_len] = (uint8_t)context->len;
-    m_len += 1;
-
-    // M'[66 : 66 + len(ctx)] = ctx
-    HARDENED_TRY(randomized_bytecopy(m + m_len, context->data, context->len));
-    m_len += context->len;
-
-    // M'[66 + len(ctx) : 66 + len(ctx) + 10] = oid_prefix.
-    HARDENED_TRY(randomized_bytecopy(m + m_len, oid_prefix, 10));
-    m_len += 10;
-
-    // M'[66 + len(ctx) : 66 + len(ctx) + 10] = oid_suffix.
-    m[m_len] = oid_suf;
-    m_len += 1;
-
-    // M'[66 + len(ctx) + 11 : 66 + len(ctx)+ 11 + len(ph)] = ph.
-    HARDENED_TRY(randomized_bytecopy(m + m_len, ph.data, dig_len));
-    m_len += dig_len;
   }
 
   // mu = SHAKE256(tr || M').
-  otcrypto_const_byte_buf_t buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, m, m_len);
-  HARDENED_TRY(otcrypto_shake256(&buf, mu));
+  otcrypto_sha3_context_t sha3_ctx;
+  HARDENED_TRY(otcrypto_shake256_init(&sha3_ctx));
+
+  // Absorb tr.
+  otcrypto_const_byte_buf_t tr_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)tr->data,
+                        kOtcryptoMldsaTrBytes);
+  HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, &tr_buf));
+
+  // Absorb M'[0] (0 in pure hash mode, 1 in pre-hash mode) and
+  // M'[1] = len(ctx).
+  uint8_t header[2] = {hash_mode != kOtcryptoMldsaHashModePure,
+                       (uint8_t)context->len};
+  otcrypto_const_byte_buf_t header_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, header, sizeof(header));
+  HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, &header_buf));
+
+  // Absorb M'[2 : 2 + len(ctx)] = ctx.
+  HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, context));
+
+  if (hash_mode == kOtcryptoMldsaHashModePure) {
+    HARDENED_CHECK_EQ(hash_mode, kOtcryptoMldsaHashModePure);
+
+    // Absorb M'[2 + len(ctx) : 2 + len(ctx) + len(msg)] = msg.
+    HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, message));
+  } else {
+    HARDENED_CHECK_NE(hash_mode, kOtcryptoMldsaHashModePure);
+
+    // Absorb M'[2 + len(ctx) : 2 + len(ctx) + 11] = oid_prefix || oid_suffix.
+    otcrypto_const_byte_buf_t oid_prefix_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, oid_prefix, sizeof(oid_prefix));
+    HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, &oid_prefix_buf));
+
+    otcrypto_const_byte_buf_t oid_suf_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &oid_suf, 1);
+    HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, &oid_suf_buf));
+
+    // Absorb M'[2 + len(ctx) + 11 : 2 + len(ctx) + 11 + len(ph)] = ph.
+    otcrypto_const_byte_buf_t ph_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, (unsigned char *)ph_data, dig_len);
+    HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, &ph_buf));
+  }
+
+  // Squeeze out mu.
+  HARDENED_TRY(otcrypto_shake256_final(&sha3_ctx, mu));
 
   return OTCRYPTO_OK;
 }
