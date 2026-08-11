@@ -124,8 +124,6 @@ In order to build and run tests, the build system requires you to declare execut
 # In hw/top_matcha/BUILD:
 load(
     "//rules/opentitan:defs.bzl",
-    "DEFAULT_TEST_FAILURE_MSG",
-    "DEFAULT_TEST_SUCCESS_MSG",
     "sim_dv",
 )
 
@@ -146,10 +144,10 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
-        "//hw/top_darjeeling/sw/dt:sim_dv",
+        "//hw/top_matcha/sw/dt:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_matcha.secrets.testing.gen.hjson",
+    rom_scramble_config = "//hw/top_matcha/data/autogen:top_matcha.secrets.testing.gen.hjson",
     # Only needed for tops that feature RRAM; the example top above does not,
     # so this would normally be omitted here.
     rram_scramble_tool = "//util/design:gen-rram-img",
