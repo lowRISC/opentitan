@@ -263,10 +263,11 @@ module kmac
   logic                          msg_ready       ;
 
   // Process control signals
-  // Process pulse propagates from register to SHA3 engine one by one.
-  // Each module (MSG_FIFO, KMAC core, SHA3 core) generates the process pulse
-  // after flushing internal data to the next module.
-  logic reg2msgfifo_process, msgfifo2kmac_process, kmac2sha3_process;
+  // The process command first flushes the message pipeline. The pulse then
+  // propagates from the message FIFO to the SHA3 engine one by one, where each
+  // module (KMAC core, SHA3 core) forwards it only after having flushed its
+  // own data to the next module.
+  logic reg2msgfifo_flush, msgfifo2kmac_flush_done, kmac2sha3_process;
 
 
   // Secret Key signals
@@ -441,7 +442,7 @@ module kmac
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
     sha3_done_d = prim_mubi_pkg::MuBi4False;
-    reg2msgfifo_process = 1'b 0;
+    reg2msgfifo_flush = 1'b 0;
 
     unique case (kmac_cmd)
       CmdStart: begin
@@ -449,7 +450,7 @@ module kmac
       end
 
       CmdProcess: begin
-        reg2msgfifo_process = 1'b 1;
+        reg2msgfifo_flush = 1'b 1;
       end
 
       CmdManualRun: begin
@@ -649,17 +650,17 @@ module kmac
   // - When seeing a negative edge on the empty signal. This signals that software has reacted to
   //   the interrupt and is filling up the FIFO again.
   assign msgfifo_full_seen_d =
-      msgfifo_full          ? 1'b 1 :
-      msgfifo_empty_negedge ? 1'b 0 :
-      msgfifo2kmac_process  ? 1'b 0 : msgfifo_full_seen_q;
+      msgfifo_full            ? 1'b 1 :
+      msgfifo_empty_negedge   ? 1'b 0 :
+      msgfifo2kmac_flush_done ? 1'b 0 : msgfifo_full_seen_q;
 
   // The interrupt is gated unless software is performing an absorption operation (but not the
-  // final block) and the FIFO was full before. The msgfifo2kmac_process pulse is arriving from the
-  // FIFO together with the empty signal.
+  // final block) and the FIFO was full before. The msgfifo2kmac_flush_done pulse is arriving
+  // from the FIFO together with the empty signal.
   assign msgfifo_empty_gate =
       app_active                     ? 1'b 1 :
       sha3_fsm != sha3_pkg::StAbsorb ? 1'b 1 :
-      msgfifo2kmac_process           ? 1'b 1 : ~msgfifo_full_seen_q;
+      msgfifo2kmac_flush_done        ? 1'b 1 : ~msgfifo_full_seen_q;
 
   assign status_msgfifo_empty = msgfifo_empty_gate ? 1'b 0 : msgfifo_empty;
 
@@ -903,7 +904,7 @@ module kmac
 
     // Controls
     .start_i   (sha3_start          ),
-    .process_i (msgfifo2kmac_process),
+    .process_i (msgfifo2kmac_flush_done),
     .done_i    (sha3_done           ),
     .process_o (kmac2sha3_process   ),
 
@@ -1185,8 +1186,8 @@ module kmac
 
     .clear_i (sha3_done),
 
-    .process_i (reg2msgfifo_process ),
-    .process_o (msgfifo2kmac_process),
+    .flush_i      (reg2msgfifo_flush),
+    .flush_done_o (msgfifo2kmac_flush_done),
 
     .err_o (msgfifo_err)
   );
