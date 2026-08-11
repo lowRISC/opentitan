@@ -445,10 +445,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
   endtask
 
-  task post_start();
-    super.post_start();
-  endtask
-
   task start_indefinite_seqs();
 
     // Create a new csrng host sequence
