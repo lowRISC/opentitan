@@ -10,6 +10,7 @@ use std::any::Any;
 use crate::commands::Dispatch;
 use crate::module::Module;
 
+pub mod export;
 pub mod generate;
 pub mod import;
 pub mod sign;
@@ -17,6 +18,7 @@ pub mod verify;
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum SlhDsa {
+    Export(export::Export),
     Generate(generate::Generate),
     Import(import::Import),
     Sign(sign::Sign),
@@ -32,6 +34,7 @@ impl Dispatch for SlhDsa {
         session: Option<&Session>,
     ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
+            SlhDsa::Export(x) => x.run(context, hsm, session),
             SlhDsa::Generate(x) => x.run(context, hsm, session),
             SlhDsa::Import(x) => x.run(context, hsm, session),
             SlhDsa::Sign(x) => x.run(context, hsm, session),
@@ -44,6 +47,7 @@ impl Dispatch for SlhDsa {
         Self: Sized,
     {
         match self {
+            SlhDsa::Export(x) => x.leaf(),
             SlhDsa::Generate(x) => x.leaf(),
             SlhDsa::Import(x) => x.leaf(),
             SlhDsa::Sign(x) => x.leaf(),
