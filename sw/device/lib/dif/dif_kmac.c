@@ -134,6 +134,18 @@ static bool is_state_squeeze(const dif_kmac_t *kmac) {
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
 }
 
+/**
+ * Report whether software has claimed the KMAC HWIP for a state write, which
+ * means that writes to the state window are accepted.
+ *
+ * @param kmac Handle.
+ * @returns Whether the state window is currently writable or not.
+ */
+static bool is_state_writable(const dif_kmac_t *kmac) {
+  uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_STATUS_STATE_WRITE_BIT);
+}
+
 dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error) {
   if (kmac == NULL) {
     return kDifBadArg;
@@ -822,6 +834,92 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
   return kDifOk;
 }
 
+dif_result_t dif_kmac_context_save(const dif_kmac_t *kmac,
+                                   dif_kmac_operation_state_t *operation_state,
+                                   dif_kmac_context_t *context) {
+  if (kmac == NULL || operation_state == NULL || context == NULL) {
+    return kDifBadArg;
+  }
+
+  // A context can only be saved while the message is absorbed.
+  if (operation_state->squeezing) {
+    return kDifError;
+  }
+
+  const mmio_region_t base = kmac->base_addr;
+
+  // Issue stop command and wait until the absorbing stage has been stopped.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_STOP);
+  mmio_region_write32(base, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  DIF_RETURN_IF_ERROR(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_STOPPED_BIT));
+
+  for (size_t i = 0; i < kDifKmacStateWords; ++i) {
+    ptrdiff_t offset =
+        KMAC_STATE_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t);
+    context->share0[i] = mmio_region_read32(base, offset);
+    context->share1[i] =
+        mmio_region_read32(base, offset + kDifKmacStateShareOffset);
+  }
+
+  context->operation_state = *operation_state;
+
+  cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_DONE);
+  mmio_region_write32(base, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Reset operation state.
+  operation_state->squeezing = false;
+  operation_state->append_d = false;
+  operation_state->offset = 0;
+  operation_state->r = 0;
+  operation_state->d = 0;
+
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_context_restore(
+    const dif_kmac_t *kmac, const dif_kmac_context_t *context,
+    dif_kmac_operation_state_t *operation_state) {
+  if (kmac == NULL || context == NULL || operation_state == NULL) {
+    return kDifBadArg;
+  }
+
+  // The keccak state is only writable while the hardware is idle.
+  if (!is_state_idle(kmac)) {
+    return kDifError;
+  }
+
+  const mmio_region_t base = kmac->base_addr;
+
+  uint32_t cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD,
+                                            KMAC_CMD_CMD_VALUE_STATE_WRITE);
+  mmio_region_write32(base, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Check that we have claimed the KMAC block.
+  if (!is_state_writable(kmac)) {
+    return kDifUnavailable;
+  }
+
+  for (size_t i = 0; i < kDifKmacStateWords; ++i) {
+    ptrdiff_t offset =
+        KMAC_STATE_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t);
+    mmio_region_write32(base, offset, context->share0[i]);
+    mmio_region_write32(base, offset + kDifKmacStateShareOffset,
+                        context->share1[i]);
+  }
+
+  // Issue continue command.
+  cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_CONTINUE);
+  mmio_region_write32(base, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  *operation_state = context->operation_state;
+
+  return dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
+}
+
 dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac,
                                        bool *is_locked) {
   if (kmac == NULL || is_locked == NULL) {
@@ -844,7 +942,7 @@ dif_result_t dif_kmac_get_status(const dif_kmac_t *kmac,
 
   kmac_status->sha3_state = bitfield_field32_read(
       reg,
-      (bitfield_field32_t){.mask = 0x07, .index = KMAC_STATUS_SHA3_IDLE_BIT});
+      (bitfield_field32_t){.mask = 0x0F, .index = KMAC_STATUS_SHA3_IDLE_BIT});
 
   kmac_status->fifo_depth =
       bitfield_field32_read(reg, KMAC_STATUS_FIFO_DEPTH_FIELD);
