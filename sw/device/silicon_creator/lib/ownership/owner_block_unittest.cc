@@ -46,20 +46,20 @@ class OwnerBlockTest : public rom_test::RomTest {
 // Create and "encrypt" the `access` word of a flash region config.
 #define FLASH_ACCESS(index, read, program, erase, pwp, lock) ( \
     ( \
-      bitfield_field32_write(0, NVM_CONFIG_READ, read ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_PROGRAM, program ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_ERASE, erase ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_PROTECT_WHEN_PRIMARY, pwp ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_LOCK, lock ? kMultiBitBool4True : kMultiBitBool4False) \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_READ, read ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_PROGRAM, program ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_ERASE, erase ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_PROTECT_WHEN_PRIMARY, pwp ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_LOCK, lock ? kMultiBitBool4True : kMultiBitBool4False) \
     ) ^ (0x11111111 * index) \
   )
 
 // Create and "encrypt" the `properties` word of a flash region config.
 #define FLASH_PROP(index, scramble, ecc, he) ( \
     ( \
-      bitfield_field32_write(0, NVM_CONFIG_SCRAMBLE, scramble ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_ECC, ecc ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, NVM_CONFIG_HIGH_ENDURANCE, he ? kMultiBitBool4True : kMultiBitBool4False) \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_SCRAMBLE, scramble ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_ECC, ecc ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, OWNER_NVM_CONFIG_HIGH_ENDURANCE, he ? kMultiBitBool4True : kMultiBitBool4False) \
     ) ^ (0x11111111 * index) \
   )
 // clang-format on
