@@ -157,7 +157,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
       type: "int",
-      default: "4",
+      default: "${num_sram_key_req_slots}",
       local: "true"
     },
     // Macro parameters
@@ -413,9 +413,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
   % endif
     // Key request from SRAM scramblers
     { struct:  "sram_otp_key"
-      // TODO: would be nice if this could accept parameters.
-      // Split this out into an issue.
-      width:   "4"
+      width:   "${num_sram_key_req_slots}"
       type:    "req_rsp"
       name:    "sram_otp_key"
       act:     "rsp"
