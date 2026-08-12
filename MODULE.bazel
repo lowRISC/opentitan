@@ -8,11 +8,12 @@ module(name = "lowrisc_opentitan")
 bazel_dep(name = "abseil-cpp", version = "20240116.1")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
+bazel_dep(name = "openssl", version = "3.5.5.bcr.4")
+bazel_dep(name = "opentitan_signing_infra", version = "0.0.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.4")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "openssl", version = "3.5.5.bcr.4")
 
 # Dev dependencies:
 bazel_dep(
@@ -29,6 +30,14 @@ archive_override(
     integrity = "sha256-Nl/mfYFo/uGg/DrqS7gFiL9yHcT8g7QEY7CetQiXzaM=",
     strip_prefix = "misc-linters-20240823_01",
     urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20240823_01.tar.gz"],
+)
+
+# Overrides and patches:
+archive_override(
+    module_name = "opentitan_signing_infra",
+    integrity = "sha256-v7WqgkRbp0J9xz9PRTF+935XE2aQBKO37eajLUtIOQ8=",
+    strip_prefix = "opentitan-signing-infra-2026-09-03-release-1",
+    urls = ["https://github.com/lowRISC/opentitan-signing-infra/archive/refs/tags/2026-09-03-release-1.tar.gz"],
 )
 
 ################### originally from //third_party/rust:rust.MODULE.bazel
@@ -386,3 +395,5 @@ provisioning_exts_hook(name = "provisioning_exts")
 register_toolchains("//rules/opentitan:localtools")
 
 register_toolchains("//toolchain:cc_toolchain_opentitan")
+
+register_toolchains("//toolchain:latest_opentitantool_toolchain")
