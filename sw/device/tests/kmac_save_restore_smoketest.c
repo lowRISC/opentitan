@@ -215,6 +215,8 @@ static void test_interleaved(const sr_test_t *test) {
 
   // Complete stream A.
   uint32_t got_a[kDigestLen];
+  // As both streams use the same config, there is no need to reconfigure
+  // KMAC.
   CHECK_DIF_OK(dif_kmac_context_restore(&kmac, &context_a, &op_state));
   CHECK_DIF_OK(dif_kmac_absorb(&kmac, &op_state, &msg_a[test->block_len],
                                kTailLen, NULL));
