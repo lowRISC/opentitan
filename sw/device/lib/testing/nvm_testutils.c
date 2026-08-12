@@ -389,14 +389,14 @@ status_t nvm_testutils_default_region_get(nvm_page_perms_t *perms,
   dif_rram_ctrl_region_properties_t props;
   TRY(dif_rram_ctrl_get_default_region_properties(&rram, &props));
   if (perms != NULL) {
-    perms->read = props.rd_en;
-    perms->write = props.wr_en;
+    perms->read = (uint32_t)props.rd_en;
+    perms->write = (uint32_t)props.wr_en;
     // RRAM has no separate erase permission.
     perms->erase = kMultiBitBool4False;
   }
   if (cfg != NULL) {
-    cfg->scrambling = props.scramble_en;
-    cfg->ecc = props.ecc_en;
+    cfg->scrambling = (uint32_t)props.scramble_en;
+    cfg->ecc = (uint32_t)props.ecc_en;
     // RRAM has no high-endurance concept.
     cfg->he = kMultiBitBool4False;
   }
@@ -714,14 +714,14 @@ status_t nvm_testutils_default_region_get(nvm_page_perms_t *perms,
   dif_flash_ctrl_region_properties_t props;
   TRY(dif_flash_ctrl_get_default_region_properties(&flash, &props));
   if (perms != NULL) {
-    perms->read = props.rd_en;
-    perms->write = props.prog_en;
-    perms->erase = props.erase_en;
+    perms->read = (uint32_t)props.rd_en;
+    perms->write = (uint32_t)props.prog_en;
+    perms->erase = (uint32_t)props.erase_en;
   }
   if (cfg != NULL) {
-    cfg->scrambling = props.scramble_en;
-    cfg->ecc = props.ecc_en;
-    cfg->he = props.high_endurance_en;
+    cfg->scrambling = (uint32_t)props.scramble_en;
+    cfg->ecc = (uint32_t)props.ecc_en;
+    cfg->he = (uint32_t)props.high_endurance_en;
   }
   return OK_STATUS();
 }

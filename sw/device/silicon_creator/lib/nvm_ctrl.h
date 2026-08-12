@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -169,7 +170,7 @@ extern "C" {
 #endif
 
 /** Value of a word in NVM after erase. */
-enum { kNvmErasedWord = UINT32_MAX };
+#define kNvmErasedWord UINT32_MAX
 
 // ---------------------------------------------------------------------------
 // Access permission and configuration types
@@ -178,28 +179,36 @@ enum { kNvmErasedWord = UINT32_MAX };
 /**
  * Access permission settings for an NVM page.
  *
- * Fields use `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
+ * Fields hold `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
  * operation; `kMultiBitBool4False` disables it. Raw hardware register values
- * are passed through without normalisation.
+ * are passed through without normalisation. Bitfields match the layout of
+ * `flash_ctrl_perms_t`/`rram_ctrl_perms_t` so the struct stays register-sized.
  */
 typedef struct nvm_page_perms {
-  multi_bit_bool_t read;
-  multi_bit_bool_t write;
-  multi_bit_bool_t erase;
+  uint32_t _pad0 : 4;
+  uint32_t read : 4;
+  uint32_t write : 4;
+  uint32_t erase : 4;
+  uint32_t _pad1 : 16;
 } nvm_page_perms_t;
+OT_ASSERT_SIZE(nvm_page_perms_t, 4);
 
 /**
  * Configuration settings for an NVM page.
  *
- * Fields use `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
+ * Fields hold `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
  * feature; `kMultiBitBool4False` disables it. Raw hardware register values
- * are passed through without normalisation.
+ * are passed through without normalisation. Bitfields match the layout of
+ * `flash_ctrl_cfg_t`/`rram_ctrl_cfg_t` so the struct stays register-sized.
  */
 typedef struct nvm_page_cfg {
-  multi_bit_bool_t scrambling;
-  multi_bit_bool_t ecc;
-  multi_bit_bool_t he;
+  uint32_t _pad0 : 16;
+  uint32_t scrambling : 4;
+  uint32_t ecc : 4;
+  uint32_t he : 4;
+  uint32_t _pad1 : 4;
 } nvm_page_cfg_t;
+OT_ASSERT_SIZE(nvm_page_cfg_t, 4);
 
 /** Read, write, and erase all enabled. */
 extern const nvm_page_perms_t kNvmPagePermsReadWrite;

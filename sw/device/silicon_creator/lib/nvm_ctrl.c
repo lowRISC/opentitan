@@ -119,8 +119,8 @@ static rram_ctrl_cfg_t cfg_to_rram(nvm_page_cfg_t c) {
 
 static nvm_page_cfg_t cfg_from_rram(rram_ctrl_cfg_t c) {
   return (nvm_page_cfg_t){
-      .scrambling = (multi_bit_bool_t)c.scrambling,
-      .ecc = (multi_bit_bool_t)c.ecc,
+      .scrambling = c.scrambling,
+      .ecc = c.ecc,
       .he = kMultiBitBool4False,
   };
 }
@@ -149,9 +149,9 @@ static flash_ctrl_cfg_t cfg_to_flash(nvm_page_cfg_t c) {
 
 static nvm_page_cfg_t cfg_from_flash(flash_ctrl_cfg_t c) {
   return (nvm_page_cfg_t){
-      .scrambling = (multi_bit_bool_t)c.scrambling,
-      .ecc = (multi_bit_bool_t)c.ecc,
-      .he = (multi_bit_bool_t)c.he,
+      .scrambling = c.scrambling,
+      .ecc = c.ecc,
+      .he = c.he,
   };
 }
 #endif  // USE_RRAM
