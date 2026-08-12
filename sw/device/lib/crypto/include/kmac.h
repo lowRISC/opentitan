@@ -22,12 +22,12 @@ enum {
   /**
    * Size of the KMAC context in words.
    *
-   * Holds the key mode, the sideload flag and the driver-level context (two
+   * Holds the key mode, the sideload flag and the driver-level context (four
    * words).
    *
    * TODO: Refine this once the save-and-context feature has landed.
    */
-  kOtcryptoKmacCtxStructWords = 4,
+  kOtcryptoKmacCtxStructWords = 6,
 };
 
 /**

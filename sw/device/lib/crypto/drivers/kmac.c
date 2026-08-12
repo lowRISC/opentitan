@@ -1202,6 +1202,135 @@ status_t kmac_update(kmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * End the absorption phase and transition to processing.
+ *
+ * @param ctx KMAC context.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t xof_process(kmac_ctx_t *ctx) {
+  const uint32_t kBase = kmac_base();
+
+  // Check that the hardware is still in the `ABSORB` state.
+  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Issue `CMD.PROCESS`, so that the squeezing phase can start.
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_PROCESS);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  ctx->squeeze_started = kHardenedBoolTrue;
+  ctx->squeeze_offset = 0;
+
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_xof_squeeze(kmac_ctx_t *ctx, uint32_t *digest,
+                          size_t digest_len) {
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL || digest == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Only SHAKE and cSHAKE support streamed squeezing.
+  if (launder32(ctx->operation) != kKmacOperationShake &&
+      launder32(ctx->operation) != kKmacOperationCshake) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  size_t keccak_rate_words;
+  HARDENED_TRY(
+      kmac_get_keccak_rate_words(ctx->security_str, &keccak_rate_words));
+
+  // The squeeze offset must be at most the size of the rate.
+  if (launder32(ctx->squeeze_offset) > keccak_rate_words) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->squeeze_offset, keccak_rate_words);
+
+  const uint32_t kBase = kmac_base();
+
+  // The first invocation ends the absorb phase.
+  if (launder32(ctx->squeeze_started) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ctx->squeeze_started, kHardenedBoolFalse);
+    HARDENED_TRY(xof_process(ctx));
+  }
+
+  size_t idx = 0;
+  while (launder32(idx) < digest_len) {
+    // Poll the status register until in the 'SQUEEZE' state.
+    HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+
+    // If we read all the remaining words and still need more digest, issue
+    // `CMD.RUN` to generate more state.
+    if (launder32(ctx->squeeze_offset) == keccak_rate_words) {
+      HARDENED_CHECK_EQ(ctx->squeeze_offset, keccak_rate_words);
+      uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+      cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                       KMAC_CMD_CMD_VALUE_RUN);
+      abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+      ctx->squeeze_offset = 0;
+      HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+    }
+
+    // Read words from the state registers.
+    size_t read_len_words = keccak_rate_words - ctx->squeeze_offset;
+    if (read_len_words > digest_len - idx) {
+      read_len_words = digest_len - idx;
+    }
+    uint32_t offset_share0 =
+        kBase + KMAC_STATE_REG_OFFSET + ctx->squeeze_offset * sizeof(uint32_t);
+    uint32_t offset_share1 = offset_share0 + kKmacStateShareSize;
+
+    // Unmask the digest as we read it.
+    HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,
+                              (const uint32_t *)offset_share1, read_len_words,
+                              &digest[idx]));
+    idx += read_len_words;
+    ctx->squeeze_offset += read_len_words;
+  }
+  HARDENED_CHECK_EQ(idx, digest_len);
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_xof_end(kmac_ctx_t *ctx) {
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // If squeezing has not started, end the absorb phase first so that the
+  // hardware reaches a state in which it accepts the `CMD.DONE` command.
+  if (launder32(ctx->squeeze_started) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ctx->squeeze_started, kHardenedBoolFalse);
+    HARDENED_TRY(xof_process(ctx));
+  }
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+
+  // Invalidate the context.
+  ctx->squeeze_started = kHardenedBoolFalse;
+  ctx->squeeze_offset = 0;
+
+  return OTCRYPTO_OK;
+}
+
 status_t kmac_sha3_224_final(kmac_ctx_t *ctx, uint32_t *digest) {
   return stream_final(ctx, kKmacOperationSha3, kKmacSecurityStrength224,
                       /*masked_digest=*/kHardenedBoolFalse, digest,

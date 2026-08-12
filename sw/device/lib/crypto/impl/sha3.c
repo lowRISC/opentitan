@@ -400,48 +400,84 @@ otcrypto_status_t otcrypto_sha3_512_final(otcrypto_sha3_context_t *const ctx,
 
 otcrypto_status_t otcrypto_shake128_final(otcrypto_sha3_context_t *const ctx,
                                           otcrypto_hash_digest_t *digest) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   digest->mode = kOtcryptoHashXofModeShake128;
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
   return otcrypto_eval_exit(
       kmac_shake_128_final((kmac_ctx_t *)ctx->data, digest->data, digest->len));
 }
 
 otcrypto_status_t otcrypto_shake256_final(otcrypto_sha3_context_t *const ctx,
                                           otcrypto_hash_digest_t *digest) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   digest->mode = kOtcryptoHashXofModeShake256;
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
   return otcrypto_eval_exit(
       kmac_shake_256_final((kmac_ctx_t *)ctx->data, digest->data, digest->len));
 }
 
 otcrypto_status_t otcrypto_cshake128_final(otcrypto_sha3_context_t *const ctx,
                                            otcrypto_hash_digest_t *digest) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   digest->mode = kOtcryptoHashXofModeCshake128;
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
   return otcrypto_eval_exit(kmac_cshake_128_final((kmac_ctx_t *)ctx->data,
                                                   digest->data, digest->len));
 }
 
 otcrypto_status_t otcrypto_cshake256_final(otcrypto_sha3_context_t *const ctx,
                                            otcrypto_hash_digest_t *digest) {
+  // Release the KMAC HWIP through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   digest->mode = kOtcryptoHashXofModeCshake256;
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
   return otcrypto_eval_exit(kmac_cshake_256_final((kmac_ctx_t *)ctx->data,
                                                   digest->data, digest->len));
 }
