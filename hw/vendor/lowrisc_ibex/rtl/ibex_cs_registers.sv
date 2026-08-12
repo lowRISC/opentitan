@@ -146,7 +146,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
   endfunction
 
   // All bitmanip configs enable non-ratified sub-extensions
-  localparam int unsigned RV32BExtra   = (RV32B != RV32BNone) ? 1 : 0;
+  localparam int unsigned RV32BEnabled = (RV32B != RV32BNone) ? 1 : 0;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
   localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? PMP_ADDR_MSB - PMPGranularity : 32;
   // Base index of the first HPM counter (0=cycle, 1=time, 2=instret)
@@ -155,7 +155,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                 <<  0)  // A - Atomic Instructions extension
-    | (0                 <<  1)  // B - Bit-Manipulation extension
+    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
     | (1                 <<  2)  // C - Compressed extension
     | (0                 <<  3)  // D - Double precision floating-point extension
     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
@@ -165,7 +165,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
     | (0                 << 13)  // N - User level interrupts supported
     | (0                 << 18)  // S - Supervisor mode implemented
     | (1                 << 20)  // U - User mode implemented
-    | (RV32BExtra        << 23)  // X - Non-standard extensions present
+    | (0                 << 23)  // X - Non-standard extensions present
     | (32'(CSR_MISA_MXL) << 30); // M-XLEN
 
   typedef struct packed {
