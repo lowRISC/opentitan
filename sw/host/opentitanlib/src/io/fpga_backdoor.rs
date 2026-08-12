@@ -75,14 +75,28 @@ pub fn enter_backdoor_loader(transport: &TransportWrapper) -> Result<()> {
     transport.capabilities()?.request(Capability::GPIO).ok()?;
     let pinmux_tap_backdoor = transport.pin_strapping("PINMUX_TAP_FPGA_BACKDOOR")?;
     let reset = transport.pin_strapping("RESET")?;
+    // Hold the JTAG TAP in reset for as long as the main reset is asserted. This works around
+    // suspected corruption of the `dmi_jtag` clock domain crossing in `bkdr_loader`.
+    // See lowrisc/opentitan#30922 and lowrisc/opentitan#29555.
+    let trst = transport.optional_pin_strapping("TRST")?;
 
     log::info!(
         "Resetting with PINMUX_TAP_FPGA_BACKDOOR (== DFT) strapping applied to enter the backdoor loader"
     );
     pinmux_tap_backdoor.apply()?;
+    if let Some(trst) = &trst {
+        log::info!("Asserting TRST strapping");
+        trst.apply()?;
+    }
     reset.apply()?;
     std::thread::sleep(Duration::from_millis(RESET_PULSE_MS));
+    // Release in reverse order of assertion, so that the TCK side of the CDC never leaves reset
+    // while the `clk_i` side is still held.
     reset.remove()?;
+    if let Some(trst) = &trst {
+        log::info!("Deasserting TRST strapping");
+        trst.remove()?;
+    }
     std::thread::sleep(Duration::from_millis(HOLD_TAP_STRAPS_MS));
     pinmux_tap_backdoor.remove()?;
     log::info!("Reset complete, backdoor TAP strapping released");
