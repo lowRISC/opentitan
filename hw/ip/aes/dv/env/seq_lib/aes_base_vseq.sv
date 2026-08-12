@@ -173,6 +173,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.sideload.predict(sideload));
     end
   endtask
@@ -196,11 +198,23 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
+  // Write the supplied key to registers, in two shares
+  //
+  // If do_b2b is true, enqueue the write transactions as quickly as possible, which should mean the
+  // writes are back-to-back.
+  //
+  // Exits early on reset.
   virtual task write_key(bit [7:0][31:0] key [2], bit do_b2b);
     `uvm_info(`gfn, $sformatf("\n\t --- back to back transactions : %b", do_b2b), UVM_MEDIUM)
-    // Share 0/1 (the masked key share = key ^ mask)
-    foreach (key[0][i]) csr_wr(.ptr(ral.key_share0[i]), .value(key[0][i]), .blocking(~do_b2b));
-    foreach (key[1][i]) csr_wr(.ptr(ral.key_share1[i]), .value(key[1][i]), .blocking(~do_b2b));
+
+    foreach (key[0][i]) begin
+      csr_wr(.ptr(ral.key_share0[i]), .value(key[0][i]), .blocking(~do_b2b));
+      if (cfg.under_reset) return;
+    end
+    foreach (key[1][i]) begin
+      csr_wr(.ptr(ral.key_share1[i]), .value(key[1][i]), .blocking(~do_b2b));
+      if (cfg.under_reset) return;
+    end
   endtask // write_key
 
 
