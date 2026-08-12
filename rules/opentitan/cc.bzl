@@ -215,7 +215,6 @@ def _build_binary(ctx, exec_env, name, deps, kind):
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
-            # FIXME: will need to supply hsmtool when we add NitroKey signing.
         )
     else:
         signed = {}
