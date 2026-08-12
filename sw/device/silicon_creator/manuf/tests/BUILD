@@ -332,7 +332,7 @@ opentitan_binary(
             init_lc_state.lower(),
             target_lc_state.lower(),
         ),
-        srcs = ["flash_device_info_flash_wr_functest.c"],
+        srcs = ["nvm_device_info_nvm_wr_functest.c"],
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_SPX_KEY_STRUCTS,
