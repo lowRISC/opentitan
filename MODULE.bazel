@@ -141,30 +141,6 @@ crate.annotation(
     patches = ["@lowrisc_opentitan//third_party/rust/patches:mdbook-landing-page-links.patch"],
     repositories = ["crate_index"],
 )
-crate.annotation(
-    crate = "cryptoki",
-    patch_args = ["-p2"],
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
-    ],
-    repositories = ["crate_index"],
-)
-crate.annotation(
-    additive_build_file_content = """
-        filegroup(
-            name = "binding_srcs",
-            srcs = [
-                "src/lib.rs",
-                "src/bindings/x86_64-unknown-linux-gnu.rs",
-            ],
-        )
-    """,
-    crate = "cryptoki-sys",
-    extra_aliased_targets = {
-        "cryptoki-sys-binding-srcs": "binding_srcs",
-    },
-    repositories = ["crate_index"],
-)
 
 inject_repo(
     crate,
