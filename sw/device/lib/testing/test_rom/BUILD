@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_for_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -182,11 +182,9 @@ cc_library(
         "test_rom.c",
         "test_rom_start.S",
     ],
-    local_defines = opentitan_if_ip(
-        "otp_ctrl",
-        ["HAS_OTP_CTRL"],
-        [],
-    ) + opentitan_select_top(
+    local_defines = opentitan_for_ip({
+        "otp_ctrl": ["HAS_OTP_CTRL"],
+    }) + opentitan_select_top(
         {
             "englishbreakfast": [],
         },
@@ -220,30 +218,16 @@ cc_library(
         "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-    ] + opentitan_if_ip(
-        "entropy_src",
-        ["//hw/top:entropy_src_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "csrng",
-        ["//hw/top:csrng_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "edn",
-        ["//hw/top:edn_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "sensor_ctrl",
-        ["//hw/top:sensor_ctrl_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "otp_ctrl",
-        [
+    ] + opentitan_for_ip({
+        "entropy_src": ["//hw/top:entropy_src_c_regs"],
+        "csrng": ["//hw/top:csrng_c_regs"],
+        "edn": ["//hw/top:edn_c_regs"],
+        "sensor_ctrl": ["//hw/top:sensor_ctrl_c_regs"],
+        "otp_ctrl": [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt:otp_ctrl",
         ],
-        [],
-    ) + opentitan_select_top(
+    }) + opentitan_select_top(
         {
             "earlgrey": ["//sw/device/lib/testing:nvm_testutils"],
             "englishbreakfast": ["//sw/device/lib/testing:nvm_testutils"],
