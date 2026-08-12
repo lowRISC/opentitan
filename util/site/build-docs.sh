@@ -131,14 +131,22 @@ buildSite () {
     mkdir -p "${rustdoc_dir}"
     local bazel_out target_rustdoc target_rustdoc_output_path
     bazel_out="$(./bazelisk.sh info output_path 2>/dev/null)"
-    for target_rustdoc in "sw/host/opentitanlib:opentitanlib_doc" "sw/host/hsmtool:hsmlib_doc" "sw/host/ot_certs:ot_certs_doc"
+    for target_rustdoc in "sw/host/opentitanlib:opentitanlib_doc" "sw/host/ot_certs:ot_certs_doc"
     do
-      target_rustdoc_output_path="${bazel_out}/k8-fastbuild/bin/$(echo ${target_rustdoc} | tr ':' '/').rustdoc" #TODO : get the target's path using cquery
+      target_rustdoc_output_path="${bazel_out}/k8-fastbuild/bin/$(echo ${target_rustdoc} | tr ':' '/').rustdoc" # TODO : get the target's path using cquery
       ./bazelisk.sh build --experimental_convenience_symlinks=ignore "${target_rustdoc}"
       cp -rf "${target_rustdoc_output_path}"/* "${rustdoc_dir}"
       chown -R "$USER": "${rustdoc_dir}"
       chmod -R +w "${rustdoc_dir}"
     done
+
+    # Build Rust Documentation for hsmlib from external `@opentitan-signing-infra` separately
+    target_rustdoc="external/opentitan_signing_infra+/hsmtool:hsmlib_doc"
+    target_rustdoc_output_path="${bazel_out}/k8-fastbuild/bin/$(echo ${target_rustdoc} | tr ':' '/').rustdoc" # TODO : get the target's path using cquery
+    ./bazelisk.sh build --experimental_convenience_symlinks=ignore @opentitan_signing_infra//hsmtool:hsmlib_doc
+    cp -rf "${target_rustdoc_output_path}"/* "${rustdoc_dir}"
+    chown -R "$USER": "${rustdoc_dir}"
+
     # The files from bazel-out aren't writable. This ensures those that were copied are.
     chmod +w -R "${rustdoc_dir}"
 
