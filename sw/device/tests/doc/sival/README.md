@@ -29,7 +29,7 @@ environment.
     OpenTitan target. FPGA, Verilator and Silicon targets are supported. DV test
     targets are integrated using
     [dvsim](https://opentitan.org/book/util/dvsim/index.html).
-*   **[hsmtool](https://github.com/lowRISC/opentitan/tree/master/sw/host/hsmtool)**:
+*   **[hsmtool](https://github.com/lowRISC/opentitan-signing-infra/tree/main/hsmtool)**:
     utility used to interface with hardware used to manage signing keys. The
     tool uses PKCS#11 to access HSM and USB tokens. Only NitroKey HSM2 is
     supported at the moment.

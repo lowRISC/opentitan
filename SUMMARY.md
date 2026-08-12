@@ -488,9 +488,7 @@
   - [OpenTitanTool](./sw/host/opentitantool/README.md)
   - [OpenTitanSession](./sw/host/opentitansession/README.md)
   - [OpenTitan Certificate Generator](./sw/host/ot_certs/README.md)
-  - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
-    - [Requirements](./sw/host/hsmtool/doc/requirements.md)
-    - [Signing Guide](./signing/README.md)
+  - [Signing Guide](./signing/README.md)
   - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
 
 # Tooling
