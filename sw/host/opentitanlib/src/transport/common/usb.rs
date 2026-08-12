@@ -581,9 +581,14 @@ impl UsbHub {
         // if possible, otherwise the kernel might not notice that the device was connected/disconnected.
         match self.try_sysfs_op(op, port) {
             Ok(()) => return Ok(()),
-            Err(err) => log::error!(
-                "Could not perform hub operation {op:?} using sysfs, falling back to direct hub operations: {err:#}"
-            ),
+            Err(err) => {
+                log::error!(
+                    "Could not perform hub operation {op:?} using sysfs, falling back to direct hub operations: {err:#}"
+                );
+                log::error!(
+                    "This could lead to unexpected behaviours such as the kernel not properly detecting devices on this port, see sw/host/tests/chip/usb/README.md for more details"
+                );
+            }
         }
 
         let (feature_index, set_feature) = match op {
