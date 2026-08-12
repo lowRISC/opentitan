@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+extends: default
+
+rules:
+  line-length: disable
+  document-start: disable # We start around files with the copyright text.
+  truthy: disable # Creates many false positive for GHA.
+
+ignore:
+  - hw/vendor/ # Vendored files should not be linted.
+  - scratch/ # Temporary directory used
+  - bazel-* # Bazel-related cache and output directories
+  - build/ # fusesoc result
+  - build*/ # build directories with special suffixes
