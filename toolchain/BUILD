@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//toolchains/opentitantool:opentitantool.bzl", "opentitantool")
 load("@rules_cc//cc/toolchains:actions.bzl", "cc_action_type")
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
@@ -18,6 +19,19 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
+
+# OpenTitanTool toolchain for usage in upstream signing rules
+opentitantool(
+    name = "latest_opentitantool",
+    tool = "//sw/host/opentitantool",
+)
+
+toolchain(
+    name = "latest_opentitantool_toolchain",
+    exec_compatible_with = ["@platforms//cpu:x86_64"],
+    toolchain = ":latest_opentitantool",
+    toolchain_type = "@opentitan_signing_infra//toolchains/opentitantool:toolchain_type",
+)
 
 platform(
     name = "opentitan_platform",
