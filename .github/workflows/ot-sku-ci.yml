@@ -9,10 +9,10 @@
 name: OT SKU CI
 on: workflow_dispatch
 
-obs:
+jobs:
   start:
     runs-on: ubuntu-latest
     steps:
       - run: |
-        echo '::error::This workflow cannot be run on the master branch'
-        exit 1
+          echo '::error::This workflow cannot be run on the master branch'
+          exit 1
