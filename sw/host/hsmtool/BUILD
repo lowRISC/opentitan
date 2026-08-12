@@ -161,7 +161,7 @@ rust_doc(
 
 pkg_files(
     name = "binary",
-    srcs = [":hsmtool"],
+    srcs = ["@opentitan_signing_infra//hsmtool"],
     attributes = pkg_attributes(mode = "0755"),
 )
 
