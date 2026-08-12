@@ -2,6 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Test integration of HSMtool.
+
+This includes testing use of HSMtool with SoftHSM, and performing tests that sign with
+opentitantool and verify with hsmtool (and vice versa) for different schemes to ensure
+consistent implementations of cryptographic operations.
+"""
+
 package(default_visibility = ["//visibility:public"])
 
 sh_library(

@@ -10,6 +10,8 @@ const_test_suite()
 
 otp_test_suite()
 
+# Test that external signing rules remain working with the latest OpenTitanTool
+
 signature_test(
     name = "corrupt_signature_test",
     srcs = [
