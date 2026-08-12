@@ -71,6 +71,10 @@ typedef struct kmac_ctx {
   uint32_t operation;
   // The security strength (internal `kmac_security_str_t` value).
   uint32_t security_str;
+  // Whether the squeezing phase has started (`hardened_bool_t` value).
+  uint32_t squeeze_started;
+  // Number of words already read from the current Keccak state block.
+  uint32_t squeeze_offset;
 } kmac_ctx_t;
 
 /**
@@ -451,6 +455,34 @@ status_t kmac_kmac_256_init(kmac_blinded_key_t *key,
  */
 OT_WARN_UNUSED_RESULT
 status_t kmac_update(kmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *msg);
+
+/**
+ * Squeeze digest words out of a streamed SHAKE or cSHAKE operation.
+ *
+ * This function can be called multiple times to extract a digest of arbitrary
+ * length in several steps. The first call terminates the absorb phase.
+ * It is necessary to call `kmac_xof_end` after all data has been squeezed
+ * in order to release the hardware.
+ *
+ * @param ctx KMAC context.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in 32-bit words.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_xof_squeeze(kmac_ctx_t *ctx, uint32_t *digest, size_t digest_len);
+
+/**
+ * Finish a streamed SHAKE or cSHAKE operation.
+ *
+ * Issues the `DONE` command, which wipes the Keccak state and releases the
+ * KMAC HWIP.
+ *
+ * @param ctx KMAC context.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_xof_end(kmac_ctx_t *ctx);
 
 /**
  * Finalize a streamed SHA-3-224 computation and return the digest.

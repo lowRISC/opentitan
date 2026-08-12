@@ -22,11 +22,11 @@ enum {
   /**
    * Size of the SHA-3 context in words.
    *
-   * Holds the driver-level context (two words).
+   * Holds the driver-level context (four words).
    *
    * TODO: Refine this once the save-and-context feature has landed.
    */
-  kOtcryptoSha3CtxStructWords = 2,
+  kOtcryptoSha3CtxStructWords = 4,
 };
 
 /**
