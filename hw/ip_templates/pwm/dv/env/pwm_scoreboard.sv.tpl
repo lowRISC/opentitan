@@ -133,15 +133,13 @@ task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item   item,
   bit             addr_phase_write = (write && channel  == AddrChannel);
   bit             data_phase_read  = (!write && channel == DataChannel);
 
-  // if access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-    // Extract register index indicating the channel number.
-    idx = get_multireg_idx(csr.get_name());
-  end else begin
+  csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr == null) begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
+
+  // Extract register index indicating the channel number.
+  idx = get_multireg_idx(csr.get_name());
 
   // The REGWEN register controls write access to all of the DUT registers, including itself.
   if (addr_phase_write && `gmv(ral.regwen.regwen)) begin
