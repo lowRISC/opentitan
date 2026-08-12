@@ -243,6 +243,70 @@ static status_t run_kmac_streamed(otcrypto_word32_buf_t tag) {
 }
 
 /**
+ * Call SHAKE-128 through the streamed squeeze API.
+ *
+ * Should only be called when `current_test_vector` is a SHAKE-128 operation.
+ * The input message is absorbed in small chunks that are not aligned to word
+ * or Keccak block boundaries and the digest is squeezed out in word chunks
+ * that are not aligned to the Keccak rate.
+ *
+ * @param[out] digest Computed digest.
+ * @param digest_len Requested digest length in 32-bit words.
+ * @return OK or error.
+ */
+static status_t run_xof_squeezed(uint32_t *digest, size_t digest_len) {
+  kmac_ctx_t ctx;
+  TRY(kmac_shake_128_init(&ctx));
+
+  const size_t kStreamChunkBytes = 9;
+
+  // Absorb the message in chunks.
+  for (size_t offset = 0; offset < current_test_vector->input_msg.len;) {
+    size_t chunk_len = current_test_vector->input_msg.len - offset;
+    if (chunk_len > kStreamChunkBytes) {
+      chunk_len = kStreamChunkBytes;
+    }
+    otcrypto_const_byte_buf_t chunk = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, current_test_vector->input_msg.data + offset,
+        chunk_len);
+    TRY(kmac_update(&ctx, &chunk));
+    offset += chunk_len;
+  }
+
+  const size_t kSqueezeChunkWords = 5;
+
+  // Squeeze the digest in chunks.
+  for (size_t offset = 0; offset < digest_len;) {
+    size_t chunk_len = digest_len - offset;
+    if (chunk_len > kSqueezeChunkWords) {
+      chunk_len = kSqueezeChunkWords;
+    }
+    TRY(kmac_xof_squeeze(&ctx, digest + offset, chunk_len));
+    offset += chunk_len;
+  }
+
+  return kmac_xof_end(&ctx);
+}
+
+/**
+ * Run the SHAKE-128 test pointed to by `current_test_vector` through the
+ * streaming squeeze API.
+ */
+static status_t run_xof_squeeze_test_vector(void) {
+  size_t digest_num_words = current_test_vector->digest.len / sizeof(uint32_t);
+  if (current_test_vector->digest.len % sizeof(uint32_t) != 0) {
+    digest_num_words++;
+  }
+  uint32_t digest_data[digest_num_words];
+
+  TRY(run_xof_squeezed(digest_data, digest_num_words));
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)digest_data,
+                      current_test_vector->digest.data,
+                      current_test_vector->digest.len);
+  return OTCRYPTO_OK;
+}
+
+/**
  * Run the KMAC-128 test pointed to by `current_test_vector` through the
  * streaming API.
  */
@@ -567,6 +631,11 @@ bool test_main(void) {
     if (current_test_vector->test_operation == kKmacTestOperationKmac &&
         current_test_vector->security_strength == 128) {
       EXECUTE_TEST(test_result, run_streaming_test_vector);
+    }
+    // Only test the streamed squeezing for SHAKE-128.
+    if (current_test_vector->test_operation == kKmacTestOperationShake &&
+        current_test_vector->security_strength == 128) {
+      EXECUTE_TEST(test_result, run_xof_squeeze_test_vector);
     }
   }
   EXECUTE_TEST(test_result, run_negative_tests);
