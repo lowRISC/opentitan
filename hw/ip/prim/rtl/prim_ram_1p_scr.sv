@@ -300,6 +300,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     // Tie-off unused parameters.
     logic unused_params;
     assign unused_params = ^{DepthPow2, MinChunkDepth};
+
+    // Address scrambling is disabled, hence the upper nonce bits are unused.
+    logic unused_addr_scr_nonce;
+    assign unused_addr_scr_nonce = ^nonce_i[NonceWidth - AddrWidth +: AddrWidth];
   end
 
   // We latch the non-scrambled address for error reporting.
