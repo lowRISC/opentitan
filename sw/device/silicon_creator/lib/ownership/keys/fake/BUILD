@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "keyset")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
-load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -16,7 +16,7 @@ load(
     "obj_transform",
 )
 load("@rules_cc//cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME", "OBJ_COPY_ACTION_NAME")
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
+load("@opentitan_signing_infra//signing:defs.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
