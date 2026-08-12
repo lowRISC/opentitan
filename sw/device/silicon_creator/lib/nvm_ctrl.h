@@ -597,18 +597,18 @@ void nvm_ctrl_cert_info_page_owner_restrict(nvm_info_page_t page);
 /**
  * Bitfields for the `access` word of owner NVM region configs.
  */
-#define NVM_CONFIG_READ                 ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
-#define NVM_CONFIG_PROGRAM              ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
-#define NVM_CONFIG_ERASE                ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
-#define NVM_CONFIG_PROTECT_WHEN_PRIMARY ((bitfield_field32_t) { .mask = 0xF, .index = 24 })
-#define NVM_CONFIG_LOCK                 ((bitfield_field32_t) { .mask = 0xF, .index = 28 })
+#define OWNER_NVM_CONFIG_READ                 ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define OWNER_NVM_CONFIG_PROGRAM              ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define OWNER_NVM_CONFIG_ERASE                ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+#define OWNER_NVM_CONFIG_PROTECT_WHEN_PRIMARY ((bitfield_field32_t) { .mask = 0xF, .index = 24 })
+#define OWNER_NVM_CONFIG_LOCK                 ((bitfield_field32_t) { .mask = 0xF, .index = 28 })
 
 /**
  * Bitfields for the `properties` word of owner NVM region configs.
  */
-#define NVM_CONFIG_SCRAMBLE             ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
-#define NVM_CONFIG_ECC                  ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
-#define NVM_CONFIG_HIGH_ENDURANCE       ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+#define OWNER_NVM_CONFIG_SCRAMBLE             ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define OWNER_NVM_CONFIG_ECC                  ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define OWNER_NVM_CONFIG_HIGH_ENDURANCE       ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
 // clang-format on
 
 #ifdef __cplusplus

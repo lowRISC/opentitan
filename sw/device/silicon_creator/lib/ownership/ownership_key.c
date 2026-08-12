@@ -164,9 +164,10 @@ static void reverse(void *buf, size_t len) {
 }
 
 static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
-  nvm_ctrl_info_perms_set(
-      kNvmInfoPageOwnerSecret,
-      (nvm_page_perms_t){.read = read, .write = write, .erase = write});
+  nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSecret,
+                          (nvm_page_perms_t){.read = (uint32_t)read,
+                                             .write = (uint32_t)write,
+                                             .erase = (uint32_t)write});
 }
 
 rom_error_t ownership_secret_new(uint32_t prior_key_alg,

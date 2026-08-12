@@ -418,21 +418,22 @@ rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
     if (config->start >= start && config->start + config->size <= end) {
       uint32_t val = config->properties ^ crypt;
       nvm_page_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE),
-          .ecc = bitfield_field32_read(val, NVM_CONFIG_ECC),
-          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE),
+          .scrambling = bitfield_field32_read(val, OWNER_NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, OWNER_NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, OWNER_NVM_CONFIG_HIGH_ENDURANCE),
       };
       val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
-          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE),
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, OWNER_NVM_CONFIG_ERASE),
       };
 
       uint32_t pwp =
-          bitfield_field32_read(val, NVM_CONFIG_PROTECT_WHEN_PRIMARY);
+          bitfield_field32_read(val, OWNER_NVM_CONFIG_PROTECT_WHEN_PRIMARY);
       hardened_bool_t lock =
-          bitfield_field32_read(val, NVM_CONFIG_LOCK) != kMultiBitBool4False
+          bitfield_field32_read(val, OWNER_NVM_CONFIG_LOCK) !=
+                  kMultiBitBool4False
               ? kHardenedBoolTrue
               : kHardenedBoolFalse;
 
@@ -480,17 +481,17 @@ rom_error_t owner_block_info_apply(const owner_nvm_info_config_t *info) {
           nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
       nvm_page_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE),
-          .ecc = bitfield_field32_read(val, NVM_CONFIG_ECC),
-          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE),
+          .scrambling = bitfield_field32_read(val, OWNER_NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, OWNER_NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, OWNER_NVM_CONFIG_HIGH_ENDURANCE),
       };
       nvm_ctrl_info_cfg_set(page, cfg);
 
       val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
-          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE),
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, OWNER_NVM_CONFIG_ERASE),
       };
       nvm_ctrl_info_perms_set(page, perm);
     }
@@ -511,7 +512,8 @@ rom_error_t owner_block_info_lockdown(const owner_nvm_info_config_t *info) {
       HARDENED_RETURN_IF_ERROR(
           nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
       uint32_t val = config->access ^ crypt;
-      if (bitfield_field32_read(val, NVM_CONFIG_LOCK) != kMultiBitBool4False) {
+      if (bitfield_field32_read(val, OWNER_NVM_CONFIG_LOCK) !=
+          kMultiBitBool4False) {
         nvm_ctrl_info_cfg_lock(page);
         SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoCfgLock);
       }
@@ -547,8 +549,8 @@ rom_error_t owner_block_info_isfb_erase_enable(
 
       uint32_t val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
           .erase = kMultiBitBool4True,
       };
       nvm_ctrl_info_perms_set(page, perm);

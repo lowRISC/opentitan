@@ -122,7 +122,7 @@ typedef enum tlv_tag {
   kTlvTagOwner = 0x524e574f,
   /** Application Key: `APPK`. */
   kTlvTagApplicationKey = 0x4b505041,
-  /** Flash Configuration: `FLSH`. */
+  /** NVM Configuration: `FLSH`. */
   kTlvTagNvmConfig = 0x48534c46,
   /** Flash INFO configuration: `INFO`. */
   kTlvTagInfoConfig = 0x4f464e49,
