@@ -83,6 +83,8 @@ jobs:
         run: ./ci/scripts/check-cmdgen.sh
       - name: Lock files
         run: ./ci/scripts/check-lock-files.sh
+      - name: Yaml (yamllint)
+        run: yamllint -c ci/lint/yamllint.yml
 
   # Single source of truth for whether the rest of the pipeline (everything
   # except the lint jobs) should run. While a PR is a draft, only lint runs.
@@ -467,8 +469,8 @@ jobs:
       - name: Upload target files
         uses: actions/upload-artifact@v7
         with:
-            name: fpga_jobs
-            path: ${{ steps.schedule.outputs.jobs_dir }}
+          name: fpga_jobs
+          path: ${{ steps.schedule.outputs.jobs_dir }}
 
   execute_fpga_cw340_jobs:
     name: ${{ matrix.name }}

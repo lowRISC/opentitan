@@ -122,6 +122,7 @@
           pkgs.pcsclite
           pkgs.dfu-util
           pkgs.lrzsz
+          pkgs.yamllint
         ];
       };
     in {
