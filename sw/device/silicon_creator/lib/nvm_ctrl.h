@@ -148,11 +148,11 @@ extern "C" {
 /**
  * Byte size of one NVM program transaction / SPI `PAGE_PROGRAM` "page".
  *
- * This is the SPI `PAGE_PROGRAM` wrap-around unit `nvm_ctrl_page_program()`
- * uses internally, and the natural write-transaction size for the
- * underlying NVM technology. It is NOT the same concept as
- * `NVM_BYTES_PER_PAGE` (the erase granularity) -- the two happen to coincide
- * for RRAM (both 512), but differ for flash (2048 erase vs. 256
+ * This is the SPI `PAGE_PROGRAM` wrap-around unit
+ * `nvm_ctrl_bootstrap_page_program()` uses internally, and the natural
+ * write-transaction size for the underlying NVM technology. It is NOT the same
+ * concept as `NVM_BYTES_PER_PAGE` (the erase granularity) -- the two happen to
+ * coincide for RRAM (both 512), but differ for flash (2048 erase vs. 256
  * program/SPI-wrap).
  *
  * For RRAM, this matches `rram_phy_wr`'s store-buffer size (`BytesPerPage`
@@ -418,14 +418,17 @@ OT_WARN_UNUSED_RESULT
 rom_error_t nvm_ctrl_chip_erase_verify(void);
 
 /**
- * Programs up to 256 bytes of NVM data starting at `addr`.
+ * Programs up to 256 bytes of NVM data starting at `addr`, emulating SPI
+ * PAGE_PROGRAM wrapping semantics for the bootstrap protocol.
  *
- * If `byte_count` is not a multiple of the NVM word size it is rounded up to
- * the next word boundary and padding bytes in `data` are set to 0xff.  If
- * `addr` is not 256-byte aligned the write is split so the first chunk fills
- * up to the 256-byte boundary and the second starts at the aligned address,
- * matching SPI PAGE_PROGRAM wrapping semantics.  Write permissions are managed
- * internally; the caller is responsible for address range validation.
+ * This is not a generic NVM page write: the 256-byte unit here is the SPI
+ * NOR flash PAGE_PROGRAM wrap size, unrelated to `NVM_BYTES_PER_PAGE` (the
+ * erase granularity). If `byte_count` is not a multiple of the NVM word size
+ * it is rounded up to the next word boundary and padding bytes in `data` are
+ * set to 0xff.  If `addr` is not 256-byte aligned the write is split so the
+ * first chunk fills up to the 256-byte boundary and the second starts at the
+ * aligned address.  Write permissions are managed internally; the caller is
+ * responsible for address range validation.
  *
  * @param addr  Start address; must be NVM-word aligned.
  * @param byte_count  Number of bytes to write.
@@ -433,19 +436,22 @@ rom_error_t nvm_ctrl_chip_erase_verify(void);
  *              of 0xff padding beyond `byte_count`.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
-                                  uint8_t *data);
+rom_error_t nvm_ctrl_bootstrap_page_program(uint32_t addr, size_t byte_count,
+                                            uint8_t *data);
 
 /**
- * Erases the 4 KiB sector containing `addr` in the data partition.
+ * Erases the 4 KiB SPI flash sector containing `addr` in the data partition.
  *
- * Because the NVM page size is 2 KiB, erasing a 4 KiB sector requires two
- * consecutive page erases.  `addr` is truncated to the nearest 4 KiB boundary
- * before erasing; the caller is responsible for range validation.
- * Erase permissions are managed internally.
+ * A 4 KiB sector is not an NVM concept; it's the conventional SPI NOR flash
+ * erase granularity that this function emulates for the bootstrap protocol,
+ * which erases the underlying NVM one sector at a time. Because the NVM page
+ * size is 2 KiB, erasing a 4 KiB sector requires two consecutive page erases.
+ * `addr` is truncated to the nearest 4 KiB boundary before erasing; the
+ * caller is responsible for range validation. Erase permissions are managed
+ * internally.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_sector_erase(uint32_t addr);
+rom_error_t nvm_ctrl_bootstrap_sector_erase(uint32_t addr);
 
 // ---------------------------------------------------------------------------
 // Info page I/O

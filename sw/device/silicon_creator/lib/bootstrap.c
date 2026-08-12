@@ -82,7 +82,7 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
       (addr >= kSlotAReservedStart && addr < kSlotAReservedEnd)) {
     return kErrorBootstrapEraseAddress;
   }
-  return nvm_ctrl_sector_erase(addr);
+  return nvm_ctrl_bootstrap_sector_erase(addr);
 }
 
 /**
@@ -106,7 +106,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
       (addr >= kSlotAReservedStart && addr < kSlotAReservedEnd)) {
     return kErrorBootstrapProgramAddress;
   }
-  return nvm_ctrl_page_program(addr, byte_count, data);
+  return nvm_ctrl_bootstrap_page_program(addr, byte_count, data);
 }
 
 /**
@@ -183,7 +183,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
                     offsetof(spi_device_cmd_t, payload) >= sizeof(uint32_t),
                 "Payload must be word aligned.");
   static_assert(sizeof((spi_device_cmd_t){0}.payload) % NVM_BYTES_PER_WORD == 0,
-                "Payload size must be a multiple of flash word size.");
+                "Payload size must be a multiple of nvm word size.");
 
   HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
 

@@ -237,7 +237,7 @@ void nvm_ctrl_init(void) {
   // `DEFAULT_REGION.RD_EN` resets to false in hardware, and boot data lives
   // on an emulated info page (mapped onto the data partition), so it must be
   // persistently enabled here rather than only bracketing individual
-  // operations like `nvm_ctrl_page_program` does.
+  // operations like `nvm_ctrl_bootstrap_page_program` does.
   rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
@@ -348,8 +348,8 @@ rom_error_t nvm_ctrl_chip_erase(void) {
 
 rom_error_t nvm_ctrl_chip_erase_verify(void) { return kErrorOk; }
 
-rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
-                                  uint8_t *data) {
+rom_error_t nvm_ctrl_bootstrap_page_program(uint32_t addr, size_t byte_count,
+                                            uint8_t *data) {
   enum {
     kProgPageSize = NVM_PROG_PAGE_SIZE,
     kProgPageMask = kProgPageSize - 1,
@@ -403,7 +403,7 @@ rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
   return err_1;
 }
 
-rom_error_t nvm_ctrl_sector_erase(uint32_t addr) {
+rom_error_t nvm_ctrl_bootstrap_sector_erase(uint32_t addr) {
   // Bootstrap's SPI SECTOR_ERASE always covers a fixed 4 KiB region,
   // independent of RRAM's own erase/write granularity (`NVM_BYTES_PER_PAGE`,
   // 512 bytes); erase every page within that region so unwritten pages left
@@ -637,8 +637,8 @@ rom_error_t nvm_ctrl_chip_erase_verify(void) {
   return err_1;
 }
 
-rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
-                                  uint8_t *data) {
+rom_error_t nvm_ctrl_bootstrap_page_program(uint32_t addr, size_t byte_count,
+                                            uint8_t *data) {
   static_assert((FLASH_CTRL_PARAM_BYTES_PER_WORD &
                  (FLASH_CTRL_PARAM_BYTES_PER_WORD - 1)) == 0,
                 "Bytes per NVM word must be a power of two.");
@@ -692,7 +692,7 @@ rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
   return err_1;
 }
 
-rom_error_t nvm_ctrl_sector_erase(uint32_t addr) {
+rom_error_t nvm_ctrl_bootstrap_sector_erase(uint32_t addr) {
   static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
                 "Page size must be 2 KiB");
   enum { kSectorAddrMask = ~UINT32_C(4096) + 1 };
