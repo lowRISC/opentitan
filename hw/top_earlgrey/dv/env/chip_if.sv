@@ -53,7 +53,6 @@ interface chip_if;
 `define CSRNG_HIER          `PD_MAIN_HIER.u_csrng
 `define ENTROPY_SRC_HIER    `PD_MAIN_HIER.u_entropy_src
 `define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
-`define FLASH_CTRL_HIER     `PD_MAIN_HIER.u_flash_ctrl
 `define RRAM_CTRL_HIER      `PD_MAIN_HIER.u_rram_ctrl
 `define RRAM_MACRO_HIER     `PD_MAIN_HIER.u_rram_macro
 `define GPIO_HIER           `PD_MAIN_HIER.u_gpio
@@ -193,16 +192,6 @@ interface chip_if;
   // Functional (dedicated) interface (input): CC1, CC2.
   pins_if #(.Width(2), .PullStrength("Weak")) cc_if(
     .pins(dios[top_earlgrey_pkg::DioPadCc2:top_earlgrey_pkg::DioPadCc1])
-  );
-
-  // Functional (dedicated) interface (analog input): flash test volt.
-  pins_if #(.Width(1), .PullStrength("Weak")) flash_test_volt_if(
-    .pins(dios[top_earlgrey_pkg::DioPadFlashTestVolt])
-  );
-
-  // Functional (dedicated) interface (input): flash test mode0.
-  pins_if #(.Width(2), .PullStrength("Weak")) flash_test_mode_if(
-    .pins(dios[top_earlgrey_pkg::DioPadFlashTestMode1:top_earlgrey_pkg::DioPadFlashTestMode0])
   );
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
@@ -451,22 +440,6 @@ interface chip_if;
     end
   endfunction
 
-  // Functional (muxed) interface: Flash controller JTAG.
-  bit enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
-  jtag_if flash_ctrl_jtag_if();
-
-  // TODO: Revisit this logic.
-  wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
-  assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
-  assign mios[top_earlgrey_pkg::MioPadIob0] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tms : 1'bz;
-  assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ?
-      mios[top_earlgrey_pkg::MioPadIob1] : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIob2] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tdi : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIob3] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tck : 1'bz;
-
   // Functional (muxed) interface: AST2PAD.
   pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
     .pins({mios[top_earlgrey_pkg::MioPadIoa0], mios[top_earlgrey_pkg::MioPadIoa1],
@@ -638,7 +611,6 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.u_status_init_done.qs[0:0];
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.u_status_init_done.qs[0:0];
 
-  wire flash_core1_host_req = 0;
 `else
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i[0].done == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i[0].good == prim_mubi_pkg::MuBi4True;
@@ -649,7 +621,6 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
-  wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
   wire adc_data_valid = `AST_HIER.u_ast_aon.u_adc.adc_d_val_o;
   wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
@@ -961,8 +932,6 @@ interface chip_if;
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
     cc_if.disconnect();
-    flash_test_volt_if.disconnect();
-    flash_test_mode_if.disconnect();
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
@@ -971,7 +940,6 @@ interface chip_if;
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
-    enable_flash_ctrl_jtag = 0;
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
@@ -1281,7 +1249,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 `undef CSRNG_HIER
 `undef ENTROPY_SRC_HIER
 `undef EDN_HIER
-`undef FLASH_CTRL_HIER
 `undef GPIO_HIER
 `undef HMAC_HIER
 `undef I2C_HIER

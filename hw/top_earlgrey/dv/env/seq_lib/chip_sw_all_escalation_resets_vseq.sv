@@ -31,11 +31,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"edn0", "", TopEarlgreyAlertIdEdn0FatalAlert},
     '{"edn1", "", TopEarlgreyAlertIdEdn1FatalAlert},
     '{"entropy_src", "", TopEarlgreyAlertIdEntropySrcFatalAlert},
-    '{"flash_ctrl", "", TopEarlgreyAlertIdFlashCtrlFatalStdErr},
     '{"rram_ctrl", "", TopEarlgreyAlertIdRramCtrlFatalStdErr},
-    // test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr is implemented in the
-    // `chip_sw_flash_host_gnt_err_inj_vseq` sequence.
-    '{"flash_ctrl*.u_flash", "", TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert},
     '{"rram_macro", "", TopEarlgreyAlertIdRramCtrlFatalMacroErr},
     '{"gpio", "", TopEarlgreyAlertIdGpioFatalFault},
     '{"hmac", "", TopEarlgreyAlertIdHmacFatalFault},

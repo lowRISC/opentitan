@@ -28,7 +28,6 @@ filesets:
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:flash
       - lowrisc:ip:rram_ctrl
       - lowrisc:ip:rram_macro
       - lowrisc:ip:sram_ctrl
@@ -42,7 +41,6 @@ filesets:
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:earlgrey_ip:alert_handler
       - lowrisc:earlgrey_ip:clkmgr
-      - lowrisc:earlgrey_ip:flash_ctrl
       - lowrisc:earlgrey_ip:gpio
       - lowrisc:earlgrey_ip:otp_ctrl
       - lowrisc:earlgrey_ip:pinmux
@@ -108,7 +106,6 @@ mapping:
   "lowrisc:virtual_constants:top_pkg": "lowrisc:earlgrey_constants:top_pkg"
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
-  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:earlgrey_constants:testing_lc_ctrl_token_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:earlgrey_constants:testing_rnd_cnst_pkg"
 
