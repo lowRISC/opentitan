@@ -4,36 +4,32 @@
 
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data_v0.h"
 
-rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb) {
-  if (pb->next_free != 0) {
-    return kErrorPersoTlvInternal;
+perso_blob_version_t perso_tlv_object_version(const uint8_t *data,
+                                              size_t size) {
+  if (size >= sizeof(perso_tlv_version_header_t) &&
+      read_32(data) == kPersoTlvVersionPrefixV1) {
+    return kPersoBlobVersionV1;
   }
-
-  // Add the Version Object (16-bit Type/Size header + 16-bit Version Payload).
-  uint16_t header = 0;
-  PERSO_TLV_SET_FIELD(Objh, Type, header, kPersoObjectTypeBlobVersion);
-  PERSO_TLV_SET_FIELD(Objh, Size, header,
-                      sizeof(perso_tlv_object_header_t) +
-                          sizeof(perso_tlv_blob_version_payload_t));
-  memcpy(pb->body + pb->next_free, &header, sizeof(uint16_t));
-  pb->next_free += sizeof(uint16_t);
-
-  uint16_t version = __builtin_bswap16(kPersoBlobVersionV1);
-  memcpy(pb->body + pb->next_free, &version, sizeof(uint16_t));
-  pb->next_free += sizeof(uint16_t);
-
-  pb->num_objs = 1;
-
-  return kErrorOk;
+  return kPersoBlobVersionV0;
 }
 
 rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
-                                   perso_blob_version_t blob_version,
                                    perso_tlv_cert_obj_t *obj) {
+  uint8_t *orig_buf = buf;
+  perso_blob_version_t blob_version =
+      perso_tlv_object_version(buf, ltv_buf_size);
+
+  size_t ver_header_size = (blob_version == kPersoBlobVersionV1)
+                               ? sizeof(perso_tlv_version_header_t)
+                               : 0;
+  buf += ver_header_size;
+  ltv_buf_size -= ver_header_size;
+
   perso_tlv_object_type_t obj_type;
   uint32_t obj_size;
   size_t obj_header_size;
@@ -52,7 +48,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   if (ltv_buf_size < obj_header_size) {
     return kErrorPersoTlvInternal;
   }
-  obj->obj_p = buf;
+  obj->obj_p = orig_buf;
   switch (blob_version) {
     case kPersoBlobVersionV0: {
       perso_tlv_object_header_t objh;
@@ -78,7 +74,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
     return kErrorPersoTlvCertObjNotFound;  // Object is empty.
   if (obj_size > ltv_buf_size)
     return kErrorPersoTlvInternal;  // Object exceeds the size of host buffer.
-  obj->obj_size = obj_size;
+  obj->obj_size = ver_header_size + obj_size;
   obj->obj_type = obj_type;
   if (obj_type != kPersoObjectTypeX509Cert &&
       obj_type != kPersoObjectTypeCwtCert &&
@@ -106,7 +102,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   }
 
   // Extract the certificate object header, including: certificate object and
-  // nameksizes, certificate name string, and pointer to the certificate body.
+  // name sizes, certificate name string, and pointer to the certificate body.
   if (ltv_buf_size < cert_header_size) {
     return kErrorPersoTlvInternal;
   }
@@ -176,6 +172,9 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
                                      const uint8_t *cert, size_t cert_size,
                                      perso_blob_version_t blob_version,
                                      uint8_t *buf, size_t *buf_size) {
+  size_t ver_header_size = (blob_version == kPersoBlobVersionV1)
+                               ? sizeof(perso_tlv_version_header_t)
+                               : 0;
   size_t obj_header_size;
   size_t cert_header_size;
   size_t max_cert_name_len;
@@ -194,6 +193,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
       return kErrorPersoTlvInternal;
   }
   size_t obj_size;
+  size_t total_size;
   size_t wrapped_cert_size;
 
   // Compute the name length (strlen() is not available).
@@ -210,14 +210,20 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
   // LTV object sizes.
   wrapped_cert_size = cert_header_size + name_len + cert_size;
   obj_size = wrapped_cert_size + obj_header_size;
+  total_size = ver_header_size + obj_size;
 
   // Check there is enough room in the buffer to store the perso LTV object.
-  if (obj_size > *buf_size)
+  if (total_size > *buf_size)
     return kErrorPersoTlvOutputBufTooSmall;
 
   // Push the cert perso LTV object to the buffer.
   // Return the size of the buffer that was used up by this perso LTV object.
   *buf_size = 0;
+  if (blob_version == kPersoBlobVersionV1) {
+    write_32(kPersoTlvVersionPrefixV1, buf + *buf_size);
+    *buf_size += sizeof(perso_tlv_version_header_t);
+  }
+
   switch (blob_version) {
     case kPersoBlobVersionV0: {
       perso_tlv_object_header_t obj_header = 0;
@@ -286,60 +292,32 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
   return kErrorOk;
 }
 
-rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
-                                       perso_blob_version_t *version,
-                                       size_t *offset) {
-  *version = kPersoBlobVersionV0;
-  *offset = 0;
-
-  if (size < sizeof(perso_tlv_object_header_t) +
-                 sizeof(perso_tlv_blob_version_payload_t)) {
-    return kErrorOk;  // Too small to contain a version object, default to V0
-  }
-
-  perso_tlv_object_header_t header;
-  memcpy(&header, data, sizeof(perso_tlv_object_header_t));
-  if (header == 0xFFFF) {
-    return kErrorOk;
-  }
-  perso_tlv_object_type_t type;
-  uint16_t obj_size;
-  PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
-  PERSO_TLV_GET_FIELD(Objh, Size, header, &obj_size);
-
-  if (type == kPersoObjectTypeBlobVersion) {
-    if (obj_size != sizeof(perso_tlv_object_header_t) +
-                        sizeof(perso_tlv_blob_version_payload_t)) {
-      return kErrorPersoTlvInternal;
-    }
-    uint16_t version_be;
-    memcpy(&version_be, data + sizeof(perso_tlv_object_header_t),
-           sizeof(uint16_t));
-    uint16_t parsed_version = __builtin_bswap16(version_be);
-    if (parsed_version == kPersoBlobVersionV1) {
-      *version = kPersoBlobVersionV1;
-      *offset = sizeof(perso_tlv_object_header_t) +
-                sizeof(perso_tlv_blob_version_payload_t);
-    } else {
-      return kErrorPersoTlvInternal;  // Unknown version
-    }
-  }
-
-  return kErrorOk;
-}
-
 perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
-                                              perso_blob_version_t version) {
-  perso_tlv_object_type_t type;
+                                              size_t size) {
+  perso_blob_version_t version = perso_tlv_object_version(data, size);
+  size_t ver_header_size =
+      (version == kPersoBlobVersionV1) ? sizeof(perso_tlv_version_header_t) : 0;
+  data += ver_header_size;
+  size -= ver_header_size;
+
+  perso_tlv_object_type_t type = 0;
   switch (version) {
     case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
+      if (size < sizeof(perso_tlv_object_header_v1_t)) {
+        return 0;
+      }
+      perso_tlv_object_header_v1_t header;
+      memcpy(&header, data, sizeof(perso_tlv_object_header_v1_t));
       PERSO_TLV_GET_FIELD_V1(Objh, Type, header, &type);
       break;
     }
     case kPersoBlobVersionV0:
     default: {
-      perso_tlv_object_header_t header = *(const uint16_t *)data;
+      if (size < sizeof(perso_tlv_object_header_t)) {
+        return 0;
+      }
+      perso_tlv_object_header_t header;
+      memcpy(&header, data, sizeof(perso_tlv_object_header_t));
       PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
       break;
     }
@@ -347,25 +325,38 @@ perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
   return type;
 }
 
-uint32_t perso_tlv_object_size(const uint8_t *data,
-                               perso_blob_version_t version) {
-  uint32_t size;
+uint32_t perso_tlv_object_size(const uint8_t *data, size_t size) {
+  perso_blob_version_t version = perso_tlv_object_version(data, size);
+  size_t ver_header_size =
+      (version == kPersoBlobVersionV1) ? sizeof(perso_tlv_version_header_t) : 0;
+  data += ver_header_size;
+  size -= ver_header_size;
+
+  uint32_t obj_size = 0;
   switch (version) {
     case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
-      PERSO_TLV_GET_FIELD_V1(Objh, Size, header, &size);
+      if (size < sizeof(perso_tlv_object_header_v1_t)) {
+        return 0;
+      }
+      perso_tlv_object_header_v1_t header;
+      memcpy(&header, data, sizeof(perso_tlv_object_header_v1_t));
+      PERSO_TLV_GET_FIELD_V1(Objh, Size, header, &obj_size);
       break;
     }
     case kPersoBlobVersionV0:
     default: {
-      perso_tlv_object_header_t header = *(const uint16_t *)data;
+      if (size < sizeof(perso_tlv_object_header_t)) {
+        return 0;
+      }
+      perso_tlv_object_header_t header;
+      memcpy(&header, data, sizeof(perso_tlv_object_header_t));
       uint16_t size_v0;
       PERSO_TLV_GET_FIELD(Objh, Size, header, &size_v0);
-      size = size_v0;
+      obj_size = size_v0;
       break;
     }
   }
-  return size;
+  return (uint32_t)ver_header_size + obj_size;
 }
 
 rom_error_t perso_tlv_push_object_to_perso_blob(
@@ -375,27 +366,36 @@ rom_error_t perso_tlv_push_object_to_perso_blob(
     return kErrorPersoTlvInternal;
   }
 
+  size_t ver_header_size =
+      (version == kPersoBlobVersionV1) ? sizeof(perso_tlv_version_header_t) : 0;
   size_t header_size = (version == kPersoBlobVersionV1)
                            ? sizeof(perso_tlv_object_header_v1_t)
                            : sizeof(perso_tlv_object_header_t);
 
-  size_t total_size = header_size + size;
+  size_t obj_size = header_size + size;
+  size_t total_size = ver_header_size + obj_size;
   if (sizeof(perso_blob->body) - perso_blob->next_free < total_size) {
     return kErrorPersoTlvOutputBufTooSmall;
+  }
+
+  if (version == kPersoBlobVersionV1) {
+    write_32(kPersoTlvVersionPrefixV1,
+             perso_blob->body + perso_blob->next_free);
+    perso_blob->next_free += sizeof(perso_tlv_version_header_t);
   }
 
   switch (version) {
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t header = 0;
       PERSO_TLV_SET_FIELD_V1(Objh, Type, header, obj_type);
-      PERSO_TLV_SET_FIELD_V1(Objh, Size, header, total_size);
+      PERSO_TLV_SET_FIELD_V1(Objh, Size, header, obj_size);
       memcpy(perso_blob->body + perso_blob->next_free, &header, header_size);
       break;
     }
     case kPersoBlobVersionV0: {
       perso_tlv_object_header_t header = 0;
       PERSO_TLV_SET_FIELD(Objh, Type, header, obj_type);
-      PERSO_TLV_SET_FIELD(Objh, Size, header, total_size);
+      PERSO_TLV_SET_FIELD(Objh, Size, header, obj_size);
       memcpy(perso_blob->body + perso_blob->next_free, &header, header_size);
       break;
     }
