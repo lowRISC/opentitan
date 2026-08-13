@@ -108,9 +108,9 @@ bool test_main(void) {
     wakeup_detector_selected =
         rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
     if (kDeviceType == kDeviceSimDV) {
-      CHECK(nvm_ctrl_data_write((uint32_t)(&wakeup_detector_idx) -
-                                    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                1, &wakeup_detector_selected) == kErrorOk);
+      CHECK(nvm_ctrl_data_write(
+                (uint32_t)(&wakeup_detector_idx) - NVM_DATA_BASE_ADDR, 1,
+                &wakeup_detector_selected) == kErrorOk);
     }
     LOG_INFO("detector %d is selected", wakeup_detector_selected);
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be

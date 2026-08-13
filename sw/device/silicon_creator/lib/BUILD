@@ -147,6 +147,11 @@ filegroup(
     srcs = ["flash_exc_handler.S"],
 )
 
+filegroup(
+    name = "rram_exc_handler",
+    srcs = ["rram_exc_handler.S"],
+)
+
 cc_library(
     name = "epmp_defs",
     hdrs = [
@@ -221,8 +226,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top:rram_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:multibits",

@@ -6352,8 +6352,8 @@ test_suite(
             },
             [
                 "//hw/top:adc_ctrl_c_regs",
-                "//hw/top:flash_ctrl_c_regs",
                 "//hw/top:keymgr_dpe_c_regs",
+                "//hw/top:rram_ctrl_c_regs",
                 "//hw/top:sysrst_ctrl_c_regs",
             ],
         ),
