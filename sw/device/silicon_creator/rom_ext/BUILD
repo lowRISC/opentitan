@@ -161,18 +161,27 @@ cc_test(
 )
 
 cc_library(
-    name = "rom_ext_flash_exc_handler",
-    srcs = ["//sw/device/silicon_creator/lib:flash_exc_handler"],
+    name = "rom_ext_nvm_exc_handler",
+    srcs = opentitan_select_top(
+        {
+            "earlgrey": ["//sw/device/silicon_creator/lib:rram_exc_handler"],
+        },
+        ["//sw/device/silicon_creator/lib:flash_exc_handler"],
+    ),
     defines = [
         "INTERRUPT_HANDLER=rom_ext_interrupt_handler",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": ["//hw/top:rram_ctrl_c_regs"],
+        },
+        ["//hw/top:flash_ctrl_c_regs"],
+    ),
 )
 
 cc_library(
@@ -181,7 +190,7 @@ cc_library(
     hdrs = ["rom_ext_isrs.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":rom_ext_flash_exc_handler",
+        ":rom_ext_nvm_exc_handler",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
