@@ -10,10 +10,6 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSig
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_sram_ctrl_main.u_prim_alert_sender*.*q*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_flash_ctrl*.*u_state_flop*.*impl_generic*.q_o*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_flash_ctrl*.*gen_alert_senders*.*alert_test_seq_q*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_keymgr.u_ctrl.key_state_ecc_q*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_keymgr.u_falut_alert.state_q*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_keymgr.*.lfsr_q*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_keymgr.*.u_fault_alert_state_q*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*u_alert_handler.gen_classes*.u_accu.*impl_generic*.q_o*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*.u_reg.*.src_busy_q*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.q_o**") && (ReconSignal=~"*.u_reg.*.u_intr_state.q*")} -comment {multiple sources with mux}
