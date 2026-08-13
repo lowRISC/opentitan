@@ -16,42 +16,18 @@
 | bkdr_loader.[`TARGET_INFO_3`](#target_info)                           | 0x10c    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
 | bkdr_loader.[`TARGET_INFO_4`](#target_info)                           | 0x110    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
 | bkdr_loader.[`TARGET_INFO_5`](#target_info)                           | 0x114    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_6`](#target_info)                           | 0x118    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_7`](#target_info)                           | 0x11c    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_8`](#target_info)                           | 0x120    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_9`](#target_info)                           | 0x124    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_10`](#target_info)                          | 0x128    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_11`](#target_info)                          | 0x12c    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_12`](#target_info)                          | 0x130    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_13`](#target_info)                          | 0x134    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
 | bkdr_loader.[`WIDTH_INFO_0`](#width_info)                             | 0x200    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`WIDTH_INFO_1`](#width_info)                             | 0x204    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`WIDTH_INFO_2`](#width_info)                             | 0x208    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`WIDTH_INFO_3`](#width_info)                             | 0x20c    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`WIDTH_INFO_4`](#width_info)                             | 0x210    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`WIDTH_INFO_5`](#width_info)                             | 0x214    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_6`](#width_info)                             | 0x218    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_7`](#width_info)                             | 0x21c    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_8`](#width_info)                             | 0x220    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_9`](#width_info)                             | 0x224    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_10`](#width_info)                            | 0x228    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_11`](#width_info)                            | 0x22c    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_12`](#width_info)                            | 0x230    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_13`](#width_info)                            | 0x234    |        4 | The SRAM word width of a given bkdr target memory.                                  |
 | bkdr_loader.[`DEPTH_INFO_0`](#depth_info)                             | 0x300    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`DEPTH_INFO_1`](#depth_info)                             | 0x304    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`DEPTH_INFO_2`](#depth_info)                             | 0x308    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`DEPTH_INFO_3`](#depth_info)                             | 0x30c    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`DEPTH_INFO_4`](#depth_info)                             | 0x310    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`DEPTH_INFO_5`](#depth_info)                             | 0x314    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_6`](#depth_info)                             | 0x318    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_7`](#depth_info)                             | 0x31c    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_8`](#depth_info)                             | 0x320    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_9`](#depth_info)                             | 0x324    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_10`](#depth_info)                            | 0x328    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_11`](#depth_info)                            | 0x32c    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_12`](#depth_info)                            | 0x330    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_13`](#depth_info)                            | 0x334    |        4 | The number of SRAM words of a given bkdr target memory.                             |
 | bkdr_loader.[`READ_DATA_0`](#read_data)                               | 0x400    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
 | bkdr_loader.[`READ_DATA_1`](#read_data)                               | 0x404    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
 | bkdr_loader.[`READ_DATA_2`](#read_data)                               | 0x408    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
@@ -75,14 +51,6 @@
 | bkdr_loader.[`HASH_LAST_LOADED_3`](#hash_last_loaded)                 | 0x70c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
 | bkdr_loader.[`HASH_LAST_LOADED_4`](#hash_last_loaded)                 | 0x710    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
 | bkdr_loader.[`HASH_LAST_LOADED_5`](#hash_last_loaded)                 | 0x714    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_6`](#hash_last_loaded)                 | 0x718    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_7`](#hash_last_loaded)                 | 0x71c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_8`](#hash_last_loaded)                 | 0x720    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_9`](#hash_last_loaded)                 | 0x724    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_10`](#hash_last_loaded)                | 0x728    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_11`](#hash_last_loaded)                | 0x72c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_12`](#hash_last_loaded)                | 0x730    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_13`](#hash_last_loaded)                | 0x734    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
 
 ## STATUS
 Status register
@@ -217,22 +185,14 @@ ASCII 4-character string values (big endian) identifying each bkdr target memory
 
 ### Instances
 
-| Name           | Offset   |
-|:---------------|:---------|
-| TARGET_INFO_0  | 0x100    |
-| TARGET_INFO_1  | 0x104    |
-| TARGET_INFO_2  | 0x108    |
-| TARGET_INFO_3  | 0x10c    |
-| TARGET_INFO_4  | 0x110    |
-| TARGET_INFO_5  | 0x114    |
-| TARGET_INFO_6  | 0x118    |
-| TARGET_INFO_7  | 0x11c    |
-| TARGET_INFO_8  | 0x120    |
-| TARGET_INFO_9  | 0x124    |
-| TARGET_INFO_10 | 0x128    |
-| TARGET_INFO_11 | 0x12c    |
-| TARGET_INFO_12 | 0x130    |
-| TARGET_INFO_13 | 0x134    |
+| Name          | Offset   |
+|:--------------|:---------|
+| TARGET_INFO_0 | 0x100    |
+| TARGET_INFO_1 | 0x104    |
+| TARGET_INFO_2 | 0x108    |
+| TARGET_INFO_3 | 0x10c    |
+| TARGET_INFO_4 | 0x110    |
+| TARGET_INFO_5 | 0x114    |
 
 
 ### Fields
@@ -252,22 +212,14 @@ The SRAM word width of a given bkdr target memory.
 
 ### Instances
 
-| Name          | Offset   |
-|:--------------|:---------|
-| WIDTH_INFO_0  | 0x200    |
-| WIDTH_INFO_1  | 0x204    |
-| WIDTH_INFO_2  | 0x208    |
-| WIDTH_INFO_3  | 0x20c    |
-| WIDTH_INFO_4  | 0x210    |
-| WIDTH_INFO_5  | 0x214    |
-| WIDTH_INFO_6  | 0x218    |
-| WIDTH_INFO_7  | 0x21c    |
-| WIDTH_INFO_8  | 0x220    |
-| WIDTH_INFO_9  | 0x224    |
-| WIDTH_INFO_10 | 0x228    |
-| WIDTH_INFO_11 | 0x22c    |
-| WIDTH_INFO_12 | 0x230    |
-| WIDTH_INFO_13 | 0x234    |
+| Name         | Offset   |
+|:-------------|:---------|
+| WIDTH_INFO_0 | 0x200    |
+| WIDTH_INFO_1 | 0x204    |
+| WIDTH_INFO_2 | 0x208    |
+| WIDTH_INFO_3 | 0x20c    |
+| WIDTH_INFO_4 | 0x210    |
+| WIDTH_INFO_5 | 0x214    |
 
 
 ### Fields
@@ -287,22 +239,14 @@ The number of SRAM words of a given bkdr target memory.
 
 ### Instances
 
-| Name          | Offset   |
-|:--------------|:---------|
-| DEPTH_INFO_0  | 0x300    |
-| DEPTH_INFO_1  | 0x304    |
-| DEPTH_INFO_2  | 0x308    |
-| DEPTH_INFO_3  | 0x30c    |
-| DEPTH_INFO_4  | 0x310    |
-| DEPTH_INFO_5  | 0x314    |
-| DEPTH_INFO_6  | 0x318    |
-| DEPTH_INFO_7  | 0x31c    |
-| DEPTH_INFO_8  | 0x320    |
-| DEPTH_INFO_9  | 0x324    |
-| DEPTH_INFO_10 | 0x328    |
-| DEPTH_INFO_11 | 0x32c    |
-| DEPTH_INFO_12 | 0x330    |
-| DEPTH_INFO_13 | 0x334    |
+| Name         | Offset   |
+|:-------------|:---------|
+| DEPTH_INFO_0 | 0x300    |
+| DEPTH_INFO_1 | 0x304    |
+| DEPTH_INFO_2 | 0x308    |
+| DEPTH_INFO_3 | 0x30c    |
+| DEPTH_INFO_4 | 0x310    |
+| DEPTH_INFO_5 | 0x314    |
 
 
 ### Fields
@@ -410,22 +354,14 @@ the same memory file is already loaded and a preload can be skipped.
 
 ### Instances
 
-| Name                | Offset   |
-|:--------------------|:---------|
-| HASH_LAST_LOADED_0  | 0x700    |
-| HASH_LAST_LOADED_1  | 0x704    |
-| HASH_LAST_LOADED_2  | 0x708    |
-| HASH_LAST_LOADED_3  | 0x70c    |
-| HASH_LAST_LOADED_4  | 0x710    |
-| HASH_LAST_LOADED_5  | 0x714    |
-| HASH_LAST_LOADED_6  | 0x718    |
-| HASH_LAST_LOADED_7  | 0x71c    |
-| HASH_LAST_LOADED_8  | 0x720    |
-| HASH_LAST_LOADED_9  | 0x724    |
-| HASH_LAST_LOADED_10 | 0x728    |
-| HASH_LAST_LOADED_11 | 0x72c    |
-| HASH_LAST_LOADED_12 | 0x730    |
-| HASH_LAST_LOADED_13 | 0x734    |
+| Name               | Offset   |
+|:-------------------|:---------|
+| HASH_LAST_LOADED_0 | 0x700    |
+| HASH_LAST_LOADED_1 | 0x704    |
+| HASH_LAST_LOADED_2 | 0x708    |
+| HASH_LAST_LOADED_3 | 0x70c    |
+| HASH_LAST_LOADED_4 | 0x710    |
+| HASH_LAST_LOADED_5 | 0x714    |
 
 
 ### Fields
