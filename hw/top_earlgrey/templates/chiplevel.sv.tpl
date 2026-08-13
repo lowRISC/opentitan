@@ -1032,6 +1032,14 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
   assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
 
+  // Indices 2 and 3 used to map to FLASH_TEST_MODE0/1, which no longer exist
+  // now that flash_ctrl has been removed from this top.
+  logic unused_sensor_ctrl_manual_pad_attr;
+  assign unused_sensor_ctrl_manual_pad_attr = ^{
+    sensor_ctrl_manual_pad_attr[2],
+    sensor_ctrl_manual_pad_attr[3]
+  };
+
   // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_rram_analog = '0;
 

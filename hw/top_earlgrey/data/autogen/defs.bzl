@@ -16,7 +16,6 @@ load("//hw/top_earlgrey/ip_autogen/clkmgr:defs.bzl", "CLKMGR")
 load("//hw/ip/csrng:defs.bzl", "CSRNG")
 load("//hw/ip/edn:defs.bzl", "EDN")
 load("//hw/ip/entropy_src:defs.bzl", "ENTROPY_SRC")
-load("//hw/top_earlgrey/ip_autogen/flash_ctrl:defs.bzl", "FLASH_CTRL")
 load("//hw/top_earlgrey/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
@@ -53,7 +52,6 @@ EARLGREY_IPS = [
     CSRNG,
     EDN,
     ENTROPY_SRC,
-    FLASH_CTRL,
     GPIO,
     HMAC,
     I2C,
@@ -115,11 +113,6 @@ EARLGREY_ALERTS = [
     "sensor_ctrl_recov_alert",
     "sensor_ctrl_fatal_alert",
     "sram_ctrl_ret_fatal_error",
-    "flash_ctrl_recov_err",
-    "flash_ctrl_fatal_std_err",
-    "flash_ctrl_fatal_err",
-    "flash_ctrl_fatal_prim_flash_alert",
-    "flash_ctrl_recov_prim_flash_alert",
     "rram_ctrl_recov_err",
     "rram_ctrl_fatal_std_err",
     "rram_ctrl_fatal_err",

@@ -293,7 +293,7 @@ module chip_englishbreakfast_verilator (
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
+  // Flash connections (only for englishbreakfast).
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
@@ -455,7 +455,7 @@ module chip_englishbreakfast_verilator (
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (flash)
-    .flash_power_down_h_o  ( flash_power_down_h ),
+    .flash_power_down_h_o  ( flash_power_down_h  ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
     .otp_power_seq_i       ( '0 ),
     .otp_power_seq_h_o     (    ),
@@ -512,6 +512,7 @@ module chip_englishbreakfast_verilator (
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    // bist enable (flash)
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     // englishbreakfast does not use the AST SRAM configuration: leave the cfg

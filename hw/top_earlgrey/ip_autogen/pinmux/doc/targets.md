@@ -6,6 +6,6 @@ util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey/
 -->
 |  Target Name  |  #IO Banks  |  #Muxed Pads  |  #Direct Pads  |  #Manual Pads  |  #Total Pads  |        Pinout / Pinmux Tables         |
 |:-------------:|:-----------:|:-------------:|:--------------:|:--------------:|:-------------:|:-------------------------------------:|
-|     ASIC      |      4      |      47       |       14       |       9        |      70       |   [Pinout Table](./pinout_asic.md)    |
-|   VERILATOR   |      4      |      47       |       14       |       9        |      70       | [Pinout Table](./pinout_verilator.md) |
+|     ASIC      |      4      |      47       |       14       |       6        |      67       |   [Pinout Table](./pinout_asic.md)    |
+|   VERILATOR   |      4      |      47       |       14       |       6        |      67       | [Pinout Table](./pinout_verilator.md) |
 |     CW340     |      4      |      47       |       14       |       13       |      74       |   [Pinout Table](./pinout_cw340.md)   |
