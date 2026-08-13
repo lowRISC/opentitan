@@ -90,11 +90,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       main_sram_bkdr_write32(addr, rand_val);
     end
 
-    // Initialize the data partition in all flash banks to all 1s.
-    `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
-    cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
-
     // Initialize the info and data partition of the RRAM to all 0s.
     cfg.mem_bkdr_util_h[RramInfo].clear_mem();
     cfg.mem_bkdr_util_h[RramData].clear_mem();
@@ -714,7 +709,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Infer mem from address.
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
-    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], RramData, FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], RramData},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
@@ -1302,21 +1297,23 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endtask : push_button
 
   // This task can be called, when rma is requested by lc_ctrl.
-  // Before rma wipe for data partition started (256 pages),
-  // this task force total page to 9 pages. So rma process is completed faster.
+  // Before rma wipe for the data partition starts (4091 pages -- see the last entry of
+  // rram_ctrl_pkg::RmaWipeEntries), this task forces the wipe's end_page down to 2 pages, so the
+  // rma process completes faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl.u_rram_ctrl_lcmgr";
     string mypath;
-    logic [2:0] rma_wipe_idx;
+    logic [1:0] rma_wipe_idx;
     logic [3:0] rma_ack;
-    // Wait for data partition rma.
+    // Wait for the data-partition entry -- the last of the 4 RmaWipeEntries (info pages are
+    // entries 0-2; the data partition, the big one, is entry 3 == MaxWipeEntry).
     mypath = {path, ".rma_wipe_idx"};
 
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
         `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_wipe_idx), 1, "hdl read failure")
-      end while (rma_wipe_idx != 3'h3);,
+      end while (rma_wipe_idx != 2'h3);,
       "waiting for rma index = 3", 100_000_000
     )
 

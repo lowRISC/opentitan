@@ -104,8 +104,8 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   virtual task reload_flash_after_rma_transfer();
     bit [7:0] selected_dest_state[];
     selected_dest_state = {dest_dec_state};
-    cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-        {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+    cfg.mem_bkdr_util_h[RramData].load_mem_from_file(
+        {cfg.sw_images[SwTypeTestSlotA], ".128.scr.vmem"});
     sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
   endtask
 endclass

@@ -13,7 +13,7 @@ class chip_sw_ate_bootstrap_one_frame_vseq extends chip_sw_base_vseq;
   local function automatic void _check_flash_data_page(input integer address,
                                                        input integer expected);
     logic [TL_DW-1:0] actual;
-    actual = cfg.mem_bkdr_util_h[FlashBank0Data].read32(address);
+    actual = cfg.mem_bkdr_util_h[RramData].read32(address);
     `DV_CHECK_EQ(actual, expected)
   endfunction
 
@@ -69,13 +69,13 @@ class chip_sw_ate_bootstrap_one_frame_vseq extends chip_sw_base_vseq;
   // mismatch, generate a uvm_error describing the mismatch and return false.
   //
   local function bit check_flash_word_32(int unsigned address, bit [31:0] expected);
-    logic [31:0]     actual = cfg.mem_bkdr_util_h[FlashBank0Data].read32(address);
+    logic [31:0]     actual = cfg.mem_bkdr_util_h[RramData].read32(address);
 
     if (actual === expected) begin
       return 1'b1;
     end else begin
       `uvm_error(get_name(),
-                 $sformatf({"Flash data mismatch at 0x%0h (in FlashBank0Data). ",
+                 $sformatf({"Flash data mismatch at 0x%0h (in RramData). ",
                             "We expected 0x%0h but saw 0x%0h."},
                            address, expected, actual))
       return 1'b0;
