@@ -16,7 +16,7 @@ class chip_sw_ate_bootstrap_flash_erase_vseq extends chip_sw_base_vseq;
   local function automatic void _check_flash_data_page(input int unsigned address,
                                                        input bit [31:0]   expected);
     logic [TL_DW-1:0] actual;
-    actual = cfg.mem_bkdr_util_h[FlashBank0Data].read32(address);
+    actual = cfg.mem_bkdr_util_h[RramData].read32(address);
     `DV_CHECK_EQ(actual, expected)
   endfunction
 

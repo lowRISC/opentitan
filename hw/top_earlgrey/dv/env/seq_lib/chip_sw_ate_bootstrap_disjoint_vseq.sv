@@ -119,34 +119,17 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
     end
   endfunction
 
-  // Extract a SW flash address into a bank index and address within the bank
+  // Extract a SW flash address into a relative address within RRAM's (single, unified) data
+  // partition.
   //
-  // The address is from the SW point of view, which is actually governed by the rom_ext slot
-  // addresses in ../../../defs.bzl. That mapping is replicated here, and we expect:
-  //
-  //    - Slot A addresses 0x00000 - 0x7ffff
-  //    - Slot B addresses 0x80000 - 0xfffff
-  //
+  // Unlike flash, which backed slots A and B with two separate physical banks, RRAM backs both
+  // slots with one contiguous region, so the SW address maps onto it directly with no per-slot
+  // offset. The out-of-range case is handled by the depth check at the call site below.
   local function bit expand_flash_address(int unsigned        address,
                                           output int unsigned rel_address,
                                           output              chip_mem_e mem_idx);
-    // Do we fit in slot A?
-    if (address < 'h80000) begin
-      rel_address = address;
-      mem_idx     = FlashBank0Data;
-      return 1'b1;
-    end
-
-    // We didn't fit in slot A. Do we fit in slot B?
-    if (address < 'hfffff) begin
-      rel_address = address - 'h80000;
-      mem_idx     = FlashBank1Data;
-      return 1'b1;
-    end
-
-    // We have run out of slots. Set the indices to something invalid and return 0.
-    rel_address = '1;
-    mem_idx     = chip_mem_e'('1);
-    return 1'b0;
+    mem_idx     = RramData;
+    rel_address = address;
+    return 1'b1;
   endfunction
 endclass
