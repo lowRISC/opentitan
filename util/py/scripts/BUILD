@@ -15,6 +15,7 @@ py_binary(
         "//util/py/packages/impl/object_size:types",
         "//util/py/packages/lib:bazel",
         "//util/py/packages/lib:ot_logging",
+        requirement("typer"),
     ],
 )
 
@@ -28,6 +29,8 @@ py_binary(
         "//util/py/packages/lib:register_usage_report",
         "//util/py/packages/lib:run",
         "//util/reggen:ip_block",
+        "//util/reggen:reg_block",
+        "//util/reggen:register",
         requirement("rich"),
         requirement("typer"),
     ],
@@ -40,6 +43,7 @@ py_binary(
     deps = [
         "//util/py/packages/lib:bazel",
         "//util/py/packages/lib:register_usage_report",
+        requirement("libclang"),
     ],
 )
 
