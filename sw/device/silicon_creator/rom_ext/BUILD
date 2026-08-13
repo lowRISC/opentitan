@@ -6,7 +6,7 @@ load("@opentitan_signing_infra//signing:defs.bzl", "signature_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules:files.bzl", "output_groups")
 load("//rules:const.bzl", "CONST", "hex")
-load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_select_top")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
@@ -149,6 +149,8 @@ cc_library(
 cc_test(
     name = "rom_ext_boot_services_unittest",
     srcs = ["rom_ext_boot_services_unittest.cc"],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":rom_ext_boot_services",
         dual_cc_device_library_of("//sw/device/silicon_creator/lib/boot_svc:boot_svc_header"),

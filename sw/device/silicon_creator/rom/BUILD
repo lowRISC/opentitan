@@ -7,6 +7,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -387,6 +388,7 @@ cc_library(
 cc_test(
     name = "bootstrap_unittest",
     srcs = ["bootstrap_unittest.cc"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":bootstrap",
         "//hw/top:flash_ctrl_c_regs",
@@ -406,6 +408,7 @@ cc_fuzz_test(
         "fuzzer",
         "manual",
     ],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",

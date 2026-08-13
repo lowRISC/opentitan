@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_ip")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_library",
@@ -51,6 +52,7 @@ cc_test(
     srcs = [
         "isfb_unittest.cc",
     ],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":isfb",
@@ -123,6 +125,8 @@ cc_test(
     srcs = [
         "ownership_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":ownership",
@@ -160,6 +164,8 @@ cc_test(
         "owner_block_unittest.cc",
         "testdata/basic_owner_testdata.h",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":owner_block",
@@ -232,6 +238,8 @@ cc_test(
     srcs = [
         "ownership_activate_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":ownership_activate",

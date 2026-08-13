@@ -20,6 +20,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//hw/top:defs.bzl", "opentitan_require_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -247,6 +248,7 @@ cc_library(
 cc_test(
     name = "flash_exec_unittest",
     srcs = ["flash_exec_unittest.cc"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":flash_exec",
         ":rsa_verify",
