@@ -12,9 +12,9 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/spi_device_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -63,9 +63,8 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, 1},
           {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, hw_rev.product_id},
           {SPI_DEVICE_DEV_ID_DENSITY_FIELD.index,
-           (uint32_t)bitfield_count_trailing_zeroes32(
-               FLASH_CTRL_PARAM_REG_NUM_BANKS *
-               FLASH_CTRL_PARAM_BYTES_PER_BANK)},
+           (uint32_t)bitfield_count_trailing_zeroes32(NVM_BYTES_PER_BANK *
+                                                      NVM_NUM_BANKS)},
           {SPI_DEVICE_JEDEC_ID_MF_OFFSET, kSpiDeviceJedecManufId},
       });
 

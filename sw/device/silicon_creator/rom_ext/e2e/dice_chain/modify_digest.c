@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/flash_ctrl.h"
+#include "hw/top/dt/rram_ctrl.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
@@ -43,9 +43,8 @@ static status_t modify_digest_test(void) {
 bool test_main(void) {
   // This test intentionally creates an invalid digest triggering recoverable
   // errors. Ignore the alert in OTTF.
-  CHECK_STATUS_OK(
-      ottf_alerts_expect_alert_start(dt_flash_ctrl_alert_to_alert_id(
-          kDtFlashCtrlFirst, kDtFlashCtrlAlertRecovErr)));
+  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(dt_rram_ctrl_alert_to_alert_id(
+      kDtRramCtrlFirst, kDtRramCtrlAlertRecovErr)));
 
   status_t sts = modify_digest_test();
   if (status_err(sts)) {

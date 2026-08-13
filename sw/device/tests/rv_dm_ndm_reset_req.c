@@ -17,11 +17,11 @@
 
 #if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top/dt/adc_ctrl.h"     // Generated
-#include "hw/top/dt/flash_ctrl.h"   // Generated
+#include "hw/top/dt/rram_ctrl.h"    // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
 
 #include "hw/top/adc_ctrl_regs.h"
-#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/rram_ctrl_regs.h"
 #include "hw/top/sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DARJEELING)
 #else
@@ -54,7 +54,7 @@
                                           RESET    PRGM (ARBITRARY VALUE)
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
-       FLASH_CTRL.SCRATCH                 0x0      0x3927
+       RRAM_CTRL.SCRATCH                  0x0      0x5252_414D
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
    Read programmed csr to check all Group2 keep programmed value while group 3
@@ -153,11 +153,11 @@ bool test_main(void) {
 
       },
       {
-          .name = "FLASH_CTRL",
-          .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
-          .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
-          .write_val = 0x3927,
-          .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
+          .name = "RRAM_CTRL",
+          .base = dt_rram_ctrl_primary_reg_block(kDtRramCtrl),
+          .offset = RRAM_CTRL_SCRATCH_REG_OFFSET,
+          .write_val = 0x5252414D,
+          .exp_read_val = RRAM_CTRL_SCRATCH_REG_RESVAL,
       },
 #elif defined(OPENTITAN_IS_DARJEELING)
 #else
