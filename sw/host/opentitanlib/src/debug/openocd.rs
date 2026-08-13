@@ -24,6 +24,10 @@ use crate::regex;
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
+/// The time (in milliseconds) to wait after reaping the OpenOCD process on shutdown,
+/// to give the Kernel USB driver time to detach, flush endpoints, release locks, etc.
+const SHUTDOWN_EXIT_DELAY_MS: u64 = 50;
+
 /// Represents an OpenOCD server that we can interact with.
 pub struct OpenOcd {
     /// OpenOCD child process.
@@ -211,6 +215,8 @@ impl OpenOcd {
         self.server_process
             .wait()
             .context("failed to wait for OpenOCD server to exit")?;
+        // Force the thread to yield and give the OS USB driver time to drop the USB completely
+        std::thread::sleep(std::time::Duration::from_millis(SHUTDOWN_EXIT_DELAY_MS));
         Ok(())
     }
 
