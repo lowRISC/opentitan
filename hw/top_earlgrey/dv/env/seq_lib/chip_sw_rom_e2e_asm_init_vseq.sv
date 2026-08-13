@@ -141,8 +141,8 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK((cfg.chip_vif.pmp_addr[0] < cfg.chip_vif.pmp_addr[1]) &&
               (cfg.chip_vif.pmp_addr[1] <= cfg.chip_vif.pmp_addr[2]))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[5],
-                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                 top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES))
+                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR,
+                                 top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[12],

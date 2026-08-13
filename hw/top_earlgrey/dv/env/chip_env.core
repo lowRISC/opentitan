@@ -51,7 +51,6 @@ filesets:
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_prim_tl_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_vseq.sv: {is_include_file: true}
@@ -88,9 +87,7 @@ filesets:
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_flash_init_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_rma_unlocked_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_inject_scramble_seed_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_exit_test_unlocked_bootstrap_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_scrap_vseq.sv: {is_include_file: true}

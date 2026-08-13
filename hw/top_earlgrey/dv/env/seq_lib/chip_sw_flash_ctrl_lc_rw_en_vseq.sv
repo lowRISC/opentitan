@@ -7,13 +7,13 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string FLASH_CTRL_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl";
+  localparam string RRAM_CTRL_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl";
   localparam string RW_EN_PATHS[5] = '{
-      {FLASH_CTRL_HDL_PATH, ".lc_creator_seed_sw_rw_en_i"},
-      {FLASH_CTRL_HDL_PATH, ".lc_owner_seed_sw_rw_en_i"},
-      {FLASH_CTRL_HDL_PATH, ".lc_iso_part_sw_wr_en_i"},
-      {FLASH_CTRL_HDL_PATH, ".lc_iso_part_sw_rd_en_i"},
-      {FLASH_CTRL_HDL_PATH, ".lc_seed_hw_rd_en_i"}
+      {RRAM_CTRL_HDL_PATH, ".lc_creator_seed_sw_rw_en_i"},
+      {RRAM_CTRL_HDL_PATH, ".lc_owner_seed_sw_rw_en_i"},
+      {RRAM_CTRL_HDL_PATH, ".lc_iso_part_sw_wr_en_i"},
+      {RRAM_CTRL_HDL_PATH, ".lc_iso_part_sw_rd_en_i"},
+      {RRAM_CTRL_HDL_PATH, ".lc_seed_hw_rd_en_i"}
   };
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -37,7 +37,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
     // Starting LC state is TestLocked2. This state disables
     // CPU execution so we check the values by directly reading
-    // the signals from the flash_ctrl inputs.
+    // the signals from the rram_ctrl inputs.
 
     for (int i = 0; i < 5; i++) begin
       `DV_CHECK_EQ_FATAL(get_rw_en_signals(i), lc_ctrl_pkg::Off,
