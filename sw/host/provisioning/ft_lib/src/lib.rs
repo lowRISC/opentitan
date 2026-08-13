@@ -303,10 +303,8 @@ fn provision_certificates(
     // DICE certificate names.
     let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
 
-    let perso_blob_parser =
-        PersoBlobParser::new_with_version(perso_certgen_inputs.blob_version, perso_blob)?;
-    let mut perso_blob_builder =
-        PersoBlobBuilder::new_with_version(perso_certgen_inputs.blob_version)?;
+    let perso_blob_parser = PersoBlobParser::new(perso_blob);
+    let mut perso_blob_builder = PersoBlobBuilder::new();
 
     let t0 = Instant::now();
     for perso_obj in perso_blob_parser.iter() {
@@ -351,7 +349,7 @@ fn provision_certificates(
             ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {
                 // The next object is a cert, let's retrieve its properties (name, needs
                 // endorsement, etc.)
-                let cert = perso_blob_parser.get_cert(perso_obj.data)?;
+                let cert = perso_obj.get_cert()?;
 
                 // Extract the certificate bytes and endorse the cert if needed.
                 let cert_bytes = if perso_obj.obj_header.obj_type == ObjType::UnendorsedX509Cert {
