@@ -111,7 +111,6 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
     ],
@@ -234,14 +233,6 @@ cc_library(
         ["//hw/top:edn_c_regs"],
         [],
     ) + opentitan_if_ip(
-        "flash_ctrl",
-        [
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/testing:flash_ctrl_testutils",
-            "//sw/device/lib/testing:nvm_testutils",
-        ],
-        [],
-    ) + opentitan_if_ip(
         "sensor_ctrl",
         ["//hw/top:sensor_ctrl_c_regs"],
         [],
@@ -251,6 +242,12 @@ cc_library(
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt:otp_ctrl",
         ],
+        [],
+    ) + opentitan_select_top(
+        {
+            "earlgrey": ["//sw/device/lib/testing:nvm_testutils"],
+            "englishbreakfast": ["//sw/device/lib/testing:nvm_testutils"],
+        },
         [],
     ),
 )

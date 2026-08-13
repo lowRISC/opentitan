@@ -612,7 +612,6 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/drivers:otbn",

@@ -938,9 +938,9 @@ dual_cc_library(
     ],
     deps = dual_inputs(
         device = [
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
             "//hw/top/dt",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
         ],
         host = [
             "//sw/device/lib/base:global_mock",

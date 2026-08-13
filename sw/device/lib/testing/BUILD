@@ -330,7 +330,6 @@ cc_library(
         {
             "earlgrey": [
                 ":nvm_testutils",
-                "//sw/device/lib/dif:flash_ctrl",
                 "//hw/top_earlgrey/sw/autogen:top_earlgrey",
                 "//sw/device/silicon_creator/lib/drivers:retention_sram",
             ],

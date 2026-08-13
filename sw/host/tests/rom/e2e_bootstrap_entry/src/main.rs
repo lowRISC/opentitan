@@ -47,9 +47,9 @@ struct Opts {
     #[arg(long, value_parser = u8::from_str, default_value = "0x09")]
     jedec_product: u8,
 
-    /// Size of the internal flash.
-    #[arg(long, value_parser = u32::from_str, default_value = "0x100000")]
-    flash_size: u32,
+    /// Size of the internal NVM.
+    #[arg(long, value_parser = u32::from_str, default_value = "0x200000")]
+    nvm_size: u32,
 }
 
 /// A struct for isolating individual test points.
@@ -172,7 +172,7 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(page, opts.jedec_page);
     assert_eq!(manufacturer, opts.jedec_id);
     assert_eq!(product, opts.jedec_product);
-    assert_eq!(1u32 << density, opts.flash_size);
+    assert_eq!(1u32 << density, opts.nvm_size);
     Ok(())
 }
 
@@ -234,7 +234,7 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(sfdp.jedec.support_fast_read_114, false);
     assert_eq!(sfdp.jedec.support_fast_read_222, false);
     assert_eq!(sfdp.jedec.support_fast_read_444, false);
-    assert_eq!(sfdp.jedec.density, opts.flash_size);
+    assert_eq!(sfdp.jedec.density, opts.nvm_size);
 
     assert_eq!(sfdp.jedec.erase[0].size, 4096);
     assert_eq!(sfdp.jedec.erase[0].opcode, 0x20);
