@@ -90,8 +90,8 @@ extern char _rom_ext_immutable_size[];
 // Life cycle state of the chip.
 lifecycle_state_t lc_state;
 
-// A ram copy of the OTP word controlling how to handle flash ECC errors.
-uint32_t flash_ecc_exc_handler_en;
+// A ram copy of the OTP word controlling how to handle NVM ECC errors.
+uint32_t nvm_ecc_exc_handler_en;
 
 // Owner configuration details parsed from the onwer info pages.
 owner_config_t owner_config;
@@ -154,7 +154,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
   lc_state = lifecycle_state_get();
-  flash_ecc_exc_handler_en = otp_read32(
+  nvm_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
   pinmux_init();
   // Configure UART0 as stdout.

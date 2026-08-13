@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * This is the flash exception handler used by the ROM and ROM_EXT to deal with
- * ECC errors reported by the flash controller.
+ * This is the exception handler used by the ROM and ROM_EXT to deal with ECC
+ * errors reported by the RRAM controller (the flash_ctrl equivalent for tops
+ * that use RRAM instead of flash for their embedded non-volatile memory).
+ * Exported as `nvm_exception_handler`/`nvm_ecc_exc_handler_en` since callers
+ * (rom.c, rom_ext.c, rom_start.S, rom_ext_start.S) use the same names
+ * regardless of which top/NVM technology is selected.
  *
  * This file is built separately for the ROM and ROM_EXT by the `rom{,_ext}_isrs`
  * rule in each of their respective subdirs.  Each of those rules builds this
@@ -14,14 +18,20 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
-#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/rram_ctrl_regs.h"
 
 .equ LOAD_ACCESS_FAULT, 5
 
-// If we get an ECC error reading from internal flash, one of these bits
-// will be set in the flash controller's FAULT_STATUS register.
-.equ PHY_ERRORS, (1 << FLASH_CTRL_FAULT_STATUS_PHY_STORAGE_ERR_BIT) | \
-                 (1 << FLASH_CTRL_FAULT_STATUS_PHY_RELBL_ERR_BIT)
+// If we get an ECC error reading from RRAM, this bit will be set in the RRAM
+// controller's FAULT_STATUS register.
+//
+// Unlike flash_ctrl's FAULT_STATUS (which has two clearable PHY error bits,
+// PHY_STORAGE_ERR and PHY_RELBL_ERR), RRAM_CTRL's analogous integrity error
+// bit (PHY_RD_INTG_ERR) is read-only/non-clearable (swaccess: ro), so it is
+// intentionally not included here -- only PHY_RELBL_ERR is rw0c and can be
+// cleared by firmware.
+// TODO(https://github.com/lowRISC/opentitan/issues/31010)
+.equ PHY_RELBL_ERROR, (1 << RRAM_CTRL_FAULT_STATUS_PHY_RELBL_ERR_BIT)
 
 // NOTE: The "ax" flag below is necessary to ensure that this section
 // is allocated executable space in ROM by the linker.
@@ -43,13 +53,13 @@ nvm_exception_handler:
   // RAM as the exception frame.
   csrw mscratch, sp
 
-  // Before saving the stack frame, check if handling of flash exceptions is
+  // Before saving the stack frame, check if handling of RRAM exceptions is
   // enabled.  Determine this with just the stack pointer so that if not enabled,
   // we don't have to do any other register save/restore.
   la   sp, nvm_ecc_exc_handler_en
   lw   sp, 0(sp)
   xori sp, sp, HARDENED_BOOL_TRUE
-  bnez sp, .L_no_flash_exceptions
+  bnez sp, .L_no_rram_exceptions
 
   // Note: we save the exception frame in RISCV register number order so that
   // we can extract the destination register from the faulting instruction and
@@ -91,24 +101,24 @@ nvm_exception_handler:
   csrr a1, mcause
   andi a1, a1, 31
   li   a2, LOAD_ACCESS_FAULT
-  bne  a1, a2, .L_not_a_flash_error
+  bne  a1, a2, .L_not_a_rram_error
 
-  // Check if there is a flash error.
-  li   a3, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
-  lw   a1, FLASH_CTRL_FAULT_STATUS_REG_OFFSET(a3)
-  andi a1, a1, PHY_ERRORS
-  beqz a1, .L_not_a_flash_error
+  // Check if there is an RRAM error.
+  li   a3, TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR
+  lw   a1, RRAM_CTRL_FAULT_STATUS_REG_OFFSET(a3)
+  andi a1, a1, PHY_RELBL_ERROR
+  beqz a1, .L_not_a_rram_error
 
-  // Clear the flash error.
-  sw   x0, FLASH_CTRL_FAULT_STATUS_REG_OFFSET(a3)
+  // Clear the RRAM error.
+  sw   x0, RRAM_CTRL_FAULT_STATUS_REG_OFFSET(a3)
   // Hardening: check that the error is cleared.
-  lw   a1, FLASH_CTRL_FAULT_STATUS_REG_OFFSET(a3)
-  beqz a1, .L_flash_fault_handled
-  j    .L_not_a_flash_error
+  lw   a1, RRAM_CTRL_FAULT_STATUS_REG_OFFSET(a3)
+  beqz a1, .L_rram_fault_handled
+  j    .L_not_a_rram_error
   unimp
   unimp
 
-.L_flash_fault_handled:
+.L_rram_fault_handled:
   // Compute the MEPC of the instruction after the fault.
   //
   // Since we support the RISC-V compressed instructions extension, we need to
@@ -144,7 +154,7 @@ nvm_exception_handler:
   // five bits are zero.
   srli a3, a2, 2
   andi a3, a3, 0x1f
-  bnez a3, .L_not_a_flash_error
+  bnez a3, .L_not_a_rram_error
   // Get the register number into a3 by masking off the rd field.
   srli a3, a2, 7
   andi a3, a3, 0x1f
@@ -154,7 +164,7 @@ nvm_exception_handler:
 
 .L_compressed_trap_instr:
   // Check if its a compressed load instruction.
-  bnez a3, .L_not_a_flash_error
+  bnez a3, .L_not_a_rram_error
   // Get the register number into a3 by masking off the rd' field and adding 8.
   srli a3, a2, 2
   andi a3, a3, 7
@@ -166,13 +176,13 @@ nvm_exception_handler:
   addi a1, a1, 1
   csrr a2, mepc
   sub  a2, a0, a2
-  bgtu a2, a1, .L_not_a_flash_error
+  bgtu a2, a1, .L_not_a_rram_error
 
   // Now, using `rd` from the faulting instruction (in a3), load all ones into
   // that register.
   // RISCV register x0, aka zero.  This register is always const 0, so there
   // is nothing to do.
-  beqz a3, .L_flash_fault_done
+  beqz a3, .L_rram_fault_done
 
   // All other registers load the value 0xFFFFFFFF as the faulting value.
   li   a2, -1
@@ -180,7 +190,7 @@ nvm_exception_handler:
   add  a3, a3, sp
   sw   a2, 0(a3)
 
-.L_flash_fault_done:
+.L_rram_fault_done:
   // Exception handler exit and return to C:
   // Load the correct MEPC for the next instruction in the current task.
   csrw mepc, a0
@@ -220,10 +230,10 @@ nvm_exception_handler:
   csrr sp, mscratch
   mret
 
-.L_no_flash_exceptions:
+.L_no_rram_exceptions:
   csrr sp, mscratch
-.L_not_a_flash_error:
-  // Since we aren't dealing with a flash error, we'll jump to the normal
+.L_not_a_rram_error:
+  // Since we aren't dealing with an RRAM error, we'll jump to the normal
   // handler for all other exceptiosn and interrupts.  That handler emits
   // the fault info to the UART and initiates shutdown.  No register state
   // preservation is necessary because we're not coming back.
