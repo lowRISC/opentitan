@@ -63,7 +63,6 @@
       rv_dm.mem
       sram_ctrl_main.ram
       sram_ctrl_sec.ram
-      flash_ctrl.mem
       rram_ctrl.host
     ]
     rv_core_ibex.cored:
@@ -78,9 +77,6 @@
       spi_host0
       spi_host1
       usbdev
-      flash_ctrl.core
-      flash_ctrl.prim
-      flash_ctrl.mem
       rram_ctrl.core
       rram_ctrl.host
       rram_macro.prim
@@ -110,9 +106,6 @@
       spi_host0
       spi_host1
       usbdev
-      flash_ctrl.core
-      flash_ctrl.prim
-      flash_ctrl.mem
       rram_ctrl.core
       rram_ctrl.host
       rram_macro.prim
@@ -349,72 +342,6 @@
             hart: 0x40320000
           }
           size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.core
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x41000000
-          }
-          size_byte: 0x200
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.prim
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x41008000
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.mem
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x20000000
-          }
-          size_byte: 0x100000
         }
       ]
       xbar: false
@@ -969,45 +896,6 @@
       default: ""
       domain: Main
       top_signame: usbdev_tl
-      index: -1
-    }
-    {
-      name: tl_flash_ctrl__core
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: main
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: flash_ctrl_core_tl
-      index: -1
-    }
-    {
-      name: tl_flash_ctrl__prim
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: main
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: flash_ctrl_prim_tl
-      index: -1
-    }
-    {
-      name: tl_flash_ctrl__mem
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: main
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: flash_ctrl_mem_tl
       index: -1
     }
     {

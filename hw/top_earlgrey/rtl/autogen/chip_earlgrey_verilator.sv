@@ -297,10 +297,11 @@ module chip_earlgrey_verilator (
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
+  // Flash connections (only for englishbreakfast).
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
+  assign flash_obs = '0;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -509,7 +510,7 @@ module chip_earlgrey_verilator (
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (flash)
-    .flash_power_down_h_o  ( flash_power_down_h ),
+    .flash_power_down_h_o  ( flash_power_down_h  ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
     .otp_power_seq_i       ( '0 ),
     .otp_power_seq_h_o     (    ),
@@ -566,6 +567,7 @@ module chip_earlgrey_verilator (
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    // bist enable (flash)
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
     // Single aggregated request/response struct, driven from the AST's internal
@@ -578,6 +580,12 @@ module chip_earlgrey_verilator (
     .scan_reset_no         ( scan_rst_n )
   );
 
+  logic unused_flash_ast_sigs;
+  assign unused_flash_ast_sigs = ^{
+    flash_bist_enable,
+    flash_power_down_h,
+    flash_power_ready_h
+  };
 
 
   /////////////////////////////////////////////
@@ -656,12 +664,6 @@ module chip_earlgrey_verilator (
     .hi_speed_sel_o                        (hi_speed_sel             ),
     .div_step_down_req_i                   (div_step_down_req        ),
     .calib_rdy_i                           (ast_init_done            ),
-    .flash_bist_enable_i                   (flash_bist_enable        ),
-    .flash_power_down_h_i                  (flash_power_down_h       ),
-    .flash_power_ready_h_i                 (flash_power_ready_h      ),
-    .flash_test_mode_a_io                  (                         ),
-    .flash_test_voltage_h_io               (                         ),
-    .flash_obs_o                           (flash_obs                ),
     .es_rng_enable_o                       (es_rng_enable            ),
     .es_rng_valid_i                        (es_rng_valid             ),
     .es_rng_bit_i                          (es_rng_bit               ),
