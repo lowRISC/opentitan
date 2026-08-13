@@ -35,7 +35,6 @@ package chip_env_pkg;
   import lc_ctrl_state_pkg::*;
   import lc_ctrl_token_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
-  import flash_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import rom_ctrl_bkdr_util_pkg::*;
   import sram_ctrl_bkdr_util_pkg::*;

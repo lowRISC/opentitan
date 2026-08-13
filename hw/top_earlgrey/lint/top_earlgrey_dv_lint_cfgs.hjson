@@ -66,12 +66,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
-             {    name: flash_ctrl
-                  fusesoc_core: lowrisc:earlgrey_dv:flash_ctrl_sim
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/lint/{tool}"
-             },
              {    name: gpio
                   fusesoc_core: lowrisc:earlgrey_dv:gpio_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

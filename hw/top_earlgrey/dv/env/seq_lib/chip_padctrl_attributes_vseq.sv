@@ -210,8 +210,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // all tests asserting a reset.
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
-        cfg.chip_vif.flash_test_mode_if.disconnect();
-        cfg.chip_vif.flash_test_volt_if.disconnect();
         cfg.chip_vif.cc_if.disconnect();
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
         check_manual_dios_pull();
@@ -611,10 +609,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   task check_manual_dios_pull();
     string obs_strength;
 
-    // Pad `FLASH_TEST_VOLT` is always high impedance.
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_volt_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_VOLT")
-
     // The other four manual pads are high impedance unless their pull-up/down is activated.
 
     // CC1 -----------------------------------------------------------------------------------------
@@ -689,77 +683,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
     // ---------------------------------------------------------------------------------------------
 
-    // FLASH_TEST_MODE0 ----------------------------------------------------------------------------
-    // - pull disabled (post-reset configuration)
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
-    // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[2].pull_select), .value(1'b0), .blocking(1),
-           .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[2].pull_en), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE0")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE0")
-`endif
-    // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[2].pull_select), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE0")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE0")
-`endif
-    // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[2].pull_en), .value(1'b0), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
-    // ---------------------------------------------------------------------------------------------
-
-    // FLASH_TEST_MODE1 ----------------------------------------------------------------------------
-    // - pull disabled (post-reset configuration)
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
-    // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[3].pull_select), .value(1'b0), .blocking(1),
-           .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[3].pull_en), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE1")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE1")
-`endif
-    // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[3].pull_select), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE1")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE1")
-`endif
-    // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[3].pull_en), .value(1'b0), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
-    // ---------------------------------------------------------------------------------------------
   endtask
 
   function logic hdl_read_lsb(string path);
@@ -790,20 +713,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     act = hdl_read_lsb("tb.dut.manual_in_cc2");
     `DV_CHECK_CASE_EQ(lsb_exp_val, act)
 
-    cfg.chip_vif.flash_test_mode_if.drive('1);
-    cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
-    `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[2].input_disable), .value(1'b1), .blocking(1),
-           .predict(1));
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
-    `DV_CHECK_CASE_EQ(lsb_exp_val, act)
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
-    `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[3].input_disable), .value(1'b1), .blocking(1),
-           .predict(1));
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
-    `DV_CHECK_CASE_EQ(lsb_exp_val, act)
   endtask
 
 endclass

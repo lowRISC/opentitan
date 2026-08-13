@@ -593,10 +593,13 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
+  // Flash connections (only for englishbreakfast).
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
+% if top["name"] == "earlgrey":
+  assign flash_obs = '0;
+% endif
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -906,7 +909,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (flash)
-    .flash_power_down_h_o  ( flash_power_down_h ),
+    .flash_power_down_h_o  ( flash_power_down_h  ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
     .otp_power_seq_i       ( '0 ),
     .otp_power_seq_h_o     (    ),
@@ -971,6 +974,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    // bist enable (flash)
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
 % if top["name"] != "englishbreakfast":
@@ -990,6 +994,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .scan_reset_no         ( scan_rst_n )
   );
 
+% if top["name"] == "earlgrey":
+  logic unused_flash_ast_sigs;
+  assign unused_flash_ast_sigs = ^{
+    flash_bist_enable,
+    flash_power_down_h,
+    flash_power_ready_h
+  };
+% endif
 
 ###################################################################
 ## ASIC                                                          ##
@@ -1008,12 +1020,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
-  assign manual_out_flash_test_mode0 = 1'b0;
-  assign manual_oe_flash_test_mode0 = 1'b0;
-  assign manual_out_flash_test_mode1 = 1'b0;
-  assign manual_oe_flash_test_mode1 = 1'b0;
-  assign manual_out_flash_test_volt = 1'b0;
-  assign manual_oe_flash_test_volt = 1'b0;
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
@@ -1025,20 +1031,14 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr;
   assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
   assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
-  assign manual_attr_flash_test_mode0 = sensor_ctrl_manual_pad_attr[2];
-  assign manual_attr_flash_test_mode1 = sensor_ctrl_manual_pad_attr[3];
 
   // These pad attributes are currently tied off permanently (these are supply pads).
-  assign manual_attr_flash_test_volt = '0;
   assign manual_attr_rram_analog = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_volt,
-    manual_in_flash_test_mode0,
-    manual_in_flash_test_mode1,
     manual_in_rram_analog
   };
 

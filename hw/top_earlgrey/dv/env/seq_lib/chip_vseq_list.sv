@@ -91,7 +91,6 @@
 `include "chip_sw_exit_test_unlocked_bootstrap_vseq.sv"
 `include "chip_sw_spi_device_tpm_vseq.sv"
 `include "chip_sw_aes_masking_off_vseq.sv"
-`include "chip_sw_flash_host_gnt_err_inj_vseq.sv"
 `include "chip_padctrl_attributes_vseq.sv"
 `include "chip_sw_rom_e2e_base_vseq.sv"
 `include "chip_sw_rom_e2e_shutdown_exception_c_vseq.sv"
