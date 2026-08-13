@@ -6,6 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//hw/top:defs.bzl", "opentitan_require_ip")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
@@ -67,6 +68,8 @@ cc_test(
         "rescue_xmodem.c",
         "rescue_xmodem_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":rescue",
         ":xmodem",

@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_build_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -73,6 +73,8 @@ dual_cc_library(
 cc_test(
     name = "boot_data_unittest",
     srcs = ["boot_data_unittest.cc"],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         dual_cc_device_library_of(":boot_data"),
         "@googletest//:gtest_main",
@@ -452,6 +454,8 @@ dual_cc_library(
 cc_test(
     name = "shutdown_unittest",
     srcs = ["shutdown_unittest.cc"],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         dual_cc_device_library_of(":shutdown"),
         "//hw/top:flash_ctrl_c_regs",
@@ -489,6 +493,7 @@ cc_library(
     name = "bootstrap_fuzzer_util",
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
@@ -505,6 +510,7 @@ cc_library(
     name = "bootstrap_unittest_util",
     srcs = ["bootstrap_unittest_util.cc"],
     hdrs = ["bootstrap_unittest_util.h"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":bootstrap",
         "//hw/top:flash_ctrl_c_regs",
@@ -547,14 +553,13 @@ dual_cc_library(
             },
             [],
         ),
-        # Host tests always build against the flash backend, independent of
-        # the selected top: existing unit tests (boot_data_unittest,
-        # flash_ctrl_unittest, rescue_xmodem_unittest, ownership tests, ...)
-        # mock flash_ctrl directly and predate RRAM support. This keeps them
-        # passing but means nvm_ctrl.c's RRAM branch has no host unit test
-        # coverage; it's only exercised by on-device functests/DV.
         # TODO(#30967): port the silicon_creator host test suite to RRAM.
-        host = ["USE_FLASH"],
+        host = opentitan_select_top(
+            {
+                "earlgrey": ["USE_RRAM"],
+            },
+            ["USE_FLASH"],
+        ),
     ),
     deps = dual_inputs(
         # Links whichever backend driver(s) the top actually has, matching
