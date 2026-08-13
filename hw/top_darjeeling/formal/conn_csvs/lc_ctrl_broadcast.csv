@@ -18,8 +18,8 @@ CONNECTION, LC_ESCALATE_EN_KMAC,      top_darjeeling.darjeeling_pd_main.u_lc_ctr
 CONNECTION, LC_ESCALATE_EN_OTBN,      top_darjeeling.darjeeling_pd_main.u_lc_ctrl, lc_escalate_en_o, top_darjeeling.darjeeling_pd_main.u_otbn,              lc_escalate_en_i
 
 # Verify that lc_ctrl's keymanager enable signal and diversification value are correctly connected to the keymgr.
-CONNECTION, LC_KEYMGR_EN_KEYMGR, top_darjeeling.darjeeling_pd_main.u_lc_ctrl,  lc_keymgr_en_o,  top_darjeeling.darjeeling_pd_main.u_keymgr, lc_keymgr_en_i
-CONNECTION, LC_KEYMGR_DIV_KEYMGR, top_darjeeling.darjeeling_pd_main.u_lc_ctrl, lc_keymgr_div_o, top_darjeeling.darjeeling_pd_main.u_keymgr, lc_keymgr_div_i
+CONNECTION, LC_KEYMGR_EN_KEYMGR, top_darjeeling.darjeeling_pd_main.u_lc_ctrl,  lc_keymgr_en_o,  top_darjeeling.darjeeling_pd_main.u_keymgr_dpe, lc_keymgr_en_i
+CONNECTION, LC_KEYMGR_DIV_KEYMGR, top_darjeeling.darjeeling_pd_main.u_lc_ctrl, lc_keymgr_div_o, top_darjeeling.darjeeling_pd_main.u_keymgr_dpe, lc_keymgr_div_i
 
 # Verify that lc_ctrl's lc_nvm_debug_en_o signal is correctly connected to flash_ctrl.
 CONNECTION, LC_NVM_DEBUG_EN_FLASH_CTRL, top_darjeeling.darjeeling_pd_main.u_lc_ctrl, lc_nvm_debug_en_o, top_darjeeling.darjeeling_pd_main.u_flash_ctrl, lc_nvm_debug_en_i
