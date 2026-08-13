@@ -9,6 +9,9 @@
 // - MIPI Alliance Specification for I3C Basic, Version 1.2 Public Release Edition.
 // - MIPI Alliance Specification for I3C TCRI, Version 1.0 (Public Release Edition).
 // - MIPI Alliance Specification for I3C HCI, Version 1.2 (Public Release Edition).
+//
+// Specification references within the design refer to the I3C Basic specification unless the TCRI
+// or the HCI is mentioned explicitly.
 
 module i3c_core
   import i3c_io_pkg::*;
@@ -533,14 +536,15 @@ module i3c_core
 
   // HCI-side handling of In-Band Interrupts.
   // - this manages the interleaved reading from the two physical FIFOs (IBIQ and IBIStD).
+  // - reading from IBI_PORT is prohibited when the PIO queues are not enabled (HCI Table 49), but
+  //   this is a very simple module so it remains enabled. It thus remains consistent with the
+  //   message buffer state, and reads continue to operate as expected.
   logic [DataWidth-1:0] ibi_rdata;
   logic ibi_status_desc;  // Is the next read word an IBI Status Descriptor?
   logic ibi_read;
   i3c_hci_ibi u_hci_ibi (
     .clk_i     (clk_i),
     .rst_ni    (rst_ni),
-
-    .enable_i  (ctrl_enabled),
 
     .sw_reset_i(ibi_sw_reset),
 
@@ -2032,7 +2036,7 @@ module i3c_core
   assign hw2reg_o.queue_size.rx_data_buffer_size.d   = 8'(reg2hw_i.ctrl_rxbuf_config.size_val.q);
   assign hw2reg_o.queue_size.ibi_status_size.d       = 8'(reg2hw_i.ibi_config.size_val.q);
   assign hw2reg_o.queue_size.cr_queue_size.d         = 8'(reg2hw_i.command_queue_config.size_val.q);
-  assign hw2reg_o.alt_queue_size.ext_ibi_queue_en.d  = 1'b0;
+  assign hw2reg_o.alt_queue_size.ext_ibi_queue_en.d  = 1'b1;
   assign hw2reg_o.alt_queue_size.alt_resp_queue_en.d = 1'b1;
   assign hw2reg_o.alt_queue_size.alt_resp_queue_size.d =
          8'(reg2hw_i.response_queue_config.size_val.q);
@@ -2062,9 +2066,18 @@ module i3c_core
   assign hw2reg_o.debug_extcap_header.cap_id.d     = I3C_DEBUG_EXTCAP_HEADER_CAP_ID_RESVAL;
   assign hw2reg_o.sched_cmds_debug.err_occurred.d  = 1'b0;
 
-  // TODO: These values are restricted to 8 bits by the HCI; we have 10 bit used/avail values.
-  assign hw2reg_o.queue_status_level.ibi_status_cnt.d        = fifo_state[FIFO_IBIStD].used;
-  assign hw2reg_o.queue_status_level.ibi_buffer_lvl.d        = fifo_state[FIFO_IBIQ].used;
+  // The HCI supports reports up to 31 IBI Status Descriptors and 255 IBI Data Words (HCI Table 94).
+  // - software should respect those limits when configuring the message buffer, but here we clamp
+  //   the reported rather than wrapping, just in case.
+  logic [4:0] ibi_status_cnt;
+  logic [7:0] ibi_buffer_lvl;
+  assign ibi_status_cnt = |(fifo_state[FIFO_IBIStD].used >> 5) ? 5'h1f
+                                                               : fifo_state[FIFO_IBIStD].used[4:0];
+  assign ibi_buffer_lvl = |(fifo_state[FIFO_IBIQ].used >> 8) ? 8'hff
+                                                             : fifo_state[FIFO_IBIQ].used[7:0];
+  assign hw2reg_o.queue_status_level.ibi_status_cnt.d = ibi_status_cnt;
+  assign hw2reg_o.queue_status_level.ibi_buffer_lvl.d = ibi_buffer_lvl;
+
   // These two fields are specified as _entries_ and not DWORDs; Commands are _two_ DWORDs.
   assign hw2reg_o.queue_status_level.response_buffer_lvl.d   = fifo_state[FIFO_RspQ].used;
   assign hw2reg_o.queue_status_level.cmd_queue_free_lvl.d    = fifo_state[FIFO_CmdQ].avail >> 1;
