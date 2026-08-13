@@ -11,8 +11,8 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device_bfpt.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/spi_device_regs.h"
 
 static const dt_spi_device_t kSpiDeviceDt = kDtSpiDevice;
@@ -36,10 +36,9 @@ enum {
   kSfdpAreaEndOff = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
                     kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
   /**
-   * Flash data partition size in bits.
+   * NVM data partition size in bits.
    */
-  kFlashBitCount =
-      FLASH_CTRL_PARAM_REG_NUM_BANKS * FLASH_CTRL_PARAM_BYTES_PER_BANK * 8,
+  kNvmBitCount = NVM_BYTES_PER_BANK * NVM_NUM_BANKS * 8,
   /**
    * 32-bit SFDP signature that indicates the presence of a SFDP table
    * (JESD216F 6.2.1).
@@ -48,9 +47,9 @@ enum {
   /**
    * LSB of the 2-byte device ID.
    *
-   * Density is expressed as log2(flash size in bytes).
+   * Density is expressed as log2(NVM size in bytes).
    */
-  kSpiDeviceJedecDensity = 20,
+  kSpiDeviceJedecDensity = __builtin_ctz(NVM_BYTES_PER_BANK * NVM_NUM_BANKS),
   /**
    * Size of the SFDP table in words.
    */
@@ -145,7 +144,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  */
 #define BFPT_WORD_2(X) \
   X(31, 31, 0x0) & \
-  X(30,  0, kFlashBitCount - 1)
+  X(30,  0, kNvmBitCount - 1)
 
 /**
  * BFPT 3rd Word

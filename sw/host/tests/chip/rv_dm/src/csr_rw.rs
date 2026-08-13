@@ -115,11 +115,6 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "flash_ctrl",
-            top_earlgrey::FLASH_CTRL_CORE_BASE_ADDR,
-            dif::FLASH_CTRL_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
             "gpio",
             top_earlgrey::GPIO_BASE_ADDR,
             dif::GPIO_INTR_ENABLE_REG_OFFSET,
@@ -175,6 +170,11 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::PWRMGR_INTR_ENABLE_REG_OFFSET,
         ),
         // Skip ROM_CTRL which does not have RW registers
+        (
+            "rram_ctrl",
+            top_earlgrey::RRAM_CTRL_CORE_BASE_ADDR,
+            dif::RRAM_CTRL_INTR_ENABLE_REG_OFFSET,
+        ),
         (
             "rstmgr",
             top_earlgrey::RSTMGR_BASE_ADDR,

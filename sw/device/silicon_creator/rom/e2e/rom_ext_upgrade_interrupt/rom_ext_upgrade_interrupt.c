@@ -5,7 +5,6 @@
 #include <assert.h>
 
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
