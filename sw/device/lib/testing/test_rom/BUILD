@@ -183,9 +183,14 @@ cc_library(
         "test_rom_start.S",
     ],
     local_defines = opentitan_for_ip({
+        "flash_ctrl": ["HAS_NVM"],
+        "rram_ctrl": ["HAS_NVM"],
         "otp_ctrl": ["HAS_OTP_CTRL"],
+        "pinmux": ["HAS_PINMUX"],
+        "uart": ["HAS_UART"],
     }) + opentitan_select_top(
         {
+            "darjeeling": ["SKIP_BOOTSTRAP"],  # FIXME bootstrap disabled for now
             "englishbreakfast": [],
         },
         ["HAS_RETENTION_RAM"],
@@ -194,8 +199,6 @@ cc_library(
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
-        "//hw/top:ast_c_regs",
-        "//hw/top:clkmgr_c_regs",
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
@@ -203,22 +206,30 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print_uart",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ] + opentitan_for_ip({
+        "ast": ["//hw/top:ast_c_regs"],
+        "clkmgr": [
+            "//hw/top:clkmgr_c_regs",
+            "//sw/device/lib/dif:clkmgr",
+        ],
+        "gpio": ["//sw/device/lib/dif:gpio"],
+        "pinmux": [
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/testing:pinmux_testutils",
+        ],
+        "spi_device": ["//sw/device/lib/dif:spi_device"],
+        "uart": [
+            "//sw/device/lib/dif:uart",
+            "//sw/device/lib/runtime:print_uart",
+        ],
         "entropy_src": ["//hw/top:entropy_src_c_regs"],
         "csrng": ["//hw/top:csrng_c_regs"],
         "edn": ["//hw/top:edn_c_regs"],
@@ -227,13 +238,9 @@ cc_library(
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt:otp_ctrl",
         ],
-    }) + opentitan_select_top(
-        {
-            "earlgrey": ["//sw/device/lib/testing:nvm_testutils"],
-            "englishbreakfast": ["//sw/device/lib/testing:nvm_testutils"],
-        },
-        [],
-    ),
+        "flash_ctrl": ["//sw/device/lib/testing:nvm_testutils"],
+        "rram_ctrl": ["//sw/device/lib/testing:nvm_testutils"],
+    }),
 )
 
 opentitan_test(
