@@ -6543,6 +6543,11 @@ test_suite(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
+                # See issue #22823. This test consistently passes when run locally, but in CI
+                # there is frequent failure to connect to the CMSIS-DAP adapter via the HyperDebug
+                # USB after the device wakes from deep sleep and we release Ior13. This failure
+                # should be further investigated and this test should be re-enabled in CI.
+                "skip_in_ci",
                 "lc_{}".format(lc_state),
             ],
             test_cmd = """
