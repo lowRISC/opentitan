@@ -1283,7 +1283,7 @@
                    This value represents the sum of the IBI Queue and the IBI Status Descriptor FIFO.
                    Since EXT_IBI_QUEUE_EN is set, the actual number of DWORDs is 8 times this value.
                    '''
-          resval:  "12"
+          resval:  "20"
         }
         { bits:   "21:12",
           name:   "MAX_ADDR",
@@ -2397,7 +2397,7 @@
         { bits:   "15:8",
           name:   "IBI_STATUS_SIZE",
           desc:   "IBI Queue Size.",
-          resval: "8"
+          resval: "20"
         }
         { bits:   "7:0",
           name:   "CR_QUEUE_SIZE",
@@ -2420,12 +2420,12 @@
         { bits:   "24",
           name:   "ALT_RESP_QUEUE_EN",
           desc:   "Alternate Response Queue."
-          resval: "0"
+          resval: "1"
         }
         { bits:   "7:0",
           name:   "ALT_RESP_QUEUE_SIZE",
           desc:   "Alternate Response Queue Size."
-          resval: "0"
+          resval: "16"
         }
       ]
     }

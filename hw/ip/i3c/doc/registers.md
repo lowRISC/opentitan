@@ -1101,7 +1101,7 @@ Response Queue State.
 ## IBI_CONFIG
 In-Band Interrupt Queue Configuration.
 - Offset: `0x94`
-- Reset default: `0xc1af130`
+- Reset default: `0x141af130`
 - Reset mask: `0xff3ff3ff`
 
 ### Fields
@@ -1112,7 +1112,7 @@ In-Band Interrupt Queue Configuration.
 
 |  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                                                                                                |
 |:------:|:------:|:-------:|:---------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:24  |   rw   |   0xc   | SIZE_VAL | Size value presented as `QUEUE_SIZE.IBI_STATUS_SIZE`. This value represents the sum of the IBI Queue and the IBI Status Descriptor FIFO. Since EXT_IBI_QUEUE_EN is set, the actual number of DWORDs is 8 times this value. |
+| 31:24  |   rw   |  0x14   | SIZE_VAL | Size value presented as `QUEUE_SIZE.IBI_STATUS_SIZE`. This value represents the sum of the IBI Queue and the IBI Status Descriptor FIFO. Since EXT_IBI_QUEUE_EN is set, the actual number of DWORDs is 8 times this value. |
 | 23:22  |        |         |          | Reserved                                                                                                                                                                                                                   |
 | 21:12  |   rw   |  0x1af  | MAX_ADDR | Maximum address for IBI Queue use (inclusive).                                                                                                                                                                             |
 | 11:10  |        |         |          | Reserved                                                                                                                                                                                                                   |
@@ -1978,7 +1978,7 @@ Transfer Data Buffer Threshold Control.
 ## QUEUE_SIZE
 Queue Size.
 - Offset: `0x218`
-- Reset default: `0x6060808`
+- Reset default: `0x6061408`
 - Reset mask: `0xffffffff`
 
 ### Fields
@@ -1991,13 +1991,13 @@ Queue Size.
 |:------:|:------:|:-------:|:--------------------|:-----------------------------|
 | 31:24  |   ro   |   0x6   | TX_DATA_BUFFER_SIZE | Transmit Data Buffer Size.   |
 | 23:16  |   ro   |   0x6   | RX_DATA_BUFFER_SIZE | Receive Data Buffer Size.    |
-|  15:8  |   ro   |   0x8   | IBI_STATUS_SIZE     | IBI Queue Size.              |
+|  15:8  |   ro   |  0x14   | IBI_STATUS_SIZE     | IBI Queue Size.              |
 |  7:0   |   ro   |   0x8   | CR_QUEUE_SIZE       | Command/Response Queue Size. |
 
 ## ALT_QUEUE_SIZE
 Alternate Queue Size.
 - Offset: `0x21c`
-- Reset default: `0x10000000`
+- Reset default: `0x11000010`
 - Reset mask: `0x110000ff`
 
 ### Fields
@@ -2011,9 +2011,9 @@ Alternate Queue Size.
 | 31:29  |        |         |                     | Reserved                       |
 |   28   |   ro   |   0x1   | EXT_IBI_QUEUE_EN    | Extended IBI Queue Size.       |
 | 27:25  |        |         |                     | Reserved                       |
-|   24   |   ro   |   0x0   | ALT_RESP_QUEUE_EN   | Alternate Response Queue.      |
+|   24   |   ro   |   0x1   | ALT_RESP_QUEUE_EN   | Alternate Response Queue.      |
 |  23:8  |        |         |                     | Reserved                       |
-|  7:0   |   ro   |   0x0   | ALT_RESP_QUEUE_SIZE | Alternate Response Queue Size. |
+|  7:0   |   ro   |  0x10   | ALT_RESP_QUEUE_SIZE | Alternate Response Queue Size. |
 
 ## PIO_INTR_STATUS
 PIO Interrupt Status.
