@@ -30,7 +30,6 @@
     "hw/top_earlgrey/data/ip/chip_csrng_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_edn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_entropy_src_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_gpio_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_i2c_testplan.hjson"
@@ -319,8 +318,6 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_flash_ctrl_ops_jitter_en",
-              "chip_sw_flash_ctrl_access_jitter_en",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
@@ -416,7 +413,6 @@
       stage: V1
       si_stage: NA
       tests: ["chip_sw_example_rom",
-              "chip_sw_example_flash",
               "chip_sw_example_manufacturer",
               "chip_sw_example_concurrency"
               ]
@@ -448,7 +444,6 @@
               "chip_sw_rstmgr_smoketest",
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
-              #"chip_sw_flash_scrambling_smoketest", TODO: Replace with RRAM test
             ]
       bazel: [
         "//sw/device/tests:aes_smoketest",
@@ -695,29 +690,5 @@
       tests: ["chip_sw_exit_test_unlocked_bootstrap"]
     }
 
-    {
-      name: chip_sw_inject_scramble_seed
-      desc: '''End to end test to ensure boot strap can succeed after injecting scramble seeds.
-
-      - Pre-load the device into PROD, PROD_END or DEV state.
-      - Backdoor load an unscrambled value into flash isolated partition.
-      - In the test program, populate the scramble seeds (flash / sram).
-      - In the test program, populate OTP entries to inform ROM to scramble flash upon next boot.
-      - Reboot the device and perform boot strap of the same test image, ROM should now program
-        the flash image with scramble enabled.
-      - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
-        instructions.
-      - In the test program, check whether the OTP partition containing the scramble seeds is
-        locked. Also check that the unscrambled value programmed into flash isolated partition
-        can be correctly read back when the region is set to scramble disable.
-      - If either of the above checks is incorrect, return error.
-
-
-      X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
-      '''
-      stage: V2
-      si_stage: NA
-      tests: ["chip_sw_inject_scramble_seed"]
-    }
   ]
 }

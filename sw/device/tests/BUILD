@@ -2029,10 +2029,14 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+    # No longer relevant on RRAM; exclude all FPGA and verilator variants from
+    # CI entirely.
     # https://github.com/lowRISC/opentitan/issues/30897
     fpga = fpga_params(tags = ["skip_in_ci"]),
-    verilator = verilator_params(timeout = "long"),
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["skip_in_ci"],
+    ),
     deps = [
         "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

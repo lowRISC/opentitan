@@ -198,8 +198,6 @@
       si_stage: SV3
       tests: [
         "chip_sw_clkmgr_jitter",
-        "chip_sw_flash_ctrl_ops_jitter_en",
-        "chip_sw_flash_ctrl_access_jitter_en",
         "chip_sw_otbn_ecdsa_op_irq_jitter_en",
         "chip_sw_aes_enc_jitter_en",
         "chip_sw_hmac_enc_jitter_en",
@@ -260,8 +258,6 @@
 
             Test the following functionalities with reduced clock:
 
-            - flash_ctrl initialization
-            - flash_ctrl program, read and erase operations
             - AES, HMAC, KMAC and OTBN operations
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
@@ -274,15 +270,12 @@
       si_stage: NA
       tests: [
         "chip_sw_clkmgr_jitter_reduced_freq",
-        "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
-        "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
         "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
         "chip_sw_aes_enc_jitter_en_reduced_freq",
         "chip_sw_hmac_enc_jitter_en_reduced_freq",
         "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
         "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
         "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
-        "chip_sw_flash_init_reduced_freq",
         "chip_sw_csrng_edn_concurrency_reduced_freq",
       ]
     }
