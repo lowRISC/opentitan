@@ -91,6 +91,34 @@ module ${top["name"]}_pd_${domain.lower()} #(
   % endif
 % endif
 
+<%
+  keymgr_dpe_seed_selector = top.get("keymgr_dpe_seed_selector", "none")
+%>\
+  % if keymgr_dpe_seed_selector == "otp_ctrl":
+  // Otp_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  assign keymgr_dpe_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign keymgr_dpe_owner_seed = otp_ctrl_keymgr_owner_seed;
+  assign unused_keymgr_creator_seed =
+      {rram_ctrl_keymgr.seeds[0], 1'b1};
+  assign unused_keymgr_owner_seed =
+      {rram_ctrl_keymgr.seeds[1], 1'b1};
+
+  % elif keymgr_dpe_seed_selector == "nvm_ctrl":
+  // nvm_ctrl provides the creator / owner seed
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
+  // TODO(#30965 / #31004): Connect the valid bit as soon as available.
+  // Replace rram_ctrl_keymgr.seeds output with designated seed outputs.
+  assign keymgr_dpe_creator_seed =
+      {rram_ctrl_keymgr.seeds[0], 1'b1};
+  assign keymgr_dpe_owner_seed =
+      {rram_ctrl_keymgr.seeds[1], 1'b1};
+  assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
+  assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
+
+  % endif
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
     .req_i    (pinmux_dft_jtag_req),
