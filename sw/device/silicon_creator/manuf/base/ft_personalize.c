@@ -144,12 +144,30 @@ typedef struct perso_pre_endorse_data {
   ecdsa_p256_public_key_t cdi_0_pubkey;
 } perso_pre_endorse_data_t;
 
-typedef struct perso_post_endorse_data {
-  // Temporary buffer to read endorsed cert into when hashing it
-  cert_scratch_buffer_t cert_buffer;
+typedef enum perso_post_endorse_stage {
+  PERSO_POST_ENDORSE_STAGE_1,
+  PERSO_POST_ENDORSE_STAGE_2,
+} perso_post_endorse_stage_t;
+
+typedef struct perso_post_endorse_stage_1_data {
   // Temporary buffer to populate dice page data before actually writing to
   // flash pages
   aligned_dice_storage_page_t dice_page;
+} perso_post_endorse_stage_1_data_t;
+
+typedef struct perso_post_endorse_stage_2_data {
+  // Temporary buffer to read endorsed cert into when hashing it
+  cert_scratch_buffer_t cert_buffer;
+} perso_post_endorse_stage_2_data_t;
+
+typedef struct perso_post_endorse_data {
+  perso_post_endorse_stage_t stage;
+
+  union {
+    perso_post_endorse_stage_1_data_t stage_1_data;
+    perso_post_endorse_stage_2_data_t stage_2_data;
+  } data;
+
 } perso_post_endorse_data_t;
 
 typedef enum perso_stage {
@@ -965,7 +983,7 @@ static status_t write_digest_to_dice_page(
 
 static status_t personalize_endorse_certificates(
     ujson_t *uj, perso_stages_shared_data_t *stages_shared_data,
-    perso_post_endorse_data_t *post_endorse_data,
+    perso_post_endorse_stage_1_data_t *post_endorse_stage_1_data,
     const dice_cert_offsets_t *generated_cert_offsets) {
   /*****************************************************************************
    * Certificate Export and Endorsement.
@@ -1066,8 +1084,8 @@ static status_t personalize_endorse_certificates(
       continue;
     }
 
-    memset(&post_endorse_data->dice_page.page, 0,
-           sizeof(post_endorse_data->dice_page.page));
+    memset(&post_endorse_stage_1_data->dice_page.page, 0,
+           sizeof(post_endorse_stage_1_data->dice_page.page));
 
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
@@ -1080,7 +1098,7 @@ static status_t personalize_endorse_certificates(
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
       TRY(write_cert_to_dice_page(&curr_layout, &block, next_cert, page_offset,
                                   cert_size_bytes_ru,
-                                  &post_endorse_data->dice_page.page));
+                                  &post_endorse_stage_1_data->dice_page.page));
       page_offset += cert_size_bytes_ru;
       next_cert += block.obj_size;
 
@@ -1089,14 +1107,14 @@ static status_t personalize_endorse_certificates(
     }
 
     if (curr_layout.need_digest) {
-      TRY(write_digest_to_dice_page(&curr_layout,
-                                    &post_endorse_data->dice_page.page));
+      TRY(write_digest_to_dice_page(
+          &curr_layout, &post_endorse_stage_1_data->dice_page.page));
     }
 
     TRY(flash_ctrl_info_write(
         curr_layout.info_page, /*page_offset=*/0,
-        util_size_to_words(sizeof(post_endorse_data->dice_page.page)),
-        &post_endorse_data->dice_page.page));
+        util_size_to_words(sizeof(post_endorse_stage_1_data->dice_page.page)),
+        &post_endorse_stage_1_data->dice_page.page));
   }
 
   stages_shared_data->blob_from_host.num_objs = num_objs_in_blob_from_host;
@@ -1263,12 +1281,23 @@ static status_t provision(ujson_t *uj) {
     // `personalize_endorse_certificates`, but this structure is starting to use
     // the post endorse fields here
     perso_data.stage_specific_data.stage = PERSO_STAGE_POST_ENDORSE;
+
+    // Currently, `post_endorse_data` only references stage specific data. So
+    // any data referenced by it will become invalid when moving from one stage
+    // to another
     perso_post_endorse_data_t *post_endorse_data =
         &perso_data.stage_specific_data.data.post_endorse_data;
-    // Endorse TBS certs and install in flash.
-    TRY(personalize_endorse_certificates(uj, &perso_data.stages_shared_data,
-                                         post_endorse_data, &cert_offsets));
-    TRY(hash_all_certs(&post_endorse_data->cert_buffer));
+    {
+      post_endorse_data->stage = PERSO_POST_ENDORSE_STAGE_1;
+      // Endorse TBS certs and install in flash.
+      TRY(personalize_endorse_certificates(
+          uj, &perso_data.stages_shared_data,
+          &post_endorse_data->data.stage_1_data, &cert_offsets));
+    }
+    {
+      post_endorse_data->stage = PERSO_POST_ENDORSE_STAGE_2;
+      TRY(hash_all_certs(&post_endorse_data->data.stage_2_data.cert_buffer));
+    }
     personalize_extension_post_endorse_t post_endorse = {
         .uj = uj,
         .perso_blob_from_host = &perso_data.stages_shared_data.blob_from_host,
