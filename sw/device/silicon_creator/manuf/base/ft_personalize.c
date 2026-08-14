@@ -496,7 +496,7 @@ static status_t personalize_gen_dice_certificates(
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-  static hmac_digest_t uds_endorsement_key_id;
+  hmac_digest_t uds_endorsement_key_id = {0};
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs->dice_auth_key_key_id,
@@ -580,9 +580,9 @@ static status_t personalize_gen_dice_certificates(
   static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
   static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 
-  static hmac_digest_t zero_digest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
-  static hmac_digest_t cdi_0_pubkey_id;
-  static hmac_digest_t cdi_1_pubkey_id;
+  hmac_digest_t zero_digest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
+  hmac_digest_t cdi_0_pubkey_id = {0};
+  hmac_digest_t cdi_1_pubkey_id = {0};
 
   // Generate CDI_0 keys and cert.
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
@@ -630,7 +630,7 @@ static status_t personalize_gen_dice_certificates(
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
-  static cert_key_id_pair_t cdi_1_key_ids = {
+  cert_key_id_pair_t cdi_1_key_ids = {
       .endorsement = &cdi_0_pubkey_id,
       .cert = &cdi_1_pubkey_id,
   };
@@ -1108,17 +1108,17 @@ static status_t provision(ujson_t *uj) {
 
   static perso_blob_t blob_to_host;    // Perso data device => host.
   static perso_blob_t blob_from_host;  // Perso data host => device.
-  static hmac_digest_t otp_creator_sw_cfg_measurement;
-  static hmac_digest_t otp_owner_sw_cfg_measurement;
-  static hmac_digest_t otp_rot_creator_auth_codesign_measurement;
-  static hmac_digest_t otp_rot_creator_auth_state_measurement;
+  hmac_digest_t otp_creator_sw_cfg_measurement = {0};
+  hmac_digest_t otp_owner_sw_cfg_measurement = {0};
+  hmac_digest_t otp_rot_creator_auth_codesign_measurement = {0};
+  hmac_digest_t otp_rot_creator_auth_state_measurement = {0};
   static manuf_certgen_inputs_t certgen_inputs;
   static ecdsa_p256_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
-  static hmac_digest_t uds_pubkey_id;
+  hmac_digest_t uds_pubkey_id = {0};
   static uint8_t all_certs[8192];
-  static size_t uds_offset;
-  static size_t cdi_0_offset;
-  static size_t cdi_1_offset;
+  size_t uds_offset = 0;
+  size_t cdi_0_offset = 0;
+  size_t cdi_1_offset = 0;
   TRY(personalize_gen_dice_certificates(
       uj, &blob_to_host, &otp_creator_sw_cfg_measurement,
       &otp_owner_sw_cfg_measurement, &otp_rot_creator_auth_codesign_measurement,
