@@ -32,6 +32,14 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"edn1", "", TopEarlgreyAlertIdEdn1FatalAlert},
     '{"entropy_src", "", TopEarlgreyAlertIdEntropySrcFatalAlert},
     '{"rram_ctrl", "", TopEarlgreyAlertIdRramCtrlFatalStdErr},
+    // TODO(#31009): RramCtrlFatalErr has no real trigger yet. With the default
+    // countermeasure ("prim_reg_we_check"), this would resolve to the exact same
+    // proxy as the FatalStdErr entry above (identical ip_inst_glob + countermeasure),
+    // which raises fatal_std_err (std_fault_status.reg_intg_err), not fatal_err
+    // (fault_status) -- so the test would wait forever for an alert that never
+    // fires whenever this index is drawn. Leave out until #31009 adds a real
+    // fault_status-specific trigger.
+    // '{"rram_ctrl", "", TopEarlgreyAlertIdRramCtrlFatalErr},
     '{"rram_macro", "", TopEarlgreyAlertIdRramCtrlFatalMacroErr},
     '{"gpio", "", TopEarlgreyAlertIdGpioFatalFault},
     '{"hmac", "", TopEarlgreyAlertIdHmacFatalFault},
