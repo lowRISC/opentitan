@@ -42,18 +42,24 @@ def flags(mem):
     return flags_str
 
 def get_virtual_memory_size(top):
-    for mod in top["module"]:
-        if "memory" in mod:
-            for _, mem in mod["memory"].items():
-                if mem["label"] == "eflash" or mem["label"] == "rram":
-                    return hex(int(mem["size"], 0) // 2)
-    # if no flash_ctrl or rram_ctrl is present, but a ctn memory region is,
-    # use that size instead
-    for mod in top["module"]:
-        if "memory" in mod:
-            for _, mem in mod["memory"].items():
-                if mem["label"] == "ctn":
-                    return hex(0x00100000 // 2)
+    if lib.has_module_type(top, "rram_ctrl") or lib.has_module_type(top, "flash_ctrl"):
+        if lib.has_module_type(top, "rram_ctrl"):
+            label = "rram"
+        else:
+            label = "eflash"
+        for mod in top["module"]:
+            if "memory" in mod:
+                for _, mem in mod["memory"].items():
+                    if mem["label"] == label:
+                        return hex(int(mem["size"], 0) // 2)
+    else:
+        # No flash_ctrl or rram_ctrl -- if a ctn memory region is present,
+        # use that size instead.
+        for mod in top["module"]:
+            if "memory" in mod:
+                for _, mem in mod["memory"].items():
+                    if mem["label"] == "ctn":
+                        return hex(0x00100000 // 2)
 
     return None
 %>\
