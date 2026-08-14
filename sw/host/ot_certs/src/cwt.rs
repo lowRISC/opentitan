@@ -960,9 +960,9 @@ pub fn generate_cert(from_file: &str, template: &CwtTemplate) -> Result<Codegen>
     // TODO: finish the unittest
     let source_unittest = String::new();
 
-    Ok(Codegen {
-        source_h,
-        source_c,
-        source_unittest,
-    })
+    let mut codegen = Codegen::new(&template.name);
+    codegen.source_h = source_h;
+    codegen.source_c = source_c;
+    codegen.source_unittest = source_unittest;
+    Ok(codegen)
 }

@@ -13,21 +13,359 @@ use std::fmt::Write;
 
 use crate::asn1::codegen::{self, CodegenOutput, VariableCodegenInfo, VariableInfo};
 use crate::asn1::x509::X509;
-use crate::template::subst::{Subst, SubstValue};
+use crate::template::subst::{Subst, SubstData, SubstValue};
 use crate::template::vars::ListVariables;
-use crate::template::{SizeRange, Template, Value, Variable, VariableType};
+use crate::template::{Payload, SizeRange, Template, Value, Variable, VariableType};
 use crate::x509;
 
 /// The amount of test cases to generate for covering more corner cases.
 const TEST_CASE_COUNT: u32 = 100;
 
+#[derive(Default)]
 pub struct Codegen {
+    tmpl_name: String,
     /// Header.
     pub source_h: String,
     /// Code containing the template and setters.
     pub source_c: String,
     /// Code containing the unittest.
     pub source_unittest: String,
+}
+
+impl Codegen {
+    /// Create a new Codegen builder.
+    pub(crate) fn new(tmpl_name: &str) -> Self {
+        Self {
+            tmpl_name: tmpl_name.to_string(),
+            ..Self::default()
+        }
+    }
+
+    /// Return the formatted builder function name for a component.
+    fn builder_name(&self, component: CertificateComponent) -> String {
+        format!("{}_build_{}", self.tmpl_name, component.name())
+    }
+
+    /// Return the formatted value structure type name for a component.
+    fn values_name(&self, component: CertificateComponent) -> String {
+        format!("{}_{}_values_t", self.tmpl_name, component.name())
+    }
+
+    /// Add license, warning, include guards, and default includes to H, C, and unittest files.
+    fn add_boilerplate(&mut self, from_file: &str) -> Result<()> {
+        let license_and_warning = generate_license_and_warning(from_file);
+        let preproc_guard_include = self.tmpl_name.to_uppercase();
+
+        // Header boilerplate
+        self.source_h.push_str(&license_and_warning);
+        writeln!(self.source_h, "#ifndef __{}__", preproc_guard_include)?;
+        writeln!(self.source_h, "#define __{}__\n", preproc_guard_include)?;
+        self.source_h
+            .push_str("#include \"sw/device/lib/base/status.h\"\n\n");
+
+        // Source boilerplate
+        self.source_c.push_str(&license_and_warning);
+        self.source_c.push('\n');
+        writeln!(self.source_c, "#include \"{}.h\"", self.tmpl_name)?;
+        self.source_c
+            .push_str("#include \"sw/device/silicon_creator/lib/cert/asn1.h\"\n\n");
+        self.source_c
+            .push_str("#include \"sw/device/silicon_creator/lib/cert/template.h\"\n\n");
+
+        // Unittest boilerplate
+        self.source_unittest.push_str(&license_and_warning);
+        self.source_unittest.push('\n');
+        self.source_unittest.push_str("extern \"C\" {\n");
+        writeln!(self.source_unittest, "#include \"{}.h\"", self.tmpl_name)?;
+        self.source_unittest.push_str("}\n");
+        self.source_unittest
+            .push_str("#include \"gtest/gtest.h\"\n\n");
+
+        Ok(())
+    }
+
+    /// Add a value struct definition to the header file.
+    fn add_value_struct(
+        &mut self,
+        component: CertificateComponent,
+        variables: &IndexMap<String, VariableType>,
+    ) -> Result<()> {
+        let type_name = self.values_name(component);
+        let struct_name = type_name.strip_suffix("_t").unwrap();
+        writeln!(self.source_h, "typedef struct {struct_name} {{")?;
+        for (var_name, var_type) in variables {
+            let (_, doc_and_type) = c_variable_info(var_name, "", var_type);
+            self.source_h.push_str(&doc_and_type);
+        }
+        writeln!(self.source_h, "}} {type_name};\n")?;
+
+        if component == CertificateComponent::Certificate {
+            // Add type alias for compatibility.
+            let compat_type_name = format!("{}_sig_values_t", self.tmpl_name);
+            writeln!(self.source_h, "typedef {type_name} {compat_type_name};\n")?;
+        }
+        Ok(())
+    }
+
+    /// Add a builder function (declaration to H, implementation to C).
+    /// Returns the BuilderInfo (which contains size info and variables).
+    fn add_builder(
+        &mut self,
+        component: CertificateComponent,
+        variables: &IndexMap<String, VariableType>,
+        build: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
+    ) -> Result<BuilderInfo> {
+        let struct_name = self.values_name(component);
+        let fn_name = self.builder_name(component);
+        let fn_params_str = format!("{struct_name} *values, uint8_t *out_buf, size_t *inout_size");
+
+        let get_var_info = |var_name: &str| -> Result<VariableInfo> {
+            let var_type = variables
+                .get(var_name)
+                .with_context(|| format!("could not find variable '{var_name}'"))
+                .copied()?;
+            let (codegen, _) = c_variable_info(var_name, "values->", &var_type);
+            Ok(VariableInfo { var_type, codegen })
+        };
+
+        let fn_impl = codegen::Codegen::generate(
+            /* buf_name */ "out_buf",
+            /* buf_size_name */ "inout_size",
+            &get_var_info,
+            build,
+        )?;
+
+        let doc = component.fn_doc();
+        write!(
+            self.source_h,
+            r#"
+                {doc}
+                rom_error_t {fn_name}({fn_params_str});
+            "#
+        )?;
+
+        let code = &fn_impl.code;
+        write!(
+            self.source_c,
+            r#"
+                rom_error_t {fn_name}({fn_params_str}) {{
+                  {code}
+                  return kErrorOk;
+                }}
+            "#
+        )?;
+
+        Ok(BuilderInfo {
+            component,
+            variables: variables.clone(),
+            output: fn_impl,
+        })
+    }
+
+    /// Add variable size constants to the header file (wrapped in enum { ... }).
+    fn add_variables_constants(
+        &mut self,
+        variables: &IndexMap<String, VariableType>,
+    ) -> Result<()> {
+        let tmpl_name = self.tmpl_name.to_upper_camel_case();
+        writeln!(self.source_h, "enum {{")?;
+        for (var_name, var_type) in variables {
+            let (codegen, _) = c_variable_info(var_name, "", var_type);
+            let const_name = var_name.to_upper_camel_case();
+            let (min_size, max_size) = if let VariableCodegenInfo::Pointer { .. } = codegen {
+                let (min_size, max_size) = var_type.array_size();
+                if var_type.has_constant_array_size() {
+                    writeln!(
+                        self.source_h,
+                        "  k{tmpl_name}Exact{const_name}SizeBytes = {max_size},"
+                    )?;
+                }
+                (min_size, max_size)
+            } else {
+                (1, 100)
+            };
+            writeln!(
+                self.source_h,
+                "  k{tmpl_name}Min{const_name}SizeBytes = {min_size},"
+            )?;
+            writeln!(
+                self.source_h,
+                "  k{tmpl_name}Max{const_name}SizeBytes = {max_size},"
+            )?;
+        }
+        writeln!(self.source_h, "}};")?;
+        Ok(())
+    }
+
+    /// Add field name mapping macros to the header file.
+    fn add_field_mappings(&mut self, variables: &IndexMap<String, VariableType>) -> Result<()> {
+        let tmpl_name = self.tmpl_name.to_upper_camel_case();
+        for (var_name, _) in variables {
+            let const_name = var_name.to_upper_camel_case();
+            writeln!(
+                self.source_h,
+                "#define k{tmpl_name}Field{const_name} {var_name}"
+            )?;
+        }
+        Ok(())
+    }
+
+    /// Add maximum size constant to the header file (wrapped in enum { ... }).
+    fn add_max_size_constant(&mut self, info: &BuilderInfo) -> Result<()> {
+        let tmpl_name = self.tmpl_name.to_upper_camel_case();
+        let component_name = info.component.name().to_upper_camel_case();
+        let const_name = format!("k{tmpl_name}Max{component_name}SizeBytes");
+        let max_size = info.output.max_size;
+
+        writeln!(self.source_h, "// Maximum possible size")?;
+        writeln!(self.source_h, "enum {{")?;
+        writeln!(self.source_h, "  {const_name} = {max_size},")?;
+        writeln!(self.source_h, "}};")?;
+        Ok(())
+    }
+
+    /// Append the TEST macro header to unittest.
+    fn add_test_header(&mut self, test_name: &str) -> Result<()> {
+        let tmpl_name = self.tmpl_name.to_upper_camel_case();
+        writeln!(self.source_unittest, "TEST({tmpl_name}, {test_name})\n{{")?;
+        Ok(())
+    }
+
+    /// Append the closing brace for the test to unittest.
+    fn add_test_footer(&mut self) -> Result<()> {
+        writeln!(self.source_unittest, "}}\n")?;
+        Ok(())
+    }
+
+    /// Append C constants for the variable values to unittest.
+    fn add_test_constants(&mut self, unittest_data: &SubstData) -> Result<()> {
+        for (var_name, data) in &unittest_data.values {
+            write!(self.source_unittest, "[[maybe_unused]] ")?;
+            match data {
+                SubstValue::ByteArray(bytes) => {
+                    writeln!(
+                        self.source_unittest,
+                        "static uint8_t g_{var_name}[] = {{ {} }};",
+                        bytes
+                            .iter()
+                            .map(|x| format!("{:#02x}", x))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    )?;
+                }
+                SubstValue::String(s) => {
+                    let s = s.chars().map(|c| format!("'{c}'")).join(", ");
+                    writeln!(
+                        self.source_unittest,
+                        "static char g_{var_name}[] = {{{s}}};"
+                    )?
+                }
+                SubstValue::Uint32(val) => {
+                    writeln!(self.source_unittest, "uint32_t g_{var_name} = {val};")?
+                }
+                SubstValue::Boolean(val) => {
+                    writeln!(self.source_unittest, "bool g_{var_name} = {val};")?
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Append expected constant array, size check, debug print, and memcmp check to unittest.
+    fn add_test_assertion(
+        &mut self,
+        data_var: &str,
+        size_var: &str,
+        expected_bytes: &[u8],
+    ) -> Result<()> {
+        let temp = data_var.strip_prefix("g_").unwrap_or(data_var);
+        let print_name = temp.strip_suffix("_data").unwrap_or(temp);
+        write!(
+            self.source_unittest,
+            r#"
+                const uint8_t kExpectedOutput[{}] = {{ {} }};
+                EXPECT_EQ({size_var}, sizeof(kExpectedOutput));
+                printf("Generated {print_name}: \n");
+                for (size_t i = 0; i < {size_var}; ++i) {{
+                  printf("%02x, ", {data_var}[i]);
+                }}
+                printf("\n");
+                EXPECT_EQ(0, memcmp({data_var}, kExpectedOutput, {size_var}));
+            "#,
+            expected_bytes.len(),
+            expected_bytes
+                .iter()
+                .map(|x| format!("0x{:02x}", x))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )?;
+        Ok(())
+    }
+
+    /// Append C struct variable declaration and assignment for testing.
+    fn add_test_values(&mut self, var_name: &str, info: &BuilderInfo) -> Result<()> {
+        let type_name = self.values_name(info.component);
+        writeln!(self.source_unittest, "{type_name} {var_name} = {{")?;
+        for (var_name, var_type) in &info.variables {
+            let (codegen, _) = c_variable_info(var_name, "", var_type);
+            match codegen {
+                VariableCodegenInfo::Pointer {
+                    ptr_expr,
+                    size_expr,
+                } => {
+                    writeln!(self.source_unittest, "  .{ptr_expr} = g_{var_name},")?;
+                    if !var_type.has_constant_array_size() {
+                        writeln!(
+                            self.source_unittest,
+                            "  .{size_expr} = sizeof(g_{var_name}),"
+                        )?;
+                    }
+                }
+                VariableCodegenInfo::Uint32 { value_expr }
+                | VariableCodegenInfo::Boolean { value_expr } => {
+                    writeln!(self.source_unittest, "  .{value_expr} = g_{var_name},")?;
+                }
+            }
+        }
+        writeln!(self.source_unittest, "}};")?;
+        Ok(())
+    }
+
+    /// Append C buffer declaration, size initialization, builder call and size checks to unittest.
+    fn add_test_builder_call(
+        &mut self,
+        values_var: &str,
+        data_var: &str,
+        size_var: &str,
+        info: &BuilderInfo,
+    ) -> Result<()> {
+        let max_size = info.output.max_size;
+        let min_size = info.output.min_size;
+        let builder_fn = self.builder_name(info.component);
+
+        write!(
+            self.source_unittest,
+            r#"
+                uint8_t {data_var}[{max_size}];
+                size_t {size_var} = sizeof({data_var});
+                EXPECT_EQ(kErrorOk, {builder_fn}(&{values_var}, {data_var}, &{size_var}));
+                EXPECT_GE({size_var}, {min_size});
+                EXPECT_LE({size_var}, {max_size});
+            "#
+        )?;
+        Ok(())
+    }
+
+    /// Finalize the code generation (e.g., closing include guards).
+    fn finalize(&mut self) -> Result<()> {
+        let preproc_guard_include = self.tmpl_name.to_uppercase();
+        writeln!(
+            self.source_h,
+            "\n#endif /* __{}__ */",
+            preproc_guard_include
+        )?;
+        Ok(())
+    }
 }
 
 /// Generate the certificate template header and source file.
@@ -58,46 +396,28 @@ pub struct Codegen {
 /// 7. Definition and documentation of a function that takes as input a
 ///    a `<name>_sig_values_t` and a buffer to produce the certificate.
 ///    It is named `<name>_build_cert` and returns a `rom_error_t`.
+pub fn generate_source(from_file: &str, tmpl: &Template) -> Result<Codegen> {
+    match &tmpl.payload {
+        Payload::Certificate { .. } => generate_cert(from_file, tmpl),
+        Payload::PrivateExtensions { .. } => generate_private_extensions(from_file, tmpl),
+    }
+}
+
+/// Generate the certificate template header and source file for a certificate.
 pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
-    let mut source_c = String::new();
-    let mut source_h = String::new();
-    let mut source_unittest = String::new();
-
-    let license_and_warning = indoc::formatdoc! { r#"
-    // Copyright lowRISC contributors (OpenTitan project).
-    // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-    // SPDX-License-Identifier: Apache-2.0
-
-    // This file was automatically generated using opentitantool from:
-    // {from_file}
-    "#};
-
-    // License, warning about autogenerated code and guard inclusion checks.
-    source_c.push_str(&license_and_warning);
-    source_h.push_str(&license_and_warning);
-    let preproc_guard_include = tmpl.name.to_uppercase();
-    writeln!(source_h, "#ifndef __{}__", preproc_guard_include)?;
-    writeln!(source_h, "#define __{}__\n", preproc_guard_include)?;
-
-    // Headers inclusion.
-    source_c.push('\n');
-    writeln!(source_c, "#include \"{}.h\"", tmpl.name)?;
-    source_c.push_str("#include \"sw/device/silicon_creator/lib/cert/asn1.h\"\n\n");
-    source_c.push_str("#include \"sw/device/silicon_creator/lib/cert/template.h\"\n\n");
-
-    source_h.push_str("#include \"sw/device/lib/base/status.h\"\n\n");
+    let cert = tmpl.certificate()?;
+    let mut codegen = Codegen::new(&tmpl.name);
+    codegen.add_boilerplate(from_file)?;
 
     // Partition variables between TBS and signature.
     let mut tbs_var_names = IndexSet::new();
-    tmpl.certificate.list_tbs_variables(&mut tbs_var_names);
+    cert.list_tbs_variables(&mut tbs_var_names);
 
     let mut sig_var_names = IndexSet::new();
-    tmpl.certificate
-        .signature
-        .list_variables(&mut sig_var_names);
+    cert.signature.list_variables(&mut sig_var_names);
 
     let mut tbs_vars = IndexMap::<String, VariableType>::new();
-    let mut sig_vars = IndexMap::<String, VariableType>::new();
+    let mut cert_vars = IndexMap::<String, VariableType>::new();
 
     for (name, var_type) in tmpl.variables.clone() {
         let in_tbs = tbs_var_names.contains(&name);
@@ -112,36 +432,24 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
             tbs_vars.insert(name.clone(), var_type);
         }
         if in_sig {
-            sig_vars.insert(name, var_type);
+            cert_vars.insert(name, var_type);
         }
     }
 
     // Structure containing the TBS variables.
-    let tbs_value_struct_name = format!("{}_tbs_values", tmpl.name);
-    source_h.push_str(&generate_value_struct(&tbs_value_struct_name, &tbs_vars));
-    let tbs_value_struct_name = tbs_value_struct_name + "_t";
+    codegen.add_value_struct(CertificateComponent::Tbs, &tbs_vars)?;
 
     // Generate TBS function.
-    let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
-    let generate_tbs_fn_params =
-        format!("{tbs_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
-    let (generate_tbs_fn_def, generate_tbs_fn_impl) = generate_builder(
-        CertificateComponent::Tbs,
-        &generate_tbs_fn_name,
-        &generate_tbs_fn_params,
-        &tbs_vars,
-        |builder| X509::push_tbs_certificate(builder, &tmpl.certificate),
-    )?;
+    let tbs_info = codegen.add_builder(CertificateComponent::Tbs, &tbs_vars, |builder| {
+        X509::push_tbs_certificate(builder, cert)
+    })?;
 
     // Create a special variable to hold the TBS binary.
     let tbs_binary_val_name = "tbs";
-    sig_vars.insert(
+    cert_vars.insert(
         tbs_binary_val_name.to_string(),
         VariableType::ByteArray {
-            size: SizeRange::RangeSize(
-                generate_tbs_fn_impl.min_size,
-                generate_tbs_fn_impl.max_size,
-            ),
+            size: SizeRange::RangeSize(tbs_info.output.min_size, tbs_info.output.max_size),
             tweak_msb: None,
         },
     );
@@ -151,358 +459,217 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     });
 
     // Structure containing the signature variables.
-    let sig_value_struct_name = format!("{}_sig_values", tmpl.name);
-    source_h.push_str(&generate_value_struct(&sig_value_struct_name, &sig_vars));
-    let sig_value_struct_name = sig_value_struct_name + "_t";
+    codegen.add_value_struct(CertificateComponent::Certificate, &cert_vars)?;
 
     // Generate sig function.
-    let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
-    let generate_cert_fn_params =
-        format!("{sig_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
-    let (generate_cert_fn_def, generate_cert_fn_impl) = generate_builder(
-        CertificateComponent::Certificate,
-        &generate_cert_fn_name,
-        &generate_cert_fn_params,
-        &sig_vars,
-        |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
-    )?;
-
-    let tmpl_name = tmpl.name.to_upper_camel_case();
+    let cert_info =
+        codegen.add_builder(CertificateComponent::Certificate, &cert_vars, |builder| {
+            X509::push_certificate(builder, &tbs_binary_val, &cert.signature)
+        })?;
 
     // Create constants for the variable size range.
-    source_h.push_str("enum {\n");
-    for (var_name, var_type) in tbs_vars
+    let all_vars = tbs_vars
         .iter()
-        .chain(sig_vars.iter())
+        .chain(cert_vars.iter())
         .unique_by(|(name, _)| *name)
-    {
-        let (codegen, _) = c_variable_info(var_name, "", var_type);
-        let const_name = var_name.to_upper_camel_case();
-        let (min_size, max_size) = if let VariableCodegenInfo::Pointer { .. } = codegen {
-            let (min_size, max_size) = var_type.array_size();
-            if var_type.has_constant_array_size() {
-                writeln!(
-                    source_h,
-                    "k{tmpl_name}Exact{const_name}SizeBytes = {max_size},"
-                )?;
-            }
-            (min_size, max_size)
-        } else {
-            // Arbitrary range to hold scalars.
-            (1, 100)
-        };
-        writeln!(
-            source_h,
-            "k{tmpl_name}Min{const_name}SizeBytes = {min_size},"
-        )?;
-        writeln!(
-            source_h,
-            "k{tmpl_name}Max{const_name}SizeBytes = {max_size},"
-        )?;
-    }
-    source_h.push_str("};\n");
+        .map(|(k, v)| (k.clone(), *v))
+        .collect::<IndexMap<_, _>>();
+    codegen.add_variables_constants(&all_vars)?;
+    codegen.add_field_mappings(&all_vars)?;
 
-    // Create field name mapping.
-    for (var_name, _) in tbs_vars.iter().chain(sig_vars.iter()) {
-        let const_name = var_name.to_upper_camel_case();
-        writeln!(source_h, "#define k{tmpl_name}Field{const_name} {var_name}")?;
-    }
-
-    let max_cert_size_const_name = format!("k{}MaxCertSizeBytes", tmpl.name.to_upper_camel_case());
-    source_h.push_str("// Maximum possible size of a certificate\n");
-    source_h.push_str(&indoc::formatdoc! {"enum {{
-        {max_cert_size_const_name} = {},
-    }};", generate_cert_fn_impl.max_size});
-
-    // Output definition of the functions.
-    source_h.push_str("\n\n");
-    source_h.push_str(&generate_tbs_fn_def);
-    source_h.push_str(&generate_cert_fn_def);
-    source_h.push('\n');
-
-    // Output the implementation of the functions.
-    source_c.push_str(&generate_tbs_fn_impl.code);
-    source_c.push_str(&generate_cert_fn_impl.code);
-    source_c.push('\n');
-
-    writeln!(source_h, "\n#endif /* __{}__ */", preproc_guard_include)?;
+    codegen.add_max_size_constant(&cert_info)?;
 
     // Generate unittest.
-    source_unittest.push_str(&license_and_warning);
-    source_unittest.push('\n');
-    source_unittest.push_str("extern \"C\" {\n");
-    writeln!(source_unittest, "#include \"{}.h\"", tmpl.name)?;
-    source_unittest.push_str("}\n");
-    source_unittest.push_str("#include \"gtest/gtest.h\"\n\n");
-
     for idx in 0..TEST_CASE_COUNT {
-        let test_case = generate_test_case(
+        generate_cert_test_case(
+            &mut codegen,
             &format!("Verify{idx}"),
-            &tbs_vars,
-            &sig_vars,
-            generate_tbs_fn_impl.min_size,
-            generate_tbs_fn_impl.max_size,
-            generate_cert_fn_impl.max_size,
+            &tbs_info,
+            &cert_info,
             tmpl,
         )?;
-        source_unittest.push_str(&test_case);
     }
 
-    Ok(Codegen {
-        source_h,
-        source_c,
-        source_unittest,
-    })
+    codegen.finalize()?;
+    Ok(codegen)
+}
+
+/// Generate the certificate template header and source file for private extensions only.
+pub fn generate_private_extensions(from_file: &str, tmpl: &Template) -> Result<Codegen> {
+    let private_extensions = tmpl.private_extensions()?;
+    let mut codegen = Codegen::new(&tmpl.name);
+    codegen.add_boilerplate(from_file)?;
+
+    // Structure containing the extension variables.
+    codegen.add_value_struct(CertificateComponent::PrivateExtList, &tmpl.variables)?;
+
+    // Generate Extensions function.
+    let ext_info = codegen.add_builder(
+        CertificateComponent::PrivateExtList,
+        &tmpl.variables,
+        |builder| {
+            for ext in private_extensions {
+                X509::push_cert_extension(builder, ext)?
+            }
+            Ok(())
+        },
+    )?;
+
+    codegen.add_variables_constants(&tmpl.variables)?;
+    codegen.add_field_mappings(&tmpl.variables)?;
+
+    codegen.add_max_size_constant(&ext_info)?;
+
+    // Generate unittest.
+    for idx in 0..TEST_CASE_COUNT {
+        generate_exts_test_case(
+            &mut codegen,
+            &format!("VerifyExtList{idx}"),
+            &ext_info,
+            tmpl,
+        )?;
+    }
+
+    codegen.finalize()?;
+    Ok(codegen)
 }
 
 // Generate a unit test test case with random variables.
-fn generate_test_case(
+fn generate_cert_test_case(
+    codegen: &mut Codegen,
     test_name: &str,
-    tbs_vars: &IndexMap<String, VariableType>,
-    sig_vars: &IndexMap<String, VariableType>,
-    min_tbs_size: usize,
-    max_tbs_size: usize,
-    max_cert_size: usize,
+    tbs_info: &BuilderInfo,
+    cert_info: &BuilderInfo,
     tmpl: &Template,
-) -> Result<String> {
-    let mut source_unittest = String::new();
+) -> Result<()> {
+    let min_tbs_size = tbs_info.output.min_size;
+    let max_tbs_size = tbs_info.output.max_size;
+
     let unittest_data = tmpl.random_test()?;
     let expected_cert = x509::generate_certificate(&tmpl.subst(&unittest_data)?)?;
 
-    let tmpl_name = tmpl.name.to_upper_camel_case();
-    let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
-    let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
-    let tbs_value_struct_name = format!("{}_tbs_values_t", tmpl.name);
-    let sig_value_struct_name = format!("{}_sig_values_t", tmpl.name);
-
-    source_unittest.push_str(&format! { r#"
-        TEST({tmpl_name}, {test_name})
-    "#});
-
-    source_unittest.push_str(
-        "
-        {
-    ",
-    );
+    codegen.add_test_header(test_name)?;
 
     // Generate constants holding the data.
-    for (var_name, data) in unittest_data.values {
-        match data {
-            SubstValue::ByteArray(bytes) => {
-                writeln!(
-                    source_unittest,
-                    "static uint8_t g_{var_name}[] = {{ {} }};",
-                    bytes
-                        .iter()
-                        .map(|x| format!("{:#02x}", x))
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )?;
-            }
-            SubstValue::String(s) => {
-                let s = s.chars().map(|c| format!("'{c}'")).join(", ");
-                writeln!(source_unittest, "static char g_{var_name}[] = {{{s}}};")?
-            }
+    codegen.add_test_constants(&unittest_data)?;
 
-            SubstValue::Uint32(val) => writeln!(source_unittest, "uint32_t g_{var_name} = {val};")?,
-            SubstValue::Boolean(val) => writeln!(source_unittest, "bool g_{var_name} = {val};")?,
-        }
-    }
-    // Generate structure to hold the TBS data.
-    source_unittest.push('\n');
-    writeln!(source_unittest, "{tbs_value_struct_name} g_tbs_values = {{")?;
-    source_unittest.push_str(&generate_value_struct_assignment(tbs_vars)?);
-    source_unittest.push_str("};\n");
-    // Generate buffer for the TBS data.
-    source_unittest.push('\n');
-    writeln!(source_unittest, "uint8_t g_tbs[{max_tbs_size}];")?;
+    // Generate structure to hold the TBS data and call builder.
+    codegen.add_test_values("g_tbs_values", tbs_info)?;
+    codegen.add_test_builder_call("g_tbs_values", "g_tbs", "tbs_size", tbs_info)?;
+
     // Generate structure to hold the certificate data.
-    source_unittest.push('\n');
-    writeln!(source_unittest, "{sig_value_struct_name} g_sig_values = {{")?;
-    source_unittest.push_str(&generate_value_struct_assignment(sig_vars)?);
-    source_unittest.push_str("};\n");
-    // Generate buffer for the certificate data.
-    source_unittest.push('\n');
-    writeln!(source_unittest, "uint8_t g_cert_data[{max_cert_size}];\n")?;
-    // Generate expected result.
-    writeln!(
-        source_unittest,
-        "const uint8_t kExpectedCert[{}] = {{ {} }};\n",
-        expected_cert.len(),
-        expected_cert
-            .iter()
-            .map(|x| format!("0x{:02x}", x))
-            .collect::<Vec<_>>()
-            .join(", ")
-    )?;
-    source_unittest.push('\n');
+    codegen.add_test_values("g_cert_values", cert_info)?;
 
-    // Comment out tbs size setter if the size is constant.
-    let no_tbs_size = if min_tbs_size == max_tbs_size {
-        "// "
-    } else {
-        ""
-    };
-
-    // Generate the body of the test.
-    source_unittest.push_str(&format! { r#"
-            size_t tbs_size = sizeof(g_tbs);
-            EXPECT_EQ(kErrorOk, {generate_tbs_fn_name}(&g_tbs_values, g_tbs, &tbs_size));
-            EXPECT_GE(tbs_size, {min_tbs_size});
-            EXPECT_LE(tbs_size, {max_tbs_size});
-
-            {no_tbs_size} g_sig_values.tbs_size = tbs_size;
-
-            size_t cert_size = sizeof(g_cert_data);
-            EXPECT_EQ(kErrorOk, {generate_cert_fn_name}(&g_sig_values, g_cert_data, &cert_size));
-            EXPECT_EQ(cert_size, sizeof(kExpectedCert));
-            printf("Generated cert: \n");
-            for (size_t i=0; i<cert_size; i++) {{
-              printf("%02x, ", g_cert_data[i]);
-            }}
-            printf("\n");
-            EXPECT_EQ(0, memcmp(g_cert_data, kExpectedCert, cert_size));
-        "#,
-    });
-
-    source_unittest.push_str(
-        "
-        }
-    ",
-    );
-
-    Ok(source_unittest)
-}
-
-// Generate a structure holding the value of the variables.
-fn generate_value_struct(
-    value_struct_name: &str,
-    variables: &IndexMap<String, VariableType>,
-) -> String {
-    let mut source = String::new();
-    writeln!(source, "typedef struct {value_struct_name} {{").unwrap();
-    for (var_name, var_type) in variables {
-        let (_, struct_def) = c_variable_info(var_name, "", var_type);
-        source.push_str(&struct_def);
+    // Extra setup for Cert: set tbs_size.
+    if min_tbs_size != max_tbs_size {
+        writeln!(
+            codegen.source_unittest,
+            "  g_cert_values.tbs_size = tbs_size;"
+        )?;
     }
-    writeln!(source, "}} {value_struct_name}_t;\n").unwrap();
-    source
+
+    // Call Cert builder.
+    codegen.add_test_builder_call("g_cert_values", "g_cert_data", "cert_size", cert_info)?;
+
+    codegen.add_test_assertion("g_cert_data", "cert_size", &expected_cert)?;
+
+    codegen.add_test_footer()?;
+
+    Ok(())
 }
 
-// Generate an assignment of a structure holding the values of the variables.
-// This is used in the unittest to fill the TBS and sig structures.
-fn generate_value_struct_assignment(variables: &IndexMap<String, VariableType>) -> Result<String> {
-    let mut source = String::new();
-    for (var_name, var_type) in variables {
-        let (codegen, _) = c_variable_info(var_name, "", var_type);
-        // The TBS variable is special
-        match codegen {
-            VariableCodegenInfo::Pointer {
-                ptr_expr,
-                size_expr,
-            } => {
-                writeln!(source, ".{ptr_expr} = g_{var_name},")?;
-                if !var_type.has_constant_array_size() {
-                    writeln!(source, ".{size_expr} = sizeof(g_{var_name}),")?;
-                }
-            }
-            VariableCodegenInfo::Uint32 { value_expr }
-            | VariableCodegenInfo::Boolean { value_expr } => {
-                writeln!(source, ".{value_expr} = g_{var_name},\n")?;
-            }
-        }
-    }
-    Ok(source)
+// Generate a unit test test case with random variables for extensions only template.
+fn generate_exts_test_case(
+    codegen: &mut Codegen,
+    test_name: &str,
+    ext_info: &BuilderInfo,
+    tmpl: &Template,
+) -> Result<()> {
+    let unittest_data = tmpl.random_test()?;
+    let expected_exts = x509::generate_private_extensions(&tmpl.subst(&unittest_data)?)?;
+
+    codegen.add_test_header(test_name)?;
+
+    // Generate constants holding the data.
+    codegen.add_test_constants(&unittest_data)?;
+
+    // Generate structure to hold the extension data.
+    codegen.add_test_values("g_ext_values", ext_info)?;
+    codegen.add_test_builder_call("g_ext_values", "g_exts", "exts_size", ext_info)?;
+
+    codegen.add_test_assertion("g_exts", "exts_size", &expected_exts)?;
+
+    codegen.add_test_footer()?;
+
+    Ok(())
 }
 
-#[derive(Debug, PartialEq)]
+struct BuilderInfo {
+    component: CertificateComponent,
+    variables: IndexMap<String, VariableType>,
+    output: CodegenOutput,
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum CertificateComponent {
     Certificate,
     Tbs,
+    PrivateExtList,
 }
 
-/// Generate a function that generates a TBS/cert.
-///
-/// This functions returns the header definition, the generated implementation
-/// code and the produced TBS/cert size range.
-fn generate_builder(
-    component: CertificateComponent,
-    fn_name: &str,
-    fn_params_str: &str,
-    variables: &IndexMap<String, VariableType>,
-    build: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
-) -> Result<(String, CodegenOutput)> {
-    let get_var_info = |var_name: &str| -> Result<VariableInfo> {
-        let var_type = variables
-            .get(var_name)
-            .with_context(|| format!("could not find variable '{var_name}'"))
-            .copied()?;
-        let (codegen, _) = c_variable_info(var_name, "values->", &var_type);
-        Ok(VariableInfo { var_type, codegen })
-    };
-    let generate_fn_def: String;
-    let mut generated_code: CodegenOutput;
-    if component == CertificateComponent::Tbs {
-        generate_fn_def = indoc::formatdoc! { r#"
-        /**
-         * Generates a TBS certificate.
-         *
-         * @param values Pointer to a structure giving the values to use to generate the TBS
-         * portion of the certificate.
-         * @param[out] out_buf Pointer to a user-allocated buffer that will contain the TBS portion of
-         * the certificate.
-         * @param[in,out] inout_size Pointer to an integer holding the size of
-         * the provided buffer; this value will be updated to reflect the actual size of
-         * the output.
-         * @return The result of the operation.
-         */
-        rom_error_t {fn_name}({fn_params_str});
-
-        "#
-        };
-        generated_code = codegen::Codegen::generate(
-            /* buf_name */ "out_buf",
-            /* buf_size_name */ "inout_size",
-            &get_var_info,
-            build,
-        )?;
-    } else {
-        generate_fn_def = indoc::formatdoc! { r#"
-        /**
-         * Generates an endorsed certificate from a TBS certificate and a signature.
-         *
-         * @param values Pointer to a structure giving the values to use to generate the
-         * certificate (TBS and signature).
-         * @param[out] out_buf Pointer to a user-allocated buffer that will contain the
-         * result.
-         * @param[in,out] inout_size Pointer to an integer holding the size of
-         * the provided buffer, this value will be updated to reflect the actual size of
-         * the output.
-         * @return The result of the operation.
-         */
-        rom_error_t {fn_name}({fn_params_str});
-
-        "#
-        };
-        generated_code = codegen::Codegen::generate(
-            /* buf_name */ "out_buf",
-            /* buf_size_name */ "inout_size",
-            &get_var_info,
-            build,
-        )?;
+impl CertificateComponent {
+    fn name(&self) -> &'static str {
+        match self {
+            Self::Tbs => "tbs",
+            Self::Certificate => "cert",
+            Self::PrivateExtList => "private_ext",
+        }
     }
 
-    let mut generate_fn_impl = String::new();
-    writeln!(
-        generate_fn_impl,
-        "rom_error_t {fn_name}({fn_params_str}) {{"
-    )?;
-    generate_fn_impl.push_str(&generated_code.code);
-    generate_fn_impl.push_str("  return kErrorOk;\n");
-    generate_fn_impl.push_str("}\n\n");
-    generated_code.code = generate_fn_impl;
-
-    Ok((generate_fn_def, generated_code))
+    fn fn_doc(&self) -> &'static str {
+        match self {
+            Self::Tbs => {
+                r#"/**
+ * Generates a TBS certificate.
+ *
+ * @param values Pointer to a structure giving the values to use to generate the TBS
+ * portion of the certificate.
+ * @param[out] out_buf Pointer to a user-allocated buffer that will contain the TBS portion of
+ * the certificate.
+ * @param[in,out] inout_size Pointer to an integer holding the size of
+ * the provided buffer; this value will be updated to reflect the actual size of
+ * the output.
+ * @return The result of the operation.
+ */"#
+            }
+            Self::Certificate => {
+                r#"/**
+ * Generates an endorsed certificate from a TBS certificate and a signature.
+ *
+ * @param values Pointer to a structure giving the values to use to generate the
+ * certificate (TBS and signature).
+ * @param[out] out_buf Pointer to a user-allocated buffer that will contain the
+ * result.
+ * @param[in,out] inout_size Pointer to an integer holding the size of
+ * the provided buffer, this value will be updated to reflect the actual size of
+ * the output.
+ * @return The result of the operation.
+ */"#
+            }
+            Self::PrivateExtList => {
+                r#"/**
+ * Generates the private extension list.
+ *
+ * @param values Pointer to a structure giving the values to use to generate the extensions.
+ * @param[out] out_buf Pointer to a user-allocated buffer that will contain the result.
+ * @param[in,out] inout_size Pointer to an integer holding the size of
+ * the provided buffer; this value will be updated to reflect the actual size of
+ * the output.
+ * @return The result of the operation.
+ */"#
+            }
+        }
+    }
 }
 
 // Decide whether a integer should use a special C type instead
@@ -629,4 +796,15 @@ fn c_variable_info(
             format!("    uint32_t {name};\n"),
         ),
     }
+}
+
+fn generate_license_and_warning(from_file: &str) -> String {
+    indoc::formatdoc! { r#"
+    // Copyright lowRISC contributors (OpenTitan project).
+    // Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    // SPDX-License-Identifier: Apache-2.0
+
+    // This file was automatically generated using opentitantool from:
+    // {from_file}
+    "#}
 }
