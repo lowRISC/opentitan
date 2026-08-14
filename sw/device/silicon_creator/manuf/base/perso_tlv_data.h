@@ -186,6 +186,40 @@ typedef struct perso_tlv_cert_obj {
 } perso_tlv_cert_obj_t;
 
 /**
+ * Helper object similar to `perso_tlv_cert_obj_t`, but with pointers to
+ * constant buffer (view)
+ */
+typedef struct perso_tlv_cert_obj_view {
+  /**
+   * Pointer to the start of the perso LTV object.
+   */
+  const uint8_t *obj_p;
+  /**
+   * LTV object size (in bytes).
+   */
+  size_t obj_size;
+  /**
+   * LTV object type.
+   */
+  uint32_t obj_type;
+  /**
+   * Pointer to the start of the certificate body (i.e., ASN.1 object for X.509
+   * certificates, or CBOR object for CWT certificates).
+   */
+  const uint8_t *cert_body_p;
+  /**
+   * Certificate (ASN.1 or CBOR) body size (in bytes).
+   *
+   * Equal to: obj_size - obj_hdr_size - cert_hdr_size - cert_name_len
+   */
+  size_t cert_body_size;
+  /**
+   * Certificate name string.
+   */
+  char name[MAX_NODEF(kCrthNameSizeFieldMaskV0, kCrthNameSizeFieldMaskV1) + 1];
+} perso_tlv_cert_obj_view_t;
+
+/**
  * Gets the TLV format version of the object in the given buffer.
  *
  * If the object starts with the 4-byte V1 version prefix (`0x010004F0` /
@@ -201,19 +235,19 @@ perso_blob_version_t perso_tlv_object_version(const uint8_t *data, size_t size);
 
 /**
  * Given the pointer to an LTV object, in case this is an endorsed certificate
- * set up the perso_tlv_cert_obj_t structure for it.
+ * set up the perso_tlv_cert_obj_view_t structure for it.
  *
  * @param buf Pointer to the LTV object buffer storing the certificate object.
  * @param ltv_buf_size Total number of bytes until the end of the LTV buffer
  *                     (cert LTV object must be <= the buffer size).
- * @param[out] obj Pointer to the certificate perso LTV object to populate.
+ * @param[out] obj Pointer to the certificate perso LTV view object to populate.
  *
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
  *                   certificate, or the error condition encountered.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
-                                   perso_tlv_cert_obj_t *obj);
+rom_error_t perso_tlv_get_cert_obj_view(const uint8_t *buf, size_t ltv_buf_size,
+                                        perso_tlv_cert_obj_view_t *obj);
 
 /**
  * Wraps the passed certificate in a perso LTV object and copies it to an output

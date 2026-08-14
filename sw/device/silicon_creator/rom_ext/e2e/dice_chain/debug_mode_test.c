@@ -83,8 +83,8 @@ static status_t test_debug_mode(void) {
   uint32_t offset = 0;
   size_t len = sizeof(data);
   while (true) {
-    perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, &obj);
+    perso_tlv_cert_obj_view_t obj = {0};
+    rom_error_t err = perso_tlv_get_cert_obj_view(data + offset, len, &obj);
     if (err != kErrorOk) {
       break;
     }
@@ -101,7 +101,7 @@ static status_t test_debug_mode(void) {
     // Extract debug mode from the attestation
     uint8_t debug_mode = 0x42;
     if (obj.obj_type == kPersoObjectTypeX509Cert) {
-      uint8_t *mode_ptr = obj.cert_body_p + kX509Cdi1DebugOffset;
+      const uint8_t *mode_ptr = obj.cert_body_p + kX509Cdi1DebugOffset;
       if (memcmp(mode_ptr, kX509Cdi1DebugOn, sizeof(kX509Cdi1DebugOn)) == 0) {
         debug_mode = true;
       } else if (memcmp(mode_ptr, kX509Cdi1DebugOff,
@@ -112,7 +112,7 @@ static status_t test_debug_mode(void) {
         return INVALID_ARGUMENT();
       }
     } else if (obj.obj_type == kPersoObjectTypeCwtCert) {
-      uint8_t *mode_ptr = obj.cert_body_p + kCwtCdi1DebugOffset;
+      const uint8_t *mode_ptr = obj.cert_body_p + kCwtCdi1DebugOffset;
       if (memcmp(mode_ptr, kCwtCdi1DebugOn, sizeof(kCwtCdi1DebugOn)) == 0) {
         debug_mode = true;
       } else if (memcmp(mode_ptr, kCwtCdi1DebugOff, sizeof(kCwtCdi1DebugOff)) ==

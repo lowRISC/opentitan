@@ -48,8 +48,8 @@ static status_t print_cert(char *dest,
   uint32_t offset = 0;
   size_t len = sizeof(data);
   while (true) {
-    perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, &obj);
+    perso_tlv_cert_obj_view_t obj = {0};
+    rom_error_t err = perso_tlv_get_cert_obj_view(data + offset, len, &obj);
     if (err != kErrorOk) {
       break;
     }
@@ -203,15 +203,15 @@ static status_t verify_handover(void) {
   }
 
   if (flash_storage_mode) {
-    perso_tlv_cert_obj_t cdi0_obj = {0};
-    perso_tlv_cert_obj_t cdi1_obj = {0};
+    perso_tlv_cert_obj_view_t cdi0_obj = {0};
+    perso_tlv_cert_obj_view_t cdi1_obj = {0};
     uint8_t *slot0_hdr = (uint8_t *)dice_storage_slot_v1_header(&cdi0_slot);
     uint8_t *slot1_hdr = (uint8_t *)dice_storage_slot_v1_header(&cdi1_slot);
     size_t slot_max_len =
         (uintptr_t)_rom_ext_size - (uintptr_t)_rom_ext_protected_size;
 
     rom_error_t err =
-        perso_tlv_get_cert_obj(slot0_hdr, slot_max_len, &cdi0_obj);
+        perso_tlv_get_cert_obj_view(slot0_hdr, slot_max_len, &cdi0_obj);
     if (err != kErrorOk) {
       LOG_ERROR("Failed to parse CDI_0 TLV from flash: 0x%08x", err);
       return INTERNAL(8);
@@ -219,7 +219,7 @@ static status_t verify_handover(void) {
     LOG_INFO("%s type=%d sz=%d/%d", cdi0_obj.name, cdi0_obj.obj_type,
              cdi0_obj.cert_body_size, cdi0_obj.obj_size);
 
-    err = perso_tlv_get_cert_obj(slot1_hdr, slot_max_len, &cdi1_obj);
+    err = perso_tlv_get_cert_obj_view(slot1_hdr, slot_max_len, &cdi1_obj);
     if (err != kErrorOk) {
       LOG_ERROR("Failed to parse CDI_1 TLV from flash: 0x%08x", err);
       return INTERNAL(9);
