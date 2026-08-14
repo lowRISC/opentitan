@@ -18,9 +18,9 @@ perso_blob_version_t perso_tlv_object_version(const uint8_t *data,
   return kPersoBlobVersionV0;
 }
 
-rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
-                                   perso_tlv_cert_obj_t *obj) {
-  uint8_t *orig_buf = buf;
+rom_error_t perso_tlv_get_cert_obj_view(const uint8_t *buf, size_t ltv_buf_size,
+                                        perso_tlv_cert_obj_view_t *obj) {
+  const uint8_t *orig_buf = buf;
   perso_blob_version_t blob_version =
       perso_tlv_object_version(buf, ltv_buf_size);
 

@@ -444,10 +444,10 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   }
 
   // Read the entire perso LTV object from flash and parse it.
-  perso_tlv_cert_obj_t cert_obj;
+  perso_tlv_cert_obj_view_t cert_obj;
   TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
                            cert_buffer));
-  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, &cert_obj));
+  TRY(perso_tlv_get_cert_obj_view(cert_buffer, kBufferSize, &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -565,7 +565,7 @@ static status_t personalize_gen_dice_certificates(
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
 
-  cert_key_id_pair_t uds_key_ids = {
+  const cert_key_id_pair_t uds_key_ids = {
       .endorsement = &uds_endorsement_key_id,
       .cert = uds_pubkey_id,
   };
@@ -595,7 +595,7 @@ static status_t personalize_gen_dice_certificates(
   static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
   static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 
-  hmac_digest_t zero_digest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
+  const static hmac_digest_t zero_digest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
   hmac_digest_t cdi_0_pubkey_id = {0};
   hmac_digest_t cdi_1_pubkey_id = {0};
 
@@ -614,7 +614,7 @@ static status_t personalize_gen_dice_certificates(
                                   /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                      &curr_pubkey));
-  cert_key_id_pair_t cdi_0_key_ids = {
+  const cert_key_id_pair_t cdi_0_key_ids = {
       .endorsement = uds_pubkey_id,
       .cert = &cdi_0_pubkey_id,
   };
@@ -645,7 +645,7 @@ static status_t personalize_gen_dice_certificates(
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
-  cert_key_id_pair_t cdi_1_key_ids = {
+  const cert_key_id_pair_t cdi_1_key_ids = {
       .endorsement = &cdi_0_pubkey_id,
       .cert = &cdi_1_pubkey_id,
   };
@@ -684,14 +684,14 @@ static status_t compute_tbs_was_hmac(perso_blob_t *blob_to_host) {
   uint8_t *tlv_buf = blob_to_host->body;
   uint32_t obj_size;
   perso_tlv_object_type_t obj_type;
-  perso_tlv_cert_obj_t cert_obj;
+  perso_tlv_cert_obj_view_t cert_obj;
   for (size_t i = 0; i < blob_to_host->num_objs; ++i) {
     size_t rem_size =
         sizeof(blob_to_host->body) - (size_t)(tlv_buf - blob_to_host->body);
     obj_type = perso_tlv_object_type(tlv_buf, rem_size);
     obj_size = perso_tlv_object_size(tlv_buf, rem_size);
     if (obj_type == kPersoObjectTypeX509Tbs) {
-      TRY(perso_tlv_get_cert_obj(tlv_buf, rem_size, &cert_obj));
+      TRY(perso_tlv_get_cert_obj_view(tlv_buf, rem_size, &cert_obj));
       hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
     }
     tlv_buf += obj_size;
@@ -819,12 +819,12 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room,
 
   // Scan the received buffer until the next endorsed cert is found.
   while (blob_from_host->num_objs != 0) {
-    perso_tlv_cert_obj_t block;
+    perso_tlv_cert_obj_view_t block;
 
     // Extract the next perso LTV object, aborting if it is not a certificate.
-    rom_error_t err =
-        perso_tlv_get_cert_obj(blob_from_host->body + blob_from_host->next_free,
-                               max_available(blob_from_host), &block);
+    rom_error_t err = perso_tlv_get_cert_obj_view(
+        blob_from_host->body + blob_from_host->next_free,
+        max_available(blob_from_host), &block);
     switch (err) {
       case kErrorOk:
         break;
@@ -861,11 +861,11 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room,
 }
 
 static status_t write_cert_to_dice_page(const cert_flash_info_layout_t *layout,
-                                        perso_tlv_cert_obj_t *block,
+                                        perso_tlv_cert_obj_view_t *block,
                                         uint8_t *cert_data,
                                         uint32_t page_offset,
                                         uint32_t cert_write_size_bytes,
-                                        dice_storage_page_t *dice_page) {
+                                        dice_storage_page_t *const dice_page) {
   base_printf("Importing %s cert to %s ...\n", block->name, layout->group_name);
   if ((page_offset + cert_write_size_bytes) > sizeof(dice_page->data)) {
     LOG_ERROR("%s %s certificate did not fit into the info page.",
@@ -893,7 +893,7 @@ static status_t write_digest_to_dice_page(
 }
 
 static status_t personalize_endorse_certificates(
-    ujson_t *uj, perso_blob_t *blob_to_host, perso_blob_t *blob_from_host,
+    ujson_t *uj, const perso_blob_t *blob_to_host, perso_blob_t *blob_from_host,
     uint8_t *all_certs, const size_t all_certs_size, const size_t uds_offset,
     const size_t cdi_0_offset, const size_t cdi_1_offset) {
   /*****************************************************************************
@@ -938,7 +938,7 @@ static status_t personalize_endorse_certificates(
   size_t free_room = all_certs_size;
   // Helper structure caching certificate information from a certificate perso
   // LTV object.
-  perso_tlv_cert_obj_t block;
+  perso_tlv_cert_obj_view_t block;
 
   // CWT DICE doesn't need host to endorse any certificate for it, so all
   // payload are in the "blob_to_host".
@@ -958,8 +958,9 @@ static status_t personalize_endorse_certificates(
   // to the host.
   for (size_t i = 0; i < cert_offsets_count; i++) {
     size_t offset = cert_offsets[i];
-    TRY(perso_tlv_get_cert_obj(blob_to_host->body + offset,
-                               sizeof(blob_to_host->body) - offset, &block));
+    TRY(perso_tlv_get_cert_obj_view(blob_to_host->body + offset,
+                                    sizeof(blob_to_host->body) - offset,
+                                    &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
     memcpy(next_cert, block.obj_p, block.obj_size);
@@ -995,7 +996,7 @@ static status_t personalize_endorse_certificates(
     // endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
       // Extract the cert block from the `all_certs` buffer.
-      TRY(perso_tlv_get_cert_obj(next_cert, free_room, &block));
+      TRY(perso_tlv_get_cert_obj_view(next_cert, free_room, &block));
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
@@ -1031,7 +1032,7 @@ static status_t personalize_endorse_certificates(
  * measurment calculated from the final OTP values. Ensure that the UDS
  * certificate was generated using the correct OTP values.
  */
-static status_t check_otp_measurement_pre_lock(hmac_digest_t *measurement,
+static status_t check_otp_measurement_pre_lock(const hmac_digest_t *measurement,
                                                otp_partition_t partition) {
   hmac_digest_t final_measurement;
   TRY(measure_otp_partition(partition, &final_measurement,
@@ -1047,8 +1048,8 @@ static status_t check_otp_measurement_pre_lock(hmac_digest_t *measurement,
  * digest stored in the OTP. Ensure that the UDS certificate was generated using
  * the correct OTP values.
  */
-static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
-                                                uint32_t offset) {
+static status_t check_otp_measurement_post_lock(
+    const hmac_digest_t *measurement, uint32_t offset) {
   uint64_t expected_digest = otp_read64(offset);
   uint32_t digest_hi = expected_digest >> 32;
   uint32_t digest_lo = expected_digest & UINT32_MAX;
@@ -1058,8 +1059,8 @@ static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
 }
 
 static status_t finalize_otp_partitions(
-    hmac_digest_t *otp_creator_sw_cfg_measurement,
-    hmac_digest_t *otp_owner_sw_cfg_measurement) {
+    const hmac_digest_t *otp_creator_sw_cfg_measurement,
+    const hmac_digest_t *otp_owner_sw_cfg_measurement) {
   TRY(check_next_slot_bootable());
 
   // Complete the provisioning of OTP OwnerSwCfg partition.

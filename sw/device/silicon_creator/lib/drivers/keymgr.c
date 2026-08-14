@@ -327,9 +327,9 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
   return kErrorOk;
 }
 
-rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *sealing_binding,
-                                        keymgr_binding_value_t *attest_binding,
-                                        uint32_t max_key_version) {
+rom_error_t sc_keymgr_owner_int_advance(
+    const keymgr_binding_value_t *sealing_binding,
+    const keymgr_binding_value_t *attest_binding, uint32_t max_key_version) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   sc_keymgr_sw_binding_set(sealing_binding, attest_binding);
   sc_keymgr_owner_int_max_ver_set(max_key_version);
@@ -339,9 +339,9 @@ rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *sealing_binding,
   return kErrorOk;
 }
 
-rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *sealing_binding,
-                                    keymgr_binding_value_t *attest_binding,
-                                    uint32_t max_key_version) {
+rom_error_t sc_keymgr_owner_advance(
+    const keymgr_binding_value_t *sealing_binding,
+    const keymgr_binding_value_t *attest_binding, uint32_t max_key_version) {
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   sc_keymgr_sw_binding_set(sealing_binding, attest_binding);
