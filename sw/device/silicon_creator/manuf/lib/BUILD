@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -38,14 +39,15 @@ cc_library(
 cc_library(
     name = "sram_start",
     srcs = ["sram_start.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
         ":ast_program",
         ":sram_start_headers",
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
@@ -54,14 +56,15 @@ cc_library(
 cc_library(
     name = "sram_start_no_ast_init",
     srcs = ["sram_start_no_ast_init.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
         ":ast_program",
         ":sram_start_headers",
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
         "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
@@ -100,9 +103,10 @@ cc_library(
     name = "util",
     srcs = ["util.c"],
     hdrs = ["util.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
@@ -152,7 +156,7 @@ opentitan_test(
         ":individualize",
         ":nvm_info_field",
         ":otp_fields",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -172,12 +176,13 @@ cc_library(
         "individualize_sw_cfg.c",
         "individualize_sw_cfg.h",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":nvm_info_field",
         ":otp_img_types",
         ":util",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
@@ -221,7 +226,7 @@ opentitan_test(
         # Testing sival SKU only should be sufficient.
         ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:otp_ctrl",
@@ -283,7 +288,7 @@ opentitan_test(
         ":personalize",
         "//hw/top:lc_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -302,9 +307,10 @@ opentitan_test(
 cc_library(
     name = "ast_program",
     srcs = ["ast_program.c"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":nvm_info_field",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
@@ -331,7 +337,7 @@ opentitan_test(
     ),
     deps = [
         ":nvm_info_field",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",

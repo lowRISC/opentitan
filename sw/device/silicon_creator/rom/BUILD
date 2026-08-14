@@ -7,7 +7,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
-load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -51,7 +51,7 @@ dual_cc_library(
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
             "//sw/device/silicon_creator/lib:nvm_ctrl",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
         ],
     ),
 )
@@ -106,7 +106,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -141,7 +141,7 @@ cc_library(
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
@@ -290,7 +290,7 @@ cc_library(
     hdrs = ["rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
@@ -379,8 +379,8 @@ cc_library(
     deps = [
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -401,7 +401,7 @@ cc_test(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "@googletest//:gtest_main",
     ],
@@ -427,6 +427,7 @@ cc_library(
     name = "sigverify_otp_keys",
     srcs = ["sigverify_otp_keys.c"],
     hdrs = ["sigverify_otp_keys.h"],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
         ":sigverify_key_types",
         "//hw/top:otp_ctrl_c_regs",

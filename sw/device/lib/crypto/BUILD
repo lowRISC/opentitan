@@ -9,6 +9,7 @@ load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 cc_library(
     name = "otcrypto_api",
@@ -60,7 +61,7 @@ opentitan_binary_blob(
     target_compatible_with = select({
         "//sw/device/lib/crypto/configs:crypto_fips_all": [],
         "//conditions:default": ["@platforms//:incompatible"],
-    }),
+    }) + opentitan_require_top("earlgrey"),
     # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
     # Minsize is added to reduce code size.
     transitive_features = [
@@ -68,7 +69,7 @@ opentitan_binary_blob(
         "minsize",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/crypto/include:crypto_hdrs",
     ],
 )

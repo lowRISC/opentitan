@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "autogen_cryptolib_build_info")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -51,11 +52,12 @@ dual_cc_library(
     hdrs = [
         "alert.h",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = dual_inputs(
         device = [
             "//hw/top:alert_handler_c_regs",
             "//hw/top:sensor_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened_memory",
             "//sw/device/lib/base:macros",

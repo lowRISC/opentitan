@@ -4,6 +4,7 @@
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,6 +15,7 @@ ld_library(
     # some SRAM content)
     non_page_aligned_segments = True,
     script = "sram_program.ld",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
@@ -33,7 +35,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = ":sram_program_linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:uart",

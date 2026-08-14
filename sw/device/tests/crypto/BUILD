@@ -7,6 +7,7 @@ load(
     "dicts",
 )
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
@@ -312,13 +313,13 @@ opentitan_binary_blob(
     target_compatible_with = select({
         "//sw/device/lib/crypto/configs:crypto_fips_all": [],
         "//conditions:default": ["@platforms//:incompatible"],
-    }),
+    }) + opentitan_require_top("earlgrey"),
     transitive_features = [
         "no_jump_tables",
         "minsize",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/crypto/include:crypto_hdrs",
     ],
 )

@@ -4,6 +4,7 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "opentitan_binary",
@@ -47,8 +48,9 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -532,7 +534,7 @@ ownership_transfer_test(
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
@@ -615,7 +617,7 @@ _FLASH_PERMISSION_TESTS = {
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -793,8 +795,9 @@ opentitan_binary(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -834,7 +837,7 @@ ownership_transfer_test(
         "test_harness": "//sw/host/tests/ownership:transfer_test",
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",

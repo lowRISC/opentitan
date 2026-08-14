@@ -55,7 +55,7 @@ opentitan_test(
     ),
     deps = [
         ":core_portme",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_start",

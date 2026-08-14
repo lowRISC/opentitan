@@ -4,6 +4,7 @@
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 opentitan_binary(
     name = "hello_usbdev",
@@ -30,9 +31,10 @@ opentitan_binary(
 
 cc_library(
     name = "hello_usbdev_lib",
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/examples:demos",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crt",

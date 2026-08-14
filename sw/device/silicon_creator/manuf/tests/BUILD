@@ -6,6 +6,7 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -268,7 +269,7 @@ cc_library(
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/dif:pinmux",
@@ -302,10 +303,11 @@ opentitan_binary(
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":test_wafer_auth_secret",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:lc_ctrl",
@@ -398,9 +400,10 @@ opentitan_binary(
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",

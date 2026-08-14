@@ -6,6 +6,7 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_test")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
@@ -169,7 +170,7 @@ SRAM_EXEC_TESTCASES = [
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:dbg_print",

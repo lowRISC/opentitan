@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -141,8 +143,9 @@ cc_library(
     name = "ecc256_keygen_sca",
     srcs = ["ecc256_keygen_sca.c"],
     hdrs = ["ecc256_keygen_sca.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:otbn",

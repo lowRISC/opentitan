@@ -36,6 +36,7 @@ load(
     "FLASH_ECC_ERROR_CAUSES",
     "SEC_VERS",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -133,9 +134,10 @@ opentitan_binary(
             "CAUSE_ID={}".format(c["id"]),
         ],
         spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
+        target_compatible_with = opentitan_require_top("earlgrey"),
         deps = [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",

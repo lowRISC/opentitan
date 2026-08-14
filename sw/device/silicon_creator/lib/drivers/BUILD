@@ -23,6 +23,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -77,10 +78,11 @@ dual_cc_library(
 cc_test(
     name = "alert_unittest",
     srcs = ["alert_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":alert"),
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:crc32",
         "@googletest//:gtest_main",
     ],
@@ -99,8 +101,8 @@ opentitan_test(
         "//hw/top:alert_handler_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -111,14 +113,15 @@ cc_library(
     name = "ast",
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -263,10 +266,11 @@ cc_test(
     name = "hmac_unittest",
     srcs = ["hmac_unittest.cc"],
     local_defines = ["HMAC_UNIT_TEST_"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":hmac"),
         "//hw/top:hmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -286,7 +290,7 @@ opentitan_test(
     ),
     deps = [
         ":hmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
@@ -383,7 +387,7 @@ opentitan_test(
         ":lifecycle",
         ":retention_sram",
         "//hw/top:kmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
@@ -434,7 +438,7 @@ opentitan_test(
     ),
     deps = [
         ":kmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -553,12 +557,13 @@ cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -571,9 +576,10 @@ cc_library(
 cc_test(
     name = "pinmux_unittest",
     srcs = ["pinmux_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":pinmux",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:sim_dv",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -619,9 +625,10 @@ dual_cc_library(
 cc_test(
     name = "retention_sram_unittest",
     srcs = ["retention_sram_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":retention_sram"),
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -637,7 +644,7 @@ opentitan_test(
     ),
     deps = [
         ":retention_sram",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -684,12 +691,13 @@ dual_cc_library(
 cc_test(
     name = "rnd_unittest",
     srcs = ["rnd_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":rnd"),
         ":otp",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -713,7 +721,7 @@ opentitan_test(
     deps = [
         ":otp",
         ":rnd",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:entropy_src",
@@ -735,6 +743,7 @@ dual_cc_library(
         host = ["mock_rram_ctrl.h"],
         shared = ["rram_ctrl.h"],
     ),
+    target_compatible_with = opentitan_require_top("earlgrey"),
     visibility = ["//visibility:public"],
     deps = dual_inputs(
         device = [
@@ -749,7 +758,7 @@ dual_cc_library(
         ],
         shared = [
             "//hw/top:rram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
@@ -845,9 +854,10 @@ cc_library(
 cc_test(
     name = "uart_unittest",
     srcs = ["uart_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -861,7 +871,7 @@ opentitan_test(
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
     ],
@@ -887,11 +897,12 @@ cc_library(
 cc_test(
     name = "watchdog_unittest",
     srcs = ["watchdog_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":watchdog",
         "//hw/top:aon_timer_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -961,10 +972,11 @@ cc_test(
     srcs = [
         "spi_device_unittest.cc",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":spi_device"),
         "//hw/top:spi_device_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
@@ -991,13 +1003,14 @@ cc_library(
     name = "sensor_ctrl",
     srcs = ["sensor_ctrl.c"],
     hdrs = ["sensor_ctrl.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":lifecycle",
         ":otp",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
@@ -1008,11 +1021,12 @@ cc_library(
 cc_test(
     name = "sensor_ctrl_unittest",
     srcs = ["sensor_ctrl_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":sensor_ctrl",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "@googletest//:gtest_main",
     ],
 )
@@ -1021,8 +1035,9 @@ cc_library(
     name = "epmp",
     srcs = ["epmp.c"],
     hdrs = ["epmp.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
@@ -1050,9 +1065,10 @@ cc_library(
         "stdusb.h",
         "usb.h",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top:usbdev_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",

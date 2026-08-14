@@ -4,6 +4,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -349,7 +350,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -420,7 +421,7 @@ opentitan_test(
     fpga = fpga_params(timeout = "moderate"),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -462,7 +463,7 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -513,8 +514,8 @@ opentitan_test(
         "//hw/top:i2c_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top:top_lib",
         "//hw/top:usbdev_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -563,7 +564,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -825,9 +826,9 @@ cc_library(
     name = "clkmgr_external_clk_src_for_sw_impl",
     srcs = ["clkmgr_external_clk_src_for_sw_impl.c"],
     hdrs = ["clkmgr_external_clk_src_for_sw_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
@@ -901,7 +902,7 @@ opentitan_test(
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
@@ -948,7 +949,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aon_timer",
@@ -1069,7 +1070,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:sensor_ctrl",
@@ -1099,7 +1100,7 @@ opentitan_test(
     # TODO(#13611): Splice ast_init in FPGA/Verilator.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rv_plic",
@@ -1829,7 +1830,7 @@ opentitan_test(
         tags = ["skip_in_ci"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:flash_ctrl",
@@ -1859,7 +1860,7 @@ opentitan_test(
     fpga = fpga_params(tags = ["skip_in_ci"]),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -1959,7 +1960,7 @@ test_suite(
             otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/dif:lc_ctrl",
@@ -2038,8 +2039,8 @@ opentitan_test(
         tags = ["skip_in_ci"],
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2061,7 +2062,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2087,8 +2088,8 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -2122,7 +2123,7 @@ opentitan_test(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -2453,7 +2454,7 @@ opentitan_test(
         otp = ":otp_ctrl_descrambling_otp_image",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -2471,7 +2472,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/examples/sram_program:sram_program_linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -2949,7 +2950,7 @@ opentitan_test(
     srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -3246,7 +3247,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -3347,10 +3348,11 @@ cc_library(
     name = "pwrmgr_sleep_resets_lib",
     srcs = ["pwrmgr_sleep_resets_lib.c"],
     hdrs = ["pwrmgr_sleep_resets_lib.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -3400,7 +3402,7 @@ opentitan_test(
     # sival ROM_EXT above. Remove this line when fixed. See #21706.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3439,7 +3441,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3477,7 +3479,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -3795,7 +3797,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/gpio:sleep_pin_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -4090,7 +4092,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
@@ -4131,7 +4133,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
@@ -4172,7 +4174,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
@@ -4206,7 +4208,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/spi_device_ujson_console_test",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:spi_flash_testutils",
@@ -4268,9 +4270,10 @@ cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
     hdrs = ["spi_host_flash_test_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4299,7 +4302,7 @@ opentitan_test(
     fpga = fpga_params(timeout = "moderate"),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4328,7 +4331,7 @@ opentitan_test(
     ),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4369,7 +4372,7 @@ opentitan_test(
     ),
     deps = [
         ":spi_host_flash_test_impl",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4393,7 +4396,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -4422,7 +4425,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -4537,7 +4540,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -4564,7 +4567,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:spi_flash_testutils",
@@ -4589,7 +4592,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/ottf_dual_console",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:uart_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -4735,7 +4738,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:usbdev",
@@ -4773,7 +4776,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4808,7 +4811,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4838,7 +4841,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4874,7 +4877,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4920,7 +4923,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -4959,7 +4962,7 @@ opentitan_test(
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5000,7 +5003,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5057,7 +5060,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
@@ -5098,7 +5101,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5139,7 +5142,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5180,7 +5183,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5217,7 +5220,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5247,7 +5250,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -5263,9 +5266,10 @@ cc_library(
     name = "usbdev_suspend",
     srcs = ["usbdev_suspend.c"],
     hdrs = ["usbdev_suspend.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -5855,9 +5859,9 @@ opentitan_test(
         "//hw/top:i2c_c_regs",
         "//hw/top:kmac_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top:top_lib",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:adc_ctrl",
@@ -6241,7 +6245,7 @@ _LC_STATES_DEBUG_DISALLOWED = [
             ],
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:lc_ctrl_testutils",
@@ -6421,7 +6425,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:dtm",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6462,7 +6466,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:control_status",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
@@ -6824,7 +6828,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
@@ -6898,7 +6902,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_in_irq",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
@@ -6935,7 +6939,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
@@ -7167,7 +7171,7 @@ opentitan_test(
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/testing/test_framework:check",
@@ -7363,7 +7367,7 @@ opentitan_binary(
     deps = [
         "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
@@ -7392,7 +7396,7 @@ opentitan_test(
     deps = [
         "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
@@ -7441,7 +7445,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
@@ -7485,7 +7489,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -7795,9 +7799,10 @@ opentitan_test(
 cc_library(
     name = "rom_exit_immediately_lib",
     srcs = ["rom_exit_immediately.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ],

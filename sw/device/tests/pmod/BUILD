@@ -11,6 +11,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -37,8 +38,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -71,8 +72,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -105,8 +106,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -140,8 +141,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -175,8 +176,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -210,8 +211,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -245,8 +246,8 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -280,7 +281,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -311,7 +312,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -342,7 +343,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -373,7 +374,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -406,7 +407,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -438,7 +439,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -472,7 +473,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -503,7 +504,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -534,7 +535,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -565,7 +566,7 @@ opentitan_test(
         tags = ["pmod"],  # Requires the PMOD::BoB.
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

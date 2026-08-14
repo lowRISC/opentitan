@@ -49,7 +49,7 @@ package(default_visibility = ["//visibility:public"])
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/runtime:log",

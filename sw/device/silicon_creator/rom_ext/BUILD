@@ -6,7 +6,7 @@ load("@opentitan_signing_infra//signing:defs.bzl", "signature_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules:files.bzl", "output_groups")
 load("//rules:const.bzl", "CONST", "hex")
-load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
@@ -105,9 +105,10 @@ cc_library(
     name = "rom_ext_boot_policy",
     srcs = ["rom_ext_boot_policy.c"],
     hdrs = ["rom_ext_boot_policy.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":rom_ext_boot_policy_ptrs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/silicon_creator/lib:boot_data",
@@ -171,9 +172,10 @@ cc_library(
     defines = [
         "INTERRUPT_HANDLER=rom_ext_interrupt_handler",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
     ] + opentitan_select_top(
@@ -257,10 +259,10 @@ ld_library(
 cc_library(
     name = "rom_ext_start",
     srcs = ["rom_ext_start.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/coverage:api_asm",
     ],

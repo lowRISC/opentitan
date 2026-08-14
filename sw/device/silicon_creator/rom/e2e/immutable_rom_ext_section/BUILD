@@ -202,7 +202,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         linker_script = s["linker_script"],
         deps = [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -283,7 +283,7 @@ BAD_SECTION_BINS = {
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
         deps = [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
