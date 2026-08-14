@@ -289,8 +289,8 @@ static status_t erase_owner_info_pages(owner_config_t *config) {
  */
 static status_t measure_otp_partition(otp_partition_t partition,
                                       hmac_digest_t *measurement,
-                                      bool use_expected_values) {
-  static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
+                                      bool use_expected_values,
+                                      uint32_t *otp_state) {
   // Compute the digest.
   otp_dai_read(partition, /*relative_address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
@@ -383,6 +383,14 @@ static void compute_keymgr_owner_binding(
   sealing_binding_value->data[0] = kOwnerAppDomainProd;
 }
 
+typedef struct cert_scratch_buffer {
+  uint8_t buffer[kBufferSize];
+} __attribute__((aligned(4))) cert_scratch_buffer_t;
+
+typedef struct aligned_dice_storage_page {
+  dice_storage_page_t page;
+} __attribute__((aligned(8))) aligned_dice_storage_page_t;
+
 /**
  * Read a certificate from the passed in location in a flash INFO page and hash
  * its contents on the existing sha256 hashing stream. Determine the actual
@@ -391,9 +399,9 @@ static void compute_keymgr_owner_binding(
  * If the caller passed a pointer, save there the certificate size.
  */
 static status_t hash_certificate(const flash_ctrl_info_page_t *page,
-                                 size_t offset, size_t *size) {
-  static alignas(uint32_t) uint8_t cert_buffer[kBufferSize];
-  memset(cert_buffer, 0, sizeof(cert_buffer));
+                                 size_t offset, size_t *size,
+                                 cert_scratch_buffer_t *cert_buffer) {
+  memset(cert_buffer->buffer, 0, sizeof(cert_buffer->buffer));
 
   // Read first 16 bytes of the certificate perso LTV object to determine size.
   alignas(uint32_t) uint8_t head[16];
@@ -409,7 +417,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
         head[0], head[1], page->base_addr, offset);
     return DATA_LOSS();
   }
-  if (obj_size > sizeof(cert_buffer)) {
+  if (obj_size > sizeof(cert_buffer->buffer)) {
     LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %x:%x",
               obj_size, page->base_addr, offset);
     return DATA_LOSS();
@@ -423,8 +431,8 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   // Read the entire perso LTV object from flash and parse it.
   perso_tlv_cert_obj_view_t cert_obj;
   TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
-                           cert_buffer));
-  TRY(perso_tlv_get_cert_obj_view(cert_buffer, kBufferSize, &cert_obj));
+                           cert_buffer->buffer));
+  TRY(perso_tlv_get_cert_obj_view(cert_buffer->buffer, kBufferSize, &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -434,7 +442,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   return OK_STATUS();
 }
 
-static status_t hash_all_certs(void) {
+static status_t hash_all_certs(cert_scratch_buffer_t *cert_buffer) {
   uint32_t cert_obj_size;
   hmac_sha256_init();
 
@@ -449,7 +457,8 @@ static status_t hash_all_certs(void) {
     uint32_t page_offset = 0;
 
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_obj_size));
+      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_obj_size,
+                           cert_buffer));
       page_offset += util_size_to_words(cert_obj_size) * sizeof(uint32_t);
       page_offset = util_round_up_to(page_offset, 3);
     }
@@ -469,7 +478,11 @@ static status_t personalize_gen_dice_certificates(
     hmac_digest_t *otp_rot_creator_auth_state_measurement,
     manuf_certgen_inputs_t *certgen_inputs, ecdsa_p256_public_key_t *uds_pubkey,
     hmac_digest_t *uds_pubkey_id, uint8_t *all_certs, size_t all_certs_size,
-    size_t *uds_offset, size_t *cdi_0_offset, size_t *cdi_1_offset) {
+    size_t *uds_offset, size_t *cdi_0_offset, size_t *cdi_1_offset,
+    keymgr_binding_value_t *sealing_binding_value,
+    keymgr_binding_value_t *attestation_binding_value,
+    ecdsa_p256_public_key_t *curr_pubkey, ecdsa_p256_public_key_t *cdi_0_pubkey,
+    uint32_t *otp_state) {
   /*****************************************************************************
    * Initialization.
    ****************************************************************************/
@@ -514,30 +527,29 @@ static status_t personalize_gen_dice_certificates(
   //   ensures consistent measurements throughout personalization.
   TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
                             otp_creator_sw_cfg_measurement,
-                            /*use_expected_values=*/true));
+                            /*use_expected_values=*/true, otp_state));
   TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
                             otp_owner_sw_cfg_measurement,
-                            /*use_expected_values=*/true));
+                            /*use_expected_values=*/true, otp_state));
   TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
                             otp_rot_creator_auth_codesign_measurement,
-                            /*use_expected_values=*/false));
+                            /*use_expected_values=*/false, otp_state));
   TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
                             otp_rot_creator_auth_state_measurement,
-                            /*use_expected_values=*/false));
+                            /*use_expected_values=*/false, otp_state));
 
   /*****************************************************************************
    * DICE certificates.
    ****************************************************************************/
   size_t curr_cert_size = 0;
-  static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 
   // Generate UDS keys and (TBS) cert.
   curr_cert_size = kUdsMaxTbsSizeBytes;
   if (all_certs_size < curr_cert_size) {
     return RESOURCE_EXHAUSTED();
   }
-  TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id, &curr_pubkey));
-  memcpy(uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
+  TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id, curr_pubkey));
+  memcpy(uds_pubkey, curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
@@ -551,7 +563,7 @@ static status_t personalize_gen_dice_certificates(
   TRY(dice_uds_tbs_cert_build(
       otp_creator_sw_cfg_measurement, otp_owner_sw_cfg_measurement,
       otp_rot_creator_auth_codesign_measurement,
-      otp_rot_creator_auth_state_measurement, &uds_key_ids, &curr_pubkey,
+      otp_rot_creator_auth_state_measurement, &uds_key_ids, curr_pubkey,
       all_certs, &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -566,12 +578,6 @@ static status_t personalize_gen_dice_certificates(
   // can initialize and seal the ownership block.
   ownership_seal_init();
 
-  /*
-   * Keymgr binding values.
-   */
-  static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-  static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
-
   const static hmac_digest_t zero_digest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
   hmac_digest_t cdi_0_pubkey_id = {0};
   hmac_digest_t cdi_1_pubkey_id = {0};
@@ -584,22 +590,21 @@ static status_t personalize_gen_dice_certificates(
   if (all_certs_size < curr_cert_size) {
     return RESOURCE_EXHAUSTED();
   }
-  compute_keymgr_owner_int_binding(&sealing_binding_value,
-                                   &attestation_binding_value);
-  TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
-                                  &attestation_binding_value,
+  compute_keymgr_owner_int_binding(sealing_binding_value,
+                                   attestation_binding_value);
+  TRY(sc_keymgr_owner_int_advance(sealing_binding_value,
+                                  attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
-                                     &curr_pubkey));
+                                     curr_pubkey));
   const cert_key_id_pair_t cdi_0_key_ids = {
       .endorsement = uds_pubkey_id,
       .cert = &cdi_0_pubkey_id,
   };
 
-  static ecdsa_p256_public_key_t cdi_0_pubkey = {.x = {0}, .y = {0}};
-  memcpy(&cdi_0_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
+  memcpy(cdi_0_pubkey, curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(dice_cdi_0_cert_build(&zero_digest, 0, &cdi_0_key_ids, uds_pubkey,
-                            &curr_pubkey, all_certs, &curr_cert_size));
+                            curr_pubkey, all_certs, &curr_cert_size));
   *cdi_0_offset = blob_to_host->next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -615,20 +620,19 @@ static status_t personalize_gen_dice_certificates(
   if (all_certs_size < curr_cert_size) {
     return RESOURCE_EXHAUSTED();
   }
-  compute_keymgr_owner_binding(&sealing_binding_value,
-                               &attestation_binding_value);
-  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
-                              &attestation_binding_value,
+  compute_keymgr_owner_binding(sealing_binding_value,
+                               attestation_binding_value);
+  TRY(sc_keymgr_owner_advance(sealing_binding_value, attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
-                                     &curr_pubkey));
+                                     curr_pubkey));
   const cert_key_id_pair_t cdi_1_key_ids = {
       .endorsement = &cdi_0_pubkey_id,
       .cert = &cdi_1_pubkey_id,
   };
   TRY(dice_cdi_1_cert_build(&zero_digest, &zero_digest, &zero_digest, 0,
-                            kOwnerAppDomainProd, &cdi_1_key_ids, &cdi_0_pubkey,
-                            &curr_pubkey, all_certs, &curr_cert_size));
+                            kOwnerAppDomainProd, &cdi_1_key_ids, cdi_0_pubkey,
+                            curr_pubkey, all_certs, &curr_cert_size));
   *cdi_1_offset = blob_to_host->next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -872,7 +876,8 @@ static status_t write_digest_to_dice_page(
 static status_t personalize_endorse_certificates(
     ujson_t *uj, const perso_blob_t *blob_to_host, perso_blob_t *blob_from_host,
     uint8_t *all_certs, const size_t all_certs_size, const size_t uds_offset,
-    const size_t cdi_0_offset, const size_t cdi_1_offset) {
+    const size_t cdi_0_offset, const size_t cdi_1_offset,
+    aligned_dice_storage_page_t *dice_page) {
   /*****************************************************************************
    * Certificate Export and Endorsement.
    ****************************************************************************/
@@ -956,7 +961,6 @@ static status_t personalize_endorse_certificates(
   // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
   next_cert = all_certs;
   free_room = all_certs_size;
-  static alignas(uint64_t) dice_storage_page_t dice_page;
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -966,7 +970,7 @@ static status_t personalize_endorse_certificates(
       continue;
     }
 
-    memset(&dice_page, 0, sizeof(dice_page));
+    memset(&dice_page->page, 0, sizeof(dice_page->page));
 
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
@@ -978,7 +982,7 @@ static status_t personalize_endorse_certificates(
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
       TRY(write_cert_to_dice_page(&curr_layout, &block, next_cert, page_offset,
-                                  cert_size_bytes_ru, &dice_page));
+                                  cert_size_bytes_ru, &dice_page->page));
       page_offset += cert_size_bytes_ru;
       next_cert += block.obj_size;
 
@@ -987,12 +991,12 @@ static status_t personalize_endorse_certificates(
     }
 
     if (curr_layout.need_digest) {
-      TRY(write_digest_to_dice_page(&curr_layout, &dice_page));
+      TRY(write_digest_to_dice_page(&curr_layout, &dice_page->page));
     }
 
     TRY(flash_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
-                              util_size_to_words(sizeof(dice_page)),
-                              &dice_page));
+                              util_size_to_words(sizeof(dice_page->page)),
+                              &dice_page->page));
   }
 
   blob_from_host->num_objs = num_objs_in_blob_from_host;
@@ -1010,10 +1014,11 @@ static status_t personalize_endorse_certificates(
  * certificate was generated using the correct OTP values.
  */
 static status_t check_otp_measurement_pre_lock(const hmac_digest_t *measurement,
-                                               otp_partition_t partition) {
+                                               otp_partition_t partition,
+                                               uint32_t *otp_state) {
   hmac_digest_t final_measurement;
   TRY(measure_otp_partition(partition, &final_measurement,
-                            /*use_expected_values=*/false));
+                            /*use_expected_values=*/false, otp_state));
 
   TRY_CHECK(final_measurement.digest[1] == measurement->digest[1]);
   TRY_CHECK(final_measurement.digest[0] == measurement->digest[0]);
@@ -1037,7 +1042,7 @@ static status_t check_otp_measurement_post_lock(
 
 static status_t finalize_otp_partitions(
     const hmac_digest_t *otp_creator_sw_cfg_measurement,
-    const hmac_digest_t *otp_owner_sw_cfg_measurement) {
+    const hmac_digest_t *otp_owner_sw_cfg_measurement, uint32_t *otp_state) {
   TRY(check_next_slot_bootable());
 
   // Complete the provisioning of OTP OwnerSwCfg partition.
@@ -1045,7 +1050,7 @@ static status_t finalize_otp_partitions(
     TRY(manuf_individualize_device_field_cfg(
         &otp_ctrl, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET));
     TRY(check_otp_measurement_pre_lock(otp_owner_sw_cfg_measurement,
-                                       kOtpPartitionOwnerSwCfg));
+                                       kOtpPartitionOwnerSwCfg, otp_state));
     TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
   }
   TRY(check_otp_measurement_post_lock(
@@ -1058,7 +1063,7 @@ static status_t finalize_otp_partitions(
     TRY(manuf_individualize_device_field_cfg(
         &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET));
     TRY(check_otp_measurement_pre_lock(otp_creator_sw_cfg_measurement,
-                                       kOtpPartitionCreatorSwCfg));
+                                       kOtpPartitionCreatorSwCfg, otp_state));
     TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
   }
   TRY(check_otp_measurement_post_lock(
@@ -1112,12 +1117,23 @@ static status_t provision(ujson_t *uj) {
   size_t uds_offset = 0;
   size_t cdi_0_offset = 0;
   size_t cdi_1_offset = 0;
+  /*
+   * Keymgr binding values.
+   */
+  static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+  static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+  static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
+  static ecdsa_p256_public_key_t cdi_0_pubkey = {.x = {0}, .y = {0}};
+  static cert_scratch_buffer_t cert_buffer;
+  static aligned_dice_storage_page_t dice_page;
+  static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
   TRY(personalize_gen_dice_certificates(
       uj, &blob_to_host, &otp_creator_sw_cfg_measurement,
       &otp_owner_sw_cfg_measurement, &otp_rot_creator_auth_codesign_measurement,
       &otp_rot_creator_auth_state_measurement, &certgen_inputs, &uds_pubkey,
       &uds_pubkey_id, all_certs, sizeof(all_certs), &uds_offset, &cdi_0_offset,
-      &cdi_1_offset));
+      &cdi_1_offset, &sealing_binding_value, &attestation_binding_value,
+      &curr_pubkey, &cdi_0_pubkey, otp_state));
   owner_config_t owner_config;
   owner_application_keyring_t owner_keyring = {0};
   TRY(install_owner(&owner_config, &owner_keyring));
@@ -1147,8 +1163,8 @@ static status_t provision(ujson_t *uj) {
   // Endorse TBS certs and install in flash.
   TRY(personalize_endorse_certificates(uj, &blob_to_host, &blob_from_host,
                                        all_certs, sizeof(all_certs), uds_offset,
-                                       cdi_0_offset, cdi_1_offset));
-  TRY(hash_all_certs());
+                                       cdi_0_offset, cdi_1_offset, &dice_page));
+  TRY(hash_all_certs(&cert_buffer));
   personalize_extension_post_endorse_t post_endorse = {
       .uj = uj,
       .perso_blob_from_host = &blob_from_host,
@@ -1166,7 +1182,7 @@ static status_t provision(ujson_t *uj) {
 
   // Complete any remaining OTP programming.
   TRY(finalize_otp_partitions(&otp_creator_sw_cfg_measurement,
-                              &otp_owner_sw_cfg_measurement));
+                              &otp_owner_sw_cfg_measurement, otp_state));
 
   return OK_STATUS();
 }
