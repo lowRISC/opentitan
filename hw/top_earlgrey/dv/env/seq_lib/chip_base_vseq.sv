@@ -93,16 +93,11 @@ class chip_base_vseq #(
     // that we also need to pick ECC values that match.
     for (int addr = 0; addr < RomMaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      rom.rom_encrypt_write32_integ(addr,
-                                    rnd_data,
-                                    top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-                                    top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce,
-                                    1'b1); // Enable scrambling.
+      rom.rom_encrypt_write32_integ(addr, rnd_data, 1'b1);
     end
 
     // Update the ROM digest.
-    rom.update_rom_digest(top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-                          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
+    rom.update_rom_digest();
   endfunction
 
   // Iniitializes the DUT.
@@ -351,8 +346,7 @@ class chip_base_vseq #(
       end else begin  // if (mem.get_access() == "RW")
         // deposit random data to rom
         int byte_addr = offset * 4;
-        rom.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata), .key(RndCnstRomCtrlScrKey),
-                                      .nonce(RndCnstRomCtrlScrNonce), .scramble_data(1));
+        rom.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata), .scramble_data(1));
       end
     end
 

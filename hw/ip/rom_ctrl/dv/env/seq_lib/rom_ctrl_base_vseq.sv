@@ -83,11 +83,7 @@ task rom_ctrl_base_vseq::rom_ctrl_mem_init();
   // that we also need to pick ECC values that match.
   for (int i = 0; i < ROM_SIZE_WORDS; i++) begin
     `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-    cfg.rom_ctrl_bkdr_util_h.rom_encrypt_write32_integ(i * 4,
-                                                  rnd_data,
-                                                  RND_CNST_SCR_KEY,
-                                                  RND_CNST_SCR_NONCE,
-                                                  1'b1);
+    cfg.rom_ctrl_bkdr_util_h.rom_encrypt_write32_integ(i * 4, rnd_data, 1'b1);
   end
 endtask
 

@@ -54,8 +54,7 @@ function void rom_ctrl_common_vseq::inject_intg_fault_in_passthru_mem(
   bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] rdata;
   bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
 
-  rdata = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(addr, RND_CNST_SCR_KEY,
-                                                 RND_CNST_SCR_NONCE, 1'b1);
+  rdata = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(addr, 1'b1);
 
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bits,
       $countones(flip_bits) inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
@@ -63,8 +62,7 @@ function void rom_ctrl_common_vseq::inject_intg_fault_in_passthru_mem(
   `uvm_info(`gfn, $sformatf("Backdoor change mem (addr 0x%0h) value 0x%0h by flipping bits %0h",
                             addr, rdata, flip_bits), UVM_LOW)
 
-  cfg.rom_ctrl_bkdr_util_h.rom_encrypt_write32_integ(addr, rdata, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE,
-                                                1'b1, flip_bits);
+  cfg.rom_ctrl_bkdr_util_h.rom_encrypt_write32_integ(addr, rdata, 1'b1, flip_bits);
 endfunction
 
 // Return 1 if path is a pointer in the prim_count associated with the fifo at fifo_path
