@@ -48,8 +48,8 @@ static status_t print_cert(char *dest,
   uint32_t offset = 0;
   size_t len = sizeof(data);
   while (true) {
-    perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, &obj);
+    perso_tlv_cert_obj_view_t obj = {0};
+    rom_error_t err = perso_tlv_get_cert_obj_view(data + offset, len, &obj);
     if (err != kErrorOk) {
       break;
     }

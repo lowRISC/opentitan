@@ -30,9 +30,10 @@ static dif_keymgr_t keymgr;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static status_t get_stored_certificate(const char *cert_name, size_t name_size,
-                                       const flash_ctrl_info_page_t *info_page,
-                                       perso_tlv_cert_obj_t *out_cert_obj) {
+static status_t get_stored_certificate(
+    const char *cert_name, size_t name_size,
+    const flash_ctrl_info_page_t *info_page,
+    perso_tlv_cert_obj_view_t *out_cert_obj) {
   uint8_t data[2048];
   TRY(flash_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t),
                            data));
@@ -41,7 +42,8 @@ static status_t get_stored_certificate(const char *cert_name, size_t name_size,
   size_t len = sizeof(data);
 
   while (len > 0) {
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, out_cert_obj);
+    rom_error_t err =
+        perso_tlv_get_cert_obj_view(data + offset, len, out_cert_obj);
     if (err != kErrorOk) {
       break;
     }
@@ -106,7 +108,7 @@ static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
 }
 
 status_t dice_test(void) {
-  perso_tlv_cert_obj_t target_cert = {0};
+  perso_tlv_cert_obj_view_t target_cert = {0};
 
   TRY(get_stored_certificate("CDI_1", 5, &kFlashCtrlInfoPageDiceCerts,
                              &target_cert));
