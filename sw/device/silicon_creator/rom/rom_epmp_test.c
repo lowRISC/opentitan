@@ -21,12 +21,11 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
@@ -181,8 +180,7 @@ static bool execute(const void *pc, ibex_exc_t expect) {
 }
 
 /**
- * An instruction that has all bits set. This value is specifically chosen to
- * match an erased flash.
+ * An instruction that has all bits set.
  *
  * Attempts to execute this instruction, `unimp`, will result in an illegal
  * instruction exception.
@@ -262,24 +260,23 @@ static void test_noexec_rwdata(void) {
 }
 
 /**
- * Test that eFlash is not executable.
+ * Test that the NVM (RRAM) host window is not executable.
  */
-static void test_noexec_eflash(void) {
-  // Ideally we'd check all of eFlash but that takes a very long time in
-  // simulation. Instead, check the first and last words are not executable and
-  // check a sample of other addresses.
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  size_t eflash_len =
-      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / sizeof(eflash[0]);
-  CHECK(execute(&eflash[0], kIbexExcInstrAccessFault));
-  CHECK(execute(&eflash[eflash_len - 1], kIbexExcInstrAccessFault));
+static void test_noexec_nvm(void) {
+  // Ideally we'd check all of the NVM host window but that takes a very long
+  // time in simulation. Instead, check the first and last words are not
+  // executable and check a sample of other addresses.
+  uint32_t *nvm = (uint32_t *)NVM_DATA_BASE_ADDR;
+  size_t nvm_len = NVM_DATA_SIZE_BYTES / sizeof(nvm[0]);
+  CHECK(execute(&nvm[0], kIbexExcInstrAccessFault));
+  CHECK(execute(&nvm[nvm_len - 1], kIbexExcInstrAccessFault));
 
   // Step size is picked arbitrarily but should provide a reasonable sample of
   // addresses.
-  size_t step = eflash_len / 999;
-  for (size_t i = step; i < eflash_len; i += step) {
-    if (!execute(&eflash[i], kIbexExcInstrAccessFault)) {
-      LOG_ERROR("eflash execution not blocked @ %p", &eflash[i]);
+  size_t step = nvm_len / 999;
+  for (size_t i = step; i < nvm_len; i += step) {
+    if (!execute(&nvm[i], kIbexExcInstrAccessFault)) {
+      LOG_ERROR("NVM execution not blocked @ %p", &nvm[i]);
       passed = false;
       break;
     }
@@ -311,22 +308,22 @@ static void test_noexec_mmio(void) {
 /**
  * Test the function used to unlock execution of the ROM extension.
  *
- * Unlock a section of eFlash to simulate the unlocking of the ROM_EXT text.
- * Accesses within the unlocked region should execute (and generate an illegal
- * instruction exception in this case) while accesses outside the unlocked
- * region should still fail with an instruction access fault exception.
+ * Unlock a section of the NVM host window to simulate the unlocking of the
+ * ROM_EXT text. Accesses within the unlocked region should execute (and
+ * generate an illegal instruction exception in this case) while accesses
+ * outside the unlocked region should still fail with an instruction access
+ * fault exception.
  *
  * @param epmp The ePMP state to update.
  */
-static void test_unlock_exec_eflash(void) {
+static void test_unlock_exec_nvm(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
   // aligned and beyond the ROM region, since this same image is placed in the
-  // flash).
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  size_t eflash_len =
-      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / sizeof(eflash[0]);
-  uint32_t *image = &eflash[eflash_len / 5];
-  size_t image_len = eflash_len / 7;
+  // NVM).
+  uint32_t *nvm = (uint32_t *)NVM_DATA_BASE_ADDR;
+  size_t nvm_len = NVM_DATA_SIZE_BYTES / sizeof(nvm[0]);
+  uint32_t *image = &nvm[nvm_len / 5];
+  size_t image_len = nvm_len / 7;
   epmp_region_t region = {.start = (uintptr_t)&image[0],
                           .end = (uintptr_t)&image[image_len]};
 
@@ -335,10 +332,28 @@ static void test_unlock_exec_eflash(void) {
   rom_epmp_unlock_rom_ext_rx(region);
   CHECK(epmp_state_check() == kErrorOk);
 
-  // Verify that execution within the region succeeds.
-  // The image must consist of `unimp` instructions so that an illegal
-  // instruction exception is generated. Because the region is not written and
-  // tests begin with the flash erased, this instruction is expected to be
+  // Don't rely on the region's words being unwritten; explicitly write the
+  // expected value to each boundary address instead.
+  nvm_ctrl_data_default_perms_set((nvm_page_perms_t){
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+  });
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioDataDefaultPermsSet);
+  uint32_t unimp = kUnimpInstruction;
+  CHECK(nvm_ctrl_data_write((uint32_t)&image[0] - NVM_DATA_BASE_ADDR, 1,
+                            &unimp) == kErrorOk);
+  CHECK(nvm_ctrl_data_write(
+            (uint32_t)&image[image_len - 1] - NVM_DATA_BASE_ADDR, 1, &unimp) ==
+        kErrorOk);
+  nvm_ctrl_data_default_perms_set((nvm_page_perms_t){
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+  });
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioDataDefaultPermsSet);
+
+  // Verify that execution within the region succeeds. The image must consist
+  // of `unimp` instructions so that an illegal instruction exception is
+  // generated; since we just wrote it above, this word is expected to be
   // UINT32_MAX.
   CHECK(image[0] == kUnimpInstruction);
   CHECK(execute(&image[0], kIbexExcIllegalInstrFault));
@@ -369,10 +384,10 @@ void rom_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
-  // Enable execution of code in flash.
-  flash_ctrl_init();
-  flash_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit + kFlashCtrlSecMmioExecSet);
+  // Enable execution of code in NVM.
+  nvm_ctrl_init();
+  nvm_ctrl_exec_set(NVM_EXEC_EN);
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInit + kNvmCtrlSecMmioExecSet);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
@@ -392,12 +407,12 @@ void rom_main(void) {
   // Test that execution outside the ROM text is blocked by default.
   test_noexec_rodata();
   test_noexec_rwdata();
-  test_noexec_eflash();
+  test_noexec_nvm();
   test_noexec_mmio();
 
-  // Test that execution is unlocked for a sub-region of eFlash correctly.
+  // Test that execution is unlocked for a sub-region of NVM correctly.
   // Simulates the unlocking of the ROM extension text.
-  test_unlock_exec_eflash();
+  test_unlock_exec_nvm();
 
   // The test of the ROM's ePMP configuration is now complete. Unlock the
   // DV address space so that the test result can be reported. Assumes that PMP

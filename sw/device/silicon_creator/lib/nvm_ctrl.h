@@ -59,6 +59,8 @@ extern "C" {
 #define NVM_NUM_BANKS FLASH_CTRL_PARAM_REG_NUM_BANKS
 /** Number of data pages per NVM bank. */
 #define NVM_PAGES_PER_BANK FLASH_CTRL_PARAM_REG_PAGES_PER_BANK
+/** Value that enables code execution from NVM; see `nvm_ctrl_exec_set()`. */
+#define NVM_EXEC_EN FLASH_CTRL_PARAM_EXEC_EN
 #if defined(OPENTITAN_IS_EARLGREY)
 /** Base address of the NVM data partition in the system memory map. */
 #define NVM_DATA_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
@@ -98,6 +100,8 @@ extern "C" {
 #define NVM_PAGES_PER_BANK RRAM_CTRL_PARAM_NUM_DATA_PAGES
 /** Byte size of one NVM bank. */
 #define NVM_BYTES_PER_BANK (NVM_PAGES_PER_BANK * NVM_BYTES_PER_PAGE)
+/** Value that enables code execution from NVM; see `nvm_ctrl_exec_set()`. */
+#define NVM_EXEC_EN RRAM_CTRL_PARAM_EXEC_EN
 /**
  * Base address of the NVM data partition in the system memory map.
  *
@@ -565,8 +569,8 @@ void nvm_ctrl_bank_erase_perms_set(hardened_bool_t enable);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioExecSet)`.
  *
- * @param exec_val `FLASH_CTRL_PARAM_EXEC_EN` enables execution; all other
- *                 values disable it.
+ * @param exec_val `NVM_EXEC_EN` enables execution; all other values disable
+ *                 it.
  */
 void nvm_ctrl_exec_set(uint32_t exec_val);
 
