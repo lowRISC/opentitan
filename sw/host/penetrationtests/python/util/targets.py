@@ -185,18 +185,12 @@ class Target:
             The JSON response of OpenTitan.
         """
         time.sleep(init_timeout)
-        it = 0
-        while it < max_tries:
-            try:
-                read_line = str(self.readline().decode().strip())
-            except UnicodeDecodeError:
-                break
+        for _ in range(max_tries):
+            read_line = str(self.readline().decode(errors="replace").strip())
             if len(read_line) > 0:
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
-            else:
-                break
-            it += 1
+        print("read_response: maximum attempts reached without a valid response", flush=True)
         return ""
 
     def start_openocd(self, startup_delay=4, print_output=True):
