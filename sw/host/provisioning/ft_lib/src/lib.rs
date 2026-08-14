@@ -301,7 +301,7 @@ fn provision_certificates(
     let dice_ca_key = &ca_keys["dice"];
 
     // DICE certificate names.
-    let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
+    let dice_cert_names = HashSet::from(["UDS"]);
 
     let perso_blob_parser = PersoBlobParser::new(perso_blob);
     let mut perso_blob_builder = PersoBlobBuilder::new();
@@ -485,10 +485,15 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-validate-dice", t0);
 
     let t0 = Instant::now();
-    if !dice_cert_chain_cwt.is_empty() {
+    if dice_cert_chain_cwt.len() > 1 {
         log::info!("Validating DICE certificate chain with hwtrust ...");
         validate_cwt_dice_chain(&dice_cert_chain_cwt)?;
         log::info!("Success.");
+    } else {
+        log::info!(
+            "Only {} certs in DICE certificate chain for CWT. Skipping chain validation",
+            dice_cert_chain_cwt.len()
+        );
     }
     response
         .stats
