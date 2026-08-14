@@ -151,7 +151,11 @@ def validate_digest_values(
             owner_sw_cfg_file.as_posix(),
         ]
         print(f"    Command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        # Capture and parse stdout only (the tool's HJSON output).
+        # stderr goes to the terminal so Bazel's own diagnostics
+        # (build progress and remote-cache/build statistics) is still
+        # visible in the CI log.
+        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
         opentitantool_output = result.stdout
 
     except subprocess.CalledProcessError as e:
