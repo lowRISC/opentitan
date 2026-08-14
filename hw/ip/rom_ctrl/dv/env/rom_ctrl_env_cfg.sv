@@ -224,10 +224,7 @@ function bit [DIGEST_SIZE-1:0] rom_ctrl_env_cfg::get_expected_digest();
 
   // Backdoor read the digest in 32-bit words.
   for (int unsigned i = 0; i < DIGEST_SIZE / 32; i++) begin
-    bit [38:0] raw_word = rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (dig_addr + i),
-                                                                  RND_CNST_SCR_KEY,
-                                                                  RND_CNST_SCR_NONCE,
-                                                                  1'b0);
+    bit [38:0] raw_word = rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (dig_addr + i), 1'b0);
 
     // Ignore the top 7 bits (which contain ECC data) and just accumulate the other 32.
     digest[32 * i +: 32] = raw_word[31:0];

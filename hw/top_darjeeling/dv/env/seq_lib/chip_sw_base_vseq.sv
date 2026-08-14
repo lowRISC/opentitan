@@ -779,12 +779,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        // TODO(#26486): The ROM utils _do_ have their configurations stored internally.
-        if (mem == Rom0) begin
-          rom.update_rom_digest(RndCnstRomCtrl0ScrKey, RndCnstRomCtrl0ScrNonce);
-        end else begin
-          rom.update_rom_digest(RndCnstRomCtrl1ScrKey, RndCnstRomCtrl1ScrNonce);
-        end
+        rom.update_rom_digest();
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",

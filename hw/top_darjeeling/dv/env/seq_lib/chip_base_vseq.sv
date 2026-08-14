@@ -100,29 +100,19 @@ class chip_base_vseq #(
     // that we also need to pick ECC values that match.
     for (int addr = 0; addr < Rom0MaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      rom0.rom_encrypt_write32_integ(addr,
-                                     rnd_data,
-                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
-                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce,
-                                     1'b1); // Enable scrambling.
+      rom0.rom_encrypt_write32_integ(addr, rnd_data, 1'b1);
     end
 
     // Update the ROM digest.
-    rom0.update_rom_digest(top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
-                           top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce);
+    rom0.update_rom_digest();
 
     for (int addr = 0; addr < Rom1MaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      rom1.rom_encrypt_write32_integ(addr,
-                                     rnd_data,
-                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
-                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce,
-                                     1'b1); // Enable scrambling.
+      rom1.rom_encrypt_write32_integ(addr, rnd_data, 1'b1);
     end
 
     // Update the ROM digest.
-    rom1.update_rom_digest(top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
-                           top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce);
+    rom1.update_rom_digest();
   endfunction
 
   // Iniitializes the DUT.
@@ -394,14 +384,10 @@ class chip_base_vseq #(
             byte_addr <  (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR +
                           top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES)) begin
           // deposit random data to rom
-          rom0.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
-                                         .key(RndCnstRomCtrl0ScrKey),
-                                         .nonce(RndCnstRomCtrl0ScrNonce), .scramble_data(1));
+          rom0.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata), .scramble_data(1));
         end else begin
           // deposit random data to rom
-          rom1.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
-                                         .key(RndCnstRomCtrl1ScrKey),
-                                         .nonce(RndCnstRomCtrl1ScrNonce), .scramble_data(1));
+          rom1.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata), .scramble_data(1));
         end
       end
     end

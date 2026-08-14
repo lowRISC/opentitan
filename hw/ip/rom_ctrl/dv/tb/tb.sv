@@ -98,9 +98,7 @@ module tb;
                                .depth ($size(`ROM_CTRL_MEM_HIER)),
                                .n_bits($bits(`ROM_CTRL_MEM_HIER)),
                                .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-                               // Encryption configuration will be provided dynamically.
-                               .key('0), .nonce('0)  // Not used.
-                              );
+                               .key(dut.RndCnstScrKey), .nonce(dut.RndCnstScrNonce));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

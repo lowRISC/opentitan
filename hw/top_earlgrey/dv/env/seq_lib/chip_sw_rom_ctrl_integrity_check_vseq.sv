@@ -66,8 +66,6 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     bit [bus_params_pkg::BUS_AW-1:0]                addr;
     bit [38:0]                                      data;
     bit [38:0]                                      flip_bit;
-    bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0]  nonce;
-    bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]    key;
     rom_ctrl_bkdr_util rom;
 
     `downcast(rom, cfg.mem_bkdr_util_h[Rom])
@@ -83,10 +81,8 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     )
     // TODO(lowrisc/opentitan#16072): Limiting the bit-flip to the data bits. Revisit later.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bit, $onehot(flip_bit); flip_bit[38:32] == 0;)
-    nonce = top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce;
-    key = top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey;
-    data = rom.rom_encrypt_read32(addr, key, nonce, 0) ^ flip_bit;
-    rom.rom_encrypt_write32_integ(addr, data, key, nonce, 0);
+    data = rom.rom_encrypt_read32(addr, 0) ^ flip_bit;
+    rom.rom_encrypt_write32_integ(addr, data, 0);
   endfunction
 
 endclass : chip_sw_rom_ctrl_integrity_check_vseq

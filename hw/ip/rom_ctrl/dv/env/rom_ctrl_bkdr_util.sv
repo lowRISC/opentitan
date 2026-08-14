@@ -10,28 +10,44 @@
 
 class rom_ctrl_bkdr_util extends mem_bkdr_util;
 
-  // Encryption configuration.
-  bit [127:0] m_key;
-  bit [63:0] m_nonce;
+  // Encryption configuration (provided to the constructor)
+  //
+  // Both the key and nonce are stored as LSB-first unpacked arrays because this is the format
+  // expected by sram_scrambler_pkg::encrypt_sram_addr, sram_scrambler_pkg::encrypt_sram_data and
+  // sram_scrambler_pkg::gen_keystream.
+  local logic m_key[];
+  local logic m_nonce[];
 
-  // Initialize the class instance.
-  // `extra_bits_per_subword` is the width of any additional metadata that is not captured in the
-  // secded package.
-  function new(string name = "", string path, int unsigned depth,
-               longint unsigned n_bits, err_detection_e err_detection_scheme,
-               bit [127:0] key, bit [63:0] nonce, mem_bkdr_util_row_adapter row_adapter = null,
-               int num_prince_rounds_half = 3, int extra_bits_per_subword = 0,
-               int unsigned system_base_addr = 0);
+  // Class constructor
+  //
+  // Most arguments are inherited from mem_bkdr_util::new, and are documented in the base class. The
+  // extra arguments are:
+  //
+  //  key:   A 128-bit key used to encrypt every word in the ROM.
+  //  nonce: A 64-bit nonce used as part of data encryption, but also for address scrambling.
+  function new(string                    name = "",
+               string                    path,
+               int unsigned              depth,
+               longint unsigned          n_bits,
+               err_detection_e           err_detection_scheme,
+               bit [127:0]               key,
+               bit [63:0]                nonce,
+               mem_bkdr_util_row_adapter row_adapter = null,
+               int                       num_prince_rounds_half = 3,
+               int                       extra_bits_per_subword = 0,
+               int unsigned              system_base_addr = 0);
     super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter,
               num_prince_rounds_half, extra_bits_per_subword, system_base_addr);
-    // Remember the encryption configuration.
-    m_key = key;
-    m_nonce = nonce;
+
+    m_key   = new[128];
+    m_key = {<<{key}};
+
+    m_nonce = new[64];
+    m_nonce = {<<{nonce}};
   endfunction
 
+  // Read a 32-bit value from ROM
   virtual function bit [38:0] rom_encrypt_read32(bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                                 logic [SRAM_KEY_WIDTH-1:0]       key,
-                                                 logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
                                                  bit                              unscramble_data);
 
     logic [bus_params_pkg::BUS_AW-1:0] mem_addr = '0;
@@ -40,13 +56,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     logic addr_arr      [] = new[addr_width];
     logic scrambled_addr[] = new[addr_width];
     logic data_arr      [] = new[39];
-    logic key_arr       [] = new[SRAM_KEY_WIDTH];
-    logic nonce_arr     [] = new[SRAM_BLOCK_WIDTH];
     logic keystream     [] = new[SRAM_BLOCK_WIDTH];
-    logic zero_key      [] = new[39];
-
-    key_arr   = {<<{key}};
-    nonce_arr = {<<{nonce}};
 
     for (int i = 0; i < addr_width; i++) begin
       addr_arr[i] = addr[addr_lsb + i];
@@ -54,7 +64,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
 
     // Calculate the scrambled address
     scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, addr_width,
-                                                           mem_bkdr_util::depth, nonce_arr);
+                                                           mem_bkdr_util::depth, m_nonce);
 
     for (int i = 0; i < addr_width; i++) begin
       mem_addr[i] = scrambled_addr[i];
@@ -75,11 +85,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     data_arr = {<<{data}};
 
     // Generate the keystream
-    keystream = sram_scrambler_pkg::gen_keystream(addr_arr, addr_width, key_arr, nonce_arr);
-
-    for (int i = 0; i < 39; i++) begin
-      zero_key[i] = '0;
-    end
+    keystream = sram_scrambler_pkg::gen_keystream(addr_arr, addr_width, m_key, m_nonce);
 
     for (int i = 0; i < 39; i++) begin
       data[i] = data_arr[i] ^ keystream[i];
@@ -91,8 +97,6 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
 
   virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                   logic [38:0]                       data,
-                                                  logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                  logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
                                                   bit                                scramble_data,
                                                   bit   [38:0]                       flip_bits = 0);
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
@@ -102,11 +106,6 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     logic wdata_arr      [] = new[39];
     logic scrambled_addr [] = new[addr_width];
     logic rom_addr       [] = new[addr_width];
-    logic key_arr        [] = new[SRAM_KEY_WIDTH];
-    logic nonce_arr      [] = new[SRAM_BLOCK_WIDTH];
-
-    key_arr   = {<<{key}};
-    nonce_arr = {<<{nonce}};
 
     for (int i = 0; i < addr_width; i++) begin
       rom_addr[i] = addr[addr_lsb + i];
@@ -114,7 +113,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
 
     // Calculate the scrambled address
     scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(rom_addr, addr_width,
-                                                           mem_bkdr_util::depth, nonce_arr);
+                                                           mem_bkdr_util::depth, m_nonce);
 
     if (scramble_data) begin
       // Calculate the integrity constant
@@ -126,7 +125,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
       // Calculate the scrambled data
       wdata_arr = {<<{integ_data}};
       wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
-          wdata_arr, 39, 39, rom_addr, addr_width, key_arr, nonce_arr
+          wdata_arr, 39, 39, rom_addr, addr_width, m_key, m_nonce
       );
       scrambled_data = {<<{wdata_arr}};
     end
@@ -146,42 +145,36 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
   endfunction
 
   virtual function bit [7:0] rom_encrypt_read8(bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                               logic [SRAM_KEY_WIDTH-1:0]       key,
-                                               logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
                                                bit                              unscramble_data = 1
                                               );
     int byte_offset = addr % bytes_per_word;
     bit [bus_params_pkg::BUS_AW-1:0] aligned_addr = (addr >> addr_lsb) << addr_lsb;
-    bit [38:0] data = rom_encrypt_read32(aligned_addr, key, nonce, unscramble_data);
+    bit [38:0] data = rom_encrypt_read32(aligned_addr, unscramble_data);
     return (data >> (byte_offset * byte_width)) & 8'hff;
   endfunction
 
   virtual function void rom_encrypt_write8(bit [bus_params_pkg::BUS_AW-1:0] addr,
                                            logic [7:0]                      data,
-                                           logic [SRAM_KEY_WIDTH-1:0]       key,
-                                           logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
                                            bit                              scramble_data = 1);
     bit [bus_params_pkg::BUS_AW-1:0] aligned_addr = (addr >> addr_lsb) << addr_lsb;
     int byte_offset = addr % bytes_per_word;
-    bit [31:0] rw_data = 32'(rom_encrypt_read32(addr, key, nonce, scramble_data));
+    bit [31:0] rw_data = 32'(rom_encrypt_read32(aligned_addr, scramble_data));
 
     rw_data[byte_offset * 8 +: 8] = data;
-    rom_encrypt_write32_integ(aligned_addr, rw_data, key, nonce, scramble_data);
+    rom_encrypt_write32_integ(aligned_addr, rw_data, scramble_data);
   endfunction
 
   // Read a single byte from the specified address.
   virtual function logic [7:0] read8(bit [bus_params_pkg::BUS_AW-1:0] addr);
-    return rom_encrypt_read8(addr, m_key, m_nonce);
+    return rom_encrypt_read8(addr);
   endfunction
 
   // Write a single byte at the specified address.
   virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data);
-    rom_encrypt_write8(addr, data, m_key, m_nonce);
+    rom_encrypt_write8(addr, data);
   endfunction
 
-  virtual function void update_rom_digest(logic [SRAM_KEY_WIDTH-1:0]   key,
-                                          logic [SRAM_BLOCK_WIDTH-1:0] nonce);
-    bit [63:0] kmac_data[$];
+  virtual function void update_rom_digest();
     bit [7:0] kmac_data_arr[];
     bit [7:0] dpi_digest[kmac_pkg::AppDigestW / 8];
     int kmac_data_bytes = size_bytes - ROM_DIGEST_BYTES;
@@ -200,7 +193,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
       // it returns 39 bits, including integrity. and the 39 bits data will be sent to 40 bits bus
       // to the kmac. The kmac bus has byte strobes that are used to indicate 5 bytes instead of the
       // full 8.
-      data40 = 40'(rom_encrypt_read32(i, key, nonce, scramble_data));
+      data40 = 40'(rom_encrypt_read32(i, scramble_data));
       for (int j = 0; j < 5; j++) begin
         // At byte position 0, we want bytes 0, 1, 2, 3, 4
         // At byte position 4, we want bytes 5, 6, 7, 8, 9
@@ -213,7 +206,7 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
                                       kmac_pkg::AppDigestW / 8, dpi_digest);
 
     for (int i = 0; i < ROM_DIGEST_BYTES; i++) begin
-      rom_encrypt_write8(digest_start_addr + i, dpi_digest[i], key, nonce, scramble_data);
+      rom_encrypt_write8(digest_start_addr + i, dpi_digest[i], scramble_data);
     end
   endfunction
 endclass
