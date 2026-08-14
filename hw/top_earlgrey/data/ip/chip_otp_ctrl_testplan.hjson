@@ -24,15 +24,15 @@
       name: chip_sw_otp_ctrl_keys
       desc: '''Verify the proliferation of keys to security peripherals.
 
-            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
-              (note that keymgr does not have handshake).
+            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl,
+              keymgr dpe (note that keymgr dpe does not have handshake).
             - Ensure that the test requests a new key and verifies the previously written
               data to an address now returns a garbage value.
 
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
             - chip_sw_flash_scramble
-            - chip_sw_keymgr_key_derivation
+            - chip_sw_keymgr_dpe_key_derivation
             - chip_sw_otbn_mem_scramble
             For sival, this test can be done by
             - manuf_ft_sku_individualization
@@ -45,7 +45,7 @@
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
+              "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
       bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
@@ -66,7 +66,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
+              "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
       bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
@@ -138,14 +138,15 @@
       desc: '''Verify the broadcast signals from LC ctrl.
 
             - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
-            - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
+            - `lc_seed_hw_rd_en_i`: verify that the keymgr dpe outputs a default value
+              when enabled.
             - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
             - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
               programming passes when enabled.
 
             Note that `lc_escalate_en_i` is verified via a connectivity test.
 
-            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr advance operation
+            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr dpe derive operation
             into the CreatorRootKey state, which should fail since the root key will be tied off to
             all-zero when the SECRET2 partition is not locked in OTP.
 

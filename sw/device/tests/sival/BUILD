@@ -127,7 +127,7 @@ test_suite(
         "//sw/device/tests:hmac_secure_wipe_test",
         "//sw/device/tests:i2c_host_override_test",
         "//sw/device/tests:i2c_target_test",
-        "//sw/device/tests:keymgr_key_derivation_test",
+        "//sw/device/tests:keymgr_dpe_key_derivation_test",
         "//sw/device/tests:keymgr_sideload_aes_test",
         "//sw/device/tests:keymgr_sideload_kmac_test",
         "//sw/device/tests:kmac_endianess_test",
