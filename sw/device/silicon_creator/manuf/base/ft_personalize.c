@@ -891,8 +891,9 @@ static status_t install_owner(owner_config_t *config,
 // Returns how much data is left in the perso blob receive buffer (i.e., `body`
 // field). Useful when scanning the receive buffer containing perso LTV objects.
 static size_t max_available(const perso_blob_t *blob) {
-  if (blob->next_free > sizeof(blob->body))
+  if (blob->next_free > sizeof(blob->body)) {
     return 0;  // This could never happen, but just in case.
+  }
 
   return sizeof(blob->body) - blob->next_free;
 }
@@ -939,8 +940,9 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room,
 
     // Check there is enough room in the destination buffer to copy the
     // certificate perso LTV object.
-    if (*free_room < block.obj_size)
+    if (*free_room < block.obj_size) {
       return RESOURCE_EXHAUSTED();
+    }
 
     // Copy the certificate object to the destination buffer.
     uint8_t *dest_p = *dest;
@@ -1065,8 +1067,9 @@ static status_t personalize_endorse_certificates(
     TRY(perso_tlv_get_cert_obj_view(
         stages_shared_data->blob_to_host.body + offset,
         sizeof(stages_shared_data->blob_to_host.body) - offset, &block));
-    if (block.obj_size > free_room)
+    if (block.obj_size > free_room) {
       return RESOURCE_EXHAUSTED();
+    }
     memcpy(next_cert, block.obj_p, block.obj_size);
     next_cert += block.obj_size;
     free_room -= block.obj_size;
