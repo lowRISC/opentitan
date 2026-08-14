@@ -102,8 +102,8 @@ static MemImageType GetMemImageTypeByName(const std::string &name) {
   throw std::runtime_error(oss.str());
 }
 
-// Return a MemImageType for the file at filepath or throw a std::runtime_error.
-// Never returns kMemImageUnknown.
+// Return a MemImageType for the file at filepath.
+// Returns kMemImageUnknown and prints to stderr if the type cannot be guessed.
 static MemImageType DetectMemImageType(const std::string &filepath) {
   size_t stem_pos = filepath.find_last_of("/");
   size_t ext_pos = filepath.find_last_of(".");
@@ -117,9 +117,8 @@ static MemImageType DetectMemImageType(const std::string &filepath) {
   std::string ext = filepath.substr(ext_pos + 1);
   MemImageType image_type = GetMemImageTypeByName(ext);
   if (image_type == kMemImageUnknown) {
-    std::ostringstream oss;
-    oss << "Cannot auto-detect file type for `" << filepath << "'.";
-    throw std::runtime_error(oss.str());
+    std::cerr << "ERROR: Cannot auto-detect file type for `" << filepath << "'." << std::endl;
+    return kMemImageUnknown;
   }
 
   return image_type;
