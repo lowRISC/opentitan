@@ -1107,90 +1107,161 @@ static status_t configure_ate_gpio_indicators(void) {
   return OK_STATUS();
 }
 
+typedef struct perso_pre_endorse_data {
+  manuf_certgen_inputs_t certgen_inputs;
+  ecdsa_p256_public_key_t uds_pubkey;
+
+  /*
+   * Keymgr binding values.
+   */
+  keymgr_binding_value_t attestation_binding_value;
+  keymgr_binding_value_t sealing_binding_value;
+
+  // Temporary buffer to store EC-DSA public keys during DICE cert generation
+  ecdsa_p256_public_key_t curr_pubkey;
+  // Temporary buffer to store CDI0 public key after it is generated and until
+  // CDI1 certificate is endorsed
+  ecdsa_p256_public_key_t cdi_0_pubkey;
+} perso_pre_endorse_data_t;
+
+typedef struct perso_post_endorse_data {
+  // Temporary buffer to read endorsed cert into when hashing it
+  cert_scratch_buffer_t cert_buffer;
+  // Temporary buffer to populate dice page data before actually writing to
+  // flash pages
+  aligned_dice_storage_page_t dice_page;
+} perso_post_endorse_data_t;
+
+typedef enum perso_stage {
+  PERSO_STAGE_PRE_ENDORSE,
+  PERSO_STAGE_POST_ENDORSE,
+} perso_stage_t;
+
+// NOTE: This approach to `stage_specific_data` data assumes that firmware will
+// not maintain any references to data from any prior stages. For example: the
+// firmware will not maintain pointer to the `uds_pubkey` while it is available
+// in the pre-endorsement stage, and then dereference that pointer in the post
+// endorsement stage.
+typedef struct perso_stage_specific_data {
+  perso_stage_t stage;
+  union {
+    perso_pre_endorse_data_t pre_endorse_data;
+    perso_post_endorse_data_t post_endorse_data;
+  } data;
+} perso_stage_specific_data_t;
+
+typedef struct perso_stages_shared_data {
+  perso_blob_t blob_to_host;    // Perso data device => host.
+  perso_blob_t blob_from_host;  // Perso data host => device.
+
+  // Used to store individual certs during pre-endorse stage, and store all
+  // certs during post-endorse stage
+  uint8_t all_certs[8192];
+
+  uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords];
+} perso_stages_shared_data_t;
+
+typedef struct perso_data {
+  perso_stage_specific_data_t stage_specific_data;
+  perso_stages_shared_data_t stages_shared_data;
+} perso_data_t;
+
 static status_t provision(ujson_t *uj) {
   // Provision OTP, flash secrets, certs, and install the first owner.
   TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   TRY(personalize_otp_and_flash_secrets(uj));
 
-  static perso_blob_t blob_to_host;    // Perso data device => host.
-  static perso_blob_t blob_from_host;  // Perso data host => device.
   hmac_digest_t otp_creator_sw_cfg_measurement = {0};
   hmac_digest_t otp_owner_sw_cfg_measurement = {0};
-  hmac_digest_t otp_rot_creator_auth_codesign_measurement = {0};
-  hmac_digest_t otp_rot_creator_auth_state_measurement = {0};
-  static manuf_certgen_inputs_t certgen_inputs;
-  static ecdsa_p256_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
   hmac_digest_t uds_pubkey_id = {0};
-  static uint8_t all_certs[8192];
-  size_t uds_offset = 0;
-  size_t cdi_0_offset = 0;
-  size_t cdi_1_offset = 0;
-  /*
-   * Keymgr binding values.
-   */
-  static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-  static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
-  static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-  static ecdsa_p256_public_key_t cdi_0_pubkey = {.x = {0}, .y = {0}};
-  static cert_scratch_buffer_t cert_buffer;
-  static aligned_dice_storage_page_t dice_page;
-  static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
-  TRY(personalize_gen_dice_certificates(
-      uj, &blob_to_host, &otp_creator_sw_cfg_measurement,
-      &otp_owner_sw_cfg_measurement, &otp_rot_creator_auth_codesign_measurement,
-      &otp_rot_creator_auth_state_measurement, &certgen_inputs, &uds_pubkey,
-      &uds_pubkey_id, all_certs, sizeof(all_certs), &uds_offset, &cdi_0_offset,
-      &cdi_1_offset, &sealing_binding_value, &attestation_binding_value,
-      &curr_pubkey, &cdi_0_pubkey, otp_state));
-  owner_config_t owner_config;
-  owner_application_keyring_t owner_keyring = {0};
-  TRY(install_owner(&owner_config, &owner_keyring));
+  size_t uds_offset = {0};
+  size_t cdi_0_offset = {0};
+  size_t cdi_1_offset = {0};
 
-  // Erase all of the owner-reserved INFO pages before performing any
-  // DICE or owner-customized certificate generation.
-  TRY(erase_owner_info_pages(&owner_config));
+  static perso_data_t perso_data;
 
-  personalize_extension_pre_endorse_t pre_endorse = {
-      .uj = uj,
-      .certgen_inputs = &certgen_inputs,
-      .perso_blob_to_host = &blob_to_host,
-      .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state,
-      .uds_pubkey = &uds_pubkey,
-      .uds_pubkey_id = &uds_pubkey_id,
-      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
-      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
-      .otp_rot_creator_auth_codesign_measurement =
-          &otp_rot_creator_auth_codesign_measurement,
-      .otp_rot_creator_auth_state_measurement =
-          &otp_rot_creator_auth_state_measurement};
-  TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
-  TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
-  TRY(log_self_hash(pre_endorse.perso_blob_to_host));
+  {
+    perso_data.stage_specific_data.stage = PERSO_STAGE_PRE_ENDORSE;
+    perso_pre_endorse_data_t *pre_endorse_data =
+        &perso_data.stage_specific_data.data.pre_endorse_data;
+    hmac_digest_t otp_rot_creator_auth_codesign_measurement = {0};
+    hmac_digest_t otp_rot_creator_auth_state_measurement = {0};
 
-  // Endorse TBS certs and install in flash.
-  TRY(personalize_endorse_certificates(uj, &blob_to_host, &blob_from_host,
-                                       all_certs, sizeof(all_certs), uds_offset,
-                                       cdi_0_offset, cdi_1_offset, &dice_page));
-  TRY(hash_all_certs(&cert_buffer));
-  personalize_extension_post_endorse_t post_endorse = {
-      .uj = uj,
-      .perso_blob_from_host = &blob_from_host,
-      .cert_flash_layout = cert_flash_layout};
-  TRY(personalize_extension_post_cert_endorse(&post_endorse));
+    TRY(personalize_gen_dice_certificates(
+        uj, &perso_data.stages_shared_data.blob_to_host,
+        &otp_creator_sw_cfg_measurement, &otp_owner_sw_cfg_measurement,
+        &otp_rot_creator_auth_codesign_measurement,
+        &otp_rot_creator_auth_state_measurement,
+        &pre_endorse_data->certgen_inputs, &pre_endorse_data->uds_pubkey,
+        &uds_pubkey_id, perso_data.stages_shared_data.all_certs,
+        sizeof(perso_data.stages_shared_data.all_certs), &uds_offset,
+        &cdi_0_offset, &cdi_1_offset, &pre_endorse_data->sealing_binding_value,
+        &pre_endorse_data->attestation_binding_value,
+        &pre_endorse_data->curr_pubkey, &pre_endorse_data->cdi_0_pubkey,
+        perso_data.stages_shared_data.otp_state));
+    owner_config_t owner_config;
+    owner_application_keyring_t owner_keyring = {0};
+    TRY(install_owner(&owner_config, &owner_keyring));
 
-  // Check the hash of all perso objects with the host to confirm integrity of
-  // the transmission / provisioning operations.
-  serdes_sha256_hash_t hash;
-  hmac_sha256_process();
-  hmac_sha256_final((hmac_digest_t *)&hash);
+    // Erase all of the owner-reserved INFO pages before performing any
+    // DICE or owner-customized certificate generation.
+    TRY(erase_owner_info_pages(&owner_config));
 
-  TRY(RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t,
-                            uj, &hash, kSerdesSha256HashSerializedMaxSize));
+    personalize_extension_pre_endorse_t pre_endorse = {
+        .uj = uj,
+        .certgen_inputs = &perso_data.stage_specific_data.data.pre_endorse_data
+                               .certgen_inputs,
+        .perso_blob_to_host = &perso_data.stages_shared_data.blob_to_host,
+        .cert_flash_layout = cert_flash_layout,
+        .flash_ctrl_handle = &flash_ctrl_state,
+        .uds_pubkey = &pre_endorse_data->uds_pubkey,
+        .uds_pubkey_id = &uds_pubkey_id,
+        .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
+        .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
+        .otp_rot_creator_auth_codesign_measurement =
+            &otp_rot_creator_auth_codesign_measurement,
+        .otp_rot_creator_auth_state_measurement =
+            &otp_rot_creator_auth_state_measurement};
+    TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
+    TRY(compute_tbs_was_hmac(&perso_data.stages_shared_data.blob_to_host));
+    TRY(log_self_hash(&perso_data.stages_shared_data.blob_to_host));
+  }
 
-  // Complete any remaining OTP programming.
-  TRY(finalize_otp_partitions(&otp_creator_sw_cfg_measurement,
-                              &otp_owner_sw_cfg_measurement, otp_state));
+  {
+    // Technically, the post endorse stage starts inside
+    // `personalize_endorse_certificates`, but this structure is starting to use
+    // the post endorse fields here
+    perso_data.stage_specific_data.stage = PERSO_STAGE_POST_ENDORSE;
+    perso_post_endorse_data_t *post_endorse_data =
+        &perso_data.stage_specific_data.data.post_endorse_data;
+    // Endorse TBS certs and install in flash.
+    TRY(personalize_endorse_certificates(
+        uj, &perso_data.stages_shared_data.blob_to_host,
+        &perso_data.stages_shared_data.blob_from_host,
+        perso_data.stages_shared_data.all_certs,
+        sizeof(perso_data.stages_shared_data.all_certs), uds_offset,
+        cdi_0_offset, cdi_1_offset, &post_endorse_data->dice_page));
+    TRY(hash_all_certs(&post_endorse_data->cert_buffer));
+    personalize_extension_post_endorse_t post_endorse = {
+        .uj = uj,
+        .perso_blob_from_host = &perso_data.stages_shared_data.blob_from_host,
+        .cert_flash_layout = cert_flash_layout};
+    TRY(personalize_extension_post_cert_endorse(&post_endorse));
+
+    // Check the hash of all perso objects with the host to confirm integrity of
+    // the transmission / provisioning operations.
+    serdes_sha256_hash_t hash;
+    hmac_sha256_process();
+    hmac_sha256_final((hmac_digest_t *)&hash);
+
+    TRY(RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t,
+                              uj, &hash, kSerdesSha256HashSerializedMaxSize));
+
+    // Complete any remaining OTP programming.
+    TRY(finalize_otp_partitions(&otp_creator_sw_cfg_measurement,
+                                &otp_owner_sw_cfg_measurement,
+                                perso_data.stages_shared_data.otp_state));
+  }
 
   return OK_STATUS();
 }
