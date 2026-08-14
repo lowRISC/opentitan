@@ -173,6 +173,9 @@ module i3c_target_trx
   logic ibi_sending;
   assign ibi_sending = 1'b0;
 
+  // Cede driving the bus
+  logic drv_release;
+
   // Transmission of Read Data to the Controller.
   logic [8:0] tx_data_nq[NumSDALanes];
   logic [8:0] tx_data_pq[NumSDALanes];
@@ -509,6 +512,11 @@ module i3c_target_trx
   wire stopping     = stop_det      & !started[2];
 
   assign arb_starting = starting & arb_reqd;
+  // Release the bus whenever we are no longer entitled to drive it: we lost arbitration, we won
+  // the Arbitrable Address Header (the Active Controller drives the ACK, not us), or we are
+  // ignoring the remainder of the frame.
+  assign drv_release = state_q inside {State_Idle, State_WaitStop, State_Ignore} ||
+                       ((state_q == State_ArbCont) && (arb_lost || penult_bit));
 
   // Is there something to transmit on behalf of the addressed target?
   wire tx_avail = sel_valid;
@@ -621,7 +629,11 @@ module i3c_target_trx
                                             : (arb_lost ? State_ArbCede : State_ArbCont);
         State_ArbCede: state_d = penult_bit ? (ack_addr ? State_AckAddr : State_WaitStop)
                                             : State_ArbCede;
-        State_AckAddr: state_d = trans.rnw ? State_TxSDR : State_RxSDR;
+        // The Active Controller's ACK/NACK of an Arbitrable Address Header is sampled on the rising
+        // edge within the ACK bit. On the addressed-target path we drive that bit low ourselves, so
+        // the same test covers both cases and also catches a driver conflict on the ACK bit.
+        State_AckAddr: state_d = sda_pq[0][0] ? State_WaitStop
+                                              : (trans.rnw ? State_TxSDR : State_RxSDR);
 
         // --- Receiving in SDR mode ---
         State_RxSDR: begin
@@ -946,6 +958,10 @@ module i3c_target_trx
       // Starting arbitration or Acknowledge SDR address.
       sda_pp_en_nq  <= 1'b0;
       sda_od_en_nq  <= 1'b1;
+    end else if (drv_release) begin
+      // Disable drivers when arbitration cannot proceed or is completed.
+      sda_pp_en_nq  <= 1'b0;
+      sda_od_en_nq  <= 1'b0;
     end else if (tx_starting | tx_ending) begin
       sda_pp_en_nq  <= tx_starting;
       sda_od_en_nq  <= 1'b0;
