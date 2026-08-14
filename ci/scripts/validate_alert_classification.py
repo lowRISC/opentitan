@@ -12,18 +12,18 @@ validates/updates digest values by parsing the HJSON configuration files.
 """
 
 import argparse
-from pathlib import Path
+import re
 import subprocess
 import sys
-from typing import Any, Dict, Tuple
-import hjson
-import re
+from pathlib import Path
+from typing import Any
 
+import hjson
 
 REGS_OUTPUT_FILE = "sw/host/opentitanlib/src/otp/alert_handler_regs.rs"
 
 
-def find_item_in_cfg(cfg_data: Dict[str, Any], item_name: str) -> Dict[str, Any]:
+def find_item_in_cfg(cfg_data: dict[str, Any], item_name: str) -> dict[str, Any]:
     """Finds an item by name in the parsed owner_sw_cfg data."""
     # Assumes the structure is partitions -> list -> items -> list
     for partition in cfg_data.get("partitions", []):
@@ -33,7 +33,7 @@ def find_item_in_cfg(cfg_data: Dict[str, Any], item_name: str) -> Dict[str, Any]
     raise ValueError(f"Could not find item '{item_name}' in the configuration structure.")
 
 
-def validate_alert_classification(alert_cfg: Dict[str, Any], owner_cfg: Dict[str, Any]) -> bool:
+def validate_alert_classification(alert_cfg: dict[str, Any], owner_cfg: dict[str, Any]) -> bool:
     print("=== Alert Classification Validation ===")
     print("Extracting alert counts from alert handler...")
 
@@ -82,8 +82,8 @@ def validate_alert_classification(alert_cfg: Dict[str, Any], owner_cfg: Dict[str
 
 
 def validate_digest_values(
-    alert_handler_file: Path, owner_sw_cfg_file: Path, owner_cfg: Dict[str, Any]
-) -> Tuple[bool, Dict[str, str]]:
+    alert_handler_file: Path, owner_sw_cfg_file: Path, owner_cfg: dict[str, Any]
+) -> tuple[bool, dict[str, str]]:
     """Validates digest values using pre-parsed HJSON data.
 
     This function compares the current digest values in the owner SW configuration
@@ -162,7 +162,9 @@ def validate_digest_values(
         print(f"Error: Failed to generate expected digest values: {e}")
         return False, {}
     finally:
-        subprocess.run(["git", "checkout", "--", REGS_OUTPUT_FILE], capture_output=True)
+        subprocess.run(["git", "checkout", "--", REGS_OUTPUT_FILE],
+                       capture_output=True,
+                       check=False)
 
     expected_digests_hex = {}
     try:
@@ -202,7 +204,7 @@ def validate_digest_values(
         return False, expected_digests_hex
 
 
-def perform_update(owner_sw_cfg_file: str, expected_digests: Dict[str, str]):
+def perform_update(owner_sw_cfg_file: str, expected_digests: dict[str, str]):
     """Performs a precise, line-by-line text replacement to update only the
     digest item values, preserving all comments and formatting.
     """
@@ -222,7 +224,7 @@ def perform_update(owner_sw_cfg_file: str, expected_digests: Dict[str, str]):
                 # If we were looking for a value but found a new item, stop looking.
                 active_digest_to_update = None
                 # Check if this new item is a digest we need to update.
-                for name in expected_digests.keys():
+                for name in expected_digests:
                     if f'"{name}"' in line or f" {name}" in line:
                         active_digest_to_update = name
                         break
@@ -241,7 +243,7 @@ def perform_update(owner_sw_cfg_file: str, expected_digests: Dict[str, str]):
         with open(owner_sw_cfg_file, "w") as f:
             f.writelines(new_lines)
 
-    except (IOError, ValueError) as e:
+    except (OSError, ValueError) as e:
         print(f"Error updating file {owner_sw_cfg_file}: {e}")
         sys.exit(1)
 
@@ -272,7 +274,7 @@ def main():
             alert_cfg_data = hjson.load(f)
         with open(args.owner_sw_cfg_file, "r") as f:
             owner_cfg_data = hjson.load(f, use_decimal=True)
-    except (FileNotFoundError, IOError, ValueError) as e:
+    except (OSError, ValueError) as e:
         print(f"Error: {e}")
         sys.exit(1)
 
