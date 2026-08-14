@@ -126,9 +126,9 @@ ALERT_INFO_TESTCASES = [
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
         deps = [
+            "//hw/top:top_lib",
             "//hw/top:uart_c_regs",
             "//hw/top/dt",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/runtime:log",

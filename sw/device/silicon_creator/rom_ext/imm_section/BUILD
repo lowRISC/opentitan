@@ -4,6 +4,7 @@
 
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
@@ -27,9 +28,10 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "imm_section_start",
     srcs = ["imm_section_start.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/coverage:api_asm",
     ],
@@ -95,8 +97,9 @@ cc_library(
     name = "imm_section_epmp",
     srcs = ["imm_section_epmp.c"],
     hdrs = ["imm_section_epmp.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:epmp_state",

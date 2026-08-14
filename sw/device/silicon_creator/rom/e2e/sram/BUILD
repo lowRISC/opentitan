@@ -64,7 +64,7 @@ _READBACK_TESTS = {
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -122,7 +122,7 @@ _RENEW_TESTS = {
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",

@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_build_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -225,13 +225,13 @@ cc_test(
 cc_library(
     name = "irq_asm",
     srcs = ["irq_asm.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:aon_timer_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top:rram_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:multibits",
     ],
 )
@@ -246,7 +246,7 @@ opentitan_test(
     deps = [
         ":error",
         ":irq_asm",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -455,12 +455,12 @@ cc_test(
     name = "shutdown_unittest",
     srcs = ["shutdown_unittest.cc"],
     # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
-    target_compatible_with = opentitan_require_ip("flash_ctrl"),
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":shutdown"),
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -493,9 +493,9 @@ cc_library(
     name = "bootstrap_fuzzer_util",
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
-    target_compatible_with = opentitan_require_ip("flash_ctrl"),
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -510,13 +510,13 @@ cc_library(
     name = "bootstrap_unittest_util",
     srcs = ["bootstrap_unittest_util.cc"],
     hdrs = ["bootstrap_unittest_util.h"],
-    target_compatible_with = opentitan_require_ip("flash_ctrl"),
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
         ":bootstrap",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
@@ -561,6 +561,7 @@ dual_cc_library(
             ["USE_FLASH"],
         ),
     ),
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = dual_inputs(
         # Links whichever backend driver(s) the top actually has, matching
         # USE_FLASH/USE_RRAM above. Gated on IP presence (not hardcoded)
@@ -644,8 +645,8 @@ opentitan_test(
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:nvm_testutils",

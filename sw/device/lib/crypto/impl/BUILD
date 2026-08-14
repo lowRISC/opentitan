@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
@@ -316,12 +317,13 @@ cc_library(
 cc_test(
     name = "key_transport_unittest",
     srcs = ["key_transport_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":cryptolib_build_info",
         ":key_transport",
         "//hw/top:aes_c_regs",
         "//hw/top:keymgr_dpe_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "@googletest//:gtest_main",
     ],
@@ -367,13 +369,14 @@ cc_library(
     name = "config",
     srcs = ["config.c"],
     hdrs = ["//sw/device/lib/crypto/include:config.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":cryptolib_build_info",
         ":entropy_src",
         ":integrity",
         ":status",
         "//hw/top:clkmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:mmio",

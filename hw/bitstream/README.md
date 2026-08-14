@@ -60,7 +60,7 @@ opentitan_test(
         ":flash_info_fields",
         ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
@@ -99,7 +99,7 @@ opentitan_test(
     },
     deps = [
         ":individualize_sw_cfg_earlgrey_sku_sival",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",

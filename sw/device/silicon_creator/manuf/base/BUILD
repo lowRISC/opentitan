@@ -8,6 +8,7 @@ load("//rules:manuf.bzl", "device_id_header")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
@@ -51,9 +52,10 @@ opentitan_binary(
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":cp_device_id_library",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:crc32",
@@ -88,11 +90,12 @@ opentitan_binary(
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         ":cp_device_id_library",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:macros",
@@ -166,10 +169,11 @@ opentitan_test(
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         local_defines = defines,
+        target_compatible_with = opentitan_require_top("earlgrey"),
         deps = [
             ":ft_device_id_{}_library".format(sku),
             "//hw/top:ast_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:crc32",

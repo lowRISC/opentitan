@@ -11,6 +11,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
@@ -57,7 +58,7 @@ opentitan_binary(
     ],
     manifest = ":manifest_allow_isfb_erase",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:nvm_testutils",
@@ -81,7 +82,7 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:nvm_testutils",
@@ -112,7 +113,7 @@ opentitan_test(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_bad_erase_contraint",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:nvm_testutils",

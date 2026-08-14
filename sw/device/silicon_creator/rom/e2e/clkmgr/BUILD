@@ -67,7 +67,7 @@ JITTER_TESTCASES = [
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/dif:base",
             "//sw/device/lib/dif:clkmgr",
             "//sw/device/lib/testing/test_framework:ottf_main",

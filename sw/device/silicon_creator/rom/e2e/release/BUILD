@@ -44,7 +44,7 @@ otp_image(
 #    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
 #    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 #    deps = [
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+#        "//hw/top:top_lib",
 #        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
 #        "//sw/device/lib/base:status",
 #        "//sw/device/lib/runtime:print",

@@ -80,7 +80,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
