@@ -115,11 +115,94 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console_tx_indicator.spi_console_tx_ready_gpio =
                             kGpioPinSpiConsoleTxReady);
 
+// 1K should be enough for the largest certificate perso LTV object.
+enum {
+  kBufferSize = 1024,
+  kAllCertsSize = 8192,
+};
+typedef struct cert_scratch_buffer {
+  uint8_t buffer[kBufferSize];
+} __attribute__((aligned(4))) cert_scratch_buffer_t;
+
+typedef struct aligned_dice_storage_page {
+  dice_storage_page_t page;
+} __attribute__((aligned(8))) aligned_dice_storage_page_t;
+
+typedef struct perso_pre_endorse_data {
+  manuf_certgen_inputs_t certgen_inputs;
+  ecdsa_p256_public_key_t uds_pubkey;
+
+  /*
+   * Keymgr binding values.
+   */
+  keymgr_binding_value_t attestation_binding_value;
+  keymgr_binding_value_t sealing_binding_value;
+
+  // Temporary buffer to store EC-DSA public keys during DICE cert generation
+  ecdsa_p256_public_key_t curr_pubkey;
+  // Temporary buffer to store CDI0 public key after it is generated and until
+  // CDI1 certificate is endorsed
+  ecdsa_p256_public_key_t cdi_0_pubkey;
+} perso_pre_endorse_data_t;
+
+typedef struct perso_post_endorse_data {
+  // Temporary buffer to read endorsed cert into when hashing it
+  cert_scratch_buffer_t cert_buffer;
+  // Temporary buffer to populate dice page data before actually writing to
+  // flash pages
+  aligned_dice_storage_page_t dice_page;
+} perso_post_endorse_data_t;
+
+typedef enum perso_stage {
+  PERSO_STAGE_PRE_ENDORSE,
+  PERSO_STAGE_POST_ENDORSE,
+} perso_stage_t;
+
+// NOTE: This approach to `stage_specific_data` data assumes that firmware will
+// not maintain any references to data from any prior stages. For example: the
+// firmware will not maintain pointer to the `uds_pubkey` while it is available
+// in the pre-endorsement stage, and then dereference that pointer in the post
+// endorsement stage.
+typedef struct perso_stage_specific_data {
+  perso_stage_t stage;
+  union {
+    perso_pre_endorse_data_t pre_endorse_data;
+    perso_post_endorse_data_t post_endorse_data;
+  } data;
+} perso_stage_specific_data_t;
+
+typedef struct perso_stages_shared_data {
+  perso_blob_t blob_to_host;    // Perso data device => host.
+  perso_blob_t blob_from_host;  // Perso data host => device.
+
+  // Used to store individual certs during pre-endorse stage, and store all
+  // certs during post-endorse stage
+  uint8_t all_certs[kAllCertsSize];
+
+  uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords];
+} perso_stages_shared_data_t;
+
+typedef struct perso_data {
+  perso_stage_specific_data_t stage_specific_data;
+  perso_stages_shared_data_t stages_shared_data;
+} perso_data_t;
+
+typedef struct otp_measurements {
+  hmac_digest_t *otp_creator_sw_cfg_measurement;
+  hmac_digest_t *otp_owner_sw_cfg_measurement;
+  hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
+  hmac_digest_t *otp_rot_creator_auth_state_measurement;
+} otp_measurements_t;
+
+typedef struct dice_cert_offsets {
+  size_t uds_offset;
+  size_t cdi_0_offset;
+  size_t cdi_1_offset;
+} dice_cert_offsets_t;
+
 /**
  * Certificates flash info page layout.
  */
-// 1K should be enough for the largest certificate perso LTV object.
-enum { kBufferSize = 1024 };
 static cert_flash_info_layout_t cert_flash_layout[] = {
     {
         // The DICE UDS cert is placed on this page since it must remain stable
@@ -383,14 +466,6 @@ static void compute_keymgr_owner_binding(
   sealing_binding_value->data[0] = kOwnerAppDomainProd;
 }
 
-typedef struct cert_scratch_buffer {
-  uint8_t buffer[kBufferSize];
-} __attribute__((aligned(4))) cert_scratch_buffer_t;
-
-typedef struct aligned_dice_storage_page {
-  dice_storage_page_t page;
-} __attribute__((aligned(8))) aligned_dice_storage_page_t;
-
 /**
  * Read a certificate from the passed in location in a flash INFO page and hash
  * its contents on the existing sha256 hashing stream. Determine the actual
@@ -471,18 +546,10 @@ static status_t hash_all_certs(cert_scratch_buffer_t *cert_buffer) {
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_gen_dice_certificates(
-    ujson_t *uj, perso_blob_t *blob_to_host,
-    hmac_digest_t *otp_creator_sw_cfg_measurement,
-    hmac_digest_t *otp_owner_sw_cfg_measurement,
-    hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
-    hmac_digest_t *otp_rot_creator_auth_state_measurement,
-    manuf_certgen_inputs_t *certgen_inputs, ecdsa_p256_public_key_t *uds_pubkey,
-    hmac_digest_t *uds_pubkey_id, uint8_t *all_certs, size_t all_certs_size,
-    size_t *uds_offset, size_t *cdi_0_offset, size_t *cdi_1_offset,
-    keymgr_binding_value_t *sealing_binding_value,
-    keymgr_binding_value_t *attestation_binding_value,
-    ecdsa_p256_public_key_t *curr_pubkey, ecdsa_p256_public_key_t *cdi_0_pubkey,
-    uint32_t *otp_state) {
+    ujson_t *uj, const otp_measurements_t *otp_measurements,
+    perso_stages_shared_data_t *stages_shared_data,
+    perso_pre_endorse_data_t *pre_endorse_data, hmac_digest_t *uds_pubkey_id,
+    dice_cert_offsets_t *cert_offsets) {
   /*****************************************************************************
    * Initialization.
    ****************************************************************************/
@@ -498,13 +565,15 @@ static status_t personalize_gen_dice_certificates(
   // sw/host/provisioning/ft_lib/src/lib.rs
   base_printf("Waiting for certificate inputs ...\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-  TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, certgen_inputs));
+  TRY(ujson_deserialize_manuf_certgen_inputs_t(
+      uj, &pre_endorse_data->certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
   hmac_digest_t uds_endorsement_key_id = {0};
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
-  memcpy(uds_endorsement_key_id.digest, certgen_inputs->dice_auth_key_key_id,
+  memcpy(uds_endorsement_key_id.digest,
+         pre_endorse_data->certgen_inputs.dice_auth_key_key_id,
          kCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
@@ -526,17 +595,20 @@ static status_t personalize_gen_dice_certificates(
   //   partitions using expected values for fields not yet provisioned. This
   //   ensures consistent measurements throughout personalization.
   TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
-                            otp_creator_sw_cfg_measurement,
-                            /*use_expected_values=*/true, otp_state));
-  TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
-                            otp_owner_sw_cfg_measurement,
-                            /*use_expected_values=*/true, otp_state));
-  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
-                            otp_rot_creator_auth_codesign_measurement,
-                            /*use_expected_values=*/false, otp_state));
-  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
-                            otp_rot_creator_auth_state_measurement,
-                            /*use_expected_values=*/false, otp_state));
+                            otp_measurements->otp_creator_sw_cfg_measurement,
+                            /*use_expected_values=*/true,
+                            stages_shared_data->otp_state));
+  TRY(measure_otp_partition(
+      kOtpPartitionOwnerSwCfg, otp_measurements->otp_owner_sw_cfg_measurement,
+      /*use_expected_values=*/true, stages_shared_data->otp_state));
+  TRY(measure_otp_partition(
+      kOtpPartitionRotCreatorAuthCodesign,
+      otp_measurements->otp_rot_creator_auth_codesign_measurement,
+      /*use_expected_values=*/false, stages_shared_data->otp_state));
+  TRY(measure_otp_partition(
+      kOtpPartitionRotCreatorAuthState,
+      otp_measurements->otp_rot_creator_auth_state_measurement,
+      /*use_expected_values=*/false, stages_shared_data->otp_state));
 
   /*****************************************************************************
    * DICE certificates.
@@ -544,12 +616,13 @@ static status_t personalize_gen_dice_certificates(
   size_t curr_cert_size = 0;
 
   // Generate UDS keys and (TBS) cert.
+  static_assert(kAllCertsSize >= kUdsMaxTbsSizeBytes,
+                "UDS cert won't fit into `all_certs`");
   curr_cert_size = kUdsMaxTbsSizeBytes;
-  if (all_certs_size < curr_cert_size) {
-    return RESOURCE_EXHAUSTED();
-  }
-  TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id, curr_pubkey));
-  memcpy(uds_pubkey, curr_pubkey, sizeof(ecdsa_p256_public_key_t));
+  TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
+                                     &pre_endorse_data->curr_pubkey));
+  memcpy(&pre_endorse_data->uds_pubkey, &pre_endorse_data->curr_pubkey,
+         sizeof(ecdsa_p256_public_key_t));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
@@ -561,18 +634,20 @@ static status_t personalize_gen_dice_certificates(
 
   // Build the certificate in a temp buffer, use all_certs for that.
   TRY(dice_uds_tbs_cert_build(
-      otp_creator_sw_cfg_measurement, otp_owner_sw_cfg_measurement,
-      otp_rot_creator_auth_codesign_measurement,
-      otp_rot_creator_auth_state_measurement, &uds_key_ids, curr_pubkey,
-      all_certs, &curr_cert_size));
+      otp_measurements->otp_creator_sw_cfg_measurement,
+      otp_measurements->otp_owner_sw_cfg_measurement,
+      otp_measurements->otp_rot_creator_auth_codesign_measurement,
+      otp_measurements->otp_rot_creator_auth_state_measurement, &uds_key_ids,
+      &pre_endorse_data->curr_pubkey, stages_shared_data->all_certs,
+      &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
-  *uds_offset = blob_to_host->next_free;
+  cert_offsets->uds_offset = stages_shared_data->blob_to_host.next_free;
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      kDiceCertFormat, all_certs, curr_cert_size, kPersoBlobVersionV0,
-      blob_to_host));
+      kDiceCertFormat, stages_shared_data->all_certs, curr_cert_size,
+      kPersoBlobVersionV0, &stages_shared_data->blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
   // can initialize and seal the ownership block.
@@ -586,59 +661,66 @@ static status_t personalize_gen_dice_certificates(
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
+  static_assert(kAllCertsSize >= kCdi0MaxCertSizeBytes,
+                "CDI0 cert won't fit into `all_certs`");
   curr_cert_size = kCdi0MaxCertSizeBytes;
-  if (all_certs_size < curr_cert_size) {
-    return RESOURCE_EXHAUSTED();
-  }
-  compute_keymgr_owner_int_binding(sealing_binding_value,
-                                   attestation_binding_value);
-  TRY(sc_keymgr_owner_int_advance(sealing_binding_value,
-                                  attestation_binding_value,
+  compute_keymgr_owner_int_binding(
+      &pre_endorse_data->sealing_binding_value,
+      &pre_endorse_data->attestation_binding_value);
+  TRY(sc_keymgr_owner_int_advance(&pre_endorse_data->sealing_binding_value,
+                                  &pre_endorse_data->attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
-                                     curr_pubkey));
+                                     &pre_endorse_data->curr_pubkey));
   const cert_key_id_pair_t cdi_0_key_ids = {
       .endorsement = uds_pubkey_id,
       .cert = &cdi_0_pubkey_id,
   };
 
-  memcpy(cdi_0_pubkey, curr_pubkey, sizeof(ecdsa_p256_public_key_t));
-  TRY(dice_cdi_0_cert_build(&zero_digest, 0, &cdi_0_key_ids, uds_pubkey,
-                            curr_pubkey, all_certs, &curr_cert_size));
-  *cdi_0_offset = blob_to_host->next_free;
+  memcpy(&pre_endorse_data->cdi_0_pubkey, &pre_endorse_data->curr_pubkey,
+         sizeof(ecdsa_p256_public_key_t));
+  TRY(dice_cdi_0_cert_build(&zero_digest, 0, &cdi_0_key_ids,
+                            &pre_endorse_data->uds_pubkey,
+                            &pre_endorse_data->curr_pubkey,
+                            stages_shared_data->all_certs, &curr_cert_size));
+  cert_offsets->cdi_0_offset = stages_shared_data->blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
-      "CDI_0", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, blob_to_host));
+      "CDI_0", /*needs_endorsement=*/false, kDiceCertFormat,
+      stages_shared_data->all_certs, curr_cert_size, kPersoBlobVersionV0,
+      &stages_shared_data->blob_to_host));
 
   // Generate CDI_1 keys and cert.
   TRY(otbn_boot_attestation_key_save(kDiceKeyCdi0.keygen_seed_idx,
                                      kDiceKeyCdi0.type,
                                      *kDiceKeyCdi0.keymgr_diversifier));
+  static_assert(kAllCertsSize >= kCdi1MaxCertSizeBytes,
+                "CDI1 cert won't fit into `all_certs`");
   curr_cert_size = kCdi1MaxCertSizeBytes;
-  if (all_certs_size < curr_cert_size) {
-    return RESOURCE_EXHAUSTED();
-  }
-  compute_keymgr_owner_binding(sealing_binding_value,
-                               attestation_binding_value);
-  TRY(sc_keymgr_owner_advance(sealing_binding_value, attestation_binding_value,
+  compute_keymgr_owner_binding(&pre_endorse_data->sealing_binding_value,
+                               &pre_endorse_data->attestation_binding_value);
+  TRY(sc_keymgr_owner_advance(&pre_endorse_data->sealing_binding_value,
+                              &pre_endorse_data->attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
-                                     curr_pubkey));
+                                     &pre_endorse_data->curr_pubkey));
   const cert_key_id_pair_t cdi_1_key_ids = {
       .endorsement = &cdi_0_pubkey_id,
       .cert = &cdi_1_pubkey_id,
   };
   TRY(dice_cdi_1_cert_build(&zero_digest, &zero_digest, &zero_digest, 0,
-                            kOwnerAppDomainProd, &cdi_1_key_ids, cdi_0_pubkey,
-                            curr_pubkey, all_certs, &curr_cert_size));
-  *cdi_1_offset = blob_to_host->next_free;
+                            kOwnerAppDomainProd, &cdi_1_key_ids,
+                            &pre_endorse_data->cdi_0_pubkey,
+                            &pre_endorse_data->curr_pubkey,
+                            stages_shared_data->all_certs, &curr_cert_size));
+  cert_offsets->cdi_1_offset = stages_shared_data->blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
-      "CDI_1", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, blob_to_host));
+      "CDI_1", /*needs_endorsement=*/false, kDiceCertFormat,
+      stages_shared_data->all_certs, curr_cert_size, kPersoBlobVersionV0,
+      &stages_shared_data->blob_to_host));
 
   return OK_STATUS();
 }
@@ -874,10 +956,9 @@ static status_t write_digest_to_dice_page(
 }
 
 static status_t personalize_endorse_certificates(
-    ujson_t *uj, const perso_blob_t *blob_to_host, perso_blob_t *blob_from_host,
-    uint8_t *all_certs, const size_t all_certs_size, const size_t uds_offset,
-    const size_t cdi_0_offset, const size_t cdi_1_offset,
-    aligned_dice_storage_page_t *dice_page) {
+    ujson_t *uj, perso_stages_shared_data_t *stages_shared_data,
+    perso_post_endorse_data_t *post_endorse_data,
+    const dice_cert_offsets_t *generated_cert_offsets) {
   /*****************************************************************************
    * Certificate Export and Endorsement.
    ****************************************************************************/
@@ -886,18 +967,20 @@ static status_t personalize_endorse_certificates(
   // sw/host/provisioning/ft_lib/src/lib.rs
   base_printf("Exporting TBS certificates ...\n");
   RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_perso_blob_t, uj,
-                        blob_to_host, kPersoBlobSerializedMaxSize);
+                        &stages_shared_data->blob_to_host,
+                        kPersoBlobSerializedMaxSize);
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   base_printf("Importing endorsed certificates ...\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-  TRY(ujson_deserialize_perso_blob_t(uj, blob_from_host));
+  TRY(ujson_deserialize_perso_blob_t(uj, &stages_shared_data->blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-  blob_from_host->next_free = 0;
-  const size_t num_objs_in_blob_from_host = blob_from_host->num_objs;
+  stages_shared_data->blob_from_host.next_free = 0;
+  const size_t num_objs_in_blob_from_host =
+      stages_shared_data->blob_from_host.num_objs;
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
@@ -915,9 +998,9 @@ static status_t personalize_endorse_certificates(
   //
   // Location where the next cert perso LTV object will be copied to in the
   // `all_certs` buffer.
-  uint8_t *next_cert = all_certs;
+  uint8_t *next_cert = stages_shared_data->all_certs;
   // How much room left in the destination (`all_certs`) buffer.
-  size_t free_room = all_certs_size;
+  size_t free_room = sizeof(stages_shared_data->all_certs);
   // Helper structure caching certificate information from a certificate perso
   // LTV object.
   perso_tlv_cert_obj_view_t block;
@@ -925,11 +1008,14 @@ static status_t personalize_endorse_certificates(
   // CWT DICE doesn't need host to endorse any certificate for it, so all
   // payload are in the "blob_to_host".
   // Default to this setting, and move to X509 setting if the flag is set.
-  size_t cert_offsets[3] = {uds_offset, cdi_0_offset, cdi_1_offset};
+  size_t cert_offsets[3] = {generated_cert_offsets->uds_offset,
+                            generated_cert_offsets->cdi_0_offset,
+                            generated_cert_offsets->cdi_1_offset};
   size_t cert_offsets_count = 3;
   if (kDiceCertFormat == kDiceCertFormatX509TcbInfo) {
     // Exract the UDS cert perso LTV object.
-    TRY(extract_next_cert(&next_cert, &free_room, blob_from_host));
+    TRY(extract_next_cert(&next_cert, &free_room,
+                          &stages_shared_data->blob_from_host));
     // Extract the two CDI cert perso LTV objects which were endorsed on-device
     // and sent to the host.
     cert_offsets[0] = cert_offsets[1];
@@ -940,9 +1026,9 @@ static status_t personalize_endorse_certificates(
   // to the host.
   for (size_t i = 0; i < cert_offsets_count; i++) {
     size_t offset = cert_offsets[i];
-    TRY(perso_tlv_get_cert_obj_view(blob_to_host->body + offset,
-                                    sizeof(blob_to_host->body) - offset,
-                                    &block));
+    TRY(perso_tlv_get_cert_obj_view(
+        stages_shared_data->blob_to_host.body + offset,
+        sizeof(stages_shared_data->blob_to_host.body) - offset, &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
     memcpy(next_cert, block.obj_p, block.obj_size);
@@ -951,16 +1037,18 @@ static status_t personalize_endorse_certificates(
   }
 
   // Extract the remaining cert perso LTV objects received from the host.
-  while (blob_from_host->num_objs)
-    TRY(extract_next_cert(&next_cert, &free_room, blob_from_host));
+  while (stages_shared_data->blob_from_host.num_objs) {
+    TRY(extract_next_cert(&next_cert, &free_room,
+                          &stages_shared_data->blob_from_host));
+  }
 
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
   // This is where the certificates to be copied are stored, each one encoded as
   // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
-  next_cert = all_certs;
-  free_room = all_certs_size;
+  next_cert = stages_shared_data->all_certs;
+  free_room = sizeof(stages_shared_data->all_certs);
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -970,7 +1058,8 @@ static status_t personalize_endorse_certificates(
       continue;
     }
 
-    memset(&dice_page->page, 0, sizeof(dice_page->page));
+    memset(&post_endorse_data->dice_page.page, 0,
+           sizeof(post_endorse_data->dice_page.page));
 
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
@@ -982,7 +1071,8 @@ static status_t personalize_endorse_certificates(
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
       TRY(write_cert_to_dice_page(&curr_layout, &block, next_cert, page_offset,
-                                  cert_size_bytes_ru, &dice_page->page));
+                                  cert_size_bytes_ru,
+                                  &post_endorse_data->dice_page.page));
       page_offset += cert_size_bytes_ru;
       next_cert += block.obj_size;
 
@@ -991,15 +1081,17 @@ static status_t personalize_endorse_certificates(
     }
 
     if (curr_layout.need_digest) {
-      TRY(write_digest_to_dice_page(&curr_layout, &dice_page->page));
+      TRY(write_digest_to_dice_page(&curr_layout,
+                                    &post_endorse_data->dice_page.page));
     }
 
-    TRY(flash_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
-                              util_size_to_words(sizeof(dice_page->page)),
-                              &dice_page->page));
+    TRY(flash_ctrl_info_write(
+        curr_layout.info_page, /*page_offset=*/0,
+        util_size_to_words(sizeof(post_endorse_data->dice_page.page)),
+        &post_endorse_data->dice_page.page));
   }
 
-  blob_from_host->num_objs = num_objs_in_blob_from_host;
+  stages_shared_data->blob_from_host.num_objs = num_objs_in_blob_from_host;
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
@@ -1099,65 +1191,6 @@ static status_t configure_ate_gpio_indicators(void) {
   return OK_STATUS();
 }
 
-typedef struct perso_pre_endorse_data {
-  manuf_certgen_inputs_t certgen_inputs;
-  ecdsa_p256_public_key_t uds_pubkey;
-
-  /*
-   * Keymgr binding values.
-   */
-  keymgr_binding_value_t attestation_binding_value;
-  keymgr_binding_value_t sealing_binding_value;
-
-  // Temporary buffer to store EC-DSA public keys during DICE cert generation
-  ecdsa_p256_public_key_t curr_pubkey;
-  // Temporary buffer to store CDI0 public key after it is generated and until
-  // CDI1 certificate is endorsed
-  ecdsa_p256_public_key_t cdi_0_pubkey;
-} perso_pre_endorse_data_t;
-
-typedef struct perso_post_endorse_data {
-  // Temporary buffer to read endorsed cert into when hashing it
-  cert_scratch_buffer_t cert_buffer;
-  // Temporary buffer to populate dice page data before actually writing to
-  // flash pages
-  aligned_dice_storage_page_t dice_page;
-} perso_post_endorse_data_t;
-
-typedef enum perso_stage {
-  PERSO_STAGE_PRE_ENDORSE,
-  PERSO_STAGE_POST_ENDORSE,
-} perso_stage_t;
-
-// NOTE: This approach to `stage_specific_data` data assumes that firmware will
-// not maintain any references to data from any prior stages. For example: the
-// firmware will not maintain pointer to the `uds_pubkey` while it is available
-// in the pre-endorsement stage, and then dereference that pointer in the post
-// endorsement stage.
-typedef struct perso_stage_specific_data {
-  perso_stage_t stage;
-  union {
-    perso_pre_endorse_data_t pre_endorse_data;
-    perso_post_endorse_data_t post_endorse_data;
-  } data;
-} perso_stage_specific_data_t;
-
-typedef struct perso_stages_shared_data {
-  perso_blob_t blob_to_host;    // Perso data device => host.
-  perso_blob_t blob_from_host;  // Perso data host => device.
-
-  // Used to store individual certs during pre-endorse stage, and store all
-  // certs during post-endorse stage
-  uint8_t all_certs[8192];
-
-  uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords];
-} perso_stages_shared_data_t;
-
-typedef struct perso_data {
-  perso_stage_specific_data_t stage_specific_data;
-  perso_stages_shared_data_t stages_shared_data;
-} perso_data_t;
-
 static status_t provision(ujson_t *uj) {
   // Provision OTP, flash secrets, certs, and install the first owner.
   TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
@@ -1166,9 +1199,7 @@ static status_t provision(ujson_t *uj) {
   hmac_digest_t otp_creator_sw_cfg_measurement = {0};
   hmac_digest_t otp_owner_sw_cfg_measurement = {0};
   hmac_digest_t uds_pubkey_id = {0};
-  size_t uds_offset = {0};
-  size_t cdi_0_offset = {0};
-  size_t cdi_1_offset = {0};
+  dice_cert_offsets_t cert_offsets = {0};
 
   static perso_data_t perso_data;
 
@@ -1179,18 +1210,18 @@ static status_t provision(ujson_t *uj) {
     hmac_digest_t otp_rot_creator_auth_codesign_measurement = {0};
     hmac_digest_t otp_rot_creator_auth_state_measurement = {0};
 
+    const otp_measurements_t otp_measurements = {
+        .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
+        .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
+        .otp_rot_creator_auth_codesign_measurement =
+            &otp_rot_creator_auth_codesign_measurement,
+        .otp_rot_creator_auth_state_measurement =
+            &otp_rot_creator_auth_state_measurement,
+    };
+
     TRY(personalize_gen_dice_certificates(
-        uj, &perso_data.stages_shared_data.blob_to_host,
-        &otp_creator_sw_cfg_measurement, &otp_owner_sw_cfg_measurement,
-        &otp_rot_creator_auth_codesign_measurement,
-        &otp_rot_creator_auth_state_measurement,
-        &pre_endorse_data->certgen_inputs, &pre_endorse_data->uds_pubkey,
-        &uds_pubkey_id, perso_data.stages_shared_data.all_certs,
-        sizeof(perso_data.stages_shared_data.all_certs), &uds_offset,
-        &cdi_0_offset, &cdi_1_offset, &pre_endorse_data->sealing_binding_value,
-        &pre_endorse_data->attestation_binding_value,
-        &pre_endorse_data->curr_pubkey, &pre_endorse_data->cdi_0_pubkey,
-        perso_data.stages_shared_data.otp_state));
+        uj, &otp_measurements, &perso_data.stages_shared_data, pre_endorse_data,
+        &uds_pubkey_id, &cert_offsets));
     owner_config_t owner_config;
     owner_application_keyring_t owner_keyring = {0};
     TRY(install_owner(&owner_config, &owner_keyring));
@@ -1227,12 +1258,8 @@ static status_t provision(ujson_t *uj) {
     perso_post_endorse_data_t *post_endorse_data =
         &perso_data.stage_specific_data.data.post_endorse_data;
     // Endorse TBS certs and install in flash.
-    TRY(personalize_endorse_certificates(
-        uj, &perso_data.stages_shared_data.blob_to_host,
-        &perso_data.stages_shared_data.blob_from_host,
-        perso_data.stages_shared_data.all_certs,
-        sizeof(perso_data.stages_shared_data.all_certs), uds_offset,
-        cdi_0_offset, cdi_1_offset, &post_endorse_data->dice_page));
+    TRY(personalize_endorse_certificates(uj, &perso_data.stages_shared_data,
+                                         post_endorse_data, &cert_offsets));
     TRY(hash_all_certs(&post_endorse_data->cert_buffer));
     personalize_extension_post_endorse_t post_endorse = {
         .uj = uj,
