@@ -71,3 +71,40 @@ It then processes the workflow description and queues and dispatches test jobs t
 
 After the runner has completed a test job it reports back the result GitHub Actions, which makes this information (build artifacts and logs) available to users through the web UI.
 The status of GitHub Actions is displayed below a pull request, as marks next to commits, and in various other places.
+
+## Bitstream Caching
+
+Since full bitstream builds for FPGA testing & development can take over an hour, we cache the output artifacts in a GCS bucket.
+Refer to the relevant documentation on the [implementation of bitstream caching](../fpga/ref_manual_fpga.md#implementation-of-bitstream-caching-and-splicing) for more information on how the bitstreams are built and exposed to the cache.
+
+To determine whether a bitstream should be built and a cache entry should be created, CI uses a [high-level approach to determine the bitstream strategy](../../../.github/workflows/bitstream.yml).
+This involves checking the files that were changed by a pull request or merge, and comparing them to a list of excluded patterns.
+If this check decides that a build is needed, then the relevant bitstream targets will be built via their Bazel targets and uploaded to the GCS bucket.
+
+Just because CI decides to rebuild a bitstream, that does not necessarily mean that the full cost of the bitstream build is incurred.
+Bazel itself may be able to cache the bitstream build action, depending on whether any of the input files that it feeds to FuseSoC have been changed.
+You can get a rough measure of what Bazel considers as an input to the bitstream build by enumerating the dependencies of the relevant target.
+For example:
+
+```sh
+bazel cquery --notool_deps --nohost_deps --noimplicit_deps 'deps(//hw/bitstream/vivado:fpga_cw340)'
+```
+
+More generally, the glob patterns listed under the `//hw:rtl_files` filegroup encompass most of the hardware files that are treated as FuseSoC inputs.
+If you change a file that is included in those patterns, then the full bitstream build cost will be incurred - regardless of whether that change actually requires a new bitstream to be built.
+
+## Merge Queue
+
+OpenTitan uses a [merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) to sequence merges and ensure that bitstreams are always available in the cache by the time that changes have been merged.
+This means that, whenever you are developing from a branch with cached builds, the Bazel bitstream flow will always be able to retrieve a cached bitstream corresponding to the latest hardware state, accelerating local development.
+
+One of the main advantages of using a merge queue is that it ensures bitstreams are cached for future CI runs.
+Without such a system, it is easy for CI to be bottlenecked during periods of heavy activity.
+This is because several PRs (which may or may not make any changes that impact the bitstream build) would then be unable to see a cached bitstream for some time after a merge, and thus would all try to build bitstreams in parallel.
+This can then further delay the bitstream builds of PRs that are subsequently merged, leading to the problem intensifying.
+At that point, queues lasting several days can materialize and may require manual intervention in the form of skipping or cancelling CI jobs, which is not ideal.
+The behaviour enforced by the merge queue prevents this kind of situation, at the cost of taking longer to merge PRs.
+
+If there are many PRs that _do_ require bitstream changes, this can result in longer queues as many PRs must wait to be merged.
+In critical situations, committers have the ability to completely bypass the merge queue - however this ability should be used sparingly and _only_ when appropriately communicated.
+In practice, the merge queue should be left to run and should not require any manual intervention.
