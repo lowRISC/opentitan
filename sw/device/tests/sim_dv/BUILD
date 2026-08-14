@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_test")
-load("//hw/top:defs.bzl", "opentitan_select_top")
 
 opentitan_test(
     name = "i2c_host_tx_rx_test",
@@ -338,12 +337,7 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ] + opentitan_select_top(
-        {
-            "earlgrey": ["//sw/device/lib/dif:flash_ctrl"],
-        },
-        [],
-    ),
+    ],
 )
 
 opentitan_test(
