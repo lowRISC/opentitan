@@ -21,12 +21,25 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _rom_ext_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_size = LENGTH(rom_ext_virtual);
-/*
- * Bounded to leave `_nvm_slot_reserved_bytes` empty at the end of whichever
- * physical slot this virtual image ends up mapped into.
- */
-ASSERT((_rom_ext_size <= (LENGTH(nvm) / 2 - _nvm_slot_reserved_bytes)), "Error: rom ext NVM is bigger than slot");
 
-REGION_ALIAS("rom_ext_nvm", rom_ext_virtual);
+/*
+ * rom_ext_virtual must be a power of two (NAPOT remap masking) and equal
+ * one NVM slot. rom.ld/test_rom.ld check this too, but for a different
+ * link unit than the ROM_EXT itself.
+ */
+ASSERT((_rom_ext_size & (_rom_ext_size - 1)) == 0,
+  "Error: rom_ext_virtual must be a power of two (NAPOT remap/ePMP).");
+ASSERT(_rom_ext_size == LENGTH(nvm) / 2,
+  "Error: rom_ext_virtual does not match the NVM slot size.");
+
+/*
+ * Leaves `_nvm_slot_reserved_bytes` empty at the end of the physical slot.
+ */
+MEMORY {
+  rom_ext_virtual_usable(rx) : ORIGIN = ORIGIN(rom_ext_virtual),
+    LENGTH = LENGTH(rom_ext_virtual) - _nvm_slot_reserved_bytes
+}
+
+REGION_ALIAS("rom_ext_nvm", rom_ext_virtual_usable);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

@@ -20,7 +20,8 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 
 MEMORY {
-  imm_section_virtual(rx) : ORIGIN = ORIGIN(rom_ext_virtual) + 0x400, LENGTH = 0x80000 - 0x400
+  imm_section_virtual(rx) : ORIGIN = ORIGIN(rom_ext_virtual) + 0x400,
+    LENGTH = LENGTH(rom_ext_virtual) - 0x400 - _nvm_slot_reserved_bytes
 }
 REGION_ALIAS("rom_ext_nvm", imm_section_virtual);
 

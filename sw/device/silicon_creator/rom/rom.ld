@@ -28,6 +28,13 @@ _rom_boot_address = ORIGIN(rom);
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
+/*
+ * Sanity check that the remap window topgen computed doesn't exceed the
+ * physical slot it gets mapped into. Compared against the unreduced slot
+ * size -- unlike rom_ext_slot_virtual.ld's placement region, this window's
+ * own size must stay a power of two for ibex_addr_remap_set()'s NAPOT-style
+ * alignment masking, so it is not shrunk by `_nvm_slot_reserved_bytes`.
+ */
 ASSERT((_rom_ext_virtual_size <= (LENGTH(nvm) / 2)),
   "Error: rom ext NVM is bigger than slot.");
 
