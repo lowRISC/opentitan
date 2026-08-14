@@ -118,14 +118,6 @@ module i3c_target_trx
 
   // Capture HDR exit detection on rising SCL that indicate that start of the ensuing STOP.
   logic ddr_mode;
-  logic hdr_exit;
-  always_ff @(posedge scl_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      hdr_exit  <= 1'b0;
-    end else begin
-      hdr_exit  <= hdr_exit_det_i;
-    end
-  end
 
   // SDR sto(P) detection.
   always_ff @(posedge sda0_clk_i or negedge rst_ni) begin
@@ -133,7 +125,7 @@ module i3c_target_trx
       stop_det  <= 1'b0;
     end else if (start_det) begin
       stop_det  <= 1'b0;
-    end else if (!ddr_mode | hdr_exit) begin
+    end else if (!ddr_mode) begin
       stop_det  <= scl_i;
     end
   end
@@ -219,9 +211,12 @@ module i3c_target_trx
   logic [8:0] sda_nq[NumSDALanes];
   logic sda_nq_shift;
   logic sda_nq_load;
+  logic send_ack;
   always_ff @(posedge scl_ni or negedge rst_ni) begin
     if (!rst_ni) begin
       sda_nq  <= '{'1};
+    end else if (send_ack) begin : ack_nq
+      sda_nq[0][8] <= 1'b0;  // Explicitly drive a 0 bit onto the bus.
     end else if (crc5_nq_emit) begin : crc5_nq
       // Load the odd-indexed bits of the CRC Word from the calculated CRC-5 value.
       sda_nq[0][8:3] <= {1'b0, 1'b1, 1'b0, crc5_q[4], crc5_q[2], crc5_q[0]};
@@ -285,7 +280,7 @@ module i3c_target_trx
     capture_all = 1'b0;
     for (int t = NumTargets - 1; t >= 0; t--) begin
       if (contenders[t] && addr_recvd == targ_dev_i[t].addr && !targ_ignore_ccc[t]) begin
-        targ_id = t;
+        targ_id     = TargIDW'(t);
         targ_set[t] = 1'b1;
       end
     end
@@ -298,7 +293,7 @@ module i3c_target_trx
       // Test the group addresses.
       // - as a diagnostic feature, a group address of zero matches against all observed traffic.
       for (int g = NumGroups - 1; g >= 0; g--) begin
-        if (|grp_addr_i[g].targets[NumTargets-1:0] &&  // Group configured?
+        if (grp_addr_i[g].addr_valid &&  // Group configured?
            ((addr_recvd == grp_addr_i[g].addr && !ignore_ccc) || ~|grp_addr_i[g].addr)) begin
           targ_set = grp_addr_i[g].targets[NumTargets-1:0] & contenders;
           targ_id  = TargIDNoMatch;
@@ -337,9 +332,10 @@ module i3c_target_trx
   always_comb begin
     // Some CCCs shall be ignored entirely; unsupported Direct CCCs shall be NACKed.
     // - Note: Broadcast CCCs should not be followed by a non-Broadcast address post-Sr.
-    ignore_ccc = (ccc_state_q == CCC_SegAddr) &&
-                 (broadcast_ccc(trans.cmd) || !supported_direct_ccc(trans.cmd));
+    ignore_ccc = (ccc_state_q == CCC_SegAddr) && !supported_direct_ccc(trans.cmd);
     // The CCCs SETAASA and SETDASA shall be ignored by targets that already have a dynamic address.
+    // TODO: The SETxASA handling is probably best handled outside of this module and in the system
+    //       clock domain.
     for (int unsigned t = 0; t < NumTargets; t++) begin
       targ_ignore_ccc[t] = &{ccc_state_q == CCC_SegAddr, trans.cmd inside {SETAASA, SETDASA},
                              targ_dev_i[t].addr_valid, targ_dev_i[t].addr_dynamic} | ignore_ccc;
@@ -381,10 +377,10 @@ module i3c_target_trx
     logic rlast;
 
     sel_valid = (trans.targ_id < NumTargets) & (ccc_command ? trx_ctvalid_i
-                                                            : trx_dvalid_i[trans.targ_id]);
+                                                            : trx_dvalid_i[sel_targ_id]);
     data_nq = ccc_command ? trx_ctreq_i.rdata_nq[sel_targ_id] : trx_dreq_i[sel_targ_id].rdata_nq;
     data_pq = ccc_command ? trx_ctreq_i.rdata_pq[sel_targ_id] : trx_dreq_i[sel_targ_id].rdata_pq;
-    rlast   = ccc_command ? trx_ctreq_i.rlast[0] : trx_dreq_i[sel_targ_id].rlast[0];
+    rlast   = ccc_command ? trx_ctreq_i.rlast[sel_targ_id][0] : trx_dreq_i[sel_targ_id].rlast[0];
 
     // For Arbitrable Address Headers and In-Band Interrupts, we drive SDA on the SCL negedge.
     // For HDR-DDR, odd-indexed bits are SCL-negedge clocked, i.e. including the MSB.
@@ -396,7 +392,7 @@ module i3c_target_trx
     tx_data_pq[0] = data_pq;
   end
 
-  typedef enum {
+  typedef enum logic [4:0] {
     State_Idle,
     State_PreStop,
 
@@ -527,7 +523,7 @@ module i3c_target_trx
                          state_q == State_TxSDR & !tx_sdr_ending}};
 
   // Ending transmission of the current data unit (Note: may also be starting another).
-  wire tx_ending = last_bit & |{state_q inside {State_AckAddr, State_TxSDR, State_TxCRCDDR},
+  wire tx_ending = last_bit & |{state_q inside {State_AckAddr, State_TxCRCDDR},
                                 state_q == State_TxSDR & tx_sdr_ending};
   assign sda_nq_load = arb_starting | tx_starting;
 
@@ -588,7 +584,7 @@ module i3c_target_trx
                                                                  : trx_dvalid_i[targ_id]));
     endcase
   end
-  wire send_ack = &{state_q == State_ArbCede, penult_bit, ack_addr};
+  assign send_ack = &{state_q == State_ArbCede, penult_bit, ack_addr};
 
   // Detection of Error Type TE0 (4.3.8.1.1).
   assign te_o[0]   = &{state_q == State_ArbCede, penult_bit, te0_invalid_addr(addr_recvd)};
@@ -640,6 +636,7 @@ module i3c_target_trx
           // Respond to Read/Write Command, considering whether or not there is data available.
           // - NACKing of Read Commands is always permitted.
           // - NACKing of Write Commands may be enabled, but is not permitted by default.
+          // TODO: State_TxNACKDDR is not implemented yet and causes unintended partial transfers
           state_d = last_bit ? (trans.rnw ? (tx_avail ? State_TxPreDDR : State_TxNACKDDR)
                                           : State_RxPreDDR)
                              : State_RxCmdDDR;
@@ -750,7 +747,7 @@ module i3c_target_trx
                 CCC_SegAddr: begin
                   // A Broadcast address here signals termination of a the previous CCC and
                   // commencement of a new CCC transfer.
-                  if (cmd_word.targ_addr == TargIDBroadcast && cmd_word.rnw) begin
+                  if (cmd_word.targ_addr == Addr_Broadcast && cmd_word.rnw) begin
                     ccc_state_q <= CCC_Setup;
                   end
                 end
@@ -862,15 +859,14 @@ module i3c_target_trx
   assign upd_parity  = (rx_ddr | tx_ddr) & data_bit;
 
   // CRC-5 calculated on received/transmitted data.
-  logic       init_crc;
+  logic init_crc, upd_crc;
   assign crc5_d = init_crc ? '1 : {crc5_q[2],
                                    crc5_q[1] ^ parcrc_bit[1] ^ crc5_q[4],
                                    crc5_q[0] ^ parcrc_bit[0] ^ crc5_q[3],
                                    crc5_q[4] ^ parcrc_bit[1],
                                    crc5_q[3] ^ parcrc_bit[0]};
   assign init_crc = (state_q == State_RxCmdDDR && bit_idx > 'h8);
-
-  assign upd_crc = (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR}) & data_bit;
+  assign upd_crc  = (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR}) & data_bit;
 
   // Do the calculated parity and CRC-5 values match against the received values?
   // TODO: Can we defer the parity checking slightly, to avoid the combinational signal
@@ -1033,8 +1029,8 @@ module i3c_target_trx
 
   // -------------------------- Arbitration Requests from Target core ------------------------------
 
-  // TODO: No support for arbitration requests at present.
-  assign trx_agnt_o = 1'b0;
+  // TODO: No support for arbitration requests at present (port does not exist).
+  //assign trx_agnt_o = 1'b0;
 
   // -------------------------------- Response to Target core --------------------------------------
 
