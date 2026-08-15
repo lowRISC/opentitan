@@ -76,6 +76,8 @@ licence_test(
         "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
         # ACVP test vectors
         "sw/host/cryptotest/testvectors/acvp/*.hjson",
+        # Generated pip lock file
+        "python-requirements.txt",
     ],
     licence = """
     Copyright lowRISC contributors (OpenTitan project).

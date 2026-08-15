@@ -182,6 +182,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -201,6 +202,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -220,6 +222,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -239,6 +242,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -359,6 +363,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -378,6 +383,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
