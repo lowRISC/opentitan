@@ -980,31 +980,13 @@ static status_t personalize_endorse_certificates(
   // LTV object.
   perso_tlv_cert_obj_view_t block;
 
-  // CWT DICE doesn't need host to endorse any certificate for it, so all
-  // payload are in the "blob_to_host".
-  // Default to this setting, and move to X509 setting if the flag is set.
-  size_t cert_offsets[1] = {generated_cert_offsets->uds_offset};
-  size_t cert_offsets_count = 1;
-  if (kDiceCertFormat == kDiceCertFormatX509TcbInfo) {
-    // Extract the UDS cert perso LTV object.
-    TRY(extract_next_cert(&next_cert, &free_room,
-                          &stages_shared_data->blob_from_host));
-    cert_offsets_count = 0;
-  }
-  // Extract the cert perso LTV objects which were endorsed on-device and sent
-  // to the host.
-  for (size_t i = 0; i < cert_offsets_count; i++) {
-    size_t offset = cert_offsets[i];
-    TRY(perso_tlv_get_cert_obj_view(
-        stages_shared_data->blob_to_host.body + offset,
-        sizeof(stages_shared_data->blob_to_host.body) - offset, &block));
-    if (block.obj_size > free_room) {
-      return RESOURCE_EXHAUSTED();
-    }
-    memcpy(next_cert, block.obj_p, block.obj_size);
-    next_cert += block.obj_size;
-    free_room -= block.obj_size;
-  }
+  // CWT DICE doesn't need host to endorse any certificate for it, but host will
+  // still send the unendorsed certificate in Perso blob so that the device does
+  // not have to rely on the data it sent to the host earlier.
+  //
+  // Extract the UDS cert perso LTV object.
+  TRY(extract_next_cert(&next_cert, &free_room,
+                        &stages_shared_data->blob_from_host));
 
   // Extract the remaining cert perso LTV objects received from the host.
   while (stages_shared_data->blob_from_host.num_objs) {

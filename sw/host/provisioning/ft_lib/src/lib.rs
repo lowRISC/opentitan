@@ -4,6 +4,7 @@
 
 use core::option::Option;
 use hmac::{Hmac, Mac};
+use perso_tlv_lib::EndorsedCertType;
 use perso_tlv_lib::PersoBlobBuilder;
 use perso_tlv_lib::PersoBlobParser;
 use sha2::{Digest, Sha256};
@@ -376,8 +377,21 @@ fn provision_certificates(
                     }
 
                     // Prepare the UJSON data payloads that will be sent back to the device.
-                    perso_blob_builder.push_endorsed_cert(cert.cert_name, &cert_bytes)?;
+                    log::info!("Pushing cert {} back to device", cert.cert_name);
+                    perso_blob_builder.push_endorsed_cert(
+                        cert.cert_name,
+                        &cert_bytes,
+                        EndorsedCertType::EndorsedX509Cert,
+                    )?;
                     cert_bytes
+                } else if perso_obj.obj_header.obj_type == ObjType::EndorsedCwtCert {
+                    log::info!("Pushing cert {} back to device", cert.cert_name);
+                    perso_blob_builder.push_endorsed_cert(
+                        cert.cert_name,
+                        &cert.cert_body,
+                        EndorsedCertType::EndorsedCwtCert,
+                    )?;
+                    cert.cert_body
                 } else {
                     cert.cert_body
                 };
@@ -491,7 +505,7 @@ fn provision_certificates(
         log::info!("Success.");
     } else {
         log::info!(
-            "Only {} certs in DICE certificate chain for CWT. Skipping chain validation",
+            "Only {} cert(s) in DICE certificate chain for CWT. Skipping chain validation",
             dice_cert_chain_cwt.len()
         );
     }
