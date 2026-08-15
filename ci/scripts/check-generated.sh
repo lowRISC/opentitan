@@ -72,7 +72,7 @@ gen_hw_and_check_clean "LC state"         lc-state-enc || bad=1
 
 gen_and_check_clean \
     "python-requirements.txt" \
-    util/sh/scripts/gen-python-requirements.sh || bad=1
+    ./bazelisk.sh run //:python-requirements.update || bad=1
 
 gen_and_check_clean \
     "secded primitive code" \
