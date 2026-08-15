@@ -32,6 +32,20 @@ pub enum ObjType {
         perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeBlobVersion as usize,
 }
 
+pub enum EndorsedCertType {
+    EndorsedCwtCert,
+    EndorsedX509Cert,
+}
+
+impl From<EndorsedCertType> for ObjType {
+    fn from(value: EndorsedCertType) -> ObjType {
+        match value {
+            EndorsedCertType::EndorsedCwtCert => ObjType::EndorsedCwtCert,
+            EndorsedCertType::EndorsedX509Cert => ObjType::EndorsedX509Cert,
+        }
+    }
+}
+
 impl TryFrom<ObjType> for u32 {
     type Error = TryFromIntError;
     fn try_from(value: ObjType) -> Result<Self, Self::Error> {
@@ -106,7 +120,12 @@ impl PersoBlobBuilder {
         }
     }
 
-    pub fn push_endorsed_cert(&mut self, cert_name: &str, cert: &Vec<u8>) -> Result<()> {
+    pub fn push_endorsed_cert(
+        &mut self,
+        cert_name: &str,
+        cert: &Vec<u8>,
+        cert_type: EndorsedCertType,
+    ) -> Result<()> {
         let version = if cert_name.len() <= PersoTlvTypesV0::MAX_CERT_NAME_LEN
             && cert.len() <= PersoTlvTypesV0::MAX_CERT_LEN
         {
@@ -121,7 +140,7 @@ impl PersoBlobBuilder {
                 let cert_header = PersoTlvTypesV0::make_cert_header(cert.len(), cert_name)?;
                 let obj_header = PersoTlvTypesV0::make_obj_header(
                     PersoTlvTypesV0::get_crth_size(cert_header),
-                    ObjType::EndorsedX509Cert,
+                    cert_type.into(),
                 )?;
                 data.extend(&obj_header.to_be_bytes());
                 data.extend(&cert_header.to_be_bytes());
@@ -137,7 +156,7 @@ impl PersoBlobBuilder {
                 let cert_header = PersoTlvTypesV1::make_cert_header(cert.len(), cert_name)?;
                 let obj_header = PersoTlvTypesV1::make_obj_header(
                     PersoTlvTypesV1::get_crth_size(cert_header),
-                    ObjType::EndorsedX509Cert,
+                    cert_type.into(),
                 )?;
                 data.extend(&obj_header.to_be_bytes());
                 data.extend(&cert_header.to_be_bytes());
@@ -1145,6 +1164,7 @@ mod tests {
     }
 
     mod perso_blob_builder_tests {
+        use crate::EndorsedCertType;
         use crate::PersoBlobBuilder;
         use ujson_lib::provisioning_data::PersoBlob;
 
@@ -1161,7 +1181,11 @@ mod tests {
         fn perso_blob_single_v0_cert() {
             let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
-                .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
+                .push_endorsed_cert(
+                    "cert",
+                    &vec![0x01, 0x02, 0x03, 0x04, 0x05],
+                    EndorsedCertType::EndorsedX509Cert,
+                )
                 .unwrap();
             let perso_blob: PersoBlob = perso_blob_builder.into();
             assert_eq!(perso_blob.num_objs, 1);
@@ -1178,10 +1202,18 @@ mod tests {
         fn perso_blob_two_v0_certs() {
             let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
-                .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
+                .push_endorsed_cert(
+                    "cert",
+                    &vec![0x01, 0x02, 0x03, 0x04, 0x05],
+                    EndorsedCertType::EndorsedX509Cert,
+                )
                 .unwrap();
             perso_blob_builder
-                .push_endorsed_cert("cert2", &vec![0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c])
+                .push_endorsed_cert(
+                    "cert2",
+                    &vec![0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c],
+                    EndorsedCertType::EndorsedX509Cert,
+                )
                 .unwrap();
             let perso_blob: PersoBlob = perso_blob_builder.into();
             let expected_perso_body_bytes = [
@@ -1202,7 +1234,11 @@ mod tests {
             // Name with 16 characters (exceeds V0 limit of 15 chars)
             let long_cert_name = "0123456789abcdef";
             perso_blob_builder
-                .push_endorsed_cert(long_cert_name, &vec![0x01, 0x02, 0x03, 0x04, 0x05])
+                .push_endorsed_cert(
+                    long_cert_name,
+                    &vec![0x01, 0x02, 0x03, 0x04, 0x05],
+                    EndorsedCertType::EndorsedX509Cert,
+                )
                 .unwrap();
             let perso_blob: PersoBlob = perso_blob_builder.into();
 
@@ -1225,7 +1261,7 @@ mod tests {
             // Body with 4090 bytes (v0_crth_size = 2 + 4 + 4090 = 4096 > 4095)
             let large_cert_body = vec![0x01; 4090];
             perso_blob_builder
-                .push_endorsed_cert("cert", &large_cert_body)
+                .push_endorsed_cert("cert", &large_cert_body, EndorsedCertType::EndorsedX509Cert)
                 .unwrap();
             let perso_blob: PersoBlob = perso_blob_builder.into();
             assert_eq!(perso_blob.num_objs, 1);
@@ -1238,14 +1274,22 @@ mod tests {
             let large_cert_body = vec![0x01; 4081];
             let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
-                .push_endorsed_cert("large_cert", &large_cert_body)
+                .push_endorsed_cert(
+                    "large_cert",
+                    &large_cert_body,
+                    EndorsedCertType::EndorsedX509Cert,
+                )
                 .unwrap();
 
             // Adding a 2nd large cert will cause Perso blob to run out of space
             let large_cert_body = vec![0x02; 1011];
             assert!(
                 perso_blob_builder
-                    .push_endorsed_cert("large_cert2", &large_cert_body)
+                    .push_endorsed_cert(
+                        "large_cert2",
+                        &large_cert_body,
+                        EndorsedCertType::EndorsedX509Cert
+                    )
                     .is_err()
             );
         }
