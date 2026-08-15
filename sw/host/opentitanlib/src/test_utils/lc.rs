@@ -26,8 +26,8 @@ pub fn read_lc_state(
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,
-        Duration::from_secs(1),
-        LcCtrlStatus::INITIALIZED,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
     )?;
     let raw_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     jtag.disconnect()?;
@@ -50,8 +50,8 @@ pub fn read_device_id(
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,
-        Duration::from_secs(1),
-        LcCtrlStatus::INITIALIZED,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
     )?;
 
     let mut device_id = ArrayVec::<u32, 8>::new();

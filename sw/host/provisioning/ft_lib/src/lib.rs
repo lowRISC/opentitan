@@ -24,10 +24,10 @@ use cert_lib::{
 use ft_ext_lib::{ft_inject_certs_ext, ft_post_boot_ext};
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
+use opentitanlib::test_utils::lc_transition::{self, trigger_lc_transition};
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
@@ -53,6 +53,13 @@ pub fn test_unlock(
     transport.reset(UartRx::Clear)?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
+    // Wait for LC controller to be ready.
+    lc_transition::wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
+    )?;
+
     // Check that LC state is currently `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     assert_eq!(state, DifLcCtrlState::TestLocked0.redundant_encoding());
@@ -70,6 +77,13 @@ pub fn test_unlock(
     )?;
 
     jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+
+    // Wait for LC controller to be ready.
+    lc_transition::wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
+    )?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
