@@ -207,14 +207,16 @@ void dice_storage_slot_init(const dice_storage_slot_t *layout,
                             dice_storage_page_t *page);
 
 /**
- * Set the actual certificate size in the slot header.
+ * Set the actual certificate size in the slot header. Note that this is meant
+ * to be used only with [v0
+ * certs](https://github.com/lowRISC/opentitan/blob/89a10642a6bd9b4fc3c5231ae23a4843753279f3/sw/device/silicon_creator/manuf/base/perso_tlv_data.h#L216-L226)
  *
  * @param layout Slot layout.
  * @param cert_size Actual size of the certificate.
  * @param page Pointer to the page in memory.
  */
-void dice_storage_set_cert_size(const dice_storage_slot_t *layout,
-                                size_t cert_size, dice_storage_page_t *page);
+void dice_storage_set_v0_cert_size(const dice_storage_slot_t *layout,
+                                   size_t cert_size, dice_storage_page_t *page);
 
 /**
  * Calculate the SHA256 digest of the certificates page.

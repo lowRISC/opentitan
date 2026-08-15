@@ -51,8 +51,9 @@ void dice_storage_slot_init(const dice_storage_slot_t *layout,
   memcpy(header_ptr, &layout->header, sizeof(layout->header));
 }
 
-void dice_storage_set_cert_size(const dice_storage_slot_t *layout,
-                                size_t cert_size, dice_storage_page_t *page) {
+void dice_storage_set_v0_cert_size(const dice_storage_slot_t *layout,
+                                   size_t cert_size,
+                                   dice_storage_page_t *page) {
   dice_storage_header_t *header = dice_storage_slot_header(layout, page);
   size_t wrapped_size =
       layout->header_size - sizeof(layout->header.object_header) + cert_size;

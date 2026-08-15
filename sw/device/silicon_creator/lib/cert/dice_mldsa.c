@@ -650,8 +650,8 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
       dice_storage_slot_init(&kDiceStorageCdi0Ecdsa, &dice_page);
       memcpy(dice_storage_slot_data(&kDiceStorageCdi0Ecdsa, &dice_page),
              static_dice_cdi_0.cert_data, static_dice_cdi_0.cert_size);
-      dice_storage_set_cert_size(&kDiceStorageCdi0Ecdsa,
-                                 static_dice_cdi_0.cert_size, &dice_page);
+      dice_storage_set_v0_cert_size(&kDiceStorageCdi0Ecdsa,
+                                    static_dice_cdi_0.cert_size, &dice_page);
       dice_page.cdi_key_ids[kDicePageKeyIdxCdi0] =
           read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
     }
@@ -659,8 +659,8 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
     dice_storage_slot_init(&kDiceStorageCdi1Ecdsa, &dice_page);
     memcpy(dice_storage_slot_data(&kDiceStorageCdi1Ecdsa, &dice_page),
            cdi1_ecdsa_cert_buf, cdi1_ecdsa_size);
-    dice_storage_set_cert_size(&kDiceStorageCdi1Ecdsa, cdi1_ecdsa_size,
-                               &dice_page);
+    dice_storage_set_v0_cert_size(&kDiceStorageCdi1Ecdsa, cdi1_ecdsa_size,
+                                  &dice_page);
     dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] = read_64(cdi1_ecdsa_id.digest);
 
     dice_storage_digest_page(&dice_page, &dice_page.digest);
