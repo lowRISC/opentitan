@@ -112,7 +112,6 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
 // 1K should be enough for the largest certificate perso LTV object.
 enum {
   kBufferSize = 1024,
-  kAllCertsSize = 8192,
 };
 typedef struct cert_scratch_buffer {
   uint8_t buffer[kBufferSize];
@@ -149,7 +148,7 @@ typedef struct perso_post_endorse_stage_1_data {
   aligned_dice_storage_page_t dice_page;
 
   // Used to store all certs temporarily
-  uint8_t all_certs[kAllCertsSize];
+  uint8_t cert_buffer[kBufferSize];
 } perso_post_endorse_stage_1_data_t;
 
 typedef struct perso_post_endorse_stage_2_data {
@@ -910,7 +909,7 @@ static status_t write_digest_to_dice_page(
 }
 
 static status_t personalize_endorse_certificates(
-    ujson_t *uj, perso_stages_shared_data_t *stages_shared_data,
+    ujson_t *uj,
     perso_post_endorse_stages_shared_data_t *post_endorse_stages_shared_data,
     perso_post_endorse_stage_1_data_t *post_endorse_stage_1_data) {
   /*****************************************************************************
@@ -930,10 +929,7 @@ static status_t personalize_endorse_certificates(
       post_endorse_stages_shared_data->blob_from_host.num_objs;
 
   /*****************************************************************************
-   * Rearrange certificates to prepare for writing to flash.
-   *
-   * All certificates are ordered in a buffer (all_certs) according to the order
-   * in which they will be written to flash. That order is:
+   * Certificates in perso blob are expected to be ordered as follows:
    * 1. UDS cert
    * 2. Provision Extension certs
    ****************************************************************************/
@@ -941,14 +937,10 @@ static status_t personalize_endorse_certificates(
   // We assume that the endorsed UDS cert is the first certificate
   // in the buffer (even if preceeded by other types of perso LTV objects).
   //
-  // Location where the next cert perso LTV object will be copied to in the
-  // `all_certs` buffer.
-  uint8_t *next_cert = post_endorse_stage_1_data->all_certs;
-  // How much room left in the destination (`all_certs`) buffer.
-  size_t free_room = sizeof(post_endorse_stage_1_data->all_certs);
-  // Helper structure caching certificate information from a certificate perso
-  // LTV object.
-  perso_tlv_cert_obj_view_t block;
+  // Location where the next cert perso LTV object will be copied
+  uint8_t *next_cert = post_endorse_stage_1_data->cert_buffer;
+  // How much room is available in the destination cert buffer.
+  size_t free_room = sizeof(post_endorse_stage_1_data->cert_buffer);
 
   // CWT DICE doesn't need host to endorse any certificate for it, but host will
   // still send the unendorsed certificate in Perso blob so that the device does
@@ -958,8 +950,14 @@ static status_t personalize_endorse_certificates(
   TRY(extract_next_cert(&next_cert, &free_room,
                         &post_endorse_stages_shared_data->blob_from_host));
 
+  // Extract rest of the certificates in the same scratch buffer to find any
+  // issues with the received Perso blob before writing anything to the flash.
+  // It is okay to overwrite the previously extracted certs since this buffer is
+  // not used to store all certs, only to check for any errors
   // Extract the remaining cert perso LTV objects received from the host.
   while (post_endorse_stages_shared_data->blob_from_host.num_objs) {
+    next_cert = post_endorse_stage_1_data->cert_buffer;
+    free_room = sizeof(post_endorse_stage_1_data->cert_buffer);
     TRY(extract_next_cert(&next_cert, &free_room,
                           &post_endorse_stages_shared_data->blob_from_host));
   }
@@ -967,10 +965,11 @@ static status_t personalize_endorse_certificates(
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  // This is where the certificates to be copied are stored, each one encoded as
-  // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
-  next_cert = post_endorse_stage_1_data->all_certs;
-  free_room = sizeof(post_endorse_stage_1_data->all_certs);
+  // Reset the blob metadata to re-extract the certificates
+  post_endorse_stages_shared_data->blob_from_host.next_free = 0;
+  post_endorse_stages_shared_data->blob_from_host.num_objs =
+      num_objs_in_blob_from_host;
+
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -984,19 +983,35 @@ static status_t personalize_endorse_certificates(
            sizeof(post_endorse_stage_1_data->dice_page.page));
 
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
-    // in the following flash layout sections to be equal to the number of
-    // endorsed extension certificates received from the host.
+    // in the following flash layout sections to be less than or equal to the
+    // number of endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      // Extract the cert block from the `all_certs` buffer.
-      TRY(perso_tlv_get_cert_obj_view(next_cert, free_room, &block));
+      // This is where the certificates to be copied are stored, each one
+      // encoded as a perso LTV object. Reset the `next_cert` pointer and
+      // `free_room` size.
+      next_cert = post_endorse_stage_1_data->cert_buffer;
+      free_room = sizeof(post_endorse_stage_1_data->cert_buffer);
+
+      // Helper structure caching certificate information from a certificate
+      // perso LTV object.
+      perso_tlv_cert_obj_view_t block;
+
+      // Read certificate from perso blob into scratch buffer
+      TRY(extract_next_cert(&next_cert, &free_room,
+                            &post_endorse_stages_shared_data->blob_from_host));
+
+      // Extract the cert block from scratch cert buffer
+      TRY(perso_tlv_get_cert_obj_view(
+          post_endorse_stage_1_data->cert_buffer,
+          sizeof(post_endorse_stage_1_data->cert_buffer) - free_room, &block));
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
-      TRY(write_cert_to_dice_page(&curr_layout, &block, next_cert, page_offset,
-                                  cert_size_bytes_ru,
+      TRY(write_cert_to_dice_page(&curr_layout, &block,
+                                  post_endorse_stage_1_data->cert_buffer,
+                                  page_offset, cert_size_bytes_ru,
                                   &post_endorse_stage_1_data->dice_page.page));
       page_offset += cert_size_bytes_ru;
-      next_cert += block.obj_size;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);
@@ -1013,6 +1028,9 @@ static status_t personalize_endorse_certificates(
         &post_endorse_stage_1_data->dice_page.page));
   }
 
+  // Reset the blob metadata here so that the caller can use perso blob without
+  // needing to do so
+  post_endorse_stages_shared_data->blob_from_host.next_free = 0;
   post_endorse_stages_shared_data->blob_from_host.num_objs =
       num_objs_in_blob_from_host;
 
@@ -1196,8 +1214,7 @@ static status_t provision(ujson_t *uj) {
       post_endorse_data->stage = PERSO_POST_ENDORSE_STAGE_1;
       // Endorse TBS certs and install in flash.
       TRY(personalize_endorse_certificates(
-          uj, &perso_data.stages_shared_data,
-          &post_endorse_data->stages_shared_data,
+          uj, &post_endorse_data->stages_shared_data,
           &post_endorse_data->stage_specific_data.stage_1_data));
     }
     {
