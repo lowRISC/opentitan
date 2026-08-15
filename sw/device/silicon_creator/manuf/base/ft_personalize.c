@@ -132,6 +132,9 @@ typedef struct perso_pre_endorse_data {
   keymgr_binding_value_t sealing_binding_value;
 
   perso_blob_t blob_to_host;  // Perso data device => host.
+
+  // Temporary buffer to build TBS certs before pushing to perso blob
+  uint8_t cert_buffer[kBufferSize];
 } perso_pre_endorse_data_t;
 
 typedef enum perso_post_endorse_stage {
@@ -143,6 +146,9 @@ typedef struct perso_post_endorse_stage_1_data {
   // Temporary buffer to populate dice page data before actually writing to
   // flash pages
   aligned_dice_storage_page_t dice_page;
+
+  // Used to store all certs temporarily
+  uint8_t all_certs[kAllCertsSize];
 } perso_post_endorse_stage_1_data_t;
 
 typedef struct perso_post_endorse_stage_2_data {
@@ -160,7 +166,7 @@ typedef struct perso_post_endorse_data {
   union {
     perso_post_endorse_stage_1_data_t stage_1_data;
     perso_post_endorse_stage_2_data_t stage_2_data;
-  } data;
+  } stage_specific_data;
 
   perso_post_endorse_stages_shared_data_t stages_shared_data;
 
@@ -185,10 +191,6 @@ typedef struct perso_stage_specific_data {
 } perso_stage_specific_data_t;
 
 typedef struct perso_stages_shared_data {
-  // Used to store individual certs during pre-endorse stage, and store all
-  // certs during post-endorse stage
-  uint8_t all_certs[kAllCertsSize];
-
   uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords];
 } perso_stages_shared_data_t;
 
@@ -644,8 +646,8 @@ static status_t personalize_gen_dice_certificates(
    ****************************************************************************/
 
   // Generate UDS keys and (TBS) cert.
-  static_assert(kAllCertsSize >= kUdsMaxTbsSizeBytes,
-                "UDS cert won't fit into `all_certs`");
+  static_assert(kBufferSize >= kUdsMaxTbsSizeBytes,
+                "UDS cert won't fit into scratch cert buffer");
   size_t curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
                                      &pre_endorse_data->uds_pubkey));
@@ -658,20 +660,20 @@ static status_t personalize_gen_dice_certificates(
       .cert = uds_pubkey_id,
   };
 
-  // Build the certificate in a temp buffer, use all_certs for that.
+  // Build the certificate in a temp buffer, use scratch cert buffer for that.
   TRY(dice_uds_tbs_cert_build(
       otp_measurements->otp_creator_sw_cfg_measurement,
       otp_measurements->otp_owner_sw_cfg_measurement,
       otp_measurements->otp_rot_creator_auth_codesign_measurement,
       otp_measurements->otp_rot_creator_auth_state_measurement, &uds_key_ids,
-      &pre_endorse_data->uds_pubkey, stages_shared_data->all_certs,
+      &pre_endorse_data->uds_pubkey, pre_endorse_data->cert_buffer,
       &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW without modifying the
   // `dice_cert_names` collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      kDiceCertFormat, stages_shared_data->all_certs, curr_cert_size,
+      kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
       kPersoBlobVersionV0, &pre_endorse_data->blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
@@ -964,9 +966,9 @@ static status_t personalize_endorse_certificates(
   //
   // Location where the next cert perso LTV object will be copied to in the
   // `all_certs` buffer.
-  uint8_t *next_cert = stages_shared_data->all_certs;
+  uint8_t *next_cert = post_endorse_stage_1_data->all_certs;
   // How much room left in the destination (`all_certs`) buffer.
-  size_t free_room = sizeof(stages_shared_data->all_certs);
+  size_t free_room = sizeof(post_endorse_stage_1_data->all_certs);
   // Helper structure caching certificate information from a certificate perso
   // LTV object.
   perso_tlv_cert_obj_view_t block;
@@ -990,8 +992,8 @@ static status_t personalize_endorse_certificates(
    ****************************************************************************/
   // This is where the certificates to be copied are stored, each one encoded as
   // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
-  next_cert = stages_shared_data->all_certs;
-  free_room = sizeof(stages_shared_data->all_certs);
+  next_cert = post_endorse_stage_1_data->all_certs;
+  free_room = sizeof(post_endorse_stage_1_data->all_certs);
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -1219,11 +1221,12 @@ static status_t provision(ujson_t *uj) {
       TRY(personalize_endorse_certificates(
           uj, &perso_data.stages_shared_data,
           &post_endorse_data->stages_shared_data,
-          &post_endorse_data->data.stage_1_data));
+          &post_endorse_data->stage_specific_data.stage_1_data));
     }
     {
       post_endorse_data->stage = PERSO_POST_ENDORSE_STAGE_2;
-      TRY(hash_all_certs(&post_endorse_data->data.stage_2_data.cert_buffer));
+      TRY(hash_all_certs(
+          &post_endorse_data->stage_specific_data.stage_2_data.cert_buffer));
     }
     personalize_extension_post_endorse_t post_endorse = {
         .uj = uj,
