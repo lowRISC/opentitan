@@ -127,6 +127,8 @@ typedef struct perso_pre_endorse_data {
    */
   keymgr_binding_value_t attestation_binding_value;
   keymgr_binding_value_t sealing_binding_value;
+
+  perso_blob_t blob_to_host;  // Perso data device => host.
 } perso_pre_endorse_data_t;
 
 typedef enum perso_post_endorse_stage {
@@ -145,6 +147,10 @@ typedef struct perso_post_endorse_stage_2_data {
   cert_scratch_buffer_t cert_buffer;
 } perso_post_endorse_stage_2_data_t;
 
+typedef struct perso_post_endorse_stages_shared_data {
+  perso_blob_t blob_from_host;  // Perso data host => device.
+} perso_post_endorse_stages_shared_data_t;
+
 typedef struct perso_post_endorse_data {
   perso_post_endorse_stage_t stage;
 
@@ -152,6 +158,8 @@ typedef struct perso_post_endorse_data {
     perso_post_endorse_stage_1_data_t stage_1_data;
     perso_post_endorse_stage_2_data_t stage_2_data;
   } data;
+
+  perso_post_endorse_stages_shared_data_t stages_shared_data;
 
 } perso_post_endorse_data_t;
 
@@ -169,9 +177,6 @@ typedef struct perso_stage_specific_data {
 } perso_stage_specific_data_t;
 
 typedef struct perso_stages_shared_data {
-  perso_blob_t blob_to_host;    // Perso data device => host.
-  perso_blob_t blob_from_host;  // Perso data host => device.
-
   // Used to store individual certs during pre-endorse stage, and store all
   // certs during post-endorse stage
   uint8_t all_certs[8192];
@@ -190,10 +195,6 @@ typedef struct otp_measurements {
   hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
   hmac_digest_t *otp_rot_creator_auth_state_measurement;
 } otp_measurements_t;
-
-typedef struct dice_cert_offsets {
-  size_t uds_offset;
-} dice_cert_offsets_t;
 
 /**
  * Certificates flash info page layout.
@@ -567,8 +568,7 @@ static status_t hash_all_certs(cert_scratch_buffer_t *cert_buffer) {
 static status_t personalize_gen_dice_certificates(
     ujson_t *uj, const otp_measurements_t *otp_measurements,
     perso_stages_shared_data_t *stages_shared_data,
-    perso_pre_endorse_data_t *pre_endorse_data, hmac_digest_t *uds_pubkey_id,
-    dice_cert_offsets_t *cert_offsets) {
+    perso_pre_endorse_data_t *pre_endorse_data, hmac_digest_t *uds_pubkey_id) {
   /*****************************************************************************
    * Initialization.
    ****************************************************************************/
@@ -659,15 +659,13 @@ static status_t personalize_gen_dice_certificates(
       otp_measurements->otp_rot_creator_auth_state_measurement, &uds_key_ids,
       &pre_endorse_data->uds_pubkey, stages_shared_data->all_certs,
       &curr_cert_size));
-  cert_offsets->uds_offset = stages_shared_data->blob_to_host.next_free;
-
   // DO NOT CHANGE THE "UDS" STRING BELOW without modifying the
   // `dice_cert_names` collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
       kDiceCertFormat, stages_shared_data->all_certs, curr_cert_size,
-      kPersoBlobVersionV0, &stages_shared_data->blob_to_host));
+      kPersoBlobVersionV0, &pre_endorse_data->blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
   // can initialize and seal the ownership block.
@@ -927,30 +925,23 @@ static status_t write_digest_to_dice_page(
 
 static status_t personalize_endorse_certificates(
     ujson_t *uj, perso_stages_shared_data_t *stages_shared_data,
-    perso_post_endorse_stage_1_data_t *post_endorse_stage_1_data,
-    const dice_cert_offsets_t *generated_cert_offsets) {
+    perso_post_endorse_stages_shared_data_t *post_endorse_stages_shared_data,
+    perso_post_endorse_stage_1_data_t *post_endorse_stage_1_data) {
   /*****************************************************************************
-   * Certificate Export and Endorsement.
+   * Import endorsed certificates.
    ****************************************************************************/
-  // Export the certificates to the provisioning appliance.
-  // DO NOT CHANGE THE BELOW STRING without modifying the host code in
-  // sw/host/provisioning/ft_lib/src/lib.rs
-  base_printf("Exporting TBS certificates ...\n");
-  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_perso_blob_t, uj,
-                        &stages_shared_data->blob_to_host,
-                        kPersoBlobSerializedMaxSize);
-
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   base_printf("Importing endorsed certificates ...\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-  TRY(ujson_deserialize_perso_blob_t(uj, &stages_shared_data->blob_from_host));
+  TRY(ujson_deserialize_perso_blob_t(
+      uj, &post_endorse_stages_shared_data->blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-  stages_shared_data->blob_from_host.next_free = 0;
+  post_endorse_stages_shared_data->blob_from_host.next_free = 0;
   const size_t num_objs_in_blob_from_host =
-      stages_shared_data->blob_from_host.num_objs;
+      post_endorse_stages_shared_data->blob_from_host.num_objs;
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
@@ -979,12 +970,12 @@ static status_t personalize_endorse_certificates(
   //
   // Extract the UDS cert perso LTV object.
   TRY(extract_next_cert(&next_cert, &free_room,
-                        &stages_shared_data->blob_from_host));
+                        &post_endorse_stages_shared_data->blob_from_host));
 
   // Extract the remaining cert perso LTV objects received from the host.
-  while (stages_shared_data->blob_from_host.num_objs) {
+  while (post_endorse_stages_shared_data->blob_from_host.num_objs) {
     TRY(extract_next_cert(&next_cert, &free_room,
-                          &stages_shared_data->blob_from_host));
+                          &post_endorse_stages_shared_data->blob_from_host));
   }
 
   /*****************************************************************************
@@ -1036,7 +1027,8 @@ static status_t personalize_endorse_certificates(
         &post_endorse_stage_1_data->dice_page.page));
   }
 
-  stages_shared_data->blob_from_host.num_objs = num_objs_in_blob_from_host;
+  post_endorse_stages_shared_data->blob_from_host.num_objs =
+      num_objs_in_blob_from_host;
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
@@ -1144,7 +1136,6 @@ static status_t provision(ujson_t *uj) {
   hmac_digest_t otp_creator_sw_cfg_measurement = {0};
   hmac_digest_t otp_owner_sw_cfg_measurement = {0};
   hmac_digest_t uds_pubkey_id = {0};
-  dice_cert_offsets_t cert_offsets = {0};
 
   static perso_data_t perso_data;
 
@@ -1164,9 +1155,9 @@ static status_t provision(ujson_t *uj) {
             &otp_rot_creator_auth_state_measurement,
     };
 
-    TRY(personalize_gen_dice_certificates(
-        uj, &otp_measurements, &perso_data.stages_shared_data, pre_endorse_data,
-        &uds_pubkey_id, &cert_offsets));
+    TRY(personalize_gen_dice_certificates(uj, &otp_measurements,
+                                          &perso_data.stages_shared_data,
+                                          pre_endorse_data, &uds_pubkey_id));
     owner_config_t owner_config;
     owner_application_keyring_t owner_keyring = {0};
     TRY(install_owner(&owner_config, &owner_keyring));
@@ -1177,9 +1168,8 @@ static status_t provision(ujson_t *uj) {
 
     personalize_extension_pre_endorse_t pre_endorse = {
         .uj = uj,
-        .certgen_inputs = &perso_data.stage_specific_data.data.pre_endorse_data
-                               .certgen_inputs,
-        .perso_blob_to_host = &perso_data.stages_shared_data.blob_to_host,
+        .certgen_inputs = &pre_endorse_data->certgen_inputs,
+        .perso_blob_to_host = &pre_endorse_data->blob_to_host,
         .cert_flash_layout = cert_flash_layout,
         .flash_ctrl_handle = &flash_ctrl_state,
         .uds_pubkey = &pre_endorse_data->uds_pubkey,
@@ -1191,8 +1181,18 @@ static status_t provision(ujson_t *uj) {
         .otp_rot_creator_auth_state_measurement =
             &otp_rot_creator_auth_state_measurement};
     TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
-    TRY(compute_tbs_was_hmac(&perso_data.stages_shared_data.blob_to_host));
-    TRY(log_self_hash(&perso_data.stages_shared_data.blob_to_host));
+    TRY(compute_tbs_was_hmac(&pre_endorse_data->blob_to_host));
+    TRY(log_self_hash(&pre_endorse_data->blob_to_host));
+    /*****************************************************************************
+     * Export generated certificates
+     ****************************************************************************/
+    // Export the certificates to the provisioning appliance.
+    // DO NOT CHANGE THE BELOW STRING without modifying the host code in
+    // sw/host/provisioning/ft_lib/src/lib.rs
+    base_printf("Exporting TBS certificates ...\n");
+    RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_perso_blob_t, uj,
+                          &pre_endorse_data->blob_to_host,
+                          kPersoBlobSerializedMaxSize);
   }
 
   {
@@ -1207,7 +1207,8 @@ static status_t provision(ujson_t *uj) {
       // Endorse TBS certs and install in flash.
       TRY(personalize_endorse_certificates(
           uj, &perso_data.stages_shared_data,
-          &post_endorse_data->data.stage_1_data, &cert_offsets));
+          &post_endorse_data->stages_shared_data,
+          &post_endorse_data->data.stage_1_data));
     }
     {
       post_endorse_data->stage = PERSO_POST_ENDORSE_STAGE_2;
@@ -1215,7 +1216,8 @@ static status_t provision(ujson_t *uj) {
     }
     personalize_extension_post_endorse_t post_endorse = {
         .uj = uj,
-        .perso_blob_from_host = &perso_data.stages_shared_data.blob_from_host,
+        .perso_blob_from_host =
+            &post_endorse_data->stages_shared_data.blob_from_host,
         .cert_flash_layout = cert_flash_layout};
     TRY(personalize_extension_post_cert_endorse(&post_endorse));
 
