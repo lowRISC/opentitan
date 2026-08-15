@@ -1,7 +1,7 @@
 From 149fb72ccfe2af0a18e37884146c73e214817050 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Tue, 21 Nov 2023 19:40:16 -0800
-Subject: [PATCH 5/7] [dm_csrs] Implement nextdm register
+Subject: [dm_csrs] Implement nextdm register
 
 Signed-off-by: Michael Schaffner <msf@opentitan.org>
 

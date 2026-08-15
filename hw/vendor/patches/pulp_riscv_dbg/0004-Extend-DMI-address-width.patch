@@ -1,7 +1,7 @@
 From c1d7ebe40689eced35ae6b8cc2f1431f6ce42e51 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Thu, 17 Aug 2023 10:30:17 -0700
-Subject: [PATCH 4/7] Extend DMI address width
+Subject: Extend DMI address width
 
 Make the DMI interface address 32bits so that larger
 address ranges can be supported (e.g. to take advantage
