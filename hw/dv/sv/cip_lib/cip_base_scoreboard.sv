@@ -212,7 +212,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!cfg.en_scb) return;
 
     if (!item.is_write()) begin
-      uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(item.a_addr);
+      uvm_reg_map map = cfg.ral_models[ral_name].get_default_map().get_root_map();
+      uvm_reg csr = map.get_reg_by_offset(item.a_addr);
       if (csr != null) begin
         dv_base_reg dv_reg;
         `downcast(dv_reg, csr)
@@ -421,7 +422,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // This function will always return a dv_base_mem handle and only returns null if it has just
   // generated a uvm_error.
   protected function dv_base_mem get_mem_at_addr(dv_base_reg_block block, uvm_reg_addr_t addr);
-    uvm_mem     raw_mem = block.default_map.get_root_map().get_mem_by_offset(addr);
+    uvm_mem     raw_mem = block.get_default_map().get_root_map().get_mem_by_offset(addr);
     dv_base_mem mem;
 
     if (raw_mem == null) begin
@@ -665,7 +666,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     for (uvm_reg_addr_t a = aligned_lo; a <= aligned_hi; a++) begin
       // We pass read=0 here because the implementation of uvm_reg_map means that this will also
       // find write-only registers.
-      if (block.get_default_map().get_reg_by_offset(a, 1'b0) != null) return 1'b1;
+      uvm_reg_map map = block.get_default_map().get_root_map();
+      if (map.get_reg_by_offset(a, 1'b0) != null) return 1'b1;
     end
 
     return 1'b0;
@@ -695,7 +697,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Return true if addr points at a register or inside a memory with the default reg_map for this
   // block.
   local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
-    uvm_reg_map map = block.get_default_map();
+    uvm_reg_map map = block.get_default_map().get_root_map();
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
 
     // Check if it's a memory or register adddress. Passning read=0 to get_reg_by_offset means that
@@ -812,7 +814,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
     // sub-word write, that's ok).
     addr = block.get_normalized_addr(item.a_addr);
-    `downcast(csr, block.default_map.get_reg_by_offset(addr))
+    `downcast(csr, block.default_map.get_root_map().get_reg_by_offset(addr))
     `downcast(sub_blk, csr.get_parent())
 
     if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
