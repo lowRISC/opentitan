@@ -128,19 +128,11 @@ static status_t manage_flow_control(ottf_console_t *console,
     if (avail < kFlowControlLowWatermark &&
         console->data.uart.flow_control_state !=
             kOttfConsoleFlowControlResume) {
-      // Enable RX watermark interrupt when RX FIFO level is below the
-      // watermark.
-      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                            kDifToggleEnabled));
       ctrl = kOttfConsoleFlowControlResume;
     } else if (avail >= kFlowControlHighWatermark &&
                console->data.uart.flow_control_state !=
                    kOttfConsoleFlowControlPause) {
       ctrl = kOttfConsoleFlowControlPause;
-      // RX watermark interrupt is status type, so disable the interrupt whilst
-      // RX FIFO is above the watermark to avoid an inifite loop of ISRs.
-      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
-                                            kDifToggleDisabled));
     } else {
       return OK_STATUS((int32_t)console->data.uart.flow_control_state);
     }
@@ -151,6 +143,23 @@ static status_t manage_flow_control(ottf_console_t *console,
   return OK_STATUS((int32_t)console->data.uart.flow_control_state);
 }
 
+static void update_watermark_irq_enable(ottf_console_t *console) {
+  const dif_uart_t *uart = &console->data.uart.dif;
+  uint32_t avail;
+  CHECK_DIF_OK(dif_uart_rx_bytes_available(uart, &avail));
+  if (avail < kFlowControlLowWatermark) {
+    // Enable RX watermark interrupt when RX FIFO level is below the
+    // watermark.
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                          kDifToggleEnabled));
+  } else if (avail >= kFlowControlHighWatermark) {
+    // RX watermark interrupt is status type, so disable the interrupt whilst
+    // RX FIFO is above the watermark to avoid an infinite loop of ISRs.
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                          kDifToggleDisabled));
+  }
+}
+
 bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
                                         ottf_console_t *console) {
   const dif_uart_t *uart = &console->data.uart.dif;
@@ -158,6 +167,7 @@ bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
   if (rx) {
     manage_flow_control(console, kOttfConsoleFlowControlAuto);
+    update_watermark_irq_enable(console);
     CHECK_DIF_OK(dif_uart_irq_acknowledge(uart, kDifUartIrqRxWatermark));
     return true;
   }
@@ -168,10 +178,19 @@ bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
 // unexpected write to the global `console->data.uart.flow_control_state`.
 status_t ottf_console_uart_flow_control(ottf_console_t *console,
                                         ottf_console_flow_control_t ctrl) {
+  if (console->data.uart.flow_control_state == kOttfConsoleFlowControlNone) {
+    return OK_STATUS(kOttfConsoleFlowControlNone);
+  }
   const dif_uart_t *uart = &console->data.uart.dif;
+  // Disable the RX watermark interrupt before snapshotting so that there's no
+  // window between dif_uart_irq_restore_all and update_watermark_irq_enable
+  // where it is incorrectly re-enabled.
+  CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                        kDifToggleDisabled));
   dif_uart_irq_enable_snapshot_t snapshot;
   CHECK_DIF_OK(dif_uart_irq_disable_all(uart, &snapshot));
   status_t s = manage_flow_control(console, ctrl);
   CHECK_DIF_OK(dif_uart_irq_restore_all(uart, &snapshot));
+  update_watermark_irq_enable(console);
   return s;
 }
