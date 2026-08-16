@@ -5,7 +5,9 @@
 #include <stdalign.h>
 #include <string.h>
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -33,6 +35,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
+#include "sw/device/silicon_creator/lib/cert/dice_mldsa.h"
 #include "sw/device/silicon_creator/lib/cert/dice_storage.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -44,6 +47,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -110,8 +114,8 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                             kGpioPinSpiConsoleTxReady);
 
 enum {
-  // 1K should be enough for the largest endorsed certificate perso LTV object
-  // (including SKU extension certificates)
+  // 1K should be enough for the largest non-PQ endorsed certificate perso LTV
+  // object (including SKU extension certificates)
   kMaxEndorsedCertBufferSize = 1024,
   // 1K should be enough for the largest TBS certificate perso LTV object
   // (excluding SKU extension certificates)
@@ -154,7 +158,7 @@ typedef struct perso_post_endorse_stage_1_data {
 } perso_post_endorse_stage_1_data_t;
 
 typedef struct perso_post_endorse_stage_2_data {
-  // Temporary buffer to read endorsed cert into when hashing it
+  // Temporary buffer to read endorsed non-PQ cert into when hashing it
   cert_scratch_buffer_t cert_buffer;
 } perso_post_endorse_stage_2_data_t;
 
@@ -207,6 +211,16 @@ typedef struct otp_measurements {
   hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
   hmac_digest_t *otp_rot_creator_auth_state_measurement;
 } otp_measurements_t;
+
+static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
+                  (5 * 1024 + kUdsMaxTbsSizeBytes),
+              "Perso blob data must be able to hold 5KiB of data to host, and "
+              "one PQ UDS TBS certificate");
+
+static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
+                  (5 * 1024 + kUdsMaxCertSizeBytes),
+              "Perso blob data must be able to hold 5KiB of endorsed "
+              "certificates, and one PQ UDS certificate");
 
 /**
  * Certificates flash info page layout.
@@ -649,8 +663,6 @@ static status_t personalize_gen_dice_certificates(
    ****************************************************************************/
 
   // Generate UDS keys and (TBS) cert.
-  static_assert(kMaxTbsBufferSize >= kUdsMaxTbsSizeBytes,
-                "UDS cert won't fit into scratch cert buffer");
   size_t curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
                                      &pre_endorse_data->uds_pubkey));
@@ -678,6 +690,45 @@ static status_t personalize_gen_dice_certificates(
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
       kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
       kPersoBlobVersionV0, &pre_endorse_data->blob_to_host));
+
+  // Build MLDSA certificate in temp buffer if requested
+  if (pre_endorse_data->certgen_inputs.generate_mldsa_uds_cert) {
+    curr_cert_size = kUdsMaxTbsSizeBytes;  // From template code
+
+    // Copy Key ID to endorse UDS MLDSA certificate sent by ATE. This must be
+    // populated by the ATE tool when `generate_mldsa_uds_cert` is set to `true`
+    static_assert(
+        sizeof(pre_endorse_data->certgen_inputs.dice_mldsa_auth_key_key_id) ==
+            kCertKeyIdSizeInBytes,
+        "Size of authkey key ID field must be equal to kCertKeyIdSizeInBytes");
+    hmac_digest_t uds_mldsa_endorsement_key_id = {0};
+    memcpy(uds_mldsa_endorsement_key_id.digest,
+           pre_endorse_data->certgen_inputs.dice_mldsa_auth_key_key_id,
+           kCertKeyIdSizeInBytes);
+
+    // Pubkey ID will be populated by
+    // `dice_uds_mldsa_tbs_cert_generate_and_build` using `uds_mldsa_key_ids`
+    hmac_digest_t uds_mldsa_pubkey_id = {0};
+    const cert_key_id_pair_t uds_mldsa_key_ids = {
+        .endorsement = &uds_mldsa_endorsement_key_id,
+        .cert = &uds_mldsa_pubkey_id,
+    };
+
+    TRY(dice_uds_mldsa_tbs_cert_generate_and_build(
+        otp_measurements->otp_creator_sw_cfg_measurement,
+        otp_measurements->otp_owner_sw_cfg_measurement,
+        otp_measurements->otp_rot_creator_auth_codesign_measurement,
+        otp_measurements->otp_rot_creator_auth_state_measurement,
+        &uds_mldsa_key_ids, pre_endorse_data->cert_buffer, &curr_cert_size));
+
+    // DO NOT CHANGE THE "PQ_UDS" STRING BELOW without modifying the SKU configs
+    // which expect this
+    TRY(perso_tlv_push_cert_to_perso_blob(
+        "PQ_UDS",
+        /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
+        kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
+        kPersoBlobVersionV1, &pre_endorse_data->blob_to_host));
+  }
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
   // can initialize and seal the ownership block.
@@ -1295,6 +1346,7 @@ bool test_main(void) {
   // Execute personalization provisioning sequence.
   status_t result = provision(&uj);
   if (!status_ok(result)) {
+    base_printf("Personalization failed 0x%04x.\n", result.value);
     CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
   } else {
     CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));

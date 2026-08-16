@@ -11,7 +11,7 @@ use core::{
 
 use arrayvec::ArrayVec;
 use perso_tlv_objects::perso_tlv_blob_version_payload;
-use ujson_lib::provisioning_data::PersoBlob;
+use ujson_lib::provisioning_data::{PERSO_BLOB_BODY_MAX_SIZE, PersoBlob};
 
 use anyhow::{Result, bail};
 
@@ -108,7 +108,7 @@ pub struct CertWithHeader<'a> {
 
 #[derive(Debug, Clone, Default)]
 pub struct PersoBlobBuilder {
-    data: ArrayVec<u8, 5120>,
+    data: ArrayVec<u8, PERSO_BLOB_BODY_MAX_SIZE>,
     num_objs: usize,
 }
 
