@@ -328,30 +328,100 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endtask
 
+  // Wait for count negative edges of each clock (waiting for the slower of the two). This returns
+  // after that many clocks have been seen or if the reset is asserted on either interface.
+  //
+  // This task is safe to kill at any time.
+  task wait_slower_n_cycles(int unsigned         count,
+                            virtual clk_rst_if   clk_rst_vif,
+                            virtual alert_esc_if alert_esc_vif);
+    fork : isolation_fork begin
+      fork
+        // This is the main process of the task: it waits count clocks on each interface, using
+        // fork/join to wait until the slower one is finished.
+        fork
+          clk_rst_vif.wait_n_clks(count);
+          repeat (count) @(negedge alert_esc_vif.clk);
+        join
+        // These two processes wait for a reset to be asserted on one of the interfaces
+        wait (!clk_rst_vif.rst_n);
+        wait (!alert_esc_vif.rst_n);
+      join_any
+
+      // At this point, there have either been count negative edges of each clock or one of the
+      // resets has been asserted. Kill the other processes that are waiting.
+      disable fork;
+    end join
+  endtask
+
   // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
   // it should not clear the `expected_alert[alert_name].expected` flag
   local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
-    int unsigned ping_count = cfg.m_alert_agent_cfgs[alert_name].ping_count;
-    // If the alert happens when we are in the middle of ping handshake phases then wait until we
-    // are out of ping.
-    wait(!cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake &&
-         !cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake_ph_2);
-    // Add 1 extra negedge edge clock to make sure no race condition.
-    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + expected_alert[alert_name].max_delay) begin
-      cfg.clk_rst_vif.wait_n_clks(1);
-      if (under_alert_handshake[alert_name] || cfg.under_reset) return;
-    end
+    alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+
+    // A snapshot of the number of ping requests that have been seen when this task starts.
+    int unsigned ping_count = agent_cfg.ping_count;
+
+    // The maximum number of cycles that are allowed to elapse before the agent sees the alert.
+    //
+    // - ALERT_B2B_DELAY is the idle time between two back-to-back alert handshakes on the
+    //   interface.
+    //
+    // - max_delay is the maximum time between the event that caused this task to be started and the
+    //   alert being handed to the prim_alert_sender.
+    //
+    // - Finally, the +1 is to give one extra negedge clock to avoid historically seen race
+    //   conditions.
+    int unsigned max_cycles_til_alert = (alert_esc_agent_pkg::ALERT_B2B_DELAY +
+                                         expected_alert[alert_name].max_delay +
+                                         1);
+
+    // If the alert happens when we are in the middle of a ping handshake, wait until we are out of
+    // ping.
+    wait(!agent_cfg.under_ping_handshake && !agent_cfg.under_ping_handshake_ph_2);
+
+    // Wait up to max_cycles_til_alert. On every cycle of the alert interface (which may not be
+    // synchronised to cfg.clk_rst_vif), check whether an alert has been asserted. If so, drop out
+    // and kill the waiting thread.
+    fork : isolation_fork begin
+      fork
+        wait_slower_n_cycles(max_cycles_til_alert,
+                             cfg.clk_rst_vif,
+                             agent_cfg.vif);
+        forever begin
+          @(negedge agent_cfg.vif.clk);
+          if (under_alert_handshake[alert_name]) break;
+        end
+      join_any
+      disable fork;
+    end join
+
+    // Is the agent under an alert handshake? If so, it was asserted in time
+    if (under_alert_handshake[alert_name]) return;
+
+    // If either the agent's interface or clk_rst_vif is under reset, return immediately. (This will
+    // be reflected in cfg.under_reset, but we are accessing signals directly, so there are race
+    // conditions if we assume that has already been updated).
+    if (!cfg.clk_rst_vif.rst_n || !agent_cfg.vif.rst_n) return;
+
     // Ignore the alert if it's due to a ping by checking if there's been a ping since the
     // check started
-    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) begin
+    if (ping_count != agent_cfg.ping_count) begin
       alert_due_to_ping = 1;
       return;
     end
+
     // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
     // alert bit is set.
     if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
-    `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
-                               alert_name, expected_alert[alert_name].max_delay))
+
+    `uvm_error(get_full_name(),
+               $sformatf({"Waited %0d cycles but did not see alert %0s. ",
+                          "(Max wait calculated ALERT_B2B_DELAY + max_delay + 1 = %0d + %0d + 1)"},
+                         max_cycles_til_alert,
+                         alert_name,
+                         alert_esc_agent_pkg::ALERT_B2B_DELAY,
+                         expected_alert[alert_name].max_delay))
   endtask
 
   // This function is used for individual IPs to set when they expect certain alert to trigger
