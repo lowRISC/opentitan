@@ -121,7 +121,9 @@ In the second round, the message length is a fixed 768 bits (512-bit size of out
 
 HMAC supports a secret key of length 128/256/384/512/1024-bit, so long as the key length does not exceed the block size of the configured digest, i.e., for SHA-2 256 a maximum length of 512-bit key is supported.
 The byte order of the key registers is big-endian by default, can be swapped to little endian by setting [`CFG.key_swap`](registers.md#cfg--key_swap) to 1.
-To support any arbitrary key length, the software should configure the HMAC to the next largest supported key length, e.g. for an 80-bit key, HMAC should be configured with an 128-bit key length and fed with the 80-bit key.
+To support any arbitrary key length, the software should configure the HMAC to the next largest supported key length and concatenate zeros to reach the programmed key size.
+The position of these zeros depends on the endianness, thus on the programmed [`CFG.key_swap`](registers.md#cfg--key_swap).
+For example, for an 80-bit key, HMAC should be configured with an 128-bit key length, fed with the 80-bit key and with 48 zero-bits.
 It is also up to the software to shrink the key to the supported key length (up to 512-bit for SHA-2 256 and up to 1024-bit for SHA-2 384/512) using a hash function when setting up the HMAC.
 For example, common key sizes may be 2048-bit or 4096-bit.
 Software is expected to hash these into the supported key length and write the hashed result as the configured key to the HMAC IP.
