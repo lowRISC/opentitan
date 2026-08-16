@@ -800,6 +800,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // register.
   local function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, dv_base_reg_block block);
     uvm_reg_addr_t    addr;
+    uvm_reg           base_reg;
     dv_base_reg       csr;
     dv_base_reg_block sub_blk;
     int unsigned      num_byte_lanes, req_byte_lanes, missing_lanes;
@@ -814,8 +815,27 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
     // sub-word write, that's ok).
     addr = block.get_normalized_addr(item.a_addr);
-    `downcast(csr, block.default_map.get_root_map().get_reg_by_offset(addr))
-    `downcast(sub_blk, csr.get_parent())
+
+    base_reg = block.default_map.get_root_map().get_reg_by_offset(addr);
+
+    if (base_reg == null) begin
+      // We can't find a register at addr. In particular, this means we aren't doing a sub-word
+      // write to a register at that address.
+      return 1;
+    end
+
+    if (!$cast(csr, base_reg)) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Cannot cast register (%0s) to a dv_base_reg.", base_reg.get_name()))
+      return 1;
+    end
+
+    if (!$cast(sub_blk, csr.get_parent())) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Cannot cast the block (%0s) with register %0s to a dv_base_reg_block.",
+                           csr.get_parent().get_name(), csr.get_name()))
+      return 1;
+    end
 
     if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
 
