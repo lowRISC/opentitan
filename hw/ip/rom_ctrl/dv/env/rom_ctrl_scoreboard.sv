@@ -331,7 +331,8 @@ endfunction
 function void rom_ctrl_scoreboard::check_reg_access(tl_seq_item item, tl_channels_e channel);
   dv_base_reg_block ral_model = cfg.ral_models["rom_ctrl_regs_reg_block"];
   uvm_reg_addr_t    csr_addr = ral_model.get_word_aligned_addr(item.a_addr);
-  uvm_reg           csr = ral_model.default_map.get_reg_by_offset(csr_addr);
+  uvm_reg_map       map = ral_model.get_default_map().get_root_map();
+  uvm_reg           csr = map.get_reg_by_offset(csr_addr);
 
   bit     do_read_check   = 1'b1;
   bit     write           = item.is_write();
