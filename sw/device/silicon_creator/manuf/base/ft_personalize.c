@@ -109,12 +109,16 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console_tx_indicator.spi_console_tx_ready_gpio =
                             kGpioPinSpiConsoleTxReady);
 
-// 1K should be enough for the largest certificate perso LTV object.
 enum {
-  kBufferSize = 1024,
+  // 1K should be enough for the largest endorsed certificate perso LTV object
+  // (including SKU extension certificates)
+  kMaxEndorsedCertBufferSize = 1024,
+  // 1K should be enough for the largest TBS certificate perso LTV object
+  // (excluding SKU extension certificates)
+  kMaxTbsBufferSize = MAX_NODEF(1024, kUdsMaxTbsSizeBytes),
 };
 typedef struct cert_scratch_buffer {
-  uint8_t buffer[kBufferSize];
+  uint8_t buffer[kMaxEndorsedCertBufferSize];
 } __attribute__((aligned(4))) cert_scratch_buffer_t;
 
 typedef struct aligned_dice_storage_page {
@@ -134,7 +138,7 @@ typedef struct perso_pre_endorse_data {
   perso_blob_t blob_to_host;  // Perso data device => host.
 
   // Temporary buffer to build TBS certs before pushing to perso blob
-  uint8_t cert_buffer[kBufferSize];
+  uint8_t cert_buffer[kMaxTbsBufferSize];
 } perso_pre_endorse_data_t;
 
 typedef enum perso_post_endorse_stage {
@@ -535,7 +539,8 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   perso_tlv_cert_obj_view_t cert_obj;
   TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
                            cert_buffer->buffer));
-  TRY(perso_tlv_get_cert_obj_view(cert_buffer->buffer, kBufferSize, &cert_obj));
+  TRY(perso_tlv_get_cert_obj_view(cert_buffer->buffer,
+                                  sizeof(cert_buffer->buffer), &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -644,7 +649,7 @@ static status_t personalize_gen_dice_certificates(
    ****************************************************************************/
 
   // Generate UDS keys and (TBS) cert.
-  static_assert(kBufferSize >= kUdsMaxTbsSizeBytes,
+  static_assert(kMaxTbsBufferSize >= kUdsMaxTbsSizeBytes,
                 "UDS cert won't fit into scratch cert buffer");
   size_t curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
