@@ -81,32 +81,21 @@ The reset clock domain is identical to the table above, and the power domain map
 | rst_ast_tlul_i   | main                        |
 | rst_ast_usb_i    | main                        |
 
-### System Reset Handling and Flash
+### System Reset Handling and RRAM
 
-Since `top_earlgrey` contains flash, it is important to examine the memory's relationship with resets.
+Since `top_earlgrey` contains RRAM, it is important to examine the memory's relationship with resets.
 
-For flash, resets that occur during a stateful operation (program or erase) must be carefully handled to ensure the flash memory is not damaged.
-There are three reset scenarios:
-
-* Reset due to external supply lowering.
-* Reset due to internal peripheral request.
-* Reset due to lower power entry and exit.
+Unlike flash, RRAM has no separate program or erase step; what would be a program or erase operation on flash is just a write operation on RRAM.
 
 #### Reset due to External Supply
 
-Device resets due to supply dropping below a specific threshold are commonly known as "brown-out".
-When this occurs, the flash memory must go through specialized sequencing to ensure the cells are not damaged.
-This process is handled exclusively between ast and the flash.
-Please see the [relevant section](../../ip/ast/README.md#main-vcc-power-detection-and-flash-protection) for more details.
+Device resets due to supply dropping below a specific threshold are commonly known as a "brown-out".
+When this occurs, the memory macro must go through appropriate sequencing, handled between ast and the memory, to ensure it is not damaged.
 
-#### Reset due to Internal Request
+#### Reset while Write in Progress
 
-When the device receives an internal request to reset (for example [aon_timer](../../../ip/aon_timer/README.md#aon-watchdog-timer)), device power is kept on and the flash is directly reset.
-It is assumed that the flash device, when powered, will be able to correctly handle such a sequence and properly protect itself.
-
-#### Reset due to Low Power Entry
-
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) is responsible for ensuring the entry request is aborted.
+Resets that happen during a write operation need special care, because an incomplete write could leave the RRAM in an undefined state.
+To that end, the RRAM controller indicates to the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) when a write is in progress, so that a reset or low power entry request can be aborted until the write completes.
 
 
 ### Main processor (`core_ibex`)
@@ -143,7 +132,7 @@ The Ibex documentation has more details on the current pipeline operation, inclu
 
 ### Memory
 
-The device contains four memory address spaces for instruction and data.
+The device contains three memory address spaces for instruction and data.
 
 Instruction ROM (32kB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
@@ -153,28 +142,26 @@ The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey currently contains two non-volatile memory (NVM) technologies: 2MiB of embedded RRAM (resistive RAM) and 1024kB of embedded-flash (e-flash).
-RRAM is now the NVM technology in active use: it houses the boot loader mentioned above, as well as the operating system and application that layers on top.
-The flash controller is expected to be removed from the design soon.
+Earl Grey contains 2MiB of embedded RRAM (resistive RAM), its non-volatile memory (NVM) technology: it houses the boot loader mentioned above, as well as the operating system and application that layers on top.
 
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
 RRAM is the primary technology for code and data storage on Earl Grey.
-Like flash, RRAM is a non-volatile memory technology, so software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
+Being a non-volatile memory technology, software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
 The FPGA emulation of the memory approximates the read and write speeds and non-volatile nature that the RRAM macro exhibits in silicon.
 
-Details on how flash and RRAM are used by software will be detailed in future Secure Boot Process and Software sections over time.
+Details on how RRAM is used by software will be detailed in future Secure Boot Process and Software sections over time.
 
 The intent is for the contents of the NVM code to survive FPGA reset as it would as a NVM in silicon.
 Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
-The SPI device peripheral is provided as a method to bulk-load either NVM.
+The SPI device peripheral is provided as a method to bulk-load the NVM.
 The processor debug port (via JTAG) is also available for code loading.
 See those specifications for more details.
 
 Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
 It is also available for code storage, though that is not its intended purpose.
 
-The base address of the ROM, RRAM, Flash, and SRAM are given in the address map section later in this document.
+The base address of the ROM, RRAM, and SRAM are given in the address map section later in this document.
 
 ### Secure boot
 
@@ -337,7 +324,7 @@ The specification for the timer can be found [here](../../../ip/rv_timer/README.
 
 ##### RRAM Controller
 
-The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is Earl Grey's primary non-volatile storage peripheral for code and data, having replaced the flash controller (below) in that role.
+The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is Earl Grey's primary non-volatile storage peripheral for code and data, having replaced the flash controller in that role. It also houses emulated OTP (one-time programmable) functionality, replacing the use of a dedicated OTP macro.
 
 The primary read path for this data is in the standard memory address space.
 Writes on the other hand, need to be initiated by software  which must interact with the RRAM controller.
@@ -351,36 +338,7 @@ The RRAM controller peripheral in this release approximates the expected timing 
 Security is also a concern, since secret data can be stored in the RRAM.
 The RRAM controller provides per-page memory protection, on-the-fly XEX scrambling (using the PRINCE cipher) with a key sideloaded from OTP, end-to-end bus integrity, and per-word address infection to protect against a range of physical and software attacks.
 A secure wipe of the RRAM contents with random data is also performed on entry to the RMA lifecycle state.
-RRAM already has the ability to emulate OTP storage; it is planned to be connected to the OTP controller for this purpose in a future revision.
 For more details see the [RRAM controller module specification](../../../ip/rram_ctrl/README.md).
-
-##### Flash Controller
-
-The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, flash has been superseded by RRAM as Earl Grey's primary NVM technology, and the flash controller is expected to be removed from the design soon.
-The primary read path for this data is in the standard memory address space.
-Writes to that address space are ignored, however, since one can not write to flash in a standard way.
-Instead, to write to flash, software must interact with the flash controller.
-
-Flash functionality include three primary commands: read, erase, and program.
-Read, as mentioned above, is standard, and uses the chip memory address space.
-Erase is done at a page level, where the page size is parameterizable in the flash controller.
-Upon receiving an erase request, the flash controller wipes all contents of that page, rendering the data in all `1`s state (`0xFFFFFFFF` per word).
-Afterwards, software can program individual words to any value.
-It is notable that software can continue to attempt to program words even before another erase, but it is not physically possible to return a flash bit back to a `'1'` state without another erase.
-So future content is in effect an AND of the current content and the written value.
-
-```
-next_value = AND(current_value, write_word)
-```
-
-Erase and program are slow.
-A typical erase time is measured in milliseconds, program times in microseconds.
-The flash controller peripheral in this release approximates those expected times.
-
-Security is also a concern, since secret data can be stored in the flash.
-Some memory protection is provided by the flash controller.
-For more details see the [flash controller module specification](../../ip_autogen/flash_ctrl/README.md).
 
 ### Interconnection
 
