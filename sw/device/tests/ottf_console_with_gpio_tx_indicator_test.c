@@ -106,7 +106,7 @@ static status_t test_base_printf(void) {
 static status_t test_large_ujson_tx(ujson_t *uj) {
   // Note: this should match the size of the "body" field in
   // `sw/device/lib/testing/json/provisioning_data.h`.
-  const size_t kPayloadSize = 5120;
+  const size_t kPayloadSize = PERSO_BLOB_BODY_MAX_SIZE;
   for (size_t i = 0; i < kPayloadSize; ++i) {
     perso_blob_to_host.body[i] = (uint8_t)(i % 256);
   }

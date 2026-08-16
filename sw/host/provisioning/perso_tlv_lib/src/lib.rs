@@ -11,7 +11,7 @@ use core::{
 
 use arrayvec::ArrayVec;
 use perso_tlv_objects::perso_tlv_blob_version_payload;
-use ujson_lib::provisioning_data::PersoBlob;
+use ujson_lib::provisioning_data::{PERSO_BLOB_BODY_MAX_SIZE, PersoBlob};
 
 use anyhow::{Result, bail};
 
@@ -108,7 +108,7 @@ pub struct CertWithHeader<'a> {
 
 #[derive(Debug, Clone, Default)]
 pub struct PersoBlobBuilder {
-    data: ArrayVec<u8, 5120>,
+    data: ArrayVec<u8, PERSO_BLOB_BODY_MAX_SIZE>,
     num_objs: usize,
 }
 
@@ -1271,7 +1271,7 @@ mod tests {
 
         #[test]
         fn perso_blob_run_out_of_space() {
-            let large_cert_body = vec![0x01; 4081];
+            let large_cert_body = vec![0x01; 8192];
             let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
                 .push_endorsed_cert(
@@ -1282,7 +1282,7 @@ mod tests {
                 .unwrap();
 
             // Adding a 2nd large cert will cause Perso blob to run out of space
-            let large_cert_body = vec![0x02; 1011];
+            let large_cert_body = vec![0x02; 5076];
             assert!(
                 perso_blob_builder
                     .push_endorsed_cert(

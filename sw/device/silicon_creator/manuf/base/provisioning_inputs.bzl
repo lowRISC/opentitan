@@ -24,7 +24,7 @@ EARLGREY_SKUS = {
     "emulation": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -39,7 +39,7 @@ EARLGREY_SKUS = {
     "emulation_dice_cwt": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -54,7 +54,7 @@ EARLGREY_SKUS = {
     "emulation_dice_mldsa": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_mldsa", "//sw/device/silicon_creator/lib/cert:dice_cert_build"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -69,7 +69,7 @@ EARLGREY_SKUS = {
     "emulation_tpm": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": [
             "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
@@ -86,7 +86,7 @@ EARLGREY_SKUS = {
     "sival": {
         "otp": "sv00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/sival:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/rom_ext/sival:sival_owner"],
