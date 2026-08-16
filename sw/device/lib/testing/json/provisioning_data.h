@@ -27,8 +27,18 @@ extern "C" {
 enum {
   kSerdesSha256HashSerializedMaxSize = 98,
   kLcTokenHashSerializedMaxSize = 52,
-  kManufCertgenInputsSerializedMaxSize = 215,
-  kPersoBlobSerializedMaxSize = 20535,
+  kManufCertgenInputsSerializedMaxSize = 352,
+  kPersoBlobSerializedMaxSize = 53303,
+};
+#endif
+
+// 5KiB for pre-existing certs + 8KiB for ML-DSA 44 UDS cert signed with ML-DSA
+// 87 key
+#ifdef RUST_PREPROCESSOR_EMIT
+pub const PERSO_BLOB_BODY_MAX_SIZE : usize = 13 * 1024;
+#else  // RUST_PREPROCESSOR_EMIT
+enum {
+  PERSO_BLOB_BODY_MAX_SIZE = 13 * 1024,
 };
 #endif
 
@@ -117,11 +127,16 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
 
 /**
  * Inputs needed to generate certificates during personalization.
+ *
+ * Valid `dice_mldsa_auth_key_key_id` must be provided when
+ * `generate_mldsa_uds_cert` is true
  */
 // clang-format off
 #define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
     field(dice_auth_key_key_id, uint8_t, 20) \
-    field(ext_auth_key_key_id, uint8_t, 20)
+    field(ext_auth_key_key_id, uint8_t, 20) \
+    field(dice_mldsa_auth_key_key_id, uint8_t, 20) \
+    field(generate_mldsa_uds_cert, bool)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
                    manuf_certgen_inputs_t, \
                    STRUCT_MANUF_CERTGEN_INPUTS);
@@ -142,7 +157,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 #define STRUCT_PERSO_BLOB(field, string) \
     field(num_objs, size_t) \
     field(next_free, size_t) \
-    field(body, uint8_t, 5120)
+    field(body, uint8_t, PERSO_BLOB_BODY_MAX_SIZE)
 UJSON_SERDE_STRUCT(PersoBlob, \
                    perso_blob_t, \
                    STRUCT_PERSO_BLOB);
