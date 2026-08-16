@@ -191,6 +191,7 @@ fn main() -> Result<()> {
 
     // Parse and prepare personalization ujson data payload.
     let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
+    let (provision_mldsa_uds_cert, dice_mldsa_ca_key_id) = (false, ArrayVec::<u8, 20>::new());
     let ext_ca_key_id = if let Some(ext) = ca_cfgs.get("ext") {
         hex_string_to_u8_arrayvec::<20>(ext.key_id.as_str())?
     } else {
@@ -199,6 +200,8 @@ fn main() -> Result<()> {
     let perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
+        generate_mldsa_uds_cert: provision_mldsa_uds_cert,
+        dice_mldsa_auth_key_key_id: dice_mldsa_ca_key_id,
     };
 
     // Only run test unlock operation if we are in a locked LC state.
