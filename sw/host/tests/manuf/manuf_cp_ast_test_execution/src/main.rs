@@ -91,7 +91,6 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"PASS.*\n")?),
         exit_failure: Some(Regex::new(r"(FAIL|FAULT).*\n")?),
-        newline: true,
         ..Default::default()
     };
     let mut stdout = std::io::stdout();
