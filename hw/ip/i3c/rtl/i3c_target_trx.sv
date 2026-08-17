@@ -44,6 +44,7 @@ module i3c_target_trx
   // Group address descriptions.
   input  i3c_grp_addr_t     grp_addr_i[NumGroups],
   // Blocked device addresses.
+  // TODO: Both currently unused.
   input               [6:0] addr_blocked_i[NumBlocked],
   input               [6:0] mask_blocked_i[NumBlocked],
 
@@ -93,6 +94,7 @@ module i3c_target_trx
   output              [6:0] te_o,
 
   // DFT-related controls.
+  // TODO: Unused and can probably be removed.
   input                     scanmode_i
 );
 
@@ -116,7 +118,7 @@ module i3c_target_trx
 
   logic start_det, stop_det;
 
-  // Capture HDR exit detection on rising SCL that indicate that start of the ensuing STOP.
+  // Capture HDR exit detection on rising SCL that indicate the start of the ensuing STOP.
   logic ddr_mode;
 
   // SDR sto(P) detection.
@@ -172,7 +174,7 @@ module i3c_target_trx
   logic arb_won;  // TODO: This shall need to be persistent.
   // Sending IBI payload?
   logic ibi_sending;
-  assign ibi_sending = 1'b0;
+  assign ibi_sending = 1'b0; // TODO: Missing implementation
 
   // Cede driving the bus
   logic drv_release;
@@ -194,7 +196,7 @@ module i3c_target_trx
     if (!rst_ni) begin
       sda_pq  <= '{'1};
     end else if (crc5_pq_emit) begin : crc5_pq
-      // Load the even-indexed bits of the CRC Word from the calculated CRC-5 value.
+      // Load the odd-indexed bits of the CRC Word from the calculated CRC-5 value.
       // - park SDA high for bus turnaround.
       sda_pq[0][8:3] <= {1'b1, 1'b1, 1'b0, crc5_q[3], crc5_q[1], 1'b1};
     end else if (parity_pq_emit) begin : parity_pq
@@ -221,7 +223,7 @@ module i3c_target_trx
     end else if (send_ack) begin : ack_nq
       sda_nq[0][8] <= 1'b0;  // Explicitly drive a 0 bit onto the bus.
     end else if (crc5_nq_emit) begin : crc5_nq
-      // Load the odd-indexed bits of the CRC Word from the calculated CRC-5 value.
+      // Load the even-indexed bits of the CRC Word from the calculated CRC-5 value.
       sda_nq[0][8:3] <= {1'b0, 1'b1, 1'b0, crc5_q[4], crc5_q[2], crc5_q[0]};
     end else if (parity_nq_emit) begin : parity_nq
       sda_nq[0][8] <= parity_d[1];  // Driven from data because SCL-negedge flop not yet updated.
@@ -266,10 +268,10 @@ module i3c_target_trx
   logic                  is_group;    // Is this a group address?
   logic    [TargIDW-1:0] targ_id;     // Individual Target addressed, _NoMatch or _Broadcast.
   logic [NumTargets-1:0] targ_set;    // Set of addressed target(s), valid for Group Addressing too.
-  logic                  capture_all; // Capturing all traffic?
+  logic                  capture_all; // Capturing all traffic? TODO: Currently assigned but not used.
   always_comb begin : addr_matching
-    // Disabled targets and those without a valid address shall ignore all traffic; ie. they do
-    // not even received and respond to broadcast writes.
+    // Disabled targets and those without a valid address shall ignore all traffic; i.e., they do
+    // not even receive and respond to broadcast writes.
     logic [NumTargets-1:0] contenders;
     contenders = '0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
@@ -287,7 +289,7 @@ module i3c_target_trx
         targ_set[t] = 1'b1;
       end
     end
-    // Respond to the I3C Broadcast Address; this commences I3C Common Command Codes as well a
+    // Respond to the I3C Broadcast Address; this commences I3C Common Command Codes as well as
     // Private Read/Write operations.
     if (addr_recvd == Addr_Broadcast) begin
       targ_id  = TargIDBroadcast;
@@ -345,7 +347,8 @@ module i3c_target_trx
     end
   end
 
-  // Target ID; this is either the unique ID number of a configured Target, or TargIDBroadcast.
+  // Target ID; this is either the unique ID number of a configured Target, or zero, to ensure it
+  // can be safely used as index into all data structures that have `NumTargets` entries.
   logic [TargIDW-1:0] sel_targ_id;
   assign sel_targ_id = (trans.targ_id < NumTargets) ? trans.targ_id : '0;
 
@@ -399,7 +402,7 @@ module i3c_target_trx
     State_Idle,
     State_PreStop,
 
-    // --- Address arbitration ---hdr_mode
+    // --- Address arbitration ---
     State_ArbCont,  // Still a contender.
     State_ArbCede,  // Ceded bus, or did not contend.
     State_AckAddr,
@@ -416,7 +419,7 @@ module i3c_target_trx
     State_TxNACKDDR,  // TODO: Implement this state; send `11`.
 
     // --- HDR-DDR Reception ---
-    // TODO: ACK/NAK of command (first data word).
+    // TODO: ACK/NACK of command (first data word).
     // TODO: Must respond to Controller abort of read Data Word.
     State_RxCmdDDR,
     State_RxPreDDR,
@@ -424,7 +427,7 @@ module i3c_target_trx
     State_RxCRCDDR,
     State_RxRsvdDDR,
 
-    // --- Ignoring traffic, e.g. HDR mode that is not understood, or Target Errors. ---
+    // --- Ignoring traffic, e.g., HDR mode that is not understood, or Target Errors. ---
     State_Ignore
   } state_e;
 
@@ -435,7 +438,7 @@ module i3c_target_trx
   wire data_bit = (|bit_idx && bit_idx <= 'h8);
   // Indications of pre-penultimate, penultimate and the last bit; these are useful for both
   // the addressing phase and the reception of HDR-DDR words.
-  wire prepen_bit = (bit_idx == BitW'('d2));
+  wire prepen_bit = (bit_idx == BitW'('d2)); // currently unused
   wire penult_bit = (bit_idx == BitW'('d1));
   wire last_bit = ~|bit_idx;
 
@@ -462,7 +465,7 @@ module i3c_target_trx
   // and stoP detectors since SDA transitions are _required_ with SCL high during HDR-DDR.
   logic [3:0] bus_mode_nq;  // MSB set indicates transition into one of the HDR modes.
   always_ff @(posedge scl_ni or negedge rst_ni) begin
-    if (!rst_ni) bus_mode_nq <= 'h0;
+    if (!rst_ni) bus_mode_nq <= '0;
     else if (state_q == State_RxSDR && enthdr_det) begin
       // Although we support only HDR-DDR mode, it is useful to report other HDR modes to software.
       bus_mode_nq <= {1'b1, rx_ccc[2:0]};
@@ -471,7 +474,7 @@ module i3c_target_trx
   // Track the current bus mode.
   logic [3:0] bus_mode_pq;
   always_ff @(posedge scl_i or negedge rst_ni) begin
-    if (!rst_ni) bus_mode_pq <= 'b0;
+    if (!rst_ni) bus_mode_pq <= '0;
     else if (hdr_exit_det_i) bus_mode_pq <= 4'h0;  // Return to SDR mode.
     else if (bus_mode_nq[3]) bus_mode_pq <= bus_mode_nq;
   end
@@ -596,6 +599,7 @@ module i3c_target_trx
 
   // Detection of Error Type TE0 (4.3.8.1.1).
   assign te_o[0]   = &{state_q == State_ArbCede, penult_bit, te0_invalid_addr(addr_recvd)};
+  // TODO: Te1-TE6 are not yet detected.
   assign te_o[6:1] = '0;
 
   // CCCs that are not understood shall be NACKed if they are not Broadcasts.
@@ -605,7 +609,7 @@ module i3c_target_trx
 
   // Arbitration loss or driver conflict on SDA line, including any mismatch detected during the
   // preceding clock phase (important for HDR-DDR).
-  wire sda_mismatch = sda_pq_mismatch | sda_diff;
+  wire sda_mismatch = sda_pq_mismatch | sda_diff; // TODO: Currently unused
 
   // State advances only on the falling edge of controller-supplied SCL, which represents the
   // reception or transmission of either 1 bit (SDR) or 2 bits (HDR-DDR) per SDA lane.
@@ -858,7 +862,7 @@ module i3c_target_trx
   wire [1:0] parcrc_bit = transmitting ? {sda_nq[0][8], sda_pq[0][8]} : {sda_pq[0][0], sda_i[0]};
 
   // Parity calculated on received/transmitted data.
-  logic       parity_sdr;
+  logic       parity_sdr; // TODO: Currently unused
   logic       upd_parity;
   logic       init_parity;
   assign parity_d = {(parity_q[1] & ~init_parity) ^ parcrc_bit[1],
@@ -899,7 +903,7 @@ module i3c_target_trx
   assign crc5_nq_emit = (state_q == State_TxDataDDR) & last_bit & !tx_avail;
 
   // Bit counting within data unit, and calculation of parity/CRC-5 on the data bits.
-  logic rx_sample_q;
+  logic rx_sample_q; // TODO: Currently unused
   always_ff @(posedge scl_ni or negedge rst_ni) begin
     if (!rst_ni) begin
       crc5_q        <= '1;
@@ -1006,7 +1010,7 @@ module i3c_target_trx
     // SCL-negedge bits are used (`sda_nq`). Start requests - which occur only during the Bus Idle
     // condition, so the transceiver is inactive - must lower SDA to prompt the Active Controller.
     assign bus_drv_o.sda = ((sda_out_ptog ^ sda_out_ntog) ? sda_pq[0][8] : sda_nq[0][8])
-                         & sreq_sda_i;
+                           & sreq_sda_i;
 
     // Use a separate pair of toggle bits for the enables because these _do_ need to change on
     // a half-cycle basis for SDR transmission, because of the T-bit in SDR Read transfers.
