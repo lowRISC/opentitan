@@ -125,7 +125,7 @@ typedef struct sc_keymgr_dpe_advance_data {
   /**
    * Binding values for the advance call.
    */
-  keymgr_dpe_binding_value_t *binding_value;
+  const keymgr_dpe_binding_value_t *binding_value;
   /**
    * Policy for the newly created DPE context.
    */
@@ -260,7 +260,8 @@ void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval);
  *
  * @param binding_value Software binding value
  */
-void sc_keymgr_dpe_sw_binding_set(keymgr_dpe_binding_value_t *binding_value);
+void sc_keymgr_dpe_sw_binding_set(
+    const keymgr_dpe_binding_value_t *binding_value);
 
 /**
  * Blocks until the software binding registers are unlocked.
