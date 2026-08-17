@@ -327,11 +327,8 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":ottf_console",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/runtime:print",
         ],
         shared = [
-            "//sw/device/lib/base:status",
             "//sw/device/lib/testing/json:ottf",
             "//sw/device/lib/ujson",
         ],
