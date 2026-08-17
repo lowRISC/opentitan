@@ -278,6 +278,51 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
 }
 
 /**
+ * Refreshes the randomness used to mask the GHASH subkey tables (tbl0 and
+ * tbl1).
+ *
+ * Shifts both subkey shares H0 and H1 by a fresh random delta mask, updating
+ * the precomputed product tables and correction terms in-place.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
+  // Check that the context's checksum is correct before modifying.
+  HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
+                    kHardenedBoolTrue);
+
+  uint32_t delta_h[kGhashBlockNumWords];
+  HARDENED_TRY(hardened_memshred(delta_h, kGhashBlockNumWords));
+
+  ghash_block_t tbl_delta[16];
+  HARDENED_TRY(ghash_init_subkey(delta_h, tbl_delta));
+
+  // Update tbl0 and tbl1 with tbl_delta.
+  for (size_t i = 0; i < 16; ++i) {
+    block_xor(&ctx->tbl0[i], &tbl_delta[i], &ctx->tbl0[i]);
+    block_xor(&ctx->tbl1[i], &tbl_delta[i], &ctx->tbl1[i]);
+  }
+
+  // Update correction_term0 and correction_term1 (both shifted by S0 *
+  // delta_h).
+  ghash_block_t s0_delta =
+      galois_mul_state_key(ctx->enc_initial_counter_block0, tbl_delta);
+  block_xor(&ctx->correction_term0, &s0_delta, &ctx->correction_term0);
+  block_xor(&ctx->correction_term1, &s0_delta, &ctx->correction_term1);
+
+  // Update correction_term1_init (shifted by S1 * delta_h).
+  ghash_block_t s1_delta =
+      galois_mul_state_key(ctx->enc_initial_counter_block1, tbl_delta);
+  block_xor(&ctx->correction_term1_init, &s1_delta,
+            &ctx->correction_term1_init);
+
+  // Recompute the structure checksum after modifying tables and correction
+  // terms.
+  ctx->checksum = ghash_context_integrity_checksum(ctx);
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Single-block update function for GHASH.
  *
  * @param ctx GHASH context.
@@ -287,6 +332,12 @@ static status_t ghash_process_block(ghash_context_t *ctx,
                                     ghash_block_t *block) {
   ghash_block_t s0_tmp;
   ghash_block_t s1_tmp;
+
+  // Periodically refresh the subkey table mask every 64 blocks to limit
+  // side-channel DPA/CPA trace accumulation on long messages.
+  if (ctx->ghash_block_cnt > 0 && (ctx->ghash_block_cnt % 64) == 0) {
+    HARDENED_TRY(ghash_refresh_subkey_mask(ctx));
+  }
 
   if (ctx->ghash_block_cnt == 0) {
     // Process share 0.
@@ -424,11 +475,15 @@ status_t ghash_update_redundant(ghash_context_t *ctx,
 
   ghash_update(&ctx_redundant, input);
 
-  // Compare the GHASH state. Do this only at a single share to avoid
-  // introducing SCA leakage. Use consttime_memeq_byte() to avoid DFA.
+  // Compare state0_reg ^ state0_red == state1_reg ^ state1_red.
+  ghash_block_t diff0, diff1;
+  hardened_xor(ctx->state0.data, ctx_redundant.state0.data, kGhashBlockNumWords,
+               diff0.data);
+  hardened_xor(ctx->state1.data, ctx_redundant.state1.data, kGhashBlockNumWords,
+               diff1.data);
+
   HARDENED_CHECK_EQ(
-      consttime_memeq_byte(&ctx->state0.data, ctx_redundant.state0.data,
-                           kGhashBlockNumBytes),
+      consttime_memeq_byte(diff0.data, diff1.data, kGhashBlockNumBytes),
       kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
