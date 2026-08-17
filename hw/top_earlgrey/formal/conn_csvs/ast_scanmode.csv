@@ -10,7 +10,6 @@
 # Verify the scanmode connectivities.
 CONNECTION, AST_SCANMODE_PADRING,      u_ast, dft_scan_md_o, u_padring,                   scanmode_i
 CONNECTION, AST_SCANMODE_CLKMGR,       u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,   scanmode_i
-CONNECTION, AST_SCANMODE_FLASH_CTRL,   u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_flash_ctrl,   scanmode_i
 CONNECTION, AST_SCANMODE_LC_CTRL,      u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl,      scanmode_i
 CONNECTION, AST_SCANMODE_OTP_CTRL,     u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_otp_macro,    scanmode_i
 CONNECTION, AST_SCANMODE_PINMUX,       u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_pinmux,   scanmode_i

@@ -62,9 +62,6 @@ CONNECTION, RSTMGR_LC_IO_DIV4_AON_SENSOR_CTRL_RST_NI, top_earlgrey.earlgrey_pd_a
 CONNECTION, RSTMGR_LC_AON_AON_SENSOR_CTRL_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_aon.u_sensor_ctrl, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_SRAM_CTRL_RET_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret, rst_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_SRAM_CTRL_RET_RST_OTP_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret, rst_otp_ni
-CONNECTION, RSTMGR_LC_D0_FLASH_CTRL_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_n[1], top_earlgrey.earlgrey_pd_main.u_flash_ctrl, rst_ni
-CONNECTION, RSTMGR_LC_SHADOWED_D0_FLASH_CTRL_RST_SHADOWED_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_shadowed_n[1], top_earlgrey.earlgrey_pd_main.u_flash_ctrl, rst_shadowed_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_FLASH_CTRL_RST_OTP_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_flash_ctrl, rst_otp_ni
 CONNECTION, RSTMGR_SYS_D0_RV_DM_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_sys_n[1], top_earlgrey.earlgrey_pd_main.u_rv_dm, rst_ni
 CONNECTION, RSTMGR_LC_D0_RV_PLIC_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_n[1], top_earlgrey.earlgrey_pd_main.u_rv_plic, rst_ni
 CONNECTION, RSTMGR_LC_D0_AES_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_n[1], top_earlgrey.earlgrey_pd_main.u_aes, rst_ni
