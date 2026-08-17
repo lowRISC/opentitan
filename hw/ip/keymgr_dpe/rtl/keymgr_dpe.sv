@@ -46,6 +46,7 @@ module keymgr_dpe
   // key interface to crypto modules
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
+  output hw_key_req_t hmac_key_o,
   output otbn_key_req_t otbn_key_o,
 
   // data interface to/from crypto modules
@@ -108,6 +109,15 @@ module keymgr_dpe
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
+
+  // TODO(#31026): Provide a sideload key to the hmac
+  localparam int NumOutBufBits = $bits(hw_key_req_t);
+  prim_buf #(
+    .Width  (NumOutBufBits)
+  ) u_anchor_buf (
+    .in_i   ('0),
+    .out_o  (hmac_key_o)
+  );
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -892,6 +902,7 @@ module keymgr_dpe
 
   `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
+  `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 

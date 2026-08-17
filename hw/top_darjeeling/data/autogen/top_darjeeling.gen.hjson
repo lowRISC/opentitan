@@ -5155,6 +5155,19 @@
           conn_type: false
         }
         {
+          name: keymgr_key
+          struct: hw_key_req
+          package: keymgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: hmac
+          default: ""
+          domain: Main
+          top_signame: keymgr_dpe_hmac_key
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5848,6 +5861,20 @@
           end_idx: -1
           top_type: broadcast
           top_signame: keymgr_dpe_kmac_key
+          index: -1
+        }
+        {
+          name: hmac_key
+          struct: hw_key_req
+          package: keymgr_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: keymgr_dpe
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: keymgr_dpe_hmac_key
           index: -1
         }
         {
@@ -11349,6 +11376,10 @@
       keymgr_dpe.kmac_key:
       [
         kmac.keymgr_key
+      ]
+      keymgr_dpe.hmac_key:
+      [
+        hmac.keymgr_key
       ]
       keymgr_dpe.otbn_key:
       [
@@ -25442,6 +25473,19 @@
         conn_type: false
       }
       {
+        name: keymgr_key
+        struct: hw_key_req
+        package: keymgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: hmac
+        default: ""
+        domain: Main
+        top_signame: keymgr_dpe_hmac_key
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -25759,6 +25803,20 @@
         end_idx: -1
         top_type: broadcast
         top_signame: keymgr_dpe_kmac_key
+        index: -1
+      }
+      {
+        name: hmac_key
+        struct: hw_key_req
+        package: keymgr_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: keymgr_dpe
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: keymgr_dpe_hmac_key
         index: -1
       }
       {
@@ -34633,6 +34691,18 @@
         struct: hw_key_req
         domain: Main
         signame: keymgr_dpe_kmac_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: keymgr_pkg::HW_KEY_REQ_DEFAULT
+      }
+      {
+        package: keymgr_pkg
+        struct: hw_key_req
+        domain: Main
+        signame: keymgr_dpe_hmac_key
         width: 1
         type: uni
         end_idx: -1

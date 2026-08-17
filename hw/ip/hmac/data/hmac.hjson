@@ -82,6 +82,12 @@
       package: "prim_mubi_pkg",
       struct:  "mubi4",
       width:   "1"
+    },
+    { struct:  "hw_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      package: "keymgr_pkg"
     }
   ],
   param_list: [

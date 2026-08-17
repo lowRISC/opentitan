@@ -1211,6 +1211,7 @@
       'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
       'keymgr_dpe.aes_key'                : ['aes.keymgr_key'],
       'keymgr_dpe.kmac_key'               : ['kmac.keymgr_key'],
+      'keymgr_dpe.hmac_key'               : ['hmac.keymgr_key'],
       'keymgr_dpe.otbn_key'               : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
