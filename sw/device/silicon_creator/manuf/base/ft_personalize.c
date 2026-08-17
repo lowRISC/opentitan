@@ -589,6 +589,8 @@ static status_t personalize_gen_dice_certificates(
   sc_keymgr_advance_state();
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
   sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
+  sc_keymgr_sw_binding_unlock_wait();
 
   // Measure OTP partitions.
   //
@@ -664,12 +666,14 @@ static status_t personalize_gen_dice_certificates(
   TRY(sc_keymgr_owner_int_advance(&pre_endorse_data->sealing_binding_value,
                                   &pre_endorse_data->attestation_binding_value,
                                   /*max_key_version=*/0));
+  sc_keymgr_sw_binding_unlock_wait();
 
   compute_keymgr_owner_binding(&pre_endorse_data->sealing_binding_value,
                                &pre_endorse_data->attestation_binding_value);
   TRY(sc_keymgr_owner_advance(&pre_endorse_data->sealing_binding_value,
                               &pre_endorse_data->attestation_binding_value,
                               /*max_key_version=*/0));
+  sc_keymgr_sw_binding_unlock_wait();
   return OK_STATUS();
 }
 
