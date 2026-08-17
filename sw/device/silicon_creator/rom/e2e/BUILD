@@ -94,6 +94,7 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -133,6 +134,7 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -161,6 +163,7 @@ opentitan_test(
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -271,6 +274,7 @@ opentitan_test(
         src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem128_signed".format(slot, key),
         # Override the name to match what the dv testbench expects.
         out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.128".format(slot, key),
+        slot = slot,
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS

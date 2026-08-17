@@ -351,7 +351,8 @@ ROM_EXT_FEATURES = [
         testonly = True,
         # TODO(#22780): Integrate real keys for A1 flows.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
-        exec_env = [
+        # "virtual" slot is only supported for FPGA targets.
+        exec_env = ["//hw/top_earlgrey:fpga_cw340"] if slot == "virtual" else [
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_dv_base",
             "//hw/top_earlgrey:sim_verilator_base",
@@ -359,6 +360,7 @@ ROM_EXT_FEATURES = [
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
+        slot = slot,
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         transitive_features = ROM_EXT_FEATURES,
         deps = [

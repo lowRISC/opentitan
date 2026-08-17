@@ -155,6 +155,14 @@ scramble_rram_vmem = rv_rule(
     attrs = {
         "src": attr.label(allow_single_file = True),
         "otp": attr.label(allow_single_file = True),
+        "slot": attr.string(
+            doc = "Which firmware slot `src` was linked for. `src` is a slot-relative " +
+                  "(0-based) image, but address-infection and scrambling need the word's " +
+                  "true absolute address in the RRAM data partition - see gen-rram-img.py's " +
+                  "--slot.",
+            default = "a",
+            values = ["a", "b"],
+        ),
         "out": attr.string(
             default = "",
             doc = "Optional name for the output file. If provided the output name will be <out>.scr.vmem otherwise <name>.scr.vmem.",

@@ -659,6 +659,18 @@ common_binary_attrs = {
         default = "flash",
         values = ["flash", "rram", "ram", "rom"],
     ),
+    "slot": attr.string(
+        doc = "Which firmware slot this binary occupies. Only relevant when kind == \"rram\": " +
+              "RRAM's scrambling tweak (and address infection) depend on the word's true " +
+              "absolute address in the (unified, slot-agnostic) RRAM data partition, but a " +
+              "slot's compiled image is always addressed starting at 0 (see " +
+              "gen-rram-img.py's --slot). Slot A starts at word address 0; slot B starts " +
+              "halfway through the data partition. \"virtual\" images are loaded via address " +
+              "translation rather than a fixed physical offset, so scrambling them is a build " +
+              "error - see scramble_rram().",
+        default = "a",
+        values = ["a", "b", "virtual"],
+    ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
     "extract_sw_logs": attr.label(

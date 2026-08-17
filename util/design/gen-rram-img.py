@@ -46,15 +46,27 @@ RRAM_WORD_SIZE = 128  # bits
 RRAM_ADDR_SIZE = 17  # bits
 RRAM_PRINCE_NUM_HALF_ROUNDS = 5
 
-# First RRAM word address in the OTP partition, i.e. the exclusive upper bound
-# of the data partition. rram_ctrl_pkg::OtpStartPage * WordsPerPage
-# = (TotalPages - OtpPages) * WordsPerPage = (4096 - 5) * 32.
+# rram_ctrl_pkg::WordsPerPage.
+RRAM_WORDS_PER_PAGE = 32
+# rram_ctrl_pkg::TotalDataPages = TotalBytes / (DataWidth / 8) / WordsPerPage = 4096.
+RRAM_TOTAL_DATA_PAGES = 4096
+# rram_ctrl_pkg::OtpPages = TotalOtpBytes / (DataWidth / 8) / WordsPerPage = 5.
+RRAM_OTP_PAGES = 5
+
+# There are always exactly two slots splitting the full data partition evenly in half (see
+# NVM_BYTES_PER_SLOT in sw/device/silicon_creator/lib/nvm_ctrl.h).
+# slot A starts at word address 0, slot B starts halfway through.
+RRAM_SLOT_B_START_WORD_ADDR = (RRAM_TOTAL_DATA_PAGES // 2) * RRAM_WORDS_PER_PAGE
+
+# First RRAM word address in the OTP partition, i.e. the exclusive upper bound of the (firmware)
+# data partition. rram_ctrl_pkg::OtpStartPage * WordsPerPage
+# = (TotalDataPages - OtpPages) * WordsPerPage.
 # This is also where rram_ctrl_otp.sv's per-64b-chunk integrity page starts.
-RRAM_OTP_START_WORD_ADDR = 4091 * 32
+RRAM_OTP_START_WORD_ADDR = (RRAM_TOTAL_DATA_PAGES - RRAM_OTP_PAGES) * RRAM_WORDS_PER_PAGE
 # First RRAM word address of OTP's actual data (one page after
 # RRAM_OTP_START_WORD_ADDR - that first page is the integrity page).
-# rram_ctrl_pkg::(OtpStartPage + 1) * WordsPerPage = 4092 * 32.
-RRAM_OTP_DATA_START_WORD_ADDR = 4092 * 32
+# rram_ctrl_pkg::(OtpStartPage + 1) * WordsPerPage.
+RRAM_OTP_DATA_START_WORD_ADDR = RRAM_OTP_START_WORD_ADDR + RRAM_WORDS_PER_PAGE
 
 # How OTP's 16b-native words pack into RRAM's 128b words and integrity bytes.
 # See rram_ctrl_otp.sv (OtpIntgDataWidth, OtpIntgWidth) and
@@ -256,7 +268,8 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
 
 def _reformat_rram_vmem(
         rram_vmem_file: str,
-        scrambling_configs: ScramblingConfigs) -> List[str]:
+        scrambling_configs: ScramblingConfigs,
+        addr_offset: int = 0) -> List[str]:
     # Open (raw) RRAM VMEM file and read into memory, skipping comment lines.
     try:
         rram_vmem = Path(rram_vmem_file).read_text()
@@ -265,18 +278,27 @@ def _reformat_rram_vmem(
     rram_vmem_lines = re.findall(r"^@.*$", rram_vmem, flags=re.MULTILINE)
 
     # Add addr-infection and potentially scramble, each RRAM word.
+    #
+    # `--in-rram-vmem` is produced from a raw (headerless) binary extracted from the firmware
+    # ELF, so it is always addressed starting at 0 regardless of which slot the firmware was
+    # actually linked for (slot B's linker script places it at the true absolute address, but
+    # that address is lost when the ELF is flattened to a raw .bin). `addr_offset` restores the
+    # true absolute address before address-infecting/scrambling, since both of those are a
+    # function of the word's real physical address in the (unified, slot-agnostic) RRAM array.
     reformatted_vmem_lines = []
     for line in rram_vmem_lines:
         line_items = line.split()
         reformatted_line = ""
         address = None
         address_offset = 0
+        addr_hex_digits = None
         data = None
         for item in line_items:
             # Process the address first.
             if re.match(r"^@", item):
-                reformatted_line += item
-                address = int(item.lstrip("@"), 16)
+                addr_hex_digits = len(item) - 1
+                address = int(item.lstrip("@"), 16) + addr_offset
+                reformatted_line += f"@{address:0{addr_hex_digits}x}"
                 address_offset = 0
             # Process the data words.
             else:
@@ -345,6 +367,17 @@ def main(argv: List[str]):
                         image a given test actually selects at runtime - it is only meant to
                         supply scrambling-key seeds for the firmware image.
                         """)
+    parser.add_argument("--slot",
+                        type=str,
+                        choices=["a", "b"],
+                        help="""
+                        Which firmware slot --in-rram-vmem was linked for. Required together with
+                        --in-rram-vmem/--out-rram-vmem: the input is a slot-relative (0-based) raw
+                        binary dump, but address-infection and scrambling need the word's true
+                        absolute address in the (unified, slot-agnostic) RRAM data partition.
+                        Slot A starts at word address 0; slot B starts halfway through the data
+                        partition.
+                        """)
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
                         metavar="<map>",
@@ -389,9 +422,13 @@ def main(argv: List[str]):
     if args.in_rram_vmem or args.out_rram_vmem:
         if not (args.in_rram_vmem and args.out_rram_vmem):
             raise ValueError("--in-rram-vmem and --out-rram-vmem must be given together.")
+        if not args.slot:
+            raise ValueError("--slot is required together with --in-rram-vmem/--out-rram-vmem.")
+        addr_offset = RRAM_SLOT_B_START_WORD_ADDR if args.slot == "b" else 0
 
         reformatted_vmem_lines = _reformat_rram_vmem(args.in_rram_vmem,
-                                                     scrambling_configs)
+                                                     scrambling_configs,
+                                                     addr_offset)
 
         # Write re-formatted output file. Use binary mode and a large buffer size
         # to improve performance.
