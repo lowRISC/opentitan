@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This test performs a the first two steps of a ROM bootstrap operation, i.e., flash erase followed
-// by a single page program operation. It then confirms flash has been programmed, by backdoor
+// This test performs a the first two steps of a ROM bootstrap operation, i.e., NVM erase followed
+// by a single page program operation. It then confirms NVM has been programmed, by backdoor
 // reading back the first data page.
 
 class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
@@ -19,7 +19,7 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
     byte         sw_byte_q[$];
 
     // The base class body function calls cpu_init, which calls spi_device_load_bootstrap. This will
-    // load up the contents of the firmware image into the two banks of flash. That will only happen
+    // load up the contents of the firmware image into the NVM. That will only happen
     // if a SW image exists: make sure it does and fail quickly if not.
     if (!cfg.sw_images.exists(SwTypeTestSlotA)) begin
       `uvm_fatal(get_name(), "Slot A image doesn't exist.")
@@ -29,18 +29,18 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
 
     // Read the SW frames again into a local queue. This feels a little silly (because we did it in
     // the base class as well), but it's reasonably quick.
-    sw_image = {cfg.sw_images[SwTypeTestSlotA], ".64.vmem"};
-    read_sw_frames(sw_image, sw_byte_q);
+    sw_image = {cfg.sw_images[SwTypeTestSlotA], ".128.vmem"};
+    read_sw_frames(sw_image, sw_byte_q, .word_size_bits(128));
 
-    // Read back the programmed flash data page to confirm it was programmed correctly.
+    // Read back the programmed NVM data page to confirm it was programmed correctly.
     for (int a = 0; a < sw_byte_q.size; a += 4) begin
       bit [31:0] expected = {sw_byte_q[a + 3], sw_byte_q[a + 2],
                              sw_byte_q[a + 1], sw_byte_q[a + 0]};
-      if (!check_flash_word_32(a, expected)) num_errors++;
+      if (!check_nvm_word_32(a, expected)) num_errors++;
     end
     if (num_errors > 0) begin
       `uvm_error(get_name(),
-                 $sformatf("Found %0d errors when checking programmed flash", num_errors))
+                 $sformatf("Found %0d errors when checking programmed NVM", num_errors))
     end
 
     // Set test passed.
@@ -51,7 +51,7 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
   // This overrides a task in chip_sw_base_vseq
   //
   // We run the normal version *unless* the relevant range of byte_q happens to only contain 'hff.
-  // If it does, there is no need to write the page: we know that we have just erased flash to that
+  // If it does, there is no need to write the page: we know that we have just erased NVM to that
   // value anyway.
   protected virtual task spi_write_flash_page(const ref byte byte_q[$],
                                               int unsigned start_idx,
@@ -74,62 +74,34 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  // Do a backdoor read of a 32-bit word in flash. On a match, return true. On a mismatch, generate
+  // Do a backdoor read of a 32-bit word in NVM. On a match, return true. On a mismatch, generate
   // a uvm_error describing the mismatch and return false.
   //
-  function bit check_flash_word_32(int unsigned address, bit [31:0] expected);
-    int unsigned     rel_address;
-    chip_mem_e       mem_idx;
+  function bit check_nvm_word_32(int unsigned address, bit [31:0] expected);
+    // RRAM backs the whole NVM data partition with one contiguous region (unlike flash, which
+    // backed slots A and B with two separate physical banks), so the SW address maps onto it
+    // directly and should never fall outside of it.
+    chip_mem_e       mem_idx = RramData;
     logic [31:0]     actual;
 
-    if (!expand_flash_address(address, rel_address, mem_idx)) begin
-      `uvm_error(get_name(), $sformatf("Cannot interpret 0x%0h as a flash address.", address))
+    if (address >= cfg.mem_bkdr_util_h[mem_idx].get_size_bytes()) begin
+      `uvm_error(get_name(),
+                 $sformatf("Address 0x%0h is out of range for the RRAM model (mem_idx %0p).",
+                           address, mem_idx))
       return 1'b0;
     end
 
-    // At this point, we know the slot and offset for the address. It might be that there isn't
-    // actually any flash memory backing the address. If the expected word is not '1, something has
-    // gone wrong (and we definitely won't have written anything).
-    if (rel_address >= cfg.mem_bkdr_util_h[mem_idx].get_depth()) begin
-      if (~&expected) begin
-        `uvm_error(get_name(),
-                   $sformatf({"Address 0x%0h is intepreted as a relative address of 0x%0h ",
-                              "in bank %0d, which is out of range for the flash model. ",
-                              "The expected value is 0x%0h (not '1), ",
-                              "so cannot have been written successfully."},
-                             address, rel_address, mem_idx, expected))
-      end
-
-      // If expected is '1, that's fine: we won't have sent the word over SPI.
-      return 1'b1;
-    end
-
-    // If we get here, we have tried to write the word over SPI, or didn't bother because we wanted
-    // a value of '1 anyway. Look up the associated backdoor and check that the flash memory agrees.
-    actual = cfg.mem_bkdr_util_h[mem_idx].read32(rel_address);
+    // Look up the associated backdoor and check that the NVM memory agrees.
+    actual = cfg.mem_bkdr_util_h[mem_idx].read32(address);
 
     if (actual === expected) begin
       return 1'b1;
     end else begin
       `uvm_error(get_name(),
-                 $sformatf({"Flash data mismatch at 0x%0h (mem_idx %0p; rel_address 0x%0h). ",
+                 $sformatf({"NVM data mismatch at 0x%0h (mem_idx %0p). ",
                             "We expected 0x%0h but saw 0x%0h."},
-                           address, mem_idx, rel_address, expected, actual))
+                           address, mem_idx, expected, actual))
       return 1'b0;
     end
-  endfunction
-
-  // Extract a SW flash address into a relative address within RRAM's (single, unified) data
-  // partition.
-  //
-  // Unlike flash, which backed slots A and B with two separate physical banks, RRAM backs both
-  // slots with one contiguous region, so the SW address maps onto it directly with no per-slot
-  // offset. The out-of-range case is handled by the depth check at the call site below.
-  local function bit expand_flash_address(int unsigned        address,
-                                          output int unsigned rel_address,
-                                          output              chip_mem_e mem_idx);
-    mem_idx     = RramData;
-    rel_address = address;
-    return 1'b1;
   endfunction
 endclass
