@@ -65,6 +65,12 @@
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "hw_key_req",  // hmac_key_req_t
+      type:    "uni",
+      name:    "hmac_key",    // hmac_key_o (req)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
     { struct:  "otbn_key_req",
       type:    "uni",
       name:    "otbn_key",
