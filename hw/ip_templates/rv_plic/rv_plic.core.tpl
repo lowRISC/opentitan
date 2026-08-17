@@ -9,6 +9,9 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:alert
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:reg_we_check
       - lowrisc:ip:rv_plic_component
       - lowrisc:prim:subreg
     % if racl_support:
