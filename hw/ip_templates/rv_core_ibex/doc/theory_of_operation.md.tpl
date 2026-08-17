@@ -112,7 +112,7 @@ The two memory protection schemes are mutually exclusive, so exactly one of them
 The Ibex wrapper contains a write-once switch that selects between them.
 It resets unlocked in ePMP mode.
 
-The selected mode gates the CHERIoT memory subsystem, but is not routed to Ibex yet.
+The selected mode gates the CHERIoT memory subsystem and Ibex.
 
 <%text>### Write Sequence</%text>
 
@@ -131,8 +131,10 @@ Further writes to either register have no effect.
 The switch has a terminal error state.
 It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
 
-In the error state, the `fatal_hw_err` alert is raised, which also disables Ibex fetch through the local escalation path described above.
-The state is only left by resetting `rv_core_ibex`.
-In the error state the mode output is driven to an invalid multi-bit value.
-The consumers are expected to escalate.
+In the error state, the `fatal_hw_err` alert is raised, and the switch's mode output is driven to an invalid multi-bit value.
+
+Consumers of the mode signal are expected to escalate invalid values. Ibex does so by detecting this invalid multi-bit mode (`cheriot_ena` routed to `cheriot_enable_i` in Ibex) and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+
+Both the error status bit and the disabled fetch state are sticky.
+Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.
 % endif

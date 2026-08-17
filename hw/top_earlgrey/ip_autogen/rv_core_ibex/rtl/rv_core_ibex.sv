@@ -22,8 +22,9 @@ module rv_core_ibex
   parameter int unsigned            PMPNumRegions       = 16,
   parameter int unsigned            MHPMCounterNum      = 10,
   parameter int unsigned            MHPMCounterWidth    = 32,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]       = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]      = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[ibex_pkg::PMP_MAX_REGIONS] = ibex_pkg::PmpCfgRst,
+  parameter logic [ibex_pkg::PMP_ADDR_MSB:0] PMPRstAddr[ibex_pkg::PMP_MAX_REGIONS] =
+      ibex_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg       = ibex_pkg::PmpMseccfgRst,
   parameter bit                     RV32E               = 0,
   parameter ibex_pkg::rv32m_e       RV32M               = ibex_pkg::RV32MSingleCycle,
@@ -208,7 +209,7 @@ module rv_core_ibex
   logic        main_core_revbm_err;
 
   // Lockstep interface
-  logic [3:0]  core_lockstep_cmp_en;
+  ibex_pkg::ibex_mubi_t core_lockstep_cmp_en;
 
   // Pipeline interfaces
   tl_h2d_t tl_i_ibex2fifo;
@@ -225,31 +226,37 @@ module rv_core_ibex
   logic tlul_lc_gate_core_d_error;
 
 `ifdef RVFI
-  logic        rvfi_valid;
-  logic [63:0] rvfi_order;
-  logic [31:0] rvfi_insn;
-  logic        rvfi_trap;
-  logic        rvfi_halt;
-  logic        rvfi_intr;
-  logic [ 1:0] rvfi_mode;
-  logic [ 1:0] rvfi_ixl;
-  logic [ 4:0] rvfi_rs1_addr;
-  logic [ 4:0] rvfi_rs2_addr;
-  logic [ 4:0] rvfi_rs3_addr;
-  logic [31:0] rvfi_rs1_rdata;
-  logic [31:0] rvfi_rs2_rdata;
-  logic [31:0] rvfi_rs3_rdata;
-  logic [ 4:0] rvfi_rd_addr;
-  logic [31:0] rvfi_rd_wdata;
-  logic [31:0] rvfi_pc_rdata;
-  logic [31:0] rvfi_pc_wdata;
-  logic [31:0] rvfi_mem_addr;
-  logic [ 3:0] rvfi_mem_rmask;
-  logic [ 3:0] rvfi_mem_wmask;
-  logic [31:0] rvfi_mem_rdata;
-  logic [31:0] rvfi_mem_wdata;
-  logic        rvfi_ext_expanded_insn_valid;
-  logic [15:0] rvfi_ext_expanded_insn;
+  logic                   rvfi_valid;
+  logic [63:0]            rvfi_order;
+  logic [31:0]            rvfi_insn;
+  logic                   rvfi_trap;
+  logic                   rvfi_halt;
+  logic                   rvfi_intr;
+  logic [ 1:0]            rvfi_mode;
+  logic [ 1:0]            rvfi_ixl;
+  logic [ 4:0]            rvfi_rs1_addr;
+  logic [ 4:0]            rvfi_rs2_addr;
+  logic [ 4:0]            rvfi_rs3_addr;
+  logic [31:0]            rvfi_rs1_rdata;
+  logic [31:0]            rvfi_rs2_rdata;
+  logic [31:0]            rvfi_rs3_rdata;
+  logic [ 4:0]            rvfi_rd_addr;
+  logic [31:0]            rvfi_rd_wdata;
+  logic [31:0]            rvfi_pc_rdata;
+  logic [31:0]            rvfi_pc_wdata;
+  logic [31:0]            rvfi_mem_addr;
+  logic [ 3:0]            rvfi_mem_rmask;
+  logic [ 3:0]            rvfi_mem_wmask;
+  logic [31:0]            rvfi_mem_rdata;
+  logic [31:0]            rvfi_mem_wdata;
+  logic                   rvfi_ext_expanded_insn_valid;
+  logic [15:0]            rvfi_ext_expanded_insn;
+  ibex_cheriot_pkg::cap_t rvfi_rs1_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rs2_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rd_wcap;
+  logic                   rvfi_mem_is_cap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_wcap;
 `endif
 
   import tlul_pkg::tl_h2d_t;
@@ -262,6 +269,7 @@ module rv_core_ibex
 
   // CHERIoT signals
   logic                  cheriot_switch_error;
+  ibex_pkg::ibex_mubi_t  cheriot_enable_ibex;
 
   // The following intermediate signals are created to aid in simulations.
   //
@@ -456,6 +464,16 @@ module rv_core_ibex
   // Convert the mubi4 to ibex_mubi. They are both four bit, but with different encodings.
   assign mcounteren_writable_ibex = mcounteren_writable_mubi4 == prim_mubi_pkg::MuBi4True ?
                                     ibex_pkg::IbexMuBiOn : ibex_pkg::IbexMuBiOff;
+  // Convert the mubi4 to ibex_mubi for the cheriot_enable signal. Invalid mubi inputs must not
+  // accidentally map to a valid ibex_mubi value and switch modes, so the default arm produces an
+  // invalid ibex_mubi value that the core can detect and escalate.
+  always_comb begin
+    unique case (cheriot_ena_o)
+      prim_mubi_pkg::MuBi4True:  cheriot_enable_ibex = ibex_pkg::IbexMuBiOn;
+      prim_mubi_pkg::MuBi4False: cheriot_enable_ibex = ibex_pkg::IbexMuBiOff;
+      default:                   cheriot_enable_ibex = ibex_pkg::ibex_mubi_t'('0);
+    endcase
+  end
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
@@ -524,6 +542,7 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
+    .cheriot_enable_i     (cheriot_enable_ibex),
     .trvk_heap_base_addr_i(CheriotTrvkHeapBaseAddr), // SRAM base address
 
     .instr_req_o        (main_core_instr_req),
@@ -598,6 +617,13 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    // CHERIoT capability RVFI signals
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
     // Unused ports from the RVFI interface
     .rvfi_ext_pre_mip            (),
     .rvfi_ext_post_mip           (),
@@ -895,6 +921,8 @@ module rv_core_ibex
     .clk_i,
     .rst_ni,
 
+    .cheriot_enable_i (cheriot_enable_ibex),
+
     .hart_id_i,
 
     .rvfi_valid,
@@ -920,6 +948,12 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
     .rvfi_ext_expanded_insn_valid,
     .rvfi_ext_expanded_insn
   );
