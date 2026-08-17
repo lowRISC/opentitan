@@ -1018,8 +1018,10 @@
       attr: "ipgen",
       ipgen_params: {
         num_regions: 2
+        cheriot_available: true
       }
-      param_decl: {PMPEnable: "1",
+      param_decl: {BaseIsa: "ibex_pkg::BaseIsaRV32IorCHERIoT",
+                   PMPEnable: "1",
                    PMPGranularity: "0",
                    PMPNumRegions: "16",
                    MHPMCounterNum: "2",

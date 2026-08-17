@@ -280,6 +280,16 @@
       desc:    "Width of the ping counter"
       local:   "false"
     },
+% if cheriot_available:
+
+    { name:    "BaseIsa"
+      type:    "ibex_pkg::base_isa_e"
+      default: "ibex_pkg::BaseIsaRV32IorCHERIoT"
+      desc:    "Base ISA selection (RV32I or dual RV32I/CHERIoT)"
+      local:   "false"
+      expose:  "true"
+    },
+% endif
 
     { name:    "PMPEnable"
       type:    "bit"
