@@ -210,7 +210,6 @@
       name: scanmode_connections
       desc: '''Verify the connectivity of scanmode to the following IPs:
             - clkmgr
-            - flash_ctrl
             - lc_ctrl
             - otp_ctrl
             - padring
@@ -223,7 +222,7 @@
             - xbar_peri
             '''
       stage: V2
-      tests: ["ast_scanmode_padring", "ast_scanmode_clkmgr", "ast_scanmode_flash_ctrl",
+      tests: ["ast_scanmode_padring", "ast_scanmode_clkmgr",
               "ast_scanmode_lc_ctrl", "ast_scanmode_otp_ctrl", "ast_scanmode_pinmux",
               "ast_scanmode_rstmgr", "ast_scanmode_rv_core_ibex", "ast_scanmode_rv_dm",
               "ast_scanmode_spi_device", "ast_scanmode_xbar_main", "ast_scanmode_xbar_peri"]
@@ -386,7 +385,6 @@
       name: clkmgr_clk_io_div4_infra
       desc: '''Verify clkmgr's `clk_io_div4_infra` is connected to the following block's clock
             input:
-            - flash_ctrl clk_otp_i
             - sram_ctrl main clk_otp_i
             - sram_ctrl retention clk_i
             - sram_ctrl retention clk_otp_i
@@ -395,8 +393,7 @@
             - xbar_peri clk_peri_i
             '''
       stage: V2
-      tests: ["clkmgr_infra_clk_flash_ctrl_otp_clk",
-              "clkmgr_infra_clk_sram_ctrl_main_otp_clk",
+      tests: ["clkmgr_infra_clk_sram_ctrl_main_otp_clk",
               "clkmgr_infra_clk_sram_ctrl_ret_clk",
               "clkmgr_infra_clk_sram_ctrl_ret_otp_clk",
               "clkmgr_infra_clk_sysrst_ctrl_clk",
@@ -408,7 +405,6 @@
     {
       name: clkmgr_clk_main_infra
       desc: '''Verify clkmgr's `clk_main_infra` is connected to the following blocks' clock input:
-            - flash_ctrl clk_i
             - rv_dm clk_i
             - rom_ctrl clk_i
             - rv_core_ibex clk_i
@@ -417,8 +413,7 @@
             - xbar_main clk_main_i
             '''
       stage: V2
-      tests: ["clkmgr_infra_clk_flash_ctrl_clk",
-              "clkmgr_infra_clk_rv_dm_clk",
+      tests: ["clkmgr_infra_clk_rv_dm_clk",
               "clkmgr_infra_clk_rom_clk",
               "clkmgr_infra_clk_rv_core_ibex_clk",
               "clkmgr_infra_clk_rv_core_ibex_edn_clk",
@@ -739,20 +734,6 @@
       tags: ["conn"]
     }
 
-    /////////////////////////
-    // ast_flash.csv       //
-    /////////////////////////
-    {
-      name: ast_flash_ctrl
-      desc: '''Verify ast's flash signals are connected to the flash controller.'''
-      stage: V2
-      tests: ["ast_flash_obs_ctrl",
-              "ast_flash_pwr_dwn_out",
-              "ast_flash_pwr_rdy_out",
-              "ast_flash_bist_en_out"]
-      si_stage: NA
-      tags: ["conn"]
-    }
     /////////////////////////////
     // ast_entropy_src_cfg.csv //
     /////////////////////////////
@@ -774,15 +755,6 @@
     // jtag.csv            //
     /////////////////////////
     {
-      name: flash_jtag
-      desc: "Verify jtag interface is connected to flash_phy_req interface."
-      stage: V2
-      tests: ["pinmux_flash_ctrl_tck", "pinmux_flash_ctrl_tms", "pinmux_flash_ctrl_tdi",
-              "pinmux_flash_ctrl_tdo", "pinmux_flash_ctrl_tdo_en"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
       name: lc_jtag_trst
       desc: "Verify jtag rst pin is connected to lc_ctrl interface."
       stage: V2
@@ -802,7 +774,6 @@
             - aon_timer
             - sram_ctrl main
             - sram_ctrl retention
-            - flash_ctrl
             - aes
             - kmac
             - otbn
@@ -812,7 +783,6 @@
               "lc_escalate_en_aon_timer",
               "lc_escalate_en_sram_main",
               "lc_escalate_en_sram_ret",
-              "lc_escalate_en_flash",
               "lc_escalate_en_aes",
               "lc_escalate_en_kmac",
               "lc_escalate_en_otbn"]
@@ -825,14 +795,6 @@
       stage: V2
       tests: ["lc_keymgr_en_keymgr",
               "lc_keymgr_div_keymgr"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: lc_nvm_debug_en
-      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
-      stage: V2
-      tests: ["lc_nvm_debug_en_flash_ctrl"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -869,12 +831,10 @@
       tags: ["conn"]
     }
     {
-      name: lc_flash_otbn_rma
+      name: lc_otbn_rma
       desc: "Verify lc_ctrl's RMA request connections."
       stage: V2
-      tests: ["lc_rma_seed_flash_ctrl",
-              "lc_rma_req_flash_ctrl",
-              "flash_ctrl_rma_ack_otbn",
+      tests: ["lc_rma_req_otbn",
               "otbn_rma_ack_lc"]
       si_stage: NA
       tags: ["conn"]
@@ -898,16 +858,11 @@
     }
     {
       name: lc_access_control
-      desc: "Verify lc_ctrl's access control modulation signals are correctly connected to flash and OTP."
+      desc: "Verify lc_ctrl's access control modulation signals are correctly connected to OTP."
       stage: V2
       tests: ["lc_creator_seed_sw_rw_en_otp",
               "lc_seed_hw_rd_en_otp",
-              "lc_rma_state_otp",
-              "lc_creator_seed_sw_rw_en_flash",
-              "lc_seed_hw_rd_en_flash",
-              "lc_owner_seed_sw_rw_en_flash",
-              "lc_iso_part_sw_rd_en_flash",
-              "lc_iso_part_sw_wr_en_flash"]
+              "lc_rma_state_otp"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1218,7 +1173,6 @@
     {
       name: rst_sys_io_div4_d0
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
-            - flash_ctrl's rst_otp_ni
             - gpio's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
@@ -1229,8 +1183,7 @@
             - xbar_peri's rst_peri_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_d0_flash_ctrl_rst_otp_ni",
-              "rstmgr_sys_io_div4_d0_gpio_rst_ni",
+      tests: ["rstmgr_sys_io_div4_d0_gpio_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_div4_d0_uart0_rst_ni",
               "rstmgr_sys_io_div4_d0_uart1_rst_ni",
@@ -1251,7 +1204,6 @@
             - edn0's rst_ni
             - edn1's rst_ni
             - entropy_src's rst_ni
-            - flash_ctrl's rst_ni
             - hmac's rst_ni
             - keymgr's rst_edn_ni
             - keymgr's rst_ni
@@ -1275,7 +1227,6 @@
               "rstmgr_sys_d0_edn0_rst_ni",
               "rstmgr_sys_d0_edn1_rst_ni",
               "rstmgr_sys_d0_entropy_src_rst_ni",
-              "rstmgr_sys_d0_flash_ctrl_rst_ni",
               "rstmgr_sys_d0_hmac_rst_ni",
               "rstmgr_sys_d0_keymgr_rst_edn_ni",
               "rstmgr_sys_d0_keymgr_rst_ni",
@@ -1297,13 +1248,11 @@
       name: rst_sys_shadowed_d0
       desc: '''Verify rstmgr's rst_sys_shadowed_n[1] is connected to the following:
             - aes's rst_shadowed_ni
-            - flash_ctrl's rst_shadowed_ni
             - keymgr's rst_shadowed_ni
             - kmac's rst_shadowed_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_shadowed_d0_aes_rst_shadowed_ni",
-              "rstmgr_sys_shadowed_d0_flash_ctrl_rst_shadowed_ni",
               "rstmgr_sys_shadowed_d0_keymgr_rst_shadowed_ni",
               "rstmgr_sys_shadowed_d0_kmac_rst_shadowed_ni"]
       si_stage: NA
@@ -1492,23 +1441,6 @@
     /////////////////////////
     // analog_sigs.csv     //
     /////////////////////////
-    {
-      name: flash_ctrl_test_voltage
-      desc: "Verify the connectivity between the test voltage pad and flash_ctrl."
-      stage: V2
-      tests: ["flash_test_volt"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: flash_ctrl_test_mode
-      desc: "Verify the connectivity between the test mode pads and flash_ctrl."
-      stage: V2
-      tests: ["flash_test_mode0",
-              "flash_test_mode1"]
-      si_stage: NA
-      tags: ["conn"]
-    }
     {
       name: ast_adc
       desc: "Verify the connectivity between the CC pads and the ast ADC input."

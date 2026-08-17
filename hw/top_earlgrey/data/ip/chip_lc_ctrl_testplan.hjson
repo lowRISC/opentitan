@@ -160,14 +160,10 @@
               - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
               - lc_keymgr_en_o: impacts keymgr dpe
               - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
-              - lc_nvm_rma_req_o: impacts flash_ctrl (handshake with lc_nvm_rma_ack_i)
-              - lc_nvm_rma_seed_o: impacts flash_ctrl
+              - lc_nvm_rma_req_o: impacts otbn (handshake with lc_nvm_rma_ack_i)
               - lc_check_byp_en_o: impacts otp_ctrl
-              - lc_creator_seed_sw_rw_en_o: impacts flash_ctrl & otp_ctrl
-              - lc_owner_seed_sw_rw_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_rd_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
-              - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
+              - lc_creator_seed_sw_rw_en_o: impacts otp_ctrl
+              - lc_seed_hw_rd_en_o: impacts otp_ctrl
             - These outputs are enabled per the
               [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
 
@@ -176,7 +172,6 @@
             Note that the following signals are already verified with connectivity tests and SVAs:
               - lc_dft_en_o (AST connection)
               - lc_cpu_en_o (rv_core_ibex)
-              - lc_nvm_debug_en_o (flash_ctrl)
               - lc_escalate_en_o (multiple)
             '''
       stage: V2

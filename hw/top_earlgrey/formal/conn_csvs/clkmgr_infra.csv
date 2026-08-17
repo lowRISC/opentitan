@@ -8,9 +8,6 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr infra clock connectivity
-# flash_ctrl
-CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK_OTP, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_infra, top_earlgrey.earlgrey_pd_main.u_flash_ctrl, clk_otp_i
-CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK,     top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_main_infra,    top_earlgrey.earlgrey_pd_main.u_flash_ctrl, clk_i
 
 #rv_dm
 CONNECTION, CLKMGR_INFRA_CLK_RV_DM_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_main_infra, top_earlgrey.earlgrey_pd_main.u_rv_dm, clk_i
