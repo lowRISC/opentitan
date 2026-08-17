@@ -6,7 +6,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -15,7 +14,7 @@
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -44,7 +43,7 @@ enum {
   kExitTokenSizeInWords = kExitTokenSizeInBytes / sizeof(uint32_t),
 };
 
-// Store CSRNG output in flash to compare results across life cycle stages.
+// Store CSRNG output in NVM to compare results across life cycle stages.
 OT_SET_BSS_SECTION(".non_volatile_scratch",
                    uint32_t nv_csrng_output[kEntropyFifoBufferSize];)
 
@@ -52,7 +51,6 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_csrng_t csrng;
 static dif_entropy_src_t entropy_src;
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_kmac_t kmac;
 static dif_rstmgr_t rstmgr;
 
@@ -113,10 +111,6 @@ static void peripherals_init(void) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   kmac_init();
 }
@@ -290,14 +284,8 @@ static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
 
 bool test_main(void) {
   peripherals_init();
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en=*/true,
-                                                 /*prog_en=*/true,
-                                                 /*erase_en=*/true,
-                                                 /*scramble_en=*/false,
-                                                 /*ecc_en=*/false,
-                                                 /*he_en=*/false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_setup(kNvmPagePermsReadWrite,
+                                                     kNvmPageCfgRaw));
 
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
@@ -308,17 +296,12 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor &&
       lc_state == kDifLcCtrlStateTestUnlocked0) {
-    enum {
-      kPartitionId = 0,
-    };
-    uint32_t address =
-        (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+    uint32_t address = (uint32_t)(nv_csrng_output)-NVM_DATA_BASE_ADDR;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
-    CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
-                                               /*partition_id=*/0, expected,
-                                               kDifFlashCtrlPartitionTypeData,
-                                               ARRAYSIZE(expected)));
+    CHECK_STATUS_OK(nvm_testutils_data_write(address, expected,
+                                             ARRAYSIZE(expected),
+                                             /*erase_before_write=*/true));
     CHECK_ARRAYS_EQ(nv_csrng_output, expected, ARRAYSIZE(expected));
 
     lock_otp_secret0_partition();
