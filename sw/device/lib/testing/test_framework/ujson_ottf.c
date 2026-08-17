@@ -4,8 +4,6 @@
 
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/ujson/ujson.h"
 
