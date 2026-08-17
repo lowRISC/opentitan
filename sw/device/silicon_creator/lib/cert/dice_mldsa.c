@@ -50,6 +50,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "third_party/embedpqc/mldsa44_tiny.h"
 #include "third_party/embedpqc/ports/mldsa44_tiny_caller.h"
+#include "third_party/embedpqc/ports/mldsa87_tiny_caller.h"
 
 enum {
   kDiceSlotSize = 936,
@@ -820,8 +821,8 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
     const hmac_digest_t *otp_owner_sw_cfg_measurement,
     const hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
     const hmac_digest_t *otp_rot_creator_auth_state_measurement,
-    const cert_key_id_pair_t *key_ids, uint8_t *tbs_cert_buffer,
-    size_t *tbs_cert_size) {
+    const cert_key_id_pair_t *key_ids, mldsa_parameter_set_t mldsa_params_set,
+    uint8_t *tbs_cert_buffer, size_t *tbs_cert_size) {
   // Generate UDS seed for keygen. Destroy this as soon as possible once it is
   // no longer needed
   keymgr_binding_value_t uds_mldsa_seed;
@@ -834,13 +835,28 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
                         sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
 
   static mldsa_public_key_t mldsa_pubkey;
-  // Generate UDS MLDSA-44 public key
   uint32_t *stack_top = (uint32_t *)(dice_mldsa_perso_scratch_stack +
                                      sizeof(dice_mldsa_perso_scratch_stack));
-  mldsa_pubkey.param_set = kMldsaParameterSet44;
-  mldsa44_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_44.key,
-                                        (const uint8_t *)uds_mldsa_seed.data,
-                                        stack_top);
+  if (mldsa_params_set == kMldsaParameterSet44) {
+    // Generate UDS MLDSA-44 public key
+    mldsa_pubkey.param_set = kMldsaParameterSet44;
+    mldsa44_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_44.key,
+                                          (const uint8_t *)uds_mldsa_seed.data,
+                                          stack_top);
+  } else if (mldsa_params_set == kMldsaParameterSet87) {
+    // Generate UDS MLDSA-87 public key
+    mldsa_pubkey.param_set = kMldsaParameterSet87;
+    mldsa87_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_87.key,
+                                          (const uint8_t *)uds_mldsa_seed.data,
+                                          stack_top);
+  } else {
+    HARDENED_CHECK_EQ(
+        hardened_memshred(uds_mldsa_seed.data,
+                          sizeof(uds_mldsa_seed.data) / sizeof(uint32_t))
+            .value,
+        kHardenedBoolTrue);
+    return kErrorCertInvalidArgument;
+  }
 
   // Populate UDS MLDSA pubkey ID
   get_mldsa_id((const hmac_key_t *)uds_mldsa_seed.data, key_ids->cert);

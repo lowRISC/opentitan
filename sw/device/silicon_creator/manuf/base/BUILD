@@ -392,6 +392,7 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/drivers:watchdog",
             "//sw/device/silicon_creator/lib/ownership:owner_block",
             "//sw/device/silicon_creator/lib/ownership:ownership_key",
+            "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
             "//sw/device/silicon_creator/manuf/lib:personalize",

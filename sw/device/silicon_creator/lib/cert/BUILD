@@ -224,6 +224,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
     ],
 )
 
@@ -261,6 +262,7 @@ cc_library(
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
         "//third_party/embedpqc:mldsa44_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
+        "//third_party/embedpqc/ports:mldsa87_tiny_caller",
     ],
 )
 
@@ -274,6 +276,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
     ],
 )
 
