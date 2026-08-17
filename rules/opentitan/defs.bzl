@@ -267,7 +267,7 @@ def exec_env_to_top_map(exec_env):
 # binaries which can be compiled for the active top.
 #
 # See exec_env_to_top_map() for constraints on the exec_env for this work.
-def opentitan_binary(name, exec_env, **kwargs):
+def opentitan_binary(name, exec_env, kind = None, **kwargs):
     # Filter execution environments by top.
     ev_map = exec_env_to_top_map(exec_env)
     select_map = {}
@@ -285,9 +285,15 @@ def opentitan_binary(name, exec_env, **kwargs):
             ["@platforms//:incompatible"],
         )
 
+    # Default `kind` to "rram" on earlgrey, same as opentitan_test(), unless
+    # the caller passes an explicit `kind`.
+    if kind == None:
+        kind = opentitan_select_top({"earlgrey": _default_kind_for_top("earlgrey")}, "flash")
+
     _opentitan_binary(
         name = name,
         exec_env = opentitan_select_top(select_map, []),
+        kind = kind,
         **kwargs
     )
 
