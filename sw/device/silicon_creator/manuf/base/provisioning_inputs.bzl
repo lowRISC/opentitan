@@ -56,7 +56,7 @@ EARLGREY_SKUS = {
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_mldsa", "//sw/device/silicon_creator/lib/cert:dice_cert_build"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
-        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+        "device_ext_libs": ["@provisioning_exts//:default_dice_mldsa_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_mldsa_virtual",

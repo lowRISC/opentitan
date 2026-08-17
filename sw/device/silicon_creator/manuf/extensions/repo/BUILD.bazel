@@ -20,6 +20,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "default_dice_mldsa_perso_fw_ext",
+    srcs = ["default_dice_mldsa_personalize_ext.c"],
+    deps = [
+        "@lowrisc_opentitan//sw/device/lib/base:macros",
+        "@lowrisc_opentitan//sw/device/lib/base:status",
+        "@lowrisc_opentitan//sw/device/lib/dif:flash_ctrl",
+        "@lowrisc_opentitan//sw/device/lib/testing/json:provisioning_data",
+        "@lowrisc_opentitan//sw/device/lib/testing/test_framework:check",
+        "@lowrisc_opentitan//sw/device/silicon_creator/lib/base:util",
+        "@lowrisc_opentitan//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "@lowrisc_opentitan//sw/device/silicon_creator/lib/drivers:hmac",
+        "@lowrisc_opentitan//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "@lowrisc_opentitan//sw/device/silicon_creator/manuf/base:personalize_ext",
+    ],
+)
+
 rust_library(
     name = "default_ft_ext_lib",
     srcs = ["default_ft_ext_lib.rs"],
