@@ -38,8 +38,10 @@ void ottf_console_configure_null(ottf_console_t *console) {
 }
 
 void ottf_console_init(void) {
+#if defined(OTTF_CONSOLE_HAS_UART) || defined(OTTF_CONSOLE_HAS_SPI_DEVICE)
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
+#endif
 
   switch (kOttfTestConfig.console.type) {
 #ifdef OTTF_CONSOLE_HAS_UART
