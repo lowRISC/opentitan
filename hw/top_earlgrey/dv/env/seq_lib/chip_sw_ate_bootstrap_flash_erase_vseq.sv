@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This test performs a the first step of a ROM bootstrap operation, i.e., flash erase. It then
-// confirms flash has been erased by reading back a few SPI flash frames to check they are all 1s
+// This test performs a the first step of a ROM bootstrap operation, i.e., NVM erase. It then
+// confirms NVM has been erased by reading back a few SPI flash frames to check they are all 1s
 // (which matches the erased state).
 
 class chip_sw_ate_bootstrap_flash_erase_vseq extends chip_sw_base_vseq;
@@ -13,7 +13,7 @@ class chip_sw_ate_bootstrap_flash_erase_vseq extends chip_sw_base_vseq;
     super.new(name);
   endfunction
 
-  local function automatic void _check_flash_data_page(input int unsigned address,
+  local function automatic void _check_nvm_data_page(input int unsigned address,
                                                        input bit [31:0]   expected);
     logic [TL_DW-1:0] actual;
     actual = cfg.mem_bkdr_util_h[RramData].read32(address);
@@ -45,9 +45,9 @@ class chip_sw_ate_bootstrap_flash_erase_vseq extends chip_sw_base_vseq;
     `uvm_info(get_name(), "Sending SPI flash erase command", UVM_LOW)
     erase_flash_over_spi();
 
-    // Read first flash data word to confirm they are erased.
+    // Read first NVM data word to confirm they are erased.
     `uvm_info(get_name(), "Checking the first data word was erased", UVM_LOW)
-    _check_flash_data_page('h0, 32'hFFFF_FFFF);
+    _check_nvm_data_page('h0, 32'hFFFF_FFFF);
 
     // Set test passed.
     cfg.chip_vif.sw_straps_if.drive(3'h0);
