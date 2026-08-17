@@ -905,6 +905,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
   perso_blob_from_host.next_free = 0;
+  orig_num_objects_from_host = perso_blob_from_host.num_objs;
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
@@ -957,7 +958,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     free_room -= block.obj_size;
   }
 
-  orig_num_objects_from_host = perso_blob_from_host.num_objs;
   // Extract the remaining cert perso LTV objects received from the host.
   while (perso_blob_from_host.num_objs)
     TRY(extract_next_cert(&next_cert, &free_room));
