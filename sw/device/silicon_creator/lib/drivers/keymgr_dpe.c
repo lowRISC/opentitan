@@ -254,7 +254,8 @@ void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval) {
 /**
  * Sets the key manager dpe software binding input.
  */
-void sc_keymgr_dpe_sw_binding_set(keymgr_dpe_binding_value_t *binding_value) {
+void sc_keymgr_dpe_sw_binding_set(
+    const keymgr_dpe_binding_value_t *binding_value) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioSwBindingSet, 8);
   for (size_t i = 0; i < ARRAYSIZE(binding_value->data); ++i) {
     sec_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_SW_BINDING_0_REG_OFFSET +
