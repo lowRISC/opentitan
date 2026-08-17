@@ -53,6 +53,7 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/mldsa_key.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
@@ -208,14 +209,14 @@ typedef struct otp_measurements {
 } otp_measurements_t;
 
 static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
-                  (5 * 1024 + kUdsMaxTbsSizeBytes),
+                  (5 * 1024 + 2 * kUdsMaxTbsSizeBytes),
               "Perso blob data must be able to hold 5KiB of data to host, and "
-              "one PQ UDS TBS certificate");
+              "two PQ UDS TBS certificates");
 
 static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
                   (5 * 1024 + kUdsMaxCertSizeBytes),
               "Perso blob data must be able to hold 5KiB of endorsed "
-              "certificates, and one PQ UDS certificate");
+              "certificates, and one endorsed PQ UDS certificate");
 
 /**
  * Certificates flash info page layout.
@@ -714,12 +715,32 @@ static status_t personalize_gen_dice_certificates(
         otp_measurements->otp_owner_sw_cfg_measurement,
         otp_measurements->otp_rot_creator_auth_codesign_measurement,
         otp_measurements->otp_rot_creator_auth_state_measurement,
-        &uds_mldsa_key_ids, pre_endorse_data->cert_buffer, &curr_cert_size));
+        &uds_mldsa_key_ids, kMldsaParameterSet44, pre_endorse_data->cert_buffer,
+        &curr_cert_size));
 
     // DO NOT CHANGE THE "PQ_UDS_44" STRING BELOW without modifying the SKU
     // configs which expect this
     TRY(perso_tlv_push_cert_to_perso_blob(
         "PQ_UDS_44",
+        /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
+        kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
+        kPersoBlobVersionV1, &pre_endorse_data->blob_to_host));
+
+    curr_cert_size = kUdsMaxTbsSizeBytes;  // From template code
+    // Pubkey ID will be populated again by
+    // `dice_uds_mldsa_tbs_cert_generate_and_build` using `uds_mldsa_key_ids`
+    TRY(dice_uds_mldsa_tbs_cert_generate_and_build(
+        otp_measurements->otp_creator_sw_cfg_measurement,
+        otp_measurements->otp_owner_sw_cfg_measurement,
+        otp_measurements->otp_rot_creator_auth_codesign_measurement,
+        otp_measurements->otp_rot_creator_auth_state_measurement,
+        &uds_mldsa_key_ids, kMldsaParameterSet87, pre_endorse_data->cert_buffer,
+        &curr_cert_size));
+
+    // DO NOT CHANGE THE "PQ_UDS_87" STRING BELOW without modifying the SKU
+    // configs which expect this
+    TRY(perso_tlv_push_cert_to_perso_blob(
+        "PQ_UDS_87",
         /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
         kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
         kPersoBlobVersionV1, &pre_endorse_data->blob_to_host));

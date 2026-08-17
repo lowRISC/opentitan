@@ -87,9 +87,15 @@ sku_cfg(
     testonly = True,
     dice_ca = ":emulation_dice_ca",
     dice_mldsa_ca = ":emulation_dice_mldsa_ca",
-    dice_mldsa_certs_from_device = ["PQ_UDS_44"],
-    dice_mldsa_certs_to_endorse = ["PQ_UDS_44"],
+    dice_mldsa_certs_from_device = [
+        "PQ_UDS_44",
+        "PQ_UDS_87",
+    ],
     dice_mldsa_certs_to_device = ["PQ_UDS_44"],
+    dice_mldsa_certs_to_endorse = [
+        "PQ_UDS_44",
+        "PQ_UDS_87",
+    ],
     ext_ca = ":emulation_ext_ca",
     otp = "em00",
     owner_fw_boot_str = "Bare metal PASS!",
