@@ -86,6 +86,8 @@ waive -rules INTEGER              -location {ibex_register_file_ff.sv ${module_i
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
 waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Memory 'pmp_req_err' has word width which is single bit wide} ${"\\"}
       -comment "For consistency with related signals, we use an unpacked array for this signal."
+waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Memory 'pmp_req_err_raw' has word width which is single bit wide} ${"\\"}
+      -comment "For consistency with related signals, we use an unpacked array for this signal."
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} ${"\\"}
       -comment "These signals are only used for assertions inside these three modules"
 waive -rules INPUT_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} ${"\\"}
