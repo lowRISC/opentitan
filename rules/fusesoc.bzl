@@ -4,6 +4,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
+load("//rules:files.bzl", "hash_files")
 
 """Rules for running FuseSoC.
 
@@ -138,3 +139,33 @@ fusesoc_build = rule(
         ),
     },
 )
+
+def fusesoc_hash_and_build(
+        name,
+        hash_dir,
+        # All other attributes of fusesoc_build
+        **kwargs):
+    """
+    This rule is similar to fusesoc_build but in addition, it will also create a target named
+    `{name}_hash` containing the hash of all input files listed by fusesoc. The `hash_dir` argument
+    is the name of subdirectory of the fusesoc build directory which needs to be hashed.
+    """
+    fusesoc_build(
+        name = name,
+        **kwargs
+    )
+
+    kwargs["output_groups"] = {
+        "files_to_hash": [hash_dir],
+    }
+    fusesoc_build(
+        name = name + "_files_to_hash",
+        setup_only = True,
+        **kwargs
+    )
+    hash_files(
+        name = name + "_hash",
+        src = ":{}_files_to_hash".format(name),
+        output_group = "files_to_hash",
+        testonly = kwargs.get("testonly", False),
+    )
