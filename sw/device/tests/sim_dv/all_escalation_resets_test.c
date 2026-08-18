@@ -175,8 +175,8 @@ enum {
 };
 
 static_assert(
-    kWdogBarkMicros < kWdogBiteMicros &&
-        kWdogBarkMicros > (kEscalationPhase0Micros + kEscalationPhase1Micros),
+    kWdogBarkMicros<kWdogBiteMicros && kWdogBarkMicros>(
+        kEscalationPhase0Micros + kEscalationPhase1Micros),
     "The wdog bite shall after the NMI phase when lc_escalate_en is asserted");
 
 /**
