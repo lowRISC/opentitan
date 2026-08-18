@@ -20,7 +20,8 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"  // Generated.
+#include "otp_ctrl_regs.h"    // Generated.
 
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
@@ -48,6 +49,59 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
     found_error |= share1[i] == UINT64_MAX || share1[i] == 0;
   }
   return found_error ? INTERNAL() : OK_STATUS();
+}
+
+OT_WARN_UNUSED_RESULT
+status_t manuf_personalize_flash_attestation_key_seeds(
+    dif_flash_ctrl_state_t *flash_state) {
+  enum {
+    kPageWords = FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
+  };
+  uint32_t page_data[kPageWords];
+
+  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
+                                /*seed_material=*/NULL));
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, page_data, kPageWords,
+                             /*fips_check=*/kHardenedBoolTrue));
+  TRY(entropy_csrng_uninstantiate());
+
+  // Set the attestation key generation version field at the end of the page.
+  page_data[kPageWords - 1] = kAttestationKeyGenVersion1;
+
+  uint32_t byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+      flash_state, kFlashInfoFieldUdsAttestationKeySeed.page,
+      kFlashInfoFieldUdsAttestationKeySeed.bank,
+      kFlashInfoFieldUdsAttestationKeySeed.partition, &byte_address));
+  TRY(flash_ctrl_testutils_erase_and_write_page(
+      flash_state, byte_address, kFlashInfoFieldUdsAttestationKeySeed.partition,
+      page_data, kDifFlashCtrlPartitionTypeInfo, kPageWords));
+
+  // Read back and verify the written page in chunks.
+  uint32_t read_back[16];
+  for (size_t offset = 0; offset < kPageWords; offset += 16) {
+    size_t chunk_words =
+        ((kPageWords - offset) < 16) ? (kPageWords - offset) : 16;
+    TRY(flash_ctrl_testutils_read(
+        flash_state, byte_address + offset * sizeof(uint32_t),
+        kFlashInfoFieldUdsAttestationKeySeed.partition, read_back,
+        kDifFlashCtrlPartitionTypeInfo, chunk_words,
+        /*delay=*/0));
+    for (size_t i = 0; i < chunk_words; ++i) {
+      size_t word_idx = offset + i;
+      if (word_idx < kPageWords - 1) {
+        if (page_data[word_idx] == 0 || page_data[word_idx] == UINT32_MAX ||
+            page_data[word_idx] != read_back[i]) {
+          return INTERNAL();
+        }
+      } else {
+        if (read_back[i] != kAttestationKeyGenVersion1) {
+          return INTERNAL();
+        }
+      }
+    }
+  }
+  return OK_STATUS();
 }
 
 OT_WARN_UNUSED_RESULT
