@@ -15,7 +15,8 @@
 
 enum {
   // Shared scratch buffer size to use for ML-DSA operations
-  kDiceMldsaAttestationScratchBufferSize = 32 * 1024,
+  kDiceMldsaRomExtAttestationScratchBufferSize = 32 * 1024,
+  kDiceMldsaPersoScratchBufferSize = 24 * 1024,
 };
 
 // `key_ids->endorsement` must already be populated
