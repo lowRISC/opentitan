@@ -5,12 +5,12 @@
 use anyhow::{Context, Result};
 use arrayvec::ArrayVec;
 use hex::decode;
+use pkcs8::DecodePublicKey;
 use rand::rngs::OsRng;
 use rand::{CryptoRng, Rng};
 use rsa::RsaPublicKey;
 use rsa::pkcs1::DecodeRsaPublicKey;
 use rsa::pkcs1v15::Pkcs1v15Encrypt;
-use rsa::pkcs8::DecodePublicKey;
 use rsa::traits::PaddingScheme;
 use std::path::Path;
 use tiny_keccak::{CShake, Hasher};
