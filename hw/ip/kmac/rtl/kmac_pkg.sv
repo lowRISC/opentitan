@@ -284,6 +284,22 @@ package kmac_pkg;
     }
   };
 
+  // Used instead of AppCfgKeyMgr if the KMAC functionality is stripped (EnFullKmac == 0). The keyed
+  // MAC is not available in that case, so KeyMgr uses the underlying cSHAKE operation.
+  parameter app_config_t AppCfgKeyMgrStripped = '{
+    if_type:       AppStatic,
+    masked:        1'b0,
+    // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
+    prefix:        NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC}),
+    en_unsup_comb: 1'b0,
+    session_cfg: '{
+      prefix_mode: 1'b1,
+      mode:        AppCShake,
+      kstrength:   sha3_pkg::L256,
+      en_xof:      1'b0
+    }
+  };
+
   parameter app_config_t AppCfgLcCtrl= '{
     if_type:       AppStatic,
     masked:        1'b0,
