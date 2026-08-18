@@ -16,7 +16,7 @@
 .globl mlkem1024_const_params
 
 mlkem1024_encaps_pk_rho:
-.zero 64
+.zero 32
 
 mlkem1024_encaps_pk_t:
 .zero 1536
@@ -69,6 +69,16 @@ const_2988_wdr:
 .globl stack
 stack:
 .zero 256
+
+.globl mlkem1024_encaps_res_ok
+mlkem1024_encaps_res_ok:
+.zero 4
+.zero 28 /* Padding */
+
+.globl mlkem1024_const_3328_vec
+mlkem1024_const_3328_vec:
+.word 0x00000d00, 0x00000d00, 0x00000d00, 0x00000d00
+.word 0x00000d00, 0x00000d00, 0x00000d00, 0x00000d00
 
 .globl poly_slot0
 .globl poly_slot1

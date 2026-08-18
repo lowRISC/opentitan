@@ -17,6 +17,7 @@
  */
 mlkem1024_decaps:
   la x31, stack
+  bn.xor w31, w31, w31 /* Initialize w31 as global zero WDR */
 
   /* Set MOD CSR with Q = 3329, MU = 0x94570CFF */
   la x2, mlkem1024_const_params

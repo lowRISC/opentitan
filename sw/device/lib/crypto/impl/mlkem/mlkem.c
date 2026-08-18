@@ -40,6 +40,7 @@ OTBN_DECLARE_SYMBOL_ADDR(mlkem1024_encaps, mlkem1024_encaps_m);
 OTBN_DECLARE_SYMBOL_ADDR(mlkem1024_encaps, mlkem1024_encaps_ct_u);
 OTBN_DECLARE_SYMBOL_ADDR(mlkem1024_encaps, mlkem1024_encaps_ct_v);
 OTBN_DECLARE_SYMBOL_ADDR(mlkem1024_encaps, mlkem1024_encaps_ss);
+OTBN_DECLARE_SYMBOL_ADDR(mlkem1024_encaps, mlkem1024_encaps_res_ok);
 
 // Decaps app.
 OTBN_DECLARE_APP_SYMBOLS(mlkem1024_decaps);
@@ -65,6 +66,13 @@ enum {
   kMlkem1024CtUWords = 1408 / sizeof(uint32_t),
   kMlkem1024CtVWords = 160 / sizeof(uint32_t),
   kMlkem1024SeedWords = 32 / sizeof(uint32_t),
+};
+
+/**
+ * Ok status for encaps.
+ */
+enum {
+  kMlkem1024StatusOk = 0x3a9e71b4,
 };
 
 status_t mlkem1024_keygen_internal_start(void) {
