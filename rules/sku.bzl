@@ -86,6 +86,24 @@ def _sku_cfg_impl(ctx):
 
     if ctx.attr.dice_ca:
         config["dice_ca"] = process_ca(ctx.attr.dice_ca)
+    if len(ctx.attr.dice_mldsa_certs_from_device) > 0:
+        config["dice_mldsa_certs_from_device"] = ctx.attr.dice_mldsa_certs_from_device
+        if not ctx.attr.dice_mldsa_ca:
+            fail("No DICE CA configuration provided to endorse ML-DSA " +
+                 "certificates when such certificates are expected from the " +
+                 "device during provisioning")
+        config["dice_mldsa_ca"] = process_ca(ctx.attr.dice_mldsa_ca)
+
+        for cert_name in ctx.attr.dice_mldsa_certs_to_device:
+            if cert_name not in ctx.attr.dice_mldsa_certs_from_device:
+                fail("Endorsed ML-DSA certificate {} expected to be sent to " +
+                     "the device, but not present in list of certificates " +
+                     "expected from device during provisioning ({})".format(
+                         cert_name,
+                         ctx.attr.dice_mldsa_certs_from_device,
+                     ))
+        config["dice_mldsa_certs_to_device"] = ctx.attr.dice_mldsa_certs_to_device
+
     if ctx.attr.ext_ca:
         config["ext_ca"] = process_ca(ctx.attr.ext_ca)
 
@@ -161,6 +179,26 @@ sku_cfg = rule(
         "otp": attr.string(mandatory = True),
         "owner_fw_boot_str": attr.string(),
         "dice_ca": attr.label(providers = [SkuCertInfo]),
+        # Optional. Only used (and required) when building for configurations
+        # with MLDSA support
+        "dice_mldsa_ca": attr.label(
+            providers = [SkuCertInfo],
+            doc = "CA configuration to use to endorse ML-DSA TBS certificates" +
+                  " from device, if ML-DSA provisioning support is enabled",
+        ),
+        "dice_mldsa_certs_from_device": attr.string_list(
+            doc = "List of TBS certificate names to expect from the device " +
+                  "when doing provisioning with ML-DSA support. All of these " +
+                  "will be endorsed during provisioning",
+        ),
+        "dice_mldsa_certs_to_device": attr.string_list(
+            doc = "List of ML-DSA endorsed certificate names to send back to " +
+                  "the device when ML-DSA provisioning support is enabled. " +
+                  "This must be a subset of `dice_mldsa_certs_from_device`. " +
+                  "These certificates will be included in the final hash " +
+                  "that the host tool expects back from the device for " +
+                  "certificates it writes to internal flash",
+        ),
         "ext_ca": attr.label(providers = [SkuCertInfo]),
         "token_encrypt_key": attr.label(allow_single_file = True),
         "perso_bins": attr.label_list(allow_files = True),

@@ -63,7 +63,7 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_mldsa",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
