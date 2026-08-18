@@ -47,7 +47,7 @@ static status_t extract_mldsa_uds_cert(const perso_blob_t *blob_from_host,
         perso_blob_body_left(blob_from_host, next_free), block);
     switch (err) {
       case kErrorOk:
-        if (memcmp("PQ_UDS", block->name, sizeof("PQ_UDS")) == 0) {
+        if (memcmp("PQ_UDS_44", block->name, sizeof("PQ_UDS_44")) == 0) {
           return OK_STATUS();
         }
         // Not the cert we are looking for
