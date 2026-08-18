@@ -2,22 +2,27 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
 use arrayvec::ArrayVec;
 use base64ct::{Base64, Encoding};
+use cert_lib::RawKeyType::{EcdsaKey, MldsaSeed};
 use clap::{Args, Parser};
 use elliptic_curve::SecretKey;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use indexmap::IndexMap;
+use ml_dsa::pkcs8::{
+    DecodePrivateKey as MldsaDecodePrivateKey, PrivateKeyInfo as MldsaPrivateKeyInfo,
+};
 use p256::NistP256;
 
 use cert_lib::{CaConfig, CaKey, CaKeyType};
 use ft_lib::{
-    check_slot_b_boot_up, run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
+    DICE_MLDSA_CA_NAME, check_slot_b_boot_up, run_ft_personalize, run_sram_ft_individualize,
+    test_exit, test_unlock,
 };
 use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -70,6 +75,16 @@ pub struct ManufFtProvisioningDataInput {
     /// Pretty-print the provisioning data output.
     #[arg(long, default_value = "false")]
     pretty: bool,
+
+    /// DICE ML-DSA TBS certificates to expect from device when provisioning with ML-DSA support is
+    /// requested. All of these TBS certificates will be endorsed
+    #[arg(long)]
+    pub dice_mldsa_certs_from_device: Option<Vec<String>>,
+
+    /// DICE ML-DSA endorsed certificates to send to device when provisioning with ML-DSA support is
+    /// requested
+    #[arg(long)]
+    pub dice_mldsa_certs_to_device: Option<Vec<String>>,
 }
 
 #[derive(Debug, Parser)]
@@ -176,10 +191,17 @@ fn main() -> Result<()> {
             ca.to_string(),
             match cfg.key_type {
                 CaKeyType::Raw => {
-                    log::info!("Using raw key for cert endorsement.");
-                    CaKey::RawKey(SecretKey::<NistP256>::read_pkcs8_der_file(
-                        cfg.key.as_str(),
-                    )?)
+                    log::info!("Using raw key for {ca} cert endorsement.");
+                    if ca == DICE_MLDSA_CA_NAME {
+                        let der_bytes = std::fs::read(cfg.key.as_str())?;
+                        let private_key_info = MldsaPrivateKeyInfo::from_pkcs8_der(der_bytes.as_slice()).context("Failed to parse ML-DSA PKCS#8 DER file for CA private key")?;
+                        let private_seed = private_key_info.private_key.as_bytes().try_into().context("ML-DSA key DER file must contain bare-seed only (matching `-provparam ml-dsa.output_formats=bare-seed` in openssl)")?;
+                        CaKey::RawKey(MldsaSeed(private_seed))
+                    } else {
+                        CaKey::RawKey(EcdsaKey(SecretKey::<NistP256>::read_pkcs8_der_file(
+                            cfg.key.as_str(),
+                        )?))
+                    }
                 }
                 CaKeyType::Token => {
                     log::info!("Using PKCS#11 token key for cert endorsement.");
@@ -191,7 +213,48 @@ fn main() -> Result<()> {
 
     // Parse and prepare personalization ujson data payload.
     let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
-    let (provision_mldsa_uds_cert, dice_mldsa_ca_key_id) = (false, ArrayVec::<u8, 20>::new());
+    let (
+        provision_mldsa_uds_cert,
+        dice_mldsa_ca_key_id,
+        dice_mldsa_certs_from_device,
+        dice_mldsa_certs_to_device,
+    ) = if let Some(dice_mldsa_certs_from_device) =
+        opts.provisioning_data.dice_mldsa_certs_from_device
+    {
+        if dice_mldsa_certs_from_device.is_empty() {
+            (false, ArrayVec::<u8, 20>::new(), HashSet::new(), Vec::new())
+        } else {
+            let dice_mldsa_ca = ca_cfgs.get(DICE_MLDSA_CA_NAME).ok_or(anyhow::anyhow!("Expect DICE ML-DSA CA configuration to be present when DICE ML-DSA certificates from device need to be endorsed"))?;
+            let dice_mldsa_certs_from_device: HashSet<String> =
+                dice_mldsa_certs_from_device.into_iter().collect();
+            let dice_mldsa_certs_to_device: HashSet<String> = opts
+                .provisioning_data
+                .dice_mldsa_certs_to_device
+                .clone()
+                .unwrap_or(Vec::new())
+                .into_iter()
+                .collect();
+            if !dice_mldsa_certs_to_device.is_subset(&dice_mldsa_certs_from_device) {
+                bail!(
+                    "List of ML-DSA endorsed certificates to send to the device contains certificate names which are not present in the list of TBS certificates expected from device during provisioning. Difference: {:?}",
+                    dice_mldsa_certs_to_device.difference(&dice_mldsa_certs_from_device)
+                );
+            }
+
+            log::info!("Will request UDS ML-DSA certificate generation from device");
+            (
+                true,
+                hex_string_to_u8_arrayvec::<20>(dice_mldsa_ca.key_id.as_str())?,
+                dice_mldsa_certs_from_device,
+                opts.provisioning_data
+                    .dice_mldsa_certs_to_device
+                    .unwrap_or(Vec::new()),
+            )
+        }
+    } else {
+        (false, ArrayVec::<u8, 20>::new(), HashSet::new(), Vec::new())
+    };
+
     let ext_ca_key_id = if let Some(ext) = ca_cfgs.get("ext") {
         hex_string_to_u8_arrayvec::<20>(ext.key_id.as_str())?
     } else {
@@ -285,6 +348,8 @@ fn main() -> Result<()> {
         &mut ujson_payloads,
         opts.timeout,
         &mut response,
+        dice_mldsa_certs_from_device,
+        dice_mldsa_certs_to_device,
     )?;
 
     check_slot_b_boot_up(
