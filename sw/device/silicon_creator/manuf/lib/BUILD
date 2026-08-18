@@ -25,7 +25,7 @@ ld_library(
     non_page_aligned_segments = True,
     script = "sram_program.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],

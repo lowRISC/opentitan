@@ -12,7 +12,7 @@
  * the upper half of NVM), this linker script only targets Slot A.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 /* Slot A starts at begining of the NVM. */
 _rom_ext_size = LENGTH(nvm) / 2;

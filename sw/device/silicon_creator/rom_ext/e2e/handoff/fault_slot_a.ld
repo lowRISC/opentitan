@@ -12,7 +12,7 @@
  * linker script only targets Slot A.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 /* Slot A starts at the start of the NVM plus the fixed size of the first
  * Silicon Owner stage */

@@ -45,7 +45,7 @@ otp_image(
 #    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 #    deps = [
 #        "//hw/top:top_lib",
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+#        "//hw/top:top_ld",
 #        "//sw/device/lib/base:status",
 #        "//sw/device/lib/runtime:print",
 #        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
