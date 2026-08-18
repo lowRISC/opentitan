@@ -54,11 +54,6 @@
         "data_file": "hw/ip/hmac/data/hmac.hjson",
         "report": "/hw/ip/hmac/dv"
     },
-    "flash": {
-        "name": "Flash",
-        "data_file": "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/flash_ctrl/dv"
-    },
     "edn": {
         "name": "EDN",
         "data_file": "hw/ip/edn/data/edn.hjson",

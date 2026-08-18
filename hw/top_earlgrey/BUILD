@@ -45,7 +45,6 @@ filegroup(
         "//hw/top_earlgrey/ip:doc_files",
         "//hw/top_earlgrey/ip_autogen/alert_handler:doc_files",
         "//hw/top_earlgrey/ip_autogen/clkmgr:doc_files",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:doc_files",
         "//hw/top_earlgrey/ip_autogen/gpio:doc_files",
         "//hw/top_earlgrey/ip_autogen/otp_ctrl:doc_files",
         "//hw/top_earlgrey/ip_autogen/pinmux:doc_files",
