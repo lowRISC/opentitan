@@ -77,6 +77,7 @@ TEST_ARGS=(
     --define "${fpga}=lowrisc"
     --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
+    --define mldsa_provisioning_test=true
 )
 
 if [[ "${mode}" == "coverage" ]]; then
