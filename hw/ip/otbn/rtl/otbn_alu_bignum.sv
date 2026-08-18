@@ -178,6 +178,13 @@ module otbn_alu_bignum
   output logic                        ispr_kmac_data_s0_rd_o,
   output logic                        ispr_kmac_data_s1_rd_o,
 
+  output logic                            ispr_urnd_ctrl_wr_o,
+  output logic [31:0]                     ispr_urnd_ctrl_wdata_o,
+  input  logic [31:0]                     ispr_urnd_status_rdata_i,
+  output logic                            ispr_urnd_state_wr_o,
+  output logic [UrndPartialSeedWidth-1:0] ispr_urnd_state_wdata_o,
+  input  logic [WLEN-1:0]                 ispr_urnd_state_rdata_i,
+
   output logic                        reg_intg_violation_err_o,
 
   input  logic                        sec_wipe_mod_urnd_i,
@@ -651,6 +658,33 @@ module otbn_alu_bignum
   assign ispr_kmac_data_s0_rd_o = ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS0];
   assign ispr_kmac_data_s1_rd_o = ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS1];
 
+  ////////////////
+  // URND Write //
+  ////////////////
+  // No blanker is required in front of a register holding known control values when writing values
+  // from base registers.
+  assign ispr_urnd_ctrl_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprUrndCtrl];
+  assign ispr_urnd_ctrl_wdata_o = ispr_base_wdata_i;
+
+  // We drop the integrity towards the rnd module. SW can verify the update by reading back the
+  // state.
+  logic [WLEN-1:0] ispr_urnd_state_wdata_no_intg;
+  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin : g_urnd_state_drop_intg
+    assign ispr_urnd_state_wdata_no_intg[i * 32 +: 32] =
+        ispr_bignum_wdata_intg_i[i * BaseIntgWidth +: 32];
+  end
+
+  assign ispr_urnd_state_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprUrndState];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(UrndPartialSeedWidth)) u_ispr_urnd_state_wdata_blanker (
+    .in_i (ispr_urnd_state_wdata_no_intg[UrndPartialSeedWidth-1:0]),
+    .en_i (ispr_urnd_state_wr_o),
+    .out_o(ispr_urnd_state_wdata_o)
+  );
+
+  logic unused_urnd_state_wdata;
+  assign unused_urnd_state_wdata = ^ispr_urnd_state_wdata_no_intg[WLEN-1:UrndPartialSeedWidth];
+
   ///////////////
   // ISPR Read //
   ///////////////
@@ -661,7 +695,7 @@ module otbn_alu_bignum
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
   // Number of ISPRs that have no integrity protection
-  localparam int NNoIntgIspr = 13;
+  localparam int NNoIntgIspr = 15;
   // IDs for ISPRs without integrity
   localparam int IsprRndNoIntg = 0;
   localparam int IsprUrndNoIntg = 1;
@@ -676,6 +710,9 @@ module otbn_alu_bignum
   localparam int IsprKmacCfgNoIntg = 10;
   localparam int IsprKmacStrbNoIntg = 11;
   localparam int IsprInsnCntNoIntg = 12;
+  localparam int IsprUrndStateNoIntg = 13;
+  localparam int IsprUrndStatusNoIntg = 14;
+  // KMAC_CTRL and URND_CTRL always read as '0. Thus we do not need a mux input.
 
   logic [NNoIntgIspr-1:0] ispr_rdata_no_intg_mux_sel;
 
@@ -702,6 +739,9 @@ module otbn_alu_bignum
   // First stage
   assign ispr_rdata_no_intg_mux_in[IsprRndNoIntg]       = rnd_data_i;
   assign ispr_rdata_no_intg_mux_in[IsprUrndNoIntg]      = urnd_data_i;
+  assign ispr_rdata_no_intg_mux_in[IsprUrndStateNoIntg] = ispr_urnd_state_rdata_i;
+  assign ispr_rdata_no_intg_mux_in[IsprUrndStatusNoIntg] =
+      {{(WLEN - 32){1'b0}}, ispr_urnd_status_rdata_i};
   assign ispr_rdata_no_intg_mux_in[IsprMaiCtrlNoIntg]   =
       {{(WLEN - 32){1'b0}}, ispr_mai_ctrl_rdata_i};
   assign ispr_rdata_no_intg_mux_in[IsprMaiStatusNoIntg] =
@@ -729,6 +769,10 @@ module otbn_alu_bignum
       ispr_bignum_predec_i.ispr_rd_en[IsprRnd];
   assign ispr_rdata_no_intg_mux_sel[IsprUrndNoIntg]       =
       ispr_bignum_predec_i.ispr_rd_en[IsprUrnd];
+  assign ispr_rdata_no_intg_mux_sel[IsprUrndStateNoIntg]  =
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrndState];
+  assign ispr_rdata_no_intg_mux_sel[IsprUrndStatusNoIntg] =
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrndStatus];
   assign ispr_rdata_no_intg_mux_sel[IsprMaiCtrlNoIntg]    =
       ispr_bignum_predec_i.ispr_rd_en[IsprMaiCtrl];
   assign ispr_rdata_no_intg_mux_sel[IsprMaiStatusNoIntg]  =
@@ -749,8 +793,9 @@ module otbn_alu_bignum
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacCfg];
   assign ispr_rdata_no_intg_mux_sel[IsprKmacStrbNoIntg]   =
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb];
-  // KMAC_CTRL always reads as '0. We use the onehot MUX to output '0 by not factoring in the
-  // KMAC_CTRL read enable signal into its select signal.
+  // KMAC_CTRL and URND_CTRL always read as '0. We use the onehot MUX to output '0 by not having an
+  // input for these. We thus also don't need to factor in their read enable signals into the MUX
+  // select signal.
 
   assign ispr_rdata_no_intg_mux_sel[IsprInsnCntNoIntg]  =
       ispr_bignum_predec_i.ispr_rd_en[IsprInsnCnt];
@@ -813,6 +858,9 @@ module otbn_alu_bignum
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg] =
     |{ispr_bignum_predec_i.ispr_rd_en[IsprInsnCnt],
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrndState],
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrndStatus],
+      ispr_bignum_predec_i.ispr_rd_en[IsprUrndCtrl],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacCfg],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacCtrl],
@@ -851,7 +899,6 @@ module otbn_alu_bignum
   ////////////////////////
   // ISPR PreDec Checks //
   ////////////////////////
-
   prim_onehot_enc #(
     .OneHotWidth (NIspr)
   ) u_expected_ispr_rd_en_enc (

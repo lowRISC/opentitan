@@ -69,7 +69,6 @@ module top_darjeeling #(
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
-  parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnFixMaiOpSeq = 0,
   parameter bit SecOtbnFixMacOpSeq = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
@@ -382,7 +381,6 @@ module top_darjeeling #(
   .KmacAppCfg(KmacAppCfg),
   .OtbnStub(OtbnStub),
   .OtbnRegFile(OtbnRegFile),
-  .SecOtbnMuteUrnd(SecOtbnMuteUrnd),
   .SecOtbnFixMaiOpSeq(SecOtbnFixMaiOpSeq),
   .SecOtbnFixMacOpSeq(SecOtbnFixMacOpSeq),
   .SecOtbnSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),

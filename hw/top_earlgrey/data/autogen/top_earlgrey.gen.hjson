@@ -7326,20 +7326,6 @@
           name_top: OtbnRegFile
         }
         {
-          name: SecMuteUrnd
-          desc:
-            '''
-            If enabled (1), URND is advanced only when data is needed.
-            Disabled (0) by default.
-            Useful for SCA measurements only.
-            '''
-          type: bit
-          default: "0"
-          local: "false"
-          expose: "true"
-          name_top: SecOtbnMuteUrnd
-        }
-        {
           name: SecFixMaiOpSeq
           desc:
             '''

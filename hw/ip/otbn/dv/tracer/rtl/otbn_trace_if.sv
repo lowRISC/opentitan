@@ -81,7 +81,14 @@ interface otbn_trace_if
   input logic                      rnd_req,
   input logic                      rnd_valid,
 
-  input logic [otbn_pkg::UrndLen-1:0] urnd_data,
+  input logic [otbn_pkg::UrndLen-1:0]                 urnd_data,
+  input logic                                         ispr_urnd_state_wr,
+  input logic [otbn_pkg::WLEN-1:0]                    ispr_urnd_state_rdata,
+  input logic [otbn_pkg::UrndPartialSeedWidth-1:0]    ispr_urnd_state_wdata,
+  input logic [31:0]                                  ispr_urnd_status_rdata,
+  input logic                                         ispr_urnd_ctrl_wr,
+  input logic [31:0]                                  ispr_urnd_ctrl_wdata,
+
 
   input logic [31:0] insn_cnt,
 
@@ -294,6 +301,24 @@ interface otbn_trace_if
   // Upper bits of URND are currently unused in the tracer interface
   logic unused_urnd;
   assign unused_urnd = ^urnd_data[UrndLen-1:WLEN];
+
+  assign ispr_read[IsprUrndState] = any_ispr_read & (ispr_addr == IsprUrndState);
+  assign ispr_read_data[IsprUrndState] = ispr_urnd_state_rdata;
+  assign ispr_read[IsprUrndCtrl] = any_ispr_read & (ispr_addr == IsprUrndCtrl);
+  assign ispr_read_data[IsprUrndCtrl] = '0;
+  assign ispr_read[IsprUrndStatus] = any_ispr_read & (ispr_addr == IsprUrndStatus);
+  assign ispr_read_data[IsprUrndStatus] = {{(WLEN - 32){1'b0}}, ispr_urnd_status_rdata};
+
+  assign ispr_write[IsprUrndState] = ispr_urnd_state_wr;
+  // SW can write a full WDR to the state. But only the lower UrndPartialSeedWidth bits are
+  // considered. So we also only trace the actual register value.
+  assign ispr_write_data[IsprUrndState] = {{{WLEN - UrndPartialSeedWidth}{1'b0}},
+                                           ispr_urnd_state_wdata};
+
+  assign ispr_write[IsprUrndCtrl] = ispr_urnd_ctrl_wr;
+  assign ispr_write_data[IsprUrndCtrl] = {{(WLEN - 32){1'b0}}, ispr_urnd_ctrl_wdata};
+  assign ispr_write[IsprUrndStatus] = '0;
+  assign ispr_write_data[IsprUrndStatus] = '0;
 
   assign ispr_write[IsprKeyS0L] = 1'b0;
   assign ispr_write_data[IsprKeyS0L] = '0;

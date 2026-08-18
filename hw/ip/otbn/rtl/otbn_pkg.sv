@@ -80,6 +80,9 @@ package otbn_pkg;
   // A wide register (WDR or WSR) split into base words with integrity and data each.
   typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] otbn_wide_intg_word_t;
 
+  // The URND partial seed width depends on the EDN interface.
+  parameter int unsigned UrndPartialSeedWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
+
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;
@@ -414,6 +417,7 @@ package otbn_pkg;
     CsrMod6        = 12'h7D6,
     CsrMod7        = 12'h7D7,
     CsrRndPrefetch = 12'h7D8,
+    CsrUrndCtrl    = 12'h7D9,
     CsrKmacStatus  = 12'h7db,
     CsrKmacCtrl    = 12'h7dc,
     CsrKmacCfg     = 12'h7dd,
@@ -423,12 +427,13 @@ package otbn_pkg;
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
     CsrUrnd        = 12'hFC1,
+    CsrUrndStatus  = 12'hFC2,
     CsrInsnCnt     = 12'hFC3,
     CsrMaiStatus   = 12'hFCA
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 16; // Number of WSRs
+  parameter int NWsr = 17; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod        = 'd0,
@@ -446,13 +451,14 @@ package otbn_pkg;
     WsrMaiIn0S0   = 'd12,
     WsrMaiIn0S1   = 'd13,
     WsrMaiIn1S0   = 'd14,
-    WsrMaiIn1S1   = 'd15
+    WsrMaiIn1S1   = 'd15,
+    WsrUrndState  = 'd16
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 24;
+  parameter int NIspr = 27;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
     IsprMod        = 'd0,
@@ -478,7 +484,10 @@ package otbn_pkg;
     IsprKmacCtrl   = 'd20,
     IsprKmacCfg    = 'd21,
     IsprKmacStrb   = 'd22,
-    IsprInsnCnt    = 'd23
+    IsprInsnCnt    = 'd23,
+    IsprUrndState  = 'd24,
+    IsprUrndCtrl   = 'd25,
+    IsprUrndStatus = 'd26
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;

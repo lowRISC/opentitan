@@ -83,17 +83,6 @@
       randcount: "288",
       randtype:  "data"
     },
-    { name:    "SecMuteUrnd"
-      type:    "bit"
-      default: "0"
-      desc: '''
-        If enabled (1), URND is advanced only when data is needed.
-        Disabled (0) by default.
-        Useful for SCA measurements only.
-        '''
-      local:   "false"
-      expose:  "true"
-    }
     { name:    "SecFixMaiOpSeq"
       type:    "bit"
       default: "0"

@@ -122,10 +122,6 @@ module otbn_mac_bignum
   output logic            sec_wipe_err_o,
   output logic [1:0]      shuffle_offset_o,
 
-  // Signals whenever the URND input is used to clear any of the internal registers. This is
-  // required to advance the URND PRNG if the SecMuteUrnd parameter is set.
-  output logic urnd_used_o,
-
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
   input  logic               ispr_acc_wr_en_i,
@@ -696,10 +692,6 @@ module otbn_mac_bignum
   assign c_clear_en    = contrl.c_clear_en;
   assign acc_wr_en_raw = contrl.acc_wr_en_raw;
   assign acc_clear_en  = contrl.acc_clear_en;
-
-  // We must signal that we used URND so the PRNG is advanced even if the SecMuteUrnd parameter is
-  // set.
-  assign urnd_used_o = tmp_clear_en || c_clear_en || acc_clear_en;
 
   //////////////////////
   // Result selection //

@@ -8,8 +8,10 @@
  * OTBN random number coordination
  *
  * This module implements the RND, RND_PREFETCH and URND CSRs/WSRs. The EDN (entropy distribution
- * network) provides the bits for random numbers. RND gives direct access to EDN bits. URND provides
- * bits from a PRNG that is seeded with bits from the EDN.
+ * network) provides the bits for random numbers. RND gives direct access to EDN bits. URND
+ * provides bits from a PRNG that is seeded with bits from the EDN. The PRNG can be stopped and
+ * resumed by SW at runtime via the URND control interface. This interface also allows SW to save
+ * and restore a PRNG state.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,12 +41,31 @@ module otbn_rnd import otbn_pkg::*;
   output logic            rnd_fips_err_o,
 
   // Request URND PRNG reseed from the EDN
-  input  logic               urnd_reseed_req_i,
+  input  logic urnd_reseed_req_i,
   // Acknowledge URND PRNG reseed from the EDN
-  output logic               urnd_reseed_ack_o,
-  // When asserted PRNG state advances. It is permissible to advance the state whilst
-  // reseeding.
-  input  logic               urnd_advance_i,
+  output logic urnd_reseed_ack_o,
+
+  // Signals if URND control interface is active. Must stay constant whilst OTBN is executing.
+  input  logic urnd_ctrl_enabled_i,
+  // When asserted, PRNG state advances except it is stopped by SW. It is permissible to advance
+  // the state whilst reseeding.
+  input  logic urnd_advance_i,
+  // When asserted, PRNG state advances independently of what SW commanded via URND CTRL.
+  input  logic urnd_must_advance_i,
+
+  // CSRs for URND control
+  input  logic        ispr_urnd_ctrl_wr_i,
+  input  logic [31:0] ispr_urnd_ctrl_wdata_i,
+  output logic [31:0] ispr_urnd_status_rdata_o,
+
+  // WSR for URND control
+  // The read state is zero padded to WLEN. The write path is limited to the partial seed width to
+  // reduce the WSR write blanker width. There is no integrity checked, SW should read back the
+  // state to verify the update.
+  output logic [WLEN-1:0]                 ispr_urnd_state_rdata_o,
+  input  logic                            ispr_urnd_state_wr_i,
+  input  logic [UrndPartialSeedWidth-1:0] ispr_urnd_state_wdata_i,
+
   // URND data from PRNG
   output logic [UrndLen-1:0] urnd_data_o,
   // URND lockup state detected
@@ -60,6 +81,29 @@ module otbn_rnd import otbn_pkg::*;
   output edn_pkg::edn_req_t       edn_urnd_o,
   input  edn_pkg::edn_rsp_t       edn_urnd_i
 );
+  localparam int unsigned StateWidth = prim_trivium_pkg::BiviumStateWidth;
+
+  // Types to represent the information in URND_STATUS and URND_CTRL. Keep in sync with
+  // data/csr.yml.
+  typedef logic [5:0] urnd_restore_info_width_t;
+  typedef logic [9:0] urnd_state_info_width_t;
+
+  typedef struct packed {
+    urnd_restore_info_width_t urnd_restore_width;
+    urnd_state_info_width_t   urnd_state_width;
+    logic [11:0]              rsvd;
+    logic                     used_while_stopped;
+    logic                     restoring;
+    logic                     stopped;
+    logic                     urnd_ctrl_enabled;
+  } ispr_urnd_status_t;
+
+  typedef struct packed {
+    logic [31-3:0] rsvd;
+    logic restore;
+    logic start;
+    logic stop;
+  } ispr_urnd_ctrl_t;
 
   logic rnd_valid_q, rnd_valid_d;
   logic [WLEN-1:0] rnd_data_q, rnd_data_d;
@@ -75,9 +119,9 @@ module otbn_rnd import otbn_pkg::*;
   logic rnd_req_queued_d, rnd_req_queued_q;
   logic edn_rnd_data_ignore_d, edn_rnd_data_ignore_q;
 
-  logic urnd_reseed_req_q;
+  logic urnd_reseed_req_d, urnd_reseed_req_q;
   logic urnd_reseed_ack_d, urnd_reseed_ack_q;
-  logic seed_en_d, seed_en_q;
+  logic start_reseeding_d, start_reseeding_q;
 
   logic [UrndLen-1:0] urnd_data_d, urnd_data_q;
 
@@ -166,53 +210,162 @@ module otbn_rnd import otbn_pkg::*;
   assign rnd_rep_err_o = rnd_req_complete & rnd_err_q;
   assign rnd_fips_err_o = rnd_req_complete & ~rnd_fips_q;
 
+  //////////////////
+  // URND control //
+  //////////////////
+  // This part implements the CSRs and control logic to start and stop the PRNG. It also implements
+  // the logic triggering a restore process. See the PRNG implementation section for how a restore
+  // is implemented.
+  logic urnd_ctrl_wr, stop_cmd, start_cmd, restore_cmd;
+  logic urnd_stopped_d, urnd_stopped_q;
+  logic urnd_advance;
+  logic used_while_stopped, used_while_stopped_d, used_while_stopped_q;
+  logic start_restoring;
+  logic restoring_d, restoring_q;
+  logic seed_from_edn_d, seed_from_edn_q;
+  logic seed_req, seed_ack;
+  logic sw_seed_ack;
+  logic seed_done;
+
+  ispr_urnd_status_t ispr_urnd_status_r;
+  assign ispr_urnd_status_rdata_o = ispr_urnd_status_r;
+
+  assign ispr_urnd_status_r = '{
+    urnd_restore_width: urnd_restore_info_width_t'(UrndPartialSeedWidth),
+    urnd_state_width:   urnd_state_info_width_t'(StateWidth),
+    rsvd:               '0,
+    used_while_stopped: used_while_stopped_q,
+    restoring:          restoring_q,
+    stopped:            urnd_stopped_q,
+    urnd_ctrl_enabled:  urnd_ctrl_enabled_i
+  };
+
+  ispr_urnd_ctrl_t ispr_urnd_ctrl_w;
+  assign ispr_urnd_ctrl_w = ispr_urnd_ctrl_wdata_i;
+
+  // A command is only effective if the interface is enabled.
+  assign urnd_ctrl_wr = ispr_urnd_ctrl_wr_i & urnd_ctrl_enabled_i;
+  assign stop_cmd     = urnd_ctrl_wr & ispr_urnd_ctrl_w.stop;
+  assign start_cmd    = urnd_ctrl_wr & ispr_urnd_ctrl_w.start;
+  assign restore_cmd  = urnd_ctrl_wr & ispr_urnd_ctrl_w.restore;
+
+  // Each execution starts with a running PRNG. Start has higher prio than stop. If this changes
+  // the used while stopped logic probably need to be adapted as well, see below.
+  assign urnd_stopped_d = opn_start_i ? 1'b0 :
+                          start_cmd   ? 1'b0 :
+                          stop_cmd    ? 1'b1 : urnd_stopped_q;
+
+  // The main advance / state update control signal. Based on current instruction because the URND
+  // output is registered. Otherwise we would still perform two updates.
+  assign urnd_advance = urnd_must_advance_i || (urnd_advance_i && !urnd_stopped_d);
+
+  // Detect a forced advance whilst stopped. Some must advance sources trigger one cycle before
+  // URND is used such that the registered URND is advanced in time. However, if we start now, then
+  // this early "must advance" signal can be ignored.
+  // ATTENTION: This logic relies on the fact that a START command has higher priority than STOP.
+  assign used_while_stopped = urnd_must_advance_i && urnd_stopped_q && !start_cmd;
+
+  // A stop does only clear previous errors. But if the next insn after stop reads it, then we must
+  // still set the flag.
+
+  // We keep track of usages whilst stopped with a sticky flag. The flag is cleared once a new
+  // OTBN execution starts or the PRNG is stopped. However, because instructions reading URND
+  // enforce an advance one cycle before they execute, the flag must be set if:
+  // The PRNG is running, a stop command is issued, and the next instruction will read URND.
+  assign used_while_stopped_d = opn_start_i                                 ? 1'b0 :
+                                used_while_stopped                          ? 1'b1 :
+                                !urnd_stopped_q && stop_cmd && urnd_advance ? 1'b1 :
+                                stop_cmd                                    ? 1'b0 :
+                                                                              used_while_stopped_q;
+
+  // Signal the start of a restoring process only if no reseed is ongoing. A URND reseed can only
+  // happen during a secure wipe, i.e., before or after software executes.
+  assign start_restoring = restore_cmd & ~restoring_q & ~seed_from_edn_q;
+
+  // Keep track if a restore process is ongoing. If a restore process is taken over by a reseed
+  // process we clear the flag once the reseed has ended (see below).
+  assign restoring_d   = opn_start_i     ? 1'b0       :
+                         restoring_q     ? ~seed_done :
+                         start_restoring ? 1'b1       : restoring_q;
+
+  // During a restore each write to URND_STATE supplies one seed word and acts as an ack for a seed
+  // request.
+  assign sw_seed_ack = ispr_urnd_state_wr_i & restoring_q & seed_req;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_urnd_ctrl
+    if (~rst_ni) begin
+      used_while_stopped_q <= 1'b0;
+      urnd_stopped_q       <= 1'b0;
+      restoring_q          <= 1'b0;
+    end else begin
+      used_while_stopped_q <= used_while_stopped_d;
+      urnd_stopped_q       <= urnd_stopped_d;
+      restoring_q          <= restoring_d;
+    end
+  end
+
   /////////////////////////
   // PRNG Implementation //
   /////////////////////////
+  // There are two processes which make use of the PRNG reseed interface. There is a reseed process
+  // issued by the OTBN start stop controller which reseeds the PRNG with values from EDN. And
+  // there is a restore process issued by OTBN SW to restore a URND context. Any reseed process has
+  // priority over a restore process. Both processes share the actual reseed interface which
+  // accepts partial seed values over multiple cycles. If a reseed process is issued whilst a
+  // restore is ongoing, the reseeding continues the restoring process but then provides seeds from
+  // EDN. All already provided seed parts are kept. As a consequence, in the worst case only the
+  // final reseed word comes from EDN. However, this is ok due to the relatively large Bivium state
+  // size, as well as the wide output width and the strong diffusion characteristics. Note, a
+  // restore process can only be running once SW executes, so the initial secure wipe will always
+  // fully reseed the PRNG with randomness from EDN. And during a secure wipe in case the program
+  // execution failed, the PRNG will be reseeded twice. So only the first reseed can be affected.
+  logic [UrndPartialSeedWidth-1:0] partial_seed;
+  logic [StateWidth-1:0] current_state;
+  logic [StateWidth-1:0] current_state_blanked;
 
   prim_trivium #(
     .BiviumVariant(1'b1),
     .OutputWidth(UrndLen),
     .StrictLockupProtection(1'b1),
     .SeedType(prim_trivium_pkg::SeedTypeStatePartial),
-    .PartialSeedWidth(edn_pkg::ENDPOINT_BUS_WIDTH),
+    .PartialSeedWidth(UrndPartialSeedWidth),
     .RndCnstTriviumLfsrSeed(RndCnstUrndPrngSeed)
   ) u_prim_trivium (
     .clk_i,
     .rst_ni,
-    .en_i                (urnd_advance_i),
+    .en_i                (urnd_advance),
     .allow_lockup_i      (1'b0),
-    .seed_en_i           (seed_en_q),
-    .seed_done_o         (urnd_reseed_ack_d),
-    .seed_req_o          (edn_urnd_o.edn_req),
-    .seed_ack_i          (edn_urnd_i.edn_ack),
+    .seed_en_i           (start_reseeding_q | start_restoring),
+    .seed_done_o         (seed_done),
+    .seed_req_o          (seed_req),
+    .seed_ack_i          (seed_ack),
     .seed_key_i          ('0), // Not connected
     .seed_iv_i           ('0), // Not connected
     .seed_state_full_i   ('0), // Not connected
-    .seed_state_partial_i(edn_urnd_i.edn_bus),
+    .seed_state_partial_i(partial_seed),
     .key_o               (urnd_data_d),
-    .state_o             (),
+    .state_o             (current_state),
     .err_o               (urnd_all_zero_o)
   );
 
-  // Buffer Bivium's output to relax timing and to prevent glitching on the URND signals.
-  always_ff @(posedge clk_i) begin : proc_bivium_output_buffer
-    urnd_data_q <= urnd_data_d;
-  end
-  assign urnd_data_o = urnd_data_q;
-
   // Signal urnd_reseed_req_i is high even during reset. Ensure we do not start until
-  // reset has been completed
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_gate_seed_en
-    if (~rst_ni) begin
-      urnd_reseed_req_q <= 1'b0;
-      seed_en_q         <= 1'b0;
-    end else begin
-      urnd_reseed_req_q <= urnd_reseed_req_i;
-      seed_en_q         <= seed_en_d;
-    end
-  end
-  assign seed_en_d = !urnd_reseed_req_q & urnd_reseed_req_i;
+  // reset has been completed by registering it with a resettable flop.
+  assign urnd_reseed_req_d = urnd_reseed_req_i;
+  assign start_reseeding_d = !urnd_reseed_req_q & urnd_reseed_req_i;
+
+  // Keep track if the current seeding is a reseed or restore process.
+  assign seed_from_edn_d = start_reseeding_d ? 1'b1 :
+                           seed_done         ? 1'b0 : seed_from_edn_q;
+
+  // Mux the seed value request depending on the type of seed process. The Bivium instance already
+  // handles the case when the last seed part is narrower than the seed interface.
+  assign partial_seed       = seed_from_edn_q ? edn_urnd_i.edn_bus : ispr_urnd_state_wdata_i;
+  assign seed_ack           = seed_from_edn_q ? edn_urnd_i.edn_ack : sw_seed_ack;
+  assign edn_urnd_o.edn_req = seed_from_edn_q ? seed_req : 1'b0;
+
+  // Only a reseed acknowledges the reseed request from the start/stop controller. Otherwise a
+  // restore would be flagged as spurious reseed ack.
+  assign urnd_reseed_ack_d = seed_done & seed_from_edn_q;
 
   // The logic around the previous PRNG (xoshiro256pp) has acknowledged the reseeding
   // operation one cycle after fetching the seed data from EDN. This cut emulates
@@ -226,10 +379,41 @@ module otbn_rnd import otbn_pkg::*;
   end
   assign urnd_reseed_ack_o = urnd_reseed_ack_q;
 
+  // If URND Control is enabled, expose the current PRNG state, zero padded to WLEN. Otherwise just
+  // output all-zero. The URND control signal directly originates from the CTRL register flop. And
+  // it can only be changed whilst OTBN is idle, so it is guaranteed to be constant.
+  prim_blanker #(.Width(StateWidth)) u_state_blanker (
+    .in_i (current_state),
+    .en_i (urnd_ctrl_enabled_i),
+    .out_o(current_state_blanked)
+  );
+
+  assign ispr_urnd_state_rdata_o = {{{WLEN - StateWidth}{1'b0}}, current_state_blanked};
+
+  // Buffer Bivium's output to relax timing and to prevent glitching on the URND signals.
+  always_ff @(posedge clk_i) begin : proc_bivium_output_buffer
+    urnd_data_q <= urnd_data_d;
+  end
+  assign urnd_data_o = urnd_data_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_seed_ctrl
+    if (~rst_ni) begin
+      urnd_reseed_req_q <= 1'b0;
+      start_reseeding_q <= 1'b0;
+      seed_from_edn_q   <= 1'b0;
+    end else begin
+      urnd_reseed_req_q <= urnd_reseed_req_d;
+      start_reseeding_q <= start_reseeding_d;
+      seed_from_edn_q   <= seed_from_edn_d;
+    end
+  end
+
   // Unused signals
-  logic unused_trivium;
-  assign unused_trivium = ^edn_urnd_i.edn_fips;
+  logic unused_signals;
+  assign unused_signals =
+      ^{edn_urnd_i.edn_fips,
+        ispr_urnd_ctrl_w.rsvd};
 
   `ASSERT(RndClearOnReqComplete_A, rnd_req_complete |=> ~rnd_valid_q)
-  `ASSERT(UrndNoReseedOnReset_A, ~rst_ni === ~seed_en_q, clk_i, rst_ni)
+  `ASSERT(UrndNoReseedOnReset_1A, start_reseeding_q |-> rst_ni, clk_i, 1'b0)
 endmodule
