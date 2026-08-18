@@ -97,15 +97,27 @@ static dice_storage_page_t dice_page;
 // Shared static buffers for `dice_attest_next_cdi` operation.
 static uint8_t curr_mldsa_sig[MLDSA44_SIGNATURE_BYTES];
 static uint8_t tbs_buffer[kCdiHybridMaxTbsSizeBytes];
-static mldsa_public_key_t mldsa_pubkey = {0};
+static uint8_t pubkey_buffer[kCdiHybridExactPubKeyMldsaSizeBytes];
 
-// Needs to be word aligned as well for `hardened_memshred` operations
-static uint8_t dice_mldsa_scratch_stack[kDiceMldsaAttestationScratchBufferSize]
+// Both stacks need to be word aligned as well for `hardened_memshred`
+// operations
+static uint8_t dice_mldsa_rom_ext_scratch_stack
+    [kDiceMldsaRomExtAttestationScratchBufferSize] __attribute__((aligned(16)));
+static uint8_t dice_mldsa_perso_scratch_stack[kDiceMldsaPersoScratchBufferSize]
     __attribute__((aligned(16)));
 
 static_assert(
-    (kDiceMldsaAttestationScratchBufferSize % 16) == 0,
-    "kDiceMldsaAttestationScratchBufferSize must be aligned to 16-bytes and "
+    (kDiceMldsaRomExtAttestationScratchBufferSize % 16) == 0,
+    "kDiceMldsaRomExtAttestationScratchBufferSize must be aligned to 16-bytes "
+    "and "
+    "its size must be multiple of 16-bytes since end of this buffer is used as "
+    "`sp`, and RISC-V ABI documentation mentions: 'In the standard RISC-V "
+    "calling convention, the stack grows downward and the stack pointer is "
+    "always kept 16-byte aligned'");
+
+static_assert(
+    (kDiceMldsaPersoScratchBufferSize % 16) == 0,
+    "kDiceMldsaPersoScratchBufferSize must be aligned to 16-bytes and "
     "its size must be multiple of 16-bytes since end of this buffer is used as "
     "`sp`, and RISC-V ABI documentation mentions: 'In the standard RISC-V "
     "calling convention, the stack grows downward and the stack pointer is "
@@ -164,8 +176,8 @@ static const attest_params_t kCdi0AttestParams = {
     .key_id_index = kDicePageKeyIdxCdi0,
     .issuer_params = &kUdsKeygenParams,
     .subject_params = &kCdi0KeygenParams,
-    .scratch_buf = dice_mldsa_scratch_stack,
-    .scratch_buf_size = sizeof(dice_mldsa_scratch_stack),
+    .scratch_buf = dice_mldsa_rom_ext_scratch_stack,
+    .scratch_buf_size = sizeof(dice_mldsa_rom_ext_scratch_stack),
     .ecdsa_cert_out = static_dice_cdi_0.cert_data,
     .ecdsa_cert_max_size = sizeof(static_dice_cdi_0.cert_data),
     .ecdsa_cert_size_out = &static_dice_cdi_0.cert_size,
@@ -180,8 +192,8 @@ static const attest_params_t kCdi1AttestParams = {
     .key_id_index = kDicePageKeyIdxCdi1,
     .issuer_params = &kCdi0KeygenParams,
     .subject_params = &kCdi1KeygenParams,
-    .scratch_buf = dice_mldsa_scratch_stack,
-    .scratch_buf_size = sizeof(dice_mldsa_scratch_stack),
+    .scratch_buf = dice_mldsa_rom_ext_scratch_stack,
+    .scratch_buf_size = sizeof(dice_mldsa_rom_ext_scratch_stack),
     .ecdsa_cert_out = cdi1_ecdsa_cert_buf,
     .ecdsa_cert_max_size = sizeof(cdi1_ecdsa_cert_buf),
     .ecdsa_cert_size_out = &cdi1_ecdsa_size,
@@ -501,14 +513,11 @@ static rom_error_t dice_attest_next_cdi(
     *params->ecdsa_cert_size_out = (uint32_t)generated_ecdsa_size;
 
     // Build ML-DSA Cert
-    mldsa_pubkey.param_set = kMldsaParameterSet44;
     mldsa44_tiny_pub_from_seed_with_stack(
-        mldsa_pubkey.key.key_44.key, (const uint8_t *)subject_mldsa_seed.data,
-        stack_top);
+        pubkey_buffer, (const uint8_t *)subject_mldsa_seed.data, stack_top);
 
     tbs_values->key_alg = kCdiHybridKeyAlgMldsa44;
-    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyMldsa,
-                 mldsa_pubkey.key.key_44.key);
+    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyMldsa, pubkey_buffer);
     TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, PubKeyId,
                            subject_mldsa_id->digest, kCertKeyIdSizeInBytes);
     TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, IssuerPubKeyId,
@@ -558,8 +567,8 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
   keymgr_binding_value_t uds_mldsa_seed;
   HARDENED_RETURN_IF_ERROR(
       dice_mldsa_derive_seed(&kUdsKeygenParams, &uds_mldsa_seed));
-  uint32_t *stack_top =
-      (uint32_t *)(dice_mldsa_scratch_stack + sizeof(dice_mldsa_scratch_stack));
+  uint32_t *stack_top = (uint32_t *)(dice_mldsa_rom_ext_scratch_stack +
+                                     sizeof(dice_mldsa_rom_ext_scratch_stack));
   mldsa44_tiny_pub_from_seed_with_stack(static_dice_mldsa_cdi.uds_pub,
                                         (const uint8_t *)uds_mldsa_seed.data,
                                         stack_top);
@@ -818,9 +827,10 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
       hardened_memshred(uds_mldsa_seed.data,
                         sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
 
+  static mldsa_public_key_t mldsa_pubkey;
   // Generate UDS MLDSA-44 public key
-  uint32_t *stack_top =
-      (uint32_t *)(dice_mldsa_scratch_stack + sizeof(dice_mldsa_scratch_stack));
+  uint32_t *stack_top = (uint32_t *)(dice_mldsa_perso_scratch_stack +
+                                     sizeof(dice_mldsa_perso_scratch_stack));
   mldsa_pubkey.param_set = kMldsaParameterSet44;
   mldsa44_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_44.key,
                                         (const uint8_t *)uds_mldsa_seed.data,
@@ -837,12 +847,13 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
       kHardenedBoolTrue);
 
   static_assert(
-      (sizeof(dice_mldsa_scratch_stack) % sizeof(uint32_t)) == 0,
+      (sizeof(dice_mldsa_perso_scratch_stack) % sizeof(uint32_t)) == 0,
       "Scratch stack size must be multiple of 4 for hardened_memshred");
   // Clear any secret data on the stack
   HARDENED_CHECK_EQ(
-      hardened_memshred((uint32_t *)dice_mldsa_scratch_stack,
-                        sizeof(dice_mldsa_scratch_stack) / sizeof(uint32_t))
+      hardened_memshred(
+          (uint32_t *)dice_mldsa_perso_scratch_stack,
+          sizeof(dice_mldsa_perso_scratch_stack) / sizeof(uint32_t))
           .value,
       kHardenedBoolTrue);
 
