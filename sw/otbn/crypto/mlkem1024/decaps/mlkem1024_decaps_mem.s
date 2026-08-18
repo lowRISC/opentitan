@@ -31,7 +31,7 @@ mlkem1024_decaps_sk_s_share1:
 mlkem1024_decaps_sk_pk_t:
 .zero 1536
 mlkem1024_decaps_sk_pk_rho:
-.zero 64
+.zero 32
 mlkem1024_decaps_sk_hpk:
 .zero 32
 mlkem1024_decaps_sk_z_share0:
