@@ -115,7 +115,7 @@ ld_library(
     name = "ld_common",
     includes = ["imm_section_common.ld"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
         "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
@@ -129,7 +129,7 @@ ld_library(
         script = "imm_section_slot_{}.ld".format(slot),
         deps = [
             ":ld_common",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+            "//hw/top:top_ld",
         ],
     )
     for slot in SLOTS

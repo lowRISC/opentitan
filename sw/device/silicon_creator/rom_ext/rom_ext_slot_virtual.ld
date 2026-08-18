@@ -14,7 +14,7 @@
  * to the virtual address.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.

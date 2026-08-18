@@ -85,7 +85,7 @@ ld_library(
     name = "linker_script",
     script = "rom.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
     ],
 )
