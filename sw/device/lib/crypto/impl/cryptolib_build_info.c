@@ -25,3 +25,12 @@ otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
 otcrypto_lib_version_t otcrypto_lib_version(void) {
   return (otcrypto_lib_version_t)kCryptoLibVersion;
 }
+
+void otcrypto_version_decode(uint32_t version, uint32_t *major, uint32_t *minor,
+                             uint32_t *patch) {
+  // Uses modular multiplicative inverse mod 2^32 for decoding
+  uint32_t decoded = version * 0x332ce355u;
+  *major = (decoded >> 24) & 0xff;
+  *minor = (decoded >> 16) & 0xff;
+  *patch = (decoded >> 8) & 0xff;
+}

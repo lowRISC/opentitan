@@ -444,10 +444,24 @@ typedef enum otcrypto_key_security_level {
  * Values are hardened.
  */
 typedef enum otcrypto_lib_version {
-  /// Version 1.
+  /**
+   * Version numbers are encoded with high Hamming distance modular arithmetic.
+   * To generate the hardened integer for a new (major, minor, patch) version,
+   * compute:
+   *   version = (((major << 24) | (minor << 16) | (patch << 8) | 0x04) *
+   *              0xc0c001fdu) & 0xffffffffu;
+   *
+   * For example:
+   *   - 1.0.0 -> 0x000007f4
+   *   - 1.0.1 -> 0xc00204f4
+   *   - 1.1.0 -> 0x01fd07f4
+   *   - 2.0.0 -> 0xfd0007f4
+   */
+
+  /// Version 1.0.0.
   kOtcryptoLibVersion1 = 0x7f4,
-  /// Version 2.
-  kOtcryptoLibVersion2 = 0x107,
+  /// Version 2.0.0.
+  kOtcryptoLibVersion2 = 0xfd0007f4,
 } otcrypto_lib_version_t;
 
 /**
