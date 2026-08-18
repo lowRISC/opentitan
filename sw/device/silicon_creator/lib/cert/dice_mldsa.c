@@ -2,22 +2,29 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/lib/cert/dice_mldsa.h"
+
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_dice_cdi_0.h"
 #include "sw/device/silicon_creator/lib/base/static_dice_mldsa_cdi.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_hybrid.h"
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/dice_keys.h"
@@ -25,6 +32,7 @@
 #include "sw/device/silicon_creator/lib/cert/ram_msg.h"
 #include "sw/device/silicon_creator/lib/cert/seeds.h"
 #include "sw/device/silicon_creator/lib/cert/template.h"
+#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -35,6 +43,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/mldsa_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
@@ -88,10 +97,19 @@ static dice_storage_page_t dice_page;
 // Shared static buffers for `dice_attest_next_cdi` operation.
 static uint8_t curr_mldsa_sig[MLDSA44_SIGNATURE_BYTES];
 static uint8_t tbs_buffer[kCdiHybridMaxTbsSizeBytes];
-static uint8_t pubkey_buffer[kCdiHybridExactPubKeyMldsaSizeBytes];
+static mldsa_public_key_t mldsa_pubkey = {0};
 
-static uint8_t mldsa_scratch[kDiceMldsaAttestationScratchBufferSize]
+// Needs to be word aligned as well for `hardened_memshred` operations
+static uint8_t dice_mldsa_scratch_stack[kDiceMldsaAttestationScratchBufferSize]
     __attribute__((aligned(16)));
+
+static_assert(
+    (kDiceMldsaAttestationScratchBufferSize % 16) == 0,
+    "kDiceMldsaAttestationScratchBufferSize must be aligned to 16-bytes and "
+    "its size must be multiple of 16-bytes since end of this buffer is used as "
+    "`sp`, and RISC-V ABI documentation mentions: 'In the standard RISC-V "
+    "calling convention, the stack grows downward and the stack pointer is "
+    "always kept 16-byte aligned'");
 
 // Keymgr configurations for deriving attestation keys.
 typedef struct keygen_params {
@@ -146,8 +164,8 @@ static const attest_params_t kCdi0AttestParams = {
     .key_id_index = kDicePageKeyIdxCdi0,
     .issuer_params = &kUdsKeygenParams,
     .subject_params = &kCdi0KeygenParams,
-    .scratch_buf = mldsa_scratch,
-    .scratch_buf_size = sizeof(mldsa_scratch),
+    .scratch_buf = dice_mldsa_scratch_stack,
+    .scratch_buf_size = sizeof(dice_mldsa_scratch_stack),
     .ecdsa_cert_out = static_dice_cdi_0.cert_data,
     .ecdsa_cert_max_size = sizeof(static_dice_cdi_0.cert_data),
     .ecdsa_cert_size_out = &static_dice_cdi_0.cert_size,
@@ -162,8 +180,8 @@ static const attest_params_t kCdi1AttestParams = {
     .key_id_index = kDicePageKeyIdxCdi1,
     .issuer_params = &kCdi0KeygenParams,
     .subject_params = &kCdi1KeygenParams,
-    .scratch_buf = mldsa_scratch,
-    .scratch_buf_size = sizeof(mldsa_scratch),
+    .scratch_buf = dice_mldsa_scratch_stack,
+    .scratch_buf_size = sizeof(dice_mldsa_scratch_stack),
     .ecdsa_cert_out = cdi1_ecdsa_cert_buf,
     .ecdsa_cert_max_size = sizeof(cdi1_ecdsa_cert_buf),
     .ecdsa_cert_size_out = &cdi1_ecdsa_size,
@@ -314,8 +332,8 @@ static rom_error_t dice_cdi_hybrid_cert_build(
  * @param params Key generation parameters.
  * @param[out] seed_output Derived 256-bit ML-DSA key seed.
  */
-static rom_error_t dice_mldsa_derive_seed(const keygen_params_t *params,
-                                          keymgr_binding_value_t *seed_output) {
+OT_WARN_UNUSED_RESULT static rom_error_t dice_mldsa_derive_seed(
+    const keygen_params_t *params, keymgr_binding_value_t *seed_output) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key_sw(
       kScKeymgrKeyTypeAttestation, *params->mldsa_cfg->keymgr_diversifier,
       seed_output));
@@ -483,11 +501,14 @@ static rom_error_t dice_attest_next_cdi(
     *params->ecdsa_cert_size_out = (uint32_t)generated_ecdsa_size;
 
     // Build ML-DSA Cert
+    mldsa_pubkey.param_set = kMldsaParameterSet44;
     mldsa44_tiny_pub_from_seed_with_stack(
-        pubkey_buffer, (const uint8_t *)subject_mldsa_seed.data, stack_top);
+        mldsa_pubkey.key.key_44.key, (const uint8_t *)subject_mldsa_seed.data,
+        stack_top);
 
     tbs_values->key_alg = kCdiHybridKeyAlgMldsa44;
-    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyMldsa, pubkey_buffer);
+    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyMldsa,
+                 mldsa_pubkey.key.key_44.key);
     TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, PubKeyId,
                            subject_mldsa_id->digest, kCertKeyIdSizeInBytes);
     TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, IssuerPubKeyId,
@@ -537,7 +558,8 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
   keymgr_binding_value_t uds_mldsa_seed;
   HARDENED_RETURN_IF_ERROR(
       dice_mldsa_derive_seed(&kUdsKeygenParams, &uds_mldsa_seed));
-  uint32_t *stack_top = (uint32_t *)(mldsa_scratch + sizeof(mldsa_scratch));
+  uint32_t *stack_top =
+      (uint32_t *)(dice_mldsa_scratch_stack + sizeof(dice_mldsa_scratch_stack));
   mldsa44_tiny_pub_from_seed_with_stack(static_dice_mldsa_cdi.uds_pub,
                                         (const uint8_t *)uds_mldsa_seed.data,
                                         stack_top);
@@ -723,4 +745,111 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
   }
 
   return kErrorOk;
+}
+
+// Copied from `dice.c`
+/**
+ * Returns true if debug (JTAG) access is exposed in the current LC state.
+ */
+static bool is_debug_exposed(void) {
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
+    return false;
+  }
+  return true;
+}
+
+static rom_error_t dice_uds_mldsa_tbs_cert_build(
+    const hmac_digest_t *otp_creator_sw_cfg_measurement,
+    const hmac_digest_t *otp_owner_sw_cfg_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_state_measurement,
+    const cert_key_id_pair_t *key_ids, const mldsa_public_key_t *uds_pubkey,
+    uint8_t *tbs_cert, size_t *tbs_cert_size) {
+  // Use template generation code based on fields defined `uds.hjson`
+  uds_tbs_values_t uds_tbs_params = {0};
+  if (uds_pubkey->param_set == kMldsaParameterSet44) {
+    uds_tbs_params.creator_pub_key_alg = kUdsKeygenAlgMldsa44;
+    TEMPLATE_SET(uds_tbs_params, Uds, CreatorPubKeyMldsa44,
+                 uds_pubkey->key.key_44.key);
+  } else if (uds_pubkey->param_set == kMldsaParameterSet87) {
+    uds_tbs_params.creator_pub_key_alg = kUdsKeygenAlgMldsa87;
+    TEMPLATE_SET(uds_tbs_params, Uds, CreatorPubKeyMldsa87,
+                 uds_pubkey->key.key_87.key);
+  } else {
+    return kErrorCertInvalidArgument;
+  }
+  uds_tbs_params.signature_alg = kUdsSignatureAlgMldsa87;
+  TEMPLATE_SET(uds_tbs_params, Uds, OtpCreatorSwCfgHash,
+               otp_creator_sw_cfg_measurement->digest);
+  TEMPLATE_SET(uds_tbs_params, Uds, OtpOwnerSwCfgHash,
+               otp_owner_sw_cfg_measurement->digest);
+  TEMPLATE_SET(uds_tbs_params, Uds, OtpRotCreatorAuthCodesignHash,
+               otp_rot_creator_auth_codesign_measurement->digest);
+  TEMPLATE_SET(uds_tbs_params, Uds, OtpRotCreatorAuthStateHash,
+               otp_rot_creator_auth_state_measurement->digest);
+  TEMPLATE_SET(uds_tbs_params, Uds, DebugFlag, is_debug_exposed());
+
+  TEMPLATE_SET_TRUNCATED(uds_tbs_params, Uds, CreatorPubKeyId,
+                         key_ids->cert->digest, kCertKeyIdSizeInBytes);
+  TEMPLATE_SET_TRUNCATED(uds_tbs_params, Uds, AuthKeyKeyId,
+                         key_ids->endorsement->digest, kCertKeyIdSizeInBytes);
+
+  HARDENED_RETURN_IF_ERROR(
+      uds_build_tbs(&uds_tbs_params, tbs_cert, tbs_cert_size));
+  return kErrorOk;
+}
+
+rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
+    const hmac_digest_t *otp_creator_sw_cfg_measurement,
+    const hmac_digest_t *otp_owner_sw_cfg_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_state_measurement,
+    const cert_key_id_pair_t *key_ids, uint8_t *tbs_cert_buffer,
+    size_t *tbs_cert_size) {
+  // Generate UDS seed for keygen. Destroy this as soon as possible once it is
+  // no longer needed
+  keymgr_binding_value_t uds_mldsa_seed;
+  static_assert(sizeof(uds_mldsa_seed.data) % sizeof(uint32_t) == 0,
+                "Expect seed size to be multiple of word size, otherwise "
+                "hardened memshred will leave few bytes untouched");
+  HARDENED_RETURN_IF_ERROR_WITH_TRY_CLEANUP(
+      dice_mldsa_derive_seed(&kUdsKeygenParams, &uds_mldsa_seed),
+      hardened_memshred(uds_mldsa_seed.data,
+                        sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
+
+  // Generate UDS MLDSA-44 public key
+  uint32_t *stack_top =
+      (uint32_t *)(dice_mldsa_scratch_stack + sizeof(dice_mldsa_scratch_stack));
+  mldsa_pubkey.param_set = kMldsaParameterSet44;
+  mldsa44_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_44.key,
+                                        (const uint8_t *)uds_mldsa_seed.data,
+                                        stack_top);
+
+  // Populate UDS MLDSA pubkey ID
+  get_mldsa_id((const hmac_key_t *)uds_mldsa_seed.data, key_ids->cert);
+
+  // Delete the seed since it is no longer needed
+  HARDENED_CHECK_EQ(
+      hardened_memshred(uds_mldsa_seed.data,
+                        sizeof(uds_mldsa_seed.data) / sizeof(uint32_t))
+          .value,
+      kHardenedBoolTrue);
+
+  static_assert(
+      (sizeof(dice_mldsa_scratch_stack) % sizeof(uint32_t)) == 0,
+      "Scratch stack size must be multiple of 4 for hardened_memshred");
+  // Clear any secret data on the stack
+  HARDENED_CHECK_EQ(
+      hardened_memshred((uint32_t *)dice_mldsa_scratch_stack,
+                        sizeof(dice_mldsa_scratch_stack) / sizeof(uint32_t))
+          .value,
+      kHardenedBoolTrue);
+
+  // Build UDS MLDSA certificate for signing
+  return dice_uds_mldsa_tbs_cert_build(
+      otp_creator_sw_cfg_measurement, otp_owner_sw_cfg_measurement,
+      otp_rot_creator_auth_codesign_measurement,
+      otp_rot_creator_auth_state_measurement, key_ids, &mldsa_pubkey,
+      tbs_cert_buffer, tbs_cert_size);
 }

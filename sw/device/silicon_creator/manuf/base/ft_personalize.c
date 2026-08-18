@@ -119,7 +119,7 @@ enum {
 };
 typedef struct cert_scratch_buffer {
   uint8_t buffer[kMaxEndorsedCertBufferSize];
-} __attribute__((aligned(4))) cert_scratch_buffer_t;
+} OT_WORD_ALIGNED cert_scratch_buffer_t;
 
 typedef struct aligned_dice_storage_page {
   dice_storage_page_t page;

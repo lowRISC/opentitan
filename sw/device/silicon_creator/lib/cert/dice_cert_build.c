@@ -53,6 +53,9 @@ rom_error_t dice_uds_tbs_cert_build(
   // Generate the TBS certificate.
   uds_tbs_values_t uds_tbs_params = {0};
 
+  uds_tbs_params.creator_pub_key_alg = kUdsKeygenAlgEcdsaP256;
+  uds_tbs_params.signature_alg = kUdsSignatureAlgEcdsaP256;
+
   TEMPLATE_SET(uds_tbs_params, Uds, OtpCreatorSwCfgHash,
                otp_creator_sw_cfg_measurement->digest);
   TEMPLATE_SET(uds_tbs_params, Uds, OtpOwnerSwCfgHash,
@@ -82,7 +85,6 @@ rom_error_t dice_cdi_0_cert_build(const hmac_digest_t *rom_ext_measurement,
                                   const ecdsa_p256_public_key_t *uds_pubkey,
                                   const ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
- 
   hmac_digest_t rom_ext_hash = *rom_ext_measurement;
   util_reverse_bytes(&rom_ext_hash, sizeof(rom_ext_hash));
 
