@@ -26,10 +26,20 @@ enum {
   kDiceMeasurementSizeInBytes = kDiceMeasurementSizeInBits / 8,
 };
 
-enum {
-  // Shared scratch buffer to use for ML-DSA operations
-  kDiceMldsaAttestationScratchBufferSize = 32 * 1024,
-};
+// Algorithms used for keygen using UDS seed for certificate generation. See
+// `creator_pub_key_alg` in `sw/device/silicon_creator/lib/cert/uds.hjson`
+typedef enum uds_cert_keygen_alg {
+  kUdsKeygenAlgEcdsaP256 = 0,
+  kUdsKeygenAlgMldsa44 = 1,
+  kUdsKeygenAlgMldsa87 = 2,
+} uds_cert_keygen_alg_t;
+
+// Algorithms used for signing UDS certificate. See `signature_alg` in
+// `sw/device/silicon_creator/lib/cert/uds.hjson`
+typedef enum uds_cert_signature_alg {
+  kUdsSignatureAlgEcdsaP256 = 0,
+  kUdsSignatureAlgMldsa87 = 1,
+} uds_cert_signature_alg_t;
 
 extern const dice_cert_format_t kDiceCertFormat;
 /**
