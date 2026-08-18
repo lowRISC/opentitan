@@ -116,3 +116,56 @@ copy_files = rule(
     },
     executable = True,
 )
+
+def _hash_file_map_fname(file):
+    return file.path
+
+def _hash_files(ctx):
+    inputs = ctx.files.src
+    if ctx.attr.output_group:
+        inputs = getattr(ctx.attr.src[OutputGroupInfo], ctx.attr.output_group).to_list()
+
+    hash_file = ctx.actions.declare_file(ctx.label.name)
+
+    args = ctx.actions.args()
+
+    # This will automatically recursively expand directories which in particular handles
+    # all the complexity of the various bazel symlinks.
+    args.add_all(
+        inputs,
+        map_each = _hash_file_map_fname,
+        expand_directories = True,
+    )
+
+    # Hash the content of the files. We sort them by filename to ensure a deterministic order.
+    # We also hash the file names themselves together with the content.
+    # The output of sha1sum will be of the form "XXXX -" so we remove only keep the hash.
+    ctx.actions.run_shell(
+        inputs = inputs,
+        outputs = [hash_file],
+        command = "echo \"$@\" | sort | xargs tail -v -n +1 | sha1sum | cut -d\\  -f 1 > \"$HASH_FILE\"",
+        arguments = [args],
+        env = {
+            "HASH_FILE": hash_file.path,
+            # Use a fixed local to get a consistent sorting order.
+            "LC_ALL": "en_US.UTF-8",
+        },
+    )
+
+    return [DefaultInfo(files = depset([hash_file]))]
+
+hash_files = rule(
+    implementation = _hash_files,
+    doc = """Hash the content of the file and produce a file containing that hash.
+        If the src is a directory, its content will be hashed recursively.""",
+    attrs = {
+        "src": attr.label(
+            mandatory = True,
+            allow_files = True,
+            doc = "Target producing file outputs",
+        ),
+        "output_group": attr.string(
+            doc = "Output group to use (optional)",
+        ),
+    },
+)
