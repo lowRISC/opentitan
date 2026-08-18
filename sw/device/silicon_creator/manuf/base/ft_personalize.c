@@ -716,10 +716,10 @@ static status_t personalize_gen_dice_certificates(
         otp_measurements->otp_rot_creator_auth_state_measurement,
         &uds_mldsa_key_ids, pre_endorse_data->cert_buffer, &curr_cert_size));
 
-    // DO NOT CHANGE THE "PQ_UDS" STRING BELOW without modifying the SKU configs
-    // which expect this
+    // DO NOT CHANGE THE "PQ_UDS_44" STRING BELOW without modifying the SKU
+    // configs which expect this
     TRY(perso_tlv_push_cert_to_perso_blob(
-        "PQ_UDS",
+        "PQ_UDS_44",
         /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
         kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
         kPersoBlobVersionV1, &pre_endorse_data->blob_to_host));
