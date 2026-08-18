@@ -28,7 +28,6 @@ block_level_urls = {
     "csrng": "hw/ip/csrng/dv/latest/",
     "edn": "hw/ip/edn/dv/latest/",
     "entropy-source": "hw/ip/entropy_src/dv/latest/",
-    "flash": "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/latest/",
     "gpio": "hw/top_earlgrey/ip_autogen/gpio/dv/latest/",
     "hmac": "hw/ip/hmac/dv/latest/",
     "i2c": "hw/ip/i2c/dv/latest/",

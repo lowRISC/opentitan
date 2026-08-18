@@ -618,7 +618,7 @@
     {
       name: "FLASH_CTRL.MEM_PROTECTION"
       desc: '''For data partitions, SW can designate a memory region of up to 8 regions.
-      Each of these regions can contain more than one page, up to a maximum limit (which is 512 in earlgrey).
+      Each of these regions can contain more than one page, up to a maximum limit of 32 pages.
       For each region, SW can establish the access policy by programming flash_ctrl.MP_REGION_CFG.
       In the case of information partitions, the access policy can be configured on a per page basis.
       To achieve this, SW must configure flash_ctrl.BANK*_INFO*_PAGE_CFG.

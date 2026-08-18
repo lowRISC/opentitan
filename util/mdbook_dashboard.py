@@ -48,7 +48,6 @@ DASHBOARDS: Dict[str, List[Path]] = {
     'top_earlgrey': [
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
-        REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson",
