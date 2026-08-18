@@ -28,6 +28,10 @@ class SkuConfig:
     perso_bin: str  # valid: any string
     token_encrypt_key: str  # valid: any file path that exists
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
+    dice_mldsa_ca: Optional[OrderedDict] = None  # valid: see CaConfig
+    dice_mldsa_certs_from_device: Optional[list[str]] = None #valid: list of strings
+    dice_mldsa_certs_to_endorse: Optional[list[str]] = None #valid: list of strings
+    dice_mldsa_certs_to_device: Optional[list[str]] = None #valid: list of strings
     ast_cfg_version: int = 255  # valid: any positive integer < 256 (to fit in one byte)
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
@@ -39,6 +43,10 @@ class SkuConfig:
             self.dice_ca = CaConfig(name="dice_ca",
                                     resolve_paths=self.resolve_paths,
                                     **self.dice_ca)
+        if self.dice_mldsa_ca:
+            self.dice_mldsa_ca = CaConfig(name="dice_mldsa_ca",
+                                    resolve_paths=self.resolve_paths,
+                                    **self.dice_mldsa_ca)
         if self.ext_ca:
             self.ext_ca = CaConfig(name="ext_ca",
                                    resolve_paths=self.resolve_paths,
@@ -107,6 +115,10 @@ class SkuConfig:
                                otp=otp,
                                perso_bin="",
                                dice_ca=OrderedDict(),
+                               dice_mldsa_ca=OrderedDict(),
+                               dice_mldsa_certs_from_device=list(),
+                               dice_mldsa_certs_to_endorse=list(),
+                               dice_mldsa_certs_to_device=list(),
                                ext_ca=OrderedDict(),
                                token_encrypt_key="")
         return sku_config
@@ -148,6 +160,25 @@ class SkuConfig:
             _ = int(self.otp[2:], 16)
         except ValueError:
             raise ValueError("OTP version should two digit hexstring.")
+
+        # Validate DICE ML-DSA provisioning configuration
+        if self.dice_mldsa_ca:
+            if len(self.dice_mldsa_certs_from_device) == 0:
+                raise ValueError("Expect at least one TBS ML-DSA certificate "
+                                 "from device when ML-DSA CA is provided for "
+                                 "provisioning")
+
+            if not set(self.dice_mldsa_certs_to_endorse).issubset(
+                    set(self.dice_mldsa_certs_from_device)):
+                raise ValueError("DICE ML-DSA TBS certificates to endorse is "
+                                 "not a subset of TBS certificates expected "
+                                 "from the device")
+
+            if not set(self.dice_mldsa_certs_to_device).issubset(
+                    set(self.dice_mldsa_certs_to_endorse)):
+                raise ValueError("DICE ML-DSA certificates to send back to the "
+                                 "device is not a subset of TBS certificates "
+                                 "endorsed")
 
     def load_hw_ids(self) -> None:
         """Sets product, SiliconCreator, and package IDs."""

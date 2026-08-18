@@ -46,6 +46,15 @@ key:         {sku_config.dice_ca.key}
 key type:    {sku_config.dice_ca.key_type}
 key ID:      {sku_config.dice_ca.key_id}
 """)
+    if sku_config.dice_mldsa_ca:
+        print(f"""
+
+[DICE MLDSA CA]
+certificate: {sku_config.dice_mldsa_ca.certificate}
+key:         {sku_config.dice_mldsa_ca.key}
+key type:    {sku_config.dice_mldsa_ca.key_type}
+key ID:      {sku_config.dice_mldsa_ca.key_id}
+""")
     if sku_config.ext_ca:
         print(f"""
 
