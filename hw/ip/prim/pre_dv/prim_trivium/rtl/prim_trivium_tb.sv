@@ -148,6 +148,7 @@ module prim_trivium_tb (
     .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_key_iv),
+    .state_o(), // unused
     .err_o()
   );
 
@@ -171,6 +172,7 @@ module prim_trivium_tb (
     .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_state_full),
+    .state_o(), // unused
     .err_o()
   );
 
@@ -195,6 +197,7 @@ module prim_trivium_tb (
     .seed_state_partial_i(trivium_seed_state_partial),
 
     .key_o(key_seed_state_partial),
+    .state_o(), // unused
     .err_o()
   );
 
@@ -352,6 +355,7 @@ module prim_trivium_tb (
     .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_state_full),
+    .state_o(), // unused
     .err_o()
   );
 
@@ -377,6 +381,7 @@ module prim_trivium_tb (
     .seed_state_partial_i(bivium_seed_state_partial),
 
     .key_o(),
+    .state_o(), // unused
     .err_o()
   );
 

@@ -92,12 +92,13 @@ module prim_trivium import prim_trivium_pkg::*;
   input  logic [StateWidth-1:0]       seed_state_full_i,    // Seed input for SeedTypeStateFull
   input  logic [PartialSeedWidth-1:0] seed_state_partial_i, // Seed input for SeedTypeStatePartial
 
-  output logic [OutputWidth-1:0] key_o, // Key stream output
-  output logic                   err_o  // The primitive entered an all zero state and may have
-                                        // locked up or entered the default state defined by
-                                        // RndCnstTriviumLfsrSeed depending on the
-                                        // StrictLockupProtection parameter and the allow_lockup_i
-                                        // signal.
+  output logic [OutputWidth-1:0] key_o,   // Key stream output
+  output logic [StateWidth-1:0]  state_o, // The current cipher state
+  output logic                   err_o    // The primitive entered an all zero state and may have
+                                          // locked up or entered the default state defined by
+                                          // RndCnstTriviumLfsrSeed depending on the
+                                          // StrictLockupProtection parameter and the
+                                          // allow_lockup_i signal.
 );
 
   localparam int unsigned LastStatePartFractional = StateWidth % PartialSeedWidth != 0 ? 1 : 0;
@@ -143,6 +144,8 @@ module prim_trivium import prim_trivium_pkg::*;
       end
     end
   end
+
+  assign state_o = state_q;
 
   ///////////////
   // Reseeding //
