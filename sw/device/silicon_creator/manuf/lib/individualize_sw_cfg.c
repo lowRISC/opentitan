@@ -78,8 +78,8 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // this should already be written to a NVM info page. We will pull the
     // data directly from there.
     // clang-format off
-    if (kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
-        kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET ||
+    if (kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET ||
+        kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET ||
@@ -127,8 +127,8 @@ static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
       memcpy(buffer + relative_addr, &kOwnerSwCfgRomBootstrapDisValue,
              sizeof(uint32_t));
       break;
-    case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET:
-      memcpy(buffer + relative_addr, &kCreatorSwCfgFlashInfoBootDataCfgValue,
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET:
+      memcpy(buffer + relative_addr, &kCreatorSwCfgNvmInfoBootDataCfgValue,
              sizeof(uint32_t));
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
@@ -243,12 +243,12 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
       field_value_addr = &kOwnerSwCfgRomBootstrapDisValue;
       partition = kDifOtpCtrlPartitionOwnerSwCfg;
       break;
-    case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET:
-      field_value_addr = &kCreatorSwCfgFlashInfoBootDataCfgValue;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET:
+      field_value_addr = &kCreatorSwCfgNvmInfoBootDataCfgValue;
       partition = kDifOtpCtrlPartitionCreatorSwCfg;
       break;
-    case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET:
-      field_value_addr = &kCreatorSwCfgFlashDataDefaultCfgValue;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET:
+      field_value_addr = &kCreatorSwCfgNvmDataDefaultCfgValue;
       partition = kDifOtpCtrlPartitionCreatorSwCfg;
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET:
@@ -275,11 +275,11 @@ status_t manuf_individualize_device_nvm_data_default_cfg_check(
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
       kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET, &offset));
   uint32_t val = 0;
   TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                                     offset, &val));
-  bool is_provisioned = (val == kCreatorSwCfgFlashDataDefaultCfgValue);
+  bool is_provisioned = (val == kCreatorSwCfgNvmDataDefaultCfgValue);
   return is_provisioned ? OK_STATUS() : INTERNAL();
 }
 
@@ -288,11 +288,11 @@ status_t manuf_individualize_device_nvm_info_boot_data_cfg_check(
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
       kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET, &offset));
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET, &offset));
   uint32_t val = 0;
   TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                                     offset, &val));
-  bool is_provisioned = (val == kCreatorSwCfgFlashInfoBootDataCfgValue);
+  bool is_provisioned = (val == kCreatorSwCfgNvmInfoBootDataCfgValue);
   return is_provisioned ? OK_STATUS() : INTERNAL();
 }
 
@@ -328,8 +328,7 @@ status_t manuf_individualize_device_partition_expected_read(
     case kDifOtpCtrlPartitionCreatorSwCfg:
       TRY(otp_img_expected_value_read(
           partition,
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET,
-          buffer));
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET, buffer));
       TRY(otp_img_expected_value_read(
           partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, buffer));
       TRY(otp_img_expected_value_read(

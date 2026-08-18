@@ -136,7 +136,7 @@ bool rom_test_main(void) {
 #ifdef HAS_OTP_CTRL
     otp_nvm_default_cfg = abs_mmio_read32(
         otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
 #endif
     CHECK_STATUS_OK(nvm_testutils_rom_init(otp_nvm_default_cfg));
   }

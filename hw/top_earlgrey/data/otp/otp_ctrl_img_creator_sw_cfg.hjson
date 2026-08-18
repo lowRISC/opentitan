@@ -24,11 +24,12 @@
                     value: "0x8d6c8c17",
                 },
                 {
-                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
-                    // Default values for flash scramble / ecc / he_en. This OTP
+                    name: "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG",
+                    // Default values for NVM scramble / ecc / he_en. This OTP
                     // word contains byte-aligned, packed, 4-bit mubi values.
-                    // See the flash_ctrl driver bitfield definitions in
-                    // sw/device/silicon_creator/lib/drivers/flash_ctrl.h.
+                    // See the flash_ctrl/rram_ctrl driver bitfield definitions
+                    // in sw/device/silicon_creator/lib/drivers/flash_ctrl.h /
+                    // rram_ctrl.h.
                     value: "0x0",
                 },
                 {

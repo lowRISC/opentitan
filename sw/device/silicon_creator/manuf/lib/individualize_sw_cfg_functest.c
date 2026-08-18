@@ -175,8 +175,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(init_flash_info_page0(true));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
     CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
-        &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
         &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_field_cfg(

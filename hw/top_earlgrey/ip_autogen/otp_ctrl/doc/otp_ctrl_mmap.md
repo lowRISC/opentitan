@@ -11,9 +11,9 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      32bit       |                         CREATOR_SW_CFG_AST_INIT_EN                          |     0x118      |     4      |
 |         |                           |            |              |      32bit       |                         CREATOR_SW_CFG_ROM_EXT_SKU                          |     0x11C      |     4      |
 |         |                           |            |              |      32bit       |                       CREATOR_SW_CFG_SIGVERIFY_SPX_EN                       |     0x120      |     4      |
-|         |                           |            |              |      32bit       |                    CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG                    |     0x124      |     4      |
-|         |                           |            |              |      32bit       |                   CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG                   |     0x128      |     4      |
-|         |                           |            |              |      32bit       |                  CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE                  |     0x12C      |     4      |
+|         |                           |            |              |      32bit       |                     CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG                     |     0x124      |     4      |
+|         |                           |            |              |      32bit       |                    CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG                    |     0x128      |     4      |
+|         |                           |            |              |      32bit       |                   CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE                   |     0x12C      |     4      |
 |         |                           |            |              |      32bit       |                            CREATOR_SW_CFG_RNG_EN                            |     0x130      |     4      |
 |         |                           |            |              |      32bit       |                          CREATOR_SW_CFG_JITTER_EN                           |     0x134      |     4      |
 |         |                           |            |              |      32bit       |                      CREATOR_SW_CFG_RET_RAM_RESET_MASK                      |     0x138      |     4      |
@@ -67,7 +67,7 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      32bit       |                  OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN                  |     0x3F4      |     4      |
 |         |                           |            |              |      32bit       |                  OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE                  |     0x3F8      |     4      |
 |         |                           |            |              |      32bit       |                         OWNER_SW_CFG_ROM_BANNER_EN                          |     0x3FC      |     4      |
-|         |                           |            |              |      32bit       |                  OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN                  |     0x400      |     4      |
+|         |                           |            |              |      32bit       |                   OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN                   |     0x400      |     4      |
 |         |                           |            |              |      32bit       |                            OWNER_SW_CFG_RESERVED                            |     0x404      |     96     |
 |         |                           |            |              |      64bit       |              [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)              |     0x470      |     8      |
 |    3    | ROT_CREATOR_AUTH_CODESIGN |    472     |      no      |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0                  |     0x478      |     4      |

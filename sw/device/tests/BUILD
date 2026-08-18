@@ -5807,7 +5807,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 # Enable flash scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],
@@ -5945,7 +5945,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 # Enable flash scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],

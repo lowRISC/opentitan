@@ -113,7 +113,7 @@ status_t nvm_testutils_read_info_page(nvm_info_page_t page,
  * controller must be initialized before the RRAM can be read/written via
  * software.
  *
- * @param otp_nvm_default_cfg CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG OTP word;
+ * @param otp_nvm_default_cfg CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG OTP word;
  *   pass 0 when HAS_OTP_CTRL is not available or the field reads as zero.
  *   Applied to both flash and RRAM default region scrambling/ECC config; the
  *   high-endurance field is ignored for RRAM, which has no such concept.

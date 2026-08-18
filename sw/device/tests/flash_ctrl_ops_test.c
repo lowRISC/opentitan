@@ -21,8 +21,8 @@
 #define FLASH_CTRL_NUM_IRQS 5
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
- * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ * Bitfields for `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP items.
  *
  * Defined here to be able to use in tests.
  */
@@ -254,7 +254,7 @@ static void do_bank0_data_partition_test(void) {
   uint32_t address = 0;
   uint32_t otp_val = abs_mmio_read32(
       TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
 
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),

@@ -131,8 +131,8 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
 #undef INFO_PAGE_STRUCT_DECL_
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
- * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ * Bitfields for `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP items.
  *
  * Defined here to be able to use in tests.
  */
@@ -144,7 +144,7 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
   (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 2}
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE` OTP item.
+ * Bitfields for `CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE` OTP item.
  *
  * Defined here to be able to use in tests.
  */

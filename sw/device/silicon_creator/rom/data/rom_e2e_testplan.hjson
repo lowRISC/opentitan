@@ -1200,9 +1200,9 @@
       desc: '''Verify that ROM initializes the flash_ctrl correctly.
 
             - Verify that
-              - `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` controls the default scrambling, ecc, and he
+              - `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` controls the default scrambling, ecc, and he
                 settings for the data partitions.
-              - `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` controls the scrambling, ecc, and he
+              - `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` controls the scrambling, ecc, and he
                 settings for the boot partitions `kFlashCtrlInfoPageBootData0` and
                 `kFlashCtrlInfoPageBootData1`.
             - Verify that flash_ctrl is initialized.

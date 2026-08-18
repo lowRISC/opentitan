@@ -126,7 +126,7 @@ uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
 TEST_P(InitTest, Initialize) {
   EXPECT_CALL(
       otp_,
-      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET))
+      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE_OFFSET))
       .WillOnce(Return(GetParam().override_val));
 
   if (GetParam().override_val != 0) {
@@ -137,8 +137,8 @@ TEST_P(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
-  EXPECT_CALL(
-      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     FLASH_CTRL_DEFAULT_REGION_REG_RESVAL);
@@ -146,8 +146,7 @@ TEST_P(InitTest, Initialize) {
                      GetParam().data_write_val);
 
   EXPECT_CALL(
-      otp_,
-      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
+      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   auto info_page = InfoPages().at(&kFlashCtrlInfoPageBootData0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,

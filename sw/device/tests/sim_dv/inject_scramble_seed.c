@@ -156,7 +156,7 @@ bool test_main(void) {
         kMultiBitBool4True);
     CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
         &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-        (OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET -
+        (OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET -
          OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
         otp_val));
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
