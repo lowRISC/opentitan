@@ -87,6 +87,7 @@ filesets:
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rram_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rram_rma_unlocked_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_exit_test_unlocked_bootstrap_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_scrap_vseq.sv: {is_include_file: true}

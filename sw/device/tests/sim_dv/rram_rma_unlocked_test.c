@@ -6,51 +6,37 @@
 // the test runs 1.6h (110ms in simtime).
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print_uart.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
+#include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-
-#define LC_TOKEN_SIZE 16
 
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
-static dif_flash_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc;
 
 // This is updated by the sv component of the test
 static volatile const uint8_t kTestPhase = 0;
 static volatile const uint8_t kSrcLcState = 0;
 
-// Closed source short rma support
+// Closed source short rma support: under `+en_small_rma=1` the vseq's
+// `enable_small_rma()` forces the RMA data-partition wipe's `end_page` down
+// to 2.
 static volatile const uint8_t kShortRma = 0;
+
 enum {
-  kFlashInfoPageIdCreatorSecret = 1,
-  kFlashInfoPageIdOwnerSecret = 2,
-  kFlashInfoPageIdIsoPart = 3,
-  kFlashInfoBank = 0,
-  kRegionBaseBank0Page0Index = 0,
-  kRegionBaseBank0Page255Index = 255,
-  kRegionBaseBank1Page0Index = 256,
-  kRegionBaseBank1Page255Index = 511,
-  kFlashBank0Page0DataRegion = 0,
-  kFlashBank0Page255DataRegion = 1,
-  kFlashBank1Page0DataRegion = 2,
-  kFlashBank1Page255DataRegion = 3,
-  kPartitionId = 0,
-  kRegionSize = 1,
   kDataSize = 16,
-  kPageSize = 2048,
 };
 
 enum {
@@ -59,7 +45,43 @@ enum {
   kTestPhaseCheckWipe = 2,
 };
 
-static const uint32_t kRandomData[7][kDataSize] = {
+// Page indices covering the start, middle, and end of the flat NVM data
+// partition. This stands in for flash's old "check both banks" coverage --
+// RRAM's data partition has no bank concept, just one address range -- by
+// spreading the same handful of checks across the full range instead.
+//
+// The literal last page of the whole partition falls inside RRAM's reserved
+// per-slot tail (part of it is even read/write protected in hardware -- see
+// `kRramCtrlOtpPageCount` in rram_ctrl.h) -- writing there hangs rather than
+// erroring. Use the last page of slot B that's still inside its *usable*
+// range instead (`NVM_SLOT_B_END_BYTES` is nvm_ctrl.h's own exclusive upper
+// bound of that range). For flash (no reserved tail), this is the same as
+// the literal last page, so no separate branch is needed.
+enum {
+  kDataPageCount = NVM_DATA_SIZE_BYTES / NVM_BYTES_PER_PAGE,
+  kDataPageStart = 0,
+  kDataPageMiddle = kDataPageCount / 2,
+  kDataPageEnd = (NVM_SLOT_B_END_BYTES / NVM_BYTES_PER_PAGE) - 1,
+};
+
+// Data region indices used to configure the three data-partition pages
+// above; arbitrary but must be distinct.
+enum {
+  kDataRegionStart = 0,
+  kDataRegionMiddle = 1,
+  kDataRegionEnd = 2,
+};
+
+// Under short RMA, only global pages 0-2 of the data partition are guaranteed
+// wiped. Move the middle/end checks next to the base so they stay within that
+// range instead of deep in slot B.
+static uint32_t data_page_middle(void) {
+  return kShortRma ? 1 : kDataPageMiddle;
+}
+
+static uint32_t data_page_end(void) { return kShortRma ? 2 : kDataPageEnd; }
+
+static const uint32_t kRandomData[6][kDataSize] = {
     {0x27af716e, 0xdd493905, 0x4d674f07, 0x1e876023, 0x555477e5, 0x8c079501,
      0xfa0aed05, 0x1091a5e4, 0xe94119be, 0xe0bed120, 0xb4611217, 0x1fa02d2a,
      0x5252583f, 0xc2a5083b, 0xc43409c3, 0xdb348c5c},
@@ -78,41 +100,35 @@ static const uint32_t kRandomData[7][kDataSize] = {
     {0xf8ff57b9, 0x444ff4a9, 0xf3574d3c, 0xf6682a84, 0x67455a38, 0x9c138df2,
      0x4054e3e5, 0xde4b1a26, 0x047cc121, 0x42cbd0ae, 0x3eec418f, 0x454323c4,
      0xf21bee28, 0x28dd24b7, 0x29dd06a6, 0xf83e419f},
-    {0x0eb23677, 0x58c97854, 0x284e1a8f, 0x9b460e99, 0x339b0fe6, 0x80778f39,
-     0x9dbc2981, 0xb4bdc15f, 0x3abbdeb2, 0xab39dd53, 0x96bb2c4a, 0x9b2d1795,
-     0x733bf534, 0xc4914b4b, 0x64487458, 0x9d0fa332}};
+};
 
-static void write_info_page_scrambled(uint32_t page_index,
+static void write_info_page_scrambled(nvm_info_page_t page,
                                       const uint32_t *data) {
-  uint32_t address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_state, page_index, kFlashInfoBank, kPartitionId, &address));
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-      &flash_state, address, kPartitionId, data, kDifFlashCtrlPartitionTypeInfo,
-      kDataSize));
+  CHECK_STATUS_OK(
+      nvm_testutils_info_page_setup(page, kPageReadWrite, kPageScrambleCfg));
+  CHECK_STATUS_OK(nvm_testutils_write_info_page(page, /*byte_offset=*/0, data,
+                                                kDataSize,
+                                                /*erase_before_write=*/true,
+                                                /*readback=*/false));
 }
 
-static void write_data_page_scrambled(uint32_t page_index, uint32_t region,
+static void write_data_page_scrambled(uint32_t region, uint32_t page_index,
                                       const uint32_t *data) {
-  uint32_t address;
-  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
-      &flash_state, page_index, region, kRegionSize, &address));
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-      &flash_state, address, kPartitionId, data, kDifFlashCtrlPartitionTypeData,
-      kDataSize));
+  CHECK_STATUS_OK(nvm_testutils_data_region_setup(
+      region, page_index, /*size=*/1, kPageReadWrite, kPageScrambleCfg));
+  CHECK_STATUS_OK(nvm_testutils_data_write(page_index * NVM_BYTES_PER_PAGE,
+                                           data, kDataSize,
+                                           /*erase_before_write=*/true));
 }
 
 static void read_and_check_info_page_scrambled(bool is_equal,
-                                               uint32_t page_index,
+                                               nvm_info_page_t page,
                                                const uint32_t *data) {
   uint32_t readback_data[kDataSize];
-  uint32_t address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_state, page_index, kFlashInfoBank, kPartitionId, &address));
-
-  CHECK_STATUS_OK(flash_ctrl_testutils_read(
-      &flash_state, address, kPartitionId, readback_data,
-      kDifFlashCtrlPartitionTypeInfo, kDataSize, 0));
+  CHECK_STATUS_OK(
+      nvm_testutils_info_page_setup(page, kPageReadWrite, kPageScrambleCfg));
+  CHECK_STATUS_OK(nvm_testutils_read_info_page(page, /*byte_offset=*/0,
+                                               readback_data, kDataSize));
   if (is_equal) {
     CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {
@@ -120,18 +136,18 @@ static void read_and_check_info_page_scrambled(bool is_equal,
   }
 }
 
-static void read_and_check_data_page_scrambled(bool is_equal,
+static void read_and_check_data_page_scrambled(bool is_equal, uint32_t region,
                                                uint32_t page_index,
-                                               uint32_t region,
                                                const uint32_t *data) {
   uint32_t readback_data[kDataSize];
-  uint32_t address;
-  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
-      &flash_state, page_index, region, kRegionSize, &address));
-
-  CHECK_STATUS_OK(flash_ctrl_testutils_read(
-      &flash_state, address, kPartitionId, readback_data,
-      kDifFlashCtrlPartitionTypeData, kDataSize, 0));
+  CHECK_STATUS_OK(nvm_testutils_data_region_setup(
+      region, page_index, /*size=*/1, kPageReadWrite, kPageScrambleCfg));
+  mmio_region_t data_region = mmio_region_from_addr(NVM_DATA_BASE_ADDR);
+  for (size_t i = 0; i < kDataSize; ++i) {
+    readback_data[i] = mmio_region_read32(
+        data_region,
+        (ptrdiff_t)(page_index * NVM_BYTES_PER_PAGE + i * sizeof(uint32_t)));
+  }
   if (is_equal) {
     CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {
@@ -139,7 +155,7 @@ static void read_and_check_data_page_scrambled(bool is_equal,
   }
 }
 
-// Function for the first boot, the flash is written to with known data.
+// Function for the first boot, the NVM is written to with known data.
 // All partitions can be written to when the LC_STATE is Dev and
 // the OTP secret 2 partition has not been provisioned.
 static void write_data_test_phase(void) {
@@ -147,26 +163,13 @@ static void write_data_test_phase(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kSrcLcState);
 
-  uint32_t write_idx = 0;
-  write_info_page_scrambled(kFlashInfoPageIdCreatorSecret, kRandomData[0]);
-  write_info_page_scrambled(kFlashInfoPageIdOwnerSecret, kRandomData[1]);
-  write_info_page_scrambled(kFlashInfoPageIdIsoPart, kRandomData[2]);
-  write_data_page_scrambled(kRegionBaseBank0Page0Index,
-                            kFlashBank0Page0DataRegion, kRandomData[3]);
-  if (kShortRma)
-    write_idx = (kRegionBaseBank0Page0Index + 1);
-  else
-    write_idx = kRegionBaseBank0Page255Index;
-  write_data_page_scrambled(write_idx, kFlashBank0Page255DataRegion,
+  write_info_page_scrambled(kNvmInfoPageCreatorSecret, kRandomData[0]);
+  write_info_page_scrambled(kNvmInfoPageOwnerSecret, kRandomData[1]);
+  write_info_page_scrambled(kNvmInfoPageWaferAuthSecret, kRandomData[2]);
+  write_data_page_scrambled(kDataRegionStart, kDataPageStart, kRandomData[3]);
+  write_data_page_scrambled(kDataRegionMiddle, data_page_middle(),
                             kRandomData[4]);
-  write_data_page_scrambled(kRegionBaseBank1Page0Index,
-                            kFlashBank1Page0DataRegion, kRandomData[5]);
-  if (kShortRma)
-    write_idx = (kRegionBaseBank1Page0Index + 1);
-  else
-    write_idx = kRegionBaseBank1Page255Index;
-  write_data_page_scrambled(write_idx, kFlashBank1Page255DataRegion,
-                            kRandomData[6]);
+  write_data_page_scrambled(kDataRegionEnd, data_page_end(), kRandomData[5]);
 
   LOG_INFO("Write data test complete - waiting for TB");
   // Going into WFI which will be detected by the testbench
@@ -177,7 +180,7 @@ static void write_data_test_phase(void) {
 
 // Function for the second boot, the LC_STATE is still Dev but the OTP secret 2
 // partition has now been provisioned by the testbench. Reading back
-// from the flash pages that are still accessible as a smoke check.
+// from the NVM pages that are still accessible as a smoke check.
 // Creator Secret is not accessible because of OTP secret 2 provisioning.
 // Isolation Partition cannot be read in LC_STATE of Dev.
 // All others are accessible.
@@ -187,28 +190,15 @@ static void enter_rma_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kSrcLcState);
-  uint32_t read_idx = 0;
 
-  read_and_check_info_page_scrambled(true, kFlashInfoPageIdOwnerSecret,
+  read_and_check_info_page_scrambled(true, kNvmInfoPageOwnerSecret,
                                      kRandomData[1]);
-  read_and_check_data_page_scrambled(true, kRegionBaseBank0Page0Index,
-                                     kFlashBank0Page0DataRegion,
+  read_and_check_data_page_scrambled(true, kDataRegionStart, kDataPageStart,
                                      kRandomData[3]);
-  if (kShortRma)
-    read_idx = (kRegionBaseBank0Page0Index + 1);
-  else
-    read_idx = kRegionBaseBank0Page255Index;
-  read_and_check_data_page_scrambled(
-      true, read_idx, kFlashBank0Page255DataRegion, kRandomData[4]);
-  read_and_check_data_page_scrambled(true, kRegionBaseBank1Page0Index,
-                                     kFlashBank1Page0DataRegion,
+  read_and_check_data_page_scrambled(true, kDataRegionMiddle,
+                                     data_page_middle(), kRandomData[4]);
+  read_and_check_data_page_scrambled(true, kDataRegionEnd, data_page_end(),
                                      kRandomData[5]);
-  if (kShortRma)
-    read_idx = (kRegionBaseBank1Page0Index + 1);
-  else
-    read_idx = kRegionBaseBank1Page255Index;
-  read_and_check_data_page_scrambled(
-      true, read_idx, kFlashBank1Page255DataRegion, kRandomData[6]);
 
   LOG_INFO("Enter RMA test complete - waiting for TB");
   // Enter WFI for detection in the testbench.
@@ -216,39 +206,26 @@ static void enter_rma_test_phase(void) {
   wait_for_interrupt();
 }
 
-// Function for the third boot, all flash partitions are readable as the
+// Function for the third boot, all NVM partitions are readable as the
 // LC_STATE is now RMA. Check that the data read from these partitions does
 // *not* match the original data and therefore has been successfully wiped.
 static void check_wipe_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kDifLcCtrlStateRma);
-  uint32_t read_idx = 0;
 
-  read_and_check_info_page_scrambled(false, kFlashInfoPageIdCreatorSecret,
+  read_and_check_info_page_scrambled(false, kNvmInfoPageCreatorSecret,
                                      kRandomData[0]);
-  read_and_check_info_page_scrambled(false, kFlashInfoPageIdOwnerSecret,
+  read_and_check_info_page_scrambled(false, kNvmInfoPageOwnerSecret,
                                      kRandomData[1]);
-  read_and_check_info_page_scrambled(false, kFlashInfoPageIdIsoPart,
+  read_and_check_info_page_scrambled(false, kNvmInfoPageWaferAuthSecret,
                                      kRandomData[2]);
-  read_and_check_data_page_scrambled(false, kRegionBaseBank0Page0Index,
-                                     kFlashBank0Page0DataRegion,
+  read_and_check_data_page_scrambled(false, kDataRegionStart, kDataPageStart,
                                      kRandomData[3]);
-  if (kShortRma)
-    read_idx = (kRegionBaseBank0Page0Index + 1);
-  else
-    read_idx = kRegionBaseBank0Page255Index;
-  read_and_check_data_page_scrambled(
-      false, read_idx, kFlashBank0Page255DataRegion, kRandomData[4]);
-  read_and_check_data_page_scrambled(false, kRegionBaseBank1Page0Index,
-                                     kFlashBank1Page0DataRegion,
+  read_and_check_data_page_scrambled(false, kDataRegionMiddle,
+                                     data_page_middle(), kRandomData[4]);
+  read_and_check_data_page_scrambled(false, kDataRegionEnd, data_page_end(),
                                      kRandomData[5]);
-  if (kShortRma)
-    read_idx = (kRegionBaseBank1Page0Index + 1);
-  else
-    read_idx = kRegionBaseBank1Page255Index;
-  read_and_check_data_page_scrambled(
-      false, read_idx, kFlashBank1Page255DataRegion, kRandomData[6]);
   LOG_INFO("Wipe test complete - done");
 }
 
@@ -256,6 +233,15 @@ bool rom_test_main(void) {
   // We need to set the test status as "in test" to indicate to the test code
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
+
+  // This test runs as its own boot ROM (`kind = "rom"`) rather than after the
+  // normal test_rom boot flow. The RRAM controller must be initialized before
+  // any read/write.
+  uint32_t otp_nvm_default_cfg = abs_mmio_read32(
+      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+  CHECK_STATUS_OK(nvm_testutils_rom_init(otp_nvm_default_cfg));
+
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
@@ -281,9 +267,6 @@ bool rom_test_main(void) {
   }
 
   // Start of the test specific code.
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
 
@@ -298,7 +281,7 @@ bool rom_test_main(void) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, otp_config));
 
-  LOG_INFO("Test phase %d", kTestPhase);
+  LOG_INFO("Test phase %d (kShortRma: %d)", kTestPhase, kShortRma);
   switch (kTestPhase) {
     case kTestPhaseWriteData:
       write_data_test_phase();

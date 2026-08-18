@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_flash_rma_unlocked_vseq)
+class chip_sw_rram_rma_unlocked_vseq extends chip_sw_base_vseq;
+  `uvm_object_utils(chip_sw_rram_rma_unlocked_vseq)
 
   `uvm_object_new
 

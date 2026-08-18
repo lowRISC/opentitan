@@ -68,8 +68,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "flash_rma_unlocked_test",
-    srcs = ["flash_rma_unlocked_test.c"],
+    name = "rram_rma_unlocked_test",
+    srcs = ["rram_rma_unlocked_test.c"],
     # This test doesn't use the OTTF.
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     # This test is designed to run and complete entirely in the ROM boot stage.
@@ -78,17 +78,18 @@ opentitan_test(
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print_uart",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
