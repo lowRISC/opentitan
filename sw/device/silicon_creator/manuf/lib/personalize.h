@@ -97,6 +97,19 @@ status_t manuf_personalize_flash_asymm_key_seed(
     dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len);
 
 /**
+ * Fills the entire attestation key seeds flash info page with random bytes,
+ * and sets the attestation key generation version at the end of the page.
+ *
+ * Entropy is extracted from the CSRNG instance and programmed into the target
+ * flash info page.
+ *
+ * @param flash_state Flash controller instance.
+ * @return OK_STATUS on success.
+ */
+status_t manuf_personalize_flash_attestation_key_seeds(
+    dif_flash_ctrl_state_t *flash_state);
+
+/**
  * Checks the device personalization end state.
  *
  * When personalization is complete, OTP SECRET2 partition should be locked.

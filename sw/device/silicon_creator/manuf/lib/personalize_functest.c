@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
+#include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
@@ -112,35 +113,20 @@ bool test_main(void) {
       CHECK_STATUS_OK(manuf_personalize_device_secrets(&flash_state, &lc_ctrl,
                                                        &otp_ctrl, &token_hash));
       LOG_INFO("Provisioning flash info asymmetric keygen seeds ...");
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-          kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-          kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-          kAttestationSeedWords));
+      CHECK_STATUS_OK(
+          manuf_personalize_flash_attestation_key_seeds(&flash_state));
 
-      // Read the attestation key seed fields to ensure they are non-zero.
-      uint32_t uds_attestation_key_seed[kAttestationSeedWords];
-      uint32_t cdi_0_attestation_key_seed[kAttestationSeedWords];
-      uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
+      // Read the entire attestation key seed page to ensure the random words
+      // are non-zero and the version field matches kAttestationKeyGenVersion1.
+      enum {
+        kPageWords = FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
+      };
+      uint32_t page_data[kPageWords];
       CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-          uds_attestation_key_seed, kAttestationSeedWords));
-      CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
-                                           kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-          cdi_0_attestation_key_seed, kAttestationSeedWords));
-      CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
-                                           kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-          cdi_1_attestation_key_seed, kAttestationSeedWords));
-      CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
-                                           kAttestationSeedWords));
+          &flash_state, kFlashInfoFieldUdsAttestationKeySeed, page_data,
+          kPageWords));
+      CHECK_STATUS_OK(check_array_non_zero(page_data, kPageWords - 1));
+      CHECK(page_data[kPageWords - 1] == kAttestationKeyGenVersion1);
       LOG_INFO(
           "Finished provisioning OTP SECRET2 and keymgr flash info pages ...");
 
