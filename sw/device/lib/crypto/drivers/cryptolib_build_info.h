@@ -48,8 +48,6 @@ typedef struct cryptolib_build_info {
 enum {
   /**
    * Cryptolib version.
-   * Currently the CL is in development, so this version is not
-   * frozen.
    */
   kCryptoLibVersion = kOtcryptoLibVersion1,
   /**
