@@ -103,14 +103,14 @@ static void check_cfg_match(flash_cfg_reg_t actual, flash_cfg_reg_t expected) {
 /**
  * Check that default data partition configurations match OTP.
  *
- * The `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` OTP value should match the
+ * The `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` OTP value should match the
  * default scrambling, ecc, and he settings for the data partitions as
  * described in the `DEFAULT_REGION` flash controller register.
  */
 static void default_cfg_test(void) {
   // Extract expected values from OTP.
   uint32_t otp_default_cfg_value =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
   flash_cfg_reg_t otp_default_cfg = {
       .reg_value = otp_default_cfg_value,
       .scrambling_en = FLASH_CTRL_OTP_FIELD_SCRAMBLING,
@@ -135,7 +135,7 @@ static void default_cfg_test(void) {
 /**
  * Check that boot partition info pages match OTP.
  *
- * The `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP value should match the
+ * The `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP value should match the
  * scrambling, ecc, and he settings in info0 for the boot partitions
  * `kFlashCtrlInfoPageBootData0` (bank 1, page 0) and
  * `kFlashCtrlInfoPageBootData1` (bank 1, page 1).
@@ -155,7 +155,7 @@ static void boot_info_cfg_test(void) {
 
   // Extract expected values from OTP.
   uint32_t otp_boot_info_cfg_value =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET);
   flash_cfg_reg_t otp_boot_info_cfg = {
       .reg_value = otp_boot_info_cfg_value,
       .scrambling_en = FLASH_CTRL_OTP_FIELD_SCRAMBLING,

@@ -198,13 +198,13 @@
               offset: 288
             }
             {
-              name: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG
+              name: CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG
               size: 4
               desc:
                 '''
                 The default scrambling, ECC, and high endurance
-                configuration settings for flash data pages set during ROM
-                execution.
+                configuration settings for NVM (flash or RRAM) data pages
+                set during ROM execution.
                 '''
               isdigest: false
               iszer: false
@@ -215,13 +215,13 @@
               offset: 292
             }
             {
-              name: CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG
+              name: CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG
               size: 4
               desc:
                 '''
                 The scrambling, ECC, and high endurance configuration
-                settings for the boot data flash info pages set during ROM
-                execution.
+                settings for the boot data NVM (flash or RRAM) info pages
+                set during ROM execution.
                 '''
               isdigest: false
               iszer: false
@@ -232,18 +232,19 @@
               offset: 296
             }
             {
-              name: CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE
+              name: CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE
               size: 4
               desc:
                 '''
                 Scrambling and ECC configuration overrides (set by the ROM)
-                for the Creator and OwnerSeed flash info pages (pages 1 and
-                2 in partition 0) that are hardwired to the keygmr. By
-                default, scrambling and ECC on these flash info pages must
-                be enabled in order to successfully crank the keygmr (in the
-                ROM_EXT). However, values of kMultiBitBool4True for each
-                subfield in this field will disable this requirement. See
-                the HW_INFO_CFG_OVERRIDE flash_ctrl CSR for more details.
+                for the Creator and OwnerSeed NVM (flash or RRAM) info
+                pages that are hardwired to the keygmr. By default,
+                scrambling and ECC on these info pages must be enabled in
+                order to successfully crank the keygmr (in the ROM_EXT).
+                However, values of kMultiBitBool4True for each subfield in
+                this field will disable this requirement. See the
+                HW_INFO_CFG_OVERRIDE flash_ctrl/rram_ctrl CSR for more
+                details.
                 '''
               isdigest: false
               iszer: false
@@ -1277,20 +1278,20 @@
               offset: 1020
             }
             {
-              name: OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN
+              name: OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN
               size: 4
               desc:
                 '''
-                Whether or not the ROM should use the flash ECC exception
-                handler during execution. A value of kHardenedBoolTrue
-                allows the ROM to use an the exception handler that recovers
-                gracefully and continues the boot process if a flash ECC
-                error is encountered during verification of a specific
-                ROM_EXT slot. This enables the ROM to attempt booting the
-                next ROM_EXT slot if the first slot attempted has been
-                corrupted. All other values trigger default ROM exception
-                handling, which is all exceptions trigger a chip shutdown
-                and reset.
+                Whether or not the ROM should use the NVM (flash or RRAM)
+                ECC exception handler during execution. A value of
+                kHardenedBoolTrue allows the ROM to use the exception
+                handler that recovers gracefully and continues the boot
+                process if an NVM ECC error is encountered during
+                verification of a specific ROM_EXT slot. This enables the
+                ROM to attempt booting the next ROM_EXT slot if the first
+                slot attempted has been corrupted. All other values
+                trigger default ROM exception handling, which is all
+                exceptions trigger a chip shutdown and reset.
                 '''
               isdigest: false
               iszer: false

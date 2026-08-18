@@ -15,9 +15,9 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 |         |                       |            |              |      32bit       |                 CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN                 |     0x0E8      |     8      |
 |         |                       |            |              |      32bit       |                   CREATOR_SW_CFG_SIGVERIFY_SPX_EN                   |     0x0F0      |     4      |
 |         |                       |            |              |      32bit       |                 CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN                 |     0x0F4      |     8      |
-|         |                       |            |              |      32bit       |                CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG                |     0x0FC      |     4      |
-|         |                       |            |              |      32bit       |               CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG               |     0x100      |     4      |
-|         |                       |            |              |      32bit       |              CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE              |     0x104      |     4      |
+|         |                       |            |              |      32bit       |                 CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG                 |     0x0FC      |     4      |
+|         |                       |            |              |      32bit       |                CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG                |     0x100      |     4      |
+|         |                       |            |              |      32bit       |               CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE               |     0x104      |     4      |
 |         |                       |            |              |      32bit       |                        CREATOR_SW_CFG_RNG_EN                        |     0x108      |     4      |
 |         |                       |            |              |      32bit       |                      CREATOR_SW_CFG_JITTER_EN                       |     0x10C      |     4      |
 |         |                       |            |              |      32bit       |                  CREATOR_SW_CFG_RET_RAM_RESET_MASK                  |     0x110      |     4      |

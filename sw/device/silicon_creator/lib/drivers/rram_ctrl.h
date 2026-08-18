@@ -218,8 +218,8 @@ enum { RRAM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_SIZE_ENUM_) };
 #undef INFO_PAGE_SIZE_ENUM_
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
- * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ * Bitfields for `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP items.
  *
  * RRAM reuses the same OTP words and bit layout as flash_ctrl (the OTP
  * schema was not redesigned for RRAM); these are RRAM's own copies of
@@ -234,7 +234,7 @@ enum { RRAM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_SIZE_ENUM_) };
   (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE` OTP item.
+ * Bitfields for `CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE` OTP item.
  *
  * See the note above: RRAM reuses flash_ctrl's OTP word/bit layout.
  *
@@ -506,7 +506,7 @@ rram_ctrl_cfg_t rram_ctrl_data_default_cfg_get(void);
 /**
  * Reads the boot data info page configuration settings from OTP.
  *
- * Reuses the same `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP word and bit
+ * Reuses the same `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP word and bit
  * layout as flash; the high-endurance field is ignored for RRAM.
  *
  * @return Current OTP configuration settings.

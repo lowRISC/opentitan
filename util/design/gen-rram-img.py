@@ -35,8 +35,8 @@ from lib.otp_scrambling_keys import (OTP_WORD_SIZE, OTP_WORD_SIZE_WECC,
 import prince
 import secded_gen
 
-OTP_RRAM_DATA_DEFAULT_CFG_RE = re.compile(
-    r"CREATOR_SW_CFG: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG")
+OTP_NVM_DATA_DEFAULT_CFG_RE = re.compile(
+    r"CREATOR_SW_CFG: CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG")
 
 # RRAM data / scrambling parameters.
 RRAM_ADDR_KEY_SIZE = 128  # bits
@@ -410,7 +410,7 @@ def main(argv: List[str]):
 
         get_otp_ctrl_netlist_consts(top_secret_cfg, scrambling_configs)
         get_scrambling_configs_from_otp(args.in_otp_vmem, args.otp_data_perm,
-                                        OTP_RRAM_DATA_DEFAULT_CFG_RE,
+                                        OTP_NVM_DATA_DEFAULT_CFG_RE,
                                         scrambling_configs)
 
     # Compute RRAM scrambling keys from seeds.

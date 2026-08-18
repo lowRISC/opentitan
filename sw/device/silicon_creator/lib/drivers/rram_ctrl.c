@@ -322,8 +322,8 @@ void rram_ctrl_init(void) {
   // and bit layout as flash_ctrl. This must be done before initializing the
   // rram_ctrl.
   uint32_t reg_val = RRAM_CTRL_HW_INFO_CFG_OVERRIDE_REG_RESVAL;
-  uint32_t otp_val = otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET);
+  uint32_t otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE_OFFSET);
   multi_bit_bool_t scramble_dis = bitfield_field32_read(
       otp_val, RRAM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS);
   if (scramble_dis == kMultiBitBool4True) {
@@ -356,10 +356,10 @@ void rram_ctrl_init(void) {
   } while (!status.init_done);
 
   // Configure default scrambling and ECC settings for the data partition.
-  // Reuses the same `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` OTP word and bit
+  // Reuses the same `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` OTP word and bit
   // layout as flash_ctrl; the high-endurance field does not apply to RRAM.
   otp_val =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
   rram_ctrl_cfg_t data_default_cfg = {
       .scrambling =
           bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_SCRAMBLING),
@@ -503,7 +503,7 @@ rram_ctrl_cfg_t rram_ctrl_data_default_cfg_get(void) {
 
 rram_ctrl_cfg_t rram_ctrl_boot_data_cfg_get(void) {
   uint32_t otp_val =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET);
   return (rram_ctrl_cfg_t){
       .scrambling =
           bitfield_field32_read(otp_val, RRAM_CTRL_OTP_FIELD_SCRAMBLING),

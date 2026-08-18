@@ -215,7 +215,7 @@
               offset: 244
             }
             {
-              name: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG
+              name: CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG
               size: 4
               isdigest: false
               iszer: false
@@ -226,7 +226,7 @@
               offset: 252
             }
             {
-              name: CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG
+              name: CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG
               size: 4
               isdigest: false
               iszer: false
@@ -237,7 +237,7 @@
               offset: 256
             }
             {
-              name: CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE
+              name: CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE
               size: 4
               isdigest: false
               iszer: false

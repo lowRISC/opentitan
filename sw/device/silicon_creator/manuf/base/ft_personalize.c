@@ -384,8 +384,7 @@ static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
   if (!status_ok(
           manuf_individualize_device_nvm_data_default_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_field_cfg(
-        &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET));
     base_printf("Bootstrap requested.\n");
     wait_for_interrupt();
   }
@@ -772,7 +771,7 @@ static status_t boot_data_cfg_initialize(void) {
           manuf_individualize_device_nvm_info_boot_data_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_field_cfg(
         &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET));
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET));
   }
 
   // Loads the boot data configuration from OTP.

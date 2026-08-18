@@ -130,9 +130,9 @@ def get_scrambling_configs_from_otp(otp_vmem_file: str, otp_data_perm: list,
     """Reads `configs`'s key seeds (and scrambling-enablement flag) from an OTP VMEM image.
 
     `data_default_cfg_re` matches the OTP VMEM comment line carrying the
-    technology's scrambling-enablement flag (e.g.
-    CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG); callers own this since it differs
-    - or may come to differ - per technology.
+    NVM scrambling-enablement flag (e.g.
+    CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG); callers own this in case it comes
+    to differ per top.
     """
     # Open OTP VMEM file and read into memory, skipping comment lines.
     try:

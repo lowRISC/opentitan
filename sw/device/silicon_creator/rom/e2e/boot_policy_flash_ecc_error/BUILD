@@ -56,7 +56,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 # Enable flash data page scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG": "0000090606",
                 # Enable SPX+ signature verification.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(CONST.HARDENED_TRUE),
             },
@@ -70,7 +70,7 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_FALSE),
+                "OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_FALSE),
             },
         ),
     ],

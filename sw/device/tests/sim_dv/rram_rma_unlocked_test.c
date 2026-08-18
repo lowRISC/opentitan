@@ -239,7 +239,7 @@ bool rom_test_main(void) {
   // any read/write.
   uint32_t otp_nvm_default_cfg = abs_mmio_read32(
       TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
   CHECK_STATUS_OK(nvm_testutils_rom_init(otp_nvm_default_cfg));
 
   CHECK_DIF_OK(dif_pinmux_init(
