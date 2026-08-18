@@ -301,8 +301,8 @@ function void dv_base_env_cfg::make_ral_model(string       ral_model_name,
   // If a model for this name doesn't already exist, we should make one.
   reg_blk = create_ral_by_name(ral_model_name);
 
-  // Build the register block with an arbitrary base address (we choose 0). We'll change it
-  // later.
+  // Build the register block with an arbitrary base address. We'll randomize it once we've locked
+  // the model (and thus know the alignment requirements).
   pre_build_ral_settings(reg_blk);
   reg_blk.build(.base_addr(0),
                 .csr_excl(null),
@@ -310,10 +310,15 @@ function void dv_base_env_cfg::make_ral_model(string       ral_model_name,
                 .data_width(data_width),
                 .be_width(be_width));
   post_build_ral_settings(reg_blk);
+
+  // Lock the model. One side effect is that this will compute an initial address map (with offset
+  // zero).
   reg_blk.lock_model();
 
-  // Set the base address for the register block that we have just created
-  reg_blk.set_base_addr(.base_addr(0), .randomize_base_addr(1));
+  // Now pick a randomized base address. This has alignment requirements. Round up the largest
+  // address in the initial address map to the next power of two: the base address must be divisible
+  // by that power of two, ensuring that addresses within the block have predictable low bits.
+  reg_blk.set_randomized_base_addr();
 
   if (reg_blk.get_name() == ral_type_name) `downcast(ral, reg_blk)
 

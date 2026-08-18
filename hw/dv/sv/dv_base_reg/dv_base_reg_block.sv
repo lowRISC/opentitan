@@ -428,32 +428,41 @@ class dv_base_reg_block extends uvm_reg_block;
     return addr_mask[map];
   endfunction
 
+  // Set the base address for the given register map to a random value.
+  //
+  // The value is chosen to be aligned as required by the register block. If map is null, this sets
+  // the base address for the default register map.
+  function void set_randomized_base_addr(uvm_reg_map map = null);
+    uvm_reg_addr_t mask;
+    uvm_reg_addr_t base_addr;
+
+    if (map == null) begin
+      map = get_default_map();
+    end
+
+    mask = get_addr_mask(map);
+
+    if (!std::randomize(base_addr) with {
+      (base_addr & mask) == '0;
+      base_addr >> m_addr_width == 0;
+    }) begin
+      `uvm_fatal(get_name(),
+                 $sformatf("Failed to randomise base address with mask 0x%0x and width %0d.",
+                           mask, m_addr_width))
+    end
+
+    set_base_addr(base_addr, map);
+  endfunction
+
   // Set the base address for the given register map
   //
-  // Checks if the provided base_addr is aligned as required by the register block. If
-  // randomize_base_addr arg is set, then the base_addr arg is ignored - the function randomizes and
-  // sets the base_addr itself.
-  //
-  // After setting the base address, this function updates m_mem_ranges, mapped_addr_ranges and
-  // unmapped_addr_ranges.
-  function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null,
-                              bit randomize_base_addr = 0);
+  // After setting the base address, this function clears m_mem_ranges_known then updates
+  // mapped_addr_ranges and unmapped_addr_ranges.
+  function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null);
     uvm_reg_addr_t mask;
 
     if (map == null) map = get_default_map();
     mask = get_addr_mask(map);
-
-    // If randomize_base_addr is set, randomly pick an aligned base address.
-    if (randomize_base_addr) begin
-      if (!std::randomize(base_addr) with {
-              (base_addr & mask) == '0;
-              base_addr >> m_addr_width == 0;
-          }) begin
-        `uvm_fatal(get_name(),
-                   $sformatf("Failed to randomise base address with mask 0x%0x and width %0d.",
-                             mask, m_addr_width))
-      end
-    end
 
     // Check that the base address is appropriately aligned, based on the mask we computed from map.
     if (base_addr & mask) begin
