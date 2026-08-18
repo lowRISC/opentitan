@@ -255,6 +255,14 @@
       local:   "false"
     },
 
+    { name:    "BaseIsa"
+      type:    "ibex_pkg::base_isa_e"
+      default: "ibex_pkg::BaseIsaRV32IorCHERIoT"
+      desc:    "Base ISA selection (RV32I or dual RV32I/CHERIoT)"
+      local:   "false"
+      expose:  "true"
+    },
+
     { name:    "PMPEnable"
       type:    "bit"
       default: "1'b0"

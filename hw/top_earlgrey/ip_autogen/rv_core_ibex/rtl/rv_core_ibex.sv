@@ -14,6 +14,7 @@ module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;
 #(
+  parameter ibex_pkg::base_isa_e    BaseIsa             = ibex_pkg::BaseIsaRV32IorCHERIoT,
   parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
   parameter int unsigned            AlertSkewCycles     = 1,
@@ -22,8 +23,9 @@ module rv_core_ibex
   parameter int unsigned            PMPNumRegions       = 16,
   parameter int unsigned            MHPMCounterNum      = 10,
   parameter int unsigned            MHPMCounterWidth    = 32,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]       = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]      = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[ibex_pkg::PMP_MAX_REGIONS] = ibex_pkg::PmpCfgRst,
+  parameter logic [ibex_pkg::PMP_ADDR_MSB:0] PMPRstAddr[ibex_pkg::PMP_MAX_REGIONS] =
+      ibex_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg       = ibex_pkg::PmpMseccfgRst,
   parameter bit                     RV32E               = 0,
   parameter ibex_pkg::rv32m_e       RV32M               = ibex_pkg::RV32MSingleCycle,
@@ -57,7 +59,9 @@ module rv_core_ibex
   parameter int unsigned                    WidthPingCounter      = 16,
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0,
   parameter logic [31:0]            CsrMvendorId                   = 32'b0,
-  parameter logic [31:0]            CsrMimpId                      = 32'b0
+  parameter logic [31:0]            CsrMimpId                      = 32'b0,
+  parameter int unsigned            CheriotRevBitmapAddrWidth      = 32'd11,
+  parameter int unsigned            CheriotRevBitmapBaseAddr       = 32'h0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -186,7 +190,7 @@ module rv_core_ibex
   logic [6:0]  shadow_core_data_wdata_intg;
 
   // Lockstep interface
-  logic [3:0]  core_lockstep_cmp_en;
+  ibex_pkg::ibex_mubi_t core_lockstep_cmp_en;
 
   // Pipeline interfaces
   tl_h2d_t tl_i_ibex2fifo;
@@ -201,31 +205,37 @@ module rv_core_ibex
   logic tlul_lc_gate_core_d_error;
 
 `ifdef RVFI
-  logic        rvfi_valid;
-  logic [63:0] rvfi_order;
-  logic [31:0] rvfi_insn;
-  logic        rvfi_trap;
-  logic        rvfi_halt;
-  logic        rvfi_intr;
-  logic [ 1:0] rvfi_mode;
-  logic [ 1:0] rvfi_ixl;
-  logic [ 4:0] rvfi_rs1_addr;
-  logic [ 4:0] rvfi_rs2_addr;
-  logic [ 4:0] rvfi_rs3_addr;
-  logic [31:0] rvfi_rs1_rdata;
-  logic [31:0] rvfi_rs2_rdata;
-  logic [31:0] rvfi_rs3_rdata;
-  logic [ 4:0] rvfi_rd_addr;
-  logic [31:0] rvfi_rd_wdata;
-  logic [31:0] rvfi_pc_rdata;
-  logic [31:0] rvfi_pc_wdata;
-  logic [31:0] rvfi_mem_addr;
-  logic [ 3:0] rvfi_mem_rmask;
-  logic [ 3:0] rvfi_mem_wmask;
-  logic [31:0] rvfi_mem_rdata;
-  logic [31:0] rvfi_mem_wdata;
-  logic        rvfi_ext_expanded_insn_valid;
-  logic [15:0] rvfi_ext_expanded_insn;
+  logic                   rvfi_valid;
+  logic [63:0]            rvfi_order;
+  logic [31:0]            rvfi_insn;
+  logic                   rvfi_trap;
+  logic                   rvfi_halt;
+  logic                   rvfi_intr;
+  logic [ 1:0]            rvfi_mode;
+  logic [ 1:0]            rvfi_ixl;
+  logic [ 4:0]            rvfi_rs1_addr;
+  logic [ 4:0]            rvfi_rs2_addr;
+  logic [ 4:0]            rvfi_rs3_addr;
+  logic [31:0]            rvfi_rs1_rdata;
+  logic [31:0]            rvfi_rs2_rdata;
+  logic [31:0]            rvfi_rs3_rdata;
+  logic [ 4:0]            rvfi_rd_addr;
+  logic [31:0]            rvfi_rd_wdata;
+  logic [31:0]            rvfi_pc_rdata;
+  logic [31:0]            rvfi_pc_wdata;
+  logic [31:0]            rvfi_mem_addr;
+  logic [ 3:0]            rvfi_mem_rmask;
+  logic [ 3:0]            rvfi_mem_wmask;
+  logic [31:0]            rvfi_mem_rdata;
+  logic [31:0]            rvfi_mem_wdata;
+  logic                   rvfi_ext_expanded_insn_valid;
+  logic [15:0]            rvfi_ext_expanded_insn;
+  ibex_cheriot_pkg::cap_t rvfi_rs1_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rs2_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rd_wcap;
+  logic                   rvfi_mem_is_cap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_wcap;
 `endif
 
   import tlul_pkg::tl_h2d_t;
@@ -431,7 +441,7 @@ module rv_core_ibex
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
-    .BaseIsa                     ( ibex_pkg::BaseIsaRV32I   ),
+    .BaseIsa                     ( BaseIsa                  ),
     .PMPEnable                   ( PMPEnable                ),
     .PMPGranularity              ( PMPGranularity           ),
     .PMPNumRegions               ( PMPNumRegions            ),
@@ -440,6 +450,8 @@ module rv_core_ibex
     .PMPRstCfg                   ( PMPRstCfg                ),
     .PMPRstAddr                  ( PMPRstAddr               ),
     .PMPRstMsecCfg               ( PMPRstMsecCfg            ),
+    .CheriotRevBitmapAddrWidth   ( CheriotRevBitmapAddrWidth),
+    .CheriotRevBitmapBaseAddr    ( CheriotRevBitmapBaseAddr ),
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
@@ -494,6 +506,7 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
+    .cheriot_enable_i     (ibex_pkg::IbexMuBiOff),
     .trvk_heap_base_addr_i('0), // TODO (#30541)
 
     .instr_req_o        (main_core_instr_req),
@@ -568,6 +581,13 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    // CHERIoT capability RVFI signals
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
     // Unused ports from the RVFI interface
     .rvfi_ext_pre_mip            (),
     .rvfi_ext_post_mip           (),
@@ -816,6 +836,8 @@ module rv_core_ibex
     .clk_i,
     .rst_ni,
 
+    .cheriot_enable_i    (ibex_pkg::IbexMuBiOff),
+
     .hart_id_i,
 
     .rvfi_valid,
@@ -841,6 +863,12 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
     .rvfi_ext_expanded_insn_valid,
     .rvfi_ext_expanded_insn
   );

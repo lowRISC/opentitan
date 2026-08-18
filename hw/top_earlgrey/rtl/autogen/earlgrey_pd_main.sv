@@ -96,6 +96,7 @@ module earlgrey_pd_main #(
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
+  parameter ibex_pkg::base_isa_e RvCoreIbexBaseIsa = ibex_pkg::BaseIsaRV32IorCHERIoT,
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
   parameter int unsigned RvCoreIbexPMPNumRegions = 16,
@@ -2504,6 +2505,7 @@ module earlgrey_pd_main #(
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
     .NEscalationSeverities(AlertHandlerEscNumSeverities),
     .WidthPingCounter(AlertHandlerEscPingCountWidth),
+    .BaseIsa(RvCoreIbexBaseIsa),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),

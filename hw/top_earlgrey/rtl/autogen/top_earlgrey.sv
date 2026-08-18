@@ -105,6 +105,7 @@ module top_earlgrey #(
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
+  parameter ibex_pkg::base_isa_e RvCoreIbexBaseIsa = ibex_pkg::BaseIsaRV32IorCHERIoT,
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
   parameter int unsigned RvCoreIbexPMPNumRegions = 16,
@@ -385,6 +386,7 @@ module top_earlgrey #(
   .SramCtrlSecEccCorrection(SramCtrlSecEccCorrection),
   .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
   .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
+  .RvCoreIbexBaseIsa(RvCoreIbexBaseIsa),
   .RvCoreIbexPMPEnable(RvCoreIbexPMPEnable),
   .RvCoreIbexPMPGranularity(RvCoreIbexPMPGranularity),
   .RvCoreIbexPMPNumRegions(RvCoreIbexPMPNumRegions),
