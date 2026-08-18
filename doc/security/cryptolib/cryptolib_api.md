@@ -89,6 +89,16 @@ Callers can check the current library version using `otcrypto_lib_version`:
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_lib_version }}
 
+To protect against fault injection and guarantee high Hamming distance between version increments, library version numbers (`otcrypto_lib_version_t`) are encoded using modular multiplicative inversion in $GF(2^{32})$:
+```
+version = (((major << 24) | (minor << 16) | (patch << 8) | 0x04) * 0xc0c001fdu) & 0xffffffffu
+```
+For example, version `1.0.0` encodes to `0x000007f4` (`kOtcryptoLibVersion1`) and version `2.0.0` encodes to `0xfd0007f4` (`kOtcryptoLibVersion2`).
+
+Callers can decode any version integer into its major, minor, and patch components using `otcrypto_version_decode`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_version_decode }}
+
 Full build information, including release status and truncated Git commit hash, can be queried with `otcrypto_build_info`:
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
