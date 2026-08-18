@@ -12,6 +12,7 @@ set -e
 cd "$(dirname "$0")"
 
 DICE_CA_KEY="sk.pkcs8.der"
+DICE_MLDSA_CA_KEY="sk_mldsa.pkcs8.der"
 EXT_CA_KEY="$DICE_CA_KEY"
 
 echo "Generating fake key DICE CA cert ..."
@@ -21,6 +22,20 @@ openssl x509 -req -in dice_ca.csr -signkey "$DICE_CA_KEY" \
         -keyform der -out dice_ca.pem -days 3650 -extfile ../dice_ca.conf \
         -extensions v3_ca
 echo "Done."
+
+echo "Generating fake key DICE MLDSA key and CA cert ..."
+openssl genpkey -algorithm ML-DSA-87 \
+        -pkeyopt hexseed:73656564206f6e6c7920666f7220756e69742074657374696e67000000000000 \
+        -provparam ml-dsa.output_formats=bare-seed \
+        -out "${DICE_MLDSA_CA_KEY}" -outform der
+
+openssl req -new -key "${DICE_MLDSA_CA_KEY}" -keyform der \
+        -out dice_mldsa_ca.csr -config ../dice_ca.conf
+openssl x509 -req -in dice_mldsa_ca.csr -signkey "${DICE_MLDSA_CA_KEY}" \
+        -keyform der -out dice_mldsa_ca.pem -days 3650 -extfile ../dice_ca.conf \
+        -extensions v3_ca
+echo "Done."
+echo "Update appropriate `sku_cert` in `sw/host/provisioning/orchestrator/configs/skus/BUILD` if key ID has changed"
 
 echo "Generating fake key Personalization Extension CA cert ..."
 openssl req -new -key "$EXT_CA_KEY" -keyform der \
