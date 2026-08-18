@@ -44,7 +44,7 @@ Fsm st "75841341"
 ANNOTATION: "[LOW_RISK] The transition from any state to error_terminal state is fully verified in FPV."
 Transition StAppOutLen->StTerminalError "719->137"
 CHECKSUM: "3353140009 1769074264"
-INSTANCE: tb.dut.u_kmac_core
+INSTANCE: tb.dut.gen_kmac_core.u_kmac_core
 Fsm st "2230450921"
 ANNOTATION: "[LOW_RISK] The transition from any state to error_terminal state is fully verified in FPV."
 Transition StKmacFlush->StTerminalError "43->32"

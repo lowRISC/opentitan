@@ -68,6 +68,7 @@ module top_earlgrey #(
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
+  parameter bit KmacEnFullKmac = 1,
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
@@ -379,6 +380,7 @@ module top_earlgrey #(
   .SecAesAllowForcingMasks(SecAesAllowForcingMasks),
   .SecAesSkipPRNGReseeding(SecAesSkipPRNGReseeding),
   .KmacEnMasking(KmacEnMasking),
+  .KmacEnFullKmac(KmacEnFullKmac),
   .KmacSwKeyMasked(KmacSwKeyMasked),
   .SecKmacCmdDelay(SecKmacCmdDelay),
   .SecKmacIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
