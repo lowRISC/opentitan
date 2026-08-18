@@ -49,21 +49,20 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "flash_ctrl_lc_rw_en_test",
-    srcs = ["flash_ctrl_lc_rw_en_test.c"],
+    name = "rram_ctrl_lc_rw_en_test",
+    srcs = ["rram_ctrl_lc_rw_en_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

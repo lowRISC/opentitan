@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/rram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_dpe_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_flash_ctrl_state_t flash;
 static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc;
@@ -26,15 +26,10 @@ static dif_otp_ctrl_t otp;
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kFlashInfoPageIdCreatorSecret = 1,
-  kFlashInfoPageIdOwnerSecret = 2,
-  kFlashInfoPageIdIsoPart = 3,
   kPartSize = 16,
-  kBankId = 0,
-  kPartitionId = 0,
 };
 
-// Random data to read/write to flash partitions.
+// Random data to read/write to NVM info partitions.
 
 const uint32_t kCreatorSecretTest[kPartSize] = {
     0xb295d21b, 0xecdfbdcd, 0x67e7ab2d, 0x6f660b08, 0x273bf65c, 0xe80f1695,
@@ -71,7 +66,7 @@ typedef struct partition_check_cfg {
   check_id_t check_id;
 
   // Page ID of the partition to check.
-  uint32_t page_id;
+  nvm_info_page_t page_id;
 
   // Data to write to the partition.
   const uint32_t *data;
@@ -96,7 +91,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdUnprovisionedCreatorSeed] =
         {
             .check_id = kCheckIdUnprovisionedCreatorSeed,
-            .page_id = kFlashInfoPageIdCreatorSecret,
+            .page_id = kNvmInfoPageCreatorSecret,
             .data = kCreatorSecretTest,
             .size = kPartSize,
             .do_write = true,
@@ -107,7 +102,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdUnprovisonedOwnerSeed] =
         {
             .check_id = kCheckIdUnprovisonedOwnerSeed,
-            .page_id = kFlashInfoPageIdOwnerSecret,
+            .page_id = kNvmInfoPageOwnerSecret,
             .data = kOwnerSecretTest,
             .size = kPartSize,
             .do_write = true,
@@ -118,7 +113,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdLcDevIsoPartAccess] =
         {
             .check_id = kCheckIdLcDevIsoPartAccess,
-            .page_id = kFlashInfoPageIdIsoPart,
+            .page_id = kNvmInfoPageWaferAuthSecret,
             .data = kIsoPartData,
             .size = kPartSize,
             .do_write = true,
@@ -129,7 +124,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdProvisionedCreatorSeed] =
         {
             .check_id = kCheckIdProvisionedCreatorSeed,
-            .page_id = kFlashInfoPageIdCreatorSecret,
+            .page_id = kNvmInfoPageCreatorSecret,
             .data = kCreatorSecretTest,
             .size = kPartSize,
             .do_write = true,
@@ -140,7 +135,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdProvisionedOwnerSeed] =
         {
             .check_id = kCheckIdProvisionedOwnerSeed,
-            .page_id = kFlashInfoPageIdOwnerSecret,
+            .page_id = kNvmInfoPageOwnerSecret,
             .data = kOwnerSecretTest,
             .size = kPartSize,
             .do_write = true,
@@ -151,7 +146,7 @@ static const partition_check_cfg_t kTest[] = {
     [kCheckIdLcProdIsoPartAccess] =
         {
             .check_id = kCheckIdLcProdIsoPartAccess,
-            .page_id = kFlashInfoPageIdIsoPart,
+            .page_id = kNvmInfoPageWaferAuthSecret,
             .data = kIsoPartData,
             .size = kPartSize,
             .do_write = false,
@@ -173,19 +168,29 @@ static void init_peripheral_handles(void) {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 static void partition_check(const partition_check_cfg_t cfg) {
-  uint32_t address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
-      &flash, cfg.page_id, kBankId, kPartitionId, &address));
+  CHECK_STATUS_OK(nvm_testutils_info_page_setup(
+      cfg.page_id, kNvmPagePermsReadWrite, kNvmPageCfgPlain));
 
   if (cfg.do_write) {
-    status_t result = flash_ctrl_testutils_erase_and_write_page(
-        &flash, address, kPartitionId, cfg.data, kDifFlashCtrlPartitionTypeInfo,
-        cfg.size);
+    // A permission-denied access completes with rram_ctrl's `mp_err`/`wr_err`
+    // set, which raises the `recov_err` alert as a side effect. Denied writes
+    // must be alert-expected or the OTTF alert catcher fails the test.
+    if (!cfg.expect_write_ok) {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_start(dt_rram_ctrl_alert_to_alert_id(
+              kDtRramCtrlFirst, kDtRramCtrlAlertRecovErr)));
+    }
+    status_t result = nvm_testutils_write_info_page(
+        cfg.page_id, /*byte_offset=*/0, cfg.data, cfg.size,
+        /*erase_before_write=*/true, /*readback=*/false);
+    if (!cfg.expect_write_ok) {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_finish(dt_rram_ctrl_alert_to_alert_id(
+              kDtRramCtrlFirst, kDtRramCtrlAlertRecovErr)));
+    }
 
     if (cfg.expect_write_ok) {
       CHECK_STATUS_OK(result);
@@ -196,9 +201,19 @@ static void partition_check(const partition_check_cfg_t cfg) {
 
   if (cfg.do_read) {
     uint32_t readback_data[cfg.size];
-    status_t result =
-        flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
-                                  kDifFlashCtrlPartitionTypeInfo, cfg.size, 0);
+    // Same as above: a denied read also raises `recov_err`.
+    if (!cfg.expect_read_ok) {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_start(dt_rram_ctrl_alert_to_alert_id(
+              kDtRramCtrlFirst, kDtRramCtrlAlertRecovErr)));
+    }
+    status_t result = nvm_testutils_read_info_page(
+        cfg.page_id, /*byte_offset=*/0, readback_data, cfg.size);
+    if (!cfg.expect_read_ok) {
+      CHECK_STATUS_OK(
+          ottf_alerts_expect_alert_finish(dt_rram_ctrl_alert_to_alert_id(
+              kDtRramCtrlFirst, kDtRramCtrlAlertRecovErr)));
+    }
 
     if (cfg.expect_read_ok) {
       CHECK_STATUS_OK(result);
@@ -235,7 +250,7 @@ bool test_main(void) {
                                     .entropy_mode = kDifKmacEntropyModeSoftware,
                                 }));
 
-  // chip_sw_flash_ctrl_lc_rw_en_vseq steps through DEV and PROD LC states.
+  // chip_sw_rram_ctrl_lc_rw_en_vseq steps through DEV and PROD LC states.
   // DEV LC state:
   //  - Initial state: Unprovisioned.
   //  - Final state: Provisioned.
