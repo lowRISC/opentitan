@@ -45,6 +45,9 @@ module otbn_instruction_fetch
   output mac_bignum_predec_t       mac_bignum_predec_o,
   output logic                     lsu_addr_en_predec_o,
 
+  // A signal indicating that URND will be used in the next cycle.
+  output logic urnd_will_be_consumed_o,
+
   input logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_i,
   input logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_i,
   input logic [NWdr-1:0] rf_bignum_wr_indirect_onehot_i,
@@ -98,6 +101,7 @@ module otbn_instruction_fetch
   ispr_bignum_predec_t ispr_bignum_predec;
   mac_bignum_predec_t  mac_bignum_predec, mac_bignum_predec_raw, mac_bignum_predec_to_fsm;
   mac_bignum_predec_t  mac_bignum_predec_q, mac_bignum_predec_d;
+  mac_bignum_contrl_t  mac_bignum_contrl;
   logic                mac_bignum_is_busy;
   logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
   logic                lsu_addr_en_predec_insn;
@@ -190,7 +194,7 @@ module otbn_instruction_fetch
     .op_b_elem1_sel_i (mac_bignum_predec_to_fsm.op_b_elem1_sel),
     .shuffle_offset_i (mac_bignum_shuffle_offset_i),
 
-    .contrl_o (/* unused here */),
+    .contrl_o (mac_bignum_contrl),
     .predec_o (mac_bignum_predec),
     .is_busy_o(mac_bignum_is_busy),
 
@@ -215,6 +219,30 @@ module otbn_instruction_fetch
     mac_bignum_predec_to_fsm.operation_valid_raw,
     mac_bignum_predec_to_fsm.shuffle_offset
   };
+
+  // We must generate a URND used signal already here so that a stopped PRNG is advanced once URND
+  // is used and not with one cycle delay (URND is the flopped PRNG output).
+  // URND is used by an instruction when (there are other users):
+  // - The BN MAC clears its internal registers during a multiplication insn.
+  // - URND is read
+  // If the PRNG is stopped, sampling the BN MAC shuffling offset does not advance the PRNG. We
+  // would have to signal the advance one cycle before we predecode. This is not feasible. Not
+  // advancing the PRNG is however ok because any instruction will advance the PRNG when clearing
+  // the registers. In addition, the shuffling bits are separate bits (not used for clearing).
+  logic mac_bignum_will_consume_urnd;
+  assign mac_bignum_will_consume_urnd = mac_bignum_contrl.acc_clear_en ||
+                                        mac_bignum_contrl.c_clear_en   ||
+                                        mac_bignum_contrl.tmp_clear_en;
+
+  logic unused_mac_bignum_contrl;
+  assign unused_mac_bignum_contrl = ^{
+    mac_bignum_contrl.acc_wr_en_raw,
+    mac_bignum_contrl.c_wr_en_raw,
+    mac_bignum_contrl.tmp_wr_en_raw
+  };
+
+  assign urnd_will_be_consumed_o = mac_bignum_will_consume_urnd ||
+                                   ispr_bignum_predec_d.ispr_rd_en[IsprUrnd];
 
   prim_onehot_enc #(
     .OneHotWidth(NWdr)

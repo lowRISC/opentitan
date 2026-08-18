@@ -26,8 +26,6 @@ module otbn_core
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
-  // Disable URND reseed and advance when not in use. Useful for SCA only.
-  parameter bit SecMuteUrnd = 1'b0,
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
   parameter bit SecFixMaiOpSeq = 1'b0,
@@ -87,6 +85,9 @@ module otbn_core
   output logic wfi_pending_o,
   input  logic wfi_resume_i,
 
+  // URND control enable from CTRL register
+  input  logic urnd_ctrl_enabled_i,
+
   output logic [31:0] insn_cnt_o,
   input  logic        insn_cnt_clear_i,
 
@@ -116,9 +117,6 @@ module otbn_core
   input  kmac_pkg::app_rsp_t kmac_app_rsp_i
 );
   import prim_mubi_pkg::*;
-
-  // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
 
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -232,7 +230,6 @@ module otbn_core
   logic                  mac_bignum_commit;
   logic                  mac_bignum_reg_intg_violation_err;
   logic                  mac_bignum_sec_wipe_err;
-  logic                  mac_bignum_urnd_used;
   logic [1:0]            mac_bignum_shuffle_offset;
 
   ispr_e                       ispr_addr;
@@ -293,6 +290,13 @@ module otbn_core
   logic [ExtWLEN-1:0] ispr_kmac_data_s1_rdata;
   logic               ispr_kmac_data_s1_rd;
 
+  logic                            ispr_urnd_ctrl_wr;
+  logic [31:0]                     ispr_urnd_ctrl_wdata;
+  logic [31:0]                     ispr_urnd_status_rdata;
+  logic                            ispr_urnd_state_wr;
+  logic [UrndPartialSeedWidth-1:0] ispr_urnd_state_wdata;
+  logic [WLEN-1:0]                 ispr_urnd_state_rdata;
+
   logic            rnd_req;
   logic            rnd_prefetch_req;
   logic            rnd_valid;
@@ -304,7 +308,10 @@ module otbn_core
   logic               urnd_reseed_ack;
   logic               urnd_reseed_err;
   logic               urnd_advance;
+  logic               urnd_must_advance;
   logic               urnd_advance_start_stop_control;
+  logic               urnd_must_advance_start_stop_control;
+  logic               urnd_will_be_consumed;
   logic [UrndLen-1:0] urnd_data;
   logic               urnd_all_zero_d, urnd_all_zero;
 
@@ -359,6 +366,7 @@ module otbn_core
   logic rd_predec_error, predec_error_d, predec_error;
   logic mac_bignum_state_error_d, mac_bignum_state_error;
 
+  logic mai_will_use_urnd;
   logic mai_software_error;
   logic mai_reg_intg_violation_err;
   logic mai_state_err, mai_state_err_d;
@@ -372,7 +380,6 @@ module otbn_core
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
-    .SecMuteUrnd(SecMuteUrnd),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
   ) u_otbn_start_stop_control (
     .clk_i,
@@ -385,10 +392,11 @@ module otbn_core
 
     .controller_start_o(controller_start),
 
-    .urnd_reseed_req_o (urnd_reseed_req),
-    .urnd_reseed_ack_i (urnd_reseed_ack),
-    .urnd_reseed_err_o (urnd_reseed_err),
-    .urnd_advance_o    (urnd_advance_start_stop_control),
+    .urnd_reseed_req_o  (urnd_reseed_req),
+    .urnd_reseed_ack_i  (urnd_reseed_ack),
+    .urnd_reseed_err_o  (urnd_reseed_err),
+    .urnd_advance_o     (urnd_advance_start_stop_control),
+    .urnd_must_advance_o(urnd_must_advance_start_stop_control),
 
     .secure_wipe_req_i (secure_wipe_req),
     .secure_wipe_ack_o (secure_wipe_ack),
@@ -458,13 +466,15 @@ module otbn_core
     .insn_fetch_err_o       (insn_fetch_err),
     .insn_addr_err_o        (insn_addr_err_d),
 
-    .rf_bignum_predec_o       (rf_bignum_predec),
-    .alu_bignum_predec_o      (alu_bignum_predec),
-    .ctrl_flow_predec_o       (ctrl_flow_predec),
-    .ctrl_flow_target_predec_o(ctrl_flow_target_predec),
-    .ispr_bignum_predec_o     (ispr_bignum_predec),
-    .mac_bignum_predec_o      (mac_bignum_predec),
-    .lsu_addr_en_predec_o     (lsu_addr_en_predec),
+    .rf_bignum_predec_o        (rf_bignum_predec),
+    .alu_bignum_predec_o       (alu_bignum_predec),
+    .ctrl_flow_predec_o        (ctrl_flow_predec),
+    .ctrl_flow_target_predec_o (ctrl_flow_target_predec),
+    .ispr_bignum_predec_o      (ispr_bignum_predec),
+    .mac_bignum_predec_o       (mac_bignum_predec),
+    .lsu_addr_en_predec_o      (lsu_addr_en_predec),
+
+    .urnd_will_be_consumed_o(urnd_will_be_consumed),
 
     .rf_bignum_rd_a_indirect_onehot_i(rf_bignum_rd_a_indirect_onehot),
     .rf_bignum_rd_b_indirect_onehot_i(rf_bignum_rd_b_indirect_onehot),
@@ -1062,6 +1072,13 @@ module otbn_core
     .ispr_kmac_data_s0_rd_o   (ispr_kmac_data_s0_rd),
     .ispr_kmac_data_s1_rd_o   (ispr_kmac_data_s1_rd),
 
+    .ispr_urnd_ctrl_wr_o     (ispr_urnd_ctrl_wr),
+    .ispr_urnd_ctrl_wdata_o  (ispr_urnd_ctrl_wdata),
+    .ispr_urnd_status_rdata_i(ispr_urnd_status_rdata),
+    .ispr_urnd_state_wr_o    (ispr_urnd_state_wr),
+    .ispr_urnd_state_wdata_o (ispr_urnd_state_wdata),
+    .ispr_urnd_state_rdata_i (ispr_urnd_state_rdata),
+
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
@@ -1103,8 +1120,6 @@ module otbn_core
     .sec_wipe_running_i(secure_wipe_running_o),
     .sec_wipe_err_o    (mac_bignum_sec_wipe_err),
     .shuffle_offset_o  (mac_bignum_shuffle_offset),
-
-    .urnd_used_o(mac_bignum_urnd_used),
 
     .mac_en_i    (mac_bignum_en),
     .mac_commit_i(mac_bignum_commit),
@@ -1185,6 +1200,7 @@ module otbn_core
       .ispr_mai_res_s0_rdata_o     (ispr_mai_res_s0_rdata),
       .ispr_mai_res_s1_rdata_o     (ispr_mai_res_s1_rdata),
       .ispr_mod_intg_i             (ispr_mod_intg),
+      .will_use_urnd_o             (mai_will_use_urnd),
       .mai_software_error_o        (mai_software_error),
       .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
       .mai_state_err_o             (mai_state_err_d),
@@ -1248,11 +1264,21 @@ module otbn_core
     .rnd_rep_err_o     (rnd_rep_err),
     .rnd_fips_err_o    (rnd_fips_err),
 
-    .urnd_reseed_req_i (urnd_reseed_req),
-    .urnd_reseed_ack_o (urnd_reseed_ack),
-    .urnd_advance_i    (urnd_advance),
-    .urnd_data_o       (urnd_data),
-    .urnd_all_zero_o   (urnd_all_zero_d),
+    .urnd_reseed_req_i  (urnd_reseed_req),
+    .urnd_reseed_ack_o  (urnd_reseed_ack),
+    .urnd_ctrl_enabled_i,
+    .urnd_advance_i     (urnd_advance),
+    .urnd_must_advance_i(urnd_must_advance),
+
+    .ispr_urnd_ctrl_wr_i     (ispr_urnd_ctrl_wr),
+    .ispr_urnd_ctrl_wdata_i  (ispr_urnd_ctrl_wdata),
+    .ispr_urnd_status_rdata_o(ispr_urnd_status_rdata),
+    .ispr_urnd_state_rdata_o (ispr_urnd_state_rdata),
+    .ispr_urnd_state_wr_i    (ispr_urnd_state_wr),
+    .ispr_urnd_state_wdata_i (ispr_urnd_state_wdata),
+
+    .urnd_data_o    (urnd_data),
+    .urnd_all_zero_o(urnd_all_zero_d),
 
     .edn_rnd_req_o,
     .edn_rnd_ack_i,
@@ -1264,21 +1290,25 @@ module otbn_core
     .edn_urnd_i
   );
 
-  // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
-  // are requested.
-  // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
-  // necessary to enable urnd_advance using ispr_bignum_predec.ispr_rd_en[IsprUrnd] whenever URND
-  // data are consumed by the BN ALU or the BN MAC clears any of its internal registers with data
-  // from URND (includes the ACC WSR).
-  assign urnd_advance = urnd_advance_start_stop_control || req_sec_wipe_urnd_keys_q ||
-                        (SecMuteUrnd && (ispr_bignum_predec.ispr_rd_en[IsprUrnd] ||
-                                         mac_bignum_urnd_used));
+  // Advance URND when the start_stop_control commands it. This can be over-steered depending on
+  // the URND control settings. However, in certain cases we must ignore the control settings. For
+  // this we generate a 'must advance' signal below.
+  assign urnd_advance = urnd_advance_start_stop_control;
 
-  // The signal mac_bignum_urnd_used is only used when muting the URND.
-  if (!SecMuteUrnd) begin : gen_unused_mac_urnd_used
-    logic unused_mac_bignum_urnd_used;
-    assign unused_mac_bignum_urnd_used = ^mac_bignum_urnd_used;
-  end
+  // Enforce URND to advance due to security reasons when:
+  // - Temporary scrambling keys for secure wipe are requested
+  // - The start stop controller enforces an URND advance during a secure wipe.
+  // - The MAI is busy executing and uses URND for masking purposes. This ensures any MAI operation
+  //   is always properly masked.
+  // - The URND is stopped by the URND control interface but SW actively uses URND. This is the case
+  //   when (1) SW reads URND or (2) BN MAC clears some internal state during a multi-cycle
+  //   multiplication instruction.
+  //   - This is detected by the predecoder so a fresh URND value is provided when the instruction
+  //     executes.
+  assign urnd_must_advance = req_sec_wipe_urnd_keys_q             ||
+                             urnd_must_advance_start_stop_control ||
+                             mai_will_use_urnd                    ||
+                             urnd_will_be_consumed;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

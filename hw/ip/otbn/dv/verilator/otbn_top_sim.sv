@@ -74,7 +74,6 @@ module otbn_top_sim (
   otbn_core #(
     .ImemSizeByte             ( ImemSizeByte ),
     .DmemSizeByte             ( DmemSizeByte ),
-    .SecMuteUrnd              ( 1'b0         ),
     .SecSkipUrndReseedAtStart ( 1'b0         )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
@@ -115,6 +114,8 @@ module otbn_top_sim (
     .wfi_enabled_i               ( 1'b1                       ),
     .wfi_pending_o               ( wfi_pending                ),
     .wfi_resume_i                ( wfi_pending_q              ),
+
+    .urnd_ctrl_enabled_i         ( 1'b1                       ),
 
     .insn_cnt_o                  ( insn_cnt                   ),
     .insn_cnt_clear_i            ( 1'b0                       ),

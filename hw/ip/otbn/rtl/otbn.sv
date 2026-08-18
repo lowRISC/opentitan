@@ -22,8 +22,6 @@ module otbn
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
-  // Disable URND advance when not in use. Useful for SCA only.
-  parameter bit SecMuteUrnd = 1'b0,
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
@@ -947,6 +945,8 @@ module otbn
     reg2hw.ctrl.wfi_enabled.qe && (status_q == StatusIdle) ?
         reg2hw.ctrl.wfi_enabled.q : wfi_enabled_q;
 
+  // The URND control enable bit must be stable during an OTBN execution because it is used to
+  // control a blanker inside otbn_rnd.sv
   assign urnd_ctrl_enabled_d =
     reg2hw.ctrl.urnd_ctrl_enabled.qe && (status_q == StatusIdle) ?
         reg2hw.ctrl.urnd_ctrl_enabled.q : urnd_ctrl_enabled_q;
@@ -1172,7 +1172,6 @@ module otbn
     .DmemSizeByte(DmemSizeByte),
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
-    .SecMuteUrnd(SecMuteUrnd),
     .SecFixMaiOpSeq(SecFixMaiOpSeq),
     .SecFixMacOpSeq(SecFixMacOpSeq),
     .FeatStubMai(FeatStubMai),
@@ -1217,6 +1216,8 @@ module otbn
     .wfi_enabled_i               (wfi_enabled_q),
     .wfi_pending_o               (wfi_pending),
     .wfi_resume_i                (wfi_resume_q),
+
+    .urnd_ctrl_enabled_i         (urnd_ctrl_enabled_q),
 
     .insn_cnt_o                  (insn_cnt),
     .insn_cnt_clear_i            (insn_cnt_clear),
