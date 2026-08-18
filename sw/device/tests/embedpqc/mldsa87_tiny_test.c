@@ -32,7 +32,10 @@ static status_t keygen_test(void) {
   TRY_CHECK_ARRAYS_EQ(actual_public_key, kMldsa87ExpectedPublicKey,
                       MLDSA87_PUBLIC_KEY_BYTES, "Public keys don't match!");
   TRY_CHECK(
-      kDiceMldsaAttestationScratchBufferSize >= keygen_stack_usage,
+      kDiceMldsaRomExtAttestationScratchBufferSize >= keygen_stack_usage,
+      "ML-DSA 87 tiny keygen uses more buffer space than assigned in firmware");
+  TRY_CHECK(
+      kDiceMldsaPersoScratchBufferSize >= keygen_stack_usage,
       "ML-DSA 87 tiny keygen uses more buffer space than assigned in firmware");
   LOG_INFO("Keygen test passed!");
 
@@ -52,7 +55,10 @@ static status_t message_sign_randomizer_test(void) {
   TRY_CHECK_ARRAYS_EQ(actual_signature, kMldsa87RandomizedExpectedSignature,
                       MLDSA87_SIGNATURE_BYTES,
                       "Randomized message signature doesn't match!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= sign_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack_usage,
+            "ML-DSA 87 tiny randomized message sign uses more buffer space "
+            "than assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack_usage,
             "ML-DSA 87 tiny randomized message sign uses more buffer space "
             "than assigned in firmware");
   LOG_INFO("Randomized message signature test passed!");
@@ -73,7 +79,10 @@ static status_t message_sign_deterministic_test(void) {
   TRY_CHECK_ARRAYS_EQ(actual_signature, kMldsa87ExpectedSignature,
                       MLDSA87_SIGNATURE_BYTES,
                       "Deterministic message signature doesn't match!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= sign_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack_usage,
+            "ML-DSA 87 tiny deterministic message sign uses more buffer space "
+            "than assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack_usage,
             "ML-DSA 87 tiny deterministic message sign uses more buffer space "
             "than assigned in firmware");
   LOG_INFO("Deterministic message signature test passed!");
@@ -95,7 +104,10 @@ static status_t mu_sign_randomizer_test(void) {
   TRY_CHECK_ARRAYS_EQ(actual_signature, kMldsa87RandomizedExpectedSignature,
                       MLDSA87_SIGNATURE_BYTES,
                       "Randomized mu signature doesn't match!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= sign_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack_usage,
+            "ML-DSA 87 tiny randomized mu sign uses more buffer space than "
+            "assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack_usage,
             "ML-DSA 87 tiny randomized mu sign uses more buffer space than "
             "assigned in firmware");
   LOG_INFO("Randomized mu signature test passed!");
@@ -116,7 +128,10 @@ static status_t mu_sign_deterministic_test(void) {
   TRY_CHECK_ARRAYS_EQ(actual_signature, kMldsa87ExpectedSignature,
                       MLDSA87_SIGNATURE_BYTES,
                       "Deterministic mu signature doesn't match!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= sign_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack_usage,
+            "ML-DSA 87 tiny deterministic mu sign uses more buffer space than "
+            "assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack_usage,
             "ML-DSA 87 tiny deterministic mu sign uses more buffer space than "
             "assigned in firmware");
   LOG_INFO("Deterministic mu signature test passed!");
@@ -134,7 +149,10 @@ static status_t message_signature_verify_test(void) {
            (uint32_t)verify_stack_usage);
 
   TRY_CHECK(verify_status != 0, "Message signature verification failed!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= verify_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack_usage,
+            "ML-DSA 87 tiny message verify uses more buffer space than "
+            "assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= verify_stack_usage,
             "ML-DSA 87 tiny message verify uses more buffer space than "
             "assigned in firmware");
   LOG_INFO("Message signature verification test passed!");
@@ -153,7 +171,10 @@ static status_t message_randomized_signature_verify_test(void) {
 
   TRY_CHECK(verify_status != 0,
             "Randomized message signature verification failed!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= verify_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack_usage,
+            "ML-DSA 87 tiny message verify uses more buffer space than "
+            "assigned in firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= verify_stack_usage,
             "ML-DSA 87 tiny message verify uses more buffer space than "
             "assigned in firmware");
   LOG_INFO("Randomized message signature verification test passed!");
@@ -171,7 +192,10 @@ static status_t mu_signature_verify_test(void) {
            (uint32_t)verify_stack_usage);
 
   TRY_CHECK(verify_status != 0, "mu signature verification failed!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= verify_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack_usage,
+            "ML-DSA 87 tiny mu verify uses more buffer space than assigned in "
+            "firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= verify_stack_usage,
             "ML-DSA 87 tiny mu verify uses more buffer space than assigned in "
             "firmware");
   LOG_INFO("mu signature verification test passed!");
@@ -189,7 +213,10 @@ static status_t mu_randomized_signature_verify_test(void) {
            (uint32_t)verify_stack_usage);
 
   TRY_CHECK(verify_status != 0, "Randomized mu signature verification failed!");
-  TRY_CHECK(kDiceMldsaAttestationScratchBufferSize >= verify_stack_usage,
+  TRY_CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack_usage,
+            "ML-DSA 87 tiny mu verify uses more buffer space than assigned in "
+            "firmware");
+  TRY_CHECK(kDiceMldsaPersoScratchBufferSize >= verify_stack_usage,
             "ML-DSA 87 tiny mu verify uses more buffer space than assigned in "
             "firmware");
   LOG_INFO("Randomized mu signature verification test passed!");

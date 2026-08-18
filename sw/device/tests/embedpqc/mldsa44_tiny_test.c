@@ -29,7 +29,10 @@ bool test_main(void) {
   LOG_INFO("mldsa44_tiny_pub_from_seed Max Stack Usage: %u bytes",
            (unsigned int)keygen_stack);
   CHECK(
-      kDiceMldsaAttestationScratchBufferSize >= keygen_stack,
+      kDiceMldsaRomExtAttestationScratchBufferSize >= keygen_stack,
+      "ML-DSA 44 tiny keygen uses more buffer space than assigned in firmware");
+  CHECK(
+      kDiceMldsaPersoScratchBufferSize >= keygen_stack,
       "ML-DSA 44 tiny keygen uses more buffer space than assigned in firmware");
 
   CHECK(check_arrays_eq_verbose(buf, kMldsa44ExpectedPublicKey,
@@ -45,7 +48,10 @@ bool test_main(void) {
   size_t sign_stack = get_max_stack_usage();
   LOG_INFO("mldsa44_tiny_sign Max Stack Usage: %u bytes",
            (unsigned int)sign_stack);
-  CHECK(kDiceMldsaAttestationScratchBufferSize >= sign_stack,
+  CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack,
+        "ML-DSA 44 tiny sign deterministic uses more buffer space than "
+        "assigned in firmware");
+  CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack,
         "ML-DSA 44 tiny sign deterministic uses more buffer space than "
         "assigned in firmware");
 
@@ -63,7 +69,10 @@ bool test_main(void) {
   LOG_INFO("mldsa44_tiny_verify Max Stack Usage: %u bytes",
            (unsigned int)verify_stack);
   CHECK(
-      kDiceMldsaAttestationScratchBufferSize >= verify_stack,
+      kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack,
+      "ML-DSA 44 tiny verify uses more buffer space than assigned in firmware");
+  CHECK(
+      kDiceMldsaPersoScratchBufferSize >= verify_stack,
       "ML-DSA 44 tiny verify uses more buffer space than assigned in firmware");
 
   CHECK(verify_res != 0, "mldsa44_tiny_verify failed!");
