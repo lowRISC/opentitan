@@ -916,6 +916,13 @@
       reseed: 3
     }
     {
+      name: chip_sw_rram_ctrl_lc_rw_en
+      uvm_test_seq: chip_sw_rram_ctrl_lc_rw_en_vseq
+      sw_images: ["//sw/device/tests/sim_dv:rram_ctrl_lc_rw_en_test:1:new_rules"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_lc_walkthrough_dev
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_test:1:new_rules"]
