@@ -305,6 +305,21 @@ typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
     HARDENED_CHECK_EQ(error_, kErrorOk); \
   } while (false)
 
+/**
+ * Macro with behavior similar to `HARDENED_RETURN_IF_ERROR`, but with
+ * additional logic to run a cleanup operation in case of error. Any return
+ * value from the cleanup procedure is ignored
+ */
+#define HARDENED_RETURN_IF_ERROR_WITH_TRY_CLEANUP(expr_, try_cleanup_expr_) \
+  do {                                                                      \
+    rom_error_t error_ = expr_;                                             \
+    if (launder32(error_) != kErrorOk) {                                    \
+      try_cleanup_expr_;                                                    \
+      return error_;                                                        \
+    }                                                                       \
+    HARDENED_CHECK_EQ(error_, kErrorOk);                                    \
+  } while (false)
+
 #ifdef __cplusplus
 }
 #endif

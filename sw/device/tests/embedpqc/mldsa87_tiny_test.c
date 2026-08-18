@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/cert/dice.h"
+#include "sw/device/silicon_creator/lib/cert/dice_mldsa.h"
 #include "sw/device/tests/embedpqc/mldsa_test_utils.h"
 #include "sw/device/tests/embedpqc/mldsa_testvectors.h"
 #include "third_party/embedpqc/ports/mldsa87_tiny_caller.h"
