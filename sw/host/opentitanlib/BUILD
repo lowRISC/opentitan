@@ -351,6 +351,7 @@ rust_library(
         "@crate_index//:once_cell",
         "@crate_index//:p256",
         "@crate_index//:pem-rfc7468",
+        "@crate_index//:pkcs8",
         "@crate_index//:rand",
         "@crate_index//:regex",
         "@crate_index//:rsa",

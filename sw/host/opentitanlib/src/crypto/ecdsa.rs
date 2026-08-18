@@ -4,12 +4,12 @@
 
 use anyhow::{Context, Result, anyhow, ensure};
 use ecdsa::Signature;
-use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
-use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::NistP256;
 use p256::ecdsa::{SigningKey, VerifyingKey};
 use pem_rfc7468::Decoder;
+use pkcs8::{DecodePrivateKey, EncodePrivateKey};
+use pkcs8::{DecodePublicKey, EncodePublicKey};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;

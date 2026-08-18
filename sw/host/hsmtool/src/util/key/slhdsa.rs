@@ -5,10 +5,9 @@
 use anyhow::{Result, anyhow};
 use cryptoki::mechanism::dsa::{HashSignAdditionalContext, HedgeType, SignAdditionalContext};
 use cryptoki::mechanism::{Mechanism, MechanismType};
-use rsa::pkcs8;
-use rsa::pkcs8::spki;
-use rsa::pkcs8::{
-    DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, Error, LineEnding,
+use pkcs8;
+use pkcs8::{
+    DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, Error, LineEnding, spki,
 };
 use slh_dsa::{SigningKey, VerifyingKey};
 use sphincsplus::SpxSignatureMode;

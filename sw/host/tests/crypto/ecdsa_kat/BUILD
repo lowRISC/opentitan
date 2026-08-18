@@ -24,6 +24,7 @@ rust_binary(
         "@crate_index//:num-traits",
         "@crate_index//:p256",
         "@crate_index//:p384",
+        "@crate_index//:pkcs8",
         "@crate_index//:rand",
         "@crate_index//:rand_chacha",
         "@crate_index//:serde",
