@@ -191,6 +191,7 @@ module otbn_rnd import otbn_pkg::*;
     .seed_state_full_i   ('0), // Not connected
     .seed_state_partial_i(edn_urnd_i.edn_bus),
     .key_o               (urnd_data_d),
+    .state_o             (),
     .err_o               (urnd_all_zero_o)
   );
 

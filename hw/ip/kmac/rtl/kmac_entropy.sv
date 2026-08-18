@@ -377,6 +377,7 @@ module kmac_entropy
    .seed_state_partial_i(seed),
 
    .key_o(prng_data),
+   .state_o(), // Not used.
    .err_o()
   );
 
