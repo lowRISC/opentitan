@@ -97,6 +97,16 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "EnFullKmac"
+      type:    "bit"
+      default: "1"
+      desc:    '''
+        Disable(0) or enable(1) the full KMAC functionality.
+        If disabled, the module is stripped down to only support SHA3, SHAKE and cSHAKE.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "SwKeyMasked"
       type:    "bit"
       default: "0"

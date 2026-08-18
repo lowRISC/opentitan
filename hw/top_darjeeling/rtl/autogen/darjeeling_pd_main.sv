@@ -47,6 +47,7 @@ module darjeeling_pd_main #(
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
+  parameter bit KmacEnFullKmac = 1,
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
@@ -1588,6 +1589,7 @@ module darjeeling_pd_main #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:28]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .EnMasking(KmacEnMasking),
+    .EnFullKmac(KmacEnFullKmac),
     .SwKeyMasked(KmacSwKeyMasked),
     .SecCmdDelay(SecKmacCmdDelay),
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
