@@ -73,10 +73,9 @@ def _fusesoc_build_impl(ctx):
 
     args.add("run")
     args.add(ctx.attr.target, format = "--target=%s")
-    args.add_all([
-        "--setup",
-        "--build",
-    ])
+    args.add("--setup")
+    if not ctx.attr.setup_only:
+        args.add("--build")
     args.add(out_dir, format = "--build-root=%s")
 
     args.add_all(ctx.attr.systems)
@@ -129,6 +128,7 @@ fusesoc_build = rule(
                 directory.
             """,
         ),
+        "setup_only": attr.bool(default = False, doc = "If set, only --setup will be passed to fusesoc"),
         "verilator_options": attr.label(),
         "make_options": attr.label(),
         "_fusesoc": attr.label(
