@@ -129,8 +129,9 @@ fpga_cw340(
             # The CW340 board has a small design problem where the USB transceiver has its
             # SOFTCONN pin directly connected to the FPGA without any pull down. When the
             # bitstream is not loaded, the pin is left floating which can cause the transceiver
-            # to random connect to the bus and confuse the host.
-            "--cw-usb-port-workaround=4",
+            # to random connect to the bus and confuse the host. In addition, this option is also
+            # useful so that USB tests know how to control VBUS for the OT USBDEV.
+            "--ot-usbdev-port=4",
         ],
         "//conditions:default": [],
     }),
