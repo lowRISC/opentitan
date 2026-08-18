@@ -88,6 +88,11 @@ class TestDatabase:
                       file=sys.stderr)
             return
 
+        if "rv_dm_access_after_wakeup" not in query_output_line:
+            if self.explain:
+                print("f{label} is purposefully filtered for manual testing of CI", file=sys.stderr)
+            return
+
         if self.explain:
             print(f"{label} added to the database", file=sys.stderr)
 
@@ -191,7 +196,7 @@ def main():
     )
     parser.add_argument(
         "query",
-        default=['//...'],
+        default=['//sw/device/tests/...'],
         metavar="QUERY...",
         nargs='*',
         help="Arguments forwarded to bazel cquery to list targets",
@@ -238,28 +243,31 @@ def main():
         k, m = divmod(len(tests), chunks)
         return [tests[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(chunks)]
 
-    def sched(human_name, fpga, id, tags, label_prefix = None, split = 1):
+    def sched(human_name, fpga, id, tags, label_prefix = None, split = 1, dup = 1):
         job = schedule_by_tag(test_db, human_name, fpga, id, tags, label_prefix)
         for (idx, sublist) in enumerate(splitlist(job["tests"], split), start=1):
-            new_job = copy(job)
-            new_job["tests"] = sublist
-            new_job["name"] += "" if split == 1 else " (part {}/{})".format(idx, split)
-            new_job["id"] += "" if split == 1 else "_{}".format(idx)
-            jobs.append(new_job)
+            for dup_idx in range(1, dup+1):
+                new_job = copy(job)
+                new_job["tests"] = sublist
+                new_job["name"] += "" if split == 1 else " (part {}/{}) ".format(idx, split)
+                new_job["name"] += "" if dup == 1 else "[clone {}/{}]".format(dup_idx, dup)
+                new_job["id"] += "" if split == 1 else "_{}".format(idx)
+                new_job["id"] += "" if dup == 1 else "_{}".format(dup_idx)
+                jobs.append(new_job)
 
-    sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"])
-    sched("SiVal ROM_EXT", "cw340", "cw340_sival_rom_ext", ["cw340_sival_rom_ext"], split=4)
-    sched("SiVal", "cw340", "cw340_sival", ["cw340_sival"])
+    #sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"])
+    #sched("SiVal ROM_EXT", "cw340", "cw340_sival_rom_ext", ["cw340_sival_rom_ext"], split=4)
+    sched("SiVal", "cw340", "cw340_sival", ["cw340_sival"], dup=10)
     # There are too many ROM_EXT tests to fit in one job so we split out the ownership and rescue
     # tests, and schedule the rest together.
-    sched("ROM_EXT (ownership)", "cw340", "cw340_ownership", ["cw340_rom_ext"],
-          label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/ownership:")
-    sched("ROM_EXT (rescue)", "cw340", "cw340_rescue", ["cw340_rom_ext"],
-          label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/rescue:")
-    sched("ROM_EXT (remaining)", "cw340", "cw340_rom_ext", ["cw340_rom_ext"])
-
-    sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"], split=2)
-    sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
+    #sched("ROM_EXT (ownership)", "cw340", "cw340_ownership", ["cw340_rom_ext"],
+    #      label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/ownership:")
+    #sched("ROM_EXT (rescue)", "cw340", "cw340_rescue", ["cw340_rom_ext"],
+    #      label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/rescue:")
+    #sched("ROM_EXT (remaining)", "cw340", "cw340_rom_ext", ["cw340_rom_ext"])
+    #
+    #sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"], split=2)
+    #sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
 
     # Check for ID collisions in the scheduled jobs.
     jobs_by_id = defaultdict(list)

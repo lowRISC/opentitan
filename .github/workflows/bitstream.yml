@@ -42,6 +42,7 @@ jobs:
             ':!/CLA' \
             ':!/*.md' \
             ':!/.github/' \
+            ':!/ci/scripts/' \
             ':!/hw/**/dv/*' \
             ':!/hw/**/generic_dv/*' \
             ':!/hw/dv/'
