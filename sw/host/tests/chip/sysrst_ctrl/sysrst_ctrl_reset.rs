@@ -3,15 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::sync::LazyLock;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{Result, ensure};
 use clap::Parser;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
-use opentitanlib::io::gpio::PinMode;
+use opentitanlib::io::gpio::{GpioPin, PinMode};
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
@@ -65,8 +66,28 @@ const PADS_VALUE_COMBO_RESET: u8 = 0b001100;
 const PADS_VALUE_WAKEUP: u8 = 0b101100;
 // Trigger sleep reset in CheckDeepSleepReset: key2 and power button low.
 const PADS_VALUE_SLEEP_RESET: u8 = 0b100000;
-// Combo action detection time: set to around 5ms on the device.
-const COMBO_DETECTION_TIME: Duration = Duration::from_micros(10_000);
+// Upper bound on how long after the key combo is detected the resulting chip
+// reset takes to land.
+const COMBO_ACTION_TIMEOUT: Duration = Duration::from_millis(100);
+
+// Poll `pin` until it reads `level`, or fail after `timeout`.
+fn wait_for_pin_level(
+    pin: &Rc<dyn GpioPin>,
+    name: &str,
+    level: bool,
+    timeout: Duration,
+) -> Result<()> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if pin.read()? == level {
+            return Ok(());
+        }
+        ensure!(
+            Instant::now() < deadline,
+            "{name} was not driven to {level} within {timeout:?}"
+        );
+    }
+}
 
 fn setup_phase_pins(transport: &TransportWrapper) -> Result<()> {
     for pin in PHASE_PINS {
@@ -119,13 +140,8 @@ fn chip_sw_sysrst_ctrl_reset(
     set_test_phase(transport, TestPhase::CheckDeepSleepWakeup)?;
     // Trigger combo reset.
     set_pins(transport, config, PADS_VALUE_COMBO_RESET)?;
-    // Wait for combo detection.
-    std::thread::sleep(COMBO_DETECTION_TIME);
-    // Verify that the flash WP was pulled down.
-    ensure!(
-        !flash_wp_pin.read()?,
-        "flash_wp_l does not have the expected value"
-    );
+    // Wait until flash WP was pulled down.
+    wait_for_pin_level(&flash_wp_pin, "flash_wp_l", false, COMBO_ACTION_TIMEOUT)?;
     // The EC reset pin must have been pulled down and then released so don't check.
 
     // Wait until target has prepared for the test.
@@ -146,13 +162,8 @@ fn chip_sw_sysrst_ctrl_reset(
     set_test_phase(transport, TestPhase::FinalCheck)?;
     // Trigger combo reset.
     set_pins(transport, config, PADS_VALUE_SLEEP_RESET)?;
-    // Wait for combo detection.
-    std::thread::sleep(COMBO_DETECTION_TIME);
-    // Verify that EC reset and flash WP pins are immediately pulled down.
-    ensure!(
-        !flash_wp_pin.read()?,
-        "flash_wp_l does not have the expected value"
-    );
+    // Wait until flash WP was pulled down.
+    wait_for_pin_level(&flash_wp_pin, "flash_wp_l", false, COMBO_ACTION_TIMEOUT)?;
     // The EC reset pin must have been pulled down and then released so don't check.
 
     let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
