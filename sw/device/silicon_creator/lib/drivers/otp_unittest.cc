@@ -7,6 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
@@ -14,7 +15,6 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace otp_unittest {
 namespace {
@@ -25,7 +25,7 @@ constexpr int kMaxOtpWordsToRead = 10;
 
 class OtpTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
+  uint32_t base_ = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl);
   rom_test::MockSecMmio mmio_;
   rom_test::MockAbsMmio abs_mmio_;
 };

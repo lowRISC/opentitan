@@ -8,13 +8,13 @@
 #include <limits>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace otbn_unittest {
 namespace {
@@ -56,7 +56,7 @@ class OtbnTest : public rom_test::RomTest {
     }
   }
 
-  uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
+  uint32_t base_ = dt_otbn_primary_reg_block(kDtOtbn);
   uint32_t err_bits_ok_ = 0;
   rom_test::MockAbsMmio abs_mmio_;
   rom_test::MockRnd rnd_;

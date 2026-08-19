@@ -88,6 +88,7 @@ cc_library(
     name = "otp_fields",
     srcs = ["otp_fields.c"],
     hdrs = ["otp_fields.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",

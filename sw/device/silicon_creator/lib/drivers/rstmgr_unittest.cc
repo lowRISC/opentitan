@@ -5,21 +5,22 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/rstmgr_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
+                                 //
 namespace rstmgr_unittest {
 namespace {
 using ::testing::ElementsAre;
 
 class RstmgrTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_RSTMGR_BASE_ADDR;
+  uint32_t base_ = dt_rstmgr_primary_reg_block(kDtRstmgr);
   rom_test::MockAbsMmio mmio_;
 };
 

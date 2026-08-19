@@ -546,6 +546,7 @@ dual_cc_library(
 cc_test(
     name = "otp_unittest",
     srcs = ["otp_unittest.cc"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":otp"),
         "//sw/device/silicon_creator/testing:rom_test",
