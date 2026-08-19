@@ -817,11 +817,26 @@ interface chip_if;
     logic [31:0] mcause;
   } probed_cpu_csrs_t;
   wire probed_cpu_csrs_t probed_cpu_csrs;
-  for (genvar i = 0; i < 32; i++) begin : gen_probed_cpu_csrs_conn
+  // In the shared register file (BaseIsaRV32IorCHERIoT) under RV32I (non-CHERIoT) mode, rf_data
+  // holds the data for registers x0-x15 and rf_shared the data for x16-x31. In CHERIoT mode,
+  // rf_shared holds capability metadata for x0-x15 and CHERIoT implicitly sets RV32E.
+  // Therefore, this probing interface will need to be adapted to run CHERIoT tests. Currently,
+  // these paths are hardcoded to match EarlGrey's configuration and hierarchy. If parameters
+  // affecting the register file change, these paths will need to be adapted accordingly.
+  for (genvar i = 0; i < 16; i++) begin : gen_probed_cpu_csrs_conn_lower
 `ifdef GATE_LEVEL
     assign probed_cpu_csrs.gprs[i] = 0;
 `else
-    assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
+    assign probed_cpu_csrs.gprs[i] =
+        `CPU_CORE_HIER.gen_regfile_ff.register_file_i.g_cheriot_rf.rf_data[i][31:0];
+`endif
+  end
+  for (genvar i = 16; i < 32; i++) begin : gen_probed_cpu_csrs_conn_upper
+`ifdef GATE_LEVEL
+    assign probed_cpu_csrs.gprs[i] = 0;
+`else
+    assign probed_cpu_csrs.gprs[i] =
+        `CPU_CORE_HIER.gen_regfile_ff.register_file_i.g_cheriot_rf.rf_shared[i-16][31:0];
 `endif
   end
   assign probed_cpu_csrs.dcsr = jtag_rv_debugger_pkg::rv_core_csr_dcsr_t'(
