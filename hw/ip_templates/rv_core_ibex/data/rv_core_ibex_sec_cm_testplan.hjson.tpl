@@ -23,6 +23,14 @@
 // .../${module_instance_name}/data/${module_instance_name}_testplan.hjson
 {
   testpoints: [
+% if cheriot_available:
+    {
+      name: sec_cm_cheriot_switch_fsm_sparse
+      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+% endif
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."

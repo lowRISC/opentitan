@@ -70,6 +70,9 @@
           - Ibex raises `alert_major_bus_o`
           - A double fault is seen (Ibex raises `double_fault_seen_o`)
           - A bus integrity error is seen
+% if cheriot_available:
+          - The ePMP/CHERIoT execution mode switch enters its error state
+% endif
       '''
     },
     { name: "recov_hw_err",
@@ -390,6 +393,16 @@
       local:   "false"
       expose:  "true"
     },
+% if cheriot_available:
+
+    { name:    "BaseIsa"
+      type:    "ibex_pkg::base_isa_e"
+      default: "ibex_pkg::BaseIsaRV32IorCHERIoT"
+      desc:    "Base ISA. Must stay CHERIoT-capable while CHERIoT is available."
+      local:   "false"
+      expose:  "true"
+    },
+% endif
 
     { name:    "WritebackStage"
       type:    "bit"
@@ -623,6 +636,11 @@
   ],
 
   countermeasures: [
+% if cheriot_available:
+    { name: "CHERIOT_SWITCH.FSM.SPARSE",
+      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
+    }
+% endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -1090,6 +1108,52 @@
           },
         ]
       },
+% if cheriot_available:
+
+      { name: "CHERIOT_ENA",
+        desc: '''
+          Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
+          This field is only sampled when !!CHERIOT_LOCK is written; changing it afterwards has
+          no effect.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            mubi: true,
+            resval: false,
+            desc: '''
+              Mode selector value, MuBi4 encoded.
+            '''
+          },
+        ]
+      },
+
+      { name: "CHERIOT_LOCK",
+        desc: '''
+          Locks the CHERIoT/ePMP mode.
+          If !!CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+        ''',
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            desc: '''
+              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA.
+              Any other value moves the switch into a terminal error state, in which CHERIoT mode
+              stays unavailable until reset and the fatal alert is raised.
+            '''
+          },
+        ]
+        tags: [// Write-only, and any write permanently locks the execution mode. A random write
+               // would also park the switch FSM in its terminal error state and raise fatal_hw_err.
+        "excl:CsrAllTests:CsrExclAll"],
+      },
+% endif
 
       { name: "FPGA_INFO",
         desc: '''
