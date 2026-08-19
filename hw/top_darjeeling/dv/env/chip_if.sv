@@ -629,7 +629,8 @@ interface chip_if;
 `ifdef GATE_LEVEL
     assign probed_cpu_csrs.gprs[i] = 0;
 `else
-    assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
+    assign probed_cpu_csrs.gprs[i] =
+        `CPU_CORE_HIER.gen_regfile_ff.register_file_i.g_plain_rf.rf_reg[i][31:0];
 `endif
   end
   assign probed_cpu_csrs.dcsr = jtag_rv_debugger_pkg::rv_core_csr_dcsr_t'(
