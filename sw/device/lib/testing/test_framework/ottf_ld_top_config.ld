@@ -10,6 +10,9 @@ MEMORY {
     ctn_ram(rwx) : ORIGIN = ORIGIN(ctn) + 0x1000000, LENGTH = 0x100000
 }
 REGION_ALIAS("ottf_storage", ctn_ram)
+
+/* Darjeeling has no flash_ctrl/rram_ctrl, so no NVM slot tail to reserve. */
+_nvm_slot_reserved_bytes = 0;
 #else
 REGION_ALIAS("ottf_storage", nvm)
 #endif

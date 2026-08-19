@@ -19,11 +19,18 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
-_ottf_size = LENGTH(owner_virtual) - _rom_ext_size;
 _ottf_start_address = ORIGIN(owner_virtual) + _rom_ext_size;
+
+/*
+ * Leaves `_nvm_slot_reserved_bytes` empty at the end of the physical slot.
+ */
+MEMORY {
+  ottf_owner_virtual(rx) : ORIGIN = _ottf_start_address, LENGTH = LENGTH(owner_virtual) - _rom_ext_size - _nvm_slot_reserved_bytes
+}
+_ottf_size = LENGTH(ottf_owner_virtual);
 ASSERT((_ottf_size <= (LENGTH(ottf_storage) / 2)),
   "Error: BL0 NVM is bigger than slot.");
 
-REGION_ALIAS("ottf_nvm", owner_virtual);
+REGION_ALIAS("ottf_nvm", ottf_owner_virtual);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld
