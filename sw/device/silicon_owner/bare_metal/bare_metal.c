@@ -6,8 +6,6 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 void bare_metal_main(void) {
   dbg_printf("Bare metal PASS!\r\n");
   while (true) {
