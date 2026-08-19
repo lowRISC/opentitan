@@ -557,6 +557,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                         cfg.keymgr_dpe_vif.aes_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.kmac_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.otbn_sideload_status == SideLoadAvail,
+                                        cfg.keymgr_dpe_vif.hmac_sideload_status == SideLoadAvail,
                                         cfg_regwen);
           end else if (csr.get_name() != "control_shadowed") begin
             cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
@@ -642,23 +643,33 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             // check sideload keys are preserved from available to disable state
             if (cfg.keymgr_dpe_vif.aes_key_exp != cfg.keymgr_dpe_vif.aes_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable aes sideload key was not preseved",
-                  "exp 'h%0h vs. act 'h%0h"},
-                  cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
+                           $sformatf({"After a disable aes sideload key was not preseved ",
+                                      "exp 'h%0h vs. act 'h%0h"},
+                                      cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
             end
 
             if (cfg.keymgr_dpe_vif.otbn_key_exp != cfg.keymgr_dpe_vif.otbn_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable otbn sideload key was not preseved",
-                    "exp 'h%0h vs. act 'h%0h"},
-                  cfg.keymgr_dpe_vif.otbn_key_exp, cfg.keymgr_dpe_vif.otbn_key))
+                           $sformatf({"After a disable otbn sideload key was not preseved ",
+                                      "exp 'h%0h vs. act 'h%0h"},
+                                      cfg.keymgr_dpe_vif.otbn_key_exp,
+                                      cfg.keymgr_dpe_vif.otbn_key))
+            end
+
+            if (cfg.keymgr_dpe_vif.hmac_key_exp != cfg.keymgr_dpe_vif.hmac_key) begin
+                `uvm_error(`gfn,
+                           $sformatf({"After a disable hmac sideload key was not preseved ",
+                                      "exp 'h%0h vs. act 'h%0h"},
+                                      cfg.keymgr_dpe_vif.hmac_key_exp,
+                                      cfg.keymgr_dpe_vif.hmac_key))
             end
 
             if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable kmac sideload key was not preseved",
-                  "exp 'h%0h vs. act 'h%0h"},
-                  cfg.keymgr_dpe_vif.kmac_key_exp, cfg.keymgr_dpe_vif.kmac_key))
+                           $sformatf({"After a disable kmac sideload key was not preseved ",
+                                      "exp 'h%0h vs. act 'h%0h"},
+                                      cfg.keymgr_dpe_vif.kmac_key_exp,
+                                      cfg.keymgr_dpe_vif.kmac_key))
             end
             post_disable_compare_key_slots = 0;
           end
@@ -1595,6 +1606,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       keymgr_dpe_pkg::Kmac: exp.KeyID = keymgr_dpe_pkg::RndCnstKmacSeedDefault;
       keymgr_dpe_pkg::Aes:  exp.KeyID = keymgr_dpe_pkg::RndCnstAesSeedDefault;
       keymgr_dpe_pkg::Otbn: exp.KeyID = keymgr_dpe_pkg::RndCnstOtbnSeedDefault;
+      keymgr_dpe_pkg::Hmac: exp.KeyID = keymgr_dpe_pkg::RndCnstHmacSeedDefault;
       keymgr_dpe_pkg::None: exp.KeyID = keymgr_dpe_pkg::RndCnstNoneSeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
     endcase
