@@ -34,7 +34,10 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__REGS = 32'h 411c0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h 10000000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_SEC__REGS  = 32'h 411d0000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_META__REGS = 32'h 411a0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_SEC__RAM   = 32'h 10020000;
+  localparam logic [31:0] ADDR_SPACE_CHERIOT__REGS        = 32'h 411b0000;
+  localparam logic [31:0] ADDR_SPACE_CHERIOT__REVBM       = 32'h 11000000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 0000000f;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
@@ -64,10 +67,13 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__REGS = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0001ffff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__REGS  = 32'h 0000003f;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_META__REGS = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__RAM   = 32'h 0000ffff;
+  localparam logic [31:0] ADDR_MASK_CHERIOT__REGS        = 32'h 00000003;
+  localparam logic [31:0] ADDR_SIZE_CHERIOT__REVBM       = 32'h 00000c00;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 26;
+  localparam int N_DEVICE = 29;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -95,12 +101,15 @@ package tl_main_pkg;
     TlSramCtrlMainRegs = 22,
     TlSramCtrlMainRam = 23,
     TlSramCtrlSecRegs = 24,
-    TlSramCtrlSecRam = 25
+    TlSramCtrlMetaRegs = 25,
+    TlSramCtrlSecRam = 26,
+    TlCheriotRegs = 27,
+    TlCheriotRevbm = 28
   } tl_device_e;
 
   typedef enum int {
     TlRvCoreIbexCorei = 0,
-    TlRvCoreIbexCored = 1,
+    TlCheriotCored = 1,
     TlRvDmSba = 2
   } tl_host_e;
 

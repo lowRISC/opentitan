@@ -186,7 +186,7 @@
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
       type: "int",
-      default: "4",
+      default: "5",
       local: "true"
     },
     // Macro parameters
@@ -1930,7 +1930,7 @@
     }
     // Key request from SRAM scramblers
     { struct:  "sram_otp_key"
-      width:   "4"
+      width:   "5"
       type:    "req_rsp"
       name:    "sram_otp_key"
       act:     "rsp"

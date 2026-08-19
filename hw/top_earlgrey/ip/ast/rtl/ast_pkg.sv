@@ -56,6 +56,7 @@ parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 parameter int unsigned SramCtrlMainNumRamInst = 1;
 parameter int unsigned SramCtrlSecNumRamInst  = 1;
 parameter int unsigned SramCtrlRetNumRamInst  = 1;
+parameter int unsigned SramCtrlMetaNumRamInst = 1;
 
 // Memories Read-Write Margin Interface
 typedef struct packed {
@@ -83,6 +84,7 @@ typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_sys2spi;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_spi2sys;
   prim_rom_pkg::rom_cfg_req_t                                    rom_ctrl_rom;
@@ -100,6 +102,7 @@ typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_sys2spi;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_spi2sys;
   prim_rom_pkg::rom_cfg_rsp_t                                    rom_ctrl_rom;

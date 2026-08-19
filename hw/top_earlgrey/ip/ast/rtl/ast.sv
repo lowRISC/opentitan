@@ -299,6 +299,8 @@ assign mem_cfg_req_o.sram_ctrl_sec            =
     {ast_pkg::SramCtrlSecNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
 assign mem_cfg_req_o.sram_ctrl_ret            =
     {ast_pkg::SramCtrlRetNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_meta           =
+    {ast_pkg::SramCtrlMetaNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
 assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};
 assign mem_cfg_req_o.spi_device_spi2sys       = '{req: tpram_rm.cfg};
 assign mem_cfg_req_o.rom_ctrl_rom             = '{req: sprom_rm.cfg};

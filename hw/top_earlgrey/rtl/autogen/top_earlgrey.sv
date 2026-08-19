@@ -116,6 +116,9 @@ module top_earlgrey #(
   parameter ibex_pkg::pmp_cfg_t RvCoreIbexPMPRstCfg[16] = ibex_pmp_reset_pkg::PmpCfgRst,
   parameter logic [33:0] RvCoreIbexPMPRstAddr[16] = ibex_pmp_reset_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t RvCoreIbexPMPRstMsecCfg = ibex_pmp_reset_pkg::PmpMseccfgRst,
+  parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth = 12,
+  parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr = 32'h1100_0000,
+  parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr = 32'h1000_0000,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
   parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
@@ -140,7 +143,20 @@ module top_earlgrey #(
   parameter bit RvCoreIbexPipeLine = 0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvCoreIbexTlulHostUserRsvdBits = '0,
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
-  parameter logic [31:0] RvCoreIbexCsrMimpId = '0
+  parameter logic [31:0] RvCoreIbexCsrMimpId = '0,
+  // parameters for cheriot
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr = 32'h1000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr = 32'h1003_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr = 32'h3000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr = 32'h3020_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr = 32'h1100_0000,
+  // parameters for sram_ctrl_meta
+  parameter int SramCtrlMetaInstSize = 38912,
+  parameter int SramCtrlMetaNumRamInst = 1,
+  parameter bit SramCtrlMetaInstrExec = 0,
+  parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlMetaNumAddrScrRounds = 0,
+  parameter bit SramCtrlMetaEccCorrection = 0
 ) (
   // Base clocks from AST
   input ast_pkg::ast_clks_t ast_base_clks_i,
@@ -199,6 +215,8 @@ module top_earlgrey #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlSecNumRamInst-1:0] sram_ctrl_sec_ram_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_req_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta_ram_cfg_rsp_o,
   output clkmgr_pkg::clkmgr_out_t       clkmgr_clocks_o,
   output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_cg_en_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
@@ -398,6 +416,9 @@ module top_earlgrey #(
   .RvCoreIbexPMPRstCfg(RvCoreIbexPMPRstCfg),
   .RvCoreIbexPMPRstAddr(RvCoreIbexPMPRstAddr),
   .RvCoreIbexPMPRstMsecCfg(RvCoreIbexPMPRstMsecCfg),
+  .RvCoreIbexCheriotRevBitmapAddrWidth(RvCoreIbexCheriotRevBitmapAddrWidth),
+  .RvCoreIbexCheriotRevBitmapBaseAddr(RvCoreIbexCheriotRevBitmapBaseAddr),
+  .RvCoreIbexCheriotTrvkHeapBaseAddr(RvCoreIbexCheriotTrvkHeapBaseAddr),
   .RvCoreIbexRV32E(RvCoreIbexRV32E),
   .RvCoreIbexRV32M(RvCoreIbexRV32M),
   .RvCoreIbexRV32B(RvCoreIbexRV32B),
@@ -420,7 +441,18 @@ module top_earlgrey #(
   .RvCoreIbexPipeLine(RvCoreIbexPipeLine),
   .RvCoreIbexTlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
   .RvCoreIbexCsrMvendorId(RvCoreIbexCsrMvendorId),
-  .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId)
+  .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId),
+  .CheriotMainSramBaseAddr(CheriotMainSramBaseAddr),
+  .CheriotMainSramTopAddr(CheriotMainSramTopAddr),
+  .CheriotNvmBaseAddr(CheriotNvmBaseAddr),
+  .CheriotNvmTopAddr(CheriotNvmTopAddr),
+  .CheriotMetaSramBaseAddr(CheriotMetaSramBaseAddr),
+  .SramCtrlMetaInstSize(SramCtrlMetaInstSize),
+  .SramCtrlMetaNumRamInst(SramCtrlMetaNumRamInst),
+  .SramCtrlMetaInstrExec(SramCtrlMetaInstrExec),
+  .SramCtrlMetaNumPrinceRoundsHalf(SramCtrlMetaNumPrinceRoundsHalf),
+  .SramCtrlMetaNumAddrScrRounds(SramCtrlMetaNumAddrScrRounds),
+  .SramCtrlMetaEccCorrection(SramCtrlMetaEccCorrection)
   ) earlgrey_pd_main (
     // Clocks and clock gating control from clkmgr
     .clkmgr_clocks_i(clkmgr_clocks_o),
@@ -557,6 +589,8 @@ module top_earlgrey #(
     .sram_ctrl_main_ram_cfg_rsp_o,
     .sram_ctrl_sec_ram_cfg_req_i,
     .sram_ctrl_sec_ram_cfg_rsp_o,
+    .sram_ctrl_meta_ram_cfg_req_i,
+    .sram_ctrl_meta_ram_cfg_rsp_o,
     .es_rng_enable_o,
     .es_rng_valid_i,
     .es_rng_bit_i,

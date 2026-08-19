@@ -27,7 +27,7 @@ initial force dut.rst_spi_host1_ni = rst_n;
 
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(rv_core_ibex__corei, dut, clk_main_i, rst_n)
-`CONNECT_TL_HOST_IF(rv_core_ibex__cored, dut, clk_main_i, rst_n)
+`CONNECT_TL_HOST_IF(cheriot__cored, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(rv_dm__sba, dut, clk_main_i, rst_n)
 
 // Device TileLink interface connections
@@ -56,4 +56,7 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__ram, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_sec__regs, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(sram_ctrl_meta__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_sec__ram, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(cheriot__regs, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(cheriot__revbm, dut, clk_main_i, rst_n)

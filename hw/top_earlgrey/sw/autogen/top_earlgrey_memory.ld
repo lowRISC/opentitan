@@ -19,6 +19,8 @@ MEMORY {
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x20000
   ram_secondary(rwx) : ORIGIN = 0x10020000, LENGTH = 0x10000
   rom(rx) : ORIGIN = 0x00040000, LENGTH = 0xc000
+  cheriot_revbm(rw) : ORIGIN = 0x11000000, LENGTH = 0xc00
+  ram_cheriot_meta(rw) : ORIGIN = 0x11000000, LENGTH = 0x9800
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x100000
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x100000
 }

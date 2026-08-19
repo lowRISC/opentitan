@@ -33,6 +33,7 @@ package bkdr_loader_pkg;
 
   // Target indices
   typedef enum logic [TargetIdxWidth-1:0] {
+    BkdrSramMeta  = 'd6,
     BkdrRramInfo  = 'd5,
     BkdrRramData  = 'd4,
     BkdrAon       = 'd3,
@@ -43,6 +44,7 @@ package bkdr_loader_pkg;
 
   // Valid targets
   localparam bkdr_idx_e BkdrValidTgts [NumBkdrTgts] = {
+    BkdrSramMeta,
     BkdrRramInfo,
     BkdrRramData,
     BkdrAon,
@@ -53,6 +55,7 @@ package bkdr_loader_pkg;
 
   // Strings describing the targets (max, 4 chars)
   localparam reg_t [NumBkdrTgts-1:0] BkdrTargets = {
+    "META",
     "RRIN",
     "RRDA",
     "AON ",

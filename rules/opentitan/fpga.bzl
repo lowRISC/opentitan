@@ -199,7 +199,7 @@ def _get_test_commands(ctx, param, exec_env):
     # can be used for testing on FPGA. This is a workaround for the lack of info page
     # splicing, but means that for now we need to make sure that at least the boot data
     # info pages are cleared between each run.
-    backdoor_writes = "--clear AON=ALL --clear SRAM=ALL --clear SRM2=ALL"
+    backdoor_writes = "--clear AON=ALL --clear SRAM=ALL --clear SRM2=ALL --clear META=ALL"
     backdoor_writes += " --clear RRDA=ALL --clear RRIN=ALL"
 
     # Load the ROM & OTP over the backdoor loader. ROM is read-only once mission mode is

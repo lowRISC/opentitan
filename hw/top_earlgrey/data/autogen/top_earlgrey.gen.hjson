@@ -606,8 +606,10 @@
             edn1
             sram_ctrl_main.regs
             sram_ctrl_sec.regs
+            sram_ctrl_meta.regs
             rom_ctrl.regs
             rv_core_ibex
+            cheriot.regs
           ]
         }
       ]
@@ -1725,6 +1727,10 @@
         }
       }
       attr: ipgen
+      ipgen_params:
+      {
+        num_sram_key_req_slots: 5
+      }
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_secure
@@ -1966,7 +1972,7 @@
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
-          width: 4
+          width: 5
           default: "'0"
           inst_name: otp_ctrl
           end_idx: -1
@@ -9264,6 +9270,7 @@
       ipgen_params:
       {
         num_regions: 2
+        cheriot_available: true
       }
       param_decl:
       {
@@ -9275,6 +9282,9 @@
         PMPRstCfg: ibex_pmp_reset_pkg::PmpCfgRst
         PMPRstAddr: ibex_pmp_reset_pkg::PmpAddrRst
         PMPRstMsecCfg: ibex_pmp_reset_pkg::PmpMseccfgRst
+        CheriotRevBitmapAddrWidth: "12"
+        CheriotRevBitmapBaseAddr: 32'h1100_0000
+        CheriotTrvkHeapBaseAddr: 32'h1000_0000
         RV32E: "0"
         RV32M: ibex_pkg::RV32MSingleCycle
         RV32B: ibex_pkg::RV32BOTEarlGrey
@@ -9437,6 +9447,33 @@
           local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstMsecCfg
+        }
+        {
+          name: CheriotRevBitmapAddrWidth
+          desc: Address width of the TRVK revocation bitmap.
+          type: int unsigned
+          default: "12"
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexCheriotRevBitmapAddrWidth
+        }
+        {
+          name: CheriotRevBitmapBaseAddr
+          desc: Base address of the TRVK revocation bitmap.
+          type: int unsigned
+          default: 32'h1100_0000
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexCheriotRevBitmapBaseAddr
+        }
+        {
+          name: CheriotTrvkHeapBaseAddr
+          desc: Base address of the heap.
+          type: int unsigned
+          default: 32'h1000_0000
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexCheriotTrvkHeapBaseAddr
         }
         {
           name: RV32E
@@ -9674,6 +9711,80 @@
           act: req
           width: 1
           inst_name: rv_core_ibex
+          index: -1
+        }
+        {
+          name: cheriot_ena
+          desc: CHERIoT mode enable.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: rv_core_ibex
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_cheriot_ena
+          index: -1
+        }
+        {
+          name: cored_tl_h
+          desc: Core data host port to the CHERIoT subsystem.
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: rv_core_ibex_cored_tl_h
+          index: -1
+        }
+        {
+          name: cored_tag_h2d
+          desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: rv_core_ibex
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_cored_tag_h2d
+          index: -1
+        }
+        {
+          name: cored_tag_d2h
+          desc: Capability tag returned on the D-channel of cored_tl_h.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: rv_core_ibex
+          package: ""
+          domain: Main
+          top_signame: cheriot_cored_tag_d2h
+          index: -1
+        }
+        {
+          name: corerevbm_tl
+          desc: Core revocation bitmap host port.
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: rv_core_ibex_corerevbm_tl
           index: -1
         }
         {
@@ -9924,7 +10035,7 @@
           default: ""
           domain: Main
           top_signame: otp_ctrl_sram_otp_key
-          index: 3
+          index: 4
         }
         {
           name: fpga_info
@@ -9954,19 +10065,6 @@
           index: -1
         }
         {
-          name: cored_tl_h
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: rv_core_ibex
-          default: ""
-          domain: Main
-          top_signame: main_tl_rv_core_ibex__cored
-          index: -1
-        }
-        {
           name: cfg_tl_d
           struct: tl
           package: tlul_pkg
@@ -9988,6 +10086,529 @@
           hart: 0x411F0000
         }
       }
+      generate_dif: true
+      domain: Main
+    }
+    {
+      name: cheriot
+      type: cheriot
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: Main
+        }
+      }
+      param_decl:
+      {
+        MainSramBaseAddr: 32'h1000_0000
+        MainSramTopAddr: 32'h1003_0000
+        NvmBaseAddr: 32'h3000_0000
+        NvmTopAddr: 32'h3020_0000
+        MetaSramBaseAddr: 32'h1100_0000
+      }
+      base_addrs:
+      {
+        regs:
+        {
+          hart: 0x411B0000
+        }
+        revbm:
+        {
+          hart: 0x11000000
+        }
+      }
+      memory:
+      {
+        revbm:
+        {
+          label: cheriot_revbm
+          swaccess: rw
+          data_intg_passthru: True
+          exec: false
+          byte_write: False
+          size: 0xc00
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks_i.clk_main_infra
+      }
+      param_list:
+      [
+        {
+          name: MainSramBaseAddr
+          desc: Base address of the main SRAM region (inclusive).
+          type: logic [top_pkg::TL_AW-1:0]
+          default: 32'h1000_0000
+          local: "false"
+          expose: "true"
+          name_top: CheriotMainSramBaseAddr
+        }
+        {
+          name: MainSramTopAddr
+          desc: Top address of the main SRAM region (exclusive).
+          type: logic [top_pkg::TL_AW-1:0]
+          default: 32'h1003_0000
+          local: "false"
+          expose: "true"
+          name_top: CheriotMainSramTopAddr
+        }
+        {
+          name: NvmBaseAddr
+          desc: Base address of the NVM region (inclusive).
+          type: logic [top_pkg::TL_AW-1:0]
+          default: 32'h3000_0000
+          local: "false"
+          expose: "true"
+          name_top: CheriotNvmBaseAddr
+        }
+        {
+          name: NvmTopAddr
+          desc: Top address of the NVM region (exclusive).
+          type: logic [top_pkg::TL_AW-1:0]
+          default: 32'h3020_0000
+          local: "false"
+          expose: "true"
+          name_top: CheriotNvmTopAddr
+        }
+        {
+          name: MetaSramBaseAddr
+          desc: Base address of the CHERIoT meta SRAM region.
+          type: logic [top_pkg::TL_AW-1:0]
+          default: 32'h1100_0000
+          local: "false"
+          expose: "true"
+          name_top: CheriotMetaSramBaseAddr
+        }
+        {
+          name: MemSizeRevbm
+          desc:
+            '''
+            Size of the revocation bitmap window (in bytes).
+            Must match the size derived from the main SRAM region; this is checked by an
+            assertion in the RTL.
+            '''
+          type: int
+          name_top: MemSizeCheriotRevbm
+          default: 3072
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: cheriot_ena
+          desc: CHERIoT mode enable.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: cheriot
+          domain: Main
+          top_signame: rv_core_ibex_cheriot_ena
+          index: -1
+        }
+        {
+          name: cored_tl_d
+          desc: Data port from the core.
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: cheriot
+          default: ""
+          domain: Main
+          top_signame: rv_core_ibex_cored_tl_h
+          index: -1
+        }
+        {
+          name: cored_tag_h2d
+          desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: cheriot
+          package: ""
+          domain: Main
+          top_signame: rv_core_ibex_cored_tag_h2d
+          index: -1
+        }
+        {
+          name: cored_tag_d2h
+          desc: Capability tag returned on the D-channel of cored_tl_h.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: cheriot
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: cheriot_cored_tag_d2h
+          index: -1
+        }
+        {
+          name: corerevbm_tl
+          desc: TRVK (tag revocation) revocation bitmap port from the core.
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: cheriot
+          default: ""
+          domain: Main
+          top_signame: rv_core_ibex_corerevbm_tl
+          index: -1
+        }
+        {
+          name: meta_sram_tl
+          desc: Host TL-UL port to the external meta SRAM controller's RAM interface.
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: cheriot
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: cheriot_meta_sram_tl
+          index: -1
+        }
+        {
+          name: cored_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: cheriot
+          default: ""
+          domain: Main
+          top_signame: main_tl_cheriot__cored
+          index: -1
+        }
+        {
+          name: regs_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: cheriot
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: cheriot_regs_tl_d
+          index: -1
+        }
+        {
+          name: revbm_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: cheriot
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: cheriot_revbm_tl_d
+          index: -1
+        }
+      ]
+      generate_dif: true
+      domain: Main
+    }
+    {
+      name: sram_ctrl_meta
+      type: sram_ctrl
+      clock_srcs:
+      {
+        clk_i: main
+        clk_otp_i: io_div4
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: Main
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: Main
+        }
+      }
+      param_decl:
+      {
+        InstrExec: "0"
+        NumAddrScrRounds: "0"
+        NumPrinceRoundsHalf: "2"
+        InstSize: "38912"
+      }
+      base_addrs:
+      {
+        regs:
+        {
+          hart: 0x411A0000
+        }
+        ram:
+        {
+          hart: 0x11000000
+        }
+      }
+      memory:
+      {
+        ram:
+        {
+          label: ram_cheriot_meta
+          swaccess: rw
+          data_intg_passthru: "true"
+          exec: false
+          byte_write: False
+          size: 0x9800
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_otp_i: clkmgr_clocks_i.clk_io_div4_infra
+      }
+      param_list:
+      [
+        {
+          name: MemSizeRam
+          desc:
+            '''
+            Memory size of the RAM (in bytes).
+            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
+            '''
+          type: int
+          name_top: MemSizeSramCtrlMetaRam
+          default: 38912
+        }
+        {
+          name: InstSize
+          desc: Memory size of a single RAM tile (in bytes).
+          type: int
+          default: "38912"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaInstSize
+        }
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          type: int
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaNumRamInst
+        }
+        {
+          name: InstrExec
+          desc: Support execution from SRAM
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaInstrExec
+        }
+        {
+          name: NumPrinceRoundsHalf
+          desc: Number of PRINCE half rounds for the SRAM scrambling feature
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaNumPrinceRoundsHalf
+        }
+        {
+          name: NumAddrScrRounds
+          desc: Number of address scrambling rounds. 0 disables address scrambling.
+          type: int
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaNumAddrScrRounds
+        }
+        {
+          name: Outstanding
+          desc: Number of outstanding TLUL transactions
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: SramCtrlMetaOutstanding
+        }
+        {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMetaEccCorrection
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: sram_otp_key
+          struct: sram_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: sram_ctrl_meta
+          default: ""
+          domain: Main
+          top_signame: otp_ctrl_sram_otp_key
+          index: 3
+        }
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width:
+          {
+            name: NumRamInst
+            desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: SramCtrlMetaNumRamInst
+          }
+          inst_name: sram_ctrl_meta
+          default: ""
+          external: true
+          conn_type: false
+          index: -1
+          top_signame: sram_ctrl_meta_ram_cfg
+        }
+        {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_meta
+          domain: Main
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_meta
+          domain: Main
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: otp_en_sram_ifetch
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8False
+          inst_name: sram_ctrl_meta
+          index: -1
+        }
+        {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: sram_ctrl_meta
+          index: -1
+        }
+        {
+          name: racl_error
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_meta
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+          struct: sram_error_t
+          package: sram_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_meta
+          index: -1
+        }
+        {
+          name: regs_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_meta
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: sram_ctrl_meta_regs_tl
+          index: -1
+        }
+        {
+          name: ram_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_meta
+          default: ""
+          domain: Main
+          top_signame: cheriot_meta_sram_tl
+          index: -1
+        }
+      ]
       generate_dif: true
       domain: Main
     }
@@ -10099,6 +10720,7 @@
         sram_ctrl_main.sram_otp_key
         sram_ctrl_sec.sram_otp_key
         sram_ctrl_ret.sram_otp_key
+        sram_ctrl_meta.sram_otp_key
         rv_core_ibex.icache_otp_key
       ]
       pwrmgr.pwr_nvm:
@@ -10293,6 +10915,7 @@
       [
         sram_ctrl_main.lc_hw_debug_en
         sram_ctrl_sec.lc_hw_debug_en
+        sram_ctrl_meta.lc_hw_debug_en
         pinmux.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
@@ -10316,6 +10939,7 @@
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_sec.lc_escalate_en
         sram_ctrl_ret.lc_escalate_en
+        sram_ctrl_meta.lc_escalate_en
         aon_timer.lc_escalate_en
         rram_ctrl.lc_escalate_en
         pinmux.lc_escalate_en
@@ -10383,6 +11007,18 @@
       [
         pwrmgr.pwr_cpu
       ]
+      rv_core_ibex.cored_tl_h:
+      [
+        cheriot.cored_tl_d
+      ]
+      rv_core_ibex.corerevbm_tl:
+      [
+        cheriot.corerevbm_tl
+      ]
+      rv_core_ibex.cored_tag_h2d:
+      [
+        cheriot.cored_tag_h2d
+      ]
       spi_device.passthrough:
       [
         spi_host0.passthrough
@@ -10398,6 +11034,18 @@
       rram_ctrl.rram_macro:
       [
         rram_macro.rram_macro
+      ]
+      cheriot.meta_sram_tl:
+      [
+        sram_ctrl_meta.ram_tl
+      ]
+      cheriot.cored_tag_d2h:
+      [
+        rv_core_ibex.cored_tag_d2h
+      ]
+      rv_core_ibex.cheriot_ena:
+      [
+        cheriot.cheriot_ena
       ]
       pwrmgr.wakeups:
       [
@@ -10417,9 +11065,9 @@
       [
         rv_core_ibex.corei_tl_h
       ]
-      main.tl_rv_core_ibex__cored:
+      main.tl_cheriot__cored:
       [
-        rv_core_ibex.cored_tl_h
+        cheriot.cored_tl_h
       ]
       main.tl_rv_dm__sba:
       [
@@ -10525,9 +11173,21 @@
       [
         main.tl_sram_ctrl_sec__regs
       ]
+      sram_ctrl_meta.regs_tl:
+      [
+        main.tl_sram_ctrl_meta__regs
+      ]
       sram_ctrl_sec.ram_tl:
       [
         main.tl_sram_ctrl_sec__ram
+      ]
+      cheriot.regs_tl_d:
+      [
+        main.tl_cheriot__regs
+      ]
+      cheriot.revbm_tl_d:
+      [
+        main.tl_cheriot__revbm
       ]
       uart0.tl:
       [
@@ -10666,6 +11326,7 @@
       sram_ctrl_main.ram_cfg: sram_ctrl_main_ram_cfg
       sram_ctrl_sec.ram_cfg: sram_ctrl_sec_ram_cfg
       sram_ctrl_ret.ram_cfg: sram_ctrl_ret_ram_cfg
+      sram_ctrl_meta.ram_cfg: sram_ctrl_meta_ram_cfg
       clkmgr.clocks: ""
       clkmgr.cg_en: ""
       clkmgr.jitter_en: clk_main_jitter_en
@@ -10767,7 +11428,7 @@
           sram_ctrl_sec.ram
           rram_ctrl.host
         ]
-        rv_core_ibex.cored:
+        cheriot.cored:
         [
           rom_ctrl.rom
           rom_ctrl.regs
@@ -10794,7 +11455,10 @@
           kmac
           sram_ctrl_main.regs
           sram_ctrl_sec.regs
+          sram_ctrl_meta.regs
           rv_core_ibex.cfg
+          cheriot.regs
+          cheriot.revbm
         ]
         rv_dm.sba:
         [
@@ -10823,7 +11487,10 @@
           kmac
           sram_ctrl_main.regs
           sram_ctrl_sec.regs
+          sram_ctrl_meta.regs
           rv_core_ibex.cfg
+          cheriot.regs
+          cheriot.revbm
         ]
       }
       nodes:
@@ -10842,7 +11509,7 @@
           rsp_fifo_pass: true
         }
         {
-          name: rv_core_ibex.cored
+          name: cheriot.cored
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -11424,6 +12091,28 @@
           pipeline: true
         }
         {
+          name: sram_ctrl_meta.regs
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x411a0000
+              }
+              size_byte: 0x40
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
           name: sram_ctrl_sec.ram
           type: device
           clock: clk_main_i
@@ -11443,6 +12132,50 @@
           xbar: false
           stub: false
           req_fifo_pass: true
+        }
+        {
+          name: cheriot.regs
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: cheriot
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x411b0000
+              }
+              size_byte: 0x4
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: cheriot.revbm
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: cheriot
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x11000000
+              }
+              size_byte: 0xc00
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
         }
       ]
       addr_spaces:
@@ -11468,7 +12201,7 @@
           index: -1
         }
         {
-          name: tl_rv_core_ibex__cored
+          name: tl_cheriot__cored
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -11478,7 +12211,7 @@
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: main_tl_rv_core_ibex__cored
+          top_signame: main_tl_cheriot__cored
           index: -1
         }
         {
@@ -11822,6 +12555,19 @@
           index: -1
         }
         {
+          name: tl_sram_ctrl_meta__regs
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: sram_ctrl_meta_regs_tl
+          index: -1
+        }
+        {
           name: tl_sram_ctrl_sec__ram
           struct: tl
           package: tlul_pkg
@@ -11832,6 +12578,32 @@
           default: ""
           domain: Main
           top_signame: sram_ctrl_sec_ram_tl
+          index: -1
+        }
+        {
+          name: tl_cheriot__regs
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: cheriot_regs_tl_d
+          index: -1
+        }
+        {
+          name: tl_cheriot__revbm
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: cheriot_revbm_tl_d
           index: -1
         }
       ]
@@ -16182,6 +16954,28 @@
       lpg_name: infra_lc_Main
       lpg_idx: 17
     }
+    {
+      name: cheriot_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: cheriot
+      desc: cheriot fatal_fault alert
+      lpg_name: infra_lc_Main
+      lpg_idx: 17
+    }
+    {
+      name: sram_ctrl_meta_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: sram_ctrl_meta
+      desc: sram_ctrl_meta fatal_error alert
+      lpg_name: infra_lc_Main
+      lpg_idx: 17
+    }
   ]
   outgoing_alert: {}
   interrupt:
@@ -19092,6 +19886,8 @@
     sram_ctrl_sec
     rom_ctrl
     rv_core_ibex
+    cheriot
+    sram_ctrl_meta
   ]
   alert_connections:
   {
@@ -19519,17 +20315,37 @@
         alert_handler[63]: recov_hw_err
       ]
     }
+    module_cheriot:
+    {
+      tx_expr: alert_tx[64]
+      rx_expr: alert_rx[64]
+      async_expr: alert_handler_reg_pkg::AsyncOn[64]
+      comments:
+      [
+        alert_handler[64]: fatal_fault
+      ]
+    }
+    module_sram_ctrl_meta:
+    {
+      tx_expr: alert_tx[65]
+      rx_expr: alert_rx[65]
+      async_expr: alert_handler_reg_pkg::AsyncOn[65]
+      comments:
+      [
+        alert_handler[65]: fatal_error
+      ]
+    }
   }
   alert_handler_info:
   {
     alert_handler:
     {
       domain: Main
-      count_tot: 64
+      count_tot: 66
       count_pd:
       {
         Aon: 11
-        Main: 53
+        Main: 55
       }
       connect_pd:
       {
@@ -21106,7 +21922,7 @@
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
-        width: 4
+        width: 5
         default: "'0"
         inst_name: otp_ctrl
         end_idx: -1
@@ -25768,6 +26584,80 @@
         index: -1
       }
       {
+        name: cheriot_ena
+        desc: CHERIoT mode enable.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_core_ibex
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_cheriot_ena
+        index: -1
+      }
+      {
+        name: cored_tl_h
+        desc: Core data host port to the CHERIoT subsystem.
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: rv_core_ibex_cored_tl_h
+        index: -1
+      }
+      {
+        name: cored_tag_h2d
+        desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: rv_core_ibex
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_cored_tag_h2d
+        index: -1
+      }
+      {
+        name: cored_tag_d2h
+        desc: Capability tag returned on the D-channel of cored_tl_h.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: rv_core_ibex
+        package: ""
+        domain: Main
+        top_signame: cheriot_cored_tag_d2h
+        index: -1
+      }
+      {
+        name: corerevbm_tl
+        desc: Core revocation bitmap host port.
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: rv_core_ibex_corerevbm_tl
+        index: -1
+      }
+      {
         name: ram_cfg_icache_tag
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
@@ -26015,7 +26905,7 @@
         default: ""
         domain: Main
         top_signame: otp_ctrl_sram_otp_key
-        index: 3
+        index: 4
       }
       {
         name: fpga_info
@@ -26045,19 +26935,6 @@
         index: -1
       }
       {
-        name: cored_tl_h
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: rv_core_ibex
-        default: ""
-        domain: Main
-        top_signame: main_tl_rv_core_ibex__cored
-        index: -1
-      }
-      {
         name: cfg_tl_d
         struct: tl
         package: tlul_pkg
@@ -26069,6 +26946,271 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: rv_core_ibex_cfg_tl_d
+        index: -1
+      }
+      {
+        name: cheriot_ena
+        desc: CHERIoT mode enable.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: cheriot
+        domain: Main
+        top_signame: rv_core_ibex_cheriot_ena
+        index: -1
+      }
+      {
+        name: cored_tl_d
+        desc: Data port from the core.
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: cheriot
+        default: ""
+        domain: Main
+        top_signame: rv_core_ibex_cored_tl_h
+        index: -1
+      }
+      {
+        name: cored_tag_h2d
+        desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: cheriot
+        package: ""
+        domain: Main
+        top_signame: rv_core_ibex_cored_tag_h2d
+        index: -1
+      }
+      {
+        name: cored_tag_d2h
+        desc: Capability tag returned on the D-channel of cored_tl_h.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: cheriot
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: cheriot_cored_tag_d2h
+        index: -1
+      }
+      {
+        name: corerevbm_tl
+        desc: TRVK (tag revocation) revocation bitmap port from the core.
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: cheriot
+        default: ""
+        domain: Main
+        top_signame: rv_core_ibex_corerevbm_tl
+        index: -1
+      }
+      {
+        name: meta_sram_tl
+        desc: Host TL-UL port to the external meta SRAM controller's RAM interface.
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: cheriot
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: cheriot_meta_sram_tl
+        index: -1
+      }
+      {
+        name: cored_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: cheriot
+        default: ""
+        domain: Main
+        top_signame: main_tl_cheriot__cored
+        index: -1
+      }
+      {
+        name: regs_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: cheriot
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: cheriot_regs_tl_d
+        index: -1
+      }
+      {
+        name: revbm_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: cheriot
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: cheriot_revbm_tl_d
+        index: -1
+      }
+      {
+        name: sram_otp_key
+        struct: sram_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: sram_ctrl_meta
+        default: ""
+        domain: Main
+        top_signame: otp_ctrl_sram_otp_key
+        index: 3
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlMetaNumRamInst
+        }
+        inst_name: sram_ctrl_meta
+        default: ""
+        external: true
+        conn_type: false
+        index: -1
+        top_signame: sram_ctrl_meta_ram_cfg
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_meta
+        domain: Main
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_meta
+        domain: Main
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: otp_en_sram_ifetch
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8False
+        inst_name: sram_ctrl_meta
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: sram_ctrl_meta
+        index: -1
+      }
+      {
+        name: racl_error
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_meta
+        index: -1
+      }
+      {
+        name: sram_rerror
+        desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+        struct: sram_error_t
+        package: sram_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_meta
+        index: -1
+      }
+      {
+        name: regs_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_meta
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: sram_ctrl_meta_regs_tl
+        index: -1
+      }
+      {
+        name: ram_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_meta
+        default: ""
+        domain: Main
+        top_signame: cheriot_meta_sram_tl
         index: -1
       }
       {
@@ -26086,7 +27228,7 @@
         index: -1
       }
       {
-        name: tl_rv_core_ibex__cored
+        name: tl_cheriot__cored
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -26096,7 +27238,7 @@
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: main_tl_rv_core_ibex__cored
+        top_signame: main_tl_cheriot__cored
         index: -1
       }
       {
@@ -26440,6 +27582,19 @@
         index: -1
       }
       {
+        name: tl_sram_ctrl_meta__regs
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: sram_ctrl_meta_regs_tl
+        index: -1
+      }
+      {
         name: tl_sram_ctrl_sec__ram
         struct: tl
         package: tlul_pkg
@@ -26450,6 +27605,32 @@
         default: ""
         domain: Main
         top_signame: sram_ctrl_sec_ram_tl
+        index: -1
+      }
+      {
+        name: tl_cheriot__regs
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: cheriot_regs_tl_d
+        index: -1
+      }
+      {
+        name: tl_cheriot__revbm
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: cheriot_revbm_tl_d
         index: -1
       }
       {
@@ -29354,6 +30535,66 @@
         netname: sram_ctrl_ret_ram_cfg_rsp
       }
       {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        inter_pd: false
+        signame: sram_ctrl_meta_ram_cfg_req_i
+        signame_chip:
+        {
+          asic: sram_ctrl_meta_ram_cfg_req
+          verilator: sram_ctrl_meta_ram_cfg_req
+          cw340: sram_ctrl_meta_ram_cfg_req
+        }
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlMetaNumRamInst
+        }
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_meta_ram_cfg_req
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        inter_pd: false
+        signame: sram_ctrl_meta_ram_cfg_rsp_o
+        signame_chip:
+        {
+          asic: sram_ctrl_meta_ram_cfg_rsp
+          verilator: sram_ctrl_meta_ram_cfg_rsp
+          cw340: sram_ctrl_meta_ram_cfg_rsp
+        }
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlMetaNumRamInst
+        }
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_meta_ram_cfg_rsp
+      }
+      {
         package: clkmgr_pkg
         struct: clkmgr_out
         domain: Aon
@@ -31356,7 +32597,7 @@
         struct: sram_otp_key_req
         domain: Main
         signame: otp_ctrl_sram_otp_key_req
-        width: 4
+        width: 5
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -31368,7 +32609,7 @@
         struct: sram_otp_key_rsp
         domain: Main
         signame: otp_ctrl_sram_otp_key_rsp
-        width: 4
+        width: 5
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -32156,6 +33397,66 @@
         default: "'0"
       }
       {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: rv_core_ibex_cored_tl_h_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: rv_core_ibex_cored_tl_h_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: tlul_pkg::TL_D2H_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: rv_core_ibex_corerevbm_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: rv_core_ibex_corerevbm_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: tlul_pkg::TL_D2H_DEFAULT
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        signame: rv_core_ibex_cored_tag_h2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
         package: spi_device_pkg
         struct: passthrough_req
         domain: Main
@@ -32216,6 +33517,54 @@
         default: rram_ctrl_pkg::RRAM_MACRO_RSP_DEFAULT
       }
       {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: cheriot_meta_sram_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: cheriot_meta_sram_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: tlul_pkg::TL_D2H_DEFAULT
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        signame: cheriot_cored_tag_d2h
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: rv_core_ibex_cheriot_ena
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
+      }
+      {
         package: ""
         struct: logic
         domain: Aon
@@ -32267,7 +33616,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: main_tl_rv_core_ibex__cored_req
+        signame: main_tl_cheriot__cored_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -32279,7 +33628,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: main_tl_rv_core_ibex__cored_rsp
+        signame: main_tl_cheriot__cored_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -32915,6 +34264,30 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
+        signame: sram_ctrl_meta_regs_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: sram_ctrl_meta_regs_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
         signame: sram_ctrl_sec_ram_tl_req
         width: 1
         type: req_rsp
@@ -32928,6 +34301,54 @@
         struct: tl_d2h
         domain: Main
         signame: sram_ctrl_sec_ram_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: cheriot_regs_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: cheriot_regs_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: cheriot_revbm_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: cheriot_revbm_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1

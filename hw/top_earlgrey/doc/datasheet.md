@@ -131,8 +131,11 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
             <li>38 KiB CHERIoT meta SRAM
               <ul>
                 <li>This stores the CHERIoT tag and revocation bits for the Main SRAM and the Secondary SRAM and the CHERIoT tag bits for the RRAM.</li>
+                <li>32 data bit + 7 ECC bit per architectural row.</li>
                 <li>In CHERIoT mode, this SRAM is only accessible by software as far as required and permitted by the CHERIoT specification.</li>
                 <li>In non-CHERIoT mode, this SRAM is not accessible by software.</li>
+                <li>Scrambling of data with reduced-round PRINCE cipher; address scrambling is currently disabled.</li>
+                <li>Hardened against FI attacks with a readback mechanism.</li>
               </ul>
             </li>
           </ul>

@@ -875,6 +875,11 @@ interface chip_if;
         force `CPU_CORE_HIER.clk_i = 1'b0;
         force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
         force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
+        // The CHERIoT sidebands leave the core directly, so with its clock silenced they hold X
+        // for the whole simulation.
+        force `CPU_HIER.cored_tag_h2d_o = 1'b0;
+        force `CPU_HIER.main_core_revbm_req = 1'b0;
+        force `CPU_HIER.main_core_revbm_addr = '0;
         force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
         force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
 
