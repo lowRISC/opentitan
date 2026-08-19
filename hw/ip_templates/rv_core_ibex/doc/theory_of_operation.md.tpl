@@ -1,6 +1,6 @@
 # Theory of Operation
 
-## Simple Address Translation
+<%text>## Simple Address Translation</%text>
 
 The wrapper supports a simple address translation scheme.
 The goal of the scheme is to provide hardware support for A/B software copies.
@@ -23,7 +23,7 @@ If a transaction matches multiple regions, the lowest indexed region has priorit
 
 For details on how to program the related registers, please see [`IBUS_ADDR_MATCHING_0`](registers.md#ibus_addr_matching) and [`IBUS_REMAP_ADDR_0`](registers.md#ibus_remap_addr).
 
-### Translation and Instruction Caching
+<%text>### Translation and Instruction Caching</%text>
 
 The simple address translation scheme used in this design is not aware of the processor context, specifically, any instruction caching done in the core.
 This means if the address translation scheme were to change, instructions that are already cached may not reflect the updated address setting.
@@ -31,7 +31,7 @@ This means if the address translation scheme were to change, instructions that a
 In order to correctly utilize simple address translation along with instruction caching, it is recommended that after the address is updated a `FENCE.I` instruction is issued.
 The `FENCE.I` instruction forces the instruction cache to flush, and this aligns the core to the new address setting.
 
-## Random Number Generation
+<%text>## Random Number Generation</%text>
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)](../../../../ip/edn/README.md) with a register based interface.
 The [`RND_DATA`](registers.md#rnd_data) register provides 32-bits directly from the EDN.
@@ -48,7 +48,7 @@ Software should take care not to enable the EDN until the entropy complex config
 When the entropy complex configuration is changed reading [`RND_DATA`](registers.md#rnd_data) when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
 If a EDN request is pending when the entropy complex configuration is changed ([`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
 
-## Crash Dump Collection
+<%text>## Crash Dump Collection</%text>
 
 In general, when the CPU encounters an error, it is software's responsibility to collect error status and supply it for debug.
 
@@ -81,17 +81,17 @@ This allows the software to see both fault locations and debug accordingly.
 
 In terms of how the crash state information can be used, the following are a few examples.
 
-### Hung Transaction
+<%text>### Hung Transaction</%text>
 
 Assuming the system has a watchdog counter setup, when a CPU transaction hangs the bus (accessing a device whose clock is not turned on or is under reset), the PC and bus access freeze in place until the watchdog resets the system.
 Upon reset release, software can check the last PC and data access address to get an idea of what transaction might have caused the bus to hang.
 
-### Double Exception
+<%text>### Double Exception</%text>
 
 If the software has some kind of error and encounters two exceptions in a row, the previous exception PC and address show the location of the first exception, while the current exception address and PC show the location of the most recent exception.
 
 
-## Fetch Enable
+<%text>## Fetch Enable</%text>
 
 Ibex has a top-level fetch enable input (``fetch_enable_i``), which uses the same multi-bit encoding used by the lifecycle controller.
 When Ibex fetch is disabled it will cease to execute, but will complete instructions currently in the pipeline.
@@ -100,6 +100,39 @@ Ibex fetch is enabled when all of the following conditions are met:
   - The power manager has enabled it
   - A ``fatal_hw_err`` alert hasn't been raised
 
-### Local Escalation Path
+<%text>### Local Escalation Path</%text>
 
 When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+% if cheriot_available:
+
+<%text>## Execution Mode Switch</%text>
+
+When CHERIoT is available, Ibex is synthesized with a CHERIoT-capable base ISA and can execute either the base RV32 ISA with ePMP, or the CHERIoT ISA.
+The two memory protection schemes are mutually exclusive, so exactly one of them is active at a time.
+The Ibex wrapper contains a write-once switch that selects between them.
+It resets unlocked in ePMP mode.
+
+The selected mode is not routed to Ibex and the CHERIoT memory subsystem yet.
+
+<%text>### Write Sequence</%text>
+
+The switch is programmed through two registers:
+
+1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
+2. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+
+The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and latches the selected mode.
+Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
+From then on the mode is fixed until `rv_core_ibex` is reset.
+Further writes to either register have no effect.
+
+<%text>### Error State</%text>
+
+The switch has a terminal error state.
+It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
+
+In the error state, the `fatal_hw_err` alert is raised, which also disables Ibex fetch through the local escalation path described above.
+The state is only left by resetting `rv_core_ibex`.
+In the error state the mode output is driven to an invalid multi-bit value.
+The consumers are expected to escalate.
+% endif

@@ -1,6 +1,5 @@
 # Hardware Interfaces
 
-
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_englishbreakfast/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rv_core_ibex`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
@@ -67,8 +66,10 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 <!-- END CMDGEN -->
 
+## Signals
+
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
-The CHERIoT ports and parameters (signals and parameters starting with `trvk_`, plus `BaseIsa`) are not yet exposed either.
+The CHERIoT ports and parameters (signals and parameters starting with `trvk_`, plus `BaseIsa`) are not yet exposed.
 Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
 
 The instruction and data memory ports are exposed as TL-UL ports.
