@@ -727,8 +727,9 @@ module xbar_main (
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_29 = 3'd5;
-    if (((tl_s1n_29_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
-       (tl_s1n_29_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM))) begin
+    if (
+      (tl_s1n_29_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
+      (tl_s1n_29_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM)) begin
       dev_sel_s1n_29 = 3'd0;
 
     end else if ((tl_s1n_29_us_h2d.a_address &
@@ -752,8 +753,9 @@ end
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_35 = 5'd26;
-    if (((tl_s1n_35_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
-       (tl_s1n_35_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM))) begin
+    if (
+      (tl_s1n_35_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
+      (tl_s1n_35_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM)) begin
       dev_sel_s1n_35 = 5'd0;
 
     end else if ((tl_s1n_35_us_h2d.a_address &
@@ -863,8 +865,9 @@ end
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_61 = 5'd26;
-    if (((tl_s1n_61_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
-       (tl_s1n_61_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM))) begin
+    if (
+      (tl_s1n_61_us_h2d.a_address < (ADDR_SPACE_ROM_CTRL__ROM + ADDR_SIZE_ROM_CTRL__ROM)) &&
+      (tl_s1n_61_us_h2d.a_address >= ADDR_SPACE_ROM_CTRL__ROM)) begin
       dev_sel_s1n_61 = 5'd0;
 
     end else if ((tl_s1n_61_us_h2d.a_address &

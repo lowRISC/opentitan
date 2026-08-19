@@ -180,8 +180,9 @@ module xbar_${xbar.name} (
 %>\
   % if len(leaf.addr_ranges[asid]) == 1:
       % if checkBaseSizeOverlap(start_addr, size_bytes) or not lib.is_pow2(size_bytes):
-    ${prefix}((${addr_sig} < (${name_space} + ${name_size})) &&
-       (${addr_sig} >= ${name_space}))) begin
+    ${prefix}
+      (${addr_sig} < (${name_space} + ${name_size})) &&
+      (${addr_sig} >= ${name_space})) begin
       % else:
     ${prefix}(${addr_sig} &
     ${" " * len(prefix)} ~(${name_mask})) == ${name_space}) begin
