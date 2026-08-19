@@ -19,7 +19,7 @@ def _system_libs_repos():
     http_archive(
         name = "libelf",
         build_file = Label("//third_party/system_libs:BUILD.libelf.bazel"),
-        url = "https://sourceware.org/elfutils/ftp/0.193/elfutils-0.193.tar.bz2",
-        strip_prefix = "elfutils-0.193",
-        sha256 = "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635",
+        url = "https://storage.googleapis.com/lowrisc-bazel-cache/elfutils-0.195.tar.bz2",
+        strip_prefix = "elfutils-0.195",
+        sha256 = "37629fdf7f1f3dc2818e138fca2b8094177d6c2d0f701d3bb650a561218dc026",
     )
