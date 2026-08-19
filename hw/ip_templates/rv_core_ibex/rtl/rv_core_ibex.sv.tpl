@@ -256,6 +256,13 @@ module ${module_instance_name}
   // core sleeping
   logic core_sleep;
 
+% if cheriot_available:
+  // CHERIoT signals
+  prim_mubi_pkg::mubi4_t cheriot_ena;
+  logic                  cheriot_switch_error;
+  logic                  unused_cheriot;
+
+% endif
   // The following intermediate signals are created to aid in simulations.
   //
   // If a parent port is connected directly to a port of sub-modules, the implicit wire connection
@@ -975,7 +982,11 @@ module ${module_instance_name}
   assign alert_events[0] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
   assign alert_events[1] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
   assign alert_events[2] = cfg_reg_intg_err | cfg_reg_intg_err_shadow |
+% if cheriot_available:
+                           fatal_intg_err | fatal_core_err | cheriot_switch_error;
+% else:
                            fatal_intg_err | fatal_core_err;
+% endif
   assign alert_events[3] = recov_core_err;
 
   logic unused_alert_acks;
@@ -1065,6 +1076,38 @@ module ${module_instance_name}
   assign hw2reg.rnd_status.rnd_data_valid.d = rnd_valid_q;
   assign hw2reg.rnd_status.rnd_data_fips.d  = rnd_fips_q;
 
+% if cheriot_available:
+  ////////////////////
+  // CHERIoT switch
+  ////////////////////
+
+  // The mode switch only exists for the CHERIoT-capable base ISA.
+  `ASSERT_INIT(CheriotSwitchBaseIsa_A, BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT)
+
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch
+    // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
+    rv_core_ibex_cheriot_switch u_cheriot_switch (
+      .clk_i,
+      .rst_ni,
+      .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
+      .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
+      .lock_access_i(reg2hw.cheriot_lock.qe),
+      .ena_o        (cheriot_ena),
+      .error_o      (cheriot_switch_error)
+    );
+    // The mode output is not connected to the core yet.
+    assign unused_cheriot = ^cheriot_ena;
+
+  end else begin : gen_no_cheriot_switch
+    assign cheriot_ena          = prim_mubi_pkg::MuBi4False;
+    assign cheriot_switch_error = 1'b0;
+    assign unused_cheriot       = ^{cheriot_ena,
+                                    reg2hw.cheriot_ena,
+                                    reg2hw.cheriot_lock
+                                  };
+  end
+
+% endif
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
@@ -1155,7 +1198,12 @@ module ${module_instance_name}
     assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
                                     reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
+% if cheriot_available:
+                                    reg2hw_shadow.mcounteren_writable,
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
+% else:
                                     reg2hw_shadow.mcounteren_writable};
+% endif
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //
@@ -1581,5 +1629,12 @@ module ${module_instance_name}
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
+% if cheriot_available:
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch_assert
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheriotSwitchFsm_A,
+        gen_cheriot_switch.u_cheriot_switch.u_state_regs, alert_tx_o[2])
+  end
+
+% endif
 `endif // ifdef INC_ASSERT
 endmodule
