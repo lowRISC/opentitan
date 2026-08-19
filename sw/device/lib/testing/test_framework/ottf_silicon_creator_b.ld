@@ -10,7 +10,9 @@
  * This linker script generates a binary to run rom.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+/* This linker script is preprocessed, OPENTITAN_TOP_MEMORY_LD is a define
+ * set by Bazel to point to the top's linker file. */
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 #include "ottf_ld_top_config.ld"
 
