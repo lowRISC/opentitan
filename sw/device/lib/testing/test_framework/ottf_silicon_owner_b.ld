@@ -20,9 +20,17 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the BL0 boot stage in slot B.
  */
-_ottf_size = (LENGTH(ottf_storage) / 2) - _rom_ext_size;
 _ottf_start_address = ORIGIN(ottf_storage) + (LENGTH(ottf_storage) / 2) + _rom_ext_size;
 
-REGION_ALIAS("ottf_nvm", ottf_storage);
+/*
+ * Leaves `_nvm_slot_reserved_bytes` empty at the end of Slot B.
+ */
+MEMORY {
+  ottf_owner_b(rx) : ORIGIN = _ottf_start_address,
+    LENGTH = (LENGTH(ottf_storage) / 2) - _rom_ext_size - _nvm_slot_reserved_bytes
+}
+_ottf_size = LENGTH(ottf_owner_b);
+
+REGION_ALIAS("ottf_nvm", ottf_owner_b);
 
 INCLUDE ottf_common.ld

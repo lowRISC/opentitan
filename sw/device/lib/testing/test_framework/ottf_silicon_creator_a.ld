@@ -20,9 +20,17 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the Silicon Creator boot stage in slot A.
  */
-_ottf_size = LENGTH(ottf_storage) / 2;
 _ottf_start_address = ORIGIN(ottf_storage);
 
-REGION_ALIAS("ottf_nvm", ottf_storage);
+/*
+ * Leaves `_nvm_slot_reserved_bytes` empty at the end of Slot A.
+ */
+MEMORY {
+  ottf_creator_a(rx) : ORIGIN = _ottf_start_address,
+    LENGTH = (LENGTH(ottf_storage) / 2) - _nvm_slot_reserved_bytes
+}
+_ottf_size = LENGTH(ottf_creator_a);
+
+REGION_ALIAS("ottf_nvm", ottf_creator_a);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld
