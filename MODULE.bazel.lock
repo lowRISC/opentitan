@@ -950,7 +950,7 @@
     },
     "//third_party/system_libs:extensions.bzl%system_libs": {
       "general": {
-        "bzlTransitiveDigest": "XtiNDsLqkYy4lKa+03xc/VMOshRbQraGyl5aPLIPfOU=",
+        "bzlTransitiveDigest": "IacbM1a6OLlu7u+YvMr64haEN5RWB6xd/WjMQcUSGdM=",
         "usagesDigest": "qjd0+Tgdi27wMz5qse8P7OKE8M5wWJ1wy1s+GXHmsiE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -969,9 +969,9 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/system_libs:BUILD.libelf.bazel",
-              "url": "https://sourceware.org/elfutils/ftp/0.193/elfutils-0.193.tar.bz2",
-              "strip_prefix": "elfutils-0.193",
-              "sha256": "7857f44b624f4d8d421df851aaae7b1402cfe6bcdd2d8049f15fc07d3dde7635"
+              "url": "https://storage.googleapis.com/lowrisc-bazel-cache/elfutils-0.195.tar.bz2",
+              "strip_prefix": "elfutils-0.195",
+              "sha256": "37629fdf7f1f3dc2818e138fca2b8094177d6c2d0f701d3bb650a561218dc026"
             }
           }
         },
