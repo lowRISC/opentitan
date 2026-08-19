@@ -901,6 +901,10 @@ module chip_earlgrey_asic #(
       sram_ctrl_ret_ram_cfg_req;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
       sram_ctrl_ret_ram_cfg_rsp;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlMetaNumRamInst-1:0]
+      sram_ctrl_meta_ram_cfg_req;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlMetaNumRamInst-1:0]
+      sram_ctrl_meta_ram_cfg_rsp;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_sys2spi_ram_cfg_req;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t spi_device_sys2spi_ram_cfg_rsp;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_spi2sys_ram_cfg_req;
@@ -932,6 +936,8 @@ module chip_earlgrey_asic #(
   assign chip_mem_cfg_rsp.sram_ctrl_sec            = sram_ctrl_sec_ram_cfg_rsp;
   assign sram_ctrl_ret_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_ret;
   assign chip_mem_cfg_rsp.sram_ctrl_ret            = sram_ctrl_ret_ram_cfg_rsp;
+  assign sram_ctrl_meta_ram_cfg_req                = chip_mem_cfg_req.sram_ctrl_meta;
+  assign chip_mem_cfg_rsp.sram_ctrl_meta           = sram_ctrl_meta_ram_cfg_rsp;
   assign spi_device_sys2spi_ram_cfg_req            = chip_mem_cfg_req.spi_device_sys2spi;
   assign chip_mem_cfg_rsp.spi_device_sys2spi       = spi_device_sys2spi_ram_cfg_rsp;
   assign spi_device_spi2sys_ram_cfg_req            = chip_mem_cfg_req.spi_device_spi2sys;
@@ -1246,6 +1252,8 @@ module chip_earlgrey_asic #(
     .sram_ctrl_sec_ram_cfg_rsp_o           (sram_ctrl_sec_ram_cfg_rsp),
     .sram_ctrl_ret_ram_cfg_req_i           (sram_ctrl_ret_ram_cfg_req),
     .sram_ctrl_ret_ram_cfg_rsp_o           (sram_ctrl_ret_ram_cfg_rsp),
+    .sram_ctrl_meta_ram_cfg_req_i          (sram_ctrl_meta_ram_cfg_req),
+    .sram_ctrl_meta_ram_cfg_rsp_o          (sram_ctrl_meta_ram_cfg_rsp),
     .clkmgr_clocks_o                       (clkmgr_clocks            ),
     .clkmgr_cg_en_o                        (                         ),
     .clk_main_jitter_en_o                  (clk_main_jitter_en       ),

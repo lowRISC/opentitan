@@ -112,7 +112,7 @@ The two memory protection schemes are mutually exclusive, so exactly one of them
 The Ibex wrapper contains a write-once switch that selects between them.
 It resets unlocked in ePMP mode.
 
-The selected mode is not routed to Ibex and the CHERIoT memory subsystem yet.
+The selected mode gates the CHERIoT memory subsystem, but is not routed to Ibex yet.
 
 <%text>### Write Sequence</%text>
 

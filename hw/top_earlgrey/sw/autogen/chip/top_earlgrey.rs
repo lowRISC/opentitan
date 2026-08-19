@@ -637,6 +637,34 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
+/// Peripheral base address for regs device on cheriot in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const CHERIOT_REGS_BASE_ADDR: usize = 0x411B0000;
+
+/// Peripheral size for regs device on cheriot in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #CHERIOT_REGS_BASE_ADDR and
+/// `CHERIOT_REGS_BASE_ADDR + CHERIOT_REGS_SIZE_BYTES`.
+pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x4;
+
+/// Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const SRAM_CTRL_META_REGS_BASE_ADDR: usize = 0x411A0000;
+
+/// Peripheral size for regs device on sram_ctrl_meta in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #SRAM_CTRL_META_REGS_BASE_ADDR and
+/// `SRAM_CTRL_META_REGS_BASE_ADDR + SRAM_CTRL_META_REGS_SIZE_BYTES`.
+pub const SRAM_CTRL_META_REGS_SIZE_BYTES: usize = 0x40;
+
 /// Memory base address for ram memory on sram_ctrl_ret in top earlgrey.
 pub const SRAM_CTRL_RET_RAM_BASE_ADDR: usize = 0x40600000;
 
@@ -666,6 +694,18 @@ pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x40000;
 
 /// Memory size for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0xC000;
+
+/// Memory base address for revbm memory on cheriot in top earlgrey.
+pub const CHERIOT_REVBM_BASE_ADDR: usize = 0x11000000;
+
+/// Memory size for revbm memory on cheriot in top earlgrey.
+pub const CHERIOT_REVBM_SIZE_BYTES: usize = 0xC00;
+
+/// Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
+pub const SRAM_CTRL_META_RAM_BASE_ADDR: usize = 0x11000000;
+
+/// Memory size for ram memory on sram_ctrl_meta in top earlgrey.
+pub const SRAM_CTRL_META_RAM_SIZE_BYTES: usize = 0x9800;
 
 /// PLIC Interrupt Source Peripheral.
 ///
@@ -1820,6 +1860,10 @@ pub enum AlertPeripheral {
     RomCtrl = 39,
     /// rv_core_ibex
     RvCoreIbex = 40,
+    /// cheriot
+    Cheriot = 41,
+    /// sram_ctrl_meta
+    SramCtrlMeta = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -1957,6 +2001,10 @@ pub enum AlertId {
     RvCoreIbexFatalHwErr = 62,
     /// rv_core_ibex_recov_hw_err
     RvCoreIbexRecovHwErr = 63,
+    /// cheriot_fatal_fault
+    CheriotFatalFault = 64,
+    /// sram_ctrl_meta_fatal_error
+    SramCtrlMetaFatalError = 65,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2027,6 +2075,8 @@ impl TryFrom<u32> for AlertId {
             61 => Ok(Self::RvCoreIbexRecovSwErr),
             62 => Ok(Self::RvCoreIbexFatalHwErr),
             63 => Ok(Self::RvCoreIbexRecovHwErr),
+            64 => Ok(Self::CheriotFatalFault),
+            65 => Ok(Self::SramCtrlMetaFatalError),
             _ => Err(val),
         }
     }
@@ -2036,7 +2086,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 64] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 66] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // Uart1FatalFault -> AlertPeripheral::Uart1
@@ -2165,6 +2215,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 64] = [
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovHwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
+    // CheriotFatalFault -> AlertPeripheral::Cheriot
+    AlertPeripheral::Cheriot,
+    // SramCtrlMetaFatalError -> AlertPeripheral::SramCtrlMeta
+    AlertPeripheral::SramCtrlMeta,
 ];
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}

@@ -65,7 +65,7 @@
       sram_ctrl_sec.ram
       rram_ctrl.host
     ]
-    rv_core_ibex.cored:
+    cheriot.cored:
     [
       rom_ctrl.rom
       rom_ctrl.regs
@@ -92,7 +92,10 @@
       kmac
       sram_ctrl_main.regs
       sram_ctrl_sec.regs
+      sram_ctrl_meta.regs
       rv_core_ibex.cfg
+      cheriot.regs
+      cheriot.revbm
     ]
     rv_dm.sba:
     [
@@ -121,7 +124,10 @@
       kmac
       sram_ctrl_main.regs
       sram_ctrl_sec.regs
+      sram_ctrl_meta.regs
       rv_core_ibex.cfg
+      cheriot.regs
+      cheriot.revbm
     ]
   }
   nodes:
@@ -140,7 +146,7 @@
       rsp_fifo_pass: true
     }
     {
-      name: rv_core_ibex.cored
+      name: cheriot.cored
       type: host
       addr_space: hart
       clock: clk_main_i
@@ -722,6 +728,28 @@
       pipeline: true
     }
     {
+      name: sram_ctrl_meta.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x411a0000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
       name: sram_ctrl_sec.ram
       type: device
       clock: clk_main_i
@@ -741,6 +769,50 @@
       xbar: false
       stub: false
       req_fifo_pass: true
+    }
+    {
+      name: cheriot.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: cheriot
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x411b0000
+          }
+          size_byte: 0x4
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: cheriot.revbm
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: cheriot
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x11000000
+          }
+          size_byte: 0xc00
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
     }
   ]
   addr_spaces:
@@ -766,7 +838,7 @@
       index: -1
     }
     {
-      name: tl_rv_core_ibex__cored
+      name: tl_cheriot__cored
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -776,7 +848,7 @@
       default: ""
       end_idx: -1
       top_type: one-to-one
-      top_signame: main_tl_rv_core_ibex__cored
+      top_signame: main_tl_cheriot__cored
       index: -1
     }
     {
@@ -1120,6 +1192,19 @@
       index: -1
     }
     {
+      name: tl_sram_ctrl_meta__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: sram_ctrl_meta_regs_tl
+      index: -1
+    }
+    {
       name: tl_sram_ctrl_sec__ram
       struct: tl
       package: tlul_pkg
@@ -1130,6 +1215,32 @@
       default: ""
       domain: Main
       top_signame: sram_ctrl_sec_ram_tl
+      index: -1
+    }
+    {
+      name: tl_cheriot__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: cheriot_regs_tl_d
+      index: -1
+    }
+    {
+      name: tl_cheriot__revbm
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: cheriot_revbm_tl_d
       index: -1
     }
   ]

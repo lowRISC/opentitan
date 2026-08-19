@@ -103,3 +103,34 @@ Ibex fetch is enabled when all of the following conditions are met:
 ### Local Escalation Path
 
 When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+
+## Execution Mode Switch
+
+When CHERIoT is available, Ibex is synthesized with a CHERIoT-capable base ISA and can execute either the base RV32 ISA with ePMP, or the CHERIoT ISA.
+The two memory protection schemes are mutually exclusive, so exactly one of them is active at a time.
+The Ibex wrapper contains a write-once switch that selects between them.
+It resets unlocked in ePMP mode.
+
+The selected mode gates the CHERIoT memory subsystem, but is not routed to Ibex yet.
+
+### Write Sequence
+
+The switch is programmed through two registers:
+
+1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
+2. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+
+The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and latches the selected mode.
+Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
+From then on the mode is fixed until `rv_core_ibex` is reset.
+Further writes to either register have no effect.
+
+### Error State
+
+The switch has a terminal error state.
+It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
+
+In the error state, the `fatal_hw_err` alert is raised, which also disables Ibex fetch through the local escalation path described above.
+The state is only left by resetting `rv_core_ibex`.
+In the error state the mode output is driven to an invalid multi-bit value.
+The consumers are expected to escalate.

@@ -5,6 +5,7 @@
   instance_name: top_earlgrey_otp_ctrl
   param_values:
   {
+    num_sram_key_req_slots: 5
     otp_mmap:
     {
       otp:
@@ -2184,6 +2185,5 @@
     topname: earlgrey
     uniquified_modules: {}
     module_instance_name: otp_ctrl
-    num_sram_key_req_slots: 4
   }
 }

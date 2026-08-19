@@ -113,6 +113,16 @@ particular, any `cheriot_ena_i` value other than a strict `MuBi4True` - includin
 A `tlul_socket_m1` arbitrates the three checked streams onto `meta_sram_tl`. Arbitration sits behind
 the checkers, on transactions that are already integrity-protected end to end.
 
+## System Bus Access
+
+The debug module's system bus access (SBA) port is a crossbar host of its own and does not pass through the tag filter, so none of the datapath above applies to it.
+SBA remains available in CHERIoT mode if the life cycle state allows debug, but:
+
+- reads and writes go straight to memory without any CHERIoT checks.
+- writes do not clear the capability tag of the location they overwrite.
+
+Debug accesses in CHERIoT-mode ***MUST*** therefore be performed through Ibex and not through SBA.
+
 ## Error Handling
 
 The subsystem distinguishes a denied access from a fault:

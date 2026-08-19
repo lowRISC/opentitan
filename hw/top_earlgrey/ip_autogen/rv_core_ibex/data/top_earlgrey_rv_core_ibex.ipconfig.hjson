@@ -6,11 +6,11 @@
   param_values:
   {
     num_regions: 2
+    cheriot_available: true
     module_instance_name: rv_core_ibex
     topname: earlgrey
     uniquified_modules: {}
     racl_support: false
-    cheriot_available: false
   }
   dtgen:
   {

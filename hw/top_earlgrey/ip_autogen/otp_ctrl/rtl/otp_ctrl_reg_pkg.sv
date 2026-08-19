@@ -7,7 +7,7 @@
 package otp_ctrl_reg_pkg;
 
   // Param list
-  parameter int NumSramKeyReqSlots = 4;
+  parameter int NumSramKeyReqSlots = 5;
   parameter int OtpDepth = 1024;
   parameter int OtpWidth = 2;
   parameter int OtpSizeWidth = 2;
