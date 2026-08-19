@@ -41,23 +41,33 @@ filegroup(
 )
 
 filegroup(
-    name = "uds_ecdsa_tbs_input_golden_data",
-    srcs = ["tests/uds_ecdsa_tbs_input_golden.json"],
+    name = "uds_ecdsa_golden_data",
+    srcs = [
+        "tests/uds_ecdsa_endorsed_cert_golden.der",
+        "tests/uds_ecdsa_endorsed_cert_input_golden.json",
+        "tests/uds_ecdsa_tbs_golden.der",
+        "tests/uds_ecdsa_tbs_input_golden.json",
+    ],
 )
 
 filegroup(
-    name = "uds_ecdsa_tbs_golden_data",
-    srcs = ["tests/uds_ecdsa_tbs_golden.der"],
+    name = "uds_mldsa44_golden_data",
+    srcs = [
+        "tests/uds_mldsa44_endorsed_cert_golden.der",
+        "tests/uds_mldsa44_endorsed_cert_input_golden.json",
+        "tests/uds_mldsa44_tbs_golden.der",
+        "tests/uds_mldsa44_tbs_input_golden.json",
+    ],
 )
 
 filegroup(
-    name = "uds_ecdsa_endorsed_cert_input_golden_data",
-    srcs = ["tests/uds_ecdsa_endorsed_cert_input_golden.json"],
-)
-
-filegroup(
-    name = "uds_ecdsa_endorsed_cert_golden_data",
-    srcs = ["tests/uds_ecdsa_endorsed_cert_golden.der"],
+    name = "uds_mldsa87_golden_data",
+    srcs = [
+        "tests/uds_mldsa87_endorsed_cert_golden.der",
+        "tests/uds_mldsa87_endorsed_cert_input_golden.json",
+        "tests/uds_mldsa87_tbs_golden.der",
+        "tests/uds_mldsa87_tbs_input_golden.json",
+    ],
 )
 
 filegroup(
@@ -137,10 +147,9 @@ rust_test_suite(
         ":generic_cert",
         ":example_cert",
         ":example_data",
-        ":uds_ecdsa_tbs_input_golden_data",
-        ":uds_ecdsa_tbs_golden_data",
-        ":uds_ecdsa_endorsed_cert_golden_data",
-        ":uds_ecdsa_endorsed_cert_input_golden_data",
+        ":uds_ecdsa_golden_data",
+        ":uds_mldsa44_golden_data",
+        ":uds_mldsa87_golden_data",
         ":mldsa_certs",
         ":fw_ids_raw_test_files",
         "tests/variants.hjson",
