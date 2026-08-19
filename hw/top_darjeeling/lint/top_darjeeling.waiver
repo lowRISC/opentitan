@@ -76,9 +76,6 @@ waive -rules {LINE_LENGTH} -location {top_darjeeling.sv darjeeling_pd_main.sv da
 waive -rules LINE_LENGTH -location {top_darjeeling_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_darjeeling_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
 
-waive -rules {LINE_LENGTH} -location {xbar_main.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
-      -comment "xbar_main is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
-
 # See https://github.com/lowRISC/opentitan/issues/15674
 waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
       -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
