@@ -5,9 +5,17 @@
     name: "uds",
 
     variables: {
+        creator_pub_key_alg: {
+          type: "selector",
+          // ecdsa-p256 = 0
+          // mldsa-44 = 1
+          // mldsa-87 = 2
+          num_choices: 3,
+        },
         // Creator public key: this is an EC point on
         // the prime256v1 curve so it has two components
         // (x and y) which are 32-bytes integers.
+        // Used when `creator_pub_key_alg` is `ecdsa-p256`
         creator_pub_key_ec_x: {
             type: "integer",
             exact-size: 32,
@@ -15,6 +23,20 @@
         creator_pub_key_ec_y: {
             type: "integer",
             exact-size: 32,
+        },
+        // Creator public key used when `creator_pub_key_alg` is
+        // `mldsa-44`
+        creator_pub_key_mldsa_44: {
+           algorithm: "mldsa-44",
+           type: "byte-array",
+           exact-size: 1312 ,
+        },
+        // Creator public key used when `creator_pub_key_alg` is
+        // `mldsa-87`
+        creator_pub_key_mldsa_87: {
+           algorithm: "mldsa-87",
+           type: "byte-array",
+           exact-size: 2592,
         },
         // Creator public key ID: this is a 20-byte hash
         // derived from the creator public key.
@@ -55,8 +77,15 @@
         debug_flag: {
             type: "boolean",
         },
+        signature_alg: {
+          type: "selector",
+          // ecdsa-p256 = 0
+          // mldsa-87 = 1
+          num_choices: 2,
+        },
         // Certificate signature: the result of signing with ECDSA
-        // are two integers named "r" and "s"
+        // are two integers named "r" and "s". Used when
+        // `signature_alg` is `ecdsa-p256`
         cert_signature_r: {
             type: "integer",
             range-size: [24, 32],
@@ -64,7 +93,14 @@
         cert_signature_s: {
             type: "integer",
             range-size: [24, 32],
-        }
+        },
+        // Certificate signature used when `signature_alg` is
+        // `mldsa-87`
+        cert_signature_mldsa_87: {
+            algorithm: "mldsa-87",
+            type: "byte-array",
+            exact-size: 4627,
+        },
     },
 
     certificate: {
@@ -87,12 +123,28 @@
         not_before: "20180322235959Z",
         not_after: "99991231235959Z",
         subject_public_key_info: {
-            algorithm: "ec-public-key",
-            curve: "prime256v1",
-            public_key: {
-                x: { var: "creator_pub_key_ec_x" },
-                y: { var: "creator_pub_key_ec_y" },
-            },
+            selector: "creator_pub_key_alg",
+            choices: [
+                // 0 => ecdsa-p256
+                {
+                    algorithm: "ec-public-key",
+                    curve: "prime256v1",
+                    public_key: {
+                        x: { var: "creator_pub_key_ec_x" },
+                        y: { var: "creator_pub_key_ec_y" },
+                    },
+                },
+                // 1 => mldsa-44
+                {
+                    algorithm: "mldsa-44",
+                    public_key: { var: "creator_pub_key_mldsa_44", },
+                },
+                // 2 => mldsa-87
+                {
+                    algorithm: "mldsa-87",
+                    public_key: { var: "creator_pub_key_mldsa_87", },
+                },
+            ]
         },
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "creator_pub_key_id" },
@@ -123,11 +175,24 @@
             },
         ],
         signature: {
-            algorithm: "ecdsa-with-sha256",
-            value: {
-                r: { var: "cert_signature_r" },
-                s: { var: "cert_signature_s" }
-            }
+            selector: "signature_alg",
+            choices: [
+                // 0 => ecdsa-p256
+                {
+                    algorithm: "ecdsa-with-sha256",
+                    value: {
+                        r: { var: "cert_signature_r" },
+                        s: { var: "cert_signature_s" }
+                    },
+                },
+                // 1 => mldsa-87
+                {
+                    algorithm: "mldsa-87",
+                    value: {
+                        var: "cert_signature_mldsa_87",
+                    },
+                },
+            ]
         }
     }
 }

@@ -10,8 +10,10 @@ filegroup(
     name = "ca_data",
     srcs = [
         ":dice_ca.pem",
+        ":dice_mldsa_ca.pem",
         ":ext_ca.pem",
         ":rma_unlock_enc_rsa3072.pub.der",
         ":sk.pkcs8.der",
+        ":sk_mldsa.pkcs8.der",
     ],
 )
