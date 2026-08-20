@@ -301,12 +301,10 @@ fn provision_certificates(
     let dice_ca_key = &ca_keys["dice"];
 
     // DICE certificate names.
-    let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
+    let dice_cert_names = HashSet::from(["UDS"]);
 
-    let perso_blob_parser =
-        PersoBlobParser::new_with_version(perso_certgen_inputs.blob_version, perso_blob)?;
-    let mut perso_blob_builder =
-        PersoBlobBuilder::new_with_version(perso_certgen_inputs.blob_version)?;
+    let perso_blob_parser = PersoBlobParser::new(perso_blob);
+    let mut perso_blob_builder = PersoBlobBuilder::new();
 
     let t0 = Instant::now();
     for perso_obj in perso_blob_parser.iter() {
@@ -351,7 +349,7 @@ fn provision_certificates(
             ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {
                 // The next object is a cert, let's retrieve its properties (name, needs
                 // endorsement, etc.)
-                let cert = perso_blob_parser.get_cert(perso_obj.data)?;
+                let cert = perso_obj.get_cert()?;
 
                 // Extract the certificate bytes and endorse the cert if needed.
                 let cert_bytes = if perso_obj.obj_header.obj_type == ObjType::UnendorsedX509Cert {
@@ -487,10 +485,15 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-validate-dice", t0);
 
     let t0 = Instant::now();
-    if !dice_cert_chain_cwt.is_empty() {
+    if dice_cert_chain_cwt.len() > 1 {
         log::info!("Validating DICE certificate chain with hwtrust ...");
         validate_cwt_dice_chain(&dice_cert_chain_cwt)?;
         log::info!("Success.");
+    } else {
+        log::info!(
+            "Only {} certs in DICE certificate chain for CWT. Skipping chain validation",
+            dice_cert_chain_cwt.len()
+        );
     }
     response
         .stats

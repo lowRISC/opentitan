@@ -121,11 +121,7 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
 // clang-format off
 #define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
     field(dice_auth_key_key_id, uint8_t, 20) \
-    field(ext_auth_key_key_id, uint8_t, 20) \
-    /* TODO: This should be a perso_blob_version_t enum, but using a primitive \
-     * uint16_t to avoid a ujson deserialization bug with nested derived \
-     * types. */ \
-    field(blob_version, uint16_t)
+    field(ext_auth_key_key_id, uint8_t, 20)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
                    manuf_certgen_inputs_t, \
                    STRUCT_MANUF_CERTGEN_INPUTS);
