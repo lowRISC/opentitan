@@ -7,10 +7,7 @@
 // neccessary information has propagated across the CDC such that the transceiver takes over.
 
 module i3c_targ_start_req
-  import i3c_tti_pkg::*;
-#(
-  parameter bit Dummy = 1'b0
-) (
+(
   input                   clk_i,
   input                   rst_ni,
 
@@ -19,8 +16,8 @@ module i3c_targ_start_req
   input                   start_i,
   input                   reset_i,
 
-  // IBI/CRR target address.
-  input             [6:0] addr_i,
+  // IBI/CRR partial target address.
+  input             [3:0] addr_i,
 
   // I3C bus signals, already synchronized.
   input                   scl_i,
@@ -89,17 +86,6 @@ module i3c_targ_start_req
 
   assign stopping = sda_drive & ~|bit_cnt_q;
 
-  // Select the appropriate bit from the IBI/CRR target address.
-  logic addr_bit;
-  always_comb begin
-    case (bit_cnt_q)
-      2'b00:   addr_bit = addr_i[3];
-      2'b01:   addr_bit = addr_i[4];
-      2'b10:   addr_bit = addr_i[5];
-      default: addr_bit = addr_i[6];
-    endcase
-  end
-
   // Start request to the transceiver.
   // - this output must be high normally, in order to permit transmission on the SDA line.
   // - driving SDA low is a signal to the Active Controller to start clocking during the
@@ -118,7 +104,8 @@ module i3c_targ_start_req
       sreq_sda_q        <= 1'b0;
     end else if (active_q & sda_drive) begin
       sreq_sda_od_en_q  <= !arb_lost_d & !stopping;
-      sreq_sda_q        <= addr_bit | arb_lost_d;
+      // Select the appropriate bit from the IBI/CRR target address.
+      sreq_sda_q        <= addr_i[bit_cnt_q] | arb_lost_d;
     end
   end
 
