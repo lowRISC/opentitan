@@ -542,13 +542,8 @@ interface chip_if;
   wire sram_mbox_init_done = `SRAM_CTRL_MBOX.u_reg_regs.status_init_done_qs;
 `endif
 
-  // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
-  //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
-  // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
-  //   assign alert_if[i].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[i];
-  // end
-
-  alerts_if alerts_if(.clk(`ALERT_HANDLER_HIER.clk_i), .rst_ni(`ALERT_HANDLER_HIER.rst_ni),
+  alerts_if alerts_if(.clk(`ALERT_HANDLER_HIER.clk_i),
+                      .rst_ni(`ALERT_HANDLER_HIER.rst_ni),
                       .alerts(`ALERT_HANDLER_HIER.alert_trig));
 
   // TODO: use pwrmgr_low_power, internal aon clk / rst monitor instead.
@@ -727,11 +722,6 @@ interface chip_if;
         null, "*.env.m_tl_agent_chip_soc_dbg_reg_block*", "vif", dmi_tl_if);
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_chip_soc_mbx_reg_block*", "vif", darjeeling_mbx_if.mbx_tl_if);
-
-    // foreach (alert_if[i]) begin
-    //   uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-    //       LIST_OF_ALERTS[i]), "vif", alert_if[i]);
-    // end
   end
 
   // Helper methods.

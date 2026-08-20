@@ -17,6 +17,7 @@ package flash_ctrl_env_pkg;
   import flash_ctrl_eflash_ral_pkg::*;
   import flash_ctrl_prim_ral_pkg::*;
   import flash_ctrl_bkdr_util_pkg::*;
+  import alert_agent_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
   import lc_ctrl_pkg::*;
