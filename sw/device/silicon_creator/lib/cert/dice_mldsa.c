@@ -127,22 +127,26 @@ static_assert(
 // Keymgr configurations for deriving attestation keys.
 typedef struct keygen_params {
   const sc_keymgr_ecc_key_t *ecc_cfg;
-  const sc_keymgr_ecc_key_t *mldsa_cfg;
+  const sc_keymgr_ecc_key_t *mldsa_44_cfg;
+  const sc_keymgr_ecc_key_t *mldsa_87_cfg;
 } keygen_params_t;
 
 static const keygen_params_t kUdsKeygenParams = {
     .ecc_cfg = &kDiceKeyUds,
-    .mldsa_cfg = &kDiceKeyMldsaUds,
+    .mldsa_44_cfg = &kDiceKeyMldsa44Uds,
+    .mldsa_87_cfg = &kDiceKeyMldsa87Uds,
 };
 
 static const keygen_params_t kCdi0KeygenParams = {
     .ecc_cfg = &kDiceKeyCdi0,
-    .mldsa_cfg = &kDiceKeyMldsaCdi0,
+    .mldsa_44_cfg = &kDiceKeyMldsa44Cdi0,
+    .mldsa_87_cfg = &kDiceKeyMldsa87Cdi0,
 };
 
 static const keygen_params_t kCdi1KeygenParams = {
     .ecc_cfg = &kDiceKeyCdi1,
-    .mldsa_cfg = &kDiceKeyMldsaCdi1,
+    .mldsa_44_cfg = &kDiceKeyMldsa44Cdi1,
+    .mldsa_87_cfg = &kDiceKeyMldsa87Cdi1,
 };
 
 // Parameters for attesting CDI_0 / CDI_1 certificates.
@@ -346,14 +350,26 @@ static rom_error_t dice_cdi_hybrid_cert_build(
  * @param[out] seed_output Derived 256-bit ML-DSA key seed.
  */
 OT_WARN_UNUSED_RESULT static rom_error_t dice_mldsa_derive_seed(
-    const keygen_params_t *params, keymgr_binding_value_t *seed_output) {
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key_sw(
-      kScKeymgrKeyTypeAttestation, *params->mldsa_cfg->keymgr_diversifier,
-      seed_output));
+    const keygen_params_t *params, mldsa_parameter_set_t alg_params,
+    keymgr_binding_value_t *seed_output) {
+  const sc_keymgr_ecc_key_t *mldsa_cfg = NULL;
+  switch (alg_params) {
+    case kMldsaParameterSet44:
+      mldsa_cfg = params->mldsa_44_cfg;
+      break;
+    case kMldsaParameterSet87:
+      mldsa_cfg = params->mldsa_87_cfg;
+      break;
+    default:
+      return kErrorDiceMldsaParamsUnsupported;
+  }
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_sw(kScKeymgrKeyTypeAttestation,
+                                *mldsa_cfg->keymgr_diversifier, seed_output));
 
   uint32_t additional_seed[kAttestationSeedWords];
   HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(
-      params->mldsa_cfg->keygen_seed_idx, additional_seed));
+      mldsa_cfg->keygen_seed_idx, additional_seed));
 
   for (size_t i = 0; i < sizeof(seed_output->data) / sizeof(uint32_t); ++i) {
     seed_output->data[i] ^= additional_seed[i];
@@ -436,8 +452,8 @@ static rom_error_t dice_attest_next_cdi(
       *params->issuer_params->ecc_cfg->keymgr_diversifier));
 
   keymgr_binding_value_t issuer_mldsa_seed;
-  HARDENED_RETURN_IF_ERROR(
-      dice_mldsa_derive_seed(params->issuer_params, &issuer_mldsa_seed));
+  HARDENED_RETURN_IF_ERROR(dice_mldsa_derive_seed(
+      params->issuer_params, kMldsaParameterSet44, &issuer_mldsa_seed));
   hmac_digest_t issuer_mldsa_id;
   get_mldsa_id((const hmac_key_t *)&issuer_mldsa_seed, &issuer_mldsa_id);
 
@@ -468,8 +484,8 @@ static rom_error_t dice_attest_next_cdi(
       &subject_ecdsa_pubkey));
 
   keymgr_binding_value_t subject_mldsa_seed;
-  HARDENED_RETURN_IF_ERROR(
-      dice_mldsa_derive_seed(params->subject_params, &subject_mldsa_seed));
+  HARDENED_RETURN_IF_ERROR(dice_mldsa_derive_seed(
+      params->subject_params, kMldsaParameterSet44, &subject_mldsa_seed));
   hmac_digest_t *subject_mldsa_id = params->subject_mldsa_key_id_out;
   get_mldsa_id((const hmac_key_t *)&subject_mldsa_seed, subject_mldsa_id);
 
@@ -566,8 +582,8 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
   }
 
   keymgr_binding_value_t uds_mldsa_seed;
-  HARDENED_RETURN_IF_ERROR(
-      dice_mldsa_derive_seed(&kUdsKeygenParams, &uds_mldsa_seed));
+  HARDENED_RETURN_IF_ERROR(dice_mldsa_derive_seed(
+      &kUdsKeygenParams, kMldsaParameterSet44, &uds_mldsa_seed));
   uint32_t *stack_top = (uint32_t *)(dice_mldsa_rom_ext_scratch_stack +
                                      sizeof(dice_mldsa_rom_ext_scratch_stack));
   mldsa44_tiny_pub_from_seed_with_stack(static_dice_mldsa_cdi.uds_pub,
@@ -823,10 +839,6 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
   static_assert(sizeof(uds_mldsa_seed.data) % sizeof(uint32_t) == 0,
                 "Expect seed size to be multiple of word size, otherwise "
                 "hardened memshred will leave few bytes untouched");
-  HARDENED_RETURN_IF_ERROR_WITH_TRY_CLEANUP(
-      dice_mldsa_derive_seed(&kUdsKeygenParams, &uds_mldsa_seed),
-      hardened_memshred(uds_mldsa_seed.data,
-                        sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
 
   static mldsa_public_key_t mldsa_pubkey;
   uint32_t *stack_top = (uint32_t *)(dice_mldsa_perso_scratch_stack +
@@ -834,12 +846,22 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
   if (mldsa_params_set == kMldsaParameterSet44) {
     // Generate UDS MLDSA-44 public key
     mldsa_pubkey.param_set = kMldsaParameterSet44;
+    HARDENED_RETURN_IF_ERROR_WITH_TRY_CLEANUP(
+        dice_mldsa_derive_seed(&kUdsKeygenParams, mldsa_pubkey.param_set,
+                               &uds_mldsa_seed),
+        hardened_memshred(uds_mldsa_seed.data,
+                          sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
     mldsa44_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_44.key,
                                           (const uint8_t *)uds_mldsa_seed.data,
                                           stack_top);
   } else if (mldsa_params_set == kMldsaParameterSet87) {
     // Generate UDS MLDSA-87 public key
     mldsa_pubkey.param_set = kMldsaParameterSet87;
+    HARDENED_RETURN_IF_ERROR_WITH_TRY_CLEANUP(
+        dice_mldsa_derive_seed(&kUdsKeygenParams, mldsa_pubkey.param_set,
+                               &uds_mldsa_seed),
+        hardened_memshred(uds_mldsa_seed.data,
+                          sizeof(uds_mldsa_seed.data) / sizeof(uint32_t)));
     mldsa87_tiny_pub_from_seed_with_stack(mldsa_pubkey.key.key_87.key,
                                           (const uint8_t *)uds_mldsa_seed.data,
                                           stack_top);
