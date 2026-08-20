@@ -431,6 +431,7 @@ module rv_core_ibex
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
+    .BaseIsa                     ( ibex_pkg::BaseIsaRV32I   ),
     .PMPEnable                   ( PMPEnable                ),
     .PMPGranularity              ( PMPGranularity           ),
     .PMPNumRegions               ( PMPNumRegions            ),
@@ -493,6 +494,8 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
+    .trvk_heap_base_addr_i('0), // TODO (#30541)
+
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
     .instr_rvalid_i     (main_core_instr_rvalid),
@@ -509,9 +512,19 @@ module rv_core_ibex
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
+    .data_tag_o         (),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
+    .data_tag_i         ('0),
     .data_err_i         (main_core_data_err),
+
+    .trvk_revbm_req_o       (),
+    .trvk_revbm_gnt_i       ('0),
+    .trvk_revbm_rvalid_i    ('0),
+    .trvk_revbm_addr_o      (),
+    .trvk_revbm_rdata_i     ('0),
+    .trvk_revbm_rdata_intg_i('0),
+    .trvk_revbm_err_i       ('0),
 
     .irq_software_i     ( irq_software     ),
     .irq_timer_i        ( irq_timer        ),

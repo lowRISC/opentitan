@@ -14,6 +14,9 @@ module ${module_instance_name}
   import rv_core_ibex_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
+% if cheriot_available:
+  parameter ibex_pkg::base_isa_e    BaseIsa             = ibex_pkg::BaseIsaRV32IorCHERIoT,
+% endif
   parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
   parameter int unsigned            AlertSkewCycles     = 1,
@@ -64,7 +67,11 @@ module ${module_instance_name}
 % endif
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0,
   parameter logic [31:0]            CsrMvendorId                   = 32'b0,
-  parameter logic [31:0]            CsrMimpId                      = 32'b0
+  parameter logic [31:0]            CsrMimpId                      = 32'b0${"," if cheriot_available else ""}
+% if cheriot_available:
+  parameter int unsigned            CheriotRevBitmapAddrWidth      = 32'd11,
+  parameter int unsigned            CheriotRevBitmapBaseAddr       = 32'h0
+% endif
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -444,6 +451,11 @@ module ${module_instance_name}
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
+% if cheriot_available:
+    .BaseIsa                     ( BaseIsa                  ),
+% else:
+    .BaseIsa                     ( ibex_pkg::BaseIsaRV32I   ),
+% endif
     .PMPEnable                   ( PMPEnable                ),
     .PMPGranularity              ( PMPGranularity           ),
     .PMPNumRegions               ( PMPNumRegions            ),
@@ -452,6 +464,10 @@ module ${module_instance_name}
     .PMPRstCfg                   ( PMPRstCfg                ),
     .PMPRstAddr                  ( PMPRstAddr               ),
     .PMPRstMsecCfg               ( PMPRstMsecCfg            ),
+% if cheriot_available:
+    .CheriotRevBitmapAddrWidth   ( CheriotRevBitmapAddrWidth),
+    .CheriotRevBitmapBaseAddr    ( CheriotRevBitmapBaseAddr ),
+% endif
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
@@ -506,6 +522,8 @@ module ${module_instance_name}
     .hart_id_i,
     .boot_addr_i,
 
+    .trvk_heap_base_addr_i('0), // TODO (#30541)
+
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
     .instr_rvalid_i     (main_core_instr_rvalid),
@@ -522,9 +540,19 @@ module ${module_instance_name}
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
+    .data_tag_o         (),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
+    .data_tag_i         ('0),
     .data_err_i         (main_core_data_err),
+
+    .trvk_revbm_req_o       (),
+    .trvk_revbm_gnt_i       ('0),
+    .trvk_revbm_rvalid_i    ('0),
+    .trvk_revbm_addr_o      (),
+    .trvk_revbm_rdata_i     ('0),
+    .trvk_revbm_rdata_intg_i('0),
+    .trvk_revbm_err_i       ('0),
 
     .irq_software_i     ( irq_software     ),
     .irq_timer_i        ( irq_timer        ),

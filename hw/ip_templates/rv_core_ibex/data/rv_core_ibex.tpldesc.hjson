@@ -38,5 +38,11 @@
       type: "bool"
       default: false
     }
+    {
+      name: "cheriot_available"
+      desc: "Whether CHERIoT is available (at synthesis time; runtime activation is separate)"
+      type: "bool"
+      default: false
+    }
   ]
 }
