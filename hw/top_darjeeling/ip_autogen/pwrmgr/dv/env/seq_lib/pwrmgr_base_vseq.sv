@@ -18,8 +18,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   localparam int MaxCyclesBeforeEnable = 12;
 
-  import pwrmgr_reg_pkg::NumRomInputs;
-
   typedef enum int {
     FastFsmActive,
     FastFsmInactive

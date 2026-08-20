@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:esc_agent
       - lowrisc:ip:rv_core_ibex_pkg
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}

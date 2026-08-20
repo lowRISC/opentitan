@@ -16,7 +16,7 @@ See the [CHERIoT Memory Subsystem HWIP technical specification](../README.md).
 `hw/ip/cheriot/dv/tb.sv` instantiates `hw/ip/cheriot/rtl/cheriot.sv` with:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md) on the `regs` CSR port
-* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md)) for `fatal_fault`
+* [Alert interface](../../../dv/sv/alert_agent/README.md)) for `fatal_fault`
 
 ## Building and running tests
 Built and run with `dvsim.py`.
