@@ -60,9 +60,12 @@ const dice_storage_slot_v1_t kDiceStorageSlotPqCdi0 = {
     .bank_idx = 0,
     .header =
         {
-            .object_header = TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert, 8192),
-            .cert_header = TLV_CERT_HEADER_V1(8, 0),
-            .name = "PQ_CDI_0",
+            .version_header = kPersoTlvVersionPrefixV1,
+            .object_header =
+                TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert,
+                                  8192 - sizeof(perso_tlv_version_header_t)),
+            .cert_header = TLV_CERT_HEADER_V1(12, 0),
+            .name = "PQ_CDI_0",  // Zero-padded to 12 bytes.
         },
 };
 
@@ -70,9 +73,12 @@ const dice_storage_slot_v1_t kDiceStorageSlotPqCdi1 = {
     .bank_idx = 1,
     .header =
         {
-            .object_header = TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert, 8192),
-            .cert_header = TLV_CERT_HEADER_V1(8, 0),
-            .name = "PQ_CDI_1",
+            .version_header = kPersoTlvVersionPrefixV1,
+            .object_header =
+                TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert,
+                                  8192 - sizeof(perso_tlv_version_header_t)),
+            .cert_header = TLV_CERT_HEADER_V1(12, 0),
+            .name = "PQ_CDI_1",  // Zero-padded to 12 bytes.
         },
 };
 

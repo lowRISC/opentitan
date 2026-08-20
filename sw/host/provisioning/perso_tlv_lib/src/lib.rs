@@ -68,11 +68,19 @@ impl TryFrom<usize> for ObjType {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum SupportedPersoTlvVersion {
+    V0,
+    V1,
+}
+
 // Header of the LTV object
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ObjHeader {
     pub obj_size: usize,
     pub obj_type: ObjType,
+    pub header_size: usize,
+    pub version: SupportedPersoTlvVersion,
 }
 
 // Header and body of the certificate payload of the LTV object
@@ -84,38 +92,31 @@ pub struct CertWithHeader<'a> {
     pub cert_body: Vec<u8>,
 }
 
+#[derive(Debug, Clone, Default)]
 pub struct PersoBlobBuilder {
     data: ArrayVec<u8, 5120>,
-    version: SupportedPersoTlvVersion,
     num_objs: usize,
 }
 
 impl PersoBlobBuilder {
-    pub fn new_with_version(version: u16) -> Result<Self> {
-        match version {
-            0 => Ok(Self {
-                data: ArrayVec::new(),
-                version: SupportedPersoTlvVersion::V0,
-                num_objs: 0,
-            }),
-            1 => {
-                let mut data = ArrayVec::new();
-                let perso_blob_version_obj_bytes: Vec<u8> =
-                    PersoBlobVersionObj::new(1).try_into()?;
-                data.try_extend_from_slice(&perso_blob_version_obj_bytes)?;
-                Ok(Self {
-                    data,
-                    version: SupportedPersoTlvVersion::V1,
-                    num_objs: 1,
-                })
-            }
-            _ => bail!("Unsupported version {version}"),
+    pub fn new() -> Self {
+        Self {
+            data: ArrayVec::new(),
+            num_objs: 0,
         }
     }
 
     pub fn push_endorsed_cert(&mut self, cert_name: &str, cert: &Vec<u8>) -> Result<()> {
+        let version = if cert_name.len() <= PersoTlvTypesV0::MAX_CERT_NAME_LEN
+            && cert.len() <= PersoTlvTypesV0::MAX_CERT_LEN
+        {
+            SupportedPersoTlvVersion::V0
+        } else {
+            SupportedPersoTlvVersion::V1
+        };
+
         let mut data: Vec<u8> = vec![];
-        match self.version {
+        match version {
             SupportedPersoTlvVersion::V0 => {
                 let cert_header = PersoTlvTypesV0::make_cert_header(cert.len(), cert_name)?;
                 let obj_header = PersoTlvTypesV0::make_obj_header(
@@ -126,6 +127,13 @@ impl PersoBlobBuilder {
                 data.extend(&cert_header.to_be_bytes());
             }
             SupportedPersoTlvVersion::V1 => {
+                let ver_header = PersoTlvTypesV0::make_obj_header(
+                    std::mem::size_of::<PersoBlobVersionObj>(),
+                    ObjType::PersoBlobVersion,
+                )?;
+                data.extend(&ver_header.to_be_bytes());
+                data.extend(&1u16.to_be_bytes());
+
                 let cert_header = PersoTlvTypesV1::make_cert_header(cert.len(), cert_name)?;
                 let obj_header = PersoTlvTypesV1::make_obj_header(
                     PersoTlvTypesV1::get_crth_size(cert_header),
@@ -136,7 +144,7 @@ impl PersoBlobBuilder {
             }
         }
         data.extend(cert_name.as_bytes());
-        data.extend(cert.as_slice());
+        data.extend(cert);
         self.data.try_extend_from_slice(&data)?;
         self.num_objs += 1;
 
@@ -156,90 +164,67 @@ impl From<PersoBlobBuilder> for PersoBlob {
 
 pub struct PersoBlobParser {
     perso_blob: PersoBlob,
-    version: SupportedPersoTlvVersion,
 }
 
 impl PersoBlobParser {
-    pub fn new_with_version(expected_version: u16, perso_blob: PersoBlob) -> Result<Self> {
-        // For v1 (and hopefully other new versions), the first TLV entry will be a
-        // BlobVersion TLV object (ref
-        // https://github.com/lowRISC/opentitan/blob/c99009d5a3a011de401404479ff823e636f170ce/sw/device/silicon_creator/manuf/base/ft_personalize.c#L558-L566). This is formatted using v0 TLV format for backwards compatibility
-        // For v0, this TLV object will not be present
-
-        match PersoBlobVersionObj::read_from_perso_blob(&perso_blob)? {
-            None => {
-                // This is a v0 Perso Blob
-                if expected_version > 0 {
-                    bail!(
-                        "Perso blob version {expected_version} expected, but there is no PersoBlobVersion TLV object in the beginning"
-                    )
-                }
-                Ok(Self {
-                    perso_blob,
-                    version: SupportedPersoTlvVersion::V0,
-                })
-            }
-            Some(obj) => {
-                // This is a Perso blob with non-zero version
-                if expected_version == 0 {
-                    bail!(
-                        "Perso blob has PersoBlobVersion TLV object with version {} in the beginning, but expected version is 0",
-                        obj.version
-                    );
-                }
-                if expected_version != obj.version {
-                    bail!(
-                        "Perso blob version {} is different from the requested version {expected_version}",
-                        obj.version
-                    )
-                }
-                match expected_version {
-                    1 => Ok(Self {
-                        perso_blob,
-                        version: SupportedPersoTlvVersion::V1,
-                    }),
-                    _ => bail!("Unsupported Perso blob version {expected_version}"),
-                }
-            }
-        }
+    pub fn new(perso_blob: PersoBlob) -> Self {
+        Self { perso_blob }
     }
 
-    pub fn get_obj_header(&self, data: &[u8]) -> Result<ObjHeader> {
-        match self.version {
+    pub fn get_obj_version(data: &[u8]) -> Result<SupportedPersoTlvVersion> {
+        if let Ok(ver_obj_header) = PersoTlvTypesV0::get_obj_header(data) {
+            if ver_obj_header.obj_type == ObjType::PersoBlobVersion {
+                let expected_size = std::mem::size_of::<
+                    <PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType,
+                >() + std::mem::size_of::<PersoBlobVersionObj>();
+                if ver_obj_header.obj_size != expected_size {
+                    bail!(
+                        "Invalid version object size {}, expected {}",
+                        ver_obj_header.obj_size,
+                        expected_size
+                    );
+                }
+                let header_len =
+                    std::mem::size_of::<<PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType>();
+                let ver = u16::from_be_bytes(data[header_len..][..2].try_into()?);
+                if ver != 1 {
+                    bail!("Unsupported version object: {ver}");
+                }
+                return Ok(SupportedPersoTlvVersion::V1);
+            }
+        }
+        Ok(SupportedPersoTlvVersion::V0)
+    }
+
+    pub fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
+        let version = Self::get_obj_version(data)?;
+        match version {
             SupportedPersoTlvVersion::V0 => PersoTlvTypesV0::get_obj_header(data),
             SupportedPersoTlvVersion::V1 => PersoTlvTypesV1::get_obj_header(data),
         }
     }
 
-    pub fn get_obj_header_size(&self) -> usize {
-        match self.version {
-            SupportedPersoTlvVersion::V0 => {
-                std::mem::size_of::<<PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType>()
-            }
-            SupportedPersoTlvVersion::V1 => {
-                std::mem::size_of::<<PersoTlvTypesV1 as PersoTlvTypes>::ObjHeaderType>()
-            }
-        }
-    }
-
-    pub fn get_cert<'a>(&self, data: &'a [u8]) -> Result<CertWithHeader<'a>> {
-        match self.version {
-            SupportedPersoTlvVersion::V0 => PersoTlvTypesV0::get_cert(data),
-            SupportedPersoTlvVersion::V1 => PersoTlvTypesV1::get_cert(data),
+    pub fn get_cert<'a>(obj: &PersoBlobObject<'a>) -> Result<CertWithHeader<'a>> {
+        match obj.obj_header.version {
+            SupportedPersoTlvVersion::V0 => PersoTlvTypesV0::get_cert(obj.data),
+            SupportedPersoTlvVersion::V1 => PersoTlvTypesV1::get_cert(obj.data),
         }
     }
 
     pub fn iter(&self) -> PersoBlobIterator<'_> {
-        match self.version {
-            SupportedPersoTlvVersion::V0 => PersoBlobIterator::new(self, 0, 0),
-            SupportedPersoTlvVersion::V1 => PersoBlobIterator::new(self, 1, 4),
-        }
+        PersoBlobIterator::new(self, 0, 0)
     }
 }
 
 pub struct PersoBlobObject<'a> {
     pub obj_header: ObjHeader,
     pub data: &'a [u8],
+}
+
+impl<'a> PersoBlobObject<'a> {
+    pub fn get_cert(&self) -> Result<CertWithHeader<'a>> {
+        PersoBlobParser::get_cert(self)
+    }
 }
 
 pub struct PersoBlobIterator<'a> {
@@ -276,7 +261,7 @@ impl<'a> Iterator for PersoBlobIterator<'a> {
                 )));
             }
         };
-        let obj_header: ObjHeader = match self.parser.get_obj_header(remaining_data) {
+        let obj_header = match PersoBlobParser::get_obj_header(remaining_data) {
             Ok(hdr) => hdr,
             Err(e) => return Some(Err(e)),
         };
@@ -292,10 +277,10 @@ impl<'a> Iterator for PersoBlobIterator<'a> {
         self.current_offset += obj_header.obj_size;
         self.current_obj_idx += 1;
 
-        let obj_header_size = self.parser.get_obj_header_size();
         Some(Ok(PersoBlobObject {
             obj_header,
-            data: &remaining_data[obj_header_size..][..obj_header.obj_size - obj_header_size],
+            data: &remaining_data[obj_header.header_size..]
+                [..obj_header.obj_size - obj_header.header_size],
         }))
     }
 }
@@ -321,6 +306,9 @@ trait PersoTlvTypes {
     type ObjHeaderType: TryFrom<u32> + Into<u32> + FromBigEndianBytes + Copy;
     type CertHeaderType: TryFrom<u32> + Into<u32> + FromBigEndianBytes + Copy;
 
+    const PREFIX_BYTES: usize;
+    const VERSION: SupportedPersoTlvVersion;
+
     const OBJH_SIZE_FIELD_MASK: u32;
     const OBJH_SIZE_FIELD_SHIFT: u32;
     const OBJH_TYPE_FIELD_MASK: u32;
@@ -330,6 +318,9 @@ trait PersoTlvTypes {
     const CRTH_SIZE_FIELD_SHIFT: u32;
     const CRTH_NAME_SIZE_FIELD_MASK: u32;
     const CRTH_NAME_SIZE_FIELD_SHIFT: u32;
+
+    const MAX_CERT_NAME_LEN: usize;
+    const MAX_CERT_LEN: usize;
 
     // Expects that `val` is Host-Endian
     fn get_obj_size(val: Self::ObjHeaderType) -> usize {
@@ -359,7 +350,7 @@ trait PersoTlvTypes {
 
     // Extract LTV object header from the input buffer.
     fn get_obj_header(data: &[u8]) -> Result<ObjHeader> {
-        let header_len = std::mem::size_of::<Self::ObjHeaderType>();
+        let header_len = Self::PREFIX_BYTES + std::mem::size_of::<Self::ObjHeaderType>();
 
         if data.len() < header_len {
             bail!(
@@ -369,8 +360,9 @@ trait PersoTlvTypes {
             )
         }
 
-        let obj_header = Self::ObjHeaderType::from_be_bytes(data)?;
-        let obj_size = Self::get_obj_size(obj_header);
+        let obj_header = Self::ObjHeaderType::from_be_bytes(&data[Self::PREFIX_BYTES..])?;
+        let inner_obj_size = Self::get_obj_size(obj_header);
+        let obj_size = Self::PREFIX_BYTES + inner_obj_size;
         let obj_type = Self::get_obj_type_raw_value(obj_header);
 
         if obj_size > data.len() {
@@ -382,17 +374,22 @@ trait PersoTlvTypes {
             );
         }
 
-        if obj_size < header_len {
+        if inner_obj_size < std::mem::size_of::<Self::ObjHeaderType>() {
             bail!(
                 "Object {} length {} is less than Object header length {}",
                 obj_type,
-                obj_size,
-                header_len
+                inner_obj_size,
+                std::mem::size_of::<Self::ObjHeaderType>()
             );
         }
 
         let obj_type = obj_type.try_into()?;
-        Ok(ObjHeader { obj_type, obj_size })
+        Ok(ObjHeader {
+            obj_type,
+            obj_size,
+            header_size: header_len,
+            version: Self::VERSION,
+        })
     }
 
     // Extract certificate payload header from the input buffer.
@@ -496,6 +493,9 @@ impl PersoTlvTypes for PersoTlvTypesV0 {
     type ObjHeaderType = perso_tlv_objects::perso_tlv_object_header_t;
     type CertHeaderType = perso_tlv_objects::perso_tlv_cert_header_t;
 
+    const PREFIX_BYTES: usize = 0;
+    const VERSION: SupportedPersoTlvVersion = SupportedPersoTlvVersion::V0;
+
     const OBJH_SIZE_FIELD_MASK: u32 =
         perso_tlv_objects::perso_tlv_obj_header_fields_v0_kObjhSizeFieldMaskV0;
     const OBJH_SIZE_FIELD_SHIFT: u32 =
@@ -513,11 +513,24 @@ impl PersoTlvTypes for PersoTlvTypesV0 {
         perso_tlv_objects::perso_tlv_cert_header_fields_v0_kCrthNameSizeFieldMaskV0;
     const CRTH_NAME_SIZE_FIELD_SHIFT: u32 =
         perso_tlv_objects::perso_tlv_cert_header_fields_v0_kCrthNameSizeFieldShiftV0;
+
+    const MAX_CERT_NAME_LEN: usize =
+        perso_tlv_objects::perso_tlv_cert_header_fields_v0_kCrthNameSizeFieldMaskV0 as usize;
+    const MAX_CERT_LEN: usize =
+        (perso_tlv_objects::perso_tlv_obj_header_fields_v0_kObjhSizeFieldMaskV0 as usize)
+            - std::mem::size_of::<Self::ObjHeaderType>()
+            - std::mem::size_of::<Self::CertHeaderType>()
+            - Self::MAX_CERT_NAME_LEN;
 }
 
 impl PersoTlvTypes for PersoTlvTypesV1 {
     type ObjHeaderType = perso_tlv_objects::perso_tlv_object_header_v1_t;
     type CertHeaderType = perso_tlv_objects::perso_tlv_cert_header_v1_t;
+
+    const PREFIX_BYTES: usize = std::mem::size_of::<
+        <PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType,
+    >() + std::mem::size_of::<PersoBlobVersionObj>();
+    const VERSION: SupportedPersoTlvVersion = SupportedPersoTlvVersion::V1;
 
     const OBJH_SIZE_FIELD_MASK: u32 =
         perso_tlv_objects::perso_tlv_obj_header_fields_v1_kObjhSizeFieldMaskV1;
@@ -536,11 +549,14 @@ impl PersoTlvTypes for PersoTlvTypesV1 {
         perso_tlv_objects::perso_tlv_cert_header_fields_v1_kCrthNameSizeFieldMaskV1;
     const CRTH_NAME_SIZE_FIELD_SHIFT: u32 =
         perso_tlv_objects::perso_tlv_cert_header_fields_v1_kCrthNameSizeFieldShiftV1;
-}
 
-enum SupportedPersoTlvVersion {
-    V0,
-    V1,
+    const MAX_CERT_NAME_LEN: usize =
+        perso_tlv_objects::perso_tlv_cert_header_fields_v1_kCrthNameSizeFieldMaskV1 as usize;
+    const MAX_CERT_LEN: usize =
+        (perso_tlv_objects::perso_tlv_obj_header_fields_v1_kObjhSizeFieldMaskV1 as usize)
+            - std::mem::size_of::<Self::ObjHeaderType>()
+            - std::mem::size_of::<Self::CertHeaderType>()
+            - Self::MAX_CERT_NAME_LEN;
 }
 
 #[repr(C)]
@@ -557,6 +573,7 @@ const _: () = {
     );
 };
 
+#[allow(dead_code)]
 impl PersoBlobVersionObj {
     pub fn new(version: u16) -> Self {
         Self { version }
@@ -578,9 +595,11 @@ impl PersoBlobVersionObj {
                     std::mem::size_of::<Self>() + obj_header_size
                 )
             }
-            return Ok(Some(Self {
-                version: u16::from_be_bytes(blob.body[obj_header_size..][..2].try_into()?),
-            }));
+            let ver = u16::from_be_bytes(blob.body[obj_header_size..][..2].try_into()?);
+            if ver != 1 {
+                bail!("Unsupported version object: {ver}");
+            }
+            return Ok(Some(Self { version: ver }));
         }
         Ok(None)
     }
@@ -676,6 +695,14 @@ mod tests {
                 body: invalid_version_obj.into_iter().collect(),
             };
             assert!(PersoBlobVersionObj::read_from_perso_blob(&perso_blob).is_err());
+
+            let disallowed_version_obj_v0 = [0xF0, 0x04, 0x00, 0x00];
+            let perso_blob = PersoBlob {
+                num_objs: 1,
+                next_free: disallowed_version_obj_v0.len(),
+                body: disallowed_version_obj_v0.into_iter().collect(),
+            };
+            assert!(PersoBlobVersionObj::read_from_perso_blob(&perso_blob).is_err());
         }
     }
 
@@ -683,6 +710,7 @@ mod tests {
         use crate::ObjType;
         use crate::PersoTlvTypes;
         use crate::PersoTlvTypesV0;
+        use crate::SupportedPersoTlvVersion;
 
         #[test]
         fn get_obj_size_test() {
@@ -695,16 +723,20 @@ mod tests {
                 171
             );
             assert_eq!(
-                PersoTlvTypesV0::get_obj_size(u16::from_be_bytes([0xfa, 0xbc])),
-                2748
+                PersoTlvTypesV0::get_obj_size(u16::from_be_bytes([0xff, 0xff])),
+                4095
             );
         }
 
         #[test]
         fn get_obj_type_test() {
             assert_eq!(
-                PersoTlvTypesV0::get_obj_type_raw_value(u16::from_be_bytes([0x2f, 0xff])),
-                2
+                PersoTlvTypesV0::get_obj_type_raw_value(u16::from_be_bytes([0x0f, 0xff])),
+                0
+            );
+            assert_eq!(
+                PersoTlvTypesV0::get_obj_type_raw_value(u16::from_be_bytes([0xaf, 0xff])),
+                10
             );
             assert_eq!(
                 PersoTlvTypesV0::get_obj_type_raw_value(u16::from_be_bytes([0xff, 0xff])),
@@ -715,8 +747,8 @@ mod tests {
         #[test]
         fn get_crth_size() {
             assert_eq!(
-                PersoTlvTypesV0::get_crth_size(u16::from_be_bytes([0xf0, 0x05])),
-                5
+                PersoTlvTypesV0::get_crth_size(u16::from_be_bytes([0xf0, 0x03])),
+                3
             );
             assert_eq!(
                 PersoTlvTypesV0::get_crth_size(u16::from_be_bytes([0xf0, 0xba])),
@@ -747,11 +779,15 @@ mod tests {
             ])
             .unwrap();
             assert_eq!(hdr.obj_size, 9);
+            assert_eq!(hdr.header_size, 2);
             assert_eq!(hdr.obj_type, ObjType::PersoSha256Hash);
+            assert_eq!(hdr.version, SupportedPersoTlvVersion::V0);
 
             let hdr = PersoTlvTypesV0::get_obj_header(&[0xf0, 0x04, 0x03, 0x00]).unwrap();
             assert_eq!(hdr.obj_size, 4);
+            assert_eq!(hdr.header_size, 2);
             assert_eq!(hdr.obj_type, ObjType::PersoBlobVersion);
+            assert_eq!(hdr.version, SupportedPersoTlvVersion::V0);
         }
 
         #[test]
@@ -860,6 +896,7 @@ mod tests {
         use crate::ObjType;
         use crate::PersoTlvTypes;
         use crate::PersoTlvTypesV1;
+        use crate::SupportedPersoTlvVersion;
 
         #[test]
         fn get_obj_size_test() {
@@ -938,16 +975,13 @@ mod tests {
         #[test]
         fn get_obj_header_valid() {
             let hdr = PersoTlvTypesV1::get_obj_header(&[
-                0x07, 0x00, 0x00, 0x09, 0x01, 0x02, 0x03, 0x04, 0x05,
+                0xf0, 0x04, 0x00, 0x01, 0x07, 0x00, 0x00, 0x09, 0x01, 0x02, 0x03, 0x04, 0x05,
             ])
             .unwrap();
-            assert_eq!(hdr.obj_size, 9);
+            assert_eq!(hdr.obj_size, 13);
+            assert_eq!(hdr.header_size, 8);
             assert_eq!(hdr.obj_type, ObjType::PersoSha256Hash);
-
-            let hdr =
-                PersoTlvTypesV1::get_obj_header(&[0x0f, 0x0, 0x00, 0x06, 0x03, 0x00]).unwrap();
-            assert_eq!(hdr.obj_size, 6);
-            assert_eq!(hdr.obj_type, ObjType::PersoBlobVersion);
+            assert_eq!(hdr.version, SupportedPersoTlvVersion::V1);
         }
 
         #[test]
@@ -956,32 +990,60 @@ mod tests {
             assert!(PersoTlvTypesV1::get_obj_header(&[0x01]).is_err());
             assert!(PersoTlvTypesV1::get_obj_header(&[0x01, 0x02]).is_err());
             assert!(PersoTlvTypesV1::get_obj_header(&[0x01, 0x02, 0x03]).is_err());
+            assert!(PersoTlvTypesV1::get_obj_header(&[0xf0, 0x04, 0x00, 0x01]).is_err());
+            assert!(
+                PersoTlvTypesV1::get_obj_header(&[0xf0, 0x04, 0x00, 0x01, 0x07, 0x00, 0x00])
+                    .is_err()
+            );
         }
 
         #[test]
         fn get_obj_header_invalid_obj_len() {
-            assert!(PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x09]).is_err());
             assert!(
-                PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x08, 0x01, 0x02]).is_err()
+                PersoTlvTypesV1::get_obj_header(&[0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x09])
+                    .is_err()
+            );
+            assert!(
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x08, 0x01, 0x02
+                ])
+                .is_err()
             );
 
             assert!(
-                PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x00, 0x01, 0x02]).is_err()
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x02
+                ])
+                .is_err()
             );
             assert!(
-                PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x01, 0x01, 0x02]).is_err()
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x01, 0x01, 0x02
+                ])
+                .is_err()
             );
             assert!(
-                PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x02, 0x01, 0x02]).is_err()
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x02, 0x01, 0x02
+                ])
+                .is_err()
             );
             assert!(
-                PersoTlvTypesV1::get_obj_header(&[0x03, 0x00, 0x00, 0x03, 0x01, 0x02]).is_err()
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0x03, 0x00, 0x00, 0x03, 0x01, 0x02
+                ])
+                .is_err()
             );
         }
 
         #[test]
         fn get_obj_header_invalid_obj_type() {
-            assert!(PersoTlvTypesV1::get_obj_header(&[0xd0, 0x00, 0x00, 0x05, 0x01]).is_err());
+            assert!(
+                PersoTlvTypesV1::get_obj_header(&[
+                    0xf0, 0x04, 0x00, 0x01, 0xd0, 0x00, 0x00, 0x05, 0x01
+                ])
+                .is_err()
+            );
         }
 
         #[test]
@@ -1087,8 +1149,8 @@ mod tests {
         use ujson_lib::provisioning_data::PersoBlob;
 
         #[test]
-        fn perso_blob_v0_no_data() {
-            let perso_blob_builder = PersoBlobBuilder::new_with_version(0).unwrap();
+        fn perso_blob_no_data() {
+            let perso_blob_builder = PersoBlobBuilder::new();
             let perso_blob: PersoBlob = perso_blob_builder.into();
             assert_eq!(perso_blob.num_objs, 0);
             assert_eq!(perso_blob.body.len(), 0);
@@ -1096,8 +1158,8 @@ mod tests {
         }
 
         #[test]
-        fn perso_blob_v0_single_cert() {
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(0).unwrap();
+        fn perso_blob_single_v0_cert() {
+            let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
                 .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
                 .unwrap();
@@ -1113,8 +1175,8 @@ mod tests {
         }
 
         #[test]
-        fn perso_blob_v0_two_certs() {
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(0).unwrap();
+        fn perso_blob_two_v0_certs() {
+            let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
                 .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
                 .unwrap();
@@ -1135,14 +1197,51 @@ mod tests {
         }
 
         #[test]
-        fn perso_blob_v0_perso_blob_run_out_of_space() {
+        fn perso_blob_oversized_name_v1_cert() {
+            let mut perso_blob_builder = PersoBlobBuilder::new();
+            // Name with 16 characters (exceeds V0 limit of 15 chars)
+            let long_cert_name = "0123456789abcdef";
+            perso_blob_builder
+                .push_endorsed_cert(long_cert_name, &vec![0x01, 0x02, 0x03, 0x04, 0x05])
+                .unwrap();
+            let perso_blob: PersoBlob = perso_blob_builder.into();
+
+            #[rustfmt::skip]
+            let expected_perso_body_bytes = [
+                // Version prefix
+                0xf0, 0x04, 0x00, 0x01,
+                // Cert 1 (V1 header)
+                0x01, 0x00, 0x00, 0x1d, 0x10, 0x00, 0x00, 0x19,
+                b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
+                0x01, 0x02, 0x03, 0x04, 0x05,
+            ];
+            assert_eq!(perso_blob.num_objs, 1);
+            assert_eq!(perso_blob.body.as_slice(), &expected_perso_body_bytes);
+        }
+
+        #[test]
+        fn perso_blob_oversized_body_v1_cert() {
+            let mut perso_blob_builder = PersoBlobBuilder::new();
+            // Body with 4090 bytes (v0_crth_size = 2 + 4 + 4090 = 4096 > 4095)
+            let large_cert_body = vec![0x01; 4090];
+            perso_blob_builder
+                .push_endorsed_cert("cert", &large_cert_body)
+                .unwrap();
+            let perso_blob: PersoBlob = perso_blob_builder.into();
+            assert_eq!(perso_blob.num_objs, 1);
+            // Verify it has the V1 version prefix
+            assert_eq!(&perso_blob.body[0..4], &[0xf0, 0x04, 0x00, 0x01]);
+        }
+
+        #[test]
+        fn perso_blob_run_out_of_space() {
             let large_cert_body = vec![0x01; 4081];
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(0).unwrap();
+            let mut perso_blob_builder = PersoBlobBuilder::new();
             perso_blob_builder
                 .push_endorsed_cert("large_cert", &large_cert_body)
                 .unwrap();
 
-            // Adding a 2nd large cert will cause Perso blob to run out of space here
+            // Adding a 2nd large cert will cause Perso blob to run out of space
             let large_cert_body = vec![0x02; 1011];
             assert!(
                 perso_blob_builder
@@ -1150,173 +1249,44 @@ mod tests {
                     .is_err()
             );
         }
-
-        #[test]
-        fn perso_blob_v1_no_data() {
-            let perso_blob_builder = PersoBlobBuilder::new_with_version(1).unwrap();
-            let perso_blob: PersoBlob = perso_blob_builder.into();
-            assert_eq!(perso_blob.num_objs, 1);
-            assert_eq!(perso_blob.body.as_slice(), &[0xf0, 0x04, 0x00, 0x01]);
-            assert_eq!(perso_blob.next_free, 4);
-        }
-
-        #[test]
-        fn perso_blob_v1_single_cert() {
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(1).unwrap();
-            perso_blob_builder
-                .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
-                .unwrap();
-            let perso_blob: PersoBlob = perso_blob_builder.into();
-
-            #[rustfmt::skip]
-            let expected_perso_body_bytes = [
-                // v1 PersoBlobVersionObj
-                0xf0, 0x04, 0x00, 0x01,
-                // Cert 1
-                0x01, 0x00, 0x00, 0x11, 0x04, 0x00, 0x00, 0x0d, b'c', b'e', b'r', b't', 0x01, 0x02,
-                0x03, 0x04, 0x05,
-            ];
-            assert_eq!(perso_blob.num_objs, 2);
-            assert_eq!(perso_blob.body.as_slice(), &expected_perso_body_bytes);
-            assert_eq!(perso_blob.next_free, 21);
-        }
-
-        #[test]
-        fn perso_blob_v1_two_certs() {
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(1).unwrap();
-            perso_blob_builder
-                .push_endorsed_cert("cert", &vec![0x01, 0x02, 0x03, 0x04, 0x05])
-                .unwrap();
-            perso_blob_builder
-                .push_endorsed_cert("cert2", &vec![0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c])
-                .unwrap();
-            let perso_blob: PersoBlob = perso_blob_builder.into();
-
-            #[rustfmt::skip]
-            let expected_perso_body_bytes = [
-                // v1 PersoBlobVersionObj
-                0xf0, 0x04, 0x00, 0x01,
-                // Cert 1
-                0x01, 0x00, 0x00, 0x11, 0x04, 0x00, 0x00, 0x0d, b'c', b'e', b'r', b't', 0x01, 0x02,
-                0x03, 0x04, 0x05,
-                // Cert 2
-                0x01, 0x00, 0x00, 0x14, 0x05, 0x00, 0x00, 0x10, b'c', b'e', b'r', b't', b'2', 0x06,
-                0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
-            ];
-            assert_eq!(perso_blob.num_objs, 3);
-            assert_eq!(perso_blob.body.as_slice(), &expected_perso_body_bytes);
-            assert_eq!(perso_blob.next_free, 41);
-        }
-
-        #[test]
-        fn perso_blob_v1_perso_blob_run_out_of_space() {
-            let large_cert_body = vec![0x01; 4077];
-            let mut perso_blob_builder = PersoBlobBuilder::new_with_version(1).unwrap();
-            perso_blob_builder
-                .push_endorsed_cert("large_cert", &large_cert_body)
-                .unwrap();
-
-            // Adding a 2nd large cert will cause Perso blob to run out of space here. Remember
-            // that there are 4 bytes used by the PersoBlobVersionObj as well
-            let large_cert_body = vec![0x02; 1003];
-            assert!(
-                perso_blob_builder
-                    .push_endorsed_cert("large_cert2", &large_cert_body)
-                    .is_err()
-            );
-        }
-
-        #[test]
-        fn perso_blob_unsupported_tlv_version() {
-            // Check for v2 here. When a new version is supported (v2, hopefully it will be a
-            // continuous sequence), this test will fail. The author is then expected to update
-            // these tests for v2 and increment the unsupported version here
-            assert!(PersoBlobBuilder::new_with_version(2).is_err());
-        }
     }
 
     mod perso_blob_parser_tests {
         use crate::PersoBlobParser;
-        use ujson_lib::provisioning_data::PersoBlob;
 
         fn get_v0_cert_bytes() -> Vec<u8> {
             vec![0x00, 0x0a, 0x40, 0x08, b'c', b'e', b'r', b't', 0x01, 0x02]
         }
 
-        fn get_v1_perso_blob_version_bytes() -> Vec<u8> {
-            vec![0xf0, 0x04, 0x00, 0x01]
-        }
-
-        fn get_v2_perso_blob_version_bytes() -> Vec<u8> {
-            vec![0xf0, 0x04, 0x00, 0x02]
+        fn get_v1_cert_bytes() -> Vec<u8> {
+            vec![
+                0xf0, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x0e, 0x04, 0x00, 0x00, 0x0a, b'c', b'e',
+                b'r', b't', 0x01, 0x02,
+            ]
         }
 
         #[test]
-        fn get_obj_header_size_v0() {
+        fn get_obj_header_v0() {
             let perso_body_bytes = get_v0_cert_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_body_bytes.len(),
-                body: perso_body_bytes.into_iter().collect(),
-            };
-            let parser = PersoBlobParser::new_with_version(0, perso_blob).unwrap();
-            assert_eq!(parser.get_obj_header_size(), 2);
+            let obj_hdr = PersoBlobParser::get_obj_header(&perso_body_bytes).unwrap();
+            assert_eq!(obj_hdr.obj_size, 10);
+            assert_eq!(obj_hdr.header_size, 2);
+            assert_eq!(obj_hdr.version, crate::SupportedPersoTlvVersion::V0);
         }
 
         #[test]
-        fn get_obj_header_size_v1() {
-            let perso_body_bytes = get_v1_perso_blob_version_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_body_bytes.len(),
-                body: perso_body_bytes.into_iter().collect(),
-            };
-            let parser = PersoBlobParser::new_with_version(1, perso_blob).unwrap();
-            assert_eq!(parser.get_obj_header_size(), 4);
+        fn get_obj_header_v1() {
+            let perso_body_bytes = get_v1_cert_bytes();
+            let obj_hdr = PersoBlobParser::get_obj_header(&perso_body_bytes).unwrap();
+            assert_eq!(obj_hdr.obj_size, 18);
+            assert_eq!(obj_hdr.header_size, 8);
+            assert_eq!(obj_hdr.version, crate::SupportedPersoTlvVersion::V1);
         }
 
         #[test]
-        fn unsupported_version() {
-            let perso_blob_bytes = get_v2_perso_blob_version_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_blob_bytes.len(),
-                body: perso_blob_bytes.into_iter().collect(),
-            };
-            assert!(PersoBlobParser::new_with_version(2, perso_blob).is_err());
-        }
-
-        #[test]
-        fn v0_expected_with_v1_blob() {
-            let perso_blob_bytes = get_v1_perso_blob_version_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_blob_bytes.len(),
-                body: perso_blob_bytes.into_iter().collect(),
-            };
-            assert!(PersoBlobParser::new_with_version(0, perso_blob).is_err());
-        }
-
-        #[test]
-        fn v1_expected_with_v0_blob() {
-            let perso_blob_bytes = get_v0_cert_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_blob_bytes.len(),
-                body: perso_blob_bytes.into_iter().collect(),
-            };
-            assert!(PersoBlobParser::new_with_version(1, perso_blob).is_err());
-        }
-
-        #[test]
-        fn expected_version_and_blob_version_mismatch() {
-            let perso_blob_bytes = get_v2_perso_blob_version_bytes();
-            let perso_blob = PersoBlob {
-                num_objs: 1,
-                next_free: perso_blob_bytes.len(),
-                body: perso_blob_bytes.into_iter().collect(),
-            };
-            assert!(PersoBlobParser::new_with_version(1, perso_blob).is_err());
+        fn get_obj_version_disallowed_v0() {
+            let invalid_bytes = vec![0xf0, 0x04, 0x00, 0x00, 0x00, 0x00];
+            assert!(PersoBlobParser::get_obj_version(&invalid_bytes).is_err());
         }
     }
 
@@ -1344,7 +1314,7 @@ mod tests {
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(0, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
@@ -1396,7 +1366,7 @@ mod tests {
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(0, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
@@ -1427,7 +1397,7 @@ mod tests {
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(0, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
@@ -1448,29 +1418,30 @@ mod tests {
         fn v1_blob_iter() {
             #[rustfmt::skip]
             let perso_blob_bytes = vec![
-                // v1 PersoBlobVersionObj
-                0xf0, 0x04, 0x00, 0x01,
                 // Cert 1
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00, 0x11, 0x04, 0x00, 0x00, 0x0d, b'c', b'e', b'r', b't', 0x01, 0x02,
                 0x03, 0x04, 0x05,
                 // Cert 2
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00, 0x14, 0x05, 0x00, 0x00, 0x10, b'c', b'e', b'r', b't', b'2', 0x06,
                 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
                 // Hash 1
+                0xf0, 0x04, 0x00, 0x01,
                 0x07, 0x00, 0x00, 0x12, 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0d, 0x15, 0x22,
                 0x37, 0x59, 0x90, 0xe9,
             ];
             let perso_blob = PersoBlob {
-                num_objs: 4,
+                num_objs: 3,
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(1, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
             assert_eq!(first_obj.obj_header.obj_type, ObjType::EndorsedX509Cert);
-            assert_eq!(first_obj.obj_header.obj_size, 17);
+            assert_eq!(first_obj.obj_header.obj_size, 21);
             assert_eq!(
                 first_obj.data,
                 &[
@@ -1480,7 +1451,7 @@ mod tests {
 
             let second_obj = perso_blob_iterator.next().unwrap().unwrap();
             assert_eq!(second_obj.obj_header.obj_type, ObjType::EndorsedX509Cert);
-            assert_eq!(second_obj.obj_header.obj_size, 20);
+            assert_eq!(second_obj.obj_header.obj_size, 24);
             assert_eq!(
                 second_obj.data,
                 &[
@@ -1491,7 +1462,7 @@ mod tests {
 
             let third_obj = perso_blob_iterator.next().unwrap().unwrap();
             assert_eq!(third_obj.obj_header.obj_type, ObjType::PersoSha256Hash);
-            assert_eq!(third_obj.obj_header.obj_size, 18);
+            assert_eq!(third_obj.obj_header.obj_size, 22);
             assert_eq!(
                 third_obj.data,
                 &[
@@ -1507,25 +1478,25 @@ mod tests {
         fn v1_blob_partial_header_iter() {
             #[rustfmt::skip]
             let perso_blob_bytes = vec![
-                // v1 PersoBlobVersionObj
-                0xf0, 0x04, 0x00, 0x01,
                 // Cert 1
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00, 0x11, 0x04, 0x00, 0x00, 0x0d, b'c', b'e', b'r', b't', 0x01, 0x02,
                 0x03, 0x04, 0x05,
                 // Cert 2 with partial header
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00,
             ];
             let perso_blob = PersoBlob {
-                num_objs: 3,
+                num_objs: 2,
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(1, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
             assert_eq!(first_obj.obj_header.obj_type, ObjType::EndorsedX509Cert);
-            assert_eq!(first_obj.obj_header.obj_size, 17);
+            assert_eq!(first_obj.obj_header.obj_size, 21);
             assert_eq!(
                 first_obj.data,
                 &[
@@ -1541,25 +1512,25 @@ mod tests {
         fn v1_blob_with_partial_body_iter() {
             #[rustfmt::skip]
             let perso_blob_bytes = vec![
-                // v1 PersoBlobVersionObj
-                0xf0, 0x04, 0x00, 0x01,
                 // Cert 1
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00, 0x11, 0x04, 0x00, 0x00, 0x0d, b'c', b'e', b'r', b't', 0x01, 0x02,
                 0x03, 0x04, 0x05,
                 // Cert 2 with partial body
+                0xf0, 0x04, 0x00, 0x01,
                 0x01, 0x00, 0x00, 0x14, 0x05, 0x00, 0x00, 0x10, b'c', b'e',
             ];
             let perso_blob = PersoBlob {
-                num_objs: 3,
+                num_objs: 2,
                 next_free: perso_blob_bytes.len(),
                 body: perso_blob_bytes.into_iter().collect(),
             };
-            let parser = PersoBlobParser::new_with_version(1, perso_blob).unwrap();
+            let parser = PersoBlobParser::new(perso_blob);
             let mut perso_blob_iterator = parser.iter();
 
             let first_obj = perso_blob_iterator.next().unwrap().unwrap();
             assert_eq!(first_obj.obj_header.obj_type, ObjType::EndorsedX509Cert);
-            assert_eq!(first_obj.obj_header.obj_size, 17);
+            assert_eq!(first_obj.obj_header.obj_size, 21);
             assert_eq!(
                 first_obj.data,
                 &[
