@@ -1025,7 +1025,7 @@ module i3c_target_fsm
 
   // Start request to the transceiver.
   // - this is needed to raise IBI and CRR requests when there is no activity on the I3C bus.
-  i3c_targ_start_req #(.Dummy(0)) u_start_req (
+  i3c_targ_start_req u_start_req (
     .clk_i           (clk_i),
     .rst_ni          (rst_ni),
 
@@ -1035,7 +1035,7 @@ module i3c_target_fsm
     .reset_i         (|{sw_reset_i, stop_det_i, rep_start_det_i}),
 
     // IBI/CRR target address.
-    .addr_i          (arb_data_o.addr),
+    .addr_i          (arb_data_o.addr[6:3]),
 
     // I3C clock signal from the Active Controller.
     .scl_i           (scl_i),
