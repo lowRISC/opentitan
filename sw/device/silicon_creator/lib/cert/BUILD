@@ -24,6 +24,11 @@ certificate_template(
     template = "//sw/host/ot_certs:example_cert",
 )
 
+filegroup(
+    name = "uds_template_file",
+    srcs = ["uds.hjson"],
+)
+
 certificate_template(
     name = "uds_template",
     template = "uds.hjson",
@@ -172,26 +177,39 @@ cc_library(
     deps = [
         ":cert",
         ":dice_api",
+        ":dice_cert_build",
         ":dice_storage",
-        ":template",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib/cert:dice_chain",
+        "//sw/device/silicon_creator/lib/cert:dice_keys",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/lib/ownership:ownership_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ],
+)
+
+cc_library(
+    name = "dice_cert_build",
+    srcs = ["dice_cert_build.c"],
+    deps = [
+        ":cert",
+        ":dice_api",
+        ":template",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:dice_chain",
-        "//sw/device/silicon_creator/lib/cert:dice_keys",
         "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
-        "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
 

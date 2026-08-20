@@ -1,0 +1,14 @@
+{
+  "creator_pub_key_ec_x": "0x2e30d513601d147c78386012ce8b37f6b33de10ea90c9943dacd7b6bfd99d2f5",
+  "creator_pub_key_ec_y": "0xb6306d21983ee734ee48c6e473f7fcaf3b0a05d48a7000fcbf46559903e3aefa",
+  "creator_pub_key_id": "05ffbabc19bed5cf7decb99dd753824ef782a622",
+  "auth_key_key_id": "fe584ae753790cfd8601a312fb32d3c1b822d112",
+  "otp_creator_sw_cfg_hash": "228820767c2211db31fe07f3487c83e8c210699e25fceda9b61c0ab88f67d9f5",
+  "otp_owner_sw_cfg_hash": "42ae6324c88c40cdcea7ebb5d13c637269d41837771e42c96e7fb74c2224600b",
+  "otp_rot_creator_auth_codesign_hash": "b71d598b165678604a79fdef77f250cd33a882a68cd0dc28e4eae47b6a6cb236",
+  "otp_rot_creator_auth_state_hash": "1fdf7af5a5a4ea3c3fe4bc9421c127e09d06fc33aef3877478e978bf769ee12f",
+  "debug_flag": false,
+  "cert_signature_r": "0x61d55e5a55ef74ef7cae1eb67cee5ec3714311de741a95416af63deb48af8a11",
+  "cert_signature_s": "0x18d7fd67a7289c2ac4565c1aa47a1f857de885448a36e1a85a44cd2b8d37039f"
+
+}

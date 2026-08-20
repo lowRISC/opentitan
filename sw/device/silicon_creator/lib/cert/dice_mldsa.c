@@ -90,8 +90,8 @@ static uint8_t curr_mldsa_sig[MLDSA44_SIGNATURE_BYTES];
 static uint8_t tbs_buffer[kCdiHybridMaxTbsSizeBytes];
 static uint8_t pubkey_buffer[kCdiHybridExactPubKeyMldsaSizeBytes];
 
-// Shared scratch buffer for ML-DSA public keys and stack.
-static uint8_t mldsa_scratch[32 * 1024] __attribute__((aligned(16)));
+static uint8_t mldsa_scratch[kDiceMldsaAttestationScratchBufferSize]
+    __attribute__((aligned(16)));
 
 // Keymgr configurations for deriving attestation keys.
 typedef struct keygen_params {
