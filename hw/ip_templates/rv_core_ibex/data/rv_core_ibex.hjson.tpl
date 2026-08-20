@@ -393,16 +393,6 @@
       local:   "false"
       expose:  "true"
     },
-% if cheriot_available:
-
-    { name:    "BaseIsa"
-      type:    "ibex_pkg::base_isa_e"
-      default: "ibex_pkg::BaseIsaRV32IorCHERIoT"
-      desc:    "Base ISA. Must stay CHERIoT-capable while CHERIoT is available."
-      local:   "false"
-      expose:  "true"
-    },
-% endif
 
     { name:    "WritebackStage"
       type:    "bit"

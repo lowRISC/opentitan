@@ -14,9 +14,6 @@ module ${module_instance_name}
   import rv_core_ibex_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
-% if cheriot_available:
-  parameter ibex_pkg::base_isa_e    BaseIsa             = ibex_pkg::BaseIsaRV32IorCHERIoT,
-% endif
   parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
   parameter int unsigned            AlertSkewCycles     = 1,
@@ -459,7 +456,7 @@ module ${module_instance_name}
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
 % if cheriot_available:
-    .BaseIsa                     ( BaseIsa                  ),
+    .BaseIsa                     ( ibex_pkg::BaseIsaRV32IorCHERIoT ),
 % else:
     .BaseIsa                     ( ibex_pkg::BaseIsaRV32I   ),
 % endif
@@ -1081,31 +1078,18 @@ module ${module_instance_name}
   // CHERIoT switch
   ////////////////////
 
-  // The mode switch only exists for the CHERIoT-capable base ISA.
-  `ASSERT_INIT(CheriotSwitchBaseIsa_A, BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT)
-
-  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch
-    // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
-    rv_core_ibex_cheriot_switch u_cheriot_switch (
-      .clk_i,
-      .rst_ni,
-      .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
-      .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
-      .lock_access_i(reg2hw.cheriot_lock.qe),
-      .ena_o        (cheriot_ena),
-      .error_o      (cheriot_switch_error)
-    );
-    // The mode output is not connected to the core yet.
-    assign unused_cheriot = ^cheriot_ena;
-
-  end else begin : gen_no_cheriot_switch
-    assign cheriot_ena          = prim_mubi_pkg::MuBi4False;
-    assign cheriot_switch_error = 1'b0;
-    assign unused_cheriot       = ^{cheriot_ena,
-                                    reg2hw.cheriot_ena,
-                                    reg2hw.cheriot_lock
-                                  };
-  end
+  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
+  rv_core_ibex_cheriot_switch u_cheriot_switch (
+    .clk_i,
+    .rst_ni,
+    .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
+    .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
+    .lock_access_i(reg2hw.cheriot_lock.qe),
+    .ena_o        (cheriot_ena),
+    .error_o      (cheriot_switch_error)
+  );
+  // The mode output is not connected to the core yet.
+  assign unused_cheriot = ^cheriot_ena;
 
 % endif
   logic unused_reg2hw;
@@ -1630,10 +1614,8 @@ module ${module_instance_name}
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
 % if cheriot_available:
-  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch_assert
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheriotSwitchFsm_A,
-        gen_cheriot_switch.u_cheriot_switch.u_state_regs, alert_tx_o[2])
-  end
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheriotSwitchFsm_A,
+      u_cheriot_switch.u_state_regs, alert_tx_o[2])
 
 % endif
 `endif // ifdef INC_ASSERT
