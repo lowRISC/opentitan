@@ -39,7 +39,7 @@ small:
 
 # Configuration to match that used in the OpenTitan project
 opentitan:
-  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32IorCHERIoT"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BOTEarlGrey"

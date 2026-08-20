@@ -1,5 +1,6 @@
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Copyright Microsoft Corporation
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +14,8 @@
 `include "prim_assert.sv"
 `include "dv_fcov_macros.svh"
 
-module ibex_if_stage import ibex_pkg::*; #(
+module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
+  parameter base_isa_e   BaseIsa              = BaseIsaRV32I,
   parameter int unsigned DmHaltAddr           = 32'h1A110800,
   parameter int unsigned DmExceptionAddr      = 32'h1A110808,
   parameter bit          DummyInstructions    = 1'b0,
@@ -35,8 +37,10 @@ module ibex_if_stage import ibex_pkg::*; #(
   input  logic                         clk_i,
   input  logic                         rst_ni,
 
+  input  ibex_mubi_t                   cheriot_enable_i,
   input  logic [31:0]                  boot_addr_i,              // also used for mtvec
   input  logic                         req_i,                    // instruction request control
+  input  logic                         debug_mode_i,
 
   // instruction cache interface
   output logic                        instr_req_o,
@@ -83,6 +87,8 @@ module ibex_if_stage import ibex_pkg::*; #(
   output logic                        instr_fetch_err_plus2_o,  // bus error misaligned
   output logic                        illegal_c_insn_id_o,      // compressed decoder thinks this
                                                                 // is an invalid instr
+  output logic                        instr_fetch_cheriot_acc_vio_o,
+  output logic                        instr_fetch_cheriot_bound_vio_o,
   output logic                        dummy_instr_id_o,         // Instruction is a dummy
   output logic [31:0]                 pc_if_o,
   output logic [31:0]                 pc_id_o,
@@ -123,7 +129,8 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   // misc signals
   output logic                        pc_mismatch_alert_o,
-  output logic                        if_busy_o                 // IF stage is busy fetching instr
+  output logic                        if_busy_o,                // IF stage is busy fetching instr
+  input  decoded_cap_t                pcc_cap_i
 );
 
   logic              instr_valid_id_d, instr_valid_id_q;
@@ -184,10 +191,23 @@ module ibex_if_stage import ibex_pkg::*; #(
   logic        [7:0] unused_csr_mtvec;
   logic              unused_exc_cause;
 
+  logic              cheriot_acc_vio, cheriot_bound_vio;
+  logic              cheriot_force_uc;
+  decoded_cap_t      unused_pcc_cap;
+  logic              unused_cheriot_force_uc;
+
   assign unused_boot_addr = boot_addr_i[7:0];
   assign unused_csr_mtvec = csr_mtvec_i[7:0];
 
   assign unused_exc_cause = |{exc_cause.irq_ext, exc_cause.irq_int};
+
+  assign unused_pcc_cap = pcc_cap_i;
+  assign unused_cheriot_force_uc = cheriot_force_uc;  // driven to prefetch_buffer port
+
+  if (BaseIsa != BaseIsaRV32IorCHERIoT) begin : gen_no_cheriot_if
+    logic unused_cheriot_if_sigs;
+    assign unused_cheriot_if_sigs = ^cheriot_enable_i | debug_mode_i;
+  end
 
   // exception PC selection mux
   always_comb begin : exc_pc_mux
@@ -199,8 +219,13 @@ module ibex_if_stage import ibex_pkg::*; #(
     end
 
     unique case (exc_pc_mux_i)
-      EXC_PC_EXC:     exc_pc = { csr_mtvec_i[31:8], 8'h00                };
-      EXC_PC_IRQ:     exc_pc = { csr_mtvec_i[31:8], 1'b0, irq_vec, 2'b00 };
+      EXC_PC_EXC:     exc_pc = ((BaseIsa == BaseIsaRV32IorCHERIoT)
+                                & (cheriot_enable_i == IbexMuBiOn)) ?
+                               {csr_mtvec_i[31:2], 2'b00} : {csr_mtvec_i[31:8], 8'h00};
+      EXC_PC_IRQ:     exc_pc = ((BaseIsa == BaseIsaRV32IorCHERIoT)
+                                & (cheriot_enable_i == IbexMuBiOn)) ?
+                               {csr_mtvec_i[31:2], 2'b00} :
+                               {csr_mtvec_i[31:8], 1'b0, irq_vec, 2'b00};
       EXC_PC_DBD:     exc_pc = DmHaltAddr;
       EXC_PC_DBG_EXC: exc_pc = DmExceptionAddr;
       default:        exc_pc = { csr_mtvec_i[31:8], 8'h00                };
@@ -340,6 +365,8 @@ module ibex_if_stage import ibex_pkg::*; #(
         .err_o               ( fetch_err                  ),
         .err_plus2_o         ( fetch_err_plus2            ),
 
+        .cheriot_force_uc_i  ( cheriot_force_uc           ),
+
         .instr_req_o         ( instr_req_o                ),
         .instr_addr_o        ( instr_addr_o               ),
         .instr_gnt_i         ( instr_gnt_i                ),
@@ -400,11 +427,49 @@ module ibex_if_stage import ibex_pkg::*; #(
                             (if_instr_addr[1] & ~instr_is_compressed & pmp_err_if_plus2_i);
 
   // Combine bus errors and pmp errors
-  assign if_instr_err = if_instr_bus_err | if_instr_pmp_err;
+  assign if_instr_err = if_instr_bus_err | if_instr_pmp_err | cheriot_acc_vio | cheriot_bound_vio;
 
   // Capture the second half of the address for errors on the second part of an instruction
+  // LEC_NOT_COMPATIBLE
   assign if_instr_err_plus2 = ((if_instr_addr[1] & ~instr_is_compressed & pmp_err_if_plus2_i) |
                                fetch_err_plus2) & ~pmp_err_if_i;
+
+  // pre-calculate headroom to improve memory read timing
+  logic [33:0] instr_hdrm;
+  logic        hdrm_ge4, hdrm_ge2, hdrm_ok, base_ok;
+  logic        allow_all;
+
+  // allow_all is used to permit the pc wraparound case (pc = 0xffff_fffe, uncompressed instruction)
+  // - in this case fetch should be allowed if pcc bounds is specified as the entire 32-bit space.
+  // - If we don't treat this as a specail case the fetch would be erred since headroom < 4
+  assign allow_all  = (pcc_cap_i.base32 == 0) & (pcc_cap_i.top33 == 33'h1_0000_0000);
+
+  assign instr_hdrm = {1'b0, pcc_cap_i.top33} - {2'b00, if_instr_addr};
+  assign hdrm_ge4   = (|instr_hdrm[32:2]) & ~instr_hdrm[33];     // >= 4
+  assign hdrm_ge2   = (|instr_hdrm[32:1]) & ~instr_hdrm[33];     // >= 2
+  logic unused_hdrm_lsb;
+  assign unused_hdrm_lsb = instr_hdrm[0];
+  assign hdrm_ok    = allow_all || (instr_is_compressed ? hdrm_ge2 : hdrm_ge4);
+  assign base_ok    = ~(if_instr_addr < pcc_cap_i.base32);
+
+  // only issue cheriot_acc_vio on valid fetches
+  assign cheriot_bound_vio = (BaseIsa == BaseIsaRV32IorCHERIoT) & (cheriot_enable_i == IbexMuBiOn)
+                           & ~debug_mode_i & (~base_ok  || ~hdrm_ok);
+
+  // In order to have constant timing (avoid side-channel leakage due to data-dependent behavior),
+  // if base vio or headroom < 4 (we are only authorized to fetch 2 bytes), force the fetch_fifo
+  // to treat the current rdata as a unaligned compressed instruction if pc[1]=1, and push it to
+  // ID stage without waiting for the 2nd part of 32-bit instruction.
+  //
+  assign cheriot_force_uc = (BaseIsa == BaseIsaRV32IorCHERIoT) & (cheriot_enable_i == IbexMuBiOn)
+                          & ~allow_all & (~base_ok | ~hdrm_ge4);
+
+  // we still check seal/perm here to be safe, however by ISA those can't happen at fetch time
+  // since they are check elsewhere already
+  assign cheriot_acc_vio = (BaseIsa == BaseIsaRV32IorCHERIoT) & (cheriot_enable_i == IbexMuBiOn)
+                         & ~debug_mode_i
+                         & (~pcc_cap_i.perms.EX || ~pcc_cap_i.valid ||
+                            (pcc_cap_i.otype != 0));
 
   // compressed instruction decoding, or more precisely compressed instruction
   // expander
@@ -419,18 +484,20 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   ibex_compressed_decoder #(
     .RV32ZC   (RV32ZC),
-    .ResetAll (ResetAll)
+    .ResetAll (ResetAll),
+    .BaseIsa  (BaseIsa)
   ) compressed_decoder_i (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .valid_i        (fetch_valid & ~fetch_err),
-    .id_in_ready_i  (id_in_ready_i & ~pc_set_i),
-    .instr_i        (if_instr_rdata),
-    .instr_o        (instr_decompressed),
-    .is_compressed_o(instr_is_compressed),
-    .gets_expanded_o(instr_gets_expanded),
-    .flush_expanded_i(flush_expanded),
-    .illegal_instr_o(illegal_c_insn)
+    .clk_i            (clk_i),
+    .rst_ni           (rst_ni),
+    .valid_i          (fetch_valid & ~fetch_err),
+    .id_in_ready_i    (id_in_ready_i & ~pc_set_i),
+    .instr_i          (if_instr_rdata),
+    .cheriot_enable_i (cheriot_enable_i),
+    .instr_o          (instr_decompressed),
+    .is_compressed_o  (instr_is_compressed),
+    .gets_expanded_o  (instr_gets_expanded),
+    .flush_expanded_i (flush_expanded),
+    .illegal_instr_o  (illegal_c_insn)
   );
 
   // Dummy instruction insertion
@@ -522,46 +589,70 @@ module ibex_if_stage import ibex_pkg::*; #(
   if (ResetAll) begin : g_instr_rdata_ra
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        instr_rdata_id_o         <= '0;
-        instr_rdata_alu_id_o     <= '0;
-        instr_fetch_err_o        <= '0;
-        instr_fetch_err_plus2_o  <= '0;
-        instr_rdata_c_id_o       <= '0;
-        instr_is_compressed_id_o <= '0;
-        instr_gets_expanded_id_o <= INSTR_NOT_EXPANDED;
-        instr_expanded_id_o      <= '0;
-        illegal_c_insn_id_o      <= '0;
-        pc_id_o                  <= '0;
+        instr_rdata_id_o                <= '0;
+        instr_rdata_alu_id_o            <= '0;
+        instr_fetch_err_o               <= '0;
+        instr_fetch_err_plus2_o         <= '0;
+        instr_rdata_c_id_o              <= '0;
+        instr_is_compressed_id_o        <= '0;
+        instr_gets_expanded_id_o        <= INSTR_NOT_EXPANDED;
+        instr_expanded_id_o             <= '0;
+        illegal_c_insn_id_o             <= '0;
+        pc_id_o                         <= '0;
       end else if (if_id_pipe_reg_we) begin
-        instr_rdata_id_o         <= instr_out;
+        instr_rdata_id_o                <= instr_out;
         // To reduce fan-out and help timing from the instr_rdata_id flops they are replicated.
-        instr_rdata_alu_id_o     <= instr_out;
-        instr_fetch_err_o        <= instr_err_out;
-        instr_fetch_err_plus2_o  <= if_instr_err_plus2;
-        instr_rdata_c_id_o       <= if_instr_rdata[15:0];
-        instr_is_compressed_id_o <= instr_is_compressed_out;
-        instr_gets_expanded_id_o <= instr_gets_expanded_out;
-        instr_expanded_id_o      <= if_instr_rdata[15:0];
-        illegal_c_insn_id_o      <= illegal_c_instr_out;
-        pc_id_o                  <= pc_if_o;
+        instr_rdata_alu_id_o            <= instr_out;
+        instr_fetch_err_o               <= instr_err_out;
+        instr_fetch_err_plus2_o         <= if_instr_err_plus2;
+        instr_rdata_c_id_o              <= if_instr_rdata[15:0];
+        instr_is_compressed_id_o        <= instr_is_compressed_out;
+        instr_gets_expanded_id_o        <= instr_gets_expanded_out;
+        instr_expanded_id_o             <= if_instr_rdata[15:0];
+        illegal_c_insn_id_o             <= illegal_c_instr_out;
+        pc_id_o                         <= pc_if_o;
       end
     end
   end else begin : g_instr_rdata_nr
     always_ff @(posedge clk_i) begin
       if (if_id_pipe_reg_we) begin
-        instr_rdata_id_o         <= instr_out;
+        instr_rdata_id_o                <= instr_out;
         // To reduce fan-out and help timing from the instr_rdata_id flops they are replicated.
-        instr_rdata_alu_id_o     <= instr_out;
-        instr_fetch_err_o        <= instr_err_out;
-        instr_fetch_err_plus2_o  <= if_instr_err_plus2;
-        instr_rdata_c_id_o       <= if_instr_rdata[15:0];
-        instr_is_compressed_id_o <= instr_is_compressed_out;
-        instr_gets_expanded_id_o <= instr_gets_expanded_out;
-        instr_expanded_id_o      <= if_instr_rdata[15:0];
-        illegal_c_insn_id_o      <= illegal_c_instr_out;
-        pc_id_o                  <= pc_if_o;
+        instr_rdata_alu_id_o            <= instr_out;
+        instr_fetch_err_o               <= instr_err_out;
+        instr_fetch_err_plus2_o         <= if_instr_err_plus2;
+        instr_rdata_c_id_o              <= if_instr_rdata[15:0];
+        instr_is_compressed_id_o        <= instr_is_compressed_out;
+        instr_gets_expanded_id_o        <= instr_gets_expanded_out;
+        instr_expanded_id_o             <= if_instr_rdata[15:0];
+        illegal_c_insn_id_o             <= illegal_c_instr_out;
+        pc_id_o                         <= pc_if_o;
       end
     end
+  end
+
+  if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_vio_regs
+    if (ResetAll) begin : g_cheriot_vio_ra
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          instr_fetch_cheriot_acc_vio_o   <= '0;
+          instr_fetch_cheriot_bound_vio_o <= '0;
+        end else if (if_id_pipe_reg_we) begin
+          instr_fetch_cheriot_acc_vio_o   <= cheriot_acc_vio;
+          instr_fetch_cheriot_bound_vio_o <= cheriot_bound_vio;
+        end
+      end
+    end else begin : g_cheriot_vio_nr
+      always_ff @(posedge clk_i) begin
+        if (if_id_pipe_reg_we) begin
+          instr_fetch_cheriot_acc_vio_o   <= cheriot_acc_vio;
+          instr_fetch_cheriot_bound_vio_o <= cheriot_bound_vio;
+        end
+      end
+    end
+  end else begin : gen_cheriot_vio_tieoff
+    assign instr_fetch_cheriot_acc_vio_o   = 1'b0;
+    assign instr_fetch_cheriot_bound_vio_o = 1'b0;
   end
 
   // Check for expected increments of the PC when security hardening enabled
@@ -775,7 +866,7 @@ module ibex_if_stage import ibex_pkg::*; #(
 
     logic predicted_branch;
 
-    // pc_set_i takes precendence over branch prediction
+    // pc_set_i takes precedence over branch prediction
     assign predicted_branch = predict_branch_taken & ~pc_set_i;
 
     always_comb begin

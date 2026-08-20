@@ -66,6 +66,7 @@ module ibex_trvk #(
   output logic revbm_device_error_o
 );
 
+  import ibex_cheriot_pkg::*;
 
   ///////////
   // Types //
@@ -73,21 +74,15 @@ module ibex_trvk #(
 
   localparam int unsigned RevBitmapWordAddrWidth = RevBitmapAddrWidth - 32'd2;
 
-  // Expanded exponent (5 bit)
-  typedef logic [ibex_cheriot_pkg::EXP_W-1:0]    cheriot_exp_t;
-  typedef logic [ibex_cheriot_pkg::BOT_W-1:0]    cheriot_bot_t;
-  typedef logic [ibex_cheriot_pkg::OTYPE_W-1:0]  cheriot_otype_t;
-  typedef logic [ibex_cheriot_pkg::CPERMS_W-1:0] cheriot_cperms_t;
-
   // Revocation bitmap word address type
   typedef logic [RevBitmapWordAddrWidth-1:0] revbm_addr_t;
 
   // Local capability metadata type to facilitate parsing of the fields.
   typedef struct packed {
-    cheriot_exp_t    exponent;
-    cheriot_bot_t    base;
-    cheriot_otype_t  otype;
-    cheriot_cperms_t cperms;
+    exp_t    exponent;
+    cbound_t base;
+    otype_t  otype;
+    cperms_t cperms;
   } cap_meta_t;
 
   // Local downstream response type
@@ -123,16 +118,17 @@ module ibex_trvk #(
   logic    downstream_rsp_out_valid;
   logic    downstream_rsp_out_ready;
   logic    downstream_rsp_wready;
+  logic    unused_downstream_rsp_wready;
 
   // Base (address) calculation
   cap_meta_t    cap_meta;
   logic         unused_cap_meta;
-  logic         cap_is_sealing;
+  logic         is_sealing_cap;
   logic [32:0]  cap_base_33;
   logic         unused_cap_base_33;
   logic [31:0]  cap_base;
-  cheriot_bot_t addr_mid;
-  logic [ 2:0]  cap_correction;
+  cbound_t      addr_mid;
+  cap_cor_t     cap_correction;
   logic         unused_cap_correction;
 
   // Revocation bitmap addressing
@@ -292,10 +288,6 @@ module ibex_trvk #(
     .err_o   ()
   );
 
-  // Only consumed by an assertion below
-  logic    unused_downstream_rsp_wready;
-  assign unused_downstream_rsp_wready = ^downstream_rsp_wready;
-
 
   ////////////////////////////////
   // Bitmap Address Calculation //
@@ -303,7 +295,7 @@ module ibex_trvk #(
 
   assign cap_meta = '{
     base:     downstream_rsp_out.data[8:0],
-    exponent: ibex_cheriot_pkg::get_exponent(downstream_rsp_out.data[21:18]),
+    exponent: cheriot_expand_exp(downstream_rsp_out.data[21:18]),
     otype:    downstream_rsp_out.data[24:22],
     cperms:   downstream_rsp_out.data[30:25]
   };
@@ -312,21 +304,22 @@ module ibex_trvk #(
   assign unused_cap_meta = ^{cap_meta.otype, cap_meta.cperms[5]};
 
   // Check if cap is sealing cap
-  assign cap_is_sealing = ibex_cheriot_pkg::is_sealing_cap(cap_meta.cperms[4:0]);
+  assign is_sealing_cap = cheriot_is_sealing_cap(cap_meta.cperms);
 
   // Extract the middle field from the pointer, bounds depend on exponent, width fixed
-  assign addr_mid = cheriot_bot_t'(ptr_storage_q >> cap_meta.exponent);
+  assign addr_mid = cbound_t'(ptr_storage_q >> cap_meta.exponent);
 
   // Fetch the correction values, we are only interested in the base correction value (1 bit)
   // top-related inputs are set to zero, top-related outputs ignored
-  assign cap_correction = ibex_cheriot_pkg::update_temp_fields('0, cap_meta.base, addr_mid);
+  assign cap_correction = cheriot_compute_corrections('0, cap_meta.base, addr_mid);
 
   // Calculate the base address of the capability as a 33-bit value
-  assign cap_base_33 = ibex_cheriot_pkg::get_bound33(cap_meta.base, {2{cap_correction[0]}},
-                                                     cap_meta.exponent, ptr_storage_q);
+  assign cap_base_33 = cheriot_expand_bound33(cap_meta.base,
+                                              cheriot_get_base_correction(cap_correction),
+                                              cap_meta.exponent, ptr_storage_q);
 
   // We don't need the correction bits corresponding to the top address
-  assign unused_cap_correction = ^cap_correction[2:1];
+  assign unused_cap_correction = ^cap_correction;
 
   // The MSB is unused in our case
   assign {unused_cap_base_33, cap_base} = cap_base_33;
@@ -353,7 +346,7 @@ module ibex_trvk #(
 
   // We have loaded valid capability pointer, now we see valid metadata, not a sealing cap,
   // and are pointing into the revocation bitmap
-  assign revbm_req_required = !cap_is_sealing          && // Not sealing cap
+  assign revbm_req_required = !is_sealing_cap          && // Not sealing cap
                               ptr_storage_valid_q      && // The pointer stored is valid
                               downstream_rsp_out.tag   && // We are looking at a capability
                               downstream_rsp_out_valid && // The stored response is valid
@@ -405,6 +398,8 @@ module ibex_trvk #(
     end
   end
 
+  // downstream_rsp_wready is only used for the assertion
+  assign unused_downstream_rsp_wready = downstream_rsp_wready;
 
   ////////////////
   // Assertions //

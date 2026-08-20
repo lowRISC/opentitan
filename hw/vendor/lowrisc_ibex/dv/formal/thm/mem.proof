@@ -8,21 +8,21 @@ lemma mem
   MemNotWFI: have (wbexc_exists && wbexc_is_mem_instr |-> ~wbexc_is_wfi)
   MemFin: have (finishing_executed && wbexc_is_mem_instr && ~wbexc_err |-> data_rvalid_i)
 
-  RespWait: have (wbexc_exists && wbexc_is_mem_instr && ~wbexc_err && ~data_rvalid_i |-> `LSU.ls_fsm_cs == `LSU.IDLE && ~`LSU.lsu_req_i)
+  RespWait: have (wbexc_exists && wbexc_is_mem_instr && ~wbexc_err && ~data_rvalid_i |-> `LSU.ls_fsm_cs == IDLE && ~`LSU.lsu_req_i)
 
   EarlyLSUCtrlMatch: have (
-    `LSU.ls_fsm_cs != `LSU.IDLE & spec_post_wX_en & mem_gnt_fst_q |->
+    `LSU.ls_fsm_cs != IDLE & spec_post_wX_en & mem_gnt_fst_q |->
     `LSU.rdata_offset_q == `LSU.data_offset && `LSU.data_type_q == `LSU.lsu_type_i && `LSU.data_sign_ext_q == `LSU.lsu_sign_ext_i && `LSU.data_we_q == `LSU.lsu_we_i
   )
 
-  MisStates: have (`LSU.ls_fsm_cs == `LSU.WAIT_GNT_MIS || `LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS || `LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS_GNTS_DONE |-> `LSU.split_misaligned_access)
+  MisStates: have (`LSU.ls_fsm_cs == WAIT_GNT_MIS || `LSU.ls_fsm_cs == WAIT_RVALID_MIS || `LSU.ls_fsm_cs == WAIT_RVALID_MIS_GNTS_DONE |-> `LSU.split_misaligned_access)
 
   LoadPMPErrorWx: have (`CR.instr_valid_id & ex_is_load_instr |-> spec_post_wX_en == ~spec_has_pmp_err)
 
   # Another graph induction for LSU states which specifically bind what is
   # happening to the specification.
   MemSpec: graph_induction +rev
-    cond (ex_is_mem_instr && (`LSU.ls_fsm_cs != `LSU.IDLE || `CR.lsu_req))
+    cond (ex_is_mem_instr && (`LSU.ls_fsm_cs != IDLE || `CR.lsu_req))
 
     inv fst_req (
       (data_req_o -> (mem_req_fst_d && fst_mem_cmp)) &&
@@ -64,28 +64,28 @@ lemma mem
       ~`LSU.lsu_err_q && ~`LSU.pmp_err_q && addr_last_matches
     )
 
-    entry (`LSU.ls_fsm_cs == `LSU.IDLE && `CR.lsu_req) -> idle_active
+    entry (`LSU.ls_fsm_cs == IDLE && `CR.lsu_req) -> idle_active
 
-    node idle_active fst_req (`LSU.ls_fsm_cs == `LSU.IDLE && `CR.lsu_req)
+    node idle_active fst_req (`LSU.ls_fsm_cs == IDLE && `CR.lsu_req)
     edge idle_active => wait_rvalid_mis wait_gnt_mis wait_gnt
     edge idle_active -> step
     
-    node wait_gnt_mis fst_req_2 (`LSU.ls_fsm_cs == `LSU.WAIT_GNT_MIS)
+    node wait_gnt_mis fst_req_2 (`LSU.ls_fsm_cs == WAIT_GNT_MIS)
     edge wait_gnt_mis => wait_gnt_mis wait_rvalid_mis
     
-    node wait_rvalid_mis snd_req_1 (`LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS)
+    node wait_rvalid_mis snd_req_1 (`LSU.ls_fsm_cs == WAIT_RVALID_MIS)
     edge wait_rvalid_mis => wait_rvalid_mis wait_rvalid_mis_gnts_done wait_gnt_split
     edge wait_rvalid_mis -> step
     
-    node wait_gnt_split snd_req_2 (`LSU.ls_fsm_cs == `LSU.WAIT_GNT && `LSU.split_misaligned_access)
+    node wait_gnt_split snd_req_2 (`LSU.ls_fsm_cs == WAIT_GNT && `LSU.split_misaligned_access)
     edge wait_gnt_split => wait_gnt_split
     edge wait_gnt_split -> step
 
-    node wait_gnt fst_req_1 (`LSU.ls_fsm_cs == `LSU.WAIT_GNT && ~`LSU.split_misaligned_access)
+    node wait_gnt fst_req_1 (`LSU.ls_fsm_cs == WAIT_GNT && ~`LSU.split_misaligned_access)
     edge wait_gnt => wait_gnt
     edge wait_gnt -> step
     
-    node wait_rvalid_mis_gnts_done req_done (`LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS_GNTS_DONE)
+    node wait_rvalid_mis_gnts_done req_done (`LSU.ls_fsm_cs == WAIT_RVALID_MIS_GNTS_DONE)
     edge wait_rvalid_mis_gnts_done => wait_rvalid_mis_gnts_done
     edge wait_rvalid_mis_gnts_done -> step
 
@@ -107,10 +107,10 @@ lemma mem
   PCMaintainEx2: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> pre_nextpc == spec_post_pc)
   CSRMaintainEx: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & ~spec_has_pmp_err |-> ex_csrs_match)
   ExcCSRMaintainEx: have (`ID.instr_valid_i & ex_is_mem_instr & ~ex_err & ~ex_kill & spec_has_pmp_err |-> ex_csrs_match_non_exc)
-  AltLSUVeryEarly: have (`LSU.ls_fsm_cs != `LSU.IDLE & spec_post_wX_en & ~lsu_had_first_resp |-> spec_post_wX == alt_lsu_very_early_res)
+  AltLSUVeryEarly: have (`LSU.ls_fsm_cs != IDLE & spec_post_wX_en & ~lsu_had_first_resp |-> spec_post_wX == alt_lsu_very_early_res)
   /
   PCNoChangeNoBranch: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ~ex_has_branched_d |-> (`ID.instr_valid_i ? pre_pc : `CR.pc_if) == wbexc_dut_post_pc)
-  AltLSUEarly: have (`LSU.ls_fsm_cs != `LSU.IDLE & spec_post_wX_en & lsu_had_first_resp |-> spec_post_wX == alt_lsu_early_res)
+  AltLSUEarly: have (`LSU.ls_fsm_cs != IDLE & spec_post_wX_en & lsu_had_first_resp |-> spec_post_wX == alt_lsu_early_res)
   /
   AltLSU: have (wbexc_exists & wbexc_is_load_instr & ~wbexc_err & wbexc_post_wX_en |-> wbexc_post_wX == alt_lsu_late_res)
   PCNoChangeBranch: have (wbexc_exists & wbexc_is_mem_instr & ~wbexc_err & ex_has_branched_d |-> pre_pc == wbexc_dut_post_pc)
