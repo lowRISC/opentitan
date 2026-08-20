@@ -245,7 +245,9 @@
           //    {    name: chip
           //         fusesoc_core: lowrisc:dv:top_darjeeling_chip_sim
           //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-          //         additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+          //         // The chip mapping, not the top mapping, is what resolves the
+          //         // virtual cores for the AST, pads, scan roles and JTAG ID.
+          //         additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_darjeeling_asic:0.1"
           //         rel_path: "hw/top_darjeeling/dv/lint/{tool}"
           //    },
             ]

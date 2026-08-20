@@ -34,7 +34,7 @@ filesets:
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe
       - lowrisc:earlgrey_constants:top_pkg
-      - lowrisc:constants:top_earlgrey_jtag_id_pkg
+      - lowrisc:virtual_constants:top_earlgrey_jtag_id_pkg
       - lowrisc:constants:top_earlgrey_ibex_pmp_reset_pkg
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev

@@ -59,7 +59,11 @@
                   rel_path: "hw/ip/aon_timer/lint/{tool}"
              },
              {    name: ast
-                  fusesoc_core: lowrisc:systems:top_darjeeling_ast
+                  // Lint the pseudo top-level, not `lowrisc:systems:top_darjeeling_ast`
+                  // itself: the latter implements a virtual core, and FuseSoC warns
+                  // about a non-deterministic selection whenever such a core is the
+                  // top of a build.  Both cores produce the same file list.
+                  fusesoc_core: lowrisc:dv:top_darjeeling_ast_top
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip/ast/lint/{tool}"
@@ -273,7 +277,7 @@
              {    name: chip_darjeeling_asic
                   fusesoc_core: lowrisc:systems:chip_darjeeling_asic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_darjeeling_asic:0.1"
                   rel_path: "hw/top_darjeeling/lint/{tool}"
              },
   ]
