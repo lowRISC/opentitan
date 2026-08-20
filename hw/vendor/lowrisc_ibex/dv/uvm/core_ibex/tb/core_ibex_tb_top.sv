@@ -40,6 +40,10 @@ module core_ibex_tb_top;
   // `define is used that can be set from the command line. If no value has been specified, this
   // gives a default. Other simulators don't take the detour via `define and can override the
   // corresponding parameters directly.
+  `ifndef IBEX_CFG_BASE_ISA
+    `define IBEX_CFG_BASE_ISA ibex_pkg::BaseIsaRV32IorCHERIoT
+  `endif
+
   `ifndef IBEX_CFG_RV32M
     `define IBEX_CFG_RV32M ibex_pkg::RV32MFast
   `endif
@@ -48,11 +52,12 @@ module core_ibex_tb_top;
     `define IBEX_CFG_RV32B ibex_pkg::RV32BNone
   `endif
 
-  `ifndef IBEX_CFG_RegFile
-    `define IBEX_CFG_RegFile ibex_pkg::RegFileFF
+  `ifndef IBEX_CFG_REG_FILE
+    `define IBEX_CFG_REG_FILE ibex_pkg::RegFileFF
   `endif
 
   // Ibex Parameters
+  parameter ibex_pkg::base_isa_e BaseIsa  = `IBEX_CFG_BASE_ISA;
   parameter bit          PMPEnable        = 1'b0;
   parameter int unsigned PMPGranularity   = 0;
   parameter int unsigned PMPNumRegions    = 4;
@@ -61,7 +66,7 @@ module core_ibex_tb_top;
   parameter bit RV32E                     = 1'b0;
   parameter ibex_pkg::rv32m_e RV32M       = `IBEX_CFG_RV32M;
   parameter ibex_pkg::rv32b_e RV32B       = `IBEX_CFG_RV32B;
-  parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_RegFile;
+  parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_REG_FILE;
   parameter bit BranchTargetALU           = 1'b0;
   parameter bit WritebackStage            = 1'b0;
   parameter bit ICache                    = 1'b0;
@@ -95,30 +100,30 @@ module core_ibex_tb_top;
   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
-    .BaseIsa              (ibex_pkg::BaseIsaRV32I),
-    .PMPEnable            (PMPEnable             ),
-    .PMPGranularity       (PMPGranularity        ),
-    .PMPNumRegions        (PMPNumRegions         ),
-    .MHPMCounterNum       (MHPMCounterNum        ),
-    .MHPMCounterWidth     (MHPMCounterWidth      ),
-    .RV32E                (RV32E                 ),
-    .RV32M                (RV32M                 ),
-    .RV32B                (RV32B                 ),
-    .RegFile              (RegFile               ),
-    .BranchTargetALU      (BranchTargetALU       ),
-    .WritebackStage       (WritebackStage        ),
-    .ICache               (ICache                ),
-    .ICacheECC            (ICacheECC             ),
-    .ICacheTweakInfection (ICacheTweakInfection  ),
-    .SecureIbex           (SecureIbex            ),
-    .LockstepOffset       (LockstepOffset        ),
-    .ICacheScramble       (ICacheScramble        ),
-    .BranchPredictor      (BranchPredictor       ),
-    .DbgTriggerEn         (DbgTriggerEn          ),
-    .DmBaseAddr           (DmBaseAddr            ),
-    .DmAddrMask           (DmAddrMask            ),
-    .DmHaltAddr           (DmHaltAddr            ),
-    .DmExceptionAddr      (DmExceptionAddr       )
+    .BaseIsa              (BaseIsa             ),
+    .PMPEnable            (PMPEnable           ),
+    .PMPGranularity       (PMPGranularity      ),
+    .PMPNumRegions        (PMPNumRegions       ),
+    .MHPMCounterNum       (MHPMCounterNum      ),
+    .MHPMCounterWidth     (MHPMCounterWidth    ),
+    .RV32E                (RV32E               ),
+    .RV32M                (RV32M               ),
+    .RV32B                (RV32B               ),
+    .RegFile              (RegFile             ),
+    .BranchTargetALU      (BranchTargetALU     ),
+    .WritebackStage       (WritebackStage      ),
+    .ICache               (ICache              ),
+    .ICacheECC            (ICacheECC           ),
+    .ICacheTweakInfection (ICacheTweakInfection),
+    .SecureIbex           (SecureIbex          ),
+    .LockstepOffset       (LockstepOffset      ),
+    .ICacheScramble       (ICacheScramble      ),
+    .BranchPredictor      (BranchPredictor     ),
+    .DbgTriggerEn         (DbgTriggerEn        ),
+    .DmBaseAddr           (DmBaseAddr          ),
+    .DmAddrMask           (DmAddrMask          ),
+    .DmHaltAddr           (DmHaltAddr          ),
+    .DmExceptionAddr      (DmExceptionAddr     )
 
   ) dut (
     .clk_i                     (clk                        ),
@@ -180,6 +185,8 @@ module core_ibex_tb_top;
     .crash_dump_o              (                           ),
     .double_fault_seen_o       (dut_if.double_fault_seen   ),
 
+    .cheriot_enable_i          (ibex_pkg::IbexMuBiOff      ),
+
     .fetch_enable_i            (dut_if.fetch_enable        ),
     .mcounteren_writable_i     (dut_if.mcounteren_writable ),
     .alert_minor_o             (dut_if.alert_minor         ),
@@ -217,6 +224,12 @@ module core_ibex_tb_top;
     `define IBEX_LOCKSTEP_PATH core_ibex_tb_top.dut.u_ibex_top.gen_lockstep.u_ibex_lockstep
     `DV_ASSERT_CTRL("tb_no_spurious_response",
       `IBEX_LOCKSTEP_PATH.u_shadow_core.NoMemResponseWithoutPendingAccess)
+  end
+
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : g_trvk_assert_ctrl
+    // Disable TRVK's alignment FIFO assertion alongside the other spurious response checks.
+    `DV_ASSERT_CTRL("tb_no_spurious_response",
+      core_ibex_tb_top.dut.u_ibex_top.gen_cheriot_trvk.i_ibex_trvk.AlignValidOnRsp_A)
   end
 
 `ifndef DV_FCOV_DISABLE
@@ -290,7 +303,8 @@ module core_ibex_tb_top;
   assign dut_if.rf_rd_a_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_a_wb_match;
   assign dut_if.rf_rd_b_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_b_wb_match;
   assign dut_if.rf_write_wb      = dut.u_ibex_top.u_ibex_core.rf_write_wb;
-  assign dut_if.sync_exc_seen    = dut.u_ibex_top.u_ibex_core.cs_registers_i.cpuctrlsts_part_q.sync_exc_seen;
+  assign dut_if.sync_exc_seen    =
+      dut.u_ibex_top.u_ibex_core.cs_registers_i.cpuctrlsts_part_q.sync_exc_seen;
   assign dut_if.csr_save_cause   = dut.u_ibex_top.u_ibex_core.csr_save_cause;
   assign dut_if.exc_cause        = dut.u_ibex_top.u_ibex_core.exc_cause;
   assign dut_if.wb_exception     = dut.u_ibex_top.u_ibex_core.id_stage_i.wb_exception;
@@ -394,6 +408,8 @@ module core_ibex_tb_top;
 
     uvm_config_db#(bit [31:0])::set(null, "*", "MHPMCounterNum", MHPMCounterNum);
     uvm_config_db#(bit)::set(null, "*", "SecureIbex", SecureIbex);
+    uvm_config_db#(bit)::set(null, "*", "CHERIoT",
+                             BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT);
     uvm_config_db#(bit)::set(null, "*", "ICache", ICache);
 
     run_test();

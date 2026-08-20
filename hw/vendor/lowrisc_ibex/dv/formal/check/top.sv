@@ -70,7 +70,6 @@ module top import ibex_pkg::*; #(
 
   // Data memory interface
   output logic                                                         data_req_o,
-  output logic                                                         data_is_cap_o,
   input  logic                                                         data_gnt_i,
   input  logic                                                         data_rvalid_i,
   output logic                                                         data_we_o,
@@ -148,6 +147,7 @@ default clocking @(posedge clk_i); endclocking
 // (a combinational pass-through of the data interface). The filter's ports still
 // exist on ibex_top, so provide nets for the `.*` connection below: drive the
 // inputs to their inactive values and leave the outputs as sinks.
+ibex_mubi_t  cheriot_enable_i;
 logic [31:0] trvk_heap_base_addr_i;
 logic        data_tag_o;
 logic        data_tag_i;
@@ -159,6 +159,7 @@ logic [31:0] trvk_revbm_rdata_i;
 logic [ 6:0] trvk_revbm_rdata_intg_i;
 logic        trvk_revbm_err_i;
 
+assign cheriot_enable_i        = IbexMuBiOff;
 assign trvk_heap_base_addr_i   = 32'b0;
 assign data_tag_i              = 1'b0;
 assign trvk_revbm_gnt_i        = 1'b0;
@@ -325,7 +326,7 @@ logic mem_req_snd_d; // We are having the second req
 logic wbexc_mem_had_snd_req; // During ID/EX there was a second request
 
 logic lsu_had_first_resp;
-assign lsu_had_first_resp = `LSU.ls_fsm_cs == `LSU.WAIT_GNT && `LSU.split_misaligned_access;
+assign lsu_had_first_resp = `LSU.ls_fsm_cs == WAIT_GNT && `LSU.split_misaligned_access;
 
 ////////////////////// Wrap signals //////////////////////
 
@@ -496,16 +497,19 @@ logic [31:0] decompressed_instr;
 logic decompressed_instr_illegal;
 ibex_compressed_decoder #(
     .RV32ZC(RV32ZC),
-    .ResetAll(SecureIbex)
+    .ResetAll(SecureIbex),
+    .BaseIsa(ibex_pkg::BaseIsaRV32I)
 ) decompression_assertion_decoder (
     .clk_i,
     .rst_ni,
     .valid_i(1'b1),
     .id_in_ready_i(1'b1),
     .instr_i(ex_compressed_instr),
+    .cheriot_enable_i(IbexMuBiOff),
     .instr_o(decompressed_instr),
     .is_compressed_o(),
     .gets_expanded_o(),
+    .flush_expanded_i(1'b0),
     .illegal_instr_o(decompressed_instr_illegal)
 );
 
@@ -513,16 +517,19 @@ logic [31:0] decompressed_instr_2;
 logic decompressed_instr_illegal_2;
 ibex_compressed_decoder #(
     .RV32ZC(RV32ZC),
-    .ResetAll(SecureIbex)
+    .ResetAll(SecureIbex),
+    .BaseIsa(ibex_pkg::BaseIsaRV32I)
 ) decompression_assertion_decoder_2(
     .clk_i,
     .rst_ni,
     .valid_i(1'b1),
     .id_in_ready_i(1'b1),
     .instr_i(wbexc_instr),
+    .cheriot_enable_i(IbexMuBiOff),
     .instr_o(decompressed_instr_2),
     .is_compressed_o(wbexc_is_compressed),
     .gets_expanded_o(),
+    .flush_expanded_i(1'b0),
     .illegal_instr_o(decompressed_instr_illegal_2)
 );
 

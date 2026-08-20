@@ -12,7 +12,7 @@
 /**
  * Top level module of the ibex RISC-V core
  */
-module ibex_top import ibex_pkg::*; #(
+module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   parameter ibex_pkg::base_isa_e    BaseIsa                      = ibex_pkg::BaseIsaRV32I,
   parameter bit                     PMPEnable                    = 1'b0,
   parameter int unsigned            PMPGranularity               = 0,
@@ -72,6 +72,8 @@ module ibex_top import ibex_pkg::*; #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_tag_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_data_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_data_o,
+
+  input  ibex_mubi_t                                                   cheriot_enable_i,
 
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
@@ -148,6 +150,9 @@ module ibex_top import ibex_pkg::*; #(
   output logic [31:0]                                                 rvfi_rs1_rdata,
   output logic [31:0]                                                 rvfi_rs2_rdata,
   output logic [31:0]                                                 rvfi_rs3_rdata,
+  output cap_t                                                        rvfi_rs1_rcap,
+  output cap_t                                                        rvfi_rs2_rcap,
+  output cap_t                                                        rvfi_rd_wcap,
   output logic [ 4:0]                                                 rvfi_rd_addr,
   output logic [31:0]                                                 rvfi_rd_wdata,
   output logic [31:0]                                                 rvfi_pc_rdata,
@@ -157,6 +162,9 @@ module ibex_top import ibex_pkg::*; #(
   output logic [ 3:0]                                                 rvfi_mem_wmask,
   output logic [31:0]                                                 rvfi_mem_rdata,
   output logic [31:0]                                                 rvfi_mem_wdata,
+  output logic                                                        rvfi_mem_is_cap,
+  output cap_t                                                        rvfi_mem_rcap,
+  output cap_t                                                        rvfi_mem_wcap,
   output logic [31:0]                                                 rvfi_ext_pre_mip,
   output logic [31:0]                                                 rvfi_ext_post_mip,
   output logic                                                        rvfi_ext_nmi,
@@ -204,10 +212,11 @@ module ibex_top import ibex_pkg::*; #(
   localparam bit          Lockstep              = SecureIbex;
   localparam bit          ResetAll              = Lockstep;
   localparam bit          DummyInstructions     = SecureIbex;
-  localparam bit          RegFileECC            = 0;
+  localparam bit          RegFileECC            = 1'b0;
   localparam bit          RegFileLockstepECC    = Lockstep;
   localparam int unsigned RegFileDataWidth      = 32;
   localparam int unsigned RegFileDataEccWidth   = 32 + 7;
+  localparam int unsigned RegFileCapEccWidth    = REGCAP_W + 7;
   // Icache parameters
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + IC_DATA_ECC_SIZE) :
                                                            BUS_SIZE;
@@ -238,6 +247,7 @@ module ibex_top import ibex_pkg::*; #(
   logic [RegFileDataWidth-1:0] rf_wdata_wb;
   logic [RegFileDataWidth-1:0] rf_rdata_a;
   logic [RegFileDataWidth-1:0] rf_rdata_b;
+  logic [REGCAP_W-1:0]         rf_rcap_a, rf_rcap_b, rf_wcap;
 
   // Combined data and integrity for data and instruction busses
   logic [MemDataWidth-1:0]     data_wdata_core;
@@ -348,8 +358,8 @@ module ibex_top import ibex_pkg::*; #(
   assign instr_rdata_core[31:0] = instr_rdata_i;
 
   if (MemECC) begin : gen_mem_rdata_ecc
-    assign data_rdata_core[38:32] = trvk_rdata_intg;
-    assign instr_rdata_core[38:32] = instr_rdata_intg_i;
+    assign data_rdata_core[MemDataWidth-1:32] = trvk_rdata_intg;
+    assign instr_rdata_core[MemDataWidth-1:32] = instr_rdata_intg_i;
   end else begin : gen_non_mem_rdata_ecc
     logic unused_intg;
 
@@ -387,6 +397,7 @@ module ibex_top import ibex_pkg::*; #(
     .DummyInstructions    (DummyInstructions),
     .RegFileECC           (RegFileECC),
     .RegFileDataWidth     (RegFileDataWidth),
+    .RegFileCapEccWidth   (REGCAP_W),
     .MemECC               (MemECC),
     .MemDataWidth         (MemDataWidth),
     .DmBaseAddr           (DmBaseAddr),
@@ -394,13 +405,15 @@ module ibex_top import ibex_pkg::*; #(
     .DmHaltAddr           (DmHaltAddr),
     .DmExceptionAddr      (DmExceptionAddr),
     .CsrMvendorId         (CsrMvendorId),
-    .CsrMimpId            (CsrMimpId)
+    .CsrMimpId            (CsrMimpId),
+    .BaseIsa              (BaseIsa)
   ) u_ibex_core (
     .clk_i(clk),
     .rst_ni,
 
     .hart_id_i,
     .boot_addr_i,
+    .cheriot_enable_i,
 
     .instr_req_o,
     .instr_gnt_i,
@@ -416,7 +429,9 @@ module ibex_top import ibex_pkg::*; #(
     .data_be_o    (trvk_be),
     .data_addr_o  (trvk_addr),
     .data_wdata_o (data_wdata_core),
+    .data_tag_o   (trvk_wtag),
     .data_rdata_i (data_rdata_core),
+    .data_tag_i   (trvk_rtag),
     .data_err_i   (trvk_err),
 
     .dummy_instr_id_o (dummy_instr_id),
@@ -428,6 +443,9 @@ module ibex_top import ibex_pkg::*; #(
     .rf_wdata_wb_ecc_o(rf_wdata_wb),
     .rf_rdata_a_ecc_i (rf_rdata_a),
     .rf_rdata_b_ecc_i (rf_rdata_b),
+    .rf_wcap_ecc_wb_o (rf_wcap),
+    .rf_rcap_a_ecc_i  (rf_rcap_a),
+    .rf_rcap_b_ecc_i  (rf_rcap_b),
 
     .ic_tag_req_o      (ic_tag_req),
     .ic_tag_write_o    (ic_tag_write),
@@ -466,10 +484,13 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_rs2_addr,
     .rvfi_rs3_addr,
     .rvfi_rs1_rdata,
+    .rvfi_rs1_rcap,
     .rvfi_rs2_rdata,
+    .rvfi_rs2_rcap,
     .rvfi_rs3_rdata,
     .rvfi_rd_addr,
     .rvfi_rd_wdata,
+    .rvfi_rd_wcap,
     .rvfi_pc_rdata,
     .rvfi_pc_wdata,
     .rvfi_mem_addr,
@@ -477,6 +498,9 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
+    .rvfi_mem_is_cap,
     .rvfi_ext_pre_mip,
     .rvfi_ext_post_mip,
     .rvfi_ext_nmi,
@@ -505,9 +529,10 @@ module ibex_top import ibex_pkg::*; #(
   /////////////////////////////////
   // Register file Instantiation //
   /////////////////////////////////
-
   if (RegFile == RegFileFF) begin : gen_regfile_ff
+
     ibex_register_file_ff #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
@@ -516,20 +541,26 @@ module ibex_top import ibex_pkg::*; #(
       .clk_i (clk),
       .rst_ni(rst_ni),
 
-      .test_en_i       (test_en_i),
-      .dummy_instr_id_i(dummy_instr_id),
-      .dummy_instr_wb_i(dummy_instr_wb),
+      .test_en_i        (test_en_i),
+      .dummy_instr_id_i (dummy_instr_id),
+      .dummy_instr_wb_i (dummy_instr_wb),
+      .cheriot_enable_i (cheriot_enable_i),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
+      .rcap_a_o (rf_rcap_a),
       .raddr_b_i(rf_raddr_b),
       .rdata_b_o(rf_rdata_b),
+      .rcap_b_o (rf_rcap_b),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb),
+      .wcap_a_i (rf_wcap),
       .we_a_i   (rf_we_wb)
     );
+
   end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
     ibex_register_file_fpga #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
@@ -541,17 +572,23 @@ module ibex_top import ibex_pkg::*; #(
       .test_en_i       (test_en_i),
       .dummy_instr_id_i(dummy_instr_id),
       .dummy_instr_wb_i(dummy_instr_wb),
+      .cheriot_enable_i (cheriot_enable_i),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
+      .rcap_a_o (rf_rcap_a),
       .raddr_b_i(rf_raddr_b),
       .rdata_b_o(rf_rdata_b),
+      .rcap_b_o (rf_rcap_b),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb),
+      .wcap_a_i (rf_wcap),
       .we_a_i   (rf_we_wb)
     );
+
   end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
     ibex_register_file_latch #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
@@ -563,15 +600,20 @@ module ibex_top import ibex_pkg::*; #(
       .test_en_i       (test_en_i),
       .dummy_instr_id_i(dummy_instr_id),
       .dummy_instr_wb_i(dummy_instr_wb),
+      .cheriot_enable_i (cheriot_enable_i),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
+      .rcap_a_o (rf_rcap_a),
       .raddr_b_i(rf_raddr_b),
       .rdata_b_o(rf_rdata_b),
+      .rcap_b_o (rf_rcap_b),
       .waddr_a_i(rf_waddr_wb),
       .wdata_a_i(rf_wdata_wb),
+      .wcap_a_i (rf_wcap),
       .we_a_i   (rf_we_wb)
     );
+
   end
 
   ///////////////////////////////
@@ -820,7 +862,7 @@ module ibex_top import ibex_pkg::*; #(
 
   if (MemECC) begin : gen_mem_wdata_ecc
     prim_buf #(.Width(7)) u_prim_buf_data_wdata_intg (
-      .in_i (data_wdata_core[38:32]),
+      .in_i (data_wdata_core[MemDataWidth-1:32]),
       .out_o(trvk_wdata_intg)
     );
   end else begin : gen_no_mem_ecc
@@ -835,8 +877,7 @@ module ibex_top import ibex_pkg::*; #(
     // This is achieved by manually buffering each bit using prim_buf.
     // Our Xilinx and DC synthesis flows make sure that these buffers cannot be optimized away
     // using keep attributes (Vivado) and size_only constraints (DC).
-
-    localparam int NumBufferBits = $bits({
+    localparam int unsigned NumBufferBits = $bits({
       hart_id_i,
       boot_addr_i,
       instr_req_o,
@@ -852,7 +893,9 @@ module ibex_top import ibex_pkg::*; #(
       trvk_be,
       trvk_addr,
       trvk_wdata,
+      trvk_wtag,
       data_rdata_core,
+      trvk_rtag,
       trvk_err,
       rf_rdata_a,
       rf_rdata_b,
@@ -877,7 +920,11 @@ module ibex_top import ibex_pkg::*; #(
       double_fault_seen_o,
       fetch_enable_i,
       mcounteren_writable_i,
-      core_busy_d
+      core_busy_d,
+      cheriot_enable_i,
+      rf_wcap,
+      rf_rcap_a,
+      rf_rcap_b
     });
 
     logic [NumBufferBits-1:0] buf_in, buf_out;
@@ -899,11 +946,19 @@ module ibex_top import ibex_pkg::*; #(
     logic [3:0]                   data_be_local;
     logic [31:0]                  data_addr_local;
     logic [31:0]                  data_wdata_local;
+    logic                         data_tag_local;
     logic [MemDataWidth-1:0]      data_rdata_local;
+    logic                         data_rdata_tag_local;
     logic                         data_err_local;
 
     logic [RegFileDataWidth-1:0]  rf_rdata_a_local;
     logic [RegFileDataWidth-1:0]  rf_rdata_b_local;
+
+    ibex_mubi_t                   cheriot_enable_local;
+    logic [REGCAP_W-1:0]          rf_wcap_vec_local;
+    logic [REGCAP_W-1:0]          rf_rcap_a_vec_local;
+    logic [REGCAP_W-1:0]          rf_rcap_b_vec_local;
+    cap_t                         rf_wcap_local, rf_rcap_a_local, rf_rcap_b_local;
 
     logic [IC_NUM_WAYS-1:0]       ic_tag_req_local;
     logic                         ic_tag_write_local;
@@ -947,7 +1002,9 @@ module ibex_top import ibex_pkg::*; #(
       trvk_be,
       trvk_addr,
       trvk_wdata,
+      trvk_wtag,
       data_rdata_core,
+      trvk_rtag,
       trvk_err,
       rf_rdata_a,
       rf_rdata_b,
@@ -972,7 +1029,11 @@ module ibex_top import ibex_pkg::*; #(
       double_fault_seen_o,
       fetch_enable_i,
       mcounteren_writable_i,
-      core_busy_d
+      core_busy_d,
+      cheriot_enable_i,
+      rf_wcap,
+      rf_rcap_a,
+      rf_rcap_b
     };
 
     assign {
@@ -991,7 +1052,9 @@ module ibex_top import ibex_pkg::*; #(
       data_be_local,
       data_addr_local,
       data_wdata_local,
+      data_tag_local,
       data_rdata_local,
+      data_rdata_tag_local,
       data_err_local,
       rf_rdata_a_local,
       rf_rdata_b_local,
@@ -1016,8 +1079,16 @@ module ibex_top import ibex_pkg::*; #(
       double_fault_seen_local,
       fetch_enable_local,
       mcounteren_writable_local,
-      core_busy_local
+      core_busy_local,
+      cheriot_enable_local,
+      rf_wcap_vec_local,
+      rf_rcap_a_vec_local,
+      rf_rcap_b_vec_local
     } = buf_out;
+
+    assign rf_wcap_local   = cheriot_vec_to_regcap(rf_wcap_vec_local);
+    assign rf_rcap_a_local = cheriot_vec_to_regcap(rf_rcap_a_vec_local);
+    assign rf_rcap_b_local = cheriot_vec_to_regcap(rf_rcap_b_vec_local);
 
     // Manually buffer all input signals.
     prim_buf #(.Width(NumBufferBits)) u_signals_prim_buf (
@@ -1074,6 +1145,7 @@ module ibex_top import ibex_pkg::*; #(
       .RegFileECC           (RegFileLockstepECC),
       .RegFileDataWidth     (RegFileDataWidth),
       .RegFileDataEccWidth  (RegFileDataEccWidth),
+      .RegFileCapEccWidth   (RegFileCapEccWidth),
       .RegFile              (RegFile),
       .MemECC               (MemECC),
       .DmBaseAddr           (DmBaseAddr),
@@ -1081,13 +1153,15 @@ module ibex_top import ibex_pkg::*; #(
       .DmHaltAddr           (DmHaltAddr),
       .DmExceptionAddr      (DmExceptionAddr),
       .CsrMvendorId         (CsrMvendorId),
-      .CsrMimpId            (CsrMimpId)
+      .CsrMimpId            (CsrMimpId),
+      .BaseIsa              (BaseIsa)
     ) u_ibex_lockstep (
       .clk_i                    (clk),
       .rst_ni                   (rst_ni),
 
       .hart_id_i                (hart_id_local),
       .boot_addr_i              (boot_addr_local),
+      .cheriot_enable_i         (cheriot_enable_local),
 
       .instr_req_i              (instr_req_local),
       .instr_gnt_i              (instr_gnt_local),
@@ -1103,11 +1177,17 @@ module ibex_top import ibex_pkg::*; #(
       .data_be_i                (data_be_local),
       .data_addr_i              (data_addr_local),
       .data_wdata_i             (data_wdata_local),
+      .data_tag_i               (data_tag_local),
       .data_rdata_i             (data_rdata_local),
+      .data_rdata_tag_i         (data_rdata_tag_local),
       .data_err_i               (data_err_local),
 
       .rf_rdata_a_i             (rf_rdata_a_local),
       .rf_rdata_b_i             (rf_rdata_b_local),
+
+      .rf_wcap_wb_i             (rf_wcap_local),
+      .rf_rcap_a_i              (rf_rcap_a_local),
+      .rf_rcap_b_i              (rf_rcap_b_local),
 
       .ic_tag_req_i             (ic_tag_req_local),
       .ic_tag_write_i           (ic_tag_write_local),
@@ -1238,21 +1318,12 @@ module ibex_top import ibex_pkg::*; #(
       .revbm_data_intg_error_o(trvk_revbm_data_intg_error),
       .revbm_device_error_o   (trvk_revbm_device_error)
     );
-
-    // Tag connection towards the core is tied-off for now. This will change as soon as the core
-    // is updated to feature CHERIoT support.
-    logic unused_trvk;
-    assign trvk_wtag   = 1'b0;
-    assign unused_trvk = trvk_rtag;
-
   end else begin : gen_no_cheriot_trvk
 
     logic unused_trvk;
 
     assign trvk_revbm_req_o           = '0;
     assign trvk_revbm_addr_o          = '0;
-    // Currently tied-off trvk_wtag as the core does not connect this signal yet.
-    assign trvk_wtag                  = 1'b0;
     assign trvk_rtag                  = 1'b0;
     assign data_tag_o                 = 1'b0;
     assign trvk_revbm_data_intg_error = 1'b0;
@@ -1265,8 +1336,6 @@ module ibex_top import ibex_pkg::*; #(
       trvk_revbm_rdata_intg_i,
       trvk_revbm_err_i,
       trvk_wtag,
-      // Currently consumed as unused as the core does not consume this signal yet.
-      trvk_rtag,
       data_tag_i
     };
 

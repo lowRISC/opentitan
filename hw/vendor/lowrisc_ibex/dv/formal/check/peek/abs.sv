@@ -17,7 +17,7 @@ assign pre_regs[0] = 32'h0;
 for (genvar i = 1; i < 32; i++) begin: g_pre_regs
     // Resolve forwarding
     assign pre_regs[i] = (`CR.rf_write_wb && `CR.rf_waddr_wb == i) ?
-                                    `CR.rf_wdata_fwd_wb : `RF.rf_reg[i];
+                                    `CR.rf_wdata_fwd_wb : `RF.g_plain_rf.rf_reg[i];
 end
 
 // FIXME: Redefined from ibex_cs_registers

@@ -15,6 +15,7 @@ module ibex_riscv_compliance (
   input IO_RST_N
 );
 
+  parameter ibex_pkg::base_isa_e BaseIsa  = ibex_pkg::BaseIsaRV32IorCHERIoT;
   parameter bit          PMPEnable        = 1'b0;
   parameter int unsigned PMPGranularity   = 0;
   parameter int unsigned PMPNumRegions    = 4;
@@ -141,30 +142,33 @@ module ibex_riscv_compliance (
   end
 
   ibex_top_tracing #(
-      .PMPEnable            (PMPEnable           ),
-      .PMPGranularity       (PMPGranularity      ),
-      .PMPNumRegions        (PMPNumRegions       ),
-      .MHPMCounterNum       (MHPMCounterNum      ),
-      .MHPMCounterWidth     (MHPMCounterWidth    ),
-      .RV32E                (RV32E               ),
-      .RV32M                (RV32M               ),
-      .RV32B                (RV32B               ),
-      .RV32ZC               (RV32ZC              ),
-      .RegFile              (RegFile             ),
-      .BranchTargetALU      (BranchTargetALU     ),
-      .WritebackStage       (WritebackStage      ),
-      .ICache               (ICache              ),
-      .ICacheECC            (ICacheECC           ),
-      .ICacheTweakInfection (ICacheTweakInfection),
-      .BranchPredictor      (BranchPredictor     ),
-      .DbgTriggerEn         (DbgTriggerEn        ),
-      .SecureIbex           (SecureIbex          ),
-      .LockstepOffset       (LockstepOffset      ),
-      .ICacheScramble       (ICacheScramble      ),
-      .DmBaseAddr           (32'h00000000        ),
-      .DmAddrMask           (32'h00000003        ),
-      .DmHaltAddr           (32'h00000000        ),
-      .DmExceptionAddr      (32'h00000000        )
+      .BaseIsa                   (BaseIsa             ),
+      .PMPEnable                 (PMPEnable           ),
+      .PMPGranularity            (PMPGranularity      ),
+      .PMPNumRegions             (PMPNumRegions       ),
+      .MHPMCounterNum            (MHPMCounterNum      ),
+      .MHPMCounterWidth          (MHPMCounterWidth    ),
+      .RV32E                     (RV32E               ),
+      .RV32M                     (RV32M               ),
+      .RV32B                     (RV32B               ),
+      .RV32ZC                    (RV32ZC              ),
+      .RegFile                   (RegFile             ),
+      .BranchTargetALU           (BranchTargetALU     ),
+      .WritebackStage            (WritebackStage      ),
+      .ICache                    (ICache              ),
+      .ICacheECC                 (ICacheECC           ),
+      .ICacheTweakInfection      (ICacheTweakInfection),
+      .BranchPredictor           (BranchPredictor     ),
+      .DbgTriggerEn              (DbgTriggerEn        ),
+      .SecureIbex                (SecureIbex          ),
+      .LockstepOffset            (LockstepOffset      ),
+      .ICacheScramble            (ICacheScramble      ),
+      .DmBaseAddr                (32'h00000000        ),
+      .DmAddrMask                (32'h00000003        ),
+      .DmHaltAddr                (32'h00000000        ),
+      .DmExceptionAddr           (32'h00000000        ),
+      .CheriotRevBitmapAddrWidth (32'd11              ),
+      .CheriotRevBitmapBaseAddr  (32'h0               )
     ) u_top (
       .clk_i                     (clk_sys              ),
       .rst_ni                    (rst_sys_n            ),
@@ -181,6 +185,8 @@ module ibex_riscv_compliance (
       .boot_addr_i               (32'h00000000         ),
 
       .trvk_heap_base_addr_i     (32'h00000000         ),
+
+      .cheriot_enable_i          (ibex_pkg::IbexMuBiOff),
 
       .instr_req_o               (host_req[CoreI]      ),
       .instr_gnt_i               (host_gnt[CoreI]      ),

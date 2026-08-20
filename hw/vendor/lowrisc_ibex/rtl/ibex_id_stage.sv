@@ -1,5 +1,6 @@
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Copyright Microsoft Corporation
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +18,7 @@
 `include "prim_assert.sv"
 `include "dv_fcov_macros.svh"
 
-module ibex_id_stage #(
+module ibex_id_stage import ibex_cheriot_pkg::*; #(
   parameter bit               RV32E           = 0,
   parameter ibex_pkg::rv32m_e RV32M           = ibex_pkg::RV32MFast,
   parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
@@ -25,11 +26,13 @@ module ibex_id_stage #(
   parameter bit               BranchTargetALU = 0,
   parameter bit               WritebackStage  = 0,
   parameter bit               BranchPredictor = 0,
-  parameter bit               MemECC          = 1'b0
+  parameter bit               MemECC          = 1'b0,
+  parameter ibex_pkg::base_isa_e BaseIsa      = ibex_pkg::BaseIsaRV32IorCHERIoT
 ) (
   input  logic                      clk_i,
   input  logic                      rst_ni,
 
+  input  ibex_pkg::ibex_mubi_t      cheriot_enable_i,
   output logic                      ctrl_busy_o,
   output logic                      illegal_insn_o,
 
@@ -62,6 +65,8 @@ module ibex_id_stage #(
   input  logic                      illegal_c_insn_i,
   input  logic                      instr_fetch_err_i,
   input  logic                      instr_fetch_err_plus2_i,
+  input  logic                      instr_fetch_cheriot_acc_vio_i,
+  input  logic                      instr_fetch_cheriot_bound_vio_i,
 
   input  logic [31:0]               pc_id_i,
 
@@ -104,11 +109,13 @@ module ibex_id_stage #(
   output logic                      csr_restore_mret_id_o,
   output logic                      csr_restore_dret_id_o,
   output logic                      csr_save_cause_o,
+  output logic                      csr_mepcc_clrtag_o,
   output logic [31:0]               csr_mtval_o,
   input  ibex_pkg::priv_lvl_e       priv_mode_i,
   input  logic                      csr_mstatus_tw_i,
   input  logic                      illegal_csr_insn_i,
   input  logic                      data_ind_timing_i,
+  input  logic                      csr_pcc_perm_sr_i,
 
   // Interface to load store unit
   output logic                      lsu_req_o,
@@ -136,6 +143,7 @@ module ibex_id_stage #(
   input  logic                      lsu_load_resp_intg_err_i,
   input  logic                      lsu_store_err_i,
   input  logic                      lsu_store_resp_intg_err_i,
+  input  logic                      lsu_err_is_cheriot_i,
 
   output logic                      expecting_load_resp_o,
   output logic                      expecting_store_resp_o,
@@ -190,7 +198,32 @@ module ibex_id_stage #(
                                                         // access to finish before proceeding
   output logic                      perf_mul_wait_o,
   output logic                      perf_div_wait_o,
-  output logic                      instr_id_done_o
+  output logic                      instr_id_done_o,
+
+  // cheriot signals
+  output logic                      cheriot_exec_id_o,
+  output logic                      instr_is_cheriot_id_o,
+  output logic                      instr_is_rv32lsu_id_o,
+  output logic [11:0]               cheriot_imm12_o,
+  output logic [19:0]               cheriot_imm20_o,
+  output logic [20:0]               cheriot_imm21_o,
+  output cheriot_op_t               cheriot_operator_o,
+  output logic  [4:0]               cheriot_cs2_dec_o,
+  output cheriot_cap_field_e        cheriot_cap_field_sel_o,
+  output cheriot_adder_a_sel_e      cheriot_adder_a_sel_o,
+  output cheriot_adder_b_sel_e      cheriot_adder_b_sel_o,
+  output cheriot_setaddr_sel_e      cheriot_setaddr_sel_o,
+  output cheriot_setbounds_sel_e    cheriot_setbounds_sel_o,
+  output logic                      cheriot_load_o,
+  output logic                      cheriot_store_o,
+
+  input  logic                      cheriot_ex_valid_i,
+  input  logic                      cheriot_ex_err_i,
+  input  logic [11:0]               cheriot_ex_err_info_i,
+  input  logic                      cheriot_wb_err_i,
+  input  logic [15:0]               cheriot_wb_err_info_i,
+  input  logic                      cheriot_branch_req_i,   // from cheriot EX
+  input  logic [31:0]               cheriot_branch_target_i
 );
 
   import ibex_pkg::*;
@@ -206,7 +239,8 @@ module ibex_id_stage #(
   logic        wfi_insn_dec;
 
   logic        wb_exception;
-  logic        id_exception;
+  logic        unused_id_exception;
+  logic        id_exception_nc;
 
   logic        branch_in_dec;
   logic        branch_set, branch_set_raw, branch_set_raw_d;
@@ -251,6 +285,7 @@ module ibex_id_stage #(
   logic        rf_we_dec, rf_we_raw;
   logic        rf_ren_a, rf_ren_b;
   logic        rf_ren_a_dec, rf_ren_b_dec;
+  logic        rf_we_or_load;
 
   // Read enables should only be asserted for valid and legal instructions
   assign rf_ren_a = instr_valid_i & ~instr_fetch_err_i & ~illegal_insn_o & rf_ren_a_dec;
@@ -261,6 +296,9 @@ module ibex_id_stage #(
 
   logic [31:0] rf_rdata_a_fwd;
   logic [31:0] rf_rdata_b_fwd;
+
+  logic        cheriot_lsu_req_dec;
+  logic        ex_valid_all;
 
   // ALU Control
   alu_op_e     alu_operator;
@@ -294,9 +332,12 @@ module ibex_id_stage #(
   // CSR control
   logic        no_flush_csr_addr;
   logic        csr_pipe_flush;
+  logic        csr_cheriot_always_ok;
 
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
+
+  logic        instr_is_legal_cheriot;
 
   /////////////
   // LSU Mux //
@@ -438,11 +479,13 @@ module ibex_id_stage #(
     .RV32E          (RV32E),
     .RV32M          (RV32M),
     .RV32B          (RV32B),
-    .BranchTargetALU(BranchTargetALU)
+    .BranchTargetALU(BranchTargetALU),
+    .BaseIsa        (BaseIsa)
   ) decoder_i (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
 
+    .cheriot_enable_i (cheriot_enable_i),
     // controller
     .illegal_insn_o(illegal_insn_dec),
     .ebrk_insn_o   (ebrk_insn),
@@ -476,6 +519,7 @@ module ibex_id_stage #(
     // register file
     .rf_wdata_sel_o(rf_wdata_sel),
     .rf_we_o       (rf_we_dec),
+    .rf_we_or_load_o(rf_we_or_load),
 
     .rf_raddr_a_o(rf_raddr_a_o),
     .rf_raddr_b_o(rf_raddr_b_o),
@@ -501,17 +545,41 @@ module ibex_id_stage #(
     .csr_access_o(csr_access_o),
     .csr_op_o    (csr_op_o),
     .csr_addr_o  (csr_addr_o),
+    .csr_cheriot_always_ok_o(csr_cheriot_always_ok),
 
     // LSU
-    .data_req_o           (lsu_req_dec),
-    .data_we_o            (lsu_we),
-    .data_type_o          (lsu_type),
-    .data_sign_extension_o(lsu_sign_ext),
+    .data_req_o             (lsu_req_dec),
+    .cheriot_data_req_o     (cheriot_lsu_req_dec),
+    .data_we_o              (lsu_we),
+    .data_type_o            (lsu_type),
+    .data_sign_extension_o  (lsu_sign_ext),
 
     // jump/branches
     .jump_in_dec_o  (jump_in_dec),
-    .branch_in_dec_o(branch_in_dec)
+    .branch_in_dec_o(branch_in_dec),
+
+    // cheriot signals
+    .instr_is_cheriot_o       (instr_is_cheriot_id_o),
+    .instr_is_legal_cheriot_o (instr_is_legal_cheriot),
+    .cheriot_imm12_o          (cheriot_imm12_o),
+    .cheriot_imm20_o          (cheriot_imm20_o),
+    .cheriot_imm21_o          (cheriot_imm21_o),
+    .cheriot_operator_o       (cheriot_operator_o),
+    .cheriot_cs2_dec_o        (cheriot_cs2_dec_o),
+    .cheriot_cap_field_sel_o  (cheriot_cap_field_sel_o),
+    .cheriot_adder_a_sel_o    (cheriot_adder_a_sel_o),
+    .cheriot_adder_b_sel_o    (cheriot_adder_b_sel_o),
+    .cheriot_setaddr_sel_o    (cheriot_setaddr_sel_o),
+    .cheriot_setbounds_sel_o  (cheriot_setbounds_sel_o)
   );
+
+  assign instr_is_rv32lsu_id_o = lsu_req_dec;
+
+  assign ex_valid_all = instr_is_cheriot_id_o ? cheriot_ex_valid_i : ex_valid_i;
+
+  assign cheriot_load_o = cheriot_operator_o.CLOAD_CAP;
+
+  assign cheriot_store_o = cheriot_operator_o.CSTORE_CAP;
 
   // Flush pipe on most CSR modification. Some CSR modifications alter how instructions execute
   // (e.g. the PMP CSRs) so this ensures all instructions always see the latest architectural state
@@ -545,33 +613,39 @@ module ibex_id_stage #(
   assign mem_resp_intg_err = lsu_load_resp_intg_err_i | lsu_store_resp_intg_err_i;
 
   ibex_controller #(
+    .BaseIsa        (BaseIsa),
     .WritebackStage (WritebackStage),
     .BranchPredictor(BranchPredictor),
     .MemECC(MemECC)
   ) controller_i (
-    .clk_i (clk_i),
-    .rst_ni(rst_ni),
-
-    .ctrl_busy_o(ctrl_busy_o),
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+    .cheriot_enable_i(cheriot_enable_i),
+    .ctrl_busy_o     (ctrl_busy_o),
 
     // decoder related signals
-    .illegal_insn_i  (illegal_insn_o),
-    .ecall_insn_i    (ecall_insn_dec),
-    .mret_insn_i     (mret_insn_dec),
-    .dret_insn_i     (dret_insn_dec),
-    .wfi_insn_i      (wfi_insn_dec),
-    .ebrk_insn_i     (ebrk_insn),
-    .csr_pipe_flush_i(csr_pipe_flush),
+    .illegal_insn_i         (illegal_insn_o),
+    .ecall_insn_i           (ecall_insn_dec),
+    .mret_insn_i            (mret_insn_dec),
+    .dret_insn_i            (dret_insn_dec),
+    .wfi_insn_i             (wfi_insn_dec),
+    .ebrk_insn_i            (ebrk_insn),
+    .csr_pipe_flush_i       (csr_pipe_flush),
+    .csr_access_i           (csr_access_o),
+    .csr_cheriot_always_ok_i(csr_cheriot_always_ok),
 
     // from IF-ID pipeline
-    .instr_valid_i          (instr_valid_i),
-    .instr_i                (instr_rdata_i),
-    .instr_compressed_i     (instr_rdata_c_i),
-    .instr_is_compressed_i  (instr_is_compressed_i),
-    .instr_gets_expanded_i  (instr_gets_expanded_i),
-    .instr_bp_taken_i       (instr_bp_taken_i),
-    .instr_fetch_err_i      (instr_fetch_err_i),
-    .instr_fetch_err_plus2_i(instr_fetch_err_plus2_i),
+    .instr_valid_i                  (instr_valid_i),
+    .instr_i                        (instr_rdata_i),
+    .instr_compressed_i             (instr_rdata_c_i),
+    .instr_is_compressed_i          (instr_is_compressed_i),
+    .instr_gets_expanded_i          (instr_gets_expanded_i),
+    .instr_bp_taken_i               (instr_bp_taken_i),
+    .instr_fetch_err_i              (instr_fetch_err_i),
+    .instr_fetch_err_plus2_i        (instr_fetch_err_plus2_i),
+    .instr_fetch_cheriot_acc_vio_i  (instr_fetch_cheriot_acc_vio_i),
+    .instr_fetch_cheriot_bound_vio_i(instr_fetch_cheriot_bound_vio_i),
+
     .pc_id_i                (pc_id_i),
 
     // to IF-ID pipeline
@@ -589,12 +663,14 @@ module ibex_id_stage #(
     .exc_cause_o           (exc_cause_o),
 
     // LSU
-    .lsu_addr_last_i    (lsu_addr_last_i),
-    .load_err_i         (lsu_load_err_i),
-    .mem_resp_intg_err_i(mem_resp_intg_err),
-    .store_err_i        (lsu_store_err_i),
-    .wb_exception_o     (wb_exception),
-    .id_exception_o     (id_exception),
+    .lsu_addr_last_i      (lsu_addr_last_i),
+    .load_err_i           (lsu_load_err_i),
+    .lsu_err_is_cheriot_i (lsu_err_is_cheriot_i),
+    .mem_resp_intg_err_i  (mem_resp_intg_err),
+    .store_err_i          (lsu_store_err_i),
+    .wb_exception_o       (wb_exception),
+    .id_exception_o       (unused_id_exception),
+    .id_exception_nc_o    (id_exception_nc),
 
     // jump/branch control
     .branch_set_i     (branch_set),
@@ -615,8 +691,10 @@ module ibex_id_stage #(
     .csr_restore_mret_id_o(csr_restore_mret_id_o),
     .csr_restore_dret_id_o(csr_restore_dret_id_o),
     .csr_save_cause_o     (csr_save_cause_o),
+    .csr_mepcc_clrtag_o   (csr_mepcc_clrtag_o),
     .csr_mtval_o          (csr_mtval_o),
     .priv_mode_i          (priv_mode_i),
+    .csr_pcc_perm_sr_i    (csr_pcc_perm_sr_i),
 
     // Debug Signal
     .debug_mode_o         (debug_mode_o),
@@ -636,11 +714,21 @@ module ibex_id_stage #(
 
     // Performance Counters
     .perf_jump_o   (perf_jump_o),
-    .perf_tbranch_o(perf_tbranch_o)
+    .perf_tbranch_o(perf_tbranch_o),
+
+    .instr_is_cheriot_i      (instr_is_cheriot_id_o),
+    .cheriot_ex_valid_i      (cheriot_ex_valid_i),
+    .cheriot_ex_err_i        (cheriot_ex_err_i),
+    .cheriot_ex_err_info_i   (cheriot_ex_err_info_i),
+    .cheriot_wb_err_i        (cheriot_wb_err_i),
+    .cheriot_wb_err_info_i   (cheriot_wb_err_info_i),
+    .cheriot_branch_req_i    (cheriot_branch_req_i),
+    .cheriot_branch_target_i (cheriot_branch_target_i)
   );
 
   assign multdiv_en_dec   = mult_en_dec | div_en_dec;
 
+  // note data_req_allowed is already part of instr_executing
   assign lsu_req         = instr_executing ? data_req_allowed & lsu_req_dec  : 1'b0;
   assign mult_en_id      = instr_executing ? mult_en_dec                     : 1'b0;
   assign div_en_id       = instr_executing ? div_en_dec                      : 1'b0;
@@ -652,9 +740,13 @@ module ibex_id_stage #(
   assign lsu_wdata_o             = rf_rdata_b_fwd;
   // csr_op_en_o is set when CSR access should actually happen.
   // csr_access_o is set when CSR access instruction is present and is used to compute whether a CSR
-  // access is illegal. A combinational loop would be created if csr_op_en_o was used along (as
+  // access is illegal. A combinational loop would be created if csr_op_en_o was used alone (as
   // asserting it for an illegal csr access would result in a flush that would need to deassert it).
-  assign csr_op_en_o             = csr_access_o & instr_executing & instr_id_done_o;
+
+  // improve timing for CHERIoT mode (instr_id_done has too much logic)
+  assign csr_op_en_o = csr_access_o & instr_executing &
+                       (((BaseIsa == BaseIsaRV32IorCHERIoT) & (cheriot_enable_i == IbexMuBiOn)) ?
+                        instr_first_cycle : instr_id_done_o);
 
   assign alu_operator_ex_o           = alu_operator;
   assign alu_operand_a_ex_o          = alu_operand_a;
@@ -685,6 +777,8 @@ module ibex_id_stage #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         branch_set_raw_q <= 1'b0;
+    // bug here (see the 07082022 report). should qualify this with instr_executing
+    // (same as id_fsm_q). let's wait for now and fix later QQQ
       end else begin
         branch_set_raw_q <= branch_set_raw_d;
       end
@@ -800,9 +894,16 @@ module ibex_id_stage #(
               if (!WritebackStage) begin
                 // LSU operation
                 id_fsm_d    = MULTI_CYCLE;
-              end else begin
-                if(~lsu_req_done_i) begin
-                  id_fsm_d  = MULTI_CYCLE;
+              end else if (~lsu_req_done_i) begin
+                id_fsm_d  = MULTI_CYCLE;
+              end
+            end
+            cheriot_lsu_req_dec: begin
+              if (cheriot_enable_i == IbexMuBiOn) begin
+                if (!WritebackStage) begin
+                  id_fsm_d = MULTI_CYCLE;
+                end else if (~lsu_req_done_i) begin  // covers the lsu_cheriot_err case (1cycle)
+                  id_fsm_d = MULTI_CYCLE;
                 end
               end
             end
@@ -879,8 +980,7 @@ module ibex_id_stage #(
 
   // Stall ID/EX stage for reason that relates to instruction in ID/EX, update assertion below if
   // modifying this.
-  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch |
-                      stall_alu;
+  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch | stall_alu;
 
   // Generally illegal instructions have no reason to stall, however they must still stall waiting
   // for outstanding memory requests so exceptions related to them take priority over the illegal
@@ -890,7 +990,7 @@ module ibex_id_stage #(
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
 
-  // Signal instruction in ID is in it's first cycle. It can remain in its
+  // Signal instruction in ID is in its first cycle. It can remain in its
   // first cycle if it is stalled.
   assign instr_first_cycle      = instr_valid_i & (id_fsm_q == FIRST_CYCLE);
   // Used by RVFI to know when to capture register read data
@@ -909,7 +1009,7 @@ module ibex_id_stage #(
 
     logic instr_kill;
 
-    assign multicycle_done = lsu_req_dec ? ~stall_mem : ex_valid_i;
+    assign multicycle_done = (lsu_req_dec | cheriot_lsu_req_dec) ? ~stall_mem : ex_valid_all;
 
     // Is a memory access ongoing that isn't finishing this cycle
     assign outstanding_memory_access = (outstanding_load_wb_i | outstanding_store_wb_i) &
@@ -926,9 +1026,13 @@ module ibex_id_stage #(
     //   response to an IRQ or debug request or whilst the core is sleeping or resetting/fetching
     //   first instruction in which case any valid instruction in ID/EX should be ignored.
     // - There was an error on instruction fetch
+
+    // cheriot instr can only generate exception after execution
+    // exclude cheriot EX exception from insr_kill improves timing
+
     assign instr_kill = instr_fetch_err_i |
                         wb_exception      |
-                        id_exception      |
+                        id_exception_nc   |   // exclude cheriot EX exceptions
                         ~controller_run;
 
     // With writeback stage instructions must be prevented from executing if there is:
@@ -957,6 +1061,20 @@ module ibex_id_stage #(
                              ~stall_ld_hz               &
                              ~outstanding_memory_access;
 
+    // allowing a cheriot instruction to start execution - valid instruction not stalled by WB/hz
+    // note we can't use instr_kill here since it includes id_exception (cheriot_ex_err),
+    // which causes a
+    // comb loop.
+
+    assign cheriot_exec_id_o = (cheriot_enable_i == IbexMuBiOn) & instr_valid_i &
+                               ~instr_fetch_err_i     &
+                               instr_is_legal_cheriot &
+                               controller_run         &
+                               ~wb_exception          &
+                               ~stall_ld_hz           &
+                               ~outstanding_memory_access;
+
+
     `ASSERT(IbexExecutingSpecIfExecuting, instr_executing |-> instr_executing_spec)
 
     `ASSERT(IbexStallIfValidInstrNotExecuting,
@@ -970,8 +1088,12 @@ module ibex_id_stage #(
     //   precise exceptions)
     // * There is a load/store request not being granted or which is unaligned and waiting to issue
     //   a second request (needs to stay in ID for the address calculation)
-    assign stall_mem = instr_valid_i &
-                       (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
+
+
+    // For pipeline timing/stalling, we treat cheriot data load/stores the same as
+    // legacy RV32 load/stores
+    assign stall_mem = instr_valid_i & (outstanding_memory_access |
+                                        ((lsu_req_dec | cheriot_lsu_req_dec) & ~lsu_req_done_i));
 
     // If we stall a load in ID for any reason, it must not make an LSU request
     // (otherwise we might issue two requests for the same instruction)
@@ -997,6 +1119,10 @@ module ibex_id_stage #(
 
     assign stall_ld_hz = outstanding_load_wb_i & (rf_rd_a_hz | rf_rd_b_hz);
 
+    logic unused_rf_we_or_load_valid;
+    assign unused_rf_we_or_load_valid = rf_we_or_load & instr_valid_i
+                                      & ~instr_fetch_err_i & ~illegal_insn_o;
+
     assign instr_type_wb_o = ~lsu_req_dec ? WB_INSTR_OTHER :
                               lsu_we      ? WB_INSTR_STORE :
                                             WB_INSTR_LOAD;
@@ -1015,20 +1141,23 @@ module ibex_id_stage #(
     assign expecting_store_resp_o = 1'b0;
   end else begin : gen_no_stall_mem
 
-    assign multicycle_done = lsu_req_dec ? lsu_resp_valid_i : ex_valid_i;
+    assign multicycle_done = (cheriot_lsu_req_dec | lsu_req_dec) ? lsu_resp_valid_i : ex_valid_all;
 
     assign data_req_allowed = instr_first_cycle;
 
     // Without Writeback Stage always stall the first cycle of a load/store.
     // Then stall until it is complete
-    assign stall_mem = instr_valid_i & (lsu_req_dec & (~lsu_resp_valid_i | instr_first_cycle));
+    assign stall_mem = instr_valid_i
+                    & ((lsu_req_dec | cheriot_lsu_req_dec)
+                    & (~lsu_resp_valid_i | instr_first_cycle));
 
     // No load hazards without Writeback Stage
     assign stall_ld_hz   = 1'b0;
 
     // Without writeback stage any valid instruction that hasn't seen an error will execute
     assign instr_executing_spec = instr_valid_i & ~instr_fetch_err_i & controller_run;
-    assign instr_executing = instr_executing_spec;
+    assign instr_executing      = instr_executing_spec;
+    assign cheriot_exec_id_o    = (cheriot_enable_i == IbexMuBiOn) & instr_executing;
 
     `ASSERT(IbexStallIfValidInstrNotExecuting,
       instr_valid_i & ~instr_fetch_err_i & ~instr_executing & controller_run |-> stall_id)
@@ -1058,7 +1187,6 @@ module ibex_id_stage #(
     logic unused_outstanding_store_wb;
     logic unused_wb_exception;
     logic [31:0] unused_rf_wdata_fwd_wb;
-    logic unused_id_exception;
 
     assign unused_data_req_done_ex     = lsu_req_done_i;
     assign unused_rf_waddr_wb          = rf_waddr_wb_i;
@@ -1067,7 +1195,9 @@ module ibex_id_stage #(
     assign unused_outstanding_store_wb = outstanding_store_wb_i;
     assign unused_wb_exception         = wb_exception;
     assign unused_rf_wdata_fwd_wb      = rf_wdata_fwd_wb_i;
-    assign unused_id_exception         = id_exception;
+
+    logic unused_cheriot_wb_signals;
+    assign unused_cheriot_wb_signals = ^{id_exception_nc, rf_we_or_load, instr_is_legal_cheriot};
 
     assign instr_type_wb_o = WB_INSTR_OTHER;
     assign stall_wb        = 1'b0;
@@ -1161,5 +1291,12 @@ module ibex_id_stage #(
   `ifdef CHECK_MISALIGNED
   `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
   `endif
+
+  // CHERIoT isolation: when CHERIoT is disabled, all CHERIoT-specific output signals must be 0.
+  // These assertions verify the invariant relied upon by downstream modules (WB, LSU).
+  `ASSERT_IF(IbexCheriotLoadDisabled,  !cheriot_load_o,         cheriot_enable_i != IbexMuBiOn)
+  `ASSERT_IF(IbexCheriotStoreDisabled, !cheriot_store_o,        cheriot_enable_i != IbexMuBiOn)
+  `ASSERT_IF(IbexInstrNotCheriot,      !instr_is_cheriot_id_o,  cheriot_enable_i != IbexMuBiOn)
+  `ASSERT_IF(IbexCheriotExecDisabled,  !cheriot_exec_id_o,      cheriot_enable_i != IbexMuBiOn)
 
 endmodule
