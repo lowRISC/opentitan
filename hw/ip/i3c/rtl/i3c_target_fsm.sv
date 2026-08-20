@@ -206,6 +206,7 @@ module i3c_target_fsm
   import i3c_async_event_pkg::*;
   import i3c_targ_ccc_pkg::*;
   import i3c_tti_pkg::*;
+  localparam MaxGroupsW  = $clog2(MaxGroups);
 
   // Additional Target info required by the Target Core logic; this is required for CCC handling,
   // but not needed by the transceiver logic.
@@ -227,9 +228,9 @@ module i3c_target_fsm
 
   // Format the supplied unit data ready for HDR-DDR transmission; this is used to populate
   // both `i3c_targ_trx_txd_t` (Private Read transfers) and `i3c_targ_trx_txc_t` (Direct Read CCCs).
-  task automatic fmt_data_out(output logic [8:0] data_nq, logic [8:0] data_pq, logic [1:0] rlast,
-                              input logic [15:0] unit_data, logic rdata_first,
-                              logic [1:0] unit_rlast);
+  task automatic fmt_data_out(output logic [8:0] data_nq, output logic [8:0] data_pq,
+                              output logic [1:0] rlast, input logic [15:0] unit_data,
+                              input logic rdata_first, input logic [1:0] unit_rlast);
     data_nq[8] = 1'b1;
     data_pq[8] = !rdata_first;
     for (int unsigned b = 4; b < 8; b++) begin
@@ -238,8 +239,8 @@ module i3c_target_fsm
     end
     // Ensure that the LS byte of a 16-bit HDR-DDR word is zero if the MS byte is the last byte.
     for (int unsigned b = 0; b < 4; b++) begin
-      data_nq[b] = unit_data[2*b+9] & !unit_rlast[0];
-      data_pq[b] = unit_data[2*b+8] & !unit_rlast[0];
+      data_nq[b] = unit_data[2*b+9] & ~unit_rlast[0];
+      data_pq[b] = unit_data[2*b+8] & ~unit_rlast[0];
     end
     rlast = unit_rlast;
   endtask
@@ -309,7 +310,7 @@ module i3c_target_fsm
   // - Tx Descriptor and Tx Data word are prefetched from shared storage and handled here.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_splitters
     logic        tx_desc_consumed;
-    logic        tx_start_thld;
+    logic  [3:0] tx_start_thld;
     logic        tx_suspended;
     logic [15:0] tx_data_len;
     logic        tx_active;
@@ -548,7 +549,7 @@ module i3c_target_fsm
   // of the _trx logic - as additional states to indicate whether we're in a read-prefetching
   // segment, a write segment or a setup segment.
   wire ccc_rd_prefetch = direct_get(reg_state[TargCR_CCC]) &&
-                         trx_rxd_i.ccc_state inside {CCC_SegAddr, CCC_SegData};
+                         (trx_rxd_i.ccc_state inside {CCC_SegAddr, CCC_SegData});
 
   assign ccc_tx_start = &{trx_rvalid_i, trx_rxd_i.sr, ccc_rd_prefetch};
 
@@ -639,7 +640,7 @@ module i3c_target_fsm
 
   // Target-side Common Command Code handling.
   i3c_target_ccc #(
-    .NumTargets (NumTargets)
+    .NumTargets(NumTargets)
   ) u_targ_ccc (
     // CCC handling enabled and active?
     .enable_i         (ccc_enabled),
@@ -704,7 +705,7 @@ module i3c_target_fsm
   // Decide which Target, if any, shall participate next in Dynamic Address Assignment.
   logic [NumTargets-1:0] daa_contenders;
   for (genvar t = 0; t < NumTargets; t++) begin : gen_daa_contenders
-    assign daa_contenders[t] = reg2hw_i.targ_enable[t].q &
+    assign daa_contenders[t] = reg2hw_i.targ_enable[t].q &&
                               !reg2hw_i.targ_addr[t].dynamic_addr_valid.q;
   end
   logic              daa_targ_valid; // TODO: Currently unused.
@@ -793,7 +794,7 @@ module i3c_target_fsm
     rx_desc_d.complete    = 1'b1;
     rx_desc_d.status      = trx_rxd_i.status;
     rx_desc_d.targets     = (trx_rxd_i.targ_id < NumTargets) ? NumTargets'('b1 << trx_rxd_i.targ_id)
-                                                             : trx_rxd_i.targ_set;
+                                                             : NumTargets'(trx_rxd_i.targ_set);
     rx_desc_d.address     = trx_rxd_i.addr;
     rx_desc_d.is_group    = trx_rxd_i.is_group;
     rx_desc_d.data_length = rx_data_len;
@@ -949,13 +950,16 @@ module i3c_target_fsm
   // Arbitrate amongst IBI, HJ/CRR and any Pending Read Notifications.
   localparam int unsigned IBIArbDataW = $bits(i3c_targ_trx_arb_t);
   i3c_targ_trx_arb_t ibi_arb_in[NumTargets + 2];
-  logic [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt; // TODO: ibi_arb_gnt currently unused.
+  logic  [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt; // TODO: ibi_arb_gnt currently unused.
+  logic [NumTargetsW-1:0] ibi_targ_id_clamp;
   always_comb begin
     for (int unsigned c = 0; c < NumTargets + 2; c++) ibi_arb_in[c] = '0;
+    ibi_targ_id_clamp = ibi_stat_desc.targ_id < NumTargets ? NumTargetsW'(ibi_stat_desc.targ_id)
+                                                           : '0;
     // The highest-priority contender is any In-Band Interrupt from the queue.
     ibi_arb_req[0] = ibi_dispatch;
     ibi_arb_in[0].targ_id  = ibi_stat_desc.targ_id;
-    ibi_arb_in[0].addr     = targ_dev_i[ibi_stat_desc.targ_id].addr;
+    ibi_arb_in[0].addr     = targ_dev_i[ibi_targ_id_clamp].addr;
     ibi_arb_in[0].ibi      = 1'b1;
     ibi_arb_in[0].rdata_nq = mand_data_nq(ibi_stat_desc.mdb, ibi_stat_desc.data_length);
     // Hot-Join Request/Controller Role Request; single contender.
@@ -972,17 +976,21 @@ module i3c_target_fsm
     end
   end
 
-  // IBI, CRR/HJ and PRN arbitration results.
-  localparam int unsigned IBIArbW = $clog2(NumTargets + 1);
+  // IBI, CRR/HJ and PRN (one per target) arbitration results.
+  localparam int unsigned IBIArbW = $clog2(NumTargets + 2);
   logic [IBIArbW-1:0] ibi_arb_winner; // TODO: Currently unused.
   i3c_targ_trx_arb_t ibi_arb_data;
   logic ibi_arb_valid;
 
   // Arbitrate amongst the Virtual Targets that currently want the attention of the Controller.
-  // - Pending Read Notifications.
+  // - Pending Read Notifications (1 per target).
   // - Hot-Join/Controller Role Request come from Standby Controller/Virtual Target 0.
   // - All In-Band Interrupts come from the associated queue.
-  prim_arbiter_fixed #(.N(NumTargets + 2), .DW(IBIArbDataW), .EnDataPort(1)) u_ibi_arb (
+  prim_arbiter_fixed #(
+    .N(NumTargets + 2),
+    .DW(IBIArbDataW),
+    .EnDataPort(1)
+  ) u_ibi_arb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
 
@@ -1038,7 +1046,7 @@ module i3c_target_fsm
 
   // Update the dynamic address of the Standby Controller; this is shared with the first
   // Virtual Target.
-  assign stby_cr_dynaddr_de_o = dynaddr_de_o;
+  assign stby_cr_dynaddr_de_o = dynaddr_de_o[0];
   assign stby_cr_dynaddr_d_o  = {dynaddr_valid_d_o, dynaddr_d_o[0]};
 
   // Notification of transmission outcomes.
@@ -1128,9 +1136,9 @@ module i3c_target_fsm
   // Group Addressing.
   //
   // SETGRPA may need to allocate a new group index.
-  logic              grp_add;
-  logic              grp_idx_valid;  // Anything found?
-  logic [Log2NT-1:0] grp_idx;        // Indicates the chosen entry.
+  logic                  grp_add;        // Add (write) new group?
+  logic                  grp_idx_valid;  // Anything found?
+  logic [MaxGroupsW-1:0] grp_idx;        // Indicates the chosen entry.
   always_comb begin
     grp_add       = 1'b1;
     grp_idx_valid = 1'b0;
@@ -1140,12 +1148,12 @@ module i3c_target_fsm
       if (reg2hw_i.targ_group[grp].group_addr.q == grp_addr) begin
         grp_add       = 1'b0;
         grp_idx_valid = 1'b1;
-        grp_idx       = grp;
+        grp_idx       = MaxGroupsW'(grp);
       end
       // Is this entry available for use if we do not already have configuration for this group?
       if (~|reg2hw_i.targ_group[grp].targets.q) begin
         grp_idx_valid = 1'b1;
-        grp_idx       = grp;
+        grp_idx       = MaxGroupsW'(grp);
       end
     end
   end
@@ -1153,7 +1161,7 @@ module i3c_target_fsm
   logic [NumTargets-1:0] targs_curr;
   logic [NumTargets-1:0] targs_set;
   logic [NumTargets-1:0] targs_rst;
-  assign targs_curr = {NumTargets{!grp_add}} & reg2hw_i.targ_group[grp_idx].targets.q;
+  assign targs_curr = {NumTargets{~grp_add}} & reg2hw_i.targ_group[grp_idx].targets.q;
   assign targs_set  = {NumTargets{ grp_set}} & grp_targets;
   assign targs_rst  = {NumTargets{ grp_rst}} & grp_targets;
 
