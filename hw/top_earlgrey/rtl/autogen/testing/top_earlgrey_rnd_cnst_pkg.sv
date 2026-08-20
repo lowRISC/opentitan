@@ -604,12 +604,12 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   // Default icache scrambling key
-  parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKeyDefault = {
+  parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKey = {
     128'h57A6A15F_AA577395_193CDE4A_6705BD11
   };
 
   // Default icache scrambling nonce
-  parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonceDefault = {
+  parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonce = {
     64'h203330A9_27A8CE1A
   };
 

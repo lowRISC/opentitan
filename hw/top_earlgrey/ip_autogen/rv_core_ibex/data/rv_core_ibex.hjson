@@ -228,13 +228,13 @@
       randcount: "32",
       randtype:  "perm"
     },
-    { name:    "RndCnstIbexKeyDefault",
+    { name:    "RndCnstIbexKey",
       type:    "logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]",
       desc:    "Default icache scrambling key"
       randcount: "128",
       randtype:  "data"
     },
-    { name:    "RndCnstIbexNonceDefault",
+    { name:    "RndCnstIbexNonce",
       type:    "logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]",
       desc:    "Default icache scrambling nonce"
       randcount: "64",
