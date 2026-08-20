@@ -295,9 +295,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endtask
 
   virtual task post_start();
-    super.post_start();
     // Wait for sw test to finish before exiting.
     wait_for_sw_test_done();
+
+    // Here, we call super.post_start **after** the body of the specialised version of the task.
+    // That ensures that things are nested sensibly (super.pre_start; pre_start; ...; post_start;
+    // super.post_start()). It also ensures that we only stop the rom_skip sequence after the
+    // software test has run to completion.
+    super.post_start();
   endtask
 
   // Monitors the SW test status.
