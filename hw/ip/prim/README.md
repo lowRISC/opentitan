@@ -254,6 +254,26 @@ To create a technology library follow these steps:
    4. Edit this copied primitive core file so that it has the new primitive library name, e.g. replacing `lowrisc:prim_generic:flop` with `partner:prim_mytech:flop`.
    5. Then in the libraries main core file, e.g. `hw/ip/prim_mytech/prim_mytech.core`, replace all instances of the generic implementation with your specific implementation, e.g. replacing `lowrisc:prim_generic:flop` with `partner:prim_mytech:flop` again.
 
+
+Note the two lines the copied library core keeps, which is what makes it selectable at all:
+
+```yaml
+# hw/ip/prim_mytech/prim_mytech.core
+name: "partner:prim_mytech:all:0.1"
+virtual:
+  - lowrisc:virtual_prim_tech:all   # "I am a technology library"
+
+mapping:
+  # Point the chip-level dependency on a technology library at this one, so
+  # that selecting a library takes a single --mapping.
+  "lowrisc:virtual_prim_tech:all" : "partner:prim_mytech:all"
+  # ... one entry per primitive
+```
+
+`lowrisc:virtual_prim_tech:all` is how a chip states that it needs *some* technology library without naming one.
+`hw/top_earlgrey/chip_earlgrey_asic.core` depends on it, and every library (`prim_generic`, `prim_xilinx`, `prim_xilinx_ultrascale`, `prim_asap7`) implements it and maps it to itself.
+Selecting the library with `--mapping` therefore both resolves that dependency and picks the individual primitive implementations.
+
 You don't have to have your own implementation for every primitive.
 You can rely on the generic implementation or even another library's implementation for other primitives.
 
@@ -267,15 +287,16 @@ This is useful in cases where technology libraries contain vendor-specific code 
 As outlined in [Resolution of Concrete Implementations](#resolution-of-concrete-implementations), you can select a technology library in one of two ways.
 
 If you have your own target which requires a particular primitive, you should add the technology library's VLNV to its dependencies.
-`hw/top_earlgrey/chip_earlgrey_cw310.core` is an example of an core requiring a particular technology library, namely `lowrisc:prim_xilinx:all`.
+`hw/top_earlgrey/chip_earlgrey_cw310.core` is an example of a core requiring a particular technology library, namely `lowrisc:prim_xilinx:all`.
 You'll notice this VLNV in its dependencies.
 
 If you are running a target which is generic across different technology libraries, then you should use mappings to select the technology library you would like to use.
-In some cases, a default technology library may already by included, but this will be removable using FuseSoC CLI *[Flags][]* to modify the build process.
-`hw/top_earlgrey/chip_earlgrey_asic.core` is an example of one of these cores.
-You should provide the `fileset_partner` flag to disable the default implementation, as well as your mapping to select an alternate implementation.
-
-[Flags]: https://fusesoc.readthedocs.io/en/stable/user/build_system/flags.html
+`hw/top_earlgrey/chip_earlgrey_asic.core` is an example of one of these cores: it depends on `lowrisc:virtual_prim_tech:all`, which says that it needs *some* technology library without naming one, so the choice is left to the caller.
+The same applies to the other parts of a chip that a partner may need to replace.
+The AST, the pad orientation and scan role packages, the physical pads and the JTAG ID are all virtual cores too, named per top, e.g. `lowrisc:virtual_systems:top_earlgrey_ast`.
+The chip core carries the `mapping:` block that selects the open-source implementations of those, because which analog top, pads, scan roles and JTAG ID a design is built with is a chip-level choice.
+Each of them has exactly one open-source implementation, so a build picks the right one even with no mapping; applying the chip mapping makes the choice explicit and silences FuseSoC's non-deterministic-selection warning.
+To supply your own, provide a core that declares the same `virtual:` VLNV, and map it -- either from your own mapping core or with an extra `--mapping`.
 
 ```yaml
 # hw/top_earlgrey/chip_earlgrey_asic.core
@@ -288,22 +309,43 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_padring
-      - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
-      - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
-      - "fileset_partner ? (partner:prim_tech:all)"
-      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
-      - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
-      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+      - lowrisc:virtual_systems:top_earlgrey_ast
+      - lowrisc:virtual_systems:top_earlgrey_pad_orient_pkg
+      - lowrisc:virtual_systems:top_earlgrey_scan_role_pkg
+      # Which technology library resolves this is chosen by --mapping.
+      - lowrisc:virtual_prim_tech:all
+
+mapping:
+  "lowrisc:virtual_systems:top_earlgrey_ast"           : "lowrisc:systems:top_earlgrey_ast"
+  "lowrisc:virtual_systems:top_earlgrey_pad_orient_pkg": "lowrisc:earlgrey_systems:pad_orient_pkg"
+  "lowrisc:virtual_systems:top_earlgrey_scan_role_pkg" : "lowrisc:earlgrey_systems:scan_role_pkg"
+  "lowrisc:virtual_systems:top_earlgrey_physical_pads" : "lowrisc:systems:top_earlgrey_physical_pads"
+  "lowrisc:virtual_constants:top_earlgrey_jtag_id_pkg" : "lowrisc:constants:top_earlgrey_jtag_id_pkg"
 ```
+
+A core's `mapping:` block is never applied on its own, not even when that core is the one being built: FuseSoC only applies the mappings of cores named with `--mapping`.
+So a chip-level flow names two of them, the technology library and the chip:
 
 ```sh
 fusesoc \
     --cores-root=$OT_REPO \
+    --cores-root=$MY_TECH_REPO \
     run \
-    --flag fileset_partner \               # Disable default implementation
-    --mapping partner:prim_mytech:all \    # Select alternate implementation via mappings
+    --mapping partner:prim_mytech:all:0.1 \            # Select the technology library
+    --mapping lowrisc:systems:chip_earlgrey_asic:0.1 \ # Resolve the chip-specific cores
     lowrisc:systems:chip_earlgrey_asic
 ```
+
+The chip and top mapping blocks map disjoint sets of virtual cores, so a flow that needs both -- synthesising `lowrisc:systems:top_earlgrey` while still resolving the chip-level JTAG ID, for instance -- can apply both at once.
+
+If a mapping is missing, FuseSoC does not fail.
+As long as exactly one implementation is discoverable it will pick that one and warn:
+
+```
+WARNING: Non-deterministic selection of virtual core <Virtual_VLNV> selected <Concrete_VLNV>
+```
+
+Treat that warning as an error: it becomes a genuine ambiguity as soon as your own implementation is on the cores-root.
 
 #### Using dvsim
 
@@ -353,15 +395,15 @@ The required files for synthesis can be generated with the following command:
 fusesoc  --cores-root . \
 		 run \
 		 --target=syn \
-		 --flag fileset_partner \
 		 --mapping lowrisc:prim_asap7:all \
+		 --mapping lowrisc:systems:top_earlgrey:0.1 \
 		 --setup \
 		 --build-root build lowrisc:prim:sdc_example
 ```
 
-By setting the `fileset_partner` flag, the generic prim implementation is not used, and the one provided through the mapping argument is used instead.
-Please note, on designs with other technology dependent files, the `fileset_partner` flag also selects other technology specific implementations (e.g. OTP, Flash, JTAG, AST, pads).
-If those are not used, they can be mapped to the generic implementations.
+`prim_sdc_example` depends only on virtual prim cores, so the first mapping is what selects the ASAP7 implementations.
+It is also generic over the top, hence the second mapping, without which `lowrisc:virtual_constants:top_pkg` would be resolved non-deterministically.
+Note that `prim_asap7` does not implement every primitive; the ones it omits, such as the memories and pads, fall back to the generic implementations through its own `mapping:` block.
 
 #### Checks on the generated netlist
 

@@ -5,13 +5,13 @@ CAPI=2:
 
 name: "lowrisc:constants:top_darjeeling_jtag_id_pkg"
 description: "jtag id for top_darjeeling"
+virtual:
+  - lowrisc:virtual_constants:top_darjeeling_jtag_id_pkg
 
 filesets:
   files_rtl:
-    depend:
-      - "fileset_partner  ? (partner:constants:top_darjeeling_jtag_id_pkg)"
     files:
-      - "!fileset_partner ? (rtl/jtag_id_pkg.sv)"
+      - rtl/jtag_id_pkg.sv
     file_type: systemVerilogSource
 
 targets:

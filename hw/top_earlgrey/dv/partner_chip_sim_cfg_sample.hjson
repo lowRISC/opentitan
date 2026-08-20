@@ -10,23 +10,45 @@
   // Import the chip_sim_cfg.hjson to run the chip level simulations.
   import_cfgs: ["{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
 
-  // Pass the fileset_partner flag to FuseSoC to swap the open source files
-  // with partner implementations.
-  sv_flist_gen_flags: ["--flag=fileset_partner"]
-
   // Override the required keys to customize the simulation flow. For instance,
-  // the FuseSoC core file or the search paths provided to FuseSoC to find the
-  // dependencies can be overridden to customize the design / testbench, while
-  // reusing the rest of the infrastructure.
+  // the FuseSoC mappings, the FuseSoC core file or the search paths provided to
+  // FuseSoC to find the dependencies can be overridden to customize the design /
+  // testbench, while reusing the rest of the infrastructure. Note that a key set
+  // outside this list extends the value of the imported cfg instead of replacing
+  // it, because dvsim concatenates lists.
   overrides: [
-    // Example 1: override the fusesoc_core to change the top level FuseSoC
+    // Example 1: select a technology library, and any other partner
+    // implementation of a virtual core, by mapping.
+    {
+      name: sv_flist_gen_flags
+      value: ["--mapping=partner:prim_tech:all",
+              "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"]
+    }
+    // The first mapping selects the technology library. It replaces the mapping
+    // of the open-source prim library, because FuseSoC rejects two mappings for
+    // the same virtual core. The second mapping is unchanged from
+    // chip_sim_cfg.hjson and resolves the chip-specific cores (AST, pad
+    // orientation, scan roles, physical pads, JTAG ID); it has to be repeated
+    // here because the override replaces the entire list.
+    //
+    // The equivalent on the command line, which does not need this file at all,
+    // is
+    //
+    //   dvsim --fusesoc-mapping lowrisc:prim_generic:all:0.1=partner:prim_tech:all \
+    //         --fusesoc-extra-cores-root /path/to/prim_tech \
+    //         {proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson
+    //
+    // or, to avoid repeating it, a dvsim.hjson file in a parent directory of the
+    // working directory. See hw/ip/prim/README.md.
+
+    // Example 2: override the fusesoc_core to change the top level FuseSoC
     // target.
     {
       name: fusesoc_core
       value: my:dv:chip_sim:0.1
     }
-    // Example 2: override the search paths to prioritize the selection of
-    // packages (with the same VLNV). The latter one wins.
+    // Example 3: override the search paths so that FuseSoC can find the
+    // partner cores named in the mappings above.
     {
       name: fusesoc_cores_root_dirs
       value: ["--cores-root {proj_root}/hw",

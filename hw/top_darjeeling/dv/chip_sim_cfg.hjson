@@ -20,6 +20,15 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:top_darjeeling_chip_sim:0.1
 
+  // The chip depends on virtual cores for the AST, pad orientation, scan roles,
+  // physical pads and the JTAG ID.  Each has exactly one implementation, so a
+  // build resolves them correctly either way, but naming the top mapping makes
+  // the choice explicit and keeps the FuseSoC log free of
+  // non-deterministic-selection warnings.
+  // Note that the imported cfg already supplies the prim mapping, and dvsim
+  // appends these lists rather than replacing them.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_darjeeling_asic:0.1"]
+
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/{top_chip}/data/chip_testplan.hjson:-conn:-no_dv"
 

@@ -11,6 +11,12 @@
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
 
+  // The chip depends on virtual cores for the AST, pad orientation, scan roles
+  // and the JTAG ID, all of which the top mapping resolves.
+  // Note that the imported cfg already supplies the prim mapping, and dvsim
+  // appends these lists rather than replacing them.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"]
+
   // Overrides
   overrides: [
     // Since this synthesizes the design at chip level,

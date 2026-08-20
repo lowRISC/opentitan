@@ -221,7 +221,12 @@
              {    name: chip
                   fusesoc_core: lowrisc:dv:top_earlgrey_chip_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  // The chip DV environment instantiates `chip_earlgrey_asic`,
+                  // so the chip mapping is the one that resolves the virtual
+                  // cores for the AST, pads, scan roles and JTAG ID.  It also
+                  // applies the mappings of `top_earlgrey`, which the chip
+                  // depends on.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"
                   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
              },
             ]

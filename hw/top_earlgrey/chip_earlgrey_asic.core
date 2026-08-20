@@ -10,14 +10,11 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_padring
-      - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
-      - "fileset_partner ? (partner:systems:top_earlgrey_pad_orient_pkg)"
-      - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
-      - "fileset_partner ? (partner:prim_tech:all)"
-      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
-      - "!fileset_partner ? (lowrisc:earlgrey_systems:pad_orient_pkg)"
-      - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
-      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+      - lowrisc:virtual_systems:top_earlgrey_ast
+      - lowrisc:virtual_systems:top_earlgrey_pad_orient_pkg
+      - lowrisc:virtual_systems:top_earlgrey_scan_role_pkg
+      # Which technology library resolves this is chosen by --mapping.
+      - lowrisc:virtual_prim_tech:all
     files:
       - rtl/autogen/chip_earlgrey_asic.sv
     file_type: systemVerilogSource
@@ -43,6 +40,17 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
+
+mapping:
+  # The chip is what knows which analog top, pads, scan roles and JTAG ID it is
+  # built with, so it owns their selection.  Apply them with
+  # --mapping=lowrisc:systems:chip_earlgrey_asic:0.1; a partner supplies a core
+  # declaring the same virtual VLNVs and maps that instead.
+  "lowrisc:virtual_systems:top_earlgrey_ast"           : "lowrisc:systems:top_earlgrey_ast"
+  "lowrisc:virtual_systems:top_earlgrey_pad_orient_pkg": "lowrisc:earlgrey_systems:pad_orient_pkg"
+  "lowrisc:virtual_systems:top_earlgrey_scan_role_pkg" : "lowrisc:earlgrey_systems:scan_role_pkg"
+  "lowrisc:virtual_systems:top_earlgrey_physical_pads" : "lowrisc:systems:top_earlgrey_physical_pads"
+  "lowrisc:virtual_constants:top_earlgrey_jtag_id_pkg" : "lowrisc:constants:top_earlgrey_jtag_id_pkg"
 
 parameters:
   SYNTHESIS:
