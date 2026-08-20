@@ -16,10 +16,7 @@ module i3c_target_fsm
   parameter int unsigned NumTargets = 2,
   parameter int unsigned DataWidth  = 32,
   parameter int unsigned FIFODepthW = i3c_fifo_pkg::DepthW,
-  parameter bit          TargetExt  = 1'b0,
-
-  // Derived parameters.
-  localparam int unsigned Log2NT = $clog2(NumTargets)
+  parameter bit          TargetExt  = 1'b0
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -206,7 +203,10 @@ module i3c_target_fsm
   import i3c_async_event_pkg::*;
   import i3c_targ_ccc_pkg::*;
   import i3c_tti_pkg::*;
-  localparam MaxGroupsW  = $clog2(MaxGroups);
+
+  // Local parameters.
+  localparam int unsigned NumTargetsW = $clog2(NumTargets);
+  localparam int unsigned MaxGroupsW  = $clog2(MaxGroups);
 
   // Additional Target info required by the Target Core logic; this is required for CCC handling,
   // but not needed by the transceiver logic.
@@ -259,7 +259,8 @@ module i3c_target_fsm
     if (!rst_ni) virt_targ_det <= 1'b0;
     // TODO: Other conditions can modify the programmed Reset Action.
     else if (rstact_de_o && rstact_d_o inside {RstAct_VirtualTargDet, RstAct_NoReset}) begin
-      virt_targ_det <= (rstact_d_o == RstAct_VirtualTargDet);
+      if (rstact_d_o == RstAct_NoReset)             virt_targ_det <= 1'b0; // Clear reset action
+      else if (rstact_d_o == RstAct_VirtualTargDet) virt_targ_det <= 1'b1; // Set reset action
     end
   end
   assign virt_targ_det_o = virt_targ_det;
@@ -311,6 +312,8 @@ module i3c_target_fsm
   for (genvar t = 0; t < NumTargets; t++) begin : gen_splitters
     logic        tx_desc_consumed;
     logic  [3:0] tx_start_thld;
+    logic        tx_thld_reached;
+    logic        tx_desc_len_reached;
     logic        tx_suspended;
     logic [15:0] tx_data_len;
     logic        tx_active;
@@ -320,18 +323,22 @@ module i3c_target_fsm
     logic        unit_ready;
     logic [15:0] unit_data;
 
-    // Do we accept the Tx Descriptor?
-    assign tx_desc[t] = i3c_tti_tx_desc_t'(tx_desc_rdata_i[t]);  // Reinterpret as a descriptor.
-    // Is the descriptor valid?
+    // Reinterpret as a descriptor.
+    assign tx_desc[t] = i3c_tti_tx_desc_t'(tx_desc_rdata_i[t]);
+    // Descriptor is valid if it is a pending read notification or contains data.
     assign tx_desc_valid[t] = |{tx_desc[t].prn.notify, tx_desc[t].tx.data_length};
     // TODO: Aborting is not yet implemented.
     assign tx_suspended = reg2hw_i.targ_pio_control.suspended.q[t];
     // TODO: Post response and/or raise error interrupt if not valid.
 
-    // Have we enough data available to commence transmission?
-    assign tx_start_thld = reg2hw_i.targ_tx_thld_ctrl[t].tx_start_thld.q;
-    assign tx_start = |{{buf_rused_i[t], 2'b00} >= tx_desc[t].tx.data_length,
-                       buf_rused_i[t][FIFODepthW:1] >> tx_start_thld} & !tx_suspended;
+    // Have we enough data available to commence transmission? Fire on either
+    // - At least as many DWORDs in buffer as dictated in descriptor, or
+    // - At least as many DWORDs in buffer as dictated by tx threshold (threshold is power-of-two)
+    assign tx_start_thld       = reg2hw_i.targ_tx_thld_ctrl[t].tx_start_thld.q;
+    assign tx_desc_len_reached = {buf_rused_i[t], 2'b00} >= tx_desc[t].tx.data_length;
+    assign tx_thld_reached     = |(buf_rused_i[t][FIFODepthW:1] >> tx_start_thld);
+
+    assign tx_start = (tx_desc_len_reached || tx_thld_reached) && !tx_suspended;
 
     // Is this Tx Descriptor describing a Read Transfer?
     assign tx_rvalid = tx_desc_rvalid_i[t] & !tx_desc[t].tx.notify;
@@ -694,7 +701,7 @@ module i3c_target_fsm
   );
 
   // Transmission outcome; for completion signaling and error reporting.
-  logic [Log2NT-1:0] tx_targ_id;
+  logic [NumTargetsW-1:0] tx_targ_id;
   assign tx_targ_id = '0;  // TODO: FSM Tracks target.
   i3c_tti_tx_desc_t tx_desc_curr;
   assign tx_desc_curr = i3c_tti_tx_desc_t'(tx_desc_rdata_i[tx_targ_id]);
@@ -716,8 +723,8 @@ module i3c_target_fsm
     assign daa_contenders[t] = reg2hw_i.targ_enable[t].q &&
                               !reg2hw_i.targ_addr[t].dynamic_addr_valid.q;
   end
-  logic              daa_targ_valid; // TODO: Currently unused.
-  logic [Log2NT-1:0] daa_targ_id;    // TODO: Currently unused.
+  logic                   daa_targ_valid; // TODO: Currently unused.
+  logic [NumTargetsW-1:0] daa_targ_id;    // TODO: Currently unused.
 
   prim_arbiter_fixed #(.N(NumTargets), .DW(1), .EnDataPort(0)) u_daa_arb (
     .clk_i  (clk_i),
@@ -763,7 +770,7 @@ module i3c_target_fsm
 
   // Broadcast CCCs received in Standby Controller Mode.
   // - these must be posted into HCI IBI Queue (HCI 8.6.7)
-  assign stby_bcst_wvalid_o = buf_wvalid_q;
+  assign stby_bcst_wvalid_o = buf_wvalid_q; // TODO: This must be further qualified.
   assign stby_bcst_wdata_o  = buf_wdata_q;
 
   // Excess Private Write Data from the Active Controller must just be dropped; there is no
@@ -804,6 +811,9 @@ module i3c_target_fsm
   end
 
   // Will we have to drop any more read data at this point?
+  // TODO: rx_data_len will always have even values if trx_rxd_i.dtype != I3CDType_SDRBytes, so
+  //       &rx_data_len will never fire in the DDR case: We therefore need to check for
+  //       &rx_data_len[13:1] in DDR mode instead.
   assign rx_drop = |{buf_wvalid_q & ~buf_wready_i,  // Transient.
                      rx_flood_q, &rx_data_len};     // Persistent until the end of the transfer.
 
@@ -834,6 +844,7 @@ module i3c_target_fsm
     end else if (sw_reset_i) begin
       rx_desc_wvalid  <= 1'b0;
       rx_data_len     <= '0;
+      rx_desc_q       <= '0;
       rx_flood_q      <= 1'b0;
     end else if (enable_i) begin
       // Update the count of received bytes.
@@ -1139,6 +1150,7 @@ module i3c_target_fsm
   // Group Addressing.
   //
   // SETGRPA may need to allocate a new group index.
+  // TODO: We have to communicate back to the transceiver if there is no slot available to add.
   logic                  grp_add;        // Add (write) new group?
   logic                  grp_idx_valid;  // Anything found?
   logic [MaxGroupsW-1:0] grp_idx;        // Indicates the chosen entry.
