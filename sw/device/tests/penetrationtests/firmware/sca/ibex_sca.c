@@ -190,7 +190,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "xor x30, x5, x12\n"
                  "xor x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[0]));
   }
@@ -211,7 +213,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "add x30, x5, x12\n"
                  "add x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[1]));
   }
@@ -232,7 +236,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "sub x30, x5, x12\n"
                  "sub x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[2]));
   }
@@ -253,7 +259,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "rol x30, x5, x12\n"
                  "rol x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[3]));
   }
@@ -274,7 +282,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "mul x30, x5, x12\n"
                  "mul x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[4]));
   }
@@ -295,7 +305,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "div x30, x5, x12\n"
                  "div x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[5]));
   }
@@ -316,7 +328,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "lw x30, (%0)\n"
                  "lw x31, (%0)\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     result[6] = value1;
   }
@@ -507,9 +521,9 @@ status_t handle_ibex_sca_register_file_read(ujson_t *uj) {
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Copy registers.
-  asm volatile("mv x28, x5");
-  asm volatile("mv x29, x6");
-  asm volatile("mv x30, x7");
+  asm volatile("mv x28, x5" ::: "x28");
+  asm volatile("mv x29, x6" ::: "x29");
+  asm volatile("mv x30, x7" ::: "x30");
   pentest_set_trigger_low();
 
   // Acknowledge test.
@@ -538,9 +552,9 @@ status_t handle_ibex_sca_register_file_read_batch_fvsr(ujson_t *uj) {
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
-    asm volatile("mv x5, x28");
-    asm volatile("mv x6, x29");
-    asm volatile("mv x7, x30");
+    asm volatile("mv x5, x28" ::: "x5");
+    asm volatile("mv x6, x29" ::: "x6");
+    asm volatile("mv x7, x30" ::: "x7");
     pentest_set_trigger_low();
   }
 
@@ -570,9 +584,9 @@ status_t handle_ibex_sca_register_file_read_batch_random(ujson_t *uj) {
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
-    asm volatile("mv x5, x28");
-    asm volatile("mv x6, x29");
-    asm volatile("mv x7, x30");
+    asm volatile("mv x5, x28" ::: "x5");
+    asm volatile("mv x6, x29" ::: "x6");
+    asm volatile("mv x7, x30" ::: "x7");
     pentest_set_trigger_low();
   }
 
