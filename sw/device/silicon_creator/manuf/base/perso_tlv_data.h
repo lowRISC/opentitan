@@ -104,6 +104,21 @@ typedef struct perso_tlv_blob_version_payload {
 } perso_tlv_blob_version_payload_t;
 
 /**
+ * Version prefix header type (4 bytes).
+ */
+typedef uint32_t perso_tlv_version_header_t;
+
+enum {
+  /**
+   * Fixed 4-byte version prefix for V1 objects in little-endian register
+   * representation (corresponds to wire bytes [0xF0, 0x04, 0x00, 0x01]):
+   * Header: 0xF004 (type = kPersoObjectTypeBlobVersion, size = 4)
+   * Payload: 0x0001 (version = 1)
+   */
+  kPersoTlvVersionPrefixV1 = 0x010004F0,
+};
+
+/**
  * The x509 certificate is prepended by a 16 bits header followed by the ASCII
  * characters of the certificate name, followed by the certificate body.
  *
@@ -171,31 +186,68 @@ typedef struct perso_tlv_cert_obj {
 } perso_tlv_cert_obj_t;
 
 /**
- * Initializes the perso blob as a V1 blob.
- *
- * @param pb Pointer to the `perso_blob_t` to initialize.
- * @return status of the operation.
+ * Helper object similar to `perso_tlv_cert_obj_t`, but with pointers to
+ * constant buffer (view)
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb);
+typedef struct perso_tlv_cert_obj_view {
+  /**
+   * Pointer to the start of the perso LTV object.
+   */
+  const uint8_t *obj_p;
+  /**
+   * LTV object size (in bytes).
+   */
+  size_t obj_size;
+  /**
+   * LTV object type.
+   */
+  uint32_t obj_type;
+  /**
+   * Pointer to the start of the certificate body (i.e., ASN.1 object for X.509
+   * certificates, or CBOR object for CWT certificates).
+   */
+  const uint8_t *cert_body_p;
+  /**
+   * Certificate (ASN.1 or CBOR) body size (in bytes).
+   *
+   * Equal to: obj_size - obj_hdr_size - cert_hdr_size - cert_name_len
+   */
+  size_t cert_body_size;
+  /**
+   * Certificate name string.
+   */
+  char name[MAX_NODEF(kCrthNameSizeFieldMaskV0, kCrthNameSizeFieldMaskV1) + 1];
+} perso_tlv_cert_obj_view_t;
+
+/**
+ * Gets the TLV format version of the object in the given buffer.
+ *
+ * If the object starts with the 4-byte V1 version prefix (`0x010004F0` /
+ * `[0xF0, 0x04, 0x00, 0x01]`), `kPersoBlobVersionV1` is returned.
+ * Otherwise, `kPersoBlobVersionV0` is returned.
+ *
+ * @param data Pointer to the start of the object buffer.
+ * @param size Available buffer size in bytes.
+ * @return TLV format version of the object (`kPersoBlobVersionV1` if V1
+ *         version prefix is present, otherwise `kPersoBlobVersionV0`).
+ */
+perso_blob_version_t perso_tlv_object_version(const uint8_t *data, size_t size);
 
 /**
  * Given the pointer to an LTV object, in case this is an endorsed certificate
- * set up the perso_tlv_cert_obj_t structure for it.
+ * set up the perso_tlv_cert_obj_view_t structure for it.
  *
  * @param buf Pointer to the LTV object buffer storing the certificate object.
  * @param ltv_buf_size Total number of bytes until the end of the LTV buffer
  *                     (cert LTV object must be <= the buffer size).
- * @param blob_version The version of the perso blob.
- * @param[out] obj Pointer to the certificate perso LTV object to populate.
+ * @param[out] obj Pointer to the certificate perso LTV view object to populate.
  *
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
  *                   certificate, or the error condition encountered.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
-                                   perso_blob_version_t blob_version,
-                                   perso_tlv_cert_obj_t *obj);
+rom_error_t perso_tlv_get_cert_obj_view(const uint8_t *buf, size_t ltv_buf_size,
+                                        perso_tlv_cert_obj_view_t *obj);
 
 /**
  * Wraps the passed certificate in a perso LTV object and copies it to an output
@@ -273,42 +325,23 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
     perso_blob_version_t blob_version, perso_blob_t *pb);
 
 /**
- * Parses the beginning of the buffer to detect the personalization blob
- * version.
- *
- * It looks for a `kPersoObjectTypeBlobVersion` object which always uses the V0
- * 16-bit header. If found, it parses the version from the payload.
- *
- * @param data Pointer to the start of the perso blob.
- * @param size Total size of the perso blob in bytes.
- * @param[out] version Extracted version, or kPersoBlobVersionV0 if not present.
- * @param[out] offset Pointer to the first object after the version object.
- * @return status of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
-                                       perso_blob_version_t *version,
-                                       size_t *offset);
-
-/**
  * Returns the object type from the header.
  *
  * @param data Pointer to the start of the object.
- * @param version The version of the perso blob.
+ * @param size Maximum available buffer size.
  * @return The type of the object.
  */
-perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
-                                              perso_blob_version_t version);
+perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data, size_t size);
 
 /**
- * Returns the object size from the header.
+ * Returns the total object size (including version prefix if present) from the
+ * header.
  *
  * @param data Pointer to the start of the object.
- * @param version The version of the perso blob.
+ * @param size Maximum available buffer size.
  * @return The size of the object in bytes.
  */
-uint32_t perso_tlv_object_size(const uint8_t *data,
-                               perso_blob_version_t version);
+uint32_t perso_tlv_object_size(const uint8_t *data, size_t size);
 
 /**
  * Wraps arbitrary data in a perso TLV object and pushes it to the perso blob.

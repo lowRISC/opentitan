@@ -58,6 +58,8 @@ memchr = "2.6.4"
 memoffset = "0.9.0"
 mio = { version = "0.8.8", features = ["os-poll", "net", "os-ext"] }
 mio-signals = "0.2.0"
+# Note: Use this only for testing purposes since the crate documentation mentions "The implementation contained in this crate has never been independently audited! USE AT YOUR OWN RISK!"
+ml-dsa = { version = "0.1.1", features = ["pkcs8"] }
 num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.7"

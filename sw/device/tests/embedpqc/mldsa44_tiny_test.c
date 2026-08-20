@@ -7,6 +7,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/cert/dice_mldsa.h"
 #include "sw/device/tests/embedpqc/mldsa_test_utils.h"
 #include "sw/device/tests/embedpqc/mldsa_testvectors.h"
 #include "third_party/embedpqc/ports/mldsa44_tiny_caller.h"
@@ -27,6 +28,12 @@ bool test_main(void) {
   size_t keygen_stack = get_max_stack_usage();
   LOG_INFO("mldsa44_tiny_pub_from_seed Max Stack Usage: %u bytes",
            (unsigned int)keygen_stack);
+  CHECK(
+      kDiceMldsaRomExtAttestationScratchBufferSize >= keygen_stack,
+      "ML-DSA 44 tiny keygen uses more buffer space than assigned in firmware");
+  CHECK(
+      kDiceMldsaPersoScratchBufferSize >= keygen_stack,
+      "ML-DSA 44 tiny keygen uses more buffer space than assigned in firmware");
 
   CHECK(check_arrays_eq_verbose(buf, kMldsa44ExpectedPublicKey,
                                 MLDSA44_PUBLIC_KEY_BYTES),
@@ -41,6 +48,12 @@ bool test_main(void) {
   size_t sign_stack = get_max_stack_usage();
   LOG_INFO("mldsa44_tiny_sign Max Stack Usage: %u bytes",
            (unsigned int)sign_stack);
+  CHECK(kDiceMldsaRomExtAttestationScratchBufferSize >= sign_stack,
+        "ML-DSA 44 tiny sign deterministic uses more buffer space than "
+        "assigned in firmware");
+  CHECK(kDiceMldsaPersoScratchBufferSize >= sign_stack,
+        "ML-DSA 44 tiny sign deterministic uses more buffer space than "
+        "assigned in firmware");
 
   CHECK(check_arrays_eq_verbose(buf, kMldsa44ExpectedSignature,
                                 MLDSA44_SIGNATURE_BYTES),
@@ -55,6 +68,12 @@ bool test_main(void) {
   size_t verify_stack = get_max_stack_usage();
   LOG_INFO("mldsa44_tiny_verify Max Stack Usage: %u bytes",
            (unsigned int)verify_stack);
+  CHECK(
+      kDiceMldsaRomExtAttestationScratchBufferSize >= verify_stack,
+      "ML-DSA 44 tiny verify uses more buffer space than assigned in firmware");
+  CHECK(
+      kDiceMldsaPersoScratchBufferSize >= verify_stack,
+      "ML-DSA 44 tiny verify uses more buffer space than assigned in firmware");
 
   CHECK(verify_res != 0, "mldsa44_tiny_verify failed!");
   LOG_INFO("Verify Test Passed.");
