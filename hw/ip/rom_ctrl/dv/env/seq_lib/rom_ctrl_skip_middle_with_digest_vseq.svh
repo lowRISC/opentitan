@@ -219,6 +219,9 @@ task rom_ctrl_skip_middle_with_digest_vseq::body();
 endtask
 
 function void rom_ctrl_skip_middle_with_digest_vseq::abort();
+  `uvm_info(get_full_name(),
+            "Aborting the vseq, which will no longer skip the middle of ROM",
+            UVM_HIGH)
   m_seen_abort = 1;
 endfunction
 
