@@ -251,8 +251,25 @@
   gen_rram_otp_img_cmd: "{proj_root}/util/design/gen-rram-img.py"
   gen_rram_otp_img_cmd_opts: ["--top-secret-cfg {gen_otp_top_secret_cfg}"]
 
-  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
-  run_opts: ["+cdc_instrumentation_enabled=1"]
+  // Standard runtime options for chip tests
+  //
+  //   +cdc_instrumentation_enabled=1
+  //
+  //      This causes dv_base_test to set en_dv_cdc=1. That, in turn, configures some virtual
+  //      sequences to extend some delays in order to cope with CDC delays being enabled in the
+  //      testbench.
+  //
+  //   +skip_middle_of_rom=1
+  //
+  //      This plusarg tells the bound-in rom_ctrl environment to force a signal in rom_ctrl so that
+  //      it skips over the bulk of the initial hash of ROM.
+  //
+  //      Obviously, this will *not* properly test that ROM gets hashed at the start of time, so
+  //      it's important that at least one test gets run with a good digest and one with a bad
+  //      digest, where neither set this flag. Because plusargs that are specified for tests
+  //      manually come later in the command line than the default ones set here, we can enable the
+  //      skip by default.
+  run_opts: ["+cdc_instrumentation_enabled=1", "+skip_middle_of_rom=1"]
 
   // Add run modes.
   run_modes: [
@@ -1594,6 +1611,11 @@
       // The `sim_dv` prefix is necessary due to how the targets are created, see BUILD file.
       sw_images: ["//sw/device/tests:kmac_app_rom_test_sim_dv:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
+
+      // Note: This test is designed to ensure that rom_ctrl passes the contents of ROM to KMAC and
+      //       then consumes the digest properly. As such, we have to override the default value of
+      //       skip_middle_of_rom=1 so that the test actually reads the ROM contents.
+      run_opts: ["+skip_middle_of_rom=0"]
     }
     {
       name: chip_sw_kmac_idle
@@ -1606,6 +1628,11 @@
       uvm_test_seq: chip_sw_rom_ctrl_integrity_check_vseq
       sw_images: ["//sw/device/tests/sim_dv:rom_ctrl_integrity_check_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
+
+      // Note: This test is designed to ensure that rom_ctrl correctly handles a computed digest
+      //       that doesn't match the expected digest. As such, we have to override the default
+      //       value of skip_middle_of_rom=1 so that the test actually reads the ROM contents.
+      run_opts: ["+skip_middle_of_rom=0"]
     }
     {
       name: chip_sw_sram_ctrl_scrambled_access
