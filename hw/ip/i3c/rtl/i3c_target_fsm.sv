@@ -29,7 +29,7 @@ module i3c_target_fsm
 
   // Control inputs.
   input                     enable_i,
-  input                     sw_reset_i,
+  input                     sw_reset_i, // TODO: Not used/connected to all required flops.
   input                     async_evt_rst_i,
 
   // Configuration.
@@ -39,8 +39,9 @@ module i3c_target_fsm
   input               [7:0] stby_cr_dcr_i,
   input               [7:0] stby_cr_bcr_i,
   input              [47:0] stby_cr_pid_i,
-  input  i3c_rstact_e       rstact_i,
+  input  i3c_rstact_e       rstact_i, // TODO: Currently unused
   // Blocked device addresses.
+  // TODO: Both currently unused
   input               [6:0] addr_blocked_i[NumBlocked],
   input               [6:0] mask_blocked_i[NumBlocked],
 
@@ -77,6 +78,7 @@ module i3c_target_fsm
   input                     scl_i,
   input                     sda_i,
   // Bus status signals.
+  // TODO: bus_avail_i currently unused
   input                     bus_avail_i,
   input                     bus_idle_i,
 
@@ -108,6 +110,7 @@ module i3c_target_fsm
   output                    tx_desc_rready_o[NumTargets],
   input                     tx_desc_rvalid_i[NumTargets],
   input     [DataWidth-1:0] tx_desc_rdata_i[NumTargets],
+  // TODO: rused/ravail below currently unused.
   input      [FIFODepthW:0] tx_desc_rused_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_ravail_i[NumTargets],
 
@@ -115,6 +118,7 @@ module i3c_target_fsm
   output                    rx_desc_wvalid_o,
   output    [DataWidth-1:0] rx_desc_wdata_o,
   input                     rx_desc_wready_i,
+  // TODO: wused/wfull below currently unused.
   input      [FIFODepthW:0] rx_desc_wused_i,
   input                     rx_desc_wfull_i,
 
@@ -135,6 +139,7 @@ module i3c_target_fsm
   input                     ibi_rvalid_i,
   input     [DataWidth-1:0] ibi_rdata_i,
   input                     ibi_rempty_i,
+  // TODO: rused currently unused
   input      [FIFODepthW:0] ibi_rused_i,
 
   // Transmit data for Private Read transfers.
@@ -161,7 +166,7 @@ module i3c_target_fsm
   output                    buf_wvalid_o,
   output    [DataWidth-1:0] buf_wdata_o,
   input                     buf_wready_i,
-  input      [FIFODepthW:0] buf_wavail_i,
+  input      [FIFODepthW:0] buf_wavail_i, // TODO: Currently unused.
 
   // Asynchronous Event Queue.
   output                    async_wvalid_o,
@@ -175,7 +180,7 @@ module i3c_target_fsm
   // Broadcast CCCs received in Standby Controller mode.
   output                    stby_bcst_wvalid_o,
   output    [DataWidth-1:0] stby_bcst_wdata_o,
-  input                     stby_bcst_wready_i,
+  input                     stby_bcst_wready_i, // TODO: Currently unused.
 
   // Error events.
   output                    async_evt_ovl_o,
@@ -435,6 +440,7 @@ module i3c_target_fsm
   always_comb begin : drv_txc_data
     txc_data_o = '0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
+      // TODO: rdata_first is hardcoded to 1'b0, which fails DDR CCC reads
       fmt_data_out(txc_data_o.rdata_nq[t], txc_data_o.rdata_pq[t], txc_data_o.rlast[t],
                    {8'b0, ccc_rsp.req_cdata[t]}, 1'b0, {1'b0, ccc_rsp.req_clast});
     end
@@ -491,6 +497,8 @@ module i3c_target_fsm
     case (state_q)
       Inactive: proceed = trx_rvalid_i;
       PrivXfer: proceed = stop_det_i;  // TODO: Want to define here what happens w.r.t. Sr?
+                                       //       Important e.g., for the legal combination of
+                                       //       S | Addr+W | RegAddr | Sr | Addr+R | ReadData | P
       CCC:      proceed = ccc_tx_start | stop_det_i;  // TODO: Shall likely want error-handling.
       CCC_Tx:   proceed = ccc_unit_ready | stop_det_i;  // TODO: Shall likely want error-handling.
       // All other states are immediately responsive.
@@ -699,8 +707,8 @@ module i3c_target_fsm
     assign daa_contenders[t] = reg2hw_i.targ_enable[t].q &
                               !reg2hw_i.targ_addr[t].dynamic_addr_valid.q;
   end
-  logic              daa_targ_valid;
-  logic [Log2NT-1:0] daa_targ_id;
+  logic              daa_targ_valid; // TODO: Currently unused.
+  logic [Log2NT-1:0] daa_targ_id;    // TODO: Currently unused.
 
   prim_arbiter_fixed #(.N(NumTargets), .DW(1), .EnDataPort(0)) u_daa_arb (
     .clk_i  (clk_i),
@@ -797,6 +805,13 @@ module i3c_target_fsm
 
   wire rx_flush = (stop_det_i & |rx_data_len) ||  // SDR
                   (prv_rvalid_i & trx_rready_o & dtype_crc); // HDR-DDR
+  // TODO: rx_data_len will always have even values if trx_rxd_i.dtype != I3CDType_SDRBytes, so
+  //       &rx_data_len will never fire in the DDR case: We therefore need to check for
+  //       &rx_data_len[13:1] in DDR mode instead.
+  // TODO: For SDR, flush is currently only triggered on a per-frame basis on a P. This means that
+  //       with frames which contain segments to multiple targets (separated via Sr), all traffic
+  //       ends up in the rx buffer with the address in the descriptor set to the target that the
+  //       first block of data was meant for.
 
   wire rx_desc_accepted = rx_desc_wvalid & rx_desc_wready_i;
 
@@ -862,7 +877,7 @@ module i3c_target_fsm
   );
 
   /* In-Band Interrupts.
-     his logic also handles the following asynchronous requests of the current Active Controller:
+     This logic also handles the following asynchronous requests of the current Active Controller:
      - Controller-Role Requests.
      - Hot-Join Requests.
      - Pending Read Data notifications.
@@ -875,7 +890,7 @@ module i3c_target_fsm
   assign ibi_rready_o = enable_i & ((ibi_desc_rvalid_i & ibi_rvalid_i) | sink_rready[0]);
 
   wire         ibi_desc_consumed = 1'b0;
-  logic [15:0] ibi_unit_data;
+  logic [15:0] ibi_unit_data; // TODO: Currently unused.
   logic        ibi_unit_valid;
   logic        ibi_unit_ready;
 
@@ -934,7 +949,7 @@ module i3c_target_fsm
   // Arbitrate amongst IBI, HJ/CRR and any Pending Read Notifications.
   localparam int unsigned IBIArbDataW = $bits(i3c_targ_trx_arb_t);
   i3c_targ_trx_arb_t ibi_arb_in[NumTargets + 2];
-  logic [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt;
+  logic [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt; // TODO: ibi_arb_gnt currently unused.
   always_comb begin
     for (int unsigned c = 0; c < NumTargets + 2; c++) ibi_arb_in[c] = '0;
     // The highest-priority contender is any In-Band Interrupt from the queue.
@@ -959,7 +974,7 @@ module i3c_target_fsm
 
   // IBI, CRR/HJ and PRN arbitration results.
   localparam int unsigned IBIArbW = $clog2(NumTargets + 1);
-  logic [IBIArbW-1:0] ibi_arb_winner;
+  logic [IBIArbW-1:0] ibi_arb_winner; // TODO: Currently unused.
   i3c_targ_trx_arb_t ibi_arb_data;
   logic ibi_arb_valid;
 
