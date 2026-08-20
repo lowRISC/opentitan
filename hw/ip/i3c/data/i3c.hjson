@@ -43,14 +43,16 @@
     { name: "sc_sw_reinit_i",  desc: "Software reinitialization of the Standby Controller registers" }
   ],
   available_inout_list: [
+    { name: "scl", desc: "I3C SCL bus clock" }
+    { name: "sda", desc: "I3C SDA data line" }
   ],
   available_input_list: [
   ],
   available_output_list: [
     { name: "ctrl_scl_pu_en", desc: "I3C Controller clock Pullup enable output" }
     { name: "ctrl_sda_pu_en", desc: "I3C Controller data Pullup enable output" }
-    { name: "scl_hk_en", desc: "I3C Controller clock High-keeper enable output" }
-    { name: "sda_hk_en", desc: "I3C Controller data High-keeper enable output" }
+    { name: "scl_hk", desc: "I3C Controller clock High-keeper enable output" }
+    { name: "sda_hk", desc: "I3C Controller data High-keeper enable output" }
   ],
   interrupt_list: [
     // Global HCI interrupt, asserted when any HCI interrupt is pending.
@@ -72,30 +74,6 @@
     }
   ],
   inter_signal_list: [
-    { struct:  "i3c_ctrl_bus_drv",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_ctrl_bus_drv",
-      act:     "req"
-    }
-    { struct:  "i3c_ctrl_bus_obs",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_ctrl_bus_obs",
-      act:     "rcv"
-    }
-    { struct:  "i3c_targ_bus_drv",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_targ_bus_drv",
-      act:     "req"
-    }
-    { struct:  "i3c_targ_bus_obs",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_targ_bus_obs",
-      act:     "rcv"
-    }
     { struct:  "logic",
       package: "",
       type:    "uni",
