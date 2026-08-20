@@ -28,7 +28,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * RSTMGR interface [`hw/top_${topname}/ip_autogen/rstmgr/dv/env/rstmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/env/rstmgr_if.sv)
-* Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_if`](../../../../dv/sv/alert_agent/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -48,7 +48,7 @@ The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent](.
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RSTMGR device.
 
 ### Alert_agents
-RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents](../../../../dv/sv/alert_esc_agent/README.md):
+RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents](../../../../dv/sv/alert_agent/README.md):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RSTMGR device.
 

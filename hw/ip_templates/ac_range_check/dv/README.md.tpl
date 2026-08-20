@@ -32,7 +32,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the Unfiltered CTN accesses](../../../../dv/sv/tl_agent/README.md)
 * [TileLink device interface for the Filtered CTN accesses](../../../../dv/sv/tl_agent/README.md)
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
-* Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_if`](../../../../dv/sv/alert_agent/README.md))
 * Miscellaneaous IP specific signals without an attached UVM agent `misc_if`
 
 
@@ -64,7 +64,7 @@ ${"###"} TL_agent
 The `tl_agent` monitor supplies partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `ac_range_check` scoreboard.
 
 ${"###"} Alert_agent
-`ac_range_check` testbench instantiates (already handled in CIP base env) [alert_agents](../../../../dv/sv/alert_esc_agent/README.md):
+`ac_range_check` testbench instantiates (already handled in CIP base env) [alert_agents](../../../../dv/sv/alert_agent/README.md):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in AC_RANGE_CHECK device.
 

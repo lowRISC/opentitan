@@ -13,15 +13,15 @@
 `ifndef DV_ALERT_IF_CONNECT
 `define DV_ALERT_IF_CONNECT(CLK_ = clk, RST_N_ = rst_n) \
   localparam uint dv_alert_if_connect_param = (NUM_ALERTS == 0) ? 1 : NUM_ALERTS; \
-  alert_esc_if alert_if[dv_alert_if_connect_param](.clk(CLK_), .rst_n(RST_N_)); \
+  alert_if alert_if[dv_alert_if_connect_param](.clk(CLK_), .rst_n(RST_N_)); \
   prim_alert_pkg::alert_rx_t [dv_alert_if_connect_param-1:0] alert_rx; \
   prim_alert_pkg::alert_tx_t [dv_alert_if_connect_param-1:0] alert_tx; \
   for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins \
     assign alert_rx[k] = alert_if[k].alert_rx; \
     assign alert_if[k].alert_tx = alert_tx[k]; \
     initial begin \
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s", \
-          LIST_OF_ALERTS[k]), "vif", alert_if[k]); \
+      static string agent_path = $sformatf("*.env.m_alert_agent_%0s", LIST_OF_ALERTS[k]); \
+      uvm_config_db#(virtual alert_if)::set(null, agent_path, "vif", alert_if[k]); \
     end \
   end
 `endif

@@ -84,8 +84,8 @@ module tb;
   );
 
   // TODO: Absorb this functionality into chip_if.
-  alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
-                                    .rst_n(`ALERT_HANDLER_HIER.rst_ni));
+  alert_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
+                                .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_connect_alert_rx
     assign alert_if[i].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[i];
   end
@@ -300,8 +300,8 @@ module tb;
 
   for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_vif
     initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-          LIST_OF_ALERTS[i]), "vif", alert_if[i]);
+      static string alert_path = $sformatf("*.env.m_alert_agent_%0s", LIST_OF_ALERTS[i]);
+      uvm_config_db#(virtual alert_if)::set(null, alert_path, "vif", alert_if[i]);
     end
   end
 

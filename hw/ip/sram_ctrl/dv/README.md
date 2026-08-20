@@ -38,7 +38,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * SRAM_CTRL IOs
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_if`](../../../dv/sv/alert_agent/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -89,7 +89,7 @@ SRAM_CTRL testbench instantiates (already handled in CIP base env) [tl_agent](..
 which provides the ability to drive and independently monitor random traffic via TL host interface into SRAM_CTRL device.
 
 ### Alert agents
-The SRAM_CTRL testbench instantiates 2 [alert agents](../../../dv/sv/alert_esc_agent/README.md) for:
+The SRAM_CTRL testbench instantiates 2 [alert agents](../../../dv/sv/alert_agent/README.md) for:
 * fatal_intg_error - signals a transmission integrity error
 * fatal_parity_error - signals an internal parity error in the memory primitive
 

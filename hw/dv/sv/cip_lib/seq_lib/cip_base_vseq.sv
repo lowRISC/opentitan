@@ -285,7 +285,7 @@ class cip_base_vseq #(
   //  alert_name    The name of the alert to test
   //
   //  alert_cfg     A config object for the alert agent
-  extern local task check_not_fatal_alert(string alert_name, alert_esc_agent_cfg alert_cfg);
+  extern local task check_not_fatal_alert(string alert_name, alert_agent_cfg alert_cfg);
 
   // Watch the interface for each alert and check that none fire as a fatal alert (using the
   // check_not_fatal_alert() task)
@@ -297,7 +297,7 @@ class cip_base_vseq #(
   extern local task run_alert_test_vseq(int num_times = 1);
 
   // Blocks if there's a ping in-flight
-  extern local task wait_until_ping_is_finished(alert_esc_agent_cfg alert_agent_cfg);
+  extern local task wait_until_ping_is_finished(alert_agent_cfg alert_agent_cfg);
 
   // Wait for the named alert to be triggered
   //
@@ -890,7 +890,7 @@ task cip_base_vseq::clear_all_interrupts();
   end
 endtask
 
-task cip_base_vseq::check_not_fatal_alert(string alert_name, alert_esc_agent_cfg alert_cfg);
+task cip_base_vseq::check_not_fatal_alert(string alert_name, alert_agent_cfg alert_cfg);
   // The maximum number of cycles that an alert handshake should take.
   // - 20 cycles includes ack response and ack stable time.
   // - 10 is the max difference between alert clock and dut clock.
@@ -1022,7 +1022,7 @@ task cip_base_vseq::run_alert_test_vseq(int num_times = 1);
   end
 endtask
 
-task cip_base_vseq::wait_until_ping_is_finished(alert_esc_agent_cfg alert_agent_cfg);
+task cip_base_vseq::wait_until_ping_is_finished(alert_agent_cfg alert_agent_cfg);
 
   if (alert_agent_cfg.vif.in_ping_st()) begin
     // There's a 2-cycle sampling delay in the monitor, so if the VIF has already seen the ping then
@@ -1037,8 +1037,8 @@ endtask
 task cip_base_vseq::wait_alert_trigger(string alert_name,
                                        int    max_wait_cycle = 7,
                                        bit    wait_complete = 0);
-  alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
-  virtual alert_esc_if alert_vif = agent_cfg.vif;
+  alert_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+  virtual alert_if alert_vif = agent_cfg.vif;
 
   // In case there is a ping in flight when we arrive, wait for the ping to clear.
   wait_until_ping_is_finished(agent_cfg);
@@ -1096,7 +1096,7 @@ task cip_base_vseq::drive_alert_rsp_and_check_handshake(string alert_name, int a
   alert_receiver_alert_rsp_seq ack_seq =
       alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
   `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
-  ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
+  ack_seq.start(p_sequencer.m_alert_sequencers[alert_name]);
 
   `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
                $sformatf("timeout wait for alert_%0d handshake:%0s", alert_index, alert_name))
@@ -1376,7 +1376,7 @@ task cip_base_vseq::check_fatal_alert_nonblocking(string alert_name);
         forever begin
           // 1 extra cycle to make sure no race condition
           // Plus 2 extra cycles due to alert sampling delay of 2 cycles at the VIF
-          for (int i = 0; i <  (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + 2); i++) begin
+          for (int i = 0; i <  (alert_agent_pkg::ALERT_B2B_DELAY + 1 + 2); i++) begin
             if (cfg.m_alert_agent_cfgs[alert_name].active_ping) begin
               wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
               i = 0; // restart the delay, since alert may take longer now ping is happening

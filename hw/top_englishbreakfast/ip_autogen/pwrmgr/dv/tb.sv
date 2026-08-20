@@ -37,7 +37,7 @@ module tb;
     .rst_n(rst_slow_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
-  alert_esc_if esc_if (
+  esc_if esc_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -126,7 +126,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "lc_clk_rst_vif", lc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(virtual alert_esc_if)::set(null, "*.env.m_esc_agent*", "vif", esc_if);
+    uvm_config_db#(virtual esc_if)::set(null, "*.env.m_esc_agent*", "vif", esc_if);
     uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pwrmgr_clock_enables_sva_if)::set(

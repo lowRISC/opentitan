@@ -95,7 +95,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
               prim_mubi_pkg::mubi4_test_false_loose(cfg.${module_instance_name}_vif.lpg_rst_en[lpg_index]);
 
           // Check that ping mechanism will only ping alerts that have been enabled and locked.
-          if (act_item.m_trans_type == AlertEscPingTrans) begin
+          if (act_item.m_trans_type == AlertPingTrans) begin
             `DV_CHECK(alert_en, $sformatf("alert %0s ping triggered but not enabled", index))
             `DV_CHECK((`gmv(ral.alert_regwen[index]) == 0),
                       $sformatf("alert %0s ping triggered but not locked", index))
@@ -103,14 +103,14 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
 
           if (alert_en) begin
             // alert detected
-            if (act_item.m_trans_type == AlertEscSigTrans && !act_item.m_ping_timeout &&
+            if (act_item.m_trans_type == AlertSigTrans && !act_item.m_ping_timeout &&
                 act_item.m_alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
-            end else if (act_item.m_trans_type == AlertEscIntFail) begin
+            end else if (act_item.m_trans_type == AlertIntFail) begin
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertIntFail].get_mirrored_value();
               if (loc_alert_en) process_alert_sig(index, 1, LocalAlertIntFail);
-            end else if (act_item.m_trans_type == AlertEscPingTrans &&
+            end else if (act_item.m_trans_type == AlertPingTrans &&
                          act_item.m_ping_timeout) begin
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertPingFail].get_mirrored_value();
               if (loc_alert_en) begin
@@ -133,16 +133,16 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
           esc_seq_item act_item;
           esc_fifo[index].get(act_item);
           // escalation triggered, check signal length
-          if (act_item.m_trans_type == AlertEscSigTrans &&
+          if (act_item.m_trans_type == EscSigTrans &&
               act_item.m_esc_handshake_sta == EscRespComplete) begin
             check_esc_signal(act_item.m_sig_cycle_cnt, index);
           // escalation integrity fail
-          end else if (act_item.m_trans_type == AlertEscIntFail ||
+          end else if (act_item.m_trans_type == EscIntFail ||
                (act_item.m_esc_handshake_sta == EscIntFail && !act_item.m_ping_timeout)) begin
             bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
-          end else if (act_item.m_trans_type == AlertEscPingTrans) begin
+          end else if (act_item.m_trans_type == EscPingTrans) begin
             if (act_item.m_ping_timeout) begin
               bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
               if (loc_alert_en) begin

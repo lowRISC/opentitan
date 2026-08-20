@@ -27,7 +27,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* [`Alerts_if`](../../../dv/sv/alert_esc_agent/README.md))
+* [Alerts interface](../../../dv/sv/alert_agent/README.md))
 * RACL interface - Currently not used
 
 ### Common DV utility components

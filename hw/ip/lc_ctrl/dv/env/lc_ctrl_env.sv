@@ -13,8 +13,8 @@ class lc_ctrl_env extends cip_base_env #(
     .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
     .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
   ) m_otp_prog_pull_agent;
-  alert_esc_agent m_esc_scrap_state1_agent;
-  alert_esc_agent m_esc_scrap_state0_agent;
+  esc_agent m_esc_scrap_state1_agent;
+  esc_agent m_esc_scrap_state0_agent;
   jtag_riscv_agent m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   kmac_app_device_agent m_kmac_app_agent;
@@ -40,15 +40,16 @@ class lc_ctrl_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get lc_ctrl_vif from uvm_config_db")
     end
 
-    m_esc_scrap_state1_agent = alert_esc_agent::type_id::create("m_esc_scrap_state1_agent", this);
-    uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_scrap_state1_agent", "cfg",
-                                             cfg.m_esc_scrap_state1_agent_cfg);
+    m_esc_scrap_state1_agent = esc_agent::type_id::create("m_esc_scrap_state1_agent", this);
+    uvm_config_db#(esc_agent_cfg)::set(this, "m_esc_scrap_state1_agent", "cfg",
+                                       cfg.m_esc_scrap_state1_agent_cfg);
     cfg.m_esc_scrap_state1_agent_cfg.en_cov = cfg.en_cov;
 
-    m_esc_scrap_state0_agent = alert_esc_agent::type_id::create("m_esc_scrap_state0_agent", this);
-    uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_scrap_state0_agent", "cfg",
-                                             cfg.m_esc_scrap_state0_agent_cfg);
+    m_esc_scrap_state0_agent = esc_agent::type_id::create("m_esc_scrap_state0_agent", this);
+    uvm_config_db#(esc_agent_cfg)::set(this, "m_esc_scrap_state0_agent", "cfg",
+                                       cfg.m_esc_scrap_state0_agent_cfg);
     cfg.m_esc_scrap_state0_agent_cfg.en_cov = cfg.en_cov;
+
     m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
     uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent", "cfg",
                                               cfg.m_jtag_riscv_agent_cfg);
