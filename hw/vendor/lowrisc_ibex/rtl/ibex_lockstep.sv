@@ -8,7 +8,8 @@
 // LockstepOffset cycles.
 
 // SEC_CM: LOGIC.SHADOW
-module ibex_lockstep import ibex_pkg::*; #(
+module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
+  parameter base_isa_e              BaseIsa                     = BaseIsaRV32I,
   parameter int unsigned            LockstepOffset              = 1,
   parameter bit                     PMPEnable                   = 1'b0,
   parameter int unsigned            PMPGranularity              = 0,
@@ -41,6 +42,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   parameter bit                     RegFileECC                  = 1'b0,
   parameter int unsigned            RegFileDataWidth            = 32,
   parameter int unsigned            RegFileDataEccWidth         = 39,
+  parameter int unsigned            RegFileCapEccWidth          = REGCAP_W + 7,
   parameter regfile_e               RegFile                     = RegFileFF,
   parameter bit                     MemECC                      = 1'b0,
   parameter int unsigned            MemDataWidth                = MemECC ? 32 + 7 : 32,
@@ -58,6 +60,7 @@ module ibex_lockstep import ibex_pkg::*; #(
 
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
+  input  ibex_mubi_t                   cheriot_enable_i,
 
   input  logic                         instr_req_i,
   input  logic                         instr_gnt_i,
@@ -73,11 +76,17 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic [3:0]                   data_be_i,
   input  logic [31:0]                  data_addr_i,
   input  logic [31:0]                  data_wdata_i,
+  input  logic                         data_tag_i,
   input  logic [MemDataWidth-1:0]      data_rdata_i,
+  input  logic                         data_rdata_tag_i,
   input  logic                         data_err_i,
 
   input  logic [RegFileDataWidth-1:0]  rf_rdata_a_i,
   input  logic [RegFileDataWidth-1:0]  rf_rdata_b_i,
+
+  input  cap_t                         rf_wcap_wb_i,
+  input  cap_t                         rf_rcap_a_i,
+  input  cap_t                         rf_rcap_b_i,
 
   input  logic [IC_NUM_WAYS-1:0]       ic_tag_req_i,
   input  logic                         ic_tag_write_i,
@@ -124,6 +133,7 @@ module ibex_lockstep import ibex_pkg::*; #(
 );
 
   import prim_secded_pkg::SecdedInv3932ZeroWord;
+  import prim_secded_pkg::SecdedInv6457ZeroEcc;
 
   localparam int unsigned LockstepOffsetW = prim_util_pkg::vbits(LockstepOffset);
   // Core outputs are delayed for an extra cycle due to shadow output registers
@@ -238,6 +248,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic                        data_gnt;
     logic                        data_rvalid;
     logic [MemDataWidth-1:0]     data_rdata;
+    logic                        data_rdata_tag;
     logic                        data_err;
     logic [RegFileDataWidth-1:0] rf_rdata_a;
     logic [RegFileDataWidth-1:0] rf_rdata_b;
@@ -250,6 +261,9 @@ module ibex_lockstep import ibex_pkg::*; #(
     ibex_mubi_t                  fetch_enable;
     ibex_mubi_t                  mcounteren_writable;
     logic                        ic_scr_key_valid;
+    ibex_mubi_t                  cheriot_enable;
+    cap_t                        rf_rcap_a;
+    cap_t                        rf_rcap_b;
   } delayed_inputs_t;
 
   delayed_inputs_t [LockstepOffset-1:0] shadow_inputs_q;
@@ -319,6 +333,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign shadow_inputs_in.data_gnt            = data_gnt_i;
   assign shadow_inputs_in.data_rvalid         = data_rvalid_i;
   assign shadow_inputs_in.data_rdata          = data_rdata_i;
+  assign shadow_inputs_in.data_rdata_tag      = data_rdata_tag_i;
   assign shadow_inputs_in.data_err            = data_err_i;
   assign shadow_inputs_in.rf_rdata_a          = rf_rdata_a_i;
   assign shadow_inputs_in.rf_rdata_b          = rf_rdata_b_i;
@@ -331,6 +346,9 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign shadow_inputs_in.fetch_enable        = fetch_enable_i;
   assign shadow_inputs_in.mcounteren_writable = mcounteren_writable_i;
   assign shadow_inputs_in.ic_scr_key_valid    = ic_scr_key_valid_i;
+  assign shadow_inputs_in.cheriot_enable      = cheriot_enable_i;
+  assign shadow_inputs_in.rf_rcap_a           = rf_rcap_a_i;
+  assign shadow_inputs_in.rf_rcap_b           = rf_rcap_b_i;
 
   ///////////////////
   // Output delays //
@@ -344,6 +362,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic [3:0]              data_be;
     logic [31:0]             data_addr;
     logic [31:0]             data_wdata;
+    logic                    data_tag;
     logic [IC_NUM_WAYS-1:0]  ic_tag_req;
     logic                    ic_tag_write;
     logic [IC_INDEX_W-1:0]   ic_tag_addr;
@@ -357,6 +376,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     crash_dump_t             crash_dump;
     logic                    double_fault_seen;
     ibex_mubi_t              core_busy;
+    cap_t                    rf_wcap_wb;
   } delayed_outputs_t;
 
   delayed_outputs_t [OutputsOffset-1:0]  core_outputs_q;
@@ -371,6 +391,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign core_outputs_in.data_be             = data_be_i;
   assign core_outputs_in.data_addr           = data_addr_i;
   assign core_outputs_in.data_wdata          = data_wdata_i;
+  assign core_outputs_in.data_tag            = data_tag_i;
   assign core_outputs_in.ic_tag_req          = ic_tag_req_i;
   assign core_outputs_in.ic_tag_write        = ic_tag_write_i;
   assign core_outputs_in.ic_tag_addr         = ic_tag_addr_i;
@@ -384,6 +405,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign core_outputs_in.crash_dump          = crash_dump_i;
   assign core_outputs_in.double_fault_seen   = double_fault_seen_i;
   assign core_outputs_in.core_busy           = core_busy_i;
+  assign core_outputs_in.rf_wcap_wb          = rf_wcap_wb_i;
 
   // Delay the outputs
   always_ff @(posedge clk_i) begin
@@ -409,6 +431,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   // The following output does not need to be checked in the lockstep comparison as we anyways
   // check the data_wdata itself.
   logic [6:0]                     shadow_data_wdata_intg;
+  logic [MemDataWidth-1:0]        shadow_data_wdata_full;
 
   ///////////////////////////////
   // Shadow core instantiation //
@@ -417,6 +440,9 @@ module ibex_lockstep import ibex_pkg::*; #(
   logic shadow_alert_minor, shadow_alert_major_internal, shadow_alert_major_bus;
   logic [RegFileDataEccWidth - RegFileDataWidth - 1:0] shadow_rf_rdata_a_intg;
   logic [RegFileDataEccWidth - RegFileDataWidth - 1:0] shadow_rf_rdata_b_intg;
+  logic [RegFileCapEccWidth-1:0] shadow_rf_wcap_ecc_wb;
+  logic [6:0] shadow_rf_rcap_a_ecc;
+  logic [6:0] shadow_rf_rcap_b_ecc;
 
   ibex_core #(
     .PMPEnable            ( PMPEnable            ),
@@ -449,6 +475,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     .DummyInstructions    ( DummyInstructions    ),
     .RegFileECC           ( RegFileECC           ),
     .RegFileDataWidth     ( RegFileDataEccWidth  ),
+    .RegFileCapEccWidth   ( RegFileCapEccWidth   ),
     .MemECC               ( MemECC               ),
     .MemDataWidth         ( MemDataWidth         ),
     .DmBaseAddr           ( DmBaseAddr           ),
@@ -456,13 +483,16 @@ module ibex_lockstep import ibex_pkg::*; #(
     .DmHaltAddr           ( DmHaltAddr           ),
     .DmExceptionAddr      ( DmExceptionAddr      ),
     .CsrMvendorId         ( CsrMvendorId         ),
-    .CsrMimpId            ( CsrMimpId            )
+    .CsrMimpId            ( CsrMimpId            ),
+    .BaseIsa              ( BaseIsa              )
   ) u_shadow_core (
     .clk_i               (clk_i),
     .rst_ni              (rst_shadow_n),
 
     .hart_id_i           (hart_id_i),
     .boot_addr_i         (boot_addr_i),
+
+    .cheriot_enable_i    (shadow_inputs_q[0].cheriot_enable),
 
     .instr_req_o         (shadow_outputs_d.instr_req),
     .instr_gnt_i         (shadow_inputs_q[0].instr_gnt),
@@ -477,8 +507,10 @@ module ibex_lockstep import ibex_pkg::*; #(
     .data_we_o           (shadow_outputs_d.data_we),
     .data_be_o           (shadow_outputs_d.data_be),
     .data_addr_o         (shadow_outputs_d.data_addr),
-    .data_wdata_o        ({shadow_data_wdata_intg, shadow_outputs_d.data_wdata}),
+    .data_wdata_o        (shadow_data_wdata_full),
+    .data_tag_o          (shadow_outputs_d.data_tag),
     .data_rdata_i        (shadow_inputs_q[0].data_rdata),
+    .data_tag_i          (shadow_inputs_q[0].data_rdata_tag),
     .data_err_i          (shadow_inputs_q[0].data_err),
 
     .dummy_instr_id_o    (shadow_dummy_instr_id),
@@ -490,6 +522,12 @@ module ibex_lockstep import ibex_pkg::*; #(
     .rf_wdata_wb_ecc_o   (shadow_rf_wdata_wb_ecc),
     .rf_rdata_a_ecc_i    ({shadow_rf_rdata_a_intg, shadow_inputs_q[0].rf_rdata_a}),
     .rf_rdata_b_ecc_i    ({shadow_rf_rdata_b_intg, shadow_inputs_q[0].rf_rdata_b}),
+
+    .rf_wcap_ecc_wb_o    (shadow_rf_wcap_ecc_wb),
+    .rf_rcap_a_ecc_i     ({shadow_rf_rcap_a_ecc,
+                           cheriot_regcap_to_vec(shadow_inputs_q[0].rf_rcap_a)}),
+    .rf_rcap_b_ecc_i     ({shadow_rf_rcap_b_ecc,
+                           cheriot_regcap_to_vec(shadow_inputs_q[0].rf_rcap_b)}),
 
     .ic_tag_req_o        (shadow_outputs_d.ic_tag_req),
     .ic_tag_write_o      (shadow_outputs_d.ic_tag_write),
@@ -554,6 +592,12 @@ module ibex_lockstep import ibex_pkg::*; #(
     .rvfi_ext_expanded_insn_valid (),
     .rvfi_ext_expanded_insn       (),
     .rvfi_ext_expanded_insn_last  (),
+    .rvfi_mem_wcap                (),
+    .rvfi_mem_rcap                (),
+    .rvfi_mem_is_cap              (),
+    .rvfi_rd_wcap                 (),
+    .rvfi_rs2_rcap                (),
+    .rvfi_rs1_rcap                (),
 `endif
 
     .fetch_enable_i         (shadow_inputs_q[0].fetch_enable),
@@ -563,6 +607,17 @@ module ibex_lockstep import ibex_pkg::*; #(
     .alert_major_bus_o      (shadow_alert_major_bus),
     .core_busy_o            (shadow_outputs_d.core_busy)
   );
+
+  // Extract cap data from shadow core's unified cap ECC output (cap in lower REGCAP_W bits)
+  assign shadow_outputs_d.rf_wcap_wb = cheriot_vec_to_regcap(shadow_rf_wcap_ecc_wb[REGCAP_W-1:0]);
+
+  // Extract data_wdata and ECC bits from shadow core's combined output
+  assign shadow_outputs_d.data_wdata = shadow_data_wdata_full[31:0];
+  if (MemECC) begin : gen_shadow_wdata_ecc
+    assign shadow_data_wdata_intg = shadow_data_wdata_full[MemDataWidth-1:32];
+  end else begin : gen_shadow_wdata_no_ecc
+    assign shadow_data_wdata_intg = '0;
+  end
 
   // Register the shadow core outputs
   always_ff @(posedge clk_i) begin
@@ -580,10 +635,13 @@ module ibex_lockstep import ibex_pkg::*; #(
   // SEC_CM: DATA_REG_SW.GLITCH_DETECT
   if (RegFile == RegFileFF) begin : gen_shadow_regfile_ff
     ibex_register_file_ff #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
-      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .CapWidth         (7),
+      .CapWordZeroVal   (SecdedInv6457ZeroEcc)
     ) register_file_shadow_i (
       .clk_i            (clk_i),
       .rst_ni           (rst_shadow_n),
@@ -591,21 +649,28 @@ module ibex_lockstep import ibex_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
+      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .rcap_a_o         (shadow_rf_rcap_a_ecc),
       .raddr_b_i        (shadow_rf_raddr_b),
       .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .rcap_b_o         (shadow_rf_rcap_b_ecc),
       .waddr_a_i        (shadow_rf_waddr_wb),
       .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .wcap_a_i         (shadow_rf_wcap_ecc_wb[RegFileCapEccWidth-1:REGCAP_W]),
       .we_a_i           (shadow_rf_we_wb)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
     ibex_register_file_fpga #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
-      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .CapWidth         (7),
+      .CapWordZeroVal   (SecdedInv6457ZeroEcc)
     ) register_file_shadow_i (
       .clk_i            (clk_i),
       .rst_ni           (rst_shadow_n),
@@ -613,21 +678,28 @@ module ibex_lockstep import ibex_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
+      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .rcap_a_o         (shadow_rf_rcap_a_ecc),
       .raddr_b_i        (shadow_rf_raddr_b),
       .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .rcap_b_o         (shadow_rf_rcap_b_ecc),
       .waddr_a_i        (shadow_rf_waddr_wb),
       .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .wcap_a_i         (shadow_rf_wcap_ecc_wb[RegFileCapEccWidth-1:REGCAP_W]),
       .we_a_i           (shadow_rf_we_wb)
     );
   end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
     ibex_register_file_latch #(
+      .BaseIsa          (BaseIsa),
       .RV32E            (RV32E),
       .DataWidth        (RegFileDataEccWidth - RegFileDataWidth),
       .DummyInstructions(DummyInstructions),
-      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth])
+      .WordZeroVal      (SecdedInv3932ZeroWord[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .CapWidth         (7),
+      .CapWordZeroVal   (SecdedInv6457ZeroEcc)
     ) register_file_shadow_i (
       .clk_i            (clk_i),
       .rst_ni           (rst_shadow_n),
@@ -635,13 +707,17 @@ module ibex_lockstep import ibex_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
+      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),
+      .rcap_a_o         (shadow_rf_rcap_a_ecc),
       .raddr_b_i        (shadow_rf_raddr_b),
       .rdata_b_o        (shadow_rf_rdata_b_intg),
+      .rcap_b_o         (shadow_rf_rcap_b_ecc),
       .waddr_a_i        (shadow_rf_waddr_wb),
       .wdata_a_i        (shadow_rf_wdata_wb_ecc[RegFileDataEccWidth-1:RegFileDataWidth]),
+      .wcap_a_i         (shadow_rf_wcap_ecc_wb[RegFileCapEccWidth-1:REGCAP_W]),
       .we_a_i           (shadow_rf_we_wb)
     );
   end

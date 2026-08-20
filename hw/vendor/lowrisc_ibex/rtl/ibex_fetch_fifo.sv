@@ -29,6 +29,9 @@ module ibex_fetch_fifo #(
   input  logic [31:0]         in_rdata_i,
   input  logic                in_err_i,
 
+  // force unaligned compressed based on CHERIoT bounds check
+  input  logic                cheriot_force_uc_i,
+
   // output port
   output logic                out_valid_o,
   input  logic                out_ready_i,
@@ -103,8 +106,27 @@ module ibex_fetch_fifo #(
                                         (valid_q[0] & in_valid_i);
 
   // If there is an error, rdata is unknown
-  assign unaligned_is_compressed = (rdata[17:16] != 2'b11) & ~err;
+`ifdef DII_SIM
+  logic [31:0] instr_rdata_dii;
+  logic [31:0] instr_pc;
+  logic        instr_ack;
+
+  // for DII we directly force out_rdata_o (re-aligned instruction)
+  // to keep the unaligned/aligned_is_compressed signals in sync
+  //   32-bit instruction; instr_rdata_dii[31:0] = instr
+  //   16-bit instruction: instr_rdata_dii[15:0] = compressed instruction
+  //                       instr_rdata_dii[31:0] = don't care
+
+  assign unaligned_is_compressed = out_addr_o[1] & cheriot_force_uc_i
+                                 | ((instr_rdata_dii[1:0] != 2'b11) & ~err);
+  assign aligned_is_compressed   = ~out_addr_o[1] & (instr_rdata_dii[1:0] != 2'b11) & ~err;
+
+  assign instr_ack = out_ready_i & out_valid_o;
+  assign instr_pc  = out_addr_o;
+`else
+  assign unaligned_is_compressed = cheriot_force_uc_i | ((rdata[17:16] != 2'b11) & ~err);
   assign aligned_is_compressed   = (rdata[ 1: 0] != 2'b11) & ~err;
+`endif
 
   ////////////////////////////////////////
   // Instruction aligner (if unaligned) //
@@ -113,7 +135,12 @@ module ibex_fetch_fifo #(
   always_comb begin
     if (out_addr_o[1]) begin
       // unaligned case
+
+`ifdef DII_SIM
+     out_rdata_o      = instr_rdata_dii;
+`else
       out_rdata_o     = rdata_unaligned;
+`endif
       out_err_o       = err_unaligned;
       out_err_plus2_o = err_plus2;
 
@@ -124,7 +151,11 @@ module ibex_fetch_fifo #(
       end
     end else begin
       // aligned case
+`ifdef DII_SIM
+     out_rdata_o      = instr_rdata_dii;
+`else
       out_rdata_o     = rdata;
+`endif
       out_err_o       = err;
       out_err_plus2_o = 1'b0;
       out_valid_o     = valid;

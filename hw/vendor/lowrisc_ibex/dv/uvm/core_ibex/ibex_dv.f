@@ -40,6 +40,8 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_28_22_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_28_22_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_39_32_dec.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_64_57_enc.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_64_57_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_inv_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_prince.sv
@@ -61,6 +63,7 @@ ${PRJ_DIR}/vendor/pulp_common_cells/rtl/stream_join_dynamic.sv
 +incdir+${PRJ_DIR}/rtl
 ${PRJ_DIR}/rtl/ibex_pkg.sv
 ${PRJ_DIR}/rtl/ibex_cheriot_pkg.sv
+${PRJ_DIR}/rtl/ibex_cheriot_ex.sv
 ${PRJ_DIR}/rtl/ibex_tracer_pkg.sv
 ${PRJ_DIR}/rtl/ibex_tracer.sv
 ${PRJ_DIR}/rtl/ibex_alu.sv

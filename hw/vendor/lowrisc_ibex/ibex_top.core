@@ -17,7 +17,6 @@ filesets:
       - lowrisc:prim:count
       - lowrisc:prim:flop
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:onehot_check
       - lowrisc:prim:onehot
       - lowrisc:prim:util
       - lowrisc:prim:fifo
