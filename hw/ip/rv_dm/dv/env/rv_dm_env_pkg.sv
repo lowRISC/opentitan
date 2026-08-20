@@ -16,6 +16,7 @@ package rv_dm_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
+  import rv_dm_mode_agent_pkg::*;
   import rv_dm_regs_ral_pkg::*;
   import rv_dm_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;
