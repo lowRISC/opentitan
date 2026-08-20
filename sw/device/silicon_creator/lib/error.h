@@ -261,6 +261,7 @@ enum module_ {
   X(kErrorDiceCwtKeyCoordsNotFound,   ERROR_(2, kModuleDice, kNotFound)), \
   X(kErrorDicePageCorrupted,          ERROR_(3, kModuleDice, kInvalidArgument)), \
   X(kErrorDiceMldsaNotImplemented,    ERROR_(4, kModuleDice, kUnimplemented)), \
+  X(kErrorDiceMldsaParamsUnsupported, ERROR_(5, kModuleDice, kInvalidArgument)), \
   \
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
