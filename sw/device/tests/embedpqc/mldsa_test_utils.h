@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MLDSA_STACK_SIZE (64 * 1024)
+#define MLDSA_STACK_SIZE (48 * 1024)
 extern uint8_t mldsa_stack[MLDSA_STACK_SIZE];
 
 /**

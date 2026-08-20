@@ -6,9 +6,18 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
+config_setting(
+    name = "mldsa_provisioning_test",
+    values = {"define": "mldsa_provisioning_test=true"},
+)
+
 rust_library(
     name = "cert_lib",
     srcs = ["src/lib.rs"],
+    crate_features = select({
+        ":mldsa_provisioning_test": ["mldsa_provisioning_test"],
+        "//conditions:default": [],
+    }),
     data = ["//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem"],
     edition = "2024",
     deps = [
@@ -20,6 +29,7 @@ rust_library(
         "@crate_index//:elliptic-curve",
         "@crate_index//:hex",
         "@crate_index//:log",
+        "@crate_index//:ml-dsa",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:openssl",
         "@crate_index//:p256",

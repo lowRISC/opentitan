@@ -5,6 +5,7 @@
 use acorn::{GenerateFlags, KeyEntry, KeyInfo, SpxInterface};
 use anyhow::{Context, Result, anyhow};
 use base64ct::{Base64, Encoding};
+use core::iter::DoubleEndedIterator;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
@@ -233,7 +234,7 @@ impl SpxKms {
             .crypto_key_versions
             .iter()
             .filter(|v| v.state == "ENABLED" && Self::kms_to_algorithm(&v.algorithm).is_ok())
-            .last()
+            .next_back()
         {
             Some(key) => Ok(key.clone()),
             None => Err(HsmError::ObjectNotFound(alias.into()).into()),

@@ -11,8 +11,12 @@ extern const sc_keymgr_ecc_key_t kDiceKeyUds;
 extern const sc_keymgr_ecc_key_t kDiceKeyCdi0;
 extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
 
-extern const sc_keymgr_ecc_key_t kDiceKeyMldsaUds;
-extern const sc_keymgr_ecc_key_t kDiceKeyMldsaCdi0;
-extern const sc_keymgr_ecc_key_t kDiceKeyMldsaCdi1;
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa44Uds;
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa44Cdi0;
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa44Cdi1;
+
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa87Uds;
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa87Cdi0;
+extern const sc_keymgr_ecc_key_t kDiceKeyMldsa87Cdi1;
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_KEYS_H_

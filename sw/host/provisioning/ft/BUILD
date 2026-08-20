@@ -30,6 +30,7 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:humantime",
             "@crate_index//:indexmap",
             "@crate_index//:log",
+            "@crate_index//:ml-dsa",
             "@crate_index//:p256",
             "@crate_index//:serde_json",
             "@lowrisc_serde_annotate//serde_annotate",

@@ -13,10 +13,11 @@ use base64ct::{Base64, Encoding};
 use elliptic_curve::SecretKey;
 use hwtrust::dice::ChainForm;
 use hwtrust::session::Session;
+use ml_dsa::{ExpandedSigningKey as MldsaSigningKey, MlDsa87, Seed as MlDsaSeed};
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
 use p256::NistP256;
-use p256::ecdsa::SigningKey;
+use p256::ecdsa::SigningKey as EcdsaSigningKey;
 use serde::{Deserialize, Serialize, Serializer};
 
 use opentitanlib::crypto::sha256::Sha256Digest;
@@ -33,6 +34,12 @@ pub enum CaKeyType {
     Token,
 }
 
+#[derive(Debug, Clone)]
+pub enum RawKeyType {
+    EcdsaKey(SecretKey<NistP256>),
+    MldsaSeed(MlDsaSeed),
+}
+
 /// Certificate Authority key input formats.
 ///
 /// The following ECC P256 private key representations are supported:
@@ -40,7 +47,7 @@ pub enum CaKeyType {
 ///   2. TokenKey: provided as a PKCS#11 token ID string.
 #[derive(Debug, Clone)]
 pub enum CaKey {
-    RawKey(SecretKey<NistP256>),
+    RawKey(RawKeyType),
     TokenKey(String),
 }
 
@@ -68,7 +75,7 @@ fn openssl_command(args: &[&str]) -> Result<()> {
             "openssl output:\n{}",
             std::str::from_utf8(&o.stderr).unwrap()
         );
-        bail!("openssl command {} failed", args[0]);
+        bail!("openssl command {:?} failed", args);
     }
     Ok(())
 }
@@ -100,14 +107,17 @@ pub fn get_cert_size(cert: &[u8]) -> Result<usize> {
 pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CaKey) -> Result<Vec<u8>> {
     match key {
         CaKey::TokenKey(key_id) => parse_and_endorse_x509_cert_token(tbs, key_id),
-        CaKey::RawKey(sk) => parse_and_endorse_x509_cert_raw(tbs, sk),
+        CaKey::RawKey(RawKeyType::EcdsaKey(sk)) => parse_and_endorse_x509_cert_raw(tbs, sk),
+        CaKey::RawKey(RawKeyType::MldsaSeed(esk)) => {
+            parse_and_endorse_x509_mldsa_cert_raw(tbs, esk)
+        }
     }
 }
 
 fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
     let tbs_digest = Sha256Digest::hash(&tbs);
-    let signing_key = SigningKey::from(ca_sk);
+    let signing_key = EcdsaSigningKey::from(ca_sk);
     let (tbs_signature, _) = signing_key.sign_prehash_recoverable(tbs_digest.as_ref())?;
     let (r, s) = tbs_signature.split_bytes();
 
@@ -121,6 +131,27 @@ fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) ->
 
     // Generate the (endorsed) certificate.
     generate_certificate_from_tbs(tbs, &signature)
+}
+
+fn parse_and_endorse_x509_mldsa_cert_raw(tbs: Vec<u8>, ca_seed: &MlDsaSeed) -> Result<Vec<u8>> {
+    if cfg!(feature = "mldsa_provisioning_test") {
+        // Sign the TBS without pre-hashing
+        let ca_sk = MldsaSigningKey::<MlDsa87>::from_seed(ca_seed);
+        // NOTE that there is no randomization here. FIPS standard suggest adding randomization to
+        // prevent against side-channel attack. But since this is not running in publicly available
+        // devices (like the OT chip itself), that might not be needed here.
+        let signature = ca_sk.sign_deterministic(tbs.as_ref(), &[])?;
+        let signature = Signature::Mldsa87 {
+            value: Some(Value::Literal(signature.encode().to_vec())),
+        };
+
+        // Generate the (endorsed) certificate.
+        generate_certificate_from_tbs(tbs, &signature)
+    } else {
+        bail!(
+            "This function does deterministic signing, and the ml-dsa crate is currently experimental only. So signing is only enabled for testing!"
+        );
+    }
 }
 
 fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u8>> {

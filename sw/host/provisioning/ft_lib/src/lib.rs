@@ -4,6 +4,7 @@
 
 use core::option::Option;
 use hmac::{Hmac, Mac};
+use perso_tlv_lib::EndorsedCertType;
 use perso_tlv_lib::PersoBlobBuilder;
 use perso_tlv_lib::PersoBlobParser;
 use sha2::{Digest, Sha256};
@@ -12,7 +13,7 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
@@ -42,6 +43,8 @@ use ujson_lib::provisioning_data::{
 use ujson_lib::*;
 use util_lib::hash_lc_token;
 use util_lib::response::*;
+
+pub const DICE_MLDSA_CA_NAME: &str = "dice_mldsa";
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -256,6 +259,9 @@ fn provision_certificates(
     spi_console: &SpiConsoleDevice,
     ujson_payloads: &mut UjsonPayloads,
     response: &mut PersonalizeResponse,
+    dice_mldsa_certs_from_device: HashSet<String>,
+    dice_mldsa_certs_to_endorse: HashSet<String>,
+    dice_mldsa_certs_to_device: Vec<String>,
 ) -> Result<()> {
     // Send attestation TCB measurements for generating DICE certificates.
     let t0 = Instant::now();
@@ -289,6 +295,7 @@ fn provision_certificates(
     //   4. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
     let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
+    let mut dice_mldsa_cert_chain: Vec<EndorsedCert> = Vec::new();
     let mut dice_cert_chain_cwt: Vec<EndorsedCert> = Vec::new();
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut device_was_hmac: Vec<u8> = Vec::new();
@@ -299,14 +306,19 @@ fn provision_certificates(
     // Extract CAs.
     let dice_ca_cert = &ca_cfgs["dice"].certificate;
     let dice_ca_key = &ca_keys["dice"];
+    // DICE ML-DSA CA is optional
+    let dice_mldsa_ca_key = ca_keys.get(DICE_MLDSA_CA_NAME);
+    if perso_certgen_inputs.generate_mldsa_uds_cert && dice_mldsa_ca_key.is_none() {
+        bail!("Need ML-DSA CA cert for signing ML-DSA UDS certificate");
+    }
 
-    // DICE certificate names.
-    let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
+    // DICE certificate names. Do not change without changing the same in device personalization
+    // firmware
+    let dice_cert_names = HashSet::from(["UDS"]);
 
-    let perso_blob_parser =
-        PersoBlobParser::new_with_version(perso_certgen_inputs.blob_version, perso_blob)?;
-    let mut perso_blob_builder =
-        PersoBlobBuilder::new_with_version(perso_certgen_inputs.blob_version)?;
+    let perso_blob_parser = PersoBlobParser::new(perso_blob);
+    let mut perso_blob_builder = PersoBlobBuilder::new();
+    let mut received_cert_names = HashSet::new();
 
     let t0 = Instant::now();
     for perso_obj in perso_blob_parser.iter() {
@@ -351,22 +363,35 @@ fn provision_certificates(
             ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {
                 // The next object is a cert, let's retrieve its properties (name, needs
                 // endorsement, etc.)
-                let cert = perso_blob_parser.get_cert(perso_obj.data)?;
+                let cert = perso_obj.get_cert()?;
 
                 // Extract the certificate bytes and endorse the cert if needed.
                 let cert_bytes = if perso_obj.obj_header.obj_type == ObjType::UnendorsedX509Cert {
                     host_was_hmac.update(cert.cert_body.as_slice());
+                    received_cert_names.insert(cert.cert_name.to_string());
                     // Endorse the cert and updates its size.
+                    log::info!("Endorsing cert {0}", cert.cert_name);
                     let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
-                        log::info!("Endorsing cert {0}", cert.cert_name);
                         parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
+                    } else if dice_mldsa_certs_from_device.contains(cert.cert_name) {
+                        if !dice_mldsa_certs_to_endorse.contains(cert.cert_name) {
+                            continue;
+                        }
+                        parse_and_endorse_x509_cert(
+                            cert.cert_body.clone(),
+                            dice_mldsa_ca_key.context(
+                                "Need ML-DSA CA cert for signing ML-DSA UDS certificate",
+                            )?,
+                        )?
                     } else {
                         let ext_ca_key = &ca_keys["ext"];
                         parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
                     };
 
                     // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
-                    if !dice_cert_names.contains(cert.cert_name) {
+                    if !dice_cert_names.contains(cert.cert_name)
+                        && !dice_mldsa_certs_from_device.contains(cert.cert_name)
+                    {
                         let ec = EndorsedCert {
                             format: CertFormat::X509,
                             name: cert.cert_name.to_string(),
@@ -378,17 +403,38 @@ fn provision_certificates(
                     }
 
                     // Prepare the UJSON data payloads that will be sent back to the device.
-                    perso_blob_builder.push_endorsed_cert(cert.cert_name, &cert_bytes)?;
+                    if !dice_mldsa_certs_from_device.contains(cert.cert_name) {
+                        log::info!("Pushing cert {} back to device", cert.cert_name);
+                        perso_blob_builder.push_endorsed_cert(
+                            cert.cert_name,
+                            &cert_bytes,
+                            EndorsedCertType::EndorsedX509Cert,
+                        )?;
+                    }
                     cert_bytes
+                } else if perso_obj.obj_header.obj_type == ObjType::EndorsedCwtCert {
+                    log::info!("Pushing cert {} back to device", cert.cert_name);
+                    perso_blob_builder.push_endorsed_cert(
+                        cert.cert_name,
+                        &cert.cert_body,
+                        EndorsedCertType::EndorsedCwtCert,
+                    )?;
+                    cert.cert_body
                 } else {
                     cert.cert_body
                 };
 
                 // Collect all DICE certs to validate the chain.
-                if dice_cert_names.contains(cert.cert_name) {
+                if dice_cert_names.contains(cert.cert_name)
+                    || dice_mldsa_certs_to_endorse.contains(cert.cert_name)
+                {
                     let (format, cert_chain) = match perso_obj.obj_header.obj_type {
                         ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => {
-                            (CertFormat::X509, &mut dice_cert_chain)
+                            if dice_cert_names.contains(cert.cert_name) {
+                                (CertFormat::X509, &mut dice_cert_chain)
+                            } else {
+                                (CertFormat::X509, &mut dice_mldsa_cert_chain)
+                            }
                         }
                         ObjType::EndorsedCwtCert => (CertFormat::Cwt, &mut dice_cert_chain_cwt),
                         ObjType::WasTbsHmac
@@ -417,12 +463,44 @@ fn provision_certificates(
                     let _ = parse_certificate(&cert_bytes)?;
                 }
                 // Push the cert into the hasher so we can ensure the certs written to the device's flash
-                // info pages match those verified on the host.
-                log::info!("Hashing cert {} on host", cert.cert_name);
-                cert_hasher.update(cert_bytes);
+                // info pages match those verified on the host. ML-DSA certs are hashed at end if
+                // requested by SKU
+                if !dice_mldsa_certs_from_device.contains(cert.cert_name) {
+                    log::info!("Hashing cert {} on host", cert.cert_name);
+                    cert_hasher.update(cert_bytes);
+                }
             }
         }
     }
+
+    if !dice_mldsa_certs_from_device.is_subset(&received_cert_names) {
+        bail!(
+            "Not all expected ML-DSA TBS certificates were received! Certificate names which were not received: {:?}",
+            dice_mldsa_certs_from_device.difference(&received_cert_names)
+        );
+    }
+
+    let dice_mldsa_endorsed_certs_map: HashMap<&str, &Vec<u8>> = dice_mldsa_cert_chain
+        .iter()
+        .map(|cert| (cert.name.as_str(), &cert.bytes))
+        .collect();
+    for cert_name in dice_mldsa_certs_to_device {
+        if let Some(cert_bytes) = dice_mldsa_endorsed_certs_map.get(cert_name.as_str()) {
+            log::info!("Pushing cert {} back to device", cert_name);
+            perso_blob_builder.push_endorsed_cert(
+                &cert_name,
+                cert_bytes,
+                EndorsedCertType::EndorsedX509Cert,
+            )?;
+            cert_hasher.update(cert_bytes);
+        } else {
+            bail!(
+                "Certificate {} to send to the device has not been endorsed!",
+                cert_name
+            );
+        }
+    }
+
     response.stats.log_elapsed_time("perso-process-blobs", t0);
 
     // Execute extension hook.
@@ -487,10 +565,29 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-validate-dice", t0);
 
     let t0 = Instant::now();
-    if !dice_cert_chain_cwt.is_empty() {
+    if !dice_mldsa_cert_chain.is_empty() {
+        let dice_mldsa_ca_cert = &ca_cfgs[DICE_MLDSA_CA_NAME].certificate;
+        log::info!(
+            "Validating DICE ML-DSA certificate chain with OpenSSL (root CA: {:?}) ...",
+            dice_mldsa_ca_cert
+        );
+        validate_cert_chain(dice_mldsa_ca_cert.to_str().unwrap(), &dice_mldsa_cert_chain)?;
+        log::info!("Success.");
+    }
+    response
+        .stats
+        .log_elapsed_time("perso-validate-dice-mldsa", t0);
+
+    let t0 = Instant::now();
+    if dice_cert_chain_cwt.len() > 1 {
         log::info!("Validating DICE certificate chain with hwtrust ...");
         validate_cwt_dice_chain(&dice_cert_chain_cwt)?;
         log::info!("Success.");
+    } else {
+        log::info!(
+            "Only {} cert(s) in DICE certificate chain for CWT. Skipping chain validation",
+            dice_cert_chain_cwt.len()
+        );
     }
     response
         .stats
@@ -526,6 +623,9 @@ pub fn run_ft_personalize(
     ujson_payloads: &mut UjsonPayloads,
     timeout: Duration,
     response: &mut PersonalizeResponse,
+    dice_mldsa_certs_from_device: HashSet<String>,
+    dice_mldsa_certs_to_endorse: HashSet<String>,
+    dice_mldsa_certs_to_device: Vec<String>,
 ) -> Result<()> {
     // Bootstrap only personalization binary into ROM_EXT slot A in flash.
     spi_console.reset_frame_counter();
@@ -565,6 +665,9 @@ pub fn run_ft_personalize(
         spi_console,
         ujson_payloads,
         response,
+        dice_mldsa_certs_from_device,
+        dice_mldsa_certs_to_endorse,
+        dice_mldsa_certs_to_device,
     )?;
     response.stats.log_elapsed_time("perso-all-certs-done", t0);
 
@@ -610,7 +713,7 @@ pub fn check_slot_b_boot_up(
         Duration::from_millis(if owner_fw_success_string.is_none() {
             800
         } else {
-            2000
+            3000
         });
 
     response.stats.log_elapsed_time("rom_ext-done", t0);
