@@ -5,6 +5,32 @@
 
 set -e
 
+SANITY_TEST="//sw/device/tests:crt_test_sim_verilator"
+SMOKE_TESTS=(
+    "//sw/device/tests:aes_smoketest_sim_verilator"
+    "//sw/device/tests:uart_smoketest_sim_verilator"
+    "//sw/device/tests:otbn_randomness_test_sim_verilator"
+    "//sw/device/tests:otbn_irq_test_sim_verilator"
+    "//sw/device/tests:kmac_mode_cshake_test_sim_verilator"
+    "//sw/device/tests:kmac_mode_kmac_test_sim_verilator"
+    "//sw/device/tests:flash_ctrl_test_sim_verilator"
+    "//sw/device/tests:usbdev_test_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator"
+    "//sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator"
+    "//sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator"
+)
+
+VERILATOR_TESTS=("${SMOKE_TESTS[@]}")
+
+if [[ "${1:-}" == "-s" || "${1:-}" == "--sanity" ]]; then
+    VERILATOR_TESTS=("${SANITY_TEST}")
+    shift
+fi
+
 # Increase the test_timeout due to slow performance on CI
 
 ./bazelisk.sh test \
@@ -16,19 +42,4 @@ set -e
     --test_output=errors \
     --//hw:verilator_options=--threads,1 \
     --//hw:make_options=-j,8 \
-    //sw/device/tests:aes_smoketest_sim_verilator \
-    //sw/device/tests:uart_smoketest_sim_verilator \
-    //sw/device/tests:crt_test_sim_verilator \
-    //sw/device/tests:otbn_randomness_test_sim_verilator \
-    //sw/device/tests:otbn_irq_test_sim_verilator \
-    //sw/device/tests:kmac_mode_cshake_test_sim_verilator \
-    //sw/device/tests:kmac_mode_kmac_test_sim_verilator \
-    //sw/device/tests:flash_ctrl_test_sim_verilator \
-    //sw/device/tests:usbdev_test_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator \
-    //sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator \
-    //sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator \
-    //sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator
+    "${VERILATOR_TESTS[@]}"
