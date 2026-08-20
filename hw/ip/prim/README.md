@@ -304,6 +304,31 @@ fusesoc \
     --mapping partner:prim_mytech:all \    # Select alternate implementation via mappings
     lowrisc:systems:chip_earlgrey_asic
 ```
+
+#### Using dvsim
+
+The `dvsim` flow configs in this repository hardcode `--mapping=lowrisc:prim_generic:all:0.1`.
+Rather than editing them, pass `--fusesoc-mapping` to replace that argument, and `--fusesoc-extra-cores-root` to make an out-of-tree library discoverable:
+
+```sh
+dvsim hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson \
+    --fusesoc-mapping lowrisc:prim_generic:all:0.1=partner:prim_mytech:all:0.1 \
+    --fusesoc-extra-cores-root /path/to/prim_mytech
+```
+
+Both options are repeatable, and both apply to every config in the run, including all the blocks of a primary config.
+Having to pass those options on every dvsim invocation is often inconvenient, so you can put them in a `dvsim.hjson` file, which `dvsim` finds by walking up from the working directory:
+
+```hjson
+// dvsim.hjson
+{
+  fusesoc: {
+    mapping: ["lowrisc:prim_generic:all:0.1=partner:prim_mytech:all:0.1"]
+    extra_cores_root: ["prim_mytech"]   // relative to this file
+  }
+}
+```
+
 ### prim_asap7 example
 
  [ASAP7](https://github.com/The-OpenROAD-Project/asap7) is an open-source standard-cell library.
