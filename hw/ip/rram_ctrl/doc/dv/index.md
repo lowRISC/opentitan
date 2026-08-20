@@ -40,7 +40,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * RRAM_CTRL IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_agent/doc" >}}))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -61,7 +61,7 @@ The RRAM_CTRL testbench instantiates (already handled in CIP base env) [tl_agent
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RRAM_CTRL device.
 
 ### Alert_agents
-RRAM_CTRL testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}):
+RRAM_CTRL testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_agent/doc" >}}):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RRAM_CTRL device.
 

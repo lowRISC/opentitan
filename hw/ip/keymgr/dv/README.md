@@ -28,7 +28,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * KEYMGR IOs (`keymgr_if`)
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* [Alert interface](../../../dv/sv/alert_agent/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
