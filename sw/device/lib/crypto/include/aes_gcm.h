@@ -56,7 +56,33 @@ typedef struct otcrypto_aes_gcm_context {
  * (same length as input), `auth_tag` buffer (same as tag_len), and
  * set the length of expected outputs in the `len` field of
  * `ciphertext` and `auth_tag`. If the user-set length and the output
- * length do not match, `kOtcryptoStatusValueBadArgs` will be returned.
+ * length does not match, an error message will be returned.
+ *
+ * The IV is drawn internally from the hardware CSRNG into `iv->data`.
+ * The caller must allocate `iv->data` and set `iv->len` to the desired IV
+ * length (3 words / 96 bits or 4 words / 128 bits) prior to calling.
+ *
+ * @param key Pointer to the blinded gcm-key struct.
+ * @param plaintext Input data to be encrypted and authenticated.
+ * @param aad Additional authenticated data.
+ * @param tag_len Length of authentication tag to be generated.
+ * @param[out] iv Output buffer for the generated IV (caller must set iv->len).
+ * @param[out] ciphertext Encrypted output data, same length as input data.
+ * @param[out] auth_tag Generated authentication tag.
+ * @return Result of the authenticated encryption operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
+ */
+otcrypto_status_t otcrypto_aes_gcm_encrypt(
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
+    const otcrypto_const_byte_buf_t *aad, otcrypto_aes_gcm_tag_len_t tag_len,
+    otcrypto_word32_buf_t *iv, otcrypto_byte_buf_t *ciphertext,
+    otcrypto_word32_buf_t *auth_tag);
+
+/**
+ * Performs AES-GCM authenticated encryption with a user-supplied manual IV.
  *
  * @param key Pointer to the blinded gcm-key struct.
  * @param plaintext Input data to be encrypted and authenticated.
@@ -71,7 +97,7 @@ typedef struct otcrypto_aes_gcm_context {
  * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
  * fails.
  */
-otcrypto_status_t otcrypto_aes_gcm_encrypt(
+otcrypto_status_t otcrypto_aes_gcm_encrypt_manual_iv(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
     const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
@@ -115,21 +141,26 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     hardened_bool_t *success);
 
 /**
- * Initializes the AES-GCM authenticated encryption operation.
+ * Initializes the AES-GCM authenticated encryption operation with a
+ * CSRNG-generated IV.
  *
- * The order of operations for encryption is:
- *   - `otcrypto_aes_gcm_encrypt_init()` called once
- *   - `otcrypto_aes_gcm_update_aad()` called zero or more times
- *   - `otcrypto_aes_gcm_update_encrypted_data()` called zero or more times
- *   - `otcrypto_aes_gcm_encrypt_final()` called once
+ * Generates an initialization vector using the internal CSRNG,
+ * writes it to `iv->data`, and initializes the streaming context.
+ * The caller must allocate `iv->data` and set `iv->len` to the desired IV
+ * length (3 words / 96 bits or 4 words / 128 bits) prior to calling.
  *
- * Associated data must be added first, before encrypted data; the caller may
- * not call `otcrypto_aes_gcm_udpate_aad()` after the first call to
- * `otcrypto_aes_gcm_update_encrypted_data()`.
- *
- * The resulting AES-GCM context will include pointers into the keyblob of the
- * blinded key. It is important that the blinded key (or at least the keyblob)
- * remains live as long as `ctx` is. The IV is safe to free.
+ * @param key Pointer to the blinded key struct.
+ * @param[out] iv Output buffer for the generated IV (caller must set iv->len).
+ * @param[out] ctx Context object for the operation.
+ * @return Result of the initialization operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
+    otcrypto_blinded_key_t *key, otcrypto_word32_buf_t *iv,
+    otcrypto_aes_gcm_context_t *ctx);
+
+/**
+ * Initializes the AES-GCM authenticated encryption operation with a
+ * user-supplied manual IV.
  *
  * @param key Pointer to the blinded key struct.
  * @param iv Initialization vector for the encryption function.
@@ -139,7 +170,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  * arguments are invalid, or `kOtcryptoStatusValueFatalError` if an internal
  * hardware error occurs.
  */
-otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init_manual_iv(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx);
 

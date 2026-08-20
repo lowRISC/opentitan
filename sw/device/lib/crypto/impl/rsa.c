@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
@@ -453,6 +454,40 @@ otcrypto_status_t otcrypto_rsa_verify(
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
+                                            verification_result);
+}
+
+otcrypto_status_t otcrypto_rsa_hash_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  HARDENED_TRY(otcrypto_rsa_sign(private_key, digest, padding_mode, signature));
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, padding_mode,
+                                   &signature_check, &verification_result));
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_rsa_hash_verify(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result) {
+  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  return otcrypto_rsa_verify_async_finalize(digest, padding_mode,
                                             verification_result);
 }
 

@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
@@ -201,6 +202,12 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
  */
 status_t aes_gcm_check_tag_length(size_t word_len,
                                   otcrypto_aes_gcm_tag_len_t tag_len) {
+#ifdef FIPS_MODE
+  if (launder32(tag_len) != kOtcryptoAesGcmTagLen128 &&
+      launder32(tag_len) != kOtcryptoAesGcmTagLen96) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   size_t bit_len = 0;
   otcrypto_aes_gcm_tag_len_t tag_len_set = launder32(0);
   switch (launder32(tag_len)) {
@@ -270,7 +277,7 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   return keymgr_generate_key_aes(diversification);
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt(
+otcrypto_status_t otcrypto_aes_gcm_encrypt_manual_iv(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
     const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
@@ -278,8 +285,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
-      auth_tag->data == NULL) {
+  if (key == NULL || auth_tag == NULL || auth_tag->data == NULL) {
     // COVERAGE (MISSING) We do not cover NULL inputs.
     return OTCRYPTO_BAD_ARGS;
   }
@@ -326,6 +332,33 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
                                key->config.security_level, ciphertext));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_aes_gcm_encrypt(
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
+    const otcrypto_const_byte_buf_t *aad, otcrypto_aes_gcm_tag_len_t tag_len,
+    otcrypto_word32_buf_t *iv, otcrypto_byte_buf_t *ciphertext,
+    otcrypto_word32_buf_t *auth_tag) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (iv == NULL || iv->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(iv->len) != 3 && launder32(iv->len) != 4) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(hardened_memshred(iv->data, iv->len));
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, iv->data, iv->len,
+                                      /*fips_check=*/kHardenedBoolTrue));
+
+  otcrypto_const_word32_buf_t iv_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv->data, iv->len);
+
+  return otcrypto_aes_gcm_encrypt_manual_iv(key, plaintext, &iv_const, aad,
+                                            tag_len, ciphertext, auth_tag);
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
@@ -383,7 +416,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init_manual_iv(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
@@ -417,6 +450,30 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
+    otcrypto_blinded_key_t *key, otcrypto_word32_buf_t *iv,
+    otcrypto_aes_gcm_context_t *ctx) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (iv == NULL || iv->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(iv->len) != 3 && launder32(iv->len) != 4) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(hardened_memshred(iv->data, iv->len));
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, iv->data, iv->len,
+                                      /*fips_check=*/kHardenedBoolTrue));
+
+  otcrypto_const_word32_buf_t iv_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv->data, iv->len);
+
+  return otcrypto_aes_gcm_encrypt_init_manual_iv(key, &iv_const, ctx);
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(

@@ -9,52 +9,12 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'p', 'a')
-
-/**
- * Digest identifiers for different hash functions (little-endian).
- *
- * See Note 1 in RFC 8017.
- */
-static const uint8_t kSha256DigestIdentifier[] = {
-    0x20, 0x04, 0x00, 0x05, 0x01, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x31, 0x30,
-};
-static const uint8_t kSha384DigestIdentifier[] = {
-    0x30, 0x04, 0x00, 0x05, 0x02, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x41, 0x30,
-};
-static const uint8_t kSha512DigestIdentifier[] = {
-    0x40, 0x04, 0x00, 0x05, 0x03, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x51, 0x30,
-};
-/*
- * SHA-3 digest identifiers adapted from the SHA-2 identifiers based on the
- * algorithm identifiers on
- * https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
- */
-static const uint8_t kSha3_224DigestIdentifier[] = {
-    0x1c, 0x04, 0x00, 0x05, 0x07, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x2d, 0x30,
-};
-static const uint8_t kSha3_256DigestIdentifier[] = {
-    0x20, 0x04, 0x00, 0x05, 0x08, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x31, 0x30,
-};
-static const uint8_t kSha3_384DigestIdentifier[] = {
-    0x30, 0x04, 0x00, 0x05, 0x09, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x41, 0x30,
-};
-static const uint8_t kSha3_512DigestIdentifier[] = {
-    0x40, 0x04, 0x00, 0x05, 0x0a, 0x02, 0x04, 0x03, 0x65, 0x01,
-    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x51, 0x30,
-};
 
 /**
  * Get the length of the DER encoding for the given hash function's digests.
@@ -70,38 +30,13 @@ OT_WARN_UNUSED_RESULT
 static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
                                        size_t *len) {
   *len = 0;
-  switch (hash_mode) {
-    case kOtcryptoHashModeSha256:
-      *len = sizeof(kSha256DigestIdentifier) + kHmacSha256DigestBytes;
-      break;
-    case kOtcryptoHashModeSha384:
-      *len = sizeof(kSha384DigestIdentifier) + kHmacSha384DigestBytes;
-      break;
-    case kOtcryptoHashModeSha512:
-      *len = sizeof(kSha512DigestIdentifier) + kHmacSha512DigestBytes;
-      break;
-    case kOtcryptoHashModeSha3_224:
-      *len = sizeof(kSha3_224DigestIdentifier) + kKmacSha3224DigestBytes;
-      break;
-    case kOtcryptoHashModeSha3_256:
-      *len = sizeof(kSha3_256DigestIdentifier) + kKmacSha3256DigestBytes;
-      break;
-    case kOtcryptoHashModeSha3_384:
-      *len = sizeof(kSha3_384DigestIdentifier) + kKmacSha3384DigestBytes;
-      break;
-    case kOtcryptoHashModeSha3_512:
-      *len = sizeof(kSha3_512DigestIdentifier) + kKmacSha3512DigestBytes;
-      break;
-    default:
-      // Unsupported or unrecognized hash function.
-      // COVERAGE (MISSING) We do not cover bad padding modes.
-      return OTCRYPTO_BAD_ARGS;
-  };
-
-  // Check if the length was set in the switch case statements.
+  hash_info_t info;
+  HARDENED_TRY(hash_info_get(hash_mode, &info));
+  if (info.der_oid == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  *len = info.der_oid_len + info.digest_wordlen * sizeof(uint32_t);
   HARDENED_CHECK_NE(*len, 0);
-
-  // Unreachable.
   return OTCRYPTO_OK;
 }
 
@@ -123,53 +58,15 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
 OT_WARN_UNUSED_RESULT
 static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
                                   uint32_t *encoding) {
-  size_t digest_wordlen = 0;
-  switch (message_digest.mode) {
-    case kOtcryptoHashModeSha256:
-      digest_wordlen = kHmacSha256DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha256DigestIdentifier,
-             sizeof(kSha256DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha384:
-      digest_wordlen = kHmacSha384DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha384DigestIdentifier,
-             sizeof(kSha384DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha512:
-      digest_wordlen = kHmacSha512DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha512DigestIdentifier,
-             sizeof(kSha512DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha3_224:
-      digest_wordlen = kKmacSha3224DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha3_224DigestIdentifier,
-             sizeof(kSha3_224DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha3_256:
-      digest_wordlen = kKmacSha3256DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha3_256DigestIdentifier,
-             sizeof(kSha3_256DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha3_384:
-      digest_wordlen = kKmacSha3384DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha3_384DigestIdentifier,
-             sizeof(kSha3_384DigestIdentifier));
-      break;
-    case kOtcryptoHashModeSha3_512:
-      digest_wordlen = kKmacSha3512DigestWords;
-      memcpy(encoding + digest_wordlen, &kSha3_512DigestIdentifier,
-             sizeof(kSha3_512DigestIdentifier));
-      break;
-    default:
-      // Unsupported or unrecognized hash function.
-      // COVERAGE (MISSING) We do not cover bad padding modes.
-      return OTCRYPTO_BAD_ARGS;
-  };
-  if (launder32(message_digest.len) != digest_wordlen) {
-    // COVERAGE (MISSING) We do not cover bad digests.
+  hash_info_t info;
+  HARDENED_TRY(hash_info_get(message_digest.mode, &info));
+  if (info.der_oid == NULL ||
+      launder32(message_digest.len) != info.digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(message_digest.len, digest_wordlen);
+  HARDENED_CHECK_EQ(message_digest.len, info.digest_wordlen);
+
+  memcpy(encoding + info.digest_wordlen, info.der_oid, info.der_oid_len);
 
   // Copy the digest into the encoding, reversing the order of bytes.
   size_t i;
@@ -249,44 +146,10 @@ status_t rsa_padding_pkcs1v15_verify(
 OT_WARN_UNUSED_RESULT
 static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
-  *num_words = 0;
-  otcrypto_hash_mode_t hash_mode_used = launder32(0);
-  switch (hash_mode) {
-    case kOtcryptoHashModeSha3_224:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_224;
-      *num_words = 224 / 32;
-      break;
-    case kOtcryptoHashModeSha256:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha256;
-      *num_words = 256 / 32;
-      break;
-    case kOtcryptoHashModeSha3_256:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_256;
-      *num_words = 256 / 32;
-      break;
-    case kOtcryptoHashModeSha384:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha384;
-      *num_words = 384 / 32;
-      break;
-    case kOtcryptoHashModeSha3_384:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_384;
-      *num_words = 384 / 32;
-      break;
-    case kOtcryptoHashModeSha512:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha512;
-      *num_words = 512 / 32;
-      break;
-    case kOtcryptoHashModeSha3_512:
-      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha3_512;
-      *num_words = 512 / 32;
-      break;
-    default:
-      // COVERAGE (MISSING) We do not cover bad padding modes.
-      return OTCRYPTO_BAD_ARGS;
-  }
+  hash_info_t info;
+  HARDENED_TRY(hash_info_get(hash_mode, &info));
+  *num_words = info.digest_wordlen;
   HARDENED_CHECK_GT(*num_words, 0);
-  HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
-
   return OTCRYPTO_OK;
 }
 
@@ -309,39 +172,8 @@ static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
                      size_t message_len, uint32_t *digest) {
   otcrypto_const_byte_buf_t message_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, message, message_len);
-  switch (launder32(hash_mode)) {
-    case kOtcryptoHashModeSha256:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha256);
-      return hmac_hash_sha256(&message_buf, digest);
-    case kOtcryptoHashModeSha384:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha384);
-      return hmac_hash_sha384(&message_buf, digest);
-    case kOtcryptoHashModeSha512:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha512);
-      return hmac_hash_sha512(&message_buf, digest);
-    case kOtcryptoHashModeSha3_224:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
-      return kmac_sha3_224(&message_buf, digest);
-    case kOtcryptoHashModeSha3_256:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_256);
-      return kmac_sha3_256(&message_buf, digest);
-    case kOtcryptoHashModeSha3_384:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_384);
-      return kmac_sha3_384(&message_buf, digest);
-    case kOtcryptoHashModeSha3_512:
-      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
-      return kmac_sha3_512(&message_buf, digest);
-    default:
-      // COVERAGE (SW ERR) This mode is checked before this function and is
-      // unreachable.
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  // COVERAGE (FI CM) This is unreachable and is coded in as a fault
-  // countermeasure.
-  return OTCRYPTO_FATAL_ERR;
+  otcrypto_hash_digest_t digest_buf;
+  return hash_message(hash_mode, &message_buf, digest, &digest_buf);
 }
 
 /**
