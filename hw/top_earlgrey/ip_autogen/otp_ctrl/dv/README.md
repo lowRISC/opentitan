@@ -28,7 +28,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * OTP_CTRL IOs
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
-* Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_if`](../../../../dv/sv/alert_agent/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -59,7 +59,7 @@ All common types and methods defined at the package level can be found in
 OTP_CTRL testbench instantiates (already handled in CIP base env) [tl_agent](../../../../dv/sv/tl_agent/README.md), which provides the ability to drive and independently monitor random traffic via TL host interface into OTP_CTRL device.
 
 ### Alert_agents
-OTP_CTRL testbench instantiates (already handled in CIP base env) two [alert_agents](../../../../dv/sv/alert_esc_agent/README.md):
+OTP_CTRL testbench instantiates (already handled in CIP base env) two [alert agents](../../../../dv/sv/alert_agent/README.md):
 fatal_check_alert and fatal_macro_alert.
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in OTP_CTRL device.
 

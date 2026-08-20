@@ -13,7 +13,9 @@ class cip_base_virtual_sequencer #(type CFG_T = cip_base_env_cfg,
   tl_sequencer        tl_sequencer_h;
   tl_sequencer        tl_sequencer_hs[string];
 
-  alert_esc_sequencer alert_esc_sequencer_h[string];
+  // Sequencers for alert agents, keyed by the name of the alert.
+  alert_sequencer     m_alert_sequencers[string];
+
   push_pull_sequencer#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_pull_sequencer_h;
 
   `uvm_component_new

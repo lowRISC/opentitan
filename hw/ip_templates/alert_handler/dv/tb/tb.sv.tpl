@@ -26,9 +26,9 @@ module tb;
   pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   ${module_instance_name}_if ${module_instance_name}_if(.clk(clk), .rst_n(rst_n));
-  alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
-  alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
-  alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
+  esc_if       esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
+  alert_if     alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
+  esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
 
   // dut signals
   prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
@@ -46,8 +46,8 @@ module tb;
     assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
     assign ${module_instance_name}_if.alert_ping_reqs[k] = dut.gen_alerts[k].u_alert_receiver.ping_req_i;
     initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
-                                                "vif", alert_host_if[k]);
+      uvm_config_db#(virtual alert_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
+                                            "vif", alert_host_if[k]);
     end
   end
 
@@ -60,10 +60,10 @@ module tb;
     assign probe_if[k].esc_en = dut.esc_sig_req[k];
     assign ${module_instance_name}_if.esc_ping_reqs[k] = dut.gen_esc_sev[k].u_esc_sender.ping_req_i;
     initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
-                                                "vif", esc_device_if[k]);
-      uvm_config_db#(virtual alert_esc_probe_if)::set(null,
-          $sformatf("*.env.esc_device_agent[%0d]", k), "probe_vif", probe_if[k]);
+      uvm_config_db#(virtual esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
+                                          "vif", esc_device_if[k]);
+      uvm_config_db#(virtual esc_probe_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
+                                                "probe_vif", probe_if[k]);
     end
   end
 
