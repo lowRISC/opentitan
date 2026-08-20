@@ -465,7 +465,7 @@
     },
     {
       "name": "dut",
-      "alias_of": "UART3"
+      "alias_of": "UART4"
     }
   ],
   "strappings": [
