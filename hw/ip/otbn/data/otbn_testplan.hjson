@@ -80,6 +80,19 @@
     }
 
     {
+      name: wfi
+      desc: '''
+            Test the WFI instruction and its behavior
+
+            Check the regular use case as well as the following edge cases:
+            - Escalation whilst OTBN is or gets paused
+            - Multiple WFI instructions executed back-to-back
+            '''
+      stage: V2
+      tests: []
+    }
+
+    {
       name: mem_integrity
       desc: '''
             Inject ECC errors into DMEM and IMEM and expect an alert
