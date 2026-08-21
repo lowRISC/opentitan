@@ -9,9 +9,10 @@
 
 module keymgr_dpe_kmac_if
   import keymgr_pkg::*;
+  import keymgr_dpe_pkg::*;
 #(
   parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault,
-  parameter int MaxAdvDataWidth         = AdvDataWidth
+  parameter int MaxAdvDataWidth         = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -45,6 +46,8 @@ module keymgr_dpe_kmac_if
   output logic cmd_error_o
 );
 
+  // Ensure MaxAdvDataWidth do not remain the default value
+  `ASSERT_INIT(MaxAdvDataWidth_A, MaxAdvDataWidth != 1)
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
