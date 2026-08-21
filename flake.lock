@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1784898907,
-        "narHash": "sha256-F8Mm8Yn3RvwW5KGMvaG7FUonv39hNwnVuiCGNQ+0Lvg=",
+        "lastModified": 1784914125,
+        "narHash": "sha256-ympCxHR9VBDUwgwJITx6A0uCfNJ7PoFS0xww3KrkAHo=",
         "owner": "lowRISC",
         "repo": "lowrisc-nix",
-        "rev": "369db7549c4985ad77fcfd8dd21acb35f5e45dbd",
+        "rev": "e0ec22af9d456a0e7caf4e5c0a724d7d0d2d9be7",
         "type": "github"
       },
       "original": {

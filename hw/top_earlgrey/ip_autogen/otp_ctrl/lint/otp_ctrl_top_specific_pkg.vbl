@@ -3,3 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for OTP controller top-specific package
+
+# The ROT_CREATOR_AUTH_CODESIGN OTP partition generates parameters such as
+# RotCreatorAuthCodesignBlockSha2_256HashOffset whose embedded "_256" does not
+# match Verible's parameter-name-style CamelCase convention. The names come
+# from the OTP memory map, so waive the rule for the generated register package.
+waive --rule=parameter-name-style --location="otp_ctrl_reg_pkg.sv"

@@ -1518,8 +1518,11 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # Generate outgoing interrupts
     generate_outgoing_interrupts(topcfg, out_path)
 
+    # The OTP memory map is read from the source tree (`cfg_path`, as in
+    # create_ipgen_blocks), not from the output directory: it is an input to
+    # generation, so it is not necessarily present under `out_path`.
     generate_modules("otp_ctrl", single_instance=True,
-                     get_params=lambda topcfg: _get_otp_ctrl_params(topcfg, out_path))
+                     get_params=lambda topcfg: _get_otp_ctrl_params(topcfg, cfg_path))
 
     # Generate Pinmux
     generate_modules("pinmux", single_instance=True, get_params=_get_pinmux_params)
@@ -1830,7 +1833,11 @@ def main():
     # file). Since we don't have a better way at the moment, we dump all output
     # into a temporary directory, and delete it after the fact, retaining only
     # the toplevel configuration.
-    if args.top_ral:
+    #
+    # --check-cm does the same: it is a read-only check, so it renders the
+    # blocks it inspects into the temporary directory rather than half-
+    # regenerating the source tree (see below).
+    if args.top_ral or args.check_cm:
         out_path_gen = Path(tempfile.mkdtemp())
     else:
         out_path_gen = out_path
@@ -1885,6 +1892,37 @@ def main():
     # Generic Inter-module connection
     im.elab_intermodule(completecfg)
 
+    # Check countermeasures for all blocks.
+    #
+    # This is a check, not a generation step, so it must not touch the source
+    # tree. It needs the ipgen blocks' Hjson and RTL and nothing else topgen
+    # produces, so render just those, into the temporary directory that
+    # `name_to_hjson` already points at (`out_path_gen`, set up above). The
+    # remaining generation steps are skipped: they would leave the tree
+    # half-generated, because the checked-in files are the output of the *full*
+    # `make top_and_cmdgen` flow -- topgen's own later steps (e.g. the pinmux
+    # pinout docs from gen_top_docs.py) plus a `cmdgen -u` pass that fills in
+    # the CMDGEN blocks the templates emit empty.
+    if args.check_cm:
+        # Re-set the seed, as the generation below uses the same RNG again from
+        # the beginning.
+        SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
+        generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
+                             cfg_path, out_path_gen)
+
+        # Change verbosity to log.INFO to see an okay confirmation message:
+        # the log level is set to log.ERROR upon start to avoid the chatter
+        # of the regular topgen elaboration.
+        log_level = log.DEBUG if args.verbose else log.INFO
+        log.basicConfig(format="%(levelname)s: %(message)s",
+                        level=log_level,
+                        force=True)
+
+        okay = _check_countermeasures(completecfg, name_to_block,
+                                      name_to_hjson)
+        shutil.rmtree(out_path_gen, ignore_errors=True)
+        sys.exit(0 if okay else 1)
+
     # Dump the complete top config
     dump_completecfg(completecfg, out_path)
 
@@ -1928,20 +1966,6 @@ def main():
                       version_stamp, SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
         if args.rust_only:
             sys.exit(0)
-
-    # Check countermeasures for all blocks.
-    if args.check_cm:
-        # Change verbosity to log.INFO to see an okay confirmation message:
-        # the log level is set to log.ERROR upon start to avoid the chatter
-        # of the regular topgen elaboration.
-        log_level = log.DEBUG if args.verbose else log.INFO
-        log.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log_level,
-                        force=True)
-
-        okay = _check_countermeasures(completecfg, name_to_block,
-                                      name_to_hjson)
-        sys.exit(0 if okay else 1)
 
     if not args.no_top or args.top_only:
 

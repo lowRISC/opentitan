@@ -1,0 +1,55 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Populates the Actions cache with the lint devShell's Nix store closure. The
+# lint jobs in ci.yml only restore it; this workflow is the sole writer.
+#
+# It exists because GitHub scopes a cache entry to the ref that created it, and
+# only default-branch entries are readable from every branch, PR and fork. So
+# the entry has to be written by a run on master -- but tying that to "whichever
+# master push happened to run the lint jobs" makes population an accident of
+# what else was going on. Here it is explicit: refresh when the closure can
+# change, on a schedule, or on demand after a flake bump.
+name: Nix cache
+
+on:
+  push:
+    branches: [master]
+    # Everything that can change the closure or how it is keyed.
+    paths:
+      - flake.nix
+      - flake.lock
+      - .github/actions/prepare-nix/action.yml
+      - .github/workflows/nix-cache.yml
+  # Manual refresh. Must be dispatched on master: prepare-nix refuses to write
+  # from any other ref, so a dispatch elsewhere restores and saves nothing.
+  workflow_dispatch:
+  # GitHub evicts entries that go a week without being read. PR runs read this
+  # one constantly, which is normally enough to keep it alive, so this is just a
+  # backstop for quiet weeks.
+  schedule:
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+
+# Never populate twice at once: the runs would duplicate a multi-gigabyte
+# download for one entry. Queue instead of cancelling, so a scheduled refresh
+# cannot discard a push-triggered one that has already done the work.
+concurrency:
+  group: nix-cache
+  cancel-in-progress: false
+
+jobs:
+  populate:
+    name: Populate the Nix store cache
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      # Realises the closure and saves it. When the key already matches, the
+      # restore hits and no upload happens, so a no-op refresh is cheap.
+      - name: Prepare Nix
+        uses: ./.github/actions/prepare-nix
+        with:
+          save-store: true
