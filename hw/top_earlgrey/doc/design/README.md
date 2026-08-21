@@ -134,7 +134,7 @@ The Ibex documentation has more details on the current pipeline operation, inclu
 
 The device contains three memory address spaces for instruction and data.
 
-Instruction ROM (32kB) is the target for the Ibex processor after release of external reset.
+Instruction ROM (192KiB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
 The next stage - a boot loader stored in non-volatile memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
