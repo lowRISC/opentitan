@@ -858,6 +858,30 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
   };
 
+  // Permutation for the URND permutation in MAI used for WSR clearing and the mask
+  // accelerator gadgets.
+  // These parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 389 --seed 1478636329 --prefix "Mai"
+  // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
+  parameter int MaiUrndPermWidth = 389;
+  typedef logic [MaiUrndPermWidth-1:0][$clog2(MaiUrndPermWidth)-1:0] mai_urnd_perm_t;
+  parameter mai_urnd_perm_t RndCnstMaiUrndPermDefault = {
+    173'h113b_75b40630_bb30dd72_f54be9c3_4625b01b_40a768d1,
+    256'haa422858_e28c712b_7aac1117_5dc94024_1d657838_819f2969_1399c966_8e49cc53,
+    256'ha35adab0_64898614_88a67384_b8f743c1_b9d44b26_50f0c51f_34a5e7ee_f690bce9,
+    256'h5d133e2b_f642a5ac_a7209d30_5517a5ea_b83ccf61_0cc6c609_f41c3b33_4b23d00d,
+    256'h707c86fc_6e6649e0_b823c55d_fcab7b87_048db103_f21b3672_b62608a9_63a2ff22,
+    256'h264a9774_52d444d6_4d6ca94b_29410e06_771c18a4_16c1b5fa_55a60e32_17a129fa,
+    256'h4d35047e_a0588565_f505f1ed_52859d69_e7792a2e_98a7bc27_8ff39225_0a14cb9a,
+    256'h0a1c0e64_0819ac16_37b46df8_08ad9a57_0eba3261_e1006a1e_cf5a2ebd_248081fb,
+    256'hc5425b21_bc94d16b_61a11935_1c9259c8_6a24029c_048d2728_e00154e2_2e8d799a,
+    256'h85829555_ee105c1e_ad608846_29449c40_0900532f_90d4f4ec_af0ac1ad_5325d11c,
+    256'hacd07ea4_89ef58ca_6a4c1363_260af536_f9b6ab79_11ac2507_d24596b8_3e892f80,
+    256'ha7a0ccdd_b8ec4dc0_6eb1b6e8_52e6f07f_d2ac20c5_c9b2315e_8f222a03_b0f81e20,
+    256'ha4b9580e_2418e8b5_c74813e1_14768750_267885b4_9542f237_72b4f2e4_30ca4cd2,
+    256'hd2c0e844_c805dc2e_30223335_d3546a50_56eb8beb_edc4c45a_0dcc618a_8d60cab1
+  };
+
   // Encoding generated at commit 2f740b6f5b using Python 3.10.19 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
   //     --seed 2298832222 --distance 3 --states 4 --bits 5

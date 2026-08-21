@@ -146,6 +146,14 @@
       randcount: "256",
       randtype:  "perm"
     },
+    { name:    "RndCnstMaiUrndPerm",
+      type:    "otbn_pkg::mai_urnd_perm_t",
+      desc:    '''
+        Compile-time random permutation for URND permutation in MAI.
+      '''
+      randcount: "389",
+      randtype:  "perm"
+    },
     { name: "RndCnstOtbnKey",
       type: "otp_ctrl_pkg::otbn_key_t",
       desc: '''
