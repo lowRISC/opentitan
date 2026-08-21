@@ -36,9 +36,8 @@ In summary, the IP block implements the following features:
     - 25Mbps theoretical peak; minus overheads this is 20Mbps throughput for long transfers.
   - No support for HDR-BT mode or Multi-Lane transfers.
   - I2C Fast Mode and Fast Mode Plus support for backwards compatibility with some I2C devices.
-- Primary Controller or Secondary Controller Role.
-- Controller Role Handoff.
-  - The Controller becomes a Standby Controller, operating as a Target.
+- Primary Controller.
+  - Support for the Secondary Controller Role, Controller Role Handoff and operation as a Standby Controller is not yet included.
 
 ### Target-side features
 
