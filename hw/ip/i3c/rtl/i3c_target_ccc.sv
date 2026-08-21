@@ -251,10 +251,15 @@ module i3c_target_ccc
         // TODO: This is quite likely to need revising.
         RData_GETCAP3: rdata[t] = 8'h58;
         RData_GETCAP4: rdata[t] = 8'h00;
-        RData_TGTSTAT0: rdata[t] = 8'h00;
+        RData_TGTSTAT0: rdata[t] = 8'h00; // TODO: Return the actual info (see 4.3.7.3.15.1)
+        // GETSTATUS Format 1, LSB byte (Table 27). A Controller-capable Device reports its
+        // readiness to participate in Controller Role Handoff via the Activity Mode field, so that
+        // field is meaningful only for Virtual Target 0, which is the Standby Controller.
         RData_TGTSTAT1: begin
-          rdata[t] = t ? {cr_acr_mode, reg2hw_i.targ_status.protocol_error.q, pend_interrupt} :
-                         {2'b0, reg2hw_i.targ_status.protocol_error.q, pend_interrupt};
+          rdata[t] = {(t == 0) ? cr_acr_mode : 2'b00,        // Activity Mode.
+                      reg2hw_i.targ_status.protocol_error.q, // Protocol Error.
+                      1'b0,                                  // Reserved.
+                      pend_interrupt};                       // Pending Interrupt.
         end
         RData_PRECR0: rdata[t] = 8'h00;
         RData_PRECR1: rdata[t] = {6'b0, reg2hw_i.stby_cr_control.handoff_delay_nack.q,
@@ -315,6 +320,7 @@ module i3c_target_ccc
       RData_PRECR1,
       RData_TESTPAT3,
       RData_VTCAP2,
+      RData_CRCAP2,
       RData_DYNADDR,
       RData_ENDXFER,
       RData_MAXRDTURN2,
@@ -324,8 +330,13 @@ module i3c_target_ccc
       RData_BCR: rlast = (ccc == GETBCR);
       RData_DCR: rlast = (ccc == GETDCR);
 
-      // Debugging/diagnostic aid; should never occur.
-      default: rlast = 1'b1;
+      // Debugging/diagnostic aid; should never occur, but terminate the Read Transfer rather than
+      // stalling the bus with an unbounded response.
+      RData_UNDEF: rlast = 1'b1;
+
+      // All remaining data sources supply an intermediate byte of a multi-byte response, so the
+      // Read Transfer must continue.
+      default: rlast = 1'b0;
     endcase
   end
 
@@ -408,7 +419,9 @@ module i3c_target_ccc
     assign dynaddr_de_o[t] = wr_commit & r_i[TargCR_Targets][t] &
                              ((ccc inside {RSTDAA, SETDASA, SETNEWDA}) ||
                               (ccc == SETAASA && reg2hw_i.targ_addr[t].static_addr_valid.q));
-    assign dynaddr_d_o[t]  = (ccc == SETAASA) ?  reg2hw_i.targ_addr[t].static_addr.q : wdata0;
+    // SETDASA and SETNEWDA carry the address in the Dynamic Address Byte, which holds the 7-bit
+    // address in Bits[7:1] with Bit[0] set to 1'b0 (Figures 33 and 35).
+    assign dynaddr_d_o[t]  = (ccc == SETAASA) ?  reg2hw_i.targ_addr[t].static_addr.q : wdata0[7:1];
   end
 
   // Set Maximum Write/Read/IBI Length.
@@ -442,18 +455,20 @@ module i3c_target_ccc
   assign grp_set_o     = wr_commit & (ccc == SETGRPA);
   assign grp_all_o     = (ccc == RSTGRPAB) ||
                          (ccc == RSTGRPA && r_i[TargCR_Status][TargStat_IsGroup]);
-  assign grp_addr_o    = wdata0;
+  assign grp_addr_o    = wdata0[7:1]; // Bit 0 holds parity
   assign grp_targets_o = targets;
 
   // Activity State of I3C bus (Table 21).
-  assign act_state_de_o = {NumTargets{wr_commit & (ccc inside {ENTAS0, ENTAS1, ENTAS2, ENTAS3})}} &
-                           targets;
+  // - both the Broadcast (ENTASnB) and Direct (ENTASn) forms shall be actioned.
+  assign act_state_de_o = {NumTargets{wr_commit &
+                                     (ccc inside {ENTAS0,  ENTAS1,  ENTAS2,  ENTAS3,
+                                                  ENTAS0B, ENTAS1B, ENTAS2B, ENTAS3B})}} & targets;
   always_comb begin
     case (ccc)
-      ENTAS3:  act_state_d_o = 2'b11;  // 50ms: Lowest-activity operation.
-      ENTAS2:  act_state_d_o = 2'b10;  // 2ms.
-      ENTAS1:  act_state_d_o = 2'b01;  // 100us.
-      default: act_state_d_o = 2'b00;  // Latency-free operation.
+      ENTAS3, ENTAS3B: act_state_d_o = 2'b11;  // 50ms: Lowest-activity operation.
+      ENTAS2, ENTAS2B: act_state_d_o = 2'b10;  // 2ms.
+      ENTAS1, ENTAS1B: act_state_d_o = 2'b01;  // 100us.
+      default:         act_state_d_o = 2'b00;  // Latency-free operation.
     endcase
   end
 
