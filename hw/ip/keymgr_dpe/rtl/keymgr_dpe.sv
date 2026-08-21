@@ -573,10 +573,10 @@ module keymgr_dpe
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;
-  keymgr_key_dest_e dest_sel;
+  keymgr_dpe_key_dest_e dest_sel;
   logic [KeyWidth-1:0] dest_seed;
 
-  assign dest_sel = keymgr_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
+  assign dest_sel = keymgr_dpe_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
   assign dest_seed = dest_sel == Aes  ? aes_seed  :
                        dest_sel == Kmac ? kmac_seed :
                        dest_sel == Otbn ? otbn_seed : none_seed;
@@ -719,7 +719,7 @@ module keymgr_dpe
     .rst_ni,
     .init_i(init),
     .entropy_i(data_rand),
-    .clr_key_i(keymgr_sideload_clr_e'(reg2hw.sideload_clear.q)),
+    .clr_key_i(keymgr_dpe_sideload_clr_e'(reg2hw.sideload_clear.q)),
     .wipe_key_i(wipe_key),
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),

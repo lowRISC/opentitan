@@ -48,7 +48,7 @@ module keymgr_dpe_ctrl
   output key_version_vld_o,
 
   output logic op_done_o,
-  output keymgr_op_status_e status_o,
+  output keymgr_dpe_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
   output logic [FaultLastPos-1:0] fault_o,
   output logic data_hw_en_o,

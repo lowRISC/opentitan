@@ -17,7 +17,7 @@ class chip_sw_keymgr_dpe_sideload_otbn_vseq extends chip_sw_keymgr_dpe_key_deriv
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_dpe_pkg::Otbn),
                            .version(kVersionVersionedKey),
                            .salt(kSaltVersionedKey));
 

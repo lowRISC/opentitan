@@ -6,14 +6,14 @@
 
 `include "prim_assert.sv"
 
-module keymgr_dpe_sideload_key_ctrl import keymgr_pkg::*;(
+module keymgr_dpe_sideload_key_ctrl import keymgr_pkg::*, keymgr_dpe_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
-  input keymgr_sideload_clr_e clr_key_i, // clear key just deletes the key
+  input keymgr_dpe_sideload_clr_e clr_key_i, // clear key just deletes the key
   input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [Shares-1:0][RandWidth-1:0] entropy_i,
-  input keymgr_key_dest_e dest_sel_i,
+  input keymgr_dpe_key_dest_e dest_sel_i,
   input prim_mubi_pkg::mubi4_t hw_key_sel_i,
   input data_en_i,
   input data_valid_i,

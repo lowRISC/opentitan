@@ -31,12 +31,12 @@ class chip_sw_keymgr_dpe_sideload_aes_vseq extends chip_sw_keymgr_dpe_key_deriva
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),
-                           .dest(keymgr_pkg::Aes),
+                           .dest(keymgr_dpe_pkg::Aes),
                            .version(kVersionVersionedKey),
                            .salt(kSaltVersionedKey));
 
     // Fetch the generated key via backdoor from the HW!
-    sideload_aes_key = get_unmasked_key(get_output(keymgr_pkg::Aes));
+    sideload_aes_key = get_unmasked_key(get_output(keymgr_dpe_pkg::Aes));
 
     // Compute AES block encryption (C model) with above unmasked key.
     aes_model_dpi_pkg::c_dpi_aes_crypt_block(1'b0, 1'b0, 6'b00_0001, 128'h0, 3'b100,
