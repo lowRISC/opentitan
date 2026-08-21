@@ -34,3 +34,4 @@
 `include "otbn_partial_wipe_vseq.sv"
 `include "otbn_wfi_smoke_vseq.sv"
 `include "otbn_wfi_sec_wipe_vseq.sv"
+`include "otbn_wfi_back_to_back_vseq.sv"

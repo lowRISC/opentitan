@@ -89,7 +89,7 @@
             - Multiple WFI instructions executed back-to-back
             '''
       stage: V2
-      tests: ["otbn_wfi_smoke", "otbn_wfi_sec_wipe"]
+      tests: ["otbn_wfi_smoke", "otbn_wfi_sec_wipe", "otbn_wfi_back_to_back"]
     }
 
     {
