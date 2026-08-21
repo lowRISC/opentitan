@@ -22,10 +22,17 @@ filesets:
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:tlul
-      - lowrisc:ip:keymgr_common
     files:
       - rtl/keymgr_dpe.sv
       - rtl/keymgr_dpe_ctrl.sv
+      - rtl/keymgr_dpe_cfg_en.sv
+      - rtl/keymgr_dpe_reseed_ctrl.sv
+      - rtl/keymgr_dpe_sideload_key.sv
+      - rtl/keymgr_dpe_sideload_key_ctrl.sv
+      - rtl/keymgr_dpe_data_en_state.sv
+      - rtl/keymgr_dpe_kmac_if.sv
+      - rtl/keymgr_dpe_input_checks.sv
+      - rtl/keymgr_dpe_err.sv
       - rtl/keymgr_dpe_op_state_ctrl.sv
       - rtl/keymgr_dpe_reg_top.sv
     file_type: systemVerilogSource

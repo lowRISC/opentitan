@@ -221,7 +221,7 @@ module keymgr_dpe_ctrl
   ///////////////////////////
 
   // Upon entering StCtrlDisabled or StCtrlInvalid, the PRNG is kept advancing until it has been
-  // reseeded twice (through the reseeding mechanism inside keymgr_reseed_ctrl.sv).
+  // reseeded twice (through the reseeding mechanism inside keymgr_dpe_reseed_ctrl.sv).
   logic [1:0] prng_en_dis_inv_d, prng_en_dis_inv_q;
   logic prng_en_dis_inv_set;
 
@@ -648,7 +648,7 @@ module keymgr_dpe_ctrl
   ///////////////////////////////
 
   logic data_fsm_err;
-  keymgr_data_en_state u_data_en (
+  keymgr_dpe_data_en_state u_data_en (
     .clk_i,
     .rst_ni,
     .hw_sel_i(hw_sel_o),
@@ -710,7 +710,7 @@ module keymgr_dpe_ctrl
   logic unused_exportable_bit;
   assign unused_exportable_bit = active_slot_policy.exportable;
 
-  keymgr_err u_err (
+  keymgr_dpe_err u_err (
     .clk_i,
     .rst_ni,
     .invalid_op_i(invalid_op),

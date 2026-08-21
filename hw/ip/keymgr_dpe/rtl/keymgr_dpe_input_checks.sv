@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager input checks
+// Key manager dpe input checks
 // Checks input data for errors
 
 `include "prim_assert.sv"
 
 // We should also check for input validity
-module keymgr_input_checks import keymgr_pkg::*; #(
+module keymgr_dpe_input_checks import keymgr_pkg::*; #(
   parameter bit          KmacEnMasking      = 1'b1,
   parameter int unsigned NumRomDigestInputs = 1
 ) (
@@ -118,4 +118,4 @@ module keymgr_input_checks import keymgr_pkg::*; #(
     end
   end
 
-endmodule // keymgr_input_checks
+endmodule // keymgr_dpe_input_checks
