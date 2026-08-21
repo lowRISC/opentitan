@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager entropy reseed controls
+// Key manager dpe entropy reseed controls
 //
 
 `include "prim_assert.sv"
 
-module keymgr_reseed_ctrl import keymgr_pkg::*; (
+module keymgr_dpe_reseed_ctrl import keymgr_pkg::*; (
   input clk_i,
   input rst_ni,
   input clk_edn_i,
   input rst_edn_ni,
 
-  // interface to keymgr_ctrl
+  // interface to keymgr_dpe_ctrl
   input reseed_req_i,
   output logic reseed_ack_o,
   output logic reseed_done_o,
@@ -109,4 +109,4 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .err_o(cnt_err_o)
   );
 
-endmodule // keymgr_reseed_ctrl
+endmodule // keymgr_dpe_reseed_ctrl
