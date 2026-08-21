@@ -235,15 +235,17 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_storage_check_digest(const dice_storage_page_t *page);
 
 typedef struct dice_storage_header_v1 {
-  uint32_t object_header;  // Big Endian
-  uint32_t cert_header;    // Big Endian
-  char name[8];            // "PQ_CDI_0" or "PQ_CDI_1" (8 bytes)
+  uint32_t version_header;  // 0x010004F0 (kPersoTlvVersionPrefixV1)
+  uint32_t object_header;   // Big Endian
+  uint32_t cert_header;     // Big Endian
+  char name[12];            // "PQ_CDI_x" string NULL-padded to 12 bytes
 } dice_storage_header_v1_t;
 
-OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, object_header, 0);
-OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, cert_header, 4);
-OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, name, 8);
-OT_ASSERT_SIZE(dice_storage_header_v1_t, 16);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, version_header, 0);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, object_header, 4);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, cert_header, 8);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, name, 12);
+OT_ASSERT_SIZE(dice_storage_header_v1_t, 24);
 
 /**
  * Represents the TLV v1 format storage layout on data flash.
