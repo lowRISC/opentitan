@@ -9,7 +9,7 @@ This involves a specific sequence of register writes:
 
 1.  **Define the Memory Range:** First, software must write the base address to the [`ENABLED_MEMORY_RANGE_BASE`](registers.md#enabled_memory_range_base) register and the upper limit of the accessible range to the [`ENABLED_MEMORY_RANGE_LIMIT`](registers.md#enabled_memory_range_limit) register.
 2.  **Validate the Range:** Next, to indicate that the configured range contains valid data, software must write to the [`RANGE_VALID`](registers.md#range_valid) register.
-3.  **Optional Range Locking:** Optionally, software can write to the [`RANGE_REGWEN`](registers.md#range_regwEN) register to lock the configured memory range. Once locked, the range configuration cannot be modified until the next reset of the DMA.
+3.  **Optional Range Locking:** Optionally, software can write to the [`RANGE_REGWEN`](registers.md#range_regwen) register to lock the configured memory range. Once locked, the range configuration cannot be modified until the next reset of the DMA.
 
 ## Initiate a Memory transfer
 
