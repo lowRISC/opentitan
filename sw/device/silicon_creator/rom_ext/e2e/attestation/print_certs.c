@@ -48,14 +48,14 @@ static status_t print_cert(char *dest,
   uint32_t offset = 0;
   size_t len = sizeof(data);
   while (true) {
-    perso_tlv_cert_obj_t obj = {0};
-    rom_error_t err =
-        perso_tlv_get_cert_obj(data + offset, len, kPersoBlobVersionV0, &obj);
+    perso_tlv_cert_obj_view_t obj = {0};
+    rom_error_t err = perso_tlv_get_cert_obj_view(data + offset, len, &obj);
     if (err != kErrorOk) {
       break;
     }
     base64_encode(dest, obj.cert_body_p, (int32_t)obj.cert_body_size);
-    LOG_INFO("%s type=%d sz=%d", obj.name, obj.obj_type, obj.obj_size);
+    LOG_INFO("%s type=%d sz=%d/%d", obj.name, obj.obj_type, obj.cert_body_size,
+             obj.obj_size);
     LOG_INFO("%s: %s", obj.name, dest);
     offset += (obj.obj_size + 7) & ~7u;
     len -= obj.obj_size;
@@ -200,6 +200,46 @@ static status_t verify_handover(void) {
         "0x%08x",
         expected_cdi1, res->mldsa_cdi1_cert);
     return INTERNAL(7);
+  }
+
+  if (flash_storage_mode) {
+    perso_tlv_cert_obj_t cdi0_obj = {0};
+    perso_tlv_cert_obj_t cdi1_obj = {0};
+    uint8_t *slot0_hdr = (uint8_t *)dice_storage_slot_v1_header(&cdi0_slot);
+    uint8_t *slot1_hdr = (uint8_t *)dice_storage_slot_v1_header(&cdi1_slot);
+    size_t slot_max_len =
+        (uintptr_t)_rom_ext_size - (uintptr_t)_rom_ext_protected_size;
+
+    rom_error_t err =
+        perso_tlv_get_cert_obj(slot0_hdr, slot_max_len, &cdi0_obj);
+    if (err != kErrorOk) {
+      LOG_ERROR("Failed to parse CDI_0 TLV from flash: 0x%08x", err);
+      return INTERNAL(8);
+    }
+    LOG_INFO("%s type=%d sz=%d/%d", cdi0_obj.name, cdi0_obj.obj_type,
+             cdi0_obj.cert_body_size, cdi0_obj.obj_size);
+
+    err = perso_tlv_get_cert_obj(slot1_hdr, slot_max_len, &cdi1_obj);
+    if (err != kErrorOk) {
+      LOG_ERROR("Failed to parse CDI_1 TLV from flash: 0x%08x", err);
+      return INTERNAL(9);
+    }
+    LOG_INFO("%s type=%d sz=%d/%d", cdi1_obj.name, cdi1_obj.obj_type,
+             cdi1_obj.cert_body_size, cdi1_obj.obj_size);
+
+    if (cdi0_obj.obj_type != kPersoObjectTypeX509Cert ||
+        cdi0_obj.cert_body_p != (uint8_t *)res->mldsa_cdi0_cert ||
+        cdi0_obj.cert_body_size != res->mldsa_cdi0_cert_len) {
+      LOG_ERROR("CDI_0 TLV body does not match handover response");
+      return INTERNAL(10);
+    }
+
+    if (cdi1_obj.obj_type != kPersoObjectTypeX509Cert ||
+        cdi1_obj.cert_body_p != (uint8_t *)res->mldsa_cdi1_cert ||
+        cdi1_obj.cert_body_size != res->mldsa_cdi1_cert_len) {
+      LOG_ERROR("CDI_1 TLV body does not match handover response");
+      return INTERNAL(11);
+    }
   }
 
   // Read and encode certificates.
