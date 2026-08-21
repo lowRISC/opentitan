@@ -337,7 +337,7 @@ status_t kmac_hwip_default_configure(void) {
 
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
-                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 1);
+                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
   // Do not remask message blocks
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
 
