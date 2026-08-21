@@ -55,22 +55,15 @@ peripheral input, typically from the pads connected to those inputs.  In the
 presence of a pin-multiplexing unit, GPIO peripheral inputs that are
 not connected to a chip input will be tied to a constant zero input.
 
-The GPIO module provides optional independent noise filter control for
-each of the 32 input signals. Each input can be independently enabled with
-the [`CTRL_EN_INPUT_FILTER`](registers.md#ctrl_en_input_filter) (one bit per input).  This 16-cycle
-filter is applied to both the [`DATA_IN`](registers.md#data_in) register and
-the interrupt detection logic. The timing for [`DATA_IN`](registers.md#data_in) is still
-not instantaneous if [`CTRL_EN_INPUT_FILTER`](registers.md#ctrl_en_input_filter) is false as there is
-top-level routing involved, but no flops are between the chip input and the
-[`DATA_IN`](registers.md#data_in) register.
+The GPIO module provides optional independent noise filter control for each of the 32 input signals.
+Each input can be independently enabled with the [`CTRL_EN_INPUT_FILTER`](registers.md#ctrl_en_input_filter) (one bit per input).
+This 16-cycle filter is applied to both the [`DATA_IN`](registers.md#data_in) register and the interrupt detection logic.
+The timing for [`DATA_IN`](registers.md#data_in) is still not instantaneous if [`CTRL_EN_INPUT_FILTER`](registers.md#ctrl_en_input_filter) is false as there is still both top-level routing delay and input CDC synchronizer delay involved.
+The top-level routing delay depends on the physical layout of the chip.
+The input synchronizer adds two flops between the chip input and the [`DATA_IN`](registers.md#data_in) register, though the added delay may vary by up to one GPIO clock cycle depending on when cycle each external input transition arrives relative to the GPIO clock.
 
-The contents of [`DATA_IN`](registers.md#data_in) are always readable and reflect the
-value seen at the chip input pad regardless of the output enable setting from
-DATA_OE. If the output enable is true (and the GPIO is connected to a
-chip-level pad), the value read from [`DATA_IN`](registers.md#data_in) includes the
-effect of the peripheral's driven output (so will only differ from DATA_OUT if
-the output driver is unable to switch the pin or during the delay imposed
-if the noise filter is enabled).
+The contents of [`DATA_IN`](registers.md#data_in) are always readable and reflect the value seen at the chip input pad regardless of the output enable setting from DATA_OE.
+If the output enable is true (and the GPIO is connected to a chip-level pad), the value read from [`DATA_IN`](registers.md#data_in) includes the effect of the peripheral's driven output and will only differ from DATA_OUT if the output driver is unable to switch the pin or during the delay imposed by the input synchronizer and noise filter (if enabled).
 
 <%text>#### GPIO Inputs as HW Straps</%text>
 

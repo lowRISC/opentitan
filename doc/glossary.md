@@ -34,6 +34,10 @@ Often abbreviated to Bd, kBd (1000 Bd), MBd (1000 kBd), and GBd (1000 MBd).
 
 Boot Fault Value.
 
+#### CDC
+
+Clock Domain Crossing, such as between peripherals running on different, asynchronous, clocks.
+
 #### CIP
 
 Comportable (hardware) Intellectual Property.
