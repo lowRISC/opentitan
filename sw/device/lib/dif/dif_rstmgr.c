@@ -15,26 +15,24 @@
 
 #include "hw/top/rstmgr_regs.h"  // Generated.
 
-// These assertions are only defined for the Earl Grey chip.
-#if defined(OPENTITAN_IS_EARLGREY)
 // This macro simplifies the `static_assert` check to make sure that the
 // public reset info register bitfield matches register bits.
-#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)         \
-  static_assert(kDifRstmgrResetInfo##pub_name ==             \
-                    (0x1 << RSTMGR_RESET_##priv_name##_BIT), \
-                "kDifRstmgrResetInfo" #pub_name              \
+#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)              \
+  static_assert(kDifRstmgrResetInfo##pub_name ==                  \
+                    (0x1 << RSTMGR_RESET_INFO_##priv_name##_BIT), \
+                "kDifRstmgrResetInfo" #pub_name                   \
                 " must match the register definition!")
 
-RSTMGR_RESET_INFO_CHECK(Por, INFO_POR);
-RSTMGR_RESET_INFO_CHECK(LowPowerExit, INFO_LOW_POWER_EXIT);
+// These assertions are only defined for the Earl Grey chip.
+#if defined(OPENTITAN_IS_EARLGREY)
+
+RSTMGR_RESET_INFO_CHECK(Por, POR);
+RSTMGR_RESET_INFO_CHECK(LowPowerExit, LOW_POWER_EXIT);
+RSTMGR_RESET_INFO_CHECK(Sw, SW_RESET);
 
 static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
                                            << RSTMGR_RESET_INFO_HW_REQ_OFFSET),
               "kDifRstmgrResetInfoHwReq must match the register definition!");
-
-static_assert(
-    RSTMGR_PARAM_NUM_SW_RESETS == 8,
-    "Number of software resets has changed, please update this file!");
 
 // The Reset Manager implementation will have to be updated if the number
 // of software resets grows, as it would span across multiple registers, so
@@ -54,7 +52,7 @@ static_assert(
     DIF_RSTMGR_ALERT_INFO_MAX_SIZE == RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
     "Alert info dump max size has grown, please update the public define!");
 #elif defined(OPENTITAN_IS_DARJEELING)
-// TODO: equivalent assertations are not yet defined for Darjeeling
+// TODO: equivalent assertions are not yet defined for Darjeeling
 #else
 #error "dif_rstmgr does not support this top"
 #endif
@@ -81,13 +79,20 @@ static bool cpu_capture_is_locked(mmio_region_t base_addr) {
   return !bitfield_bit32_read(bitfield, RSTMGR_CPU_REGWEN_EN_BIT);
 }
 
+static inline ptrdiff_t get_regwen_reg_offset(dif_rstmgr_peripheral_t p) {
+  return RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)p;
+}
+
 /**
  * Checks whether the software reset is disabled for a `peripheral`.
  */
 static bool rstmgr_software_reset_is_locked(
     mmio_region_t base_addr, dif_rstmgr_peripheral_t peripheral) {
-  return !mmio_region_read32(
-      base_addr, RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral);
+  return !mmio_region_read32(base_addr, get_regwen_reg_offset(peripheral));
+}
+
+static inline ptrdiff_t get_ctrl_n_reg_offset(dif_rstmgr_peripheral_t p) {
+  return RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * (ptrdiff_t)p;
 }
 
 /**
@@ -97,9 +102,7 @@ static void rstmgr_software_reset_hold(mmio_region_t base_addr,
                                        dif_rstmgr_peripheral_t peripheral,
                                        bool hold) {
   bool value = hold ? false : true;
-  mmio_region_write32(
-      base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral,
-      value);
+  mmio_region_write32(base_addr, get_ctrl_n_reg_offset(peripheral), value);
 }
 
 /**
@@ -122,9 +125,7 @@ dif_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle) {
 
   // Set bits to stop holding all peripherals in the reset state.
   for (uint32_t i = 0; i < RSTMGR_PARAM_NUM_SW_RESETS; i++) {
-    mmio_region_write32(base_addr,
-                        RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + (ptrdiff_t)i * 4,
-                        UINT32_MAX);
+    mmio_region_write32(base_addr, get_ctrl_n_reg_offset(i), UINT32_MAX);
   }
 
   return kDifOk;
@@ -138,9 +139,7 @@ dif_result_t dif_rstmgr_reset_lock(const dif_rstmgr_t *handle,
 
   mmio_region_t base_addr = handle->base_addr;
 
-  mmio_region_write32(
-      base_addr, RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral,
-      0);
+  mmio_region_write32(base_addr, get_regwen_reg_offset(peripheral), 0);
 
   return kDifOk;
 }
@@ -400,8 +399,7 @@ dif_result_t dif_rstmgr_software_reset_is_held(
 
   // When the bit is cleared - peripheral is held in reset.
   *asserted =
-      !mmio_region_read32(handle->base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET +
-                                                 4 * (ptrdiff_t)peripheral);
+      !mmio_region_read32(handle->base_addr, get_ctrl_n_reg_offset(peripheral));
 
   return kDifOk;
 }

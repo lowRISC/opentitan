@@ -327,11 +327,8 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":ottf_console",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/runtime:print",
         ],
         shared = [
-            "//sw/device/lib/base:status",
             "//sw/device/lib/testing/json:ottf",
             "//sw/device/lib/ujson",
         ],
@@ -371,6 +368,7 @@ OTTF_CONSOLE_BACKENDS = {
             "//sw/device/lib/dif:spi_device",
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/testing:spi_device_testutils",
+            "//sw/device/lib/dif:gpio",
         ],
         "defines": ["OTTF_CONSOLE_HAS_SPI_DEVICE"],
     },
@@ -414,7 +412,6 @@ cc_library(
     ]) + [
         ":ottf_console_types",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:gpio",
     ],
 )
 
