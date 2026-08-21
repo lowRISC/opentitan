@@ -98,6 +98,10 @@ typedef struct personalize_extension_post_endorse {
  * This extension runs *BEFORE* TBS certificates are sent to the host to be
  * endorsed. Implementing this extension enables SKU owners to add more TBS
  * certificates to the list of certificates to be endorsed by the host.
+ *
+ * NOTE that the implementation must not maintain any references to data inside
+ * `pre_params` to use after this function returns (for example to use in
+ * `personalize_extension_post_endorse`)
  */
 status_t personalize_extension_pre_cert_endorse(
     personalize_extension_pre_endorse_t *pre_params);
@@ -109,6 +113,9 @@ status_t personalize_extension_pre_cert_endorse(
  * device from the host. Implementing this extension enables SKU owners to
  * provision additional data into flash, in addition to the endorsed
  * certificates in the `perso_blob_from_host` struct.
+ *
+ * NOTE that the implementation must not maintain any references to data inside
+ * `post_params` to use after this function returns
  */
 status_t personalize_extension_post_cert_endorse(
     personalize_extension_post_endorse_t *post_params);

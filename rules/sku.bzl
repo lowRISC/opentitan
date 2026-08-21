@@ -86,8 +86,35 @@ def _sku_cfg_impl(ctx):
 
     if ctx.attr.dice_ca:
         config["dice_ca"] = process_ca(ctx.attr.dice_ca)
-    if ctx.attr.blob_version:
-        config["blob_version"] = ctx.attr.blob_version
+    if ctx.attr.dice_mldsa_ca:
+        config["dice_mldsa_ca"] = process_ca(ctx.attr.dice_mldsa_ca)
+
+        if len(ctx.attr.dice_mldsa_certs_from_device) == 0:
+            fail("Empty list of ML-DSA certificates to expect from device, " +
+                 "when ML-DSA CA is specified for provisioning. Expect at " +
+                 "least 1 certificate name")
+        config["dice_mldsa_certs_from_device"] = ctx.attr.dice_mldsa_certs_from_device
+
+        for cert_name in ctx.attr.dice_mldsa_certs_to_endorse:
+            if cert_name not in ctx.attr.dice_mldsa_certs_from_device:
+                fail("ML-DSA certificate {} expected to be endorsed, but not " +
+                     "present in list of certificates to expect from device " +
+                     "during provisioning ({})".format(
+                         cert_name,
+                         ctx.attr.dice_mldsa_certs_from_device,
+                     ))
+        config["dice_mldsa_certs_to_endorse"] = ctx.attr.dice_mldsa_certs_to_endorse
+
+        for cert_name in ctx.attr.dice_mldsa_certs_to_device:
+            if cert_name not in ctx.attr.dice_mldsa_certs_to_endorse:
+                fail("Endorsed ML-DSA certificate {} expected to be sent to " +
+                     "the device, but not present in list of certificates to " +
+                     "endorse during provisioning ({})".format(
+                         cert_name,
+                         ctx.attr.dice_mldsa_certs_to_endorse,
+                     ))
+        config["dice_mldsa_certs_to_device"] = ctx.attr.dice_mldsa_certs_to_device
+
     if ctx.attr.ext_ca:
         config["ext_ca"] = process_ca(ctx.attr.ext_ca)
 
@@ -135,7 +162,6 @@ sku_cfg = rule(
     implementation = _sku_cfg_impl,
     attrs = {
         "sku_name": attr.string(mandatory = True),
-        "blob_version": attr.int(mandatory = False),
         "product": attr.string(mandatory = True),
         "si_creator": attr.string(mandatory = True),
         "package": attr.string(mandatory = True),
@@ -143,6 +169,30 @@ sku_cfg = rule(
         "otp": attr.string(mandatory = True),
         "owner_fw_boot_str": attr.string(),
         "dice_ca": attr.label(providers = [SkuCertInfo]),
+        # Optional. Only used (and required) when building for configuations
+        # with MLDSA support
+        "dice_mldsa_ca": attr.label(
+            providers = [SkuCertInfo],
+            doc = "CA configuration to use to endorse ML-DSA TBS certificates" +
+                  " from device, if ML-DSA provisioning support is enabled",
+        ),
+        "dice_mldsa_certs_from_device": attr.string_list(
+            doc = "List of TBS certificate names to expect from the device " +
+                  "when doing provisioning with ML-DSA support",
+        ),
+        "dice_mldsa_certs_to_endorse": attr.string_list(
+            doc = "List of ML-DSA certificate names to endorse when ML-DSA " +
+                  "provisioning support is enabled. This must be a subset of " +
+                  "`dice_mldsa_certs_from_device`",
+        ),
+        "dice_mldsa_certs_to_device": attr.string_list(
+            doc = "List of ML-DSA endorsed certificate names to send back to " +
+                  "the device when ML-DSA provisioning support is enabled. " +
+                  "This must be a subset of `dice_mldsa_certs_to_endorse`. " +
+                  "These certificates will be included in the final hash " +
+                  "that the host tool expects back from the device for " +
+                  "certificates it writes to internal flash",
+        ),
         "ext_ca": attr.label(providers = [SkuCertInfo]),
         "token_encrypt_key": attr.label(allow_single_file = True),
         "perso_bins": attr.label_list(allow_files = True),

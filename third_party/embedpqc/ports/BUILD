@@ -27,3 +27,15 @@ cc_library(
         "//third_party/embedpqc:mldsa44_tiny",
     ],
 )
+
+cc_library(
+    name = "mldsa87_tiny_caller",
+    srcs = [
+        "mldsa87_tiny_caller.S",
+        "mldsa_caller_common.h",
+    ],
+    hdrs = ["mldsa87_tiny_caller.h"],
+    deps = [
+        "//third_party/embedpqc:mldsa87_tiny",
+    ],
+)

@@ -321,9 +321,9 @@ inline rom_error_t sc_keymgr_sideload_clear_otbn(void) {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *attest_binding,
-                                        keymgr_binding_value_t *sealing_binding,
-                                        uint32_t max_key_version);
+rom_error_t sc_keymgr_owner_int_advance(
+    const keymgr_binding_value_t *attest_binding,
+    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version);
 
 /**
  * Sets the binding registers and advances the keymgr to the `OwnerKey` (CDI_1)
@@ -339,9 +339,9 @@ rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *attest_binding,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *attest_binding,
-                                    keymgr_binding_value_t *sealing_binding,
-                                    uint32_t max_key_version);
+rom_error_t sc_keymgr_owner_advance(
+    const keymgr_binding_value_t *attest_binding,
+    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version);
 
 /**
  * Disables the keymgr and clears all sideload slots.
