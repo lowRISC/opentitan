@@ -1,0 +1,19 @@
+/* Copyright lowRISC contributors (OpenTitan project). */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.section .text.start
+
+  addi  x2, x0, 0x111
+  addi  x3, x0, 0x222
+  add   x4, x2, x3 /* for otbn_wfi_sec_wipe_vseq insn before wfi must be single cycle. */
+  wfi
+
+  /*
+    This is a single-cycle instruction followed by a WFI. The instruction and its address are both
+    known by otbn_wfi_sec_wipe_vseq: keep the two files in sync.
+  */
+  addi  x2, x0, 0
+  lw    x5, 0(x2)
+
+  ecall

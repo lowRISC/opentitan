@@ -33,3 +33,4 @@
 `include "otbn_stack_addr_integ_chk_vseq.sv"
 `include "otbn_partial_wipe_vseq.sv"
 `include "otbn_wfi_smoke_vseq.sv"
+`include "otbn_wfi_sec_wipe_vseq.sv"

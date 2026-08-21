@@ -384,6 +384,13 @@ name:
       en_run_modes: ["build_otbn_wfi_binary_mode"]
       reseed: 1 // directed test
     }
+
+    {
+      name: "otbn_wfi_sec_wipe"
+      uvm_test_seq: "otbn_wfi_sec_wipe_vseq"
+      en_run_modes: ["build_otbn_wfi_binary_mode"]
+      reseed: 5 // directed test but with randomized escalation source
+    }
   ]
 
   // List of regressions.
