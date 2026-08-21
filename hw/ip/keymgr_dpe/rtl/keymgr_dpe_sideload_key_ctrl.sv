@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
+module keymgr_dpe_sideload_key_ctrl import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
@@ -56,14 +56,14 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     StSideloadIdle  = 10'b0101000101,
     StSideloadWipe  = 10'b1110110010,
     StSideloadStop  = 10'b1000001010
-  } keymgr_sideload_e;
+  } keymgr_dpe_sideload_e;
 
-  keymgr_sideload_e state_q, state_d;
+  keymgr_dpe_sideload_e state_q, state_d;
 
   // SEC_CM: SIDELOAD_CTRL.FSM.SPARSE
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_sideload_e, StSideloadReset)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_sideload_e, StSideloadReset)
 
   logic keys_en;
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
@@ -145,7 +145,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   assign slot_sel[KmacIdx] = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[KmacIdx]);
   assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
 
-  keymgr_sideload_key u_aes_key (
+  keymgr_dpe_sideload_key u_aes_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -158,7 +158,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .key_o(aes_key_o.key)
   );
 
-  keymgr_sideload_key #(
+  keymgr_dpe_sideload_key #(
     .Width(OtbnKeyWidth)
   ) u_otbn_key (
     .clk_i,
@@ -174,7 +174,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   );
 
   hw_key_req_t kmac_sideload_key;
-  keymgr_sideload_key u_kmac_key (
+  keymgr_dpe_sideload_key u_kmac_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -213,7 +213,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   // 1 outside that window, then an error is triggered.
   assign sideload_sel_err_o = |(~valid_tracking_q & valids);
 
-  // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
+  // when directed by keymgr_dpe_ctrl, switch over to internal key and feed to kmac
   assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
 
   // when clearing, request prng
@@ -227,4 +227,4 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   // When updating a sideload key, the secret key state must always be used as the source
   `ASSERT(KmacKeySource_a, data_valid_i |-> key_i.valid)
 
-endmodule // keymgr_sideload_key_ctrl
+endmodule // keymgr_dpe_sideload_key_ctrl
