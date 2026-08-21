@@ -664,11 +664,9 @@ class MaskingAcceleratorInterface:
         self._pending_busy_clear = False
 
     def on_sec_wipe_zero_step(self) -> None:
-        '''Called during the secure-wipe zero step to latch the initial counter.
-
-        The URND Bivium has been stepped up to this cycle in _step_wiping(). The
-        keystream for this cycle is already in wsrs.URND._next_value.
-        '''
+        '''Called during the secure-wipe zero step to latch the initial counter.'''
+        # We take the URND's pending value because we need the next cycle value of URND. And this
+        # function is called before this happens in the simulator.
         _, _, _, cnt = _urnd_fields(self.wsrs.URND.pending_value())
         self._cnt = cnt
         self._wb_cnt = cnt

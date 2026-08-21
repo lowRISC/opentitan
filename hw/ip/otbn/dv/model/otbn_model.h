@@ -104,6 +104,10 @@ class OtbnModel {
   // Set wfi_enabled bit in ISS model. Returns 0 on success; -1 on failure.
   int set_wfi_enabled(unsigned char new_val);
 
+  // Set urnd_ctrl_enabled bit in ISS model. Returns 0 on success; -1 on
+  // failure.
+  int set_urnd_ctrl_enabled(unsigned char new_val);
+
   // Resume a paused wfi instruction. Returns 0 on success; -1 on failure.
   int wfi_resume();
 

@@ -225,6 +225,26 @@ class Trivium:
         """Returns true if the seeding procedure has been completed."""
         return self.seed_rounds == self.seed_counter
 
+    def get_state(self) -> int:
+        """Return the current state as a little-endian integer (bit j = state[j]).
+
+        This is the inverse of _int_to_regs."""
+        # Revert bit order by converting to a string, reversing the string, and converting back to
+        # an int. Do this for all state parts and concatenate them.
+        reg1, reg2 = self.state[0], self.state[1]
+        val = int(f"{reg1:093b}"[::-1], 2)
+        val |= int(f"{reg2:084b}"[::-1], 2) << 93
+        if self.cipher_type == CipherType.TRIVIUM:
+            val |= int(f"{self.state[2]:0111b}"[::-1], 2) << 177
+        return val
+
+    def discard_update(self) -> None:
+        """Drop a scheduled state update without applying it.
+
+        Any scheduled seed is left intact so a seed can still be injected on a
+        cycle where the state is not allowed to advance."""
+        self.next_state = None
+
     @staticmethod
     def _int_to_regs(val: int, cipher_type: CipherType) -> Tuple[int, ...]:
         """Convert a little-endian integer (bit j = state[j]) to a register
