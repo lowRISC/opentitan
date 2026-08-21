@@ -898,6 +898,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(IntrKnownO_A, intr_op_done_o)
+  `ASSERT_KNOWN(EdnReqKnownO_A, edn_o)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
