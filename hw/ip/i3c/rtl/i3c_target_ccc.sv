@@ -14,7 +14,7 @@ module i3c_target_ccc
   // CCC logic is enabled and active.
   // - this may be used to suppress any internal activity and gate off any output control signals
   //   when not processing CCCs.
-  input                         enable_i,
+  input                         enable_i, // TODO: Currently unused
 
   // Configuration.
   input  i3c_reg2hw_t           reg2hw_i,
@@ -357,7 +357,9 @@ module i3c_target_ccc
       end
       TargCRsn_RxD:
         if (ccc_req_i.sr) begin
+          // We are past the CCC setup phase, after the Restart
           if (|ccc_req_i.idx) begin
+            // Non-zero byte index: CCC sub-command or data
             if (ccc_req_i.rnw) begin
               // Return the read data selected/constructed above.
               ccc_rsp_o.req_cvalid = ccc_req_i.en;
