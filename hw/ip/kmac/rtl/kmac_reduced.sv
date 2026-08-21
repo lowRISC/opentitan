@@ -230,12 +230,25 @@ module kmac_reduced
     .done_i,            // Clear internal variables and move back into Idle state.
     .absorbed_o,        // Absorption process is done.
     .squeezing_o,       // Currently running manually triggered processing after absorption.
+
+    .stop_i      (1'b 0),
+    .continue_i  (1'b 0),
+    .stopped_o   (),
+    .stop_error_o(),
+
     .block_processed_o,
     .sha3_fsm_o,
 
     // State output
     .state_valid_o(state_valid_o),
     .state_o      (state_o),
+
+    // State write. Not used in the reduced version.
+    .state_we_i         ('0),
+    .state_waddr_i      ('0),
+    .state_wdata_i      ('0),
+    .state_write_start_i(1'b0),
+    .state_restored_o   (),
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o(),     // Not used

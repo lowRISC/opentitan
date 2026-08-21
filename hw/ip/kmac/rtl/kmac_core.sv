@@ -44,6 +44,7 @@ module kmac_core
 
   // Controls : same to SHA3 core
   input start_i,
+  input continue_i,
   input process_i,
   input prim_mubi_pkg::mubi4_t done_i,
 
@@ -179,6 +180,10 @@ module kmac_core
       StKmacIdle: begin
         if (kmac_en_i && start_i) begin
           st_d = StKey;
+        end else if (kmac_en_i && continue_i) begin
+          // Resume a saved context. No need to again process the key
+          // as this already was done previously.
+          st_d = StKmacMsg;
         end else begin
           st_d = StKmacIdle;
         end

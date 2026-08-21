@@ -22,15 +22,21 @@
 // However, the logic does not prevent the error-ed command to be propagated.
 // The unexpected commands are filtered by each individual submodule.
 //
-// st := { Idle, MsgFeed, Processing, Absorbed, Squeeze}
+// st := { Idle, StateWrite, MsgFeed, Processing, Absorbed, Stopped, Squeeze}
 //
 // allowed := {
-//   Idle :      { Start     },
-//   MsgFeed:    { Process   },
-//   Processing: { None      },
-//   Absorbed:   { Run, Done },
-//   Squeeze:    { None      }
+//   Idle :      { Start, StateWrite },
+//   StateWrite: { Continue, Done    },
+//   MsgFeed:    { Process, Stop     },
+//   Processing: { None              },
+//   Absorbed:   { Run, Done         },
+//   Stopped:    { Done              },
+//   Squeeze:    { None              }
 // }
+//
+// A context can be resumed with issuing first `StateWrite` to claim the
+// KMAC HWIP and write the state. Then, the `Continue` command is used to
+// proceed with this context.
 //
 // ## SW Configuration Error
 //
@@ -39,6 +45,7 @@
 //
 // 1. Mode & Strength combinations
 // 2. Kmac Prefix
+// 3. Sideload when saving or restoring a context
 // * sideload & key_valid -> Checker in kmac_core
 
 `include "prim_assert.sv"
@@ -58,6 +65,7 @@ module kmac_errchk
   input keccak_strength_e cfg_strength_i,
 
   input        kmac_en_i,
+  input        cfg_sideload_i,
   input [47:0] cfg_prefix_6B_i, // first 6B of PREFIX
 
   // If the signal below is set, errchk propagates the command to the rest of
@@ -76,6 +84,9 @@ module kmac_errchk
 
   // Status from SHA3 core
   input prim_mubi_pkg::mubi4_t sha3_absorbed_i,
+  input prim_mubi_pkg::mubi4_t sha3_stopped_i,
+  input                        sha3_stop_error_i,
+  input                        state_restored_i,
   input keccak_done_i,
 
   // Life cycle
@@ -105,42 +116,47 @@ module kmac_errchk
   /////////////////
   // Definitions //
   /////////////////
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
-  //      -s 2239170217 --language=sv
+  // Encoding generated at commit 6852a91493 using Python 3.12.13 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv --avoid-zero \
+  //     --seed 52166682 --distance 3 --states 8 --bits 7
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (50.00%)
-  //  4: |||||||||||||||| (40.00%)
-  //  5: |||| (10.00%)
-  //  6: --
+  //  3: |||||||||||||||||||| (42.86%)
+  //  4: |||||||||||||||||| (39.29%)
+  //  5: ||||| (10.71%)
+  //  6: ||| (7.14%)
+  //  7: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 4
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 5
   //
-  localparam int StateWidth = 6;
+  localparam int StateWidth = 7;
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 6'b001101,
-    StMsgFeed = 6'b110001,
-    StProcessing = 6'b010110,
-    StAbsorbed = 6'b100010,
-    StSqueezing = 6'b111100,
-    StTerminalError = 6'b011011
+    StIdle = 7'b0111010,
+    StStateWrite = 7'b1110001,
+    StMsgFeed = 7'b0111101,
+    StProcessing = 7'b1011011,
+    StAbsorbed = 7'b1110110,
+    StStopped = 7'b0000111,
+    StSqueezing = 7'b1101000,
+    StTerminalError = 7'b1001110
   } st_e;
   st_e st, st_d;
 
   localparam int StateWidthL = 3;
   typedef enum logic [StateWidthL-1:0] {
     StIdleL,
+    StStateWriteL,
     StMsgFeedL,
     StProcessingL,
     StAbsorbedL,
+    StStoppedL,
     StSqueezingL,
     StErrorL
   } st_logical_e;
@@ -173,6 +189,16 @@ module kmac_errchk
   // entropy_ready is a pulse signal. Logic needs to store the state.
   logic cfg_entropy_ready;
 
+  // `err_sideload` occurs when SW requests a context switch while the
+  // sideloaded key is selected. Saving the context would expose the
+  // intermediate state of a key that SW does not know. This error blocks the
+  // command.
+  logic err_sideload;
+
+  // `err_continue_no_context` occurs when SW resumes an absorb without
+  // restoring the context before.
+  logic err_continue_no_context;
+
   // Signal to block the SW command propagation
   logic block_swcmd;
 
@@ -189,15 +215,23 @@ module kmac_errchk
 
     unique case (st)
       StIdle: begin
-        // Allow Start command only
-        if (!(sw_cmd_i inside {CmdNone, CmdStart})) begin
+        // Allow Start and StateWrite command only
+        if (!(sw_cmd_i inside {CmdNone, CmdStart, CmdStateWrite})) begin
+          err_swsequence = 1'b 1;
+        end
+      end
+
+      StStateWrite: begin
+        // Allow Continue to resume the restored context, and Done to release
+        // the block again without resuming.
+        if (!(sw_cmd_i inside {CmdNone, CmdContinue, CmdDone})) begin
           err_swsequence = 1'b 1;
         end
       end
 
       StMsgFeed: begin
-        // Allow Process only
-        if (!(sw_cmd_i inside {CmdNone, CmdProcess})) begin
+        // Allow Process and Stop only
+        if (!(sw_cmd_i inside {CmdNone, CmdProcess, CmdStop})) begin
           err_swsequence = 1'b 1;
         end
       end
@@ -211,6 +245,13 @@ module kmac_errchk
       StAbsorbed: begin
         // Allow ManualRun and Done
         if (!(sw_cmd_i inside {CmdNone, CmdManualRun, CmdDone})) begin
+          err_swsequence = 1'b 1;
+        end
+      end
+
+      StStopped: begin
+        // Allow Done only
+        if (!(sw_cmd_i inside {CmdNone, CmdDone})) begin
           err_swsequence = 1'b 1;
         end
       end
@@ -233,10 +274,18 @@ module kmac_errchk
     endcase
   end
 
+  // A context switch is not allowed when a sideloaded key is used.
+  assign err_sideload = cfg_sideload_i && (sw_cmd_i inside {CmdStop, CmdStateWrite, CmdContinue});
+
+  // An absorb can only be resumed after a context has been restored.
+  assign err_continue_no_context = (sw_cmd_i == CmdContinue) && !state_restored_i;
+
   assign block_swcmd =  (err_swsequence)
                      || (err_modestrength
                          && !cfg_en_unsupported_modestrength_i)
-                     || err_entropy_ready;
+                     || err_entropy_ready
+                     || err_sideload
+                     || err_continue_no_context;
 
   // sw_cmd_o latch
   // To reduce the command path delay, sw_cmd is latched here
@@ -314,9 +363,11 @@ module kmac_errchk
   always_comb begin : recode_st
     unique case (st)
       StIdle       : stL = StIdleL;
+      StStateWrite : stL = StStateWriteL;
       StMsgFeed    : stL = StMsgFeedL;
       StProcessing : stL = StProcessingL;
       StAbsorbed   : stL = StAbsorbedL;
+      StStopped    : stL = StStoppedL;
       StSqueezing  : stL = StSqueezingL;
       default      : stL = StErrorL;
     endcase
@@ -328,6 +379,27 @@ module kmac_errchk
     err = '{valid: 1'b0, code: ErrNone, info: '0};
 
     priority case (1'b 1)
+      err_sideload: begin
+        err = '{ valid: 1'b 1,
+                 code:  ErrSwSaveRestoreSideload,
+                 info:  24'({2'b 0, sw_cmd_i})
+               };
+      end
+
+      err_continue_no_context: begin
+        err = '{ valid: 1'b 1,
+                 code:  ErrSwContinueWithoutContext,
+                 info:  24'({5'h 0, stL})
+               };
+      end
+
+      sha3_stop_error_i: begin
+        err = '{ valid: 1'b 1,
+                 code:  ErrSwStopNotBlockAligned,
+                 info:  24'({5'h 0, stL})
+               };
+      end
+
       err_swsequence: begin
         err = '{ valid: 1'b 1,
                  code: ErrSwCmdSequence,
@@ -410,14 +482,27 @@ module kmac_errchk
     unique case (st)
       StIdle: begin
         if (!app_active_i && sw_cmd_i == CmdStart) begin
-          // Proceed to the next state only when the SW issues the Start command
-          // in a valid period.
+          // Proceed to the next state only when the SW issues the Start
+          // command in a valid period.
           st_d = StMsgFeed;
+        end else if (!app_active_i && sw_cmd_i == CmdStateWrite) begin
+          // SW claims the block to write a saved Keccak state back.
+          st_d = StStateWrite;
+        end
+      end
+
+      StStateWrite: begin
+        if (sw_cmd_i == CmdContinue) begin
+          // The context is restored, resume absorbing the message.
+          st_d = StMsgFeed;
+        end else if (sw_cmd_i == CmdDone) begin
+          // SW gives the block back without resuming a context.
+          st_d = StIdle;
         end
       end
 
       StMsgFeed: begin
-        if (sw_cmd_i == CmdProcess) begin
+        if (sw_cmd_i inside {CmdProcess, CmdStop}) begin
           st_d = StProcessing;
         end
       end
@@ -425,6 +510,8 @@ module kmac_errchk
       StProcessing: begin
         if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed_i)) begin
           st_d = StAbsorbed;
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_stopped_i)) begin
+          st_d = StStopped;
         end
       end
 
@@ -432,6 +519,12 @@ module kmac_errchk
         if (sw_cmd_i == CmdManualRun) begin
           st_d = StSqueezing;
         end else if (sw_cmd_i == CmdDone) begin
+          st_d = StIdle;
+        end
+      end
+
+      StStopped: begin
+        if (sw_cmd_i == CmdDone) begin
           st_d = StIdle;
         end
       end

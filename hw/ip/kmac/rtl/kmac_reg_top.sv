@@ -254,6 +254,8 @@ module kmac_reg_top (
   logic status_sha3_idle_qs;
   logic status_sha3_absorb_qs;
   logic status_sha3_squeeze_qs;
+  logic status_sha3_stopped_qs;
+  logic status_state_write_qs;
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
@@ -1183,6 +1185,36 @@ module kmac_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_sha3_squeeze_qs)
+  );
+
+  //   F[sha3_stopped]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_sha3_stopped (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.sha3_stopped.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_sha3_stopped_qs)
+  );
+
+  //   F[state_write]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_state_write (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.state_write.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_state_write_qs)
   );
 
   //   F[fifo_depth]: 12:8
@@ -3036,6 +3068,8 @@ module kmac_reg_top (
         reg_rdata_next[0] = status_sha3_idle_qs;
         reg_rdata_next[1] = status_sha3_absorb_qs;
         reg_rdata_next[2] = status_sha3_squeeze_qs;
+        reg_rdata_next[3] = status_sha3_stopped_qs;
+        reg_rdata_next[4] = status_state_write_qs;
         reg_rdata_next[12:8] = status_fifo_depth_qs;
         reg_rdata_next[14] = status_fifo_empty_qs;
         reg_rdata_next[15] = status_fifo_full_qs;

@@ -29,7 +29,7 @@ filesets:
       - rtl/kmac_reg_top.sv
       - rtl/kmac_core.sv
       - rtl/kmac_msgfifo.sv
-      - rtl/kmac_staterd.sv
+      - rtl/kmac_staterdwr.sv
       - rtl/kmac_app.sv
       - rtl/kmac_entropy.sv
       - rtl/kmac_errchk.sv

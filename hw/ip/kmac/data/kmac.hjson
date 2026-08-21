@@ -633,9 +633,9 @@
                 the field is defined as enum.
                 '''
           enum: [
-            { value: "29"
+            { value: "7"
               name: "start"
-              desc: '''Writing 6'b011101 or dec 29 into this field when KMAC/SHA3
+              desc: '''Writing 6'b000111 or dec 7 into this field when KMAC/SHA3
                     is in idle, KMAC/SHA3 begins its operation.
 
                     If the mode is cSHAKE, before receiving the message, the
@@ -644,14 +644,14 @@
                     additionally it processes secret key block.
                     '''
             } // e: start
-            { value: "46"
+            { value: "50"
               name: "process"
-              desc: '''Writing 6'b101110 or dec 46 into this field when KMAC/SHA3
+              desc: '''Writing 6'b110010 or dec 50 into this field when KMAC/SHA3
                     began its operation and received the entire message, it
                     computes the digest or signing.
                     '''
             } // e: process
-            { value: "49"
+            { value: "46"
               name: "run"
               desc: '''The `run` field is used in the sponge squeezing stage.
                     It triggers the keccak round logic to run full 24 rounds.
@@ -661,13 +661,77 @@
                     It only affects when the kmac/sha3 operation is completed.
                     '''
             } // e: run
-            { value: "22"
+            { value: "53"
               name: "done"
-              desc: '''Writing 6'b010110 or dec 22 into this field when KMAC/SHA3
+              desc: '''Writing 6'b110101 or dec 53 into this field when KMAC/SHA3
                     squeezing is completed, KMAC/SHA3 hashing engine clears internal
                     variables and goes back to Idle state for next command.
                     '''
             } // e: done
+            { value: "28"
+              name: "stop"
+              desc: '''Writing 6'b011100 or dec 28 into this field when KMAC/SHA3
+                    is receiving the message stops the sponge absorbing stage
+                    without appending any padding. The Keccak state then holds a
+                    valid intermediate sponge state, which SW can read from
+                    !!STATE to save the context.
+
+                    The message received since the last `start` or `continue`
+                    command must be a multiple of the Keccak rate. Otherwise the
+                    absorbing stage is stopped anyway, but the exposed state is
+                    not a valid context and `ErrSwStopNotBlockAligned` is
+                    reported.
+
+                    Once !!STATUS.sha3_stopped is set, or the `kmac_done`
+                    interrupt is raised, SW reads !!STATE and completes the
+                    operation with the `done` command, which clears the Keccak
+                    state.
+
+                    This command is not available when a sideloaded key is used,
+                    as saving the context would expose the key. The command is
+                    then discarded and `ErrSwSaveRestoreSideload` is reported.
+                    '''
+            } // e: stop
+            { value: "27"
+              name: "state_write"
+              desc: '''Writing 6'b011011 or dec 27 into this field when KMAC/SHA3
+                    is idle claims the KMAC HWIP for SW such that it can write a
+                    previously saved context to the KMAC HWIP. The command also
+                    clears the Keccak state, so a restore always starts from a
+                    known state.
+
+                    SW resumes the operation with the `continue` command once the
+                    full context is written. If SW decides not to resume after
+                    all, the `done` command releases the KMAC HWIP again.
+
+                    This command is not available when a sideloaded key is used.
+                    The command is then discarded and `ErrSwSaveRestoreSideload`
+                    is reported.
+                    '''
+            } // e: state_write
+            { value: "41"
+              name: "continue"
+              desc: '''Writing 6'b101001 or dec 41 into this field after the
+                    `state_write` command resumes the sponge absorbing stage from
+                    the context that SW has written into !!STATE. Issuing it
+                    without claiming the KMAC HWIP first is discarded and reported
+                    as `ErrSwCmdSequence`.
+
+                    In contrast to the `start` command, the prefix and key are
+                    not processed again, as both are already part of the
+                    restored state. The !!KEY_SHARE0 and !!KEY_SHARE1 registers
+                    therefore do not need to be restored, but !!CFG_SHADOWED must
+                    hold the same configuration as before the context was saved.
+
+                    A context must have been written into !!STATE after the
+                    `state_write` command. Otherwise the command is discarded and
+                    `ErrSwContinueWithoutContext` is reported.
+
+                    This command is not available when a sideloaded key is used.
+                    The command is then discarded and `ErrSwSaveRestoreSideload`
+                    is reported.
+                    '''
+            } // e: continue
           ] // enum
         } // f: cmd
         { bits: "8"
@@ -713,6 +777,24 @@
           name: "sha3_squeeze"
           desc: '''If 1, SHA3 completes sponge absorbing stage.
                 In this stage, SW can manually run the hashing engine.
+                '''
+        }
+        { bits: "3"
+          name: "sha3_stopped"
+          desc: '''If 1, SHA3 has stopped the sponge absorbing stage for a
+                context switch. In this stage, SW can read the !!STATE to save
+                the context. The absorbing stage is resumed by restoring the
+                !!STATE and issuing the `continue` command.
+                '''
+        }
+        { bits: "4"
+          name: "state_write"
+          desc: '''If 1, SW has claimed the KMAC HWIP with the `state_write`
+                command and writes to !!STATE are accepted. SW must poll this
+                bit after issuing the command and before writing the context.
+
+                The bit clears again when SW leaves the state with the
+                `continue` or the `done` command.
                 '''
         }
         { bits: "12:8"
@@ -1027,13 +1109,23 @@
     { window: {
         name: "STATE"
         items: "128"  // 512B address space
-        swaccess: "ro"
+        swaccess: "rw"
         desc: '''Keccak State (1600 bit) memory.
 
               The software can get the processed digest by reading this memory
               region. Unlike MSG_FIFO, STATE memory space sees the addr[9:0].
               If Masking feature is enabled, the software reads two shares from
               this memory space.
+
+              Software can write to the register to restore a previously saved
+              context. Writes are only accepted once software claimed the KMAC
+              HWIP with the `state_write` command and while the hashing engine
+              is idle, which !!STATUS.state_write reports. Writes at any other
+              time are acknowledged on the bus and ignored.
+
+              Writes must be full 32-bit word writes. Sub-word writes are
+              answered with a bus error, as a partial write cannot be applied
+              to the Keccak state.
 
               0x400 - 0x4C7: State share
               0x500 - 0x5C7: Mask share of the state, 0 if EnMasking = 0
