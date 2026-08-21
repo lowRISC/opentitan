@@ -89,6 +89,7 @@ class CsrAddrs(IntEnum):
     MOD6 = 0x7d6
     MOD7 = 0x7d7
     RND_PREFETCH = 0x7d8
+    URND_CTRL = 0x7d9
     KMAC_STATUS = 0x7db
     KMAC_CTRL = 0x7dc
     KMAC_CFG = 0x7dd
@@ -96,6 +97,7 @@ class CsrAddrs(IntEnum):
     MAI_CTRL = 0x7e0
     RND = 0xfc0
     URND = 0xfc1
+    URND_STATUS = 0xfc2
     INSN_CNT = 0xfc3
     MAI_STATUS = 0xfca
 
@@ -119,6 +121,7 @@ class WsrAddrs(IntEnum):
     MAI_IN0_S1 = 13
     MAI_IN1_S0 = 14
     MAI_IN1_S1 = 15
+    URND_STATE = 16
 
 
 def sv_perm_to_tuple(num_elems: int, literal: str) -> Tuple[int, ...]:

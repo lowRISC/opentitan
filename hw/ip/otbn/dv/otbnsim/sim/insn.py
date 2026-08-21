@@ -1455,6 +1455,10 @@ class BNMULV(BnVecVecMul):
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
+            if cycle == 2:
+                # In cycle 3 ACC is cleared with URND. If the PRNG is stopped, it must advance.
+                # This must happen one cycle before as URND is the flopped PRNG output.
+                state.wsrs.URND.mark_consumed()
             yield None
 
         state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
@@ -1507,6 +1511,10 @@ class BNMULVL(BnVecVecMul):
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
+            if cycle == 2:
+                # In cycle 3 ACC is cleared with URND. If the PRNG is stopped, it must advance.
+                # This must happen one cycle before as URND is the flopped PRNG output.
+                state.wsrs.URND.mark_consumed()
             yield None
 
         state.wsrs.ACC.write_unsigned(state.wsrs.URND.read_unsigned())
@@ -1584,8 +1592,9 @@ class BNMULVM(BnVecVecMul):
         # Cycle 2: TMP is written, ACC and C unused
         # Cycle 3: ACC is read and written, TMP and C are read
         #
-        # We now repeat these 3 cycles for all four 64b chunks (quarter words).
-        # In cycle 12 ACC is cleared and the result is written to the destination WDR.
+        # We now repeat these 3 cycles for all four 64b chunks (quarter words). After each chunk,
+        # TMP and C are cleared using URND. In cycle 12 ACC is cleared and the result is written to
+        # the destination WDR.
         #
         # The chunk processing order is rotated by a random offset sampled from URND.
         offset = state.mac_rnd_offset
@@ -1595,6 +1604,8 @@ class BNMULVM(BnVecVecMul):
             if qword != 0:
                 yield None
             yield None
+            # The PRNG advance must be issued one cycle before URND is used.
+            state.wsrs.URND.mark_consumed()
             yield None
             chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
@@ -1655,6 +1666,7 @@ class BNMULVML(BnVecVecMul):
             if qword != 0:
                 yield None
             yield None
+            state.wsrs.URND.mark_consumed()
             yield None
             chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
@@ -1804,6 +1816,20 @@ class BNPACK(OTBNInsn):
         packed = shifted & ((1 << 256) - 1)
 
         state.wdrs.get_reg(self.wrd).write_unsigned(packed)
+
+
+def reads_urnd_first_cycle(insn: OTBNInsn) -> bool:
+    '''Whether insn reads URND on its first execute cycle.
+
+    If the PRNG is stopped, the predecoder issues an advance one cycle before the instruction
+    executes as URND is the flopped PRNG output.'''
+    if isinstance(insn, BNWSRR):
+        return insn.wsr == WsrAddrs.URND
+    if isinstance(insn, CSRRS):
+        return insn.csr == CsrAddrs.URND
+    if isinstance(insn, CSRRW):
+        return insn.csr == CsrAddrs.URND and insn.grd != 0
+    return False
 
 
 INSN_CLASSES = [
