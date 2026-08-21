@@ -29,6 +29,8 @@ package i3c_consts_pkg;
     SETMRLB   = 8'h0a,  // Set Max Read Length
     ENTTM     = 8'h0b,  // Enter Test Mode
 
+    ENDXFERB  = 8'h12,  // Data Transfer Ending Procedure Control
+
     ENTHDR0   = 8'h20,  // Enter HDR Mode 0
     ENTHDR1   = 8'h21,  // Enter HDR Mode 1
     ENTHDR2   = 8'h22,  // Enter HDR Mode 2

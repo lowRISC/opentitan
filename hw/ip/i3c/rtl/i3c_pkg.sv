@@ -531,7 +531,7 @@ package i3c_pkg;
     // Note that we need only be concerned with those CCCs that are supported by the Target;
     // the Target transceiver logic is responsible for rejecting or ignoring CCCs/DEFBs that are not
     // supported.
-    return ccc inside {ENTTM, RSTACTB, GETSTATUS, ENDXFER, GETMXDS, GETCAPS, RSTACT};
+    return ccc inside {ENTTM, RSTACTB, GETSTATUS, ENDXFER, ENDXFERB, GETMXDS, GETCAPS, RSTACT};
   endfunction
 
   // Indicates whether the Target supports the given Direct Common Control Command.
@@ -539,8 +539,8 @@ package i3c_pkg;
   //   concerned with Broadcast CCCs.
   function automatic bit supported_direct_ccc(logic [7:0] ccc);
     return ccc inside {ENEC, DISEC, SETDASA, SETNEWDA, SETMWL, SETMRL, GETMWL, GETMRL, GETPID,
-                       GETBCR, GETDCR, GETSTATUS, GETACCCR, ENDXFER, GETMXDS, GETCAPS, SETROUTE,
-                       RSTACT, SETGRPA, RSTGRPA};
+                       GETBCR, GETDCR, GETSTATUS, GETACCCR, ENDXFER, GETMXDS, GETCAPS, RSTACT,
+                       SETGRPA, RSTGRPA};
   endfunction
 
 endpackage
