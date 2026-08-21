@@ -800,7 +800,8 @@ class otbn_base_vseq extends cip_base_vseq #(
     stop_tokens = 0;
   endtask
 
-  // Wait for (the one and only) interrupt to strike. Returns early on reset
+  // Wait for the DONE interrupt to strike (can be end of execution of a WFI pause). Returns early
+  // on reset.
   task wait_for_interrupt();
     if (cfg.clk_rst_vif.rst_n && !cfg.intr_vif.pins[0]) begin
       @(negedge cfg.clk_rst_vif.rst_n or posedge cfg.intr_vif.pins[0]);
