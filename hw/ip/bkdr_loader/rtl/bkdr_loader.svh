@@ -5,6 +5,10 @@
 `ifndef BKDR_LOADER_SVH
 `define BKDR_LOADER_SVH
 
+// The u_rram_macro.u_info_array/u_data_array paths below are the open-source rram_macro's own
+// hierarchy. This backdoor loader is only used in flows (e.g. the CW340 FPGA build) that always
+// use that implementation, so unlike `RRAM_DATA_MEM_PATH`/`RRAM_INFO_MEM_PATH` in
+// chip_hier_macros.svh, these paths don't need to resolve for a vendor rram_macro too.
 `define BKDR_LOADER_CONNECT_REQS \
   assign top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req   = bkdr_req[bkdr_loader_pkg::BkdrAon];      \
   assign top_earlgrey.earlgrey_pd_main.u_rram_macro.u_info_array.bkdr_req                                                  = bkdr_req[bkdr_loader_pkg::BkdrRramInfo]; \

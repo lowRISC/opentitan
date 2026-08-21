@@ -298,6 +298,8 @@ The chip core carries the `mapping:` block that selects the open-source implemen
 Each of them has exactly one open-source implementation, so a build picks the right one even with no mapping; applying the chip mapping makes the choice explicit and silences FuseSoC's non-deterministic-selection warning.
 To supply your own, provide a core that declares the same `virtual:` VLNV, and map it -- either from your own mapping core or with an extra `--mapping`.
 
+The RRAM macro, `lowrisc:virtual_ip:rram_macro`, is virtual too, but unlike those it isn't resolved via the chip core's own `mapping:` block: it follows the same externally-supplied pattern as `lowrisc:virtual_prim_tech:all` below, so it can stay swappable via `--mapping`/`dvsim.hjson` without editing `chip_earlgrey_asic.core` itself.
+
 ```yaml
 # hw/top_earlgrey/chip_earlgrey_asic.core
 name: "lowrisc:systems:chip_earlgrey_asic:0.1"
@@ -346,6 +348,11 @@ WARNING: Non-deterministic selection of virtual core <Virtual_VLNV> selected <Co
 ```
 
 Treat that warning as an error: it becomes a genuine ambiguity as soon as your own implementation is on the cores-root.
+
+FuseSoC also emits this warning unconditionally when a core that provides a virtual VLNV is itself the direct build target -- for instance, running `--target=lint` on `lowrisc:ip:rram_macro` directly -- no matter what `--mapping` is given.
+The top-level target isn't recorded as a dependency edge, so the solver has nothing to resolve it against and always calls the selection non-deterministic.
+The fix is a thin wrapper core that `depend`s on the virtual VLNV instead of providing it, giving the solver an edge to resolve: see `hw/ip/rram_macro/lint/rram_macro_lint.core`.
+Point standalone flows (e.g. a lint config's `fusesoc_core:`) at a wrapper like that rather than at a concrete implementation directly.
 
 #### Using dvsim
 

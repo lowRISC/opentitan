@@ -39,8 +39,11 @@
 
 // Memory hierarchies.
 `define MEM_ARRAY_SUB         mem
-`define RRAM_DATA_MEM_HIER    `RRAM_MACRO_HIER.u_data_array.`MEM_ARRAY_SUB
-`define RRAM_INFO_MEM_HIER    `RRAM_MACRO_HIER.u_info_array.`MEM_ARRAY_SUB
+// Defines `RRAM_DATA_MEM_PATH`/`RRAM_INFO_MEM_PATH`, resolved to whichever rram_ctrl_bkdr_util
+// implementation (open-source or vendor) is mapped in for this build.
+`include "rram_ctrl_bkdr_util_hier.svh"
+`define RRAM_DATA_MEM_HIER    `RRAM_MACRO_HIER.`RRAM_DATA_MEM_PATH
+`define RRAM_INFO_MEM_HIER    `RRAM_MACRO_HIER.`RRAM_INFO_MEM_PATH
 `define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
 `define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
 `define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

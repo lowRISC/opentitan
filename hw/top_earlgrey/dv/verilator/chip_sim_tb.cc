@@ -27,6 +27,10 @@ int main(int argc, char **argv) {
                0x30000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
+  // u_rram_macro.u_data_array is the open-source rram_macro's own hierarchy.
+  // Verilator builds never use a vendor rram_macro, so unlike
+  // RRAM_DATA_MEM_PATH/RRAM_INFO_MEM_PATH in chip_hier_macros.svh, this path
+  // doesn't need to resolve for one too.
   MemArea rram(top_scope + ".u_rram_macro.u_data_array", 0x200000 / 16, 16);
 
   std::vector<uint8_t> all_zeros(rram.GetSizeBytes());

@@ -13,6 +13,12 @@ In the open-source version, the RRAM is emulated with prim_ram_1p modules.
 In the closed-source version, the real RRAM is instantiated and additional signals for production testing and scan isolation are connected.
 The macro contains a CSR block for vendor specific operations which is not used in the open-source version.
 
+## Replacing the macro
+
+`rram_macro` is a FuseSoC virtual core (`lowrisc:virtual_ip:rram_macro`): this open-source implementation is the default, and a partner can map the virtual core to their own implementation instead, without changing anything outside `rram_macro` itself.
+Since `earlgrey_pd_main.sv` instantiates `rram_macro` with a fixed parameter and port list, a replacement must match the open-source model exactly.
+
+
 ## Simulation
 
 A pre-dv environment exists that allows to perform basic read and write transactions to the RRAM macro.

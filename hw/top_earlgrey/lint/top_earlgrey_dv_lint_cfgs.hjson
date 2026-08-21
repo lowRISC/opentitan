@@ -226,7 +226,9 @@
                   // cores for the AST, pads, scan roles and JTAG ID.  It also
                   // applies the mappings of `top_earlgrey`, which the chip
                   // depends on.
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"
+                  // rram_ctrl_bkdr_util is also virtual: chip_env (which this
+                  // DV environment instantiates) depends on it directly.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1          --mapping=lowrisc:systems:top_earlgrey:0.1  --mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1"
                   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
              },
             ]
