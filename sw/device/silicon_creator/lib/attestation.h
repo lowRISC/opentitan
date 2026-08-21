@@ -29,6 +29,7 @@ enum {
  */
 enum {
   kAttestationKeyGenVersion0 = 0,
+  kAttestationKeyGenVersion1 = 1,
 };
 
 #ifdef __cplusplus
