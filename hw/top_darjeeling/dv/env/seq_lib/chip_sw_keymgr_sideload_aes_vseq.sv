@@ -17,14 +17,14 @@ class chip_sw_keymgr_sideload_aes_vseq extends chip_sw_keymgr_key_derivation_vse
   };
 
 
-  virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
+  virtual task check_op_in_owner_int_state(bit [keymgr_dpe_pkg::KeyWidth-1:0] unmasked_key);
 
     bit [3:0][3:0][7:0] ciphertext;
     bit [3:0][3:0][7:0] ciphertext_transposed;
     bit [7:0] digest [16];
     bit [7:0] digest_rev [16];
-    bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key;
-    bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key_rev;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] sideload_aes_key;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] sideload_aes_key_rev;
 
     // Only need to fetch the AES sideload key from keymgr and test it with AES and not check key generation.
     check_aes_sideload(unmasked_key, sideload_aes_key);

@@ -8,7 +8,6 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_data_en_state
-  import keymgr_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 (
   input clk_i,

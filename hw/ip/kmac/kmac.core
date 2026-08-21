@@ -17,7 +17,7 @@ filesets:
       - lowrisc:prim:trivium
       - lowrisc:prim:mubi
       - lowrisc:ip:tlul
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:sha3
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
