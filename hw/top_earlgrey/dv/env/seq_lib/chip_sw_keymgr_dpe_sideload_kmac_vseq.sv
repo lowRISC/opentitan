@@ -24,12 +24,12 @@ class chip_sw_keymgr_dpe_sideload_kmac_vseq extends chip_sw_keymgr_dpe_key_deriv
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),
-                           .dest(keymgr_pkg::Kmac),
+                           .dest(keymgr_dpe_pkg::Kmac),
                            .version(kVersionVersionedKey),
                            .salt(kSaltVersionedKey));
 
     // Fetch the generated key via backdoor from the HW!
-    sideload_kmac_key = get_unmasked_key(get_output(keymgr_pkg::Kmac));
+    sideload_kmac_key = get_unmasked_key(get_output(keymgr_dpe_pkg::Kmac));
     {<< byte {sideload_key_arr}} = sideload_kmac_key;
 
     c_dpi_kmac128(MsgArr, MessageBytes,

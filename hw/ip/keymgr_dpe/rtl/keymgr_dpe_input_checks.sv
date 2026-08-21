@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 // We should also check for input validity
-module keymgr_dpe_input_checks import keymgr_pkg::*; #(
+module keymgr_dpe_input_checks import keymgr_pkg::*; import keymgr_dpe_pkg::*; #(
   parameter bit          KmacEnMasking      = 1'b1,
   parameter int unsigned NumRomDigestInputs = 1
 ) (
