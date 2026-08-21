@@ -32,8 +32,8 @@ class csrng_monitor extends dv_reactive_monitor #(
   task run_phase(uvm_phase phase);
     @(posedge cfg.vif.rst_n);
     fork
-      handle_reset();
       collect_valid_trans();
+      monitor_and_handle_reset();
       // We only need to monitor incoming requests if the agent is configured
       // in device mode.
       if (cfg.if_mode == dv_utils_pkg::Device) begin
@@ -49,6 +49,16 @@ class csrng_monitor extends dv_reactive_monitor #(
       // TODO: sample any reset-related covergroups
       wait (!cfg.in_reset);
     end
+  endtask
+
+  local task monitor_and_handle_reset();
+    fork
+      forever begin
+        @(cfg.vif.rst_n);
+        cfg.in_reset = !cfg.vif.rst_n;
+      end
+      handle_reset();
+    join_none
   endtask
 
   virtual task collect_valid_trans();
@@ -86,12 +96,16 @@ class csrng_monitor extends dv_reactive_monitor #(
             end
             cfg.vif.wait_cmd_ack_or_rst_n();
           join_any
-          cs_item.status = cfg.vif.mon_cb.cmd_rsp.csrng_rsp_sts;
-          `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
-                    UVM_HIGH)
-          analysis_port.write(cs_item);
-          if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);
 
+          cs_item.status = cfg.vif.mon_cb.cmd_rsp.csrng_rsp_sts;
+
+          // Don't write the analysis port and sample the covergroup if reset happens.
+          if (!cfg.in_reset) begin
+            `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
+                      UVM_HIGH)
+            analysis_port.write(cs_item);
+            if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);
+          end
           ,
 
           // Wait reset
