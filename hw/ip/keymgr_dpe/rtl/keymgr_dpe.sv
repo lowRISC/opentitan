@@ -77,8 +77,8 @@ module keymgr_dpe
 
   // interrupts and alerts
   output logic intr_op_done_o,
-  input  prim_alert_pkg::alert_rx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
+  input  prim_alert_pkg::alert_rx_t [keymgr_dpe_reg_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [keymgr_dpe_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   // Advance width calculation

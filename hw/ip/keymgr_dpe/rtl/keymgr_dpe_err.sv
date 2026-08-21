@@ -9,7 +9,7 @@
 
 module keymgr_dpe_err
   import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+  import keymgr_dpe_reg_pkg::*;
 (
   input clk_i,
   input rst_ni,
