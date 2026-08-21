@@ -580,9 +580,11 @@ module tb;
       data = new(
           .name  ("mem_bkdr_util[RramData]"),
           .path  (`DV_STRINGIFY(`RRAM_DATA_MEM_HIER)),
-          .depth ($size(`RRAM_DATA_MEM_HIER) - rram_ctrl_pkg::OtpPages * rram_ctrl_pkg::WordsPerPage),
-          .n_bits(($bits(`RRAM_DATA_MEM_HIER) - rram_ctrl_pkg::OtpPages * rram_ctrl_pkg::WordsPerPage *
-                  rram_ctrl_pkg::DataWidth)),
+          .depth ($size(`RRAM_DATA_MEM_HIER) -
+                  rram_ctrl_pkg::OtpPages * rram_ctrl_pkg::WordsPerPage),
+          .n_bits(($bits(`RRAM_DATA_MEM_HIER) / $size(`RRAM_DATA_MEM_HIER)) *
+                  ($size(`RRAM_DATA_MEM_HIER) -
+                   rram_ctrl_pkg::OtpPages * rram_ctrl_pkg::WordsPerPage)),
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
       m_mem_bkdr_util[RramData] = data;
@@ -646,8 +648,7 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
           .system_base_addr(top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
       m_mem_bkdr_util[Otp] = otp;
-      // No `MEM_BKDR_UTIL_FILE_OP: rram_ctrl_otp_bkdr_util parses the OTP image itself instead
-      // of using $readmemh (to handle the integrity page), so there's no event to hook up here.
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `RRAM_DATA_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM", UVM_MEDIUM)
       ram_main0 = new(

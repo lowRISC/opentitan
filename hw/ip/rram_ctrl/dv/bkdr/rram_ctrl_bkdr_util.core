@@ -4,6 +4,8 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:dv:rram_ctrl_bkdr_util:0.1
 description: "Backdoor read/write rram memory for DV"
+virtual:
+  - lowrisc:virtual_dv:rram_ctrl_bkdr_util
 
 filesets:
   files_dv:
@@ -16,10 +18,14 @@ filesets:
       - lowrisc:ip:rram_ctrl_pkg
       - lowrisc:dv:mem_bkdr_util
     files:
+      - rram_ctrl_bkdr_util_hier.svh: {is_include_file: true}
       - rram_ctrl_bkdr_util_pkg.sv
       - rram_ctrl_bkdr_util.sv: {is_include_file: true}
       - rram_ctrl_otp_bkdr_util.sv: {is_include_file: true}
     file_type: systemVerilogSource
+
+mapping:
+  "lowrisc:virtual_dv:rram_ctrl_bkdr_util": "lowrisc:dv:rram_ctrl_bkdr_util"
 
 targets:
   default:

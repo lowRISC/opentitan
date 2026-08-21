@@ -27,7 +27,8 @@
   // non-deterministic-selection warnings.
   // Note that the imported cfg already supplies the prim mapping, and dvsim
   // appends these lists rather than replacing them.
-  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"]
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_earlgrey_asic:0.1",
+                       "--mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1"]
 
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn:-no_dv"

@@ -30,7 +30,7 @@ filesets:
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:rram_ctrl
-      - lowrisc:ip:rram_macro
+      - lowrisc:virtual_ip:rram_macro
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe
       - lowrisc:earlgrey_constants:top_pkg
@@ -109,6 +109,7 @@ mapping:
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:earlgrey_constants:testing_lc_ctrl_token_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:earlgrey_constants:testing_rnd_cnst_pkg"
+  "lowrisc:virtual_ip:rram_macro": "lowrisc:ip:rram_macro"
 
 parameters:
   SYNTHESIS:

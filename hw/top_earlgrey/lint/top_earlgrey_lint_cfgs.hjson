@@ -161,7 +161,7 @@
                   rel_path: "hw/ip/rram_ctrl/lint/{tool}"
              },
              {    name: rram_macro
-                  fusesoc_core: lowrisc:ip:rram_macro
+                  fusesoc_core: lowrisc:ip:rram_macro_lint
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/rram_macro/lint/{tool}"
@@ -271,7 +271,7 @@
              {    name: chip_earlgrey_asic
                   fusesoc_core: lowrisc:systems:chip_earlgrey_asic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1 --mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/lint/{tool}"
              },
             ]

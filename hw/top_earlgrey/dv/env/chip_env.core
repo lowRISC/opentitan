@@ -21,7 +21,7 @@ filesets:
       - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:jtag_dmi_agent
       - lowrisc:dv:lc_ctrl_dv_utils
-      - lowrisc:dv:rram_ctrl_bkdr_util
+      - lowrisc:virtual_dv:rram_ctrl_bkdr_util
       - lowrisc:earlgrey_dv:otp_ctrl_mem_bkdr_util
       - lowrisc:dv:spi_agent
       - lowrisc:dv:spi_host_sva
