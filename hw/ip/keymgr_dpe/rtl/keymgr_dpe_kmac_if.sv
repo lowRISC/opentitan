@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager interface to kmac
+// Key manager dpe interface to kmac
 //
 
 `include "prim_assert.sv"
 
-module keymgr_kmac_if
+module keymgr_dpe_kmac_if
   import keymgr_pkg::*;
 #(
   parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault,
@@ -23,7 +23,7 @@ module keymgr_kmac_if
   input [3:0] inputs_invalid_i,
   output logic inputs_invalid_o,
 
-  // keymgr control to select appropriate inputs
+  // keymgr dpe control to select appropriate inputs
   input adv_en_i,
   input id_en_i,
   input gen_en_i,
@@ -405,4 +405,4 @@ module keymgr_kmac_if
   `ASSERT(LastStrb_A, valid |-> strb != '0)
 
 
-endmodule // keymgr_kmac_if
+endmodule // keymgr_dpe_kmac_if
