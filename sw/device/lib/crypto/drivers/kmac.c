@@ -315,7 +315,7 @@ status_t kmac_hwip_default_configure(void) {
   entropy_hash_threshold = bitfield_field32_write(
       entropy_hash_threshold,
       KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, UINT32_MAX);
-  abs_mmio_write32(
+  abs_mmio_write32_shadowed(
       kKmacBaseAddr + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
       entropy_hash_threshold);
 
@@ -337,7 +337,7 @@ status_t kmac_hwip_default_configure(void) {
 
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
-                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 1);
+                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
   // Do not remask message blocks
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
 
