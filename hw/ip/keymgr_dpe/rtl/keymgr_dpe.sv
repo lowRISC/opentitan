@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager top level
+// Key manager dpe top level
 //
 
 `include "prim_assert.sv"
@@ -213,7 +213,7 @@ module keymgr_dpe
   logic reseed_done;
   logic reseed_cnt_err;
 
-  keymgr_reseed_ctrl u_reseed_ctrl (
+  keymgr_dpe_reseed_ctrl u_reseed_ctrl (
     .clk_i,
     .rst_ni,
     .clk_edn_i,
@@ -404,7 +404,7 @@ module keymgr_dpe
   logic cfg_regwen;
 
   // key manager registers cannot be changed once an operation starts
-  keymgr_cfg_en u_cfgen (
+  keymgr_dpe_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
@@ -431,7 +431,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_sw_binding_regwen (
     .clk_i,
@@ -446,7 +446,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_slot_policy_regwen (
     .clk_i,
@@ -461,7 +461,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_max_key_ver_regwen (
     .clk_i,
@@ -596,7 +596,7 @@ module keymgr_dpe
   logic key_vld;
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
-  keymgr_input_checks #(
+  keymgr_dpe_input_checks #(
     .KmacEnMasking(KmacEnMasking),
     .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
@@ -681,7 +681,8 @@ module keymgr_dpe
 
   // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
-  keymgr_kmac_if #(
+  keymgr_dpe_kmac_if #(
+    .RndCnstRandPerm(RndCnstRandPerm),
     .MaxAdvDataWidth(DpeAdvDataWidth)
   ) u_kmac_if (
     .clk_i,
@@ -713,7 +714,7 @@ module keymgr_dpe
   //  Side load key storage
   /////////////////////////////////////
   // SEC_CM: HW.KEY.SW_NOACCESS
-  keymgr_sideload_key_ctrl u_sideload_ctrl (
+  keymgr_dpe_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
     .init_i(init),
