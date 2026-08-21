@@ -14,7 +14,7 @@ module i3c_target_ccc
   // CCC logic is enabled and active.
   // - this may be used to suppress any internal activity and gate off any output control signals
   //   when not processing CCCs.
-  input                         enable_i,
+  input                         enable_i, // TODO: Currently unused
 
   // Configuration.
   input  i3c_reg2hw_t           reg2hw_i,
@@ -398,7 +398,9 @@ module i3c_target_ccc
       end
       TargCRsn_RxD:
         if (ccc_req_i.sr) begin
+          // We are past the CCC setup phase, after the Restart
           if (|ccc_req_i.idx) begin
+            // Non-zero byte index: CCC sub-command or data
             if (ccc_req_i.rnw) begin
               // Return the read data selected/constructed above.
               ccc_rsp_o.req_cvalid = ccc_req_i.en;
@@ -418,6 +420,8 @@ module i3c_target_ccc
             // - the FSM logic records in the TargCR_Status register whether it's a group address.
             ccc_rsp_o.reg_we    = ccc_req_i.en;
             ccc_rsp_o.reg_widx  = TargCR_Targets;
+            // TODO(31128): This overwrites all targets if a group address is used, even if some or
+            //              all targets are not part of the group at hand.
             ccc_rsp_o.reg_wdata = ('b1 << ccc_req_i.targ_id) | {NumTargets{ccc_req_i.is_group}};
           end
         end else begin
@@ -447,6 +451,7 @@ module i3c_target_ccc
           endcase
         end
       // These are single-cycle reasons, so no need to qualify with 'en'.
+      // TODO(31128): TargCRsn_Sr is currently unreachable.
       TargCRsn_Sr: wr_commit = ccc_req_i.sr;
       TargCRsn_P:  wr_commit = 1'b1;
       // All cases are covered above; no requirement for a `default` clause.
@@ -493,6 +498,7 @@ module i3c_target_ccc
   assign endis_event_o.dishj  = {NumTargets{disevt & wdata0[3]}} & targets;
 
   // Reset Action.
+  // TODO(31128): This only implements a small part of what RSTACT is supposed to do.
   // Write only on broadcast or if any of our virtual targets has been addressed.
   // Write only if the defining byte has the MSB cleared, otherwise it is a GET RSTACT.
   assign rstact_de_o = wr_commit & (ccc inside {RSTACTB, RSTACT}) & ((ccc == RSTACTB) | |targets) &
