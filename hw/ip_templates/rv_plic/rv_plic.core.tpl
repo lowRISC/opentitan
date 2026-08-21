@@ -8,8 +8,11 @@ description: "RISC-V Platform Interrupt Controller (PLIC)"
 filesets:
   files_rtl:
     depend:
-      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_component:0.1")}
       - lowrisc:ip:tlul
+      - lowrisc:prim:alert
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:reg_we_check
+      - lowrisc:ip:rv_plic_component
       - lowrisc:prim:subreg
     % if racl_support:
       - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
@@ -20,6 +23,15 @@ filesets:
       - rtl/${module_instance_name}.sv
     file_type: systemVerilogSource
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rv_plic.waiver
+    file_type: waiver
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -28,6 +40,7 @@ parameters:
 targets:
   default: &default_target
     filesets:
+      - tool_ascentlint  ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: ${module_instance_name}
 
