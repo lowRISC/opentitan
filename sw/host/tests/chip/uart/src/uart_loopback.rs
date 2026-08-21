@@ -59,6 +59,7 @@ fn main() -> Result<()> {
 
     let transport = opts.init.init_target()?;
     let uart_console = transport.uart("console")?;
+    uart_console.set_flow_control(true)?;
 
     for uart_idx in 0..4 {
         transport.reset_with_delay(UartRx::Clear, Duration::from_millis(500))?;
