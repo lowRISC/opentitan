@@ -10,7 +10,7 @@ module prim_secded_inv_28_22_tb (
   input        [21:0] data_i,
   output logic [21:0] data_o,
   output logic [27:0] encoded_o,
-  output logic [5:0] syndrome_o,
+  output logic [5:0]  syndrome_o,
   output logic [1:0]  err_o,
   input        [27:0] error_inject_i
 );
