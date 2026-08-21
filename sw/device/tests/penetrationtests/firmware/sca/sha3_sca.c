@@ -527,8 +527,6 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
   }
 
   for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
-    kmac_reset();
-
     if (sha3_serial_absorb(sha3_batch_messages[i], kMessageLength) !=
         sha3ScaOk) {
       return ABORTED();
@@ -545,6 +543,10 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
     for (uint32_t j = 0; j < kDigestLength; ++j) {
       batch_digest[j] ^= out[j];
     }
+
+    // Reset before the next absorb since KMAC must be idle before starting
+    // another absorb.
+    kmac_reset();
   }
 
   // Acknowledge the batch command. This is crucial to be in sync with the host
