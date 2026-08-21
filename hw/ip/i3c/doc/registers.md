@@ -1101,7 +1101,7 @@ Response Queue State.
 ## IBI_CONFIG
 In-Band Interrupt Queue Configuration.
 - Offset: `0x94`
-- Reset default: `0xc1af130`
+- Reset default: `0x101af130`
 - Reset mask: `0xff3ff3ff`
 
 ### Fields
@@ -1112,7 +1112,7 @@ In-Band Interrupt Queue Configuration.
 
 |  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                                                                                                |
 |:------:|:------:|:-------:|:---------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:24  |   rw   |   0xc   | SIZE_VAL | Size value presented as `QUEUE_SIZE.IBI_STATUS_SIZE`. This value represents the sum of the IBI Queue and the IBI Status Descriptor FIFO. Since EXT_IBI_QUEUE_EN is set, the actual number of DWORDs is 8 times this value. |
+| 31:24  |   rw   |  0x10   | SIZE_VAL | Size value presented as `QUEUE_SIZE.IBI_STATUS_SIZE`. This value represents the sum of the IBI Queue and the IBI Status Descriptor FIFO. Since EXT_IBI_QUEUE_EN is set, the actual number of DWORDs is 8 times this value. |
 | 23:22  |        |         |          | Reserved                                                                                                                                                                                                                   |
 | 21:12  |   rw   |  0x1af  | MAX_ADDR | Maximum address for IBI Queue use (inclusive).                                                                                                                                                                             |
 | 11:10  |        |         |          | Reserved                                                                                                                                                                                                                   |

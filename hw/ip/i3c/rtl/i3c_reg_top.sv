@@ -4483,7 +4483,7 @@ module i3c_reg_top
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'hc),
+    .RESVAL  (8'h10),
     .Mubi    (1'b0)
   ) u_ibi_config_size_val (
     .clk_i   (clk_i),
