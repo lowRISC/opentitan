@@ -90,8 +90,8 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   };
 
   // Are we in a lifecycle state which needs alert configuration?
-  uint32_t lc_shift;
-  uint32_t lc_shift_masked;
+  uint32_t lc_shift = 0;
+  uint32_t lc_shift_masked = 0;
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
