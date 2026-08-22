@@ -575,4 +575,40 @@ class dv_base_reg_block extends uvm_reg_block;
     return regs.size() > 0;
   endfunction
 
+  // Return true if a fetch from rg is allowed because the block that contains it, or one of that
+  // block's ancestors, has allows_csr_fetch set.
+  local function bit reg_allows_fetch(uvm_reg rg);
+    uvm_reg_block     blk = rg.get_parent();
+    dv_base_reg_block dv_blk;
+
+    while (blk != null) begin
+      if ($cast(dv_blk, blk) && dv_blk.get_allows_csr_fetch()) return 1'b1;
+      blk = blk.get_parent();
+    end
+    return 1'b0;
+  endfunction
+
+  // Collect the registers in this reg block, or a child block, from which an instruction fetch is
+  // not allowed.
+  //
+  // Note that allows_csr_fetch is a property of the block that contains a register, so a
+  // hierarchical model like the one at chip level may contain a mixture of both sorts of register.
+  function void get_nofetch_csrs(ref uvm_reg regs[$]);
+    uvm_reg all_regs[$];
+
+    regs.delete();
+    get_registers(all_regs, UVM_HIER);
+    foreach (all_regs[i]) begin
+      if (!reg_allows_fetch(all_regs[i])) regs.push_back(all_regs[i]);
+    end
+  endfunction
+
+  // Return true if there is at least one register in this reg block or a child block from which an
+  // instruction fetch is not allowed.
+  function bit has_nofetch_csrs();
+    uvm_reg regs[$];
+    get_nofetch_csrs(regs);
+    return regs.size() > 0;
+  endfunction
+
 endclass
