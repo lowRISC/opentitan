@@ -23,6 +23,7 @@ rust_binary(
         "@crate_index//:num-bigint-dig",
         "@crate_index//:regex",
         "@crate_index//:serde_json",
+        "@crate_index//:tempfile",
         "@rules_rust//rust/runfiles",
     ],
 )
