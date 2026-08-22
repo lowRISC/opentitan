@@ -3,12 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{Result, anyhow};
+use anyhow::{Result, anyhow, bail};
 use base64ct::{Base64, Decoder};
 use clap::Parser;
+use core::option::Option;
 use num_bigint_dig::BigUint;
 use regex::Regex;
 use std::time::Duration;
+use tempfile::TempDir;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::crypto::sha256::Sha256Digest;
@@ -33,9 +35,14 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
 
-    /// Enable verification of ML-DSA certificates.
+    /// Enable verification of ML-DSA certificates
     #[arg(long)]
     test_mldsa: bool,
+
+    /// Enable verification of attestation chains after provisioning. This allows testing chains
+    /// starting from UDS certificates stored during provisioning
+    #[arg(long)]
+    post_provisioning_tests: bool,
 
     /// Assert that ML-DSA certificates are handed over from Flash storage.
     #[arg(long)]
@@ -148,22 +155,42 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     )?;
 
     // Note: Finding UDS is allowed to fail on FPGA environments.
-    let _uds_bin = get_base64_blob(&capture[0], r"(?msR)UDS: (.*?)$");
+    let uds_bin = if opts.post_provisioning_tests {
+        Some(get_base64_blob(&capture[0], r"(?msR)UDS: (.*?)$")?)
+    } else {
+        None
+    };
     let cdi0_bin = get_base64_blob(&capture[0], r"(?msR)CDI_0: (.*?)$")?;
     let cdi1_bin = get_base64_blob(&capture[0], r"(?msR)CDI_1: (.*?)$")?;
     let owner_page_0 = get_base64_blob(&capture[0], r"(?msR)OWNER_PAGE_0: (.*?)$")?;
     let owner_page_1 = get_base64_blob(&capture[0], r"(?msR)OWNER_PAGE_1: (.*?)$")?;
 
-    // TODO: check UDS certificate.
+    let uds = uds_bin
+        .as_ref()
+        .map(|b| x509::parse_certificate(b))
+        .transpose()?;
     let cdi0 = x509::parse_certificate(&cdi0_bin)?;
     let cdi1 = x509::parse_certificate(&cdi1_bin)?;
 
+    let uds_b64 = uds_bin
+        .map(|_| get_base64_str(&capture[0], r"(?msR)UDS: (.*?)$"))
+        .transpose()?;
+    let cdi0_b64 = get_base64_str(&capture[0], r"(?msR)CDI_0: (.*?)$")?;
+    let cdi1_b64 = get_base64_str(&capture[0], r"(?msR)CDI_1: (.*?)$")?;
+
+    log::info!("Verifying EC-DSA chain with OpenSSL...");
+    if let Some(uds_b64) = uds_b64 {
+        verify_cert_partial_chain(&[&uds_b64, &cdi0_b64, &cdi1_b64])?;
+    } else {
+        verify_cert_partial_chain(&[&cdi0_b64, &cdi1_b64])?;
+    }
+    log::info!("OpenSSL EC-DSA verification successful!");
+
     if opts.test_mldsa {
-        verify_mldsa_certs(&capture[0], &cdi0, &cdi1)?;
+        verify_mldsa_certs(&capture[0], uds.as_ref(), &cdi0, &cdi1)?;
         check_mldsa_storage_mode(&capture[0], opts.assert_mldsa_flash_storage)?;
         check_mldsa_flash_overlapped(&capture[0], opts.assert_mldsa_overlapped)?;
     }
-    // TODO: verify signature chain from CDI_1 to CDI_0 to UDS.
 
     let image = Image::read_from_file(opts.init.bootstrap.bootstrap.as_deref().unwrap())?;
 
@@ -297,62 +324,128 @@ fn check_mldsa_flash_overlapped(console_output: &str, assert_overlapped: bool) -
     Ok(())
 }
 
+fn verify_cert_partial_chain(chain_certs_b64: &[&str]) -> Result<()> {
+    let chain_certs_pem: Vec<String> = chain_certs_b64
+        .iter()
+        .map(|b64_cert| {
+            format!(
+                "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n",
+                b64_cert
+            )
+        })
+        .collect();
+
+    if let [root_cert, intermediate_certs @ .., leaf_cert] = &chain_certs_pem[..] {
+        let openssl_bin = find_openssl_bin()?;
+
+        let temp_dir = TempDir::new()?;
+        let ca_cert_filepath = temp_dir.path().join("ca_cert.pem");
+        std::fs::write(&ca_cert_filepath, root_cert)?;
+
+        let intermediate_certs_filepath = temp_dir.path().join("intermediate_certs.pem");
+        std::fs::write(&intermediate_certs_filepath, intermediate_certs.join("\n"))?;
+
+        let leaf_cert_filepath = temp_dir.path().join("leaf_cert.pem");
+        std::fs::write(&leaf_cert_filepath, leaf_cert)?;
+        let mut args: Vec<String> = vec![
+            "verify",
+            "-partial_chain",
+            "-ignore_critical",
+            "-show_chain",
+            "-verbose",
+            "-CAfile",
+            ca_cert_filepath
+                .to_str()
+                .ok_or(anyhow::anyhow!("Invalid CA cert filepath"))?,
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        if chain_certs_pem.len() > 2 {
+            args.extend(
+                [
+                    "-untrusted",
+                    intermediate_certs_filepath
+                        .to_str()
+                        .ok_or(anyhow::anyhow!("Invalid intermediate certs filepath"))?,
+                ]
+                .map(String::from),
+            );
+        }
+        args.push(
+            leaf_cert_filepath
+                .to_str()
+                .map(String::from)
+                .ok_or(anyhow::anyhow!("Invalid leaf cert filepath"))?,
+        );
+
+        let output = std::process::Command::new(openssl_bin)
+            .args(&args)
+            .output()?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            return Err(anyhow!(
+                "OpenSSL certificate chain verification failed!\nArgs: {:?}\nStdout: {}\nStderr: {}",
+                args,
+                stdout,
+                stderr
+            ));
+        } else {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            log::info!("Verified chain: {}", stdout);
+        }
+        Ok(())
+    } else {
+        bail!(
+            "Chain length: {}.At least 2 certificates needed to verify chain!",
+            chain_certs_b64.len()
+        );
+    }
+}
+
 /// Verify ML-DSA certificates if requested and structurally compare them to ECDSA certs.
 fn verify_mldsa_certs(
     console_output: &str,
+    uds_ecdsa: Option<&Certificate>,
     cdi0_ecdsa: &Certificate,
     cdi1_ecdsa: &Certificate,
 ) -> Result<()> {
     log::info!("ML-DSA verification requested. Performing verification...");
+    let uds_mldsa_bin = uds_ecdsa
+        .map(|_| get_base64_blob(console_output, r"(?msR)UDS_MLDSA_CERT: (.*?)$"))
+        .transpose()?;
     let cdi0_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
     let cdi1_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
 
+    let uds_mldsa = uds_mldsa_bin
+        .as_ref()
+        .map(|bin| x509::parse_certificate(bin))
+        .transpose()?;
     let cdi0_mldsa = x509::parse_certificate(&cdi0_mldsa_bin)?;
     let cdi1_mldsa = x509::parse_certificate(&cdi1_mldsa_bin)?;
 
-    let openssl_bin = find_openssl_bin()?;
+    let uds_mldsa_b64 = uds_mldsa_bin
+        .map(|_| get_base64_str(console_output, r"(?msR)UDS_MLDSA_CERT: (.*?)$"))
+        .transpose()?;
     let cdi0_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
     let cdi1_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
 
-    let cdi0_pem = format!(
-        "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n",
-        cdi0_mldsa_b64
-    );
-    let cdi1_pem = format!(
-        "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n",
-        cdi1_mldsa_b64
-    );
-
-    std::fs::write("cdi0_mldsa.pem", &cdi0_pem)?;
-    std::fs::write("cdi1_mldsa.pem", &cdi1_pem)?;
-
     log::info!("Verifying ML-DSA chain with OpenSSL...");
-    let output = std::process::Command::new(openssl_bin)
-        .args([
-            "verify",
-            "-partial_chain",
-            "-ignore_critical",
-            "-CAfile",
-            "cdi0_mldsa.pem",
-            "cdi1_mldsa.pem",
-        ])
-        .output()?;
-
-    let _ = std::fs::remove_file("cdi0_mldsa.pem");
-    let _ = std::fs::remove_file("cdi1_mldsa.pem");
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        return Err(anyhow!(
-            "OpenSSL ML-DSA verification failed!\nStdout: {}\nStderr: {}",
-            stdout,
-            stderr
-        ));
+    if let Some(uds_mldsa_b64) = uds_mldsa_b64 {
+        verify_cert_partial_chain(&[&uds_mldsa_b64, &cdi0_mldsa_b64, &cdi1_mldsa_b64])?;
+    } else {
+        verify_cert_partial_chain(&[&cdi0_mldsa_b64, &cdi1_mldsa_b64])?;
     }
     log::info!("OpenSSL ML-DSA verification successful!");
 
     log::info!("Comparing ML-DSA and ECDSA certificates for structural equivalence...");
+    match (uds_ecdsa, uds_mldsa) {
+        (Some(uds_ecdsa), Some(uds_mldsa)) => compare_certs_except_keys(uds_ecdsa, &uds_mldsa)?,
+        (None, None) => (),
+        _ => unreachable!(),
+    }
     compare_certs_except_keys(cdi0_ecdsa, &cdi0_mldsa)?;
     compare_certs_except_keys(cdi1_ecdsa, &cdi1_mldsa)?;
     log::info!("Structural equivalence verification successful!");
