@@ -290,6 +290,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (regs[i]) begin
       regs[i].clear_hdl_path("ALL");
     end
+
+    // Accesses to rv_dm's debug memory window land on a single TL device port, which passes both
+    // the CSRs and the debug ROM straight to dm_top without distinguishing a read from a fetch.
+    // There is thus nothing that stops a fetch from the CSRs in that window. This matches what
+    // rv_dm_env_cfg does for the block-level environment.
+    chip_ral.rv_dm_mem.set_allows_csr_fetch(1'b1);
   endfunction
 
   // Apply RAL exclusions externally since the RAL itself is considered generic. The IP it is used
