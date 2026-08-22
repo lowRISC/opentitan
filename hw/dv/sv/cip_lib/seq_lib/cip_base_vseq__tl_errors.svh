@@ -241,15 +241,16 @@ task tl_write_ro_mem_err(string            ral_name,
   end
 endtask
 
-// Return the address of the csr at a random index
-virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (dv_base_reg_block block);
+// Return the address of a randomly chosen CSR from which an instruction fetch is not allowed
+virtual function bit[BUS_AW-1:0] pick_rand_nofetch_csr_addr (dv_base_reg_block block);
   uvm_reg regs[$];
   uvm_reg chosen_reg;
-  block.get_registers(regs, UVM_HIER);
+  block.get_nofetch_csrs(regs);
 
   if (regs.size() == 0) begin
     `uvm_fatal(get_name(),
-               $sformatf("Cannot pick a random address: block %0s has no CSRs.", block.get_name()))
+               $sformatf("Cannot pick a random address: block %0s has no no-fetch CSRs.",
+                         block.get_name()))
   end
 
   chosen_reg = regs[$urandom_range(0, regs.size() - 1)];
@@ -265,7 +266,7 @@ endfunction
 // reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
   dv_base_reg_block ral_model = cfg.ral_models[ral_name];
-  bit has_nofetch_csrs = ral_model.has_csrs() && !ral_model.get_allows_csr_fetch();
+  bit has_nofetch_csrs = ral_model.has_nofetch_csrs();
 
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
@@ -294,7 +295,7 @@ virtual task tl_instr_type_err(string ral_name);
       has_nofetch_csrs: begin
         write = 1'b0;
         instr_type = MuBi4True;
-        addr = pick_rand_csr_addr(ral_model);
+        addr = pick_rand_nofetch_csr_addr(ral_model);
       end
     endcase
 
