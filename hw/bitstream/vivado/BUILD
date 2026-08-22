@@ -5,7 +5,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
-load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//rules:fusesoc.bzl", "fusesoc_hash_and_build")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
@@ -26,7 +26,7 @@ _CW340_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_TESTROM)
 _FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
 # CW340 bitstream
-fusesoc_build(
+fusesoc_hash_and_build(
     name = "fpga_cw340",
     testonly = True,
     srcs = [
@@ -38,6 +38,7 @@ fusesoc_build(
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
     ],
+    hash_dir = _FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "src/"),
     output_groups = {
         "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
         "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
