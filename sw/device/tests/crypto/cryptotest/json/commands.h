@@ -22,6 +22,7 @@ extern "C" {
     value(_, Hmac) \
     value(_, Kmac) \
     value(_, Mldsa) \
+    value(_, Mlkem) \
     value(_, Quit) \
     value(_, Rsa) \
     value(_, Sha) \
