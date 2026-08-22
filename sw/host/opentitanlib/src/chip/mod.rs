@@ -23,4 +23,6 @@ pub enum ChipDataError {
     BadSlot(boot_svc::BootSlot),
     #[error("invalid digest")]
     InvalidDigest,
+    #[error("invalid boot_svc identifier")]
+    BadIdentifier,
 }
