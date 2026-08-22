@@ -95,15 +95,20 @@ def get_random_data_hex_literal(width):
 def blockify(s, size, limit):
     '''Make sure the output does not exceed a certain size per line.'''
 
-    str_idx = 2
+    # Strip the '0x' prefix and zero-pad so the digit string always has exactly the
+    # number of hex digits needed to represent 'size' bits.
+    num_digits = -(-size // 4)  # ceil(size / 4)
+    digits = s[2:].zfill(num_digits)
+
+    str_idx = 0
     remain = size % (limit * 4)
     numbits = remain if remain else limit * 4
     s_list = []
 
     remain = size
     while remain > 0:
-        s_incr = int(numbits / 4)
-        string = s[str_idx:str_idx + s_incr]
+        s_incr = -(-numbits // 4)  # ceil(numbits / 4)
+        string = digits[str_idx:str_idx + s_incr]
         # Separate 32-bit words for readability.
         for i in range(s_incr - 1, 0, -1):
             if (s_incr - i) % 8 == 0:
@@ -120,6 +125,10 @@ def get_random_perm_hex_literal(numel):
     '''Compute a random permutation of 'numel' elements and
     return as packed hex literal.'''
     num_elements = int(numel)
+    if num_elements < 2:
+        raise ValueError(
+            'numel must be at least 2 to form a meaningful permutation (got {})'.format(
+                num_elements))
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
     random.shuffle(idx)
