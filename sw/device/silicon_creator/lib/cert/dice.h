@@ -26,6 +26,21 @@ enum {
   kDiceMeasurementSizeInBytes = kDiceMeasurementSizeInBits / 8,
 };
 
+// Algorithms used for keygen using UDS seed for certificate generation. See
+// `creator_pub_key_alg` in `sw/device/silicon_creator/lib/cert/uds.hjson`
+typedef enum uds_cert_keygen_alg {
+  kUdsKeygenAlgEcdsaP256 = 0,
+  kUdsKeygenAlgMldsa44 = 1,
+  kUdsKeygenAlgMldsa87 = 2,
+} uds_cert_keygen_alg_t;
+
+// Algorithms used for signing UDS certificate. See `signature_alg` in
+// `sw/device/silicon_creator/lib/cert/uds.hjson`
+typedef enum uds_cert_signature_alg {
+  kUdsSignatureAlgEcdsaP256 = 0,
+  kUdsSignatureAlgMldsa87 = 1,
+} uds_cert_signature_alg_t;
+
 extern const dice_cert_format_t kDiceCertFormat;
 /**
  * DICE ECC key descriptors.
@@ -54,12 +69,13 @@ extern const sc_keymgr_ecc_key_t kDiceKeyCdi1;
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_uds_tbs_cert_build(
-    hmac_digest_t *otp_creator_sw_cfg_measurement,
-    hmac_digest_t *otp_owner_sw_cfg_measurement,
-    hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
-    hmac_digest_t *otp_rot_creator_auth_state_measurement,
-    cert_key_id_pair_t *key_ids, ecdsa_p256_public_key_t *uds_pubkey,
-    uint8_t *tbs_cert, size_t *tbs_cert_size);
+    const hmac_digest_t *otp_creator_sw_cfg_measurement,
+    const hmac_digest_t *otp_owner_sw_cfg_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
+    const hmac_digest_t *otp_rot_creator_auth_state_measurement,
+    const cert_key_id_pair_t *key_ids,
+    const ecdsa_p256_public_key_t *uds_pubkey, uint8_t *tbs_cert,
+    size_t *tbs_cert_size);
 
 /**
  * Generates the CDI_0 attestation keypair and X.509 certificate.
@@ -76,11 +92,11 @@ rom_error_t dice_uds_tbs_cert_build(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
+rom_error_t dice_cdi_0_cert_build(const hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
-                                  cert_key_id_pair_t *key_ids,
-                                  ecdsa_p256_public_key_t *uds_pubkey,
-                                  ecdsa_p256_public_key_t *cdi_0_pubkey,
+                                  const cert_key_id_pair_t *key_ids,
+                                  const ecdsa_p256_public_key_t *uds_pubkey,
+                                  const ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size);
 
 /**
@@ -102,11 +118,13 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_cdi_1_cert_build(
-    hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
-    hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
-    owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
-    ecdsa_p256_public_key_t *cdi_0_pubkey,
-    ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size);
+    const hmac_digest_t *owner_measurement,
+    const hmac_digest_t *owner_manifest_measurement,
+    const hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
+    owner_app_domain_t key_domain, const cert_key_id_pair_t *key_ids,
+    const ecdsa_p256_public_key_t *cdi_0_pubkey,
+    const ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert,
+    size_t *cert_size);
 
 /**
  * Perform attestation for CDI_0.
