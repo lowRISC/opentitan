@@ -52,6 +52,11 @@ The following utilities provide generic helper tasks and functions to perform ac
 * dv_base_reg_pkg
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
+### Mode agent (`rv_dm_mode_agent`)
+
+This simple agent is used to drive / monitor the various mode selection inputs to `rv_dm`.
+These are connected to the environment through an `rv_dm_mode_if`.
+
 ### TL_agent
 
 The RV_DM testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md).
