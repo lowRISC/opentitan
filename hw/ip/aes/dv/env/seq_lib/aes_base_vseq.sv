@@ -714,7 +714,7 @@ class aes_base_vseq extends cip_base_vseq #(
     new_key = 1;
     do begin
       if (new_key) begin
-        if (!std::randomize(req_key_seq) with { req_key_seq.sideload_key.valid == 1; }) begin
+        if (!req_key_seq.randomize() with { sideload_key.valid == 1; }) begin
           `uvm_fatal(get_name(), "Failed to randomize req_key_seq.")
         end
         new_key = 0;
