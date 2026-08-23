@@ -610,10 +610,9 @@ function void rv_dm_scoreboard::on_mem_access_d(tl_seq_item item);
 endfunction
 
 function logic rv_dm_scoreboard::using_late_debug_enable();
-  prim_mubi_pkg::mubi8_t  pin_val = cfg.m_mode_agent_cfg.vif.otp_dis_rv_dm_late_debug;
-  prim_mubi_pkg::mubi32_t reg_val = prim_mubi_pkg::mubi32_t'(`gmv(ral.late_debug_enable));
-  return (prim_mubi_pkg::mubi8_test_true_strict(pin_val) ||
-          prim_mubi_pkg::mubi32_test_true_strict(reg_val));
+  bit [31:0] reg_val = ral.late_debug_enable.get_mirrored_value();
+  return (!cfg.m_disable_late_debug ||
+          prim_mubi_pkg::mubi32_test_true_strict(prim_mubi_pkg::mubi32_t'(reg_val)));
 endfunction
 
 function logic rv_dm_scoreboard::is_debug_enabled();
