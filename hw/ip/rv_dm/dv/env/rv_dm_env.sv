@@ -78,6 +78,7 @@ class rv_dm_env extends cip_base_env #(
       m_sba_access_monitor.analysis_port.connect(scoreboard.sba_access_fifo.analysis_export);
       m_tl_sba_agent.monitor.a_chan_port.connect(scoreboard.tl_sba_a_chan_fifo.analysis_export);
       m_tl_sba_agent.monitor.d_chan_port.connect(scoreboard.tl_sba_d_chan_fifo.analysis_export);
+      m_mode_agent.m_analysis_port.connect(scoreboard.m_mode_imp);
     end
     if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;

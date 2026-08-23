@@ -34,6 +34,37 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   // A constant that can be referenced from anywhere.
   string mem_ral_name = "rv_dm_mem_reg_block";
 
+  // The value that is currently supplied as next_dm_addr_i. This is updated by the scoreboard when
+  // it sees an item from the mode agent's monitor.
+  bit [31:0] m_next_dm_addr;
+
+  // Boolean values for mode inputs from lc_ctrl. These are all represented as bits here, mostly
+  // translated from lc_tx_t values that were observed by the mode agent's monitor and passed to the
+  // scoreboard.
+  bit        m_lc_hw_debug_clr;
+  bit        m_lc_hw_debug_en;
+  bit        m_lc_dft_en;
+  bit        m_lc_check_byp_en;
+  bit        m_lc_escalate_en;
+  bit        m_lc_init_done;
+  bit        m_strap_en_override;
+
+  // The debug enable signal from pinmux (pinmux_hw_debug_en_i), translated from an lc_tx_t value
+  // that was observed by the mode agent's monitor and passed to the scoreboard.
+  bit        m_pinmux_hw_debug_en;
+
+  // The strap-enable signal from pwrmgr (strap_en_i). This was observed by the mode agent's monitor
+  // and passed to the scoreboard.
+  bit        m_strap_en;
+
+  // The signal from otp_ctrl that tells rv_dm to disable late debug. This is translated from a
+  // mubi8_t value that was observed by the mode agent's monitor and passed to the scoreboard.
+  bit        m_disable_late_debug;
+
+  // The scanmode signal (scanmode_i). This is translated from a mubi4_t signal that was observed by
+  // the mode agent's monitor and passed to the scoreboard.
+  bit        m_scanmode;
+
   `uvm_object_utils_begin(rv_dm_env_cfg)
     `uvm_field_object(m_jtag_agent_cfg,   UVM_DEFAULT)
     `uvm_field_object(m_tl_sba_agent_cfg, UVM_DEFAULT)

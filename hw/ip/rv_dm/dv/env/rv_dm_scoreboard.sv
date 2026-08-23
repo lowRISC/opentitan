@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_mode_txn)
+
 class rv_dm_scoreboard extends cip_base_scoreboard #(
     .CFG_T(rv_dm_env_cfg),
     .RAL_T(rv_dm_regs_reg_block),
@@ -23,6 +25,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   // SBA transactions seen by the environment's m_sba_access_monitor
   uvm_tlm_analysis_fifo #(sba_access_item) sba_access_fifo;
+
+  // An import for observed mode updates
+  uvm_analysis_imp_mode_txn #(rv_dm_mode_seq_item, rv_dm_scoreboard) m_mode_imp;
 
   // A queue of D channel items that have been seen in tl_sba_d_chan_fifo but have not yet been
   // paired with a corresponding item in sba_access_fifo.
@@ -62,6 +67,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   extern protected function bit predict_tl_err(tl_seq_item   item,
                                                tl_channels_e channel,
                                                string        ral_name);
+
+  // Process mode updates written to the m_mode_imp import
+  extern function void write_mode_txn(rv_dm_mode_seq_item item);
 
   // Receive and process incoming raw JTAG accesses to non-DMI DTM registers.
   extern local task process_jtag_non_dmi_dtm_fifo();
@@ -116,6 +124,8 @@ function void rv_dm_scoreboard::build_phase(uvm_phase phase);
   sba_access_fifo = new("sba_access_fifo", this);
   tl_sba_a_chan_fifo = new("tl_sba_a_chan_fifo", this);
   tl_sba_d_chan_fifo = new("tl_sba_d_chan_fifo", this);
+  m_mode_imp = new("m_mode_imp", this);
+
   // TODO: remove once support alert checking
   do_alert_check = 0;
   selected_dtm_csr = cfg.m_jtag_agent_cfg.jtag_dtm_ral.default_map.get_reg_by_offset(0);
@@ -189,6 +199,37 @@ function bit rv_dm_scoreboard::predict_tl_err(tl_seq_item   item,
   end
 
   return super.predict_tl_err(item, channel, ral_name);
+endfunction
+
+function void rv_dm_scoreboard::write_mode_txn(rv_dm_mode_seq_item item);
+  // These translations are designed to convert invalid encodings to the "safer" option in each
+  // case. The mode agent does a similar translation in the other direction in rv_dm_mode_seq
+  // (converting unsafe values to arbitrary encodings).
+
+  if (item.m_has_next_dm_addr) begin
+    cfg.m_next_dm_addr = item.m_next_dm_addr;
+  end
+  if (item.m_has_lc_ctrl_signals) begin
+    cfg.m_lc_hw_debug_clr   = !(item.m_lc_hw_debug_clr == lc_ctrl_pkg::Off);
+    cfg.m_lc_hw_debug_en    = (item.m_lc_hw_debug_en == lc_ctrl_pkg::On);
+    cfg.m_lc_dft_en         = (item.m_lc_dft_en == lc_ctrl_pkg::On);
+    cfg.m_lc_check_byp_en   = (item.m_lc_check_byp_en != lc_ctrl_pkg::Off);
+    cfg.m_lc_escalate_en    = (item.m_lc_escalate_en != lc_ctrl_pkg::Off);
+    cfg.m_lc_init_done      = (item.m_lc_init_done == lc_ctrl_pkg::On);
+    cfg.m_strap_en_override = item.m_strap_en_override;
+  end
+  if (item.m_has_pinmux_signals) begin
+    cfg.m_pinmux_hw_debug_en = (item.m_pinmux_hw_debug_en == lc_ctrl_pkg::On);
+  end
+  if (item.m_has_pwrmgr_signals) begin
+    cfg.m_strap_en = item.m_strap_en;
+  end
+  if (item.m_has_otp_ctrl_signals) begin
+    cfg.m_disable_late_debug = !(item.m_otp_dis_rv_dm_late_debug == prim_mubi_pkg::MuBi8False);
+  end
+  if (item.m_has_scanmode) begin
+    cfg.m_scanmode = (item.m_scanmode == prim_mubi_pkg::MuBi8True);
+  end
 endfunction
 
 task rv_dm_scoreboard::process_jtag_non_dmi_dtm_fifo();

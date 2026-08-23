@@ -8,12 +8,18 @@ class rv_dm_mode_agent extends dv_base_agent #(.CFG_T      (rv_dm_mode_agent_cfg
                                                .MONITOR_T  (rv_dm_mode_monitor));
   `uvm_component_utils(rv_dm_mode_agent)
 
+  // An analysis port that broadcasts updates to the mode configuration that have been seen by the
+  // monitor.
+  uvm_analysis_port #(rv_dm_mode_seq_item) m_analysis_port;
+
   extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
 endclass
 
 function rv_dm_mode_agent::new (string name, uvm_component parent);
   super.new(name, parent);
+  m_analysis_port = new("m_analysis_port", this);
 endfunction
 
 function void rv_dm_mode_agent::build_phase(uvm_phase phase);
@@ -33,4 +39,9 @@ function void rv_dm_mode_agent::build_phase(uvm_phase phase);
   if (cfg.is_active && !cfg.vif.is_active) begin
     `uvm_error(get_full_name(), "Agent is active but the interface's is_active signal is false.")
   end
+endfunction
+
+function void rv_dm_mode_agent::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+  monitor.analysis_port.connect(m_analysis_port);
 endfunction

@@ -123,6 +123,10 @@ task rv_dm_mode_seq::body();
   // Randomise encodings for various fields of the item (if they are enabled) before randomising the
   // item itself. This avoids having to call complicated functions (which can call `uvm_error) from
   // inside the item randomisation.
+  //
+  // Note that rv_dm_scoreboard has to do a similar translation in the other direction (in its
+  // write_mode_txn function).
+
   if (m_has_lc_ctrl_signals) begin
     enc_lc_hw_debug_clr = m_lc_hw_debug_clr_valid ?
                           bool_to_lc_tx_t(m_lc_hw_debug_clr) :

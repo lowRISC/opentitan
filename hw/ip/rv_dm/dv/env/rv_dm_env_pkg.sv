@@ -29,6 +29,7 @@ package rv_dm_env_pkg;
   import rv_dm_mode_agent_pkg::rv_dm_mode_agent_cfg;
   import rv_dm_mode_agent_pkg::rv_dm_mode_sequencer;
   import rv_dm_mode_agent_pkg::rv_dm_mode_seq;
+  import rv_dm_mode_agent_pkg::rv_dm_mode_seq_item;
 
   // parameters
   parameter uint NUM_HARTS = rv_dm_reg_pkg::NrHarts;
