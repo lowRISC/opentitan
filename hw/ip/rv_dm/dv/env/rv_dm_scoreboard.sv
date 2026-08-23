@@ -77,10 +77,6 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // Receive and process incoming completed JTAG DMI accesses to non-SBA registers.
   extern local task process_jtag_non_sba_dmi_fifo();
 
-  // Return true if the top-level lc_hw_debug_en_i signal (monitored through
-  // cfg.m_mode_agent_cfg.vif) is On
-  extern local function bit is_lc_hw_debug_en();
-
   // Receive and process incoming complete SBA accesses (through sba_access_fifo).
   extern local task process_sba_access_fifo();
 
@@ -351,10 +347,6 @@ task rv_dm_scoreboard::process_jtag_non_sba_dmi_fifo();
   end
 endtask
 
-function bit rv_dm_scoreboard::is_lc_hw_debug_en();
-  return cfg.m_mode_agent_cfg.vif.mon_cb.lc_hw_debug_en === lc_ctrl_pkg::On;
-endfunction
-
 task rv_dm_scoreboard::process_sba_access_fifo();
   sba_access_item item;
   forever begin
@@ -372,7 +364,7 @@ task rv_dm_scoreboard::process_sba_access_fifo();
 
     // If the debugger is not enabled and cfg.sba_tl_tx_requires_debug=1 then we should not have
     // seen the SBA item translate into a TL access.
-    if (cfg.sba_tl_tx_requires_debug && !is_lc_hw_debug_en()) begin
+    if (cfg.sba_tl_tx_requires_debug && !cfg.m_lc_hw_debug_en) begin
       `DV_CHECK(sba_tl_access_q.size() == 0)
     end
 
@@ -389,9 +381,8 @@ task rv_dm_scoreboard::process_tl_sba_a_chan_fifo();
     tl_sba_a_chan_fifo.get(item);
     `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s",
                               item.sprint(uvm_default_line_printer)), UVM_HIGH)
-    if (cfg.sba_tl_tx_requires_debug) begin
-      `DV_CHECK(is_lc_hw_debug_en(),
-                "Received an SBA TL item when SBA should have been disabled.")
+    if (cfg.sba_tl_tx_requires_debug && !cfg.m_lc_hw_debug_en) begin
+      `uvm_error(get_full_name(), "Received an SBA TL item when SBA should have been disabled.")
     end
 
     process_tl_sba_access(item, AddrChannel);
@@ -404,9 +395,8 @@ task rv_dm_scoreboard::process_tl_sba_d_chan_fifo();
     tl_sba_d_chan_fifo.get(item);
     `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s",
                               item.sprint(uvm_default_line_printer)), UVM_HIGH)
-    if (cfg.sba_tl_tx_requires_debug) begin
-      `DV_CHECK(is_lc_hw_debug_en(),
-                "Received an SBA TL item when SBA should have been disabled.")
+    if (cfg.sba_tl_tx_requires_debug && !cfg.m_lc_hw_debug_en) begin
+      `uvm_error(get_full_name(), "Received an SBA TL item when SBA should have been disabled.")
     end
     sba_tl_access_q.push_back(item);
     // check tl packet integrity
