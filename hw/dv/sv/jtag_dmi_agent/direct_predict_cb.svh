@@ -104,7 +104,7 @@ task direct_predict_cb::pre_write(uvm_reg_item rw);
   // and then storing the first element of wdata.
   m_wdata[fld] = rw.value[0];
 
-  `uvm_info("direct_predict_cb::pre_write",
+  `uvm_info("pre_write",
             $sformatf("Storing wdata of 0x%0h for write to field %0s.",
                       m_wdata[fld], fld.get_full_name()),
             UVM_HIGH)
@@ -124,7 +124,7 @@ function void direct_predict_cb::post_predict(input uvm_reg_field  fld,
   prediction = m_direct_predictions[fld];
   m_direct_predictions.delete(fld);
 
-  `uvm_info("direct_predict_cb::post_predict",
+  `uvm_info("post_predict",
             $sformatf({"Applying direct prediction made for field %0s, ",
                        "which had value 0x%0h when the existing prediction updated a value of ",
                        "0x%0h to 0x%0h."},
