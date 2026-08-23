@@ -99,49 +99,49 @@
       name: rv_dm_jtag_dtm_csr_hw_reset
       uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_hw_reset"]
+      run_opts: ["+csr_hw_reset"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dtm_csr_rw
       uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_rw"]
+      run_opts: ["+csr_rw"]
       reseed: 20
     }
     {
       name: rv_dm_jtag_dtm_csr_bit_bash
       uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_bit_bash"]
+      run_opts: ["+csr_bit_bash"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dtm_csr_aliasing
       uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_aliasing"]
+      run_opts: ["+csr_aliasing"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dmi_csr_hw_reset
       uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_hw_reset"]
+      run_opts: ["+csr_hw_reset"]
       reseed: 5
     }
     {
       name: rv_dm_jtag_dmi_csr_rw
       uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_rw"]
+      run_opts: ["+csr_rw"]
       reseed: 20
     }
     {
       name: rv_dm_jtag_dmi_csr_bit_bash
       uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_bit_bash",
+      run_opts: ["+csr_bit_bash",
                  // Constrain the set of CSRs that we test in one iteration. DMI access is quite
                  // slow and doing the bit bash sequence for each of the 47 registers takes ages.
                  // Splitting into smaller chunks and running with more seeds should give us the
@@ -155,7 +155,7 @@
       name: rv_dm_jtag_dmi_csr_aliasing
       uvm_test_seq: rv_dm_jtag_dmi_csr_vseq
       build_mode: "cover_reg_top"
-      run_opts: ["+en_scb=0", "+csr_aliasing"]
+      run_opts: ["+csr_aliasing"]
       reseed: 5
     }
     {
@@ -184,8 +184,7 @@
       uvm_test_seq: "rv_dm_common_vseq"
       build_mode: "cover_reg_top"
       run_opts: ["+run_stress_all_with_rand_reset",
-                 "+stress_seq=rv_dm_tap_fsm_vseq",
-                 "+en_scb=0"]
+                 "+stress_seq=rv_dm_tap_fsm_vseq"]
       reseed: 10
     }
      {
