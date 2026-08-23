@@ -70,6 +70,8 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
 
+    jtag.halt()?;
+
     let rom_data = std::fs::read(&opts.rom)?;
     ensure!(rom_data.len() % 4 == 0);
 
