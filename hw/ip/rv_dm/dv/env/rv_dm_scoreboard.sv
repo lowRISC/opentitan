@@ -616,7 +616,5 @@ function logic rv_dm_scoreboard::using_late_debug_enable();
 endfunction
 
 function logic rv_dm_scoreboard::is_debug_enabled();
-  return lc_ctrl_pkg::lc_tx_test_true_strict(using_late_debug_enable() ?
-                                             cfg.m_mode_agent_cfg.vif.mon_cb.lc_hw_debug_en :
-                                             cfg.m_mode_agent_cfg.vif.mon_cb.lc_dft_en);
+  return (using_late_debug_enable() ? cfg.m_lc_hw_debug_en : cfg.m_lc_dft_en);
 endfunction
