@@ -214,12 +214,12 @@ pub fn load_elf(elf_file: &PathBuf) -> Result<StatusCreateRecords> {
         .with_context(|| format!("Could not read ELF file {}.", elf_file.display()))?;
     let file = object::File::parse(&*file_data)
         .with_context(|| format!("Could not parse ELF file {}", elf_file.display()))?;
-    // Try to find the .ot.status_create_record section.
-    let section = file
-        .section_by_name(".ot.status_create_record")
-        .ok_or_else(|| {
-            anyhow::anyhow!("ELF file should have a .ot.status_create_record section")
-        })?;
+    // Try to find the .ot.status_create_record section. If not found, assume there are none.
+    let Some(section) = file.section_by_name(".ot.status_create_record") else {
+        return Ok(StatusCreateRecords {
+            records: Vec::new(),
+        });
+    };
     let status_create_records = section
         .data()
         .context("cannot read .ot.status_create_record section data")?;
