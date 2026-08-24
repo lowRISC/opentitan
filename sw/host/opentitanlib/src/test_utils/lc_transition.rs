@@ -82,12 +82,13 @@ fn setup_lc_transition(
     target_lc_state: DifLcCtrlState,
     token: Option<[u32; 4]>,
 ) -> Result<()> {
-    // Check the lc_ctrl is initialized and ready to accept a transition request.
-    let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-    let status = LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
-    if status != LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY {
-        return Err(LcTransitionError::LcCtrlNotReady(status).into());
-    }
+    // Wait for the lc_ctrl to become initialized and ready.
+    wait_for_status(
+        jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
+    )
+    .context("LC controller did not become ready to accept a transition request.")?;
 
     claim_lc_mutex(jtag, true)?;
 
