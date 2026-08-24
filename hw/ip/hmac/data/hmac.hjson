@@ -42,6 +42,15 @@
       design_stage:       "D3",
       verification_stage: "V3",
       dif_stage:          "S0",
+      commit_id:          "4e85f97536f1fe0e2924d61bf11f7f36d4e063aa",
+      notes:              "",
+    }
+    {
+      version:            "2.0.2",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
       notes:              "",
     }
   ]
