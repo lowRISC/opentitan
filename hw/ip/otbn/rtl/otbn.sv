@@ -1463,10 +1463,20 @@ module otbn
   `ASSERT_KNOWN(IdleOKnown_A, idle_o)
   `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(LcRmaAckKnown_A, lc_rma_ack_o)
+  `ASSERT_KNOWN(RamCfgDmemKnown_A, ram_cfg_dmem_o)
+  `ASSERT_KNOWN(RamCfgImemKnown_A, ram_cfg_imem_o)
   `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
+  // The data part of the request directly originates from WSRs. These are non resettable flops.
+  // When a simulation starts, these are still X as only a secure wipe will set a value. We thus
+  // only check whether the data is known when the valid is set.
+  `ASSERT_KNOWN(KmacReqKnown_A, {kmac_data_o.req_last, kmac_data_o.req_valid,
+                                 kmac_data_o.rsp_ready, kmac_data_o.strb})
+  `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_data_o.data_s0, kmac_data_o.data_s1},
+                   kmac_data_o.req_valid)
 
   // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
   `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
