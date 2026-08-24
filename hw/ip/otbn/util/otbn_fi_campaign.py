@@ -36,15 +36,30 @@ class FISim(StandaloneSim):
         max_insns: Optional[int] = None,
     ) -> int:
         insn_count = 0
+        urnd_seed_count = 0
+
+        self.state.wsrs.URND.on_start()
+        for _ in range(6):
+            self.state.wsrs.URND.set_seed(random.getrandbits(32))
+            self.state.wsrs.URND.step()
+            self.state.wsrs.URND.commit()
+        self.state.wsrs.URND.reseed_done = True
+        self.state.commit(sim_stalled=True)
+
+        self.state.wfi_enabled = True
+        self.state.wfi_auto_resume = True
+
         self.state.complete_init_sec_wipe()
         while True:
             if max_insns is not None and insn_count >= max_insns:
                 raise TimeoutError("Maximum instruction limit reached")
             if self.state.ext_regs.read("RND_REQ", True):
                 self.state.wsrs.RND.set_unsigned(random.getrandbits(256), False, False)
-            if not self.state.wsrs.URND.running:
-                seed = [random.getrandbits(64) for _ in range(4)]
-                self.state.wsrs.URND.set_seed(seed)
+            if self.state.wsrs.URND.requesting:
+                self.state.wsrs.URND.set_seed(random.getrandbits(32))
+                urnd_seed_count = (urnd_seed_count + 1) % 6
+                if urnd_seed_count == 0:
+                    self.state.wsrs.URND.reseed_done = True
 
             current_pc = self.state.pc
 
