@@ -23,6 +23,7 @@ For SW convenience, the SRAM controller also provides an LFSR-based memory initi
 Similarly to the scrambling key, it is the task of SW to request memory initialization via the CSRs as described in the [Programmer's Guide](programmers_guide.md) below.
 
 Note that TL-UL accesses to the memory that occur while a key request or hardware initialization is pending will be blocked until the request has completed.
+This does not apply to accesses outside of the implemented memory range, see the [Programmer's Guide](programmers_guide.md).
 
 The individual mechanisms are explained in more detail in the subsections below.
 
