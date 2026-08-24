@@ -16,7 +16,7 @@ filegroup(
     testonly = True,
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_test_rom"],
+        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_stub_rom"],
         "//hw/bitstream:bitstream_gcp": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
     }),

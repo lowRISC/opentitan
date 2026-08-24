@@ -37,7 +37,7 @@ MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.a
 # Required designs
 KNOWN_DESIGNS = {
     "chip_earlgrey_cw340": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
+        "bitstream": "@//hw/bitstream/vivado:fpga_cw340_stub_rom",
         "mmi": "@//hw/bitstream/vivado:cw340_mmi",
     },
 }
