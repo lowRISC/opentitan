@@ -25,6 +25,11 @@ Note that before (re-)requesting an updated SRAM key it is imperative to make su
 
 It should also be noted that data and address scrambling is never entirely disabled - even when the default scrambling key is used.
 
+## Accesses Outside of the Implemented Memory Range
+
+Depending on the configured memory size, the address range decoded by the memory can be larger than the implemented memory, e.g., if `MemSizeRam` is not a power of 2.
+Accesses to an address inside that range but beyond `MemSizeRam` are answered with a TL-UL error response, and the memory is not accessed.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_sram_ctrl.h)
