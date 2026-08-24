@@ -437,6 +437,14 @@ class cip_base_vseq #(
   // Set the tlul_assert_en configuration flag in uvm_config_db. This is consumed by the code in
   // tlul_assert.sv and can enable/disable the assertions in that file
   extern virtual protected function void set_tl_assert_en(bit enable, string path = "*");
+
+  // Configure a virtual sequence that is a child of this one.
+  //
+  // The base implementation sets the sequencer for the child sequence to be p_sequencer. This is
+  // all that is needed if the child sequence will access everything through a virtual sequencer.
+  // This hook allows classes that extend cip_base_vseq to pass sequencers outside of the virtual
+  // sequencer to their child sequences.
+  extern virtual protected function void configure_child_vseq(uvm_sequence child_vseq);
 endclass
 
 constraint cip_base_vseq::rand_reset_delay_c {
@@ -1179,7 +1187,7 @@ task cip_base_vseq::run_seq_with_rand_reset_vseq(uvm_sequence seq,
                 `downcast(dv_vseq, seq.clone())
 
                 dv_vseq.do_apply_reset = 0;
-                dv_vseq.set_sequencer(p_sequencer);
+                configure_child_vseq(dv_vseq);
                 `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
                 `uvm_info(`gfn, $sformatf("Starting sequence %s", dv_vseq.get_full_name()),
                           UVM_MEDIUM)
@@ -1525,6 +1533,10 @@ endfunction
 
 function void cip_base_vseq::set_tl_assert_en(bit enable, string path = "*");
   uvm_config_db#(bit)::set(null, path, "tlul_assert_en", enable);
+endfunction
+
+function void cip_base_vseq::configure_child_vseq(uvm_sequence child_vseq);
+  child_vseq.set_sequencer(p_sequencer);
 endfunction
 
 `undef loop_ral_models_to_create_threads
