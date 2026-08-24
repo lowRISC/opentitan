@@ -19,9 +19,9 @@ package(default_visibility = ["//visibility:public"])
 # relative $(location ...) resolved labels is up 10 subdirectories.
 _PREFIX = "../../../../../../../../../../.."
 
-_CW340_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw340_scr_vmem"
+_CW340_STUBROM = "//sw/device/lib/testing/stub_rom:stub_rom_fpga_cw340_scr_vmem"
 
-_CW340_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_TESTROM)
+_CW340_STUBROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_STUBROM)
 
 _FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
@@ -31,12 +31,12 @@ fusesoc_hash_and_build(
     testonly = True,
     srcs = [
         "//hw:rtl_files",
-        _CW340_TESTROM,
+        _CW340_STUBROM,
     ],
     cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
-        "--BootRomInitFile=" + _CW340_TESTROM_PATH,
+        "--BootRomInitFile=" + _CW340_STUBROM_PATH,
     ],
     output_groups = {
         "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
@@ -50,7 +50,7 @@ fusesoc_hash_and_build(
 )
 
 filegroup(
-    name = "fpga_cw340_test_rom",
+    name = "fpga_cw340_stub_rom",
     testonly = True,
     srcs = [":fpga_cw340"],
     output_group = "bitstream",
