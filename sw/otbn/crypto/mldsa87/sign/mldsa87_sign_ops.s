@@ -124,7 +124,7 @@ compute_w:
    *   end for
    * end for
    */
-  loopi 7, 38
+  loopi 7, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
     /* Expand polynomials Y0[s] and Y1[s] and store them in slots 1 and 2. */
     addi x2, x8, 1024 /* Slot 1 */
     addi x3, x9, 0    /* Slot 2 */
@@ -144,7 +144,7 @@ compute_w:
     addi x3, x9, 0
     jal x1, ntt
 
-    loopi 8, 18
+    loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
       /* Expand polynomial A[r][s] and store it at slot 0. */
       addi x2, x8, 0
       addi x3, x12, 0
@@ -178,13 +178,13 @@ compute_w:
 
     /* Reset the output addresses, i.e., subtract 8192. */
     addi x20, x0, 1024
-    slli x20, x20, 3
+    slli x20, x20, 3    /* SCA_TEST_REPLACE: slli x20, x20, 0 */
     sub x10, x10, x20
     sub x11, x11, x20
     /* End of loop */
 
   /* Map the result polynomials back to the time domain. */
-  loopi 8, 8
+  loopi 8, 8    /* SCA_TEST_REPLACE: loopi 1, 8 */
     /* W0[r] = INTT(W0[r]). */
     addi x2, x10, 0
     addi x3, x10, 0
@@ -232,7 +232,7 @@ decompose_w:
    * polynomial for the high-bit coefficients W1[i]. To save DMEM space, W1[i]
    * is immediately encoded into a dense representation.
    */
-  loopi 8, 10
+  loopi 8, 10    /* SCA_TEST_REPLACE: loopi 1, 10 */
     /* Compute the decomposition of W[i]. Overwrite the two shares of W[i] with
        the shares of W0[i] and place W1[i] in the slot. */
     addi x2, x6, 0
@@ -367,7 +367,7 @@ _compute_z_norm_check_loop:
   addi x17, x17, 96
 
   /* Loop until all the Z[s] have been norm-checked. */
-  addi x2, x0, 7
+  addi x2, x0, 7    /* SCA_TEST_REPLACE: addi x2, x0, 1 */
   bne x18, x2, _compute_z_norm_check_loop
 
   /*
@@ -376,10 +376,10 @@ _compute_z_norm_check_loop:
 
   /* Reset the loop index s and the S1 pointers. */
   addi x18, x0, 0
-  addi x16, x16, -672
-  addi x17, x17, -672
+  addi x16, x16, -672    /* SCA_TEST_REPLACE: addi x16, x16, -96 */
+  addi x17, x17, -672    /* SCA_TEST_REPLACE: addi x17, x17, -96 */
 
-  loopi 7, 9
+  loopi 7, 9    /* SCA_TEST_REPLACE: loopi 1, 9 */
     /* Compute the arithmetic shares of Z[s]. */
     jal x1, _compute_z_kernel
 
@@ -617,18 +617,18 @@ _compute_r0_loop:
   addi x15, x15, 1
 
   /* Loop until all the R0[r] have been computed. */
-  addi x2, x0, 8
+  addi x2, x0, 8    /* SCA_TEST_REPLACE: addi x2, x0, 1 */
   bne x15, x2, _compute_r0_loop
 
   /* Reset the R0[s] address pointers. */
-  li x2, 8192
+  li x2, 8192    /* SCA_TEST_REPLACE: li x2, 1024 */
   sub x10, x10, x2
   sub x11, x11, x2
 
   /* At this point, due to the passed infinity norm check, D0 and D1 are not
      considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
        R0[s] = D0 + D1 (unmasking). */
-  loopi 8, 6
+  loopi 8, 6    /* SCA_TEST_REPLACE: loopi 1, 6 */
     addi x2, x10, 0
     addi x3, x11, 0
     addi x4, x10, 0
@@ -680,7 +680,7 @@ compute_x0:
    *   X0[r] = R0[r] + C
    * endfor
    */
-  loopi 8, 19
+  loopi 8, 19    /* SCA_TEST_REPLACE: loopi 1, 19 */
     /* Decode T0[r] into the polynomial slot. */
     addi x2, x8, 0
     addi x3, x9, 0
@@ -773,7 +773,7 @@ make_hint:
    */
 
   /* Calculate the hint polynomials H[r] for 0 <= r < 8. */
-  loopi 8, 32
+  loopi 8, 32    /* SCA_TEST_REPLACE: loopi 1, 32 */
     /* Decode W1[r] into the polynomial slot. */
     addi x2, x6, 0
     addi x3, x7, 0
@@ -889,7 +889,7 @@ hw_check_hint:
    * Accumulate the eight parallel counters by looping over all H[r] in steps
    * of eight coefficients at a time.
    */
-  loopi 8, 4
+  loopi 8, 4    /* SCA_TEST_REPLACE: loopi 1, 4 */
     loopi 32, 2
       bn.lid x0, 0(x2++)
       bn.addv.8s w1, w1, w0
@@ -959,7 +959,7 @@ compress_hint:
    *   Slot[(75 + i) * 4] = index
    * endfor
    */
-  loopi 8, 16
+  loopi 8, 16    /* SCA_TEST_REPLACE: loopi 1, 16 */
     loopi 256, 8
       /* x8 = H[i][j]. */
       lw x8, 0(x2)

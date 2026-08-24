@@ -43,7 +43,7 @@ sample_s:
   addi x16, x0, 0 /* s */
 
   /* Expand the S1 polynomials and encode them. */
-  loopi 7, 14
+  loopi 7, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
     /* Expand S1[s] into slots 0 and 1. */
     addi x2, x10, 0
     addi x3, x11, 0
@@ -68,7 +68,7 @@ sample_s:
   addi x16, x0, 0 /* r */
 
   /* Expand the S2 polynomials and encode them. */
-  loopi 8, 14
+  loopi 8, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
     /* Expand S2[r] into slots 0 and 1. */
     addi x2, x10, 0
     addi x3, x11, 0
@@ -153,7 +153,7 @@ compute_t:
    * end for
    */
 
-  loopi 7, 38
+  loopi 7, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
     /* X0, X1 = decode_s(S1_0_enc[s], S1_1_enc[s]) (poly slots 0, 1). */
     addi x2, x13, 0
     addi x3, x14, 0
@@ -171,7 +171,7 @@ compute_t:
     addi x3, x10, 0
     jal x1, ntt
 
-    loopi 8, 18
+    loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
       /* A = expand_a(RHO, r, s) (poly slot 2). */
       addi x2, x11, 0
       addi x3, x12, 0
@@ -205,7 +205,7 @@ compute_t:
 
     /* Reset the output addresses, i.e., subtract 8192. */
     addi x20, x0, 1024
-    slli x20, x20, 3
+    slli x20, x20, 3    /* SCA_TEST_REPLACE: slli x20, x20, 0 */
     sub x7, x7, x20
     sub x8, x8, x20
 
@@ -226,7 +226,7 @@ compute_t:
    * end for
   */
 
-  loopi 8, 23
+  loopi 8, 23    /* SCA_TEST_REPLACE: loopi 1, 23 */
     /* T_0[r] = INTT(T_0[r]). */
     addi x2, x7, 0
     addi x3, x7, 0
@@ -288,7 +288,7 @@ encode_t:
   addi x11, x5, 0 /* T1_enc */
 
   /* Unmask, round and encode each T polynomial. */
-  loopi 8, 18
+  loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
     /* Securely unmask T into slot 0. */
     addi x2, x8, 0
     addi x3, x9, 0
