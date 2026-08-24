@@ -46,11 +46,10 @@ class TVLASim(StandaloneSim):
     ) -> int:
         insn_count = 0
         initial_pc = self.state.pc
-        snapshot_dmem = self.state.dmem.dump_le_words() if batch_size > 1 else None
+        snapshot_dmem = self.state.dmem.dump_le_words()
 
         for trace_idx in range(batch_size):
-            if batch_size > 1:
-                assert snapshot_dmem is not None
+            if trace_idx > 0:
                 if self.trace_hw_file:
                     self.trace_hw_file.write("===\n")
                 self.state.dmem.load_le_words(
@@ -62,12 +61,20 @@ class TVLASim(StandaloneSim):
                 self.state.wsrs.ACC.write_unsigned(0)
                 self.state.csrs.flags[0].write_unsigned(0)
                 self.state.csrs.flags[1].write_unsigned(0)
-                self.state.wsrs.URND.set_seed(
-                    [random.getrandbits(64) for _ in range(4)]
-                )
                 self.state.pc = initial_pc
-                self.state.commit(sim_stalled=True)
-                self._tvla_init()
+
+            self.state.wsrs.URND.on_start()
+            for _ in range(6):
+                self.state.wsrs.URND.set_seed(random.getrandbits(32))
+                self.state.wsrs.URND.step()
+                self.state.wsrs.URND.commit()
+            self.state.wsrs.URND.reseed_done = True
+            self.state.commit(sim_stalled=True)
+            self._tvla_init()
+
+            urnd_seed_count = 0
+            self.state.wfi_enabled = True
+            self.state.wfi_auto_resume = True
 
             if dmem_batch_data:
                 sim_dmem_vars = dmem_batch_data[trace_idx]
@@ -82,10 +89,11 @@ class TVLASim(StandaloneSim):
                     self.state.wsrs.RND.set_unsigned(
                         random.getrandbits(256), False, False
                     )
-                if not self.state.wsrs.URND.running:
-                    self.state.wsrs.URND.set_seed(
-                        [random.getrandbits(64) for _ in range(4)]
-                    )
+                if self.state.wsrs.URND.requesting:
+                    self.state.wsrs.URND.set_seed(random.getrandbits(32))
+                    urnd_seed_count = (urnd_seed_count + 1) % 6
+                    if urnd_seed_count == 0:
+                        self.state.wsrs.URND.reseed_done = True
 
                 current_pc = self.state.pc
 
