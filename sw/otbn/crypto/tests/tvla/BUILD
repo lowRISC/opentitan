@@ -276,3 +276,138 @@ otbn_tvla_sim_test(
         "rsa_d0,rsa_d1": "boolean:64:0x322c127f274460106c92fed934f1c6d695dfc595227fd7a607c032cec45983351d0b0bc8f3dff3b6c9ad7832dd18d46d82a6173a921aaf8adaa5b31fa0d07f7d",
     },
 )
+
+genrule(
+    name = "mldsa87_sign_short_s",
+    srcs = ["//sw/otbn/crypto/mldsa87/sign:mldsa87_sign.s"],
+    outs = ["mldsa87_sign_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "mldsa87_sign_ops_short_s",
+    srcs = ["//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_ops.s"],
+    outs = ["mldsa87_sign_ops_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+otbn_sim_test(
+    name = "run_mldsa87_sign_short",
+    srcs = [
+        ":mldsa87_sign_ops_short_s",
+        ":mldsa87_sign_short_s",
+        "//sw/otbn/crypto:mai_gadgets.s",
+        "//sw/otbn/crypto:xof.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_decoding.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
+        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_encoding.s",
+        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_expand.s",
+        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_mem.s",
+        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_sample.s",
+    ],
+    tags = ["manual"],
+)
+
+# Fixed-vs-Random s1 TVLA test for ML-DSA-87 signature generation.
+# Evaluate across the signing operation with secret vector s1 (672 bytes, 2 boolean shares)
+# Still has expected output signature z leakage, leakage in tail ends of rejection sampling, and kappa's decision
+otbn_tvla_sim_test(
+    name = "mldsa87_sign_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "mldsa87_sign_mode": "const:4:0x29d8e5c9",  # Abridged Mode: skips mask seed derivation and directly executes the signing loop
+        "mldsa87_sign_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_s2_share0,mldsa87_sign_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_var_rho_prime_share0,mldsa87_sign_var_rho_prime_share1": "boolean:66:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    num_experiments = 2000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_mldsa87_sign_short",
+    tvla_secrets = {
+        "mldsa87_sign_sk_s1_share0,mldsa87_sign_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+# Fixed (Deterministic) vs Random (Hedged) Signing Mode TVLA test for ML-DSA-87.
+# Evaluates 1st-order side-channel leakage between Deterministic Sign mode (rnd = 0)
+# and Hedged / Random Sign mode (rnd sampled fresh from EDN1 on each trace).
+# Has several false positives, while it tests y accordingly, the w1, c, and h are public.
+otbn_tvla_sim_test(
+    name = "mldsa87_sign_mode_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "mldsa87_sign_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_k_share0,mldsa87_sign_sk_k_share1": "boolean:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_s1_share0,mldsa87_sign_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sign_sk_s2_share0,mldsa87_sign_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    num_experiments = 2000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_mldsa87_sign_short",
+    tvla_secrets = {
+        "mldsa87_sign_mode": "enum:4:0x8accea7f:0x7138777c",
+    },
+)
+
+genrule(
+    name = "mldsa87_keygen_ops_short_s",
+    srcs = ["//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_ops.s"],
+    outs = ["mldsa87_keygen_ops_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+otbn_sim_test(
+    name = "run_mldsa87_keygen_from_seeds_short",
+    srcs = [
+        "mldsa87_keygen_from_seeds.s",
+        ":mldsa87_keygen_ops_short_s",
+        "//sw/otbn/crypto:mai_gadgets.s",
+        "//sw/otbn/crypto:xof.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_decoding.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_encoding.s",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_expand.s",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_mem.s",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_rounding.s",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_sample.s",
+    ],
+    tags = ["manual"],
+)
+
+# Fixed-vs-Random rho_prime (secret seed) TVLA test for ML-DSA-87 key generation.
+# Evaluates side-channel leakage of ExpandS(rho') and A * s1 + s2 while keeping
+# the public matrix seed rho (and thus public matrix A) completely constant.
+# May give false positives on the tail ends of rejection sampling routes.
+otbn_tvla_sim_test(
+    name = "mldsa87_keygen_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "mldsa87_keygen_var_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    num_experiments = 2000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_mldsa87_keygen_from_seeds_short",
+    tvla_secrets = {
+        "mldsa87_keygen_var_rho_prime_share0,mldsa87_keygen_var_rho_prime_share1": "boolean:66:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)

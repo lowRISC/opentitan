@@ -386,7 +386,7 @@ def generate_shares(
         share1 = r1 * modulus
         return share0, share1
 
-    elif mode == "const":
+    elif mode in ["const", "enum"]:
         return secret, None
 
     raise ValueError(f"Unknown mode: {mode}")
@@ -414,13 +414,16 @@ def run_experiment(
         for _ in range(batch_size):
             trace_dict = {}
 
-            # Target shares (fixed vs random)
+            # Target shares (fixed vs random / enum state 0 vs state 1)
             for tvla in cfg["tvla_secrets"]:
                 if is_random_set:
-                    bit_len = tvla["size"] * 8
-                    current_secret = random.getrandbits(bit_len)
-                    if tvla["modulus"]:
-                        current_secret = current_secret % tvla["modulus"]
+                    if tvla["mode"] == "enum":
+                        current_secret = tvla["alt_secret"]
+                    else:
+                        bit_len = tvla["size"] * 8
+                        current_secret = random.getrandbits(bit_len)
+                        if tvla["modulus"]:
+                            current_secret = current_secret % tvla["modulus"]
                 else:
                     current_secret = tvla["secret"]
 
@@ -450,10 +453,13 @@ def run_experiment(
 
             # Random background (value is randomized on every trace)
             for bg in cfg["random_bg_secrets"]:
-                bit_len = bg["size"] * 8
-                rnd_sec = random.getrandbits(bit_len)
-                if bg["modulus"]:
-                    rnd_sec = rnd_sec % bg["modulus"]
+                if bg["mode"] == "enum":
+                    rnd_sec = random.choice([bg["secret"], bg["alt_secret"]])
+                else:
+                    bit_len = bg["size"] * 8
+                    rnd_sec = random.getrandbits(bit_len)
+                    if bg["modulus"]:
+                        rnd_sec = rnd_sec % bg["modulus"]
 
                 bg_share0, bg_share1 = generate_shares(
                     bg["mode"], rnd_sec, bg["size"], bg["modulus"]
@@ -635,13 +641,26 @@ def main() -> int:
         secrets = []
         for item in arg_list:
             parts = item.split(":")
-            modulus = int(parts[4], 16) if len(parts) > 4 and parts[4] else None
+            mode = parts[1]
+            size = int(parts[2])
+            secret = int(parts[3], 16)
+            alt_secret = (
+                int(parts[4], 16)
+                if len(parts) > 4 and parts[4] and mode == "enum"
+                else None
+            )
+            modulus = (
+                int(parts[4], 16)
+                if len(parts) > 4 and parts[4] and mode != "enum"
+                else None
+            )
             secrets.append(
                 {
                     "symbols": parts[0].split(","),
-                    "mode": parts[1],
-                    "size": int(parts[2]),
-                    "secret": int(parts[3], 16),
+                    "mode": mode,
+                    "size": size,
+                    "secret": secret,
+                    "alt_secret": alt_secret,
                     "modulus": modulus,
                 }
             )

@@ -195,7 +195,7 @@ _rej_loop:
   /* Encode the signature vector Z. */
   la x2, mldsa87_sign_vector_slot1
   la x3, mldsa87_sign_sig_z
-  loopi 7, 3
+  loopi 7, 3    /* SCA_TEST_REPLACE: loopi 1, 3 */
     jal x1, encode_z
     addi x2, x2, 1024
     addi x3, x3, 640
