@@ -168,6 +168,12 @@ status_t entropy_csrng_kat(void) {
       0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
       0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
   };
+
+  // Disable CSRNG internal state reading and lock the register.
+  abs_mmio_write32(kBaseCsrng + CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET, 0);
+  abs_mmio_write32(kBaseCsrng + CSRNG_INT_STATE_READ_ENABLE_REGWEN_REG_OFFSET,
+                   0);
+
   if (!memcmp(got, kExpectedOutput, sizeof(kExpectedOutput))) {
     return OTCRYPTO_OK;
   }
