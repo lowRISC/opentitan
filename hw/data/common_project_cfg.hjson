@@ -31,8 +31,8 @@
 
   // If defined, this is printed into the results md files
   revision: '''{eval_cmd}
-            COMMIT_L=`git rev-parse HEAD`; \
-            COMMIT_S=`git rev-parse --short HEAD`; \
+            COMMIT_L=`git -C {proj_root} rev-parse HEAD`; \
+            COMMIT_S=`git -C {proj_root} rev-parse --short HEAD`; \
             REV_STR="GitHub Revision: [\`$COMMIT_S\`](https://{repo_server}/tree/$COMMIT_L)"; \
             printf "$REV_STR"; \
             if [ -d "{proj_root}/hw/foundry" ]; then \
