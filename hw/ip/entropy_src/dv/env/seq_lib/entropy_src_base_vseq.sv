@@ -78,7 +78,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     foreach (stat_regs[i]) begin
       uvm_status_e status;
       stat_regs[i].mirror(status);
-      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (cfg.under_reset) return;
       if (status != UVM_IS_OK)
         `uvm_error("mirror", $sformatf("Failed to mirror %0s", stat_regs[i].get_name()))
     end
@@ -123,19 +123,19 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     uvm_status_e status;
 
     ral.module_enable.module_enable.write(status, MuBi4False);
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("write", "Writing MuBi4False to module_enable failed")
 
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
     // Clear all interrupts here
     ral.intr_state.write(status, 32'hf);
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("write", "Writing '1 to intr_state failed")
 
     // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
     ral.recov_alert_sts.es_main_sm_alert.mirror(status);
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("mirror", "Mirroring recov_alert_sts failed")
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
@@ -147,7 +147,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // Wait the given time, but stop early if cfg.m_rng_agent_cfg.in_reset is asserted or if the stop_early flag
+  // Wait the given time, but stop early if cfg.under_reset is asserted or if the stop_early flag
   // (passed by reference) becomes true.
   task pause_until_reset_or_flag(realtime pause, ref bit stop_early);
     // The code here is a little complicated, because we are not allowed to access a reference
@@ -162,7 +162,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       end
       fork : isolation_fork begin
         fork
-          wait (cfg.m_rng_agent_cfg.in_reset);
+          wait (cfg.under_reset);
           wait (done);
           #(pause);
         join_any
@@ -188,13 +188,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.entropy_control.es_route.set(newcfg.route_software);
     csr_update(.csr(ral.entropy_control));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.health_test_windows.fips_window.set(newcfg.fips_window_size);
     ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size);
     csr_update(.csr(ral.health_test_windows));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     // Thresholds for the continuous health checks:
     // REPCNT and REPCNTS
@@ -208,41 +208,41 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         ral.repcnts_threshold.set(newcfg.repcnts_thresh_bypass);
       end
       csr_update(.csr(ral.repcnt_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
       csr_update(.csr(ral.repcnts_threshold));
     end
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     // Windowed health test thresholds managed in derived vseq classes
 
     ral.ht_watermark_num.set(newcfg.ht_watermark_num);
     csr_update(.csr(ral.ht_watermark_num));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     // FW_OV registers
     ral.fw_ov_control.fw_ov_mode.set(newcfg.fw_read_enable);
     ral.fw_ov_control.fw_ov_entropy_insert.set(newcfg.fw_over_enable);
     csr_update(.csr(ral.fw_ov_control));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.fw_ov_sha3_start.fw_ov_insert_start.set(newcfg.fw_ov_insert_start);
     csr_update(.csr(ral.fw_ov_sha3_start));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.alert_threshold.alert_threshold.set(newcfg.alert_threshold);
     ral.alert_threshold.alert_threshold_inv.set(newcfg.alert_threshold_inv);
     csr_update(.csr(ral.alert_threshold));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.observe_fifo_thresh.observe_fifo_thresh.set(newcfg.observe_fifo_thresh);
     csr_update(ral.observe_fifo_thresh);
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.conf.fips_enable.set(newcfg.fips_enable);
     ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
@@ -253,7 +253,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
     csr_update(.csr(ral.conf));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     // The CSR write accesses above may trigger recoverable alerts (e.g. in case invalid MuBis are
     // written to the CSRs). To handle such cases, the calling entropy_src_init() task listens for
@@ -270,7 +270,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Setting this to zero will lock future writes
     csr_wr(.ptr(ral.sw_regupd), .value(newcfg.sw_regupd));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     // Module_enables (should be done last)
     if (newcfg.module_enable == MuBi4True) begin
@@ -285,21 +285,21 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.module_enable));
     end
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     ral.me_regwen.set(newcfg.me_regwen);
     csr_update(.csr(ral.me_regwen));
     pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     if (do_interrupt) begin
       ral.intr_enable.set(newcfg.en_intr);
       csr_update(ral.intr_enable);
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
     end
 
     cfg.clk_rst_vif.wait_clks_or_rst(2);
-    if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+    if (stop_early || cfg.under_reset) return;
 
     `uvm_info(`gfn, "Configuration Complete", UVM_MEDIUM)
     completed = 1;
@@ -353,14 +353,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       return;
     end
 
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     // If we get here, we stopped early in try_apply_base_configuration because we saw an alert.
     `uvm_info(`gfn, "Detected recoverable alert. Falling back on safe config", UVM_LOW)
 
     // Set all fields with redundancy to safe values
     entropy_src_safe_config();
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     `uvm_info(`gfn, $sformatf("Exiting configuration, status %d", completed) , UVM_MEDIUM)
   endtask
@@ -376,12 +376,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Clear all interrupts
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     ral.entropy_control.es_type.set(MuBi4False);
     ral.entropy_control.es_route.set(MuBi4False);
     csr_update(.csr(ral.entropy_control));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     ral.conf.fips_enable.set(MuBi4False);
     ral.conf.entropy_data_reg_enable.set(MuBi4False);
@@ -390,23 +390,23 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.conf.rng_bit_enable.set(MuBi4False);
     ral.conf.threshold_scope.set(MuBi4False);
     csr_update(.csr(ral.conf));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     ral.fw_ov_control.fw_ov_mode.set(MuBi4False);
     ral.fw_ov_control.fw_ov_entropy_insert.set(MuBi4False);
     csr_update(.csr(ral.fw_ov_control));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
     csr_update(.csr(ral.fw_ov_sha3_start));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     csr_wr(.ptr(ral.alert_threshold), .value(ral.alert_threshold.get_reset()));
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
 
     // Read the alert_sts register (whose value will be checked by the scoreboard)
     ral.recov_alert_sts.mirror(status);
-    if (cfg.m_rng_agent_cfg.in_reset) return;
+    if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
 
     // If the current status value is nonzero, clear it and then read it back (causing the
@@ -414,11 +414,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.recov_alert_sts.set(0);
     if (ral.recov_alert_sts.needs_update()) begin
       ral.recov_alert_sts.write(status, {32{1'b1}});
-      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (cfg.under_reset) return;
       if (status != UVM_IS_OK) `uvm_error("update", "Failed to update alert_sts")
 
       ral.recov_alert_sts.mirror(status);
-      if (cfg.m_rng_agent_cfg.in_reset) return;
+      if (cfg.under_reset) return;
       if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
     end
 
