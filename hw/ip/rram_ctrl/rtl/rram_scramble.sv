@@ -38,7 +38,8 @@ module rram_scramble import rram_ctrl_pkg::*; #(
     addr_key_d = addr_key_q;
     data_key_d = data_key_q;
 
-    if (prim_mubi_pkg::mubi4_test_false_strict(keys_disable_i)) begin
+    // Disable the keys whenever (keys_disable_i != MuBi4False).
+    if (prim_mubi_pkg::mubi4_test_true_loose(keys_disable_i)) begin
       addr_key_d = rand_addr_key_i;
       data_key_d = rand_data_key_i;
     end else if (keys_valid_i) begin
@@ -149,7 +150,7 @@ module rram_scramble import rram_ctrl_pkg::*; #(
   // Note: Degree of IPoly and width parameters must match (leading MSB of IPoly is dropped).
   if (SecScrambleEn) begin : gen_gf_mult
     logic [DataWidth-1:0] operand_a, operand_b;
-    assign operand_a = addr_key_i[DataWidth-1:0];
+    assign operand_a = addr_key_q[DataWidth-1:0];
     assign operand_b = {AddrPadWidth'(0), calc_addr_in};
     prim_gf_mult # (
       .Width(DataWidth),
@@ -227,7 +228,7 @@ module rram_scramble import rram_ctrl_pkg::*; #(
         .rst_ni,
         .valid_i(cipher_valid_in_d),
         .data_i (cipher_data_in),
-        .key_i  (data_key_i),
+        .key_i  (data_key_q),
         .dec_i  (op_type == DeScrambleOp),
         .data_o (cipher_data_out[k]),
         .valid_o(cipher_valid[k])
