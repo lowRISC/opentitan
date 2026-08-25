@@ -244,7 +244,7 @@ module sysrst_ctrl_detect
     `ASSERT(HighLevelEvent_A, trigger_i === trigger_event)
   end else if (EventType == EdgeToLow) begin : gen_edge_to_low_event_sva
     `ASSERT(EdgeToLowEvent_A, !trigger_i && $past(trigger_i) |-> trigger_event)
-  end else if (EventType == EdgeToLow) begin : gen_edge_to_high_event_sva
+  end else if (EventType == EdgeToHigh) begin : gen_edge_to_high_event_sva
     `ASSERT(EdgeToHighEvent_A, trigger_i && !$past(trigger_i) |-> trigger_event)
   end
 
