@@ -488,3 +488,134 @@ def char_x25519_ecdh(
         asymsca.handle_x25519_ecdh(private_key, public_x, public_y, cfg, trigger)
         response = target.read_response()
     return response
+
+
+def char_mldsa87_keygen(
+    target, iterations, seed, cfg, trigger, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mldsa87_keygen(seed, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mldsa87_sign(
+    target,
+    iterations,
+    seed,
+    message,
+    message_len,
+    context,
+    context_len,
+    sign_mode,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mldsa87_sign(
+            seed, message, message_len, context, context_len, sign_mode, cfg, trigger
+        )
+        response = target.read_response()
+    return response
+
+
+def char_mldsa87_verify(
+    target,
+    iterations,
+    public_key,
+    message,
+    message_len,
+    context,
+    context_len,
+    signature,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mldsa87_verify(
+            public_key, message, message_len, context, context_len, signature, cfg, trigger
+        )
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_keygen(
+    target, iterations, seed, cfg, trigger, reset=False
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mlkem1024_keygen(seed, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_encaps(
+    target,
+    iterations,
+    public_key,
+    m,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mlkem1024_encaps(public_key, m, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_decaps(
+    target,
+    iterations,
+    ciphertext,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymsca = OTAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    (device_id, owner_page, boot_log, boot_measurements, version, cryptolib_version) = (
+        asymsca.init()
+    )
+    for _ in range(iterations):
+        asymsca.handle_mlkem1024_decaps(ciphertext, cfg, trigger)
+        response = target.read_response()
+    return response

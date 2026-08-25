@@ -482,3 +482,131 @@ class OTFIAsymCrypto:
             "trigger": trigger,
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mldsa87_keygen(self, seed, cfg, trigger) -> None:
+        """Call the cryptolib MLDSA-87 key generation.
+
+        Args:
+            seed: Array of 32 bytes of seed data.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mldsa87Keygen").encode("ascii"))
+        input_data = {
+            "seed": seed,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mldsa87_sign(
+        self, seed, message, message_len, context, context_len, sign_mode, cfg, trigger
+    ) -> None:
+        """Call the cryptolib MLDSA-87 signing.
+
+        Args:
+            seed: Array of 32 bytes of seed data.
+            message: Array of max 128 bytes of message data.
+            message_len: Length of the message in bytes.
+            context: Array of max 256 bytes of context data.
+            context_len: Length of the context in bytes.
+            sign_mode: Integer specifying deterministic (1) or randomized (0) mode.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mldsa87Sign").encode("ascii"))
+        input_data = {
+            "seed": seed,
+            "message": message,
+            "message_len": message_len,
+            "context": context,
+            "context_len": context_len,
+            "sign_mode": sign_mode,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mldsa87_verify(
+        self, public_key, message, message_len, context, context_len, signature, cfg, trigger
+    ) -> None:
+        """Call the cryptolib MLDSA-87 verify.
+
+        Args:
+            public_key: Array of 2592 bytes of public key data.
+            message: Array of max 128 bytes of message data.
+            message_len: Length of the message in bytes.
+            context: Array of max 256 bytes of context data.
+            context_len: Length of the context in bytes.
+            signature: Array of 4628 bytes of signature data.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mldsa87Verify").encode("ascii"))
+        input_data = {
+            "public_key": public_key,
+            "message": message,
+            "message_len": message_len,
+            "context": context,
+            "context_len": context_len,
+            "signature": signature,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mlkem1024_keygen(self, seed, cfg, trigger) -> None:
+        """Call the cryptolib MLKEM-1024 key generation.
+
+        Args:
+            seed: Array of 32 bytes of seed data.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mlkem1024Keygen").encode("ascii"))
+        input_data = {
+            "seed": seed,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mlkem1024_encaps(self, public_key, m, cfg, trigger) -> None:
+        """Call the cryptolib MLKEM-1024 encapsulation.
+
+        Args:
+            public_key: Array of 1568 bytes of public key data.
+            m: Array of 32 bytes of randomness data.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mlkem1024Encaps").encode("ascii"))
+        input_data = {
+            "public_key": public_key,
+            "m": m,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_mlkem1024_decaps(self, ciphertext, cfg, trigger) -> None:
+        """Call the cryptolib MLKEM-1024 decapsulation.
+
+        Args:
+            ciphertext: Array of 1568 bytes of ciphertext data.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_asym_crypto_fi_cmd()
+        self.target.write(json.dumps("Mlkem1024Decaps").encode("ascii"))
+        input_data = {
+            "ciphertext": ciphertext,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))

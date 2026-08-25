@@ -658,6 +658,87 @@ status_t handle_cryptolib_sca_asym_ed25519_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_sca_asym_mldsa87_keygen(ujson_t *uj) {
+  cryptolib_sca_asym_mldsa87_keygen_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mldsa87_keygen_in_t(uj, &uj_input));
+
+  cryptolib_sca_asym_mldsa87_keygen_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mldsa87_keygen_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mldsa87_keygen_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_mldsa87_sign(ujson_t *uj) {
+  cryptolib_sca_asym_mldsa87_sign_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mldsa87_sign_in_t(uj, &uj_input));
+
+  cryptolib_sca_asym_mldsa87_sign_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mldsa87_sign_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mldsa87_sign_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_mldsa87_verify(ujson_t *uj) {
+  cryptolib_sca_asym_mldsa87_verify_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mldsa87_verify_in_t(uj, &uj_input));
+
+  cryptolib_sca_asym_mldsa87_verify_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mldsa87_verify_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mldsa87_verify_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_mlkem1024_keygen(ujson_t *uj) {
+  cryptolib_sca_asym_mlkem1024_keygen_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mlkem1024_keygen_in_t(uj,
+                                                                 &uj_input));
+
+  cryptolib_sca_asym_mlkem1024_keygen_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mlkem1024_keygen_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mlkem1024_keygen_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_mlkem1024_encaps(ujson_t *uj) {
+  cryptolib_sca_asym_mlkem1024_encaps_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mlkem1024_encaps_in_t(uj,
+                                                                 &uj_input));
+
+  cryptolib_sca_asym_mlkem1024_encaps_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mlkem1024_encaps_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mlkem1024_encaps_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_mlkem1024_decaps(ujson_t *uj) {
+  cryptolib_sca_asym_mlkem1024_decaps_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_mlkem1024_decaps_in_t(uj,
+                                                                 &uj_input));
+
+  cryptolib_sca_asym_mlkem1024_decaps_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(cryptolib_sca_mlkem1024_decaps_impl(uj_input, &uj_output));
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_mlkem1024_decaps_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_sca_asym_init(ujson_t *uj) {
   // Configure the device.
   pentest_setup_device(uj, false, false);
@@ -736,6 +817,18 @@ status_t handle_cryptolib_sca_asym(ujson_t *uj) {
       return handle_cryptolib_sca_asym_ed25519_base_mul_daisy_chaining(uj);
     case kCryptoLibScaAsymSubcommandEd25519Sign:
       return handle_cryptolib_sca_asym_ed25519_sign(uj);
+    case kCryptoLibScaAsymSubcommandMldsa87Keygen:
+      return handle_cryptolib_sca_asym_mldsa87_keygen(uj);
+    case kCryptoLibScaAsymSubcommandMldsa87Sign:
+      return handle_cryptolib_sca_asym_mldsa87_sign(uj);
+    case kCryptoLibScaAsymSubcommandMldsa87Verify:
+      return handle_cryptolib_sca_asym_mldsa87_verify(uj);
+    case kCryptoLibScaAsymSubcommandMlkem1024Keygen:
+      return handle_cryptolib_sca_asym_mlkem1024_keygen(uj);
+    case kCryptoLibScaAsymSubcommandMlkem1024Encaps:
+      return handle_cryptolib_sca_asym_mlkem1024_encaps(uj);
+    case kCryptoLibScaAsymSubcommandMlkem1024Decaps:
+      return handle_cryptolib_sca_asym_mlkem1024_decaps(uj);
     case kCryptoLibScaAsymSubcommandInit:
       return handle_cryptolib_sca_asym_init(uj);
     default:

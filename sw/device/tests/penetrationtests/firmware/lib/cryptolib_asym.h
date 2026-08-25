@@ -91,6 +91,26 @@ enum {
    */
   kPentestEd25519MaskedPrivateKeyWords =
       kPentestEd25519MaskedPrivateKeyBytes / sizeof(uint32_t),
+  /**
+   * ML-DSA-87 parameters.
+   */
+  kPentestMldsa87PkBytes = 2592,
+  kPentestMldsa87PkWords = 2592 / sizeof(uint32_t),
+  kPentestMldsa87SkBytes = 6368,
+  kPentestMldsa87SkWords = 6368 / sizeof(uint32_t),
+  kPentestMldsa87SigBytes = 4628,
+  kPentestMldsa87SigWords = 4628 / sizeof(uint32_t),
+  /**
+   * ML-KEM-1024 parameters.
+   */
+  kPentestMlkem1024PkBytes = 1568,
+  kPentestMlkem1024PkWords = 1568 / sizeof(uint32_t),
+  kPentestMlkem1024SkBytes = 3168,
+  kPentestMlkem1024SkWords = 2 * (3168 / sizeof(uint32_t)),
+  kPentestMlkem1024CtBytes = 1568,
+  kPentestMlkem1024CtWords = 1568 / sizeof(uint32_t),
+  kPentestMlkem1024SharedSecretBytes = 32,
+  kPentestMlkem1024SharedSecretWords = 32 / sizeof(uint32_t),
 };
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_CRYPTOLIB_ASYM_H_

@@ -1226,6 +1226,299 @@ status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_fi_asym_mldsa87_keygen(ujson_t *uj) {
+  cryptolib_fi_asym_mldsa87_keygen_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mldsa87_keygen_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mldsa87_keygen_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mldsa87_keygen_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mldsa87_keygen_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_asym_mldsa87_sign(ujson_t *uj) {
+  cryptolib_fi_asym_mldsa87_sign_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mldsa87_sign_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mldsa87_sign_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mldsa87_sign_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mldsa87_sign_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_asym_mldsa87_verify(ujson_t *uj) {
+  cryptolib_fi_asym_mldsa87_verify_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mldsa87_verify_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mldsa87_verify_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mldsa87_verify_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mldsa87_verify_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_asym_mlkem1024_keygen(ujson_t *uj) {
+  cryptolib_fi_asym_mlkem1024_keygen_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mlkem1024_keygen_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mlkem1024_keygen_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mlkem1024_keygen_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mlkem1024_keygen_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_asym_mlkem1024_encaps(ujson_t *uj) {
+  cryptolib_fi_asym_mlkem1024_encaps_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mlkem1024_encaps_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mlkem1024_encaps_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mlkem1024_encaps_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mlkem1024_encaps_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_asym_mlkem1024_decaps(ujson_t *uj) {
+  cryptolib_fi_asym_mlkem1024_decaps_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_mlkem1024_decaps_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_asym_mlkem1024_decaps_out_t uj_output;
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_mlkem1024_decaps_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_mlkem1024_decaps_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_fi_asym_init(ujson_t *uj) {
   // Configure the device.
   pentest_setup_device(uj, true, false);
@@ -1292,6 +1585,16 @@ status_t handle_cryptolib_fi_asym(ujson_t *uj) {
       return handle_cryptolib_fi_asym_p384_sign(uj);
     case kCryptoLibFiAsymSubcommandP384Verify:
       return handle_cryptolib_fi_asym_p384_verify(uj);
+    case kCryptoLibFiAsymSubcommandSecp256k1BaseMul:
+      return handle_cryptolib_fi_asym_secp256k1_base_mul(uj);
+    case kCryptoLibFiAsymSubcommandSecp256k1PointMul:
+      return handle_cryptolib_fi_asym_secp256k1_point_mul(uj);
+    case kCryptoLibFiAsymSubcommandSecp256k1Ecdh:
+      return handle_cryptolib_fi_asym_secp256k1_ecdh(uj);
+    case kCryptoLibFiAsymSubcommandSecp256k1Sign:
+      return handle_cryptolib_fi_asym_secp256k1_sign(uj);
+    case kCryptoLibFiAsymSubcommandSecp256k1Verify:
+      return handle_cryptolib_fi_asym_secp256k1_verify(uj);
     case kCryptoLibFiAsymSubcommandX25519BaseMul:
       return handle_cryptolib_fi_asym_x25519_base_mul(uj);
     case kCryptoLibFiAsymSubcommandX25519PointMul:
@@ -1304,6 +1607,18 @@ status_t handle_cryptolib_fi_asym(ujson_t *uj) {
       return handle_cryptolib_fi_asym_ed25519_sign(uj);
     case kCryptoLibFiAsymSubcommandEd25519Verify:
       return handle_cryptolib_fi_asym_ed25519_verify(uj);
+    case kCryptoLibFiAsymSubcommandMldsa87Keygen:
+      return handle_cryptolib_fi_asym_mldsa87_keygen(uj);
+    case kCryptoLibFiAsymSubcommandMldsa87Sign:
+      return handle_cryptolib_fi_asym_mldsa87_sign(uj);
+    case kCryptoLibFiAsymSubcommandMldsa87Verify:
+      return handle_cryptolib_fi_asym_mldsa87_verify(uj);
+    case kCryptoLibFiAsymSubcommandMlkem1024Keygen:
+      return handle_cryptolib_fi_asym_mlkem1024_keygen(uj);
+    case kCryptoLibFiAsymSubcommandMlkem1024Encaps:
+      return handle_cryptolib_fi_asym_mlkem1024_encaps(uj);
+    case kCryptoLibFiAsymSubcommandMlkem1024Decaps:
+      return handle_cryptolib_fi_asym_mlkem1024_decaps(uj);
     case kCryptoLibFiAsymSubcommandInit:
       return handle_cryptolib_fi_asym_init(uj);
     default:
