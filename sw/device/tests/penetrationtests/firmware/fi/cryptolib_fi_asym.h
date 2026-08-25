@@ -226,6 +226,54 @@ status_t handle_cryptolib_fi_asym_ed25519_sign(ujson_t *uj);
 status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj);
 
 /**
+ * The cryptolib fi mldsa87 keygen handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mldsa87_keygen(ujson_t *uj);
+
+/**
+ * The cryptolib fi mldsa87 sign handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mldsa87_sign(ujson_t *uj);
+
+/**
+ * The cryptolib fi mldsa87 verify handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mldsa87_verify(ujson_t *uj);
+
+/**
+ * The cryptolib fi mlkem1024 keygen handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mlkem1024_keygen(ujson_t *uj);
+
+/**
+ * The cryptolib fi mlkem1024 encaps handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mlkem1024_encaps(ujson_t *uj);
+
+/**
+ * The cryptolib fi mlkem1024 decaps handler.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_mlkem1024_decaps(ujson_t *uj);
+
+/**
  * Initialize CryptoLib command handler.
  *
  * This command is designed to setup the CryptoLib FI firmware.

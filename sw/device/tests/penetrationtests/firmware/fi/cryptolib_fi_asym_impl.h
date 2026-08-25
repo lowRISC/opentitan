@@ -184,4 +184,70 @@ status_t cryptolib_fi_ed25519_verify_impl(
     cryptolib_fi_asym_ed25519_verify_in_t uj_input,
     cryptolib_fi_asym_ed25519_verify_out_t *uj_output);
 
+/**
+ * Wrapper to MLDSA87 Keygen FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mldsa87_keygen_impl(
+    cryptolib_fi_asym_mldsa87_keygen_in_t uj_input,
+    cryptolib_fi_asym_mldsa87_keygen_out_t *uj_output);
+
+/**
+ * Wrapper to MLDSA87 Sign FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mldsa87_sign_impl(
+    cryptolib_fi_asym_mldsa87_sign_in_t uj_input,
+    cryptolib_fi_asym_mldsa87_sign_out_t *uj_output);
+
+/**
+ * Wrapper to MLDSA87 Verify FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mldsa87_verify_impl(
+    cryptolib_fi_asym_mldsa87_verify_in_t uj_input,
+    cryptolib_fi_asym_mldsa87_verify_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Keygen FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mlkem1024_keygen_impl(
+    cryptolib_fi_asym_mlkem1024_keygen_in_t uj_input,
+    cryptolib_fi_asym_mlkem1024_keygen_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Encaps FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mlkem1024_encaps_impl(
+    cryptolib_fi_asym_mlkem1024_encaps_in_t uj_input,
+    cryptolib_fi_asym_mlkem1024_encaps_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Decaps FI cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_mlkem1024_decaps_impl(
+    cryptolib_fi_asym_mlkem1024_decaps_in_t uj_input,
+    cryptolib_fi_asym_mlkem1024_decaps_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_CRYPTOLIB_FI_ASYM_IMPL_H_

@@ -851,6 +851,138 @@ class SymCryptolibFiTest(unittest.TestCase):
             actual_result_json, expected_result_json, ignored_keys_set
         )
 
+    def test_char_mldsa87_keygen(self):
+        seed = [0] * 32
+        cfg = 0
+        trigger = 0
+
+        actual_result = fi_asym_cryptolib_functions.char_mldsa87_keygen(
+            target,
+            iterations,
+            seed,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+        self.assertEqual(actual_result_json["status"], 0)
+        self.assertEqual(len(actual_result_json["public_key"]), 2592)
+        self.assertEqual(actual_result_json["err_status"], 0)
+        self.assertEqual(actual_result_json["alerts"], [0, 0, 0])
+
+    def test_char_mldsa87_sign_and_verify(self):
+        seed = [0] * 32
+        message = [1, 2, 3, 4] + [0] * 124
+        message_len = 4
+        context = [0] * 256
+        context_len = 0
+        sign_mode = 0  # randomized
+        cfg = 0
+        trigger = 0
+
+        actual_sign_result = fi_asym_cryptolib_functions.char_mldsa87_sign(
+            target,
+            iterations,
+            seed,
+            message,
+            message_len,
+            context,
+            context_len,
+            sign_mode,
+            cfg,
+            trigger,
+        )
+        actual_sign_json = json.loads(actual_sign_result)
+        self.assertEqual(actual_sign_json["status"], 0)
+        self.assertEqual(len(actual_sign_json["signature"]), 4628)
+        self.assertEqual(len(actual_sign_json["public_key"]), 2592)
+        self.assertEqual(actual_sign_json["err_status"], 0)
+        self.assertEqual(actual_sign_json["alerts"], [0, 0, 0])
+
+        # Now verify using the generated signature and public key
+        actual_verify_result = fi_asym_cryptolib_functions.char_mldsa87_verify(
+            target,
+            iterations,
+            actual_sign_json["public_key"],
+            message,
+            message_len,
+            context,
+            context_len,
+            actual_sign_json["signature"],
+            cfg,
+            trigger,
+        )
+        actual_verify_json = json.loads(actual_verify_result)
+        self.assertEqual(actual_verify_json["status"], 0)
+        self.assertEqual(actual_verify_json["result"], True)
+        self.assertEqual(actual_verify_json["err_status"], 0)
+        self.assertEqual(actual_verify_json["alerts"], [0, 0, 0])
+
+    def test_char_mlkem1024_keygen(self):
+        seed = [0] * 32
+        cfg = 0
+        trigger = 0
+
+        actual_result = fi_asym_cryptolib_functions.char_mlkem1024_keygen(
+            target,
+            iterations,
+            seed,
+            cfg,
+            trigger,
+        )
+        actual_result_json = json.loads(actual_result)
+        self.assertEqual(actual_result_json["status"], 0)
+        self.assertEqual(len(actual_result_json["public_key"]), 1568)
+        self.assertEqual(actual_result_json["err_status"], 0)
+        self.assertEqual(actual_result_json["alerts"], [0, 0, 0])
+
+    def test_char_mlkem1024_encaps_and_decaps(self):
+        seed = [0] * 32
+        cfg = 0
+        trigger = 0
+
+        # Generate keypair first
+        actual_keygen_result = fi_asym_cryptolib_functions.char_mlkem1024_keygen(
+            target,
+            iterations,
+            seed,
+            cfg,
+            trigger,
+        )
+        actual_keygen_json = json.loads(actual_keygen_result)
+        self.assertEqual(actual_keygen_json["status"], 0)
+        public_key = actual_keygen_json["public_key"]
+
+        # Encapsulate
+        m = [1, 2, 3, 4] + [0] * 28
+        actual_encaps_result = fi_asym_cryptolib_functions.char_mlkem1024_encaps(
+            target,
+            iterations,
+            public_key,
+            m,
+            cfg,
+            trigger,
+        )
+        actual_encaps_json = json.loads(actual_encaps_result)
+        self.assertEqual(actual_encaps_json["status"], 0)
+        self.assertEqual(len(actual_encaps_json["ciphertext"]), 1568)
+        self.assertEqual(len(actual_encaps_json["shared_secret"]), 32)
+        self.assertEqual(actual_encaps_json["err_status"], 0)
+        self.assertEqual(actual_encaps_json["alerts"], [0, 0, 0])
+
+        # Decapsulate
+        actual_decaps_result = fi_asym_cryptolib_functions.char_mlkem1024_decaps(
+            target,
+            iterations,
+            actual_encaps_json["ciphertext"],
+            cfg,
+            trigger,
+        )
+        actual_decaps_json = json.loads(actual_decaps_result)
+        self.assertEqual(actual_decaps_json["status"], 0)
+        self.assertEqual(actual_decaps_json["shared_secret"], actual_encaps_json["shared_secret"])
+        self.assertEqual(actual_decaps_json["err_status"], 0)
+        self.assertEqual(actual_decaps_json["alerts"], [0, 0, 0])
+
 
 if __name__ == "__main__":
     r = Runfiles.Create()
