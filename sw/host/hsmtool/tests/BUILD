@@ -48,6 +48,66 @@ sh_library(
     ]
 ]
 
+[
+    sh_test(
+        name = "mldsa_generate_test_{}".format(parameter_set),
+        srcs = ["hsmtool_runner.sh"],
+        args = [
+            "--module=$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+            "--token=fake_keys -u user -p 123456",
+            "mldsa",
+            "generate",
+            "--label fake",
+            "--parameter-set {}".format(parameter_set),
+        ],
+        data = [
+            "//signing/softhsm",
+            "//signing/softhsm:conf",
+            "//sw/host/hsmtool",
+            "@softhsm2//:gen_dir",
+        ],
+        env = {
+            "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        },
+        deps = [":test_lib"],
+    )
+    for parameter_set in [
+        "mldsa-44",
+        "mldsa-65",
+        "mldsa-87",
+    ]
+]
+
+[
+    sh_test(
+        name = "mldsa_roundtrip_test_{}".format(parameter_set),
+        srcs = ["mldsa_roundtrip_runner.sh"],
+        args = [
+            parameter_set,
+            "$(rootpath :tqbf.txt)",
+        ],
+        data = [
+            "tqbf.txt",
+            "//signing/softhsm",
+            "//signing/softhsm:conf",
+            "//sw/host/hsmtool",
+            "@openssl",
+            "@softhsm2//:gen_dir",
+        ],
+        env = {
+            "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+            "OPENSSL": "$(rootpath @openssl)",
+            "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        },
+        deps = [":test_lib"],
+    )
+    for parameter_set in [
+        "mldsa-44",
+        "mldsa-65",
+        "mldsa-87",
+    ]
+]
+
 sh_test(
     name = "slh_dsa_roundtrip_test",
     srcs = ["hsmtool_roundtrip_runner.sh"],

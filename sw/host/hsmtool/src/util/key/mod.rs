@@ -6,6 +6,7 @@ use clap;
 use serde::{Deserialize, Serialize};
 
 pub mod ecdsa;
+pub mod mldsa;
 pub mod rsa;
 pub mod slhdsa;
 
