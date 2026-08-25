@@ -710,6 +710,7 @@
   - [reggen & regtool: Register Generator](./util/reggen/README.md)
   - [Setup and use of regtool](./util/reggen/doc/setup_and_use.md)
 
+  - [DV Tools](./hw/dv/tools/README.md)
   - [ralgen: FuseSoC UVM RAL Generator](./hw/dv/tools/ralgen/README.md)
   - [uvmdvgen: Initial Testbench Auto-generation](./util/uvmdvgen/README.md)
   - [tlgen: Crossbar Generation](./util/tlgen/README.md)
