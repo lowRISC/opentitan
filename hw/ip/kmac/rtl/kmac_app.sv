@@ -962,7 +962,7 @@ module kmac_app
   // Encoded output length for the KMAC operation. The length is based upon the full app interface
   // response width.
   assign encoded_outlen      = EncodedOutLen[SelDigSize];
-  assign encoded_outlen_strb = EncodedOutLenStrb[SelKeySize];
+  assign encoded_outlen_strb = EncodedOutLenStrb[SelDigSize];
 
   // Data mux
   // This is the main datapath part of the app interface logic.
