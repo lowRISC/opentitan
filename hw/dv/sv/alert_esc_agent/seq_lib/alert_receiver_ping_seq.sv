@@ -20,6 +20,7 @@ endfunction : new
 
 task alert_receiver_ping_seq::body();
   forever begin
+     if (cfg.in_reset) wait (!cfg.in_reset);
     req = alert_seq_item::type_id::create("req");
     start_item(req);
     // Randomise the item to be a ping request. When driven, the item will "wait around" for
