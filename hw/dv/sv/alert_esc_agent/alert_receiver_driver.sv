@@ -150,8 +150,8 @@ task alert_receiver_driver::drive_req();
     // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
     // that come in.
     while (cfg.in_reset) begin
+      alert_seq_item item;
       fork : isolation_fork begin
-        alert_seq_item item;
         fork
           wait (!cfg.in_reset);
           m_requests.get(item);
@@ -159,7 +159,10 @@ task alert_receiver_driver::drive_req();
         disable fork;
         // Since we are in reset, we ignore any item that we see. Because it was fetched by get() in
         // alert_base_driver (instead of with get_next_item()), we do not have to declare it done.
+        // We do still need to send a response otherwise the sequence that sent it will be stuck in
+        // get_response() forever.
       end join
+       if (item != null) seq_item_port.put_response(item);
     end
 
     drive_req_between_resets();
@@ -167,22 +170,26 @@ task alert_receiver_driver::drive_req();
 endtask
 
 task alert_receiver_driver::consume_requests_betwen_resets();
-  fork : isolation_fork begin
-    fork
-      wait (cfg.in_reset);
-      forever begin
-        alert_seq_item item;
-        m_requests.get(item);
-
-        case (item.m_txn_type)
-          alert_seq_item::AlertTxn: m_pending_alert_rsps.write(item);
-          alert_seq_item::PingTxn:  m_pending_pings.write(item);
-          default: `uvm_fatal(get_full_name(), "Unknown txn type")
-        endcase
-      end
-    join_any
-    disable fork;
-  end join
+   alert_seq_item item;
+   fork : isolation_fork begin
+      fork
+         wait (cfg.in_reset);
+         forever begin
+            m_requests.get(item);
+            `uvm_info(get_full_name(), $sformatf("Classifying item, m_txn_type=%s", item.m_txn_type.name()), UVM_LOW)
+            case (item.m_txn_type)
+              alert_seq_item::AlertTxn: m_pending_alert_rsps.write(item);
+              alert_seq_item::PingTxn:  m_pending_pings.write(item);
+              default: `uvm_fatal(get_full_name(), "Unknown txn type")
+            endcase
+         end
+      join_any
+      disable fork;
+   end join
+   // When we get here we must be in reset. m_requests might be nonempty if an item arrived right as
+   // reset was asserted, before consume_requests_betwen_resets could classify it. Report any such
+   // item done before returning
+    while (m_requests.try_get(item)) seq_item_port.put_response(item);
 endtask
 
 task alert_receiver_driver::drive_req_between_resets();
