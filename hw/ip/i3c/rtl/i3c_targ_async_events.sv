@@ -19,7 +19,6 @@ module i3c_targ_async_events
 #(
   parameter int unsigned NumTargets = 2,
   parameter int unsigned DataWidth  = 32,
-  parameter int unsigned FIFODepthW = i3c_fifo_pkg::DepthW,
 
   // Derived parameters.
   localparam int unsigned Log2NT = $clog2(NumTargets)
@@ -28,7 +27,7 @@ module i3c_targ_async_events
   input                       rst_ni,
 
   // Control inputs.
-  input                       enable_i,
+  input                       enable_i,  // TODO: Currently unused.
   input                       sw_reset_i,
 
   // Configuration inputs.
@@ -51,12 +50,10 @@ module i3c_targ_async_events
   input      [NumTargets-1:0] suspend_tx_i,
   input                       ibi_suspend_tx_i,
 
-  // CCC traffic.
-  input                       ccc_traffic_i,
+  // CCC request and current state of CCC handling.
+  input  i3c_targ_ccc_req_t   ccc_req_i,
   // Register state for recording CCC traffic.
   input     [TargCRWidth-1:0] r_i[TargCR_Count],
-  // Current state of CCC handling.
-  input  i3c_targ_ccc_req_t   ccc_req_i,
 
   // Bus Events.
   input  [TTIBusEv_Count-1:0] bus_events_i,
@@ -70,29 +67,32 @@ module i3c_targ_async_events
   output                      overflow_o
 );
 
-  logic [AsyncEv_Count-1:0] evt_captured;
+  // Signals to indicate pending capture and capturing into the message buffer.
   logic [AsyncEv_Count-1:0] capture;
+  logic [AsyncEv_Count-1:0] evt_captured;
+
+  // First byte when receiving a CCC data stream is the CCC itself.
+  logic ccc_byte0;
+  assign ccc_byte0 = ccc_req_i.en && (ccc_req_i.rsn == TargCRsn_RxD) && (ccc_req_i.idx == 0);
 
   // The Common Command Code, including Broadcast/Direct indication.
-  // - this comes from a register but is always available, along with all of the other registers.
+  // - this comes from a register after the first byte has been received.
   i3c_ccc_e ccc;
-  assign ccc = i3c_ccc_e'(r_i[TargCR_CCC]);
+  assign ccc = ccc_byte0 ? i3c_ccc_e'(ccc_req_i.rdata) : i3c_ccc_e'(r_i[TargCR_CCC]);
 
   // Generate 'new capture' strobes by qualifying the activity strobes with the current enables.
   always_comb begin
     capture = '0;
 
-    // These strobes are not qualified by enables but rather determined by the descriptor and the
-    // outcome; unsuccessful transmissions shall always be reported.
-    capture[AsyncEv_NotifyTx]   = txd_result_i;
-    capture[AsyncEv_NotifyIBI]  = ibi_result_i;
+    capture[AsyncEv_NotifyTx]   = txd_result_i & reg2hw_i.targ_async_evt_control.tx_notify.q;
+    capture[AsyncEv_NotifyIBI]  = ibi_result_i & reg2hw_i.targ_async_evt_control.ibi_notify.q;
 
     capture[AsyncEv_TxSuspend]  = |suspend_tx_i     & reg2hw_i.targ_async_evt_control.tx_suspend.q;
     capture[AsyncEv_IBISuspend] = |ibi_suspend_tx_i & reg2hw_i.targ_async_evt_control.ibi_suspend.q;
     capture[AsyncEv_BusEvents]  = |bus_events_i     & reg2hw_i.targ_async_evt_control.bus_events.q;
 
     // The CCC handling supports filtering by CCC category, making the decision more involved.
-    if (ccc_traffic_i) begin
+    if (ccc_req_i.en) begin
       capture[AsyncEv_CCC] = broadcast_ccc(ccc) ? reg2hw_i.targ_async_evt_control.bcst_ccc.q    :
                                (direct_get(ccc) ? reg2hw_i.targ_async_evt_control.dir_get_ccc.q :
                                                   reg2hw_i.targ_async_evt_control.dir_set_ccc.q);
@@ -104,20 +104,32 @@ module i3c_targ_async_events
   // - the aim is to report CCC activity to one or more targets, so that software is notified of any
   //   resultant configuration change.
   logic [NumTargets-1:0] ccc_targets;
-  logic [6:0] ccc_address;
-  logic [15:0] ccc_info;
+  logic [6:0] ccc_address; // TODO: Currently unused
+
+  struct packed {
+    logic [7:0] ccc;
+    logic [7:0] defb;
+    logic       has_defb;
+  } ccc_info;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      ccc_targets <= 'b0;
-      ccc_address <= 'b0;
-      ccc_info    <= 'b0;
-    end else if (sw_reset_i) ccc_targets <= 'b0;
+      ccc_targets <= '0;
+      ccc_address <= '0;
+      ccc_info    <= '0;
+    end else if (sw_reset_i) ccc_targets <= '0;
     else begin
       if (capture[AsyncEv_CCC] | evt_captured[AsyncEv_CCC]) begin
-        ccc_targets <= capture[AsyncEv_CCC] ? r_i[TargCR_Targets] : 'b0;
+        ccc_targets <= capture[AsyncEv_CCC] ? NumTargets'(r_i[TargCR_Targets]) : '0;
       end
-      ccc_address <= 'b0;
-      ccc_info    <= {r_i[TargCR_Status][TargStat_HasDEFB], r_i[TargCR_DEFB], r_i[TargCR_CCC]};
+      if (capture[AsyncEv_CCC] & (!(|ccc_targets) | evt_captured[AsyncEv_CCC])) begin
+        ccc_address <= '0; // TODO
+        ccc_info <= '{
+          ccc:      ccc,
+          defb:     r_i[TargCR_DEFB],
+          has_defb: r_i[TargCR_Status][TargStat_HasDEFB]
+        };
+      end
     end
   end
 
@@ -164,8 +176,9 @@ module i3c_targ_async_events
     if (!rst_ni) begin
       ibi_result_q    <= 1'b0;
       ibi_status_q    <= ErrStatus_OK;
-      ibi_tid_q       <= 'b0;
-      ibi_data_left_q <= 'b0;
+      ibi_targ_id_q   <= '0;
+      ibi_tid_q       <= '0;
+      ibi_data_left_q <= '0;
     end else if (sw_reset_i) begin
       ibi_result_q    <= 1'b0;
     end else begin
@@ -182,15 +195,16 @@ module i3c_targ_async_events
       end
     end
   end
+
   // Capture transmission suspensions.
   // - these may be captured incrementally until arbitration is won.
   logic [NumTargets-1:0] suspend_tx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) suspend_tx_q <= 'b0;
-    else if (sw_reset_i) suspend_tx_q <= 'b0;
+    if (!rst_ni) suspend_tx_q <= '0;
+    else if (sw_reset_i) suspend_tx_q <= '0;
     else if (capture[AsyncEv_TxSuspend] | evt_captured[AsyncEv_TxSuspend]) begin
-      suspend_tx_q <= (suspend_tx_q & !evt_captured[AsyncEv_TxSuspend]) |
-                      capture[AsyncEv_TxSuspend];
+      suspend_tx_q <= (evt_captured[AsyncEv_TxSuspend] ? '0 : suspend_tx_q) |
+                      (capture[AsyncEv_TxSuspend] ? suspend_tx_i : '0);
     end
   end
 
@@ -208,17 +222,17 @@ module i3c_targ_async_events
   // Capture Bus Events.
   logic [TTIBusEv_Count-1:0] bus_events_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) bus_events_q <= 'b0;
-    else if (sw_reset_i) bus_events_q <= 'b0;
+    if (!rst_ni) bus_events_q <= '0;
+    else if (sw_reset_i) bus_events_q <= '0;
     else if (capture[AsyncEv_BusEvents] | evt_captured[AsyncEv_BusEvents]) begin
-      bus_events_q <= (evt_captured[AsyncEv_BusEvents] ? 'b0 : bus_events_q) |
-                       capture[AsyncEv_BusEvents];
+      bus_events_q <= (evt_captured[AsyncEv_BusEvents] ? '0 : bus_events_q) |
+                      (capture[AsyncEv_BusEvents] ? bus_events_i : '0);
     end
   end
 
   // Events are cleared once they have been captured into the message buffer.
   logic [AsyncEv_Count-1:0] async_gnt;
-  assign evt_captured = wready_i ? async_gnt : 'b0;
+  assign evt_captured = wready_i ? async_gnt : '0;
 
   // Arbitration requests.
   logic [AsyncEv_Count-1:0] async_req;
@@ -238,9 +252,13 @@ module i3c_targ_async_events
     for (int unsigned et = 0; et < int'(AsyncEv_Count); et++)
       async_evt[et] = '0;
 
-    async_evt[AsyncEv_CCC].ccc.code = AsyncEv_CCC;
-    // TODO populate this structure!
-    //async_evt[AsyncEv_CCC].info    = ccc_info;
+    async_evt[AsyncEv_CCC].ccc = '{
+      code:     AsyncEv_CCC,
+      ccc:      i3c_ccc_e'(ccc_info.ccc),
+      defb:     ccc_info.defb,
+      has_defb: ccc_info.has_defb,
+      default:  '0 // TODO: Implement `has_length` and `data_length` fields
+    };
 
     async_evt[AsyncEv_NotifyTx].txdr.code       = AsyncEv_NotifyTx;
     async_evt[AsyncEv_NotifyTx].txdr.err_status = txd_status_q;
@@ -255,7 +273,7 @@ module i3c_targ_async_events
     async_evt[AsyncEv_NotifyIBI].ibir.data_left  = ibi_data_left_q;
 
     async_evt[AsyncEv_TxSuspend].txds.code    = AsyncEv_TxSuspend;
-    async_evt[AsyncEv_TxSuspend].txds.targets = suspend_tx_q;
+    async_evt[AsyncEv_TxSuspend].txds.targets = MaxTargets'(suspend_tx_q);
 
     async_evt[AsyncEv_IBISuspend].ibis.code = AsyncEv_IBISuspend;
 
@@ -284,9 +302,9 @@ module i3c_targ_async_events
   );
 
   // Report any failure to write into the Asynchronous Event Queue in a timely fashion.
-  assign overflow_o = &{async_req & ~async_gnt, wvalid_o, !wready_i};
+  assign overflow_o = |(async_req & ~async_gnt) && wvalid_o && !wready_i;
 
   // TTI Async Event union size check.
-  if ($bits(i3c_tti_async_event_t) != 32) $fatal(2, "i3c_tti_async_event_t has incorrect size");
+  if ($bits(i3c_tti_async_event_t) != DataWidth) $fatal(2, "i3c_tti_async_event_t has incorrect size");
 
 endmodule

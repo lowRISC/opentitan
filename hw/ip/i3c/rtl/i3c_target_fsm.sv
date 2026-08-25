@@ -1133,9 +1133,8 @@ module i3c_target_fsm
 
   // Writing of Asynchronous Events descriptors into the queue.
   i3c_targ_async_events #(
-    .NumTargets (NumTargets),
-    .DataWidth  (DataWidth),
-    .FIFODepthW (FIFODepthW)
+    .NumTargets(NumTargets),
+    .DataWidth (DataWidth)
   ) u_async_evt (
     .clk_i           (clk_i),
     .rst_ni          (rst_ni),
@@ -1164,12 +1163,10 @@ module i3c_target_fsm
     .suspend_tx_i    (suspend_tx_o),
     .ibi_suspend_tx_i(ibi_suspend_tx_o),
 
-    // CCC traffic.
-    .ccc_traffic_i   (ccc_req.en),
+    // CCC request and current state of CCC handling.
+    .ccc_req_i       (ccc_req),
     // Register state
     .r_i             (reg_state),
-    // Current state of CCC handling.
-    .ccc_req_i       (ccc_req),
 
     // Bus Events.
     .bus_events_i    (bus_events),

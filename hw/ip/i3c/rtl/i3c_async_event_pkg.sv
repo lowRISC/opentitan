@@ -86,9 +86,9 @@ package i3c_async_event_pkg;
 
   // Bus Event reported as an Asynchronous Event.
   typedef struct packed {
-    i3c_tti_async_event_e      code;      // Specifies the type of this descriptor.
-    logic  [AsyncEv_Count-1:0] evt;       // The Bus Event(s) observed.
-    logic [27-AsyncEv_Count:0] reserved;
+    i3c_tti_async_event_e       code;      // Specifies the type of this descriptor.
+    logic  [TTIBusEv_Count-1:0] evt;       // The Bus Event(s) observed.
+    logic [27-TTIBusEv_Count:0] reserved;
   } i3c_tti_async_busevt_t;
 
   // Asynchronous Event Descriptor; single DWORD.
