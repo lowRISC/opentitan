@@ -31,7 +31,7 @@
           life_stage:         "L1",
           design_stage:       "D1",
           verification_stage: "V1",
-          dif_stage:          "S2",
+          dif_stage:          "S1",
       }
   ],
   clocking: [
