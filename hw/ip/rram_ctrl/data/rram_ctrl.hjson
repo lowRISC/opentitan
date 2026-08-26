@@ -26,7 +26,6 @@
           life_stage:         "L1",
           design_stage:       "D0",
           verification_stage: "V0",
-          commit_id:          "-",
       },
   ]
   clocking: [
