@@ -106,6 +106,18 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
+    // IOR5 (used above as "pwrb_in") is not usable as GPIO on hyper310/hyper340:
+    // HyperDebug's probe firmware reserves that pin (STM32 PE2, aliased to
+    // CN9 pin14) for SAI_A_MCLK, so it can never be read back correctly.
+    // See https://github.com/lowRISC/opentitan/issues/31106.
+    let interface = opts.init.backend_opts.interface.as_str();
+    if interface == "hyper310" || interface == "hyper340" {
+        log::warn!(
+            "IOR5 is not usable as GPIO on {interface} (see issue #31106). Skipping test!"
+        );
+        return Ok(());
+    }
+
     /* Load the ELF binary and get the address of the `kPhase` variable
      * in example_sival.c */
     let elf_binary = fs::read(&opts.firmware_elf)?;

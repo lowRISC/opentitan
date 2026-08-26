@@ -35,10 +35,15 @@ struct Config {
     output: HashMap<PinmuxMioOut, PinmuxOutsel>,
 }
 
-// Although all supported interfaces use the same config, keep a map because:
+// Although all supported interfaces use mostly the same config, keep a map because:
 //  (a) Future interfaces may need different mappings
 //  (b) Hyperdebug firmware updates may enable more testing with differences
 //  (c) Testing for the presence of a known interface is useful anyway.
+//  (d) IOR5 is not usable as GPIO on hyper310/hyper340: on the NUCLEO-L552ZE-Q
+//      probe board used by HyperDebug, IOR5 (aliased to CN9 pin14 = STM32
+//      PE2) is reserved for SAI_A_MCLK in the HyperDebug firmware and cannot
+//      be driven/read as a general-purpose pin, so writes succeed but reads
+//      always come back false. See https://github.com/lowRISC/opentitan/issues/31106.
 static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
     // Common FPGA (CW310/340) pin configuration. Also applies for teacup.
     // See the `top_earlgrey/data/pins_{cw310_hyperdebug,cw341}.xdc` files.
@@ -55,13 +60,13 @@ static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
         // - IOC8: TAP Strap 0
         // - IOC9: PMOD2 IO2
         // - IOR0-4: reserved for JTAG
+        // - IOR5: not usable as GPIO on hyper310/hyper340, see (d) above
         // - IOR8-9: dedicated IOs (for sysrst_ctrl)
         input: collection! {
             PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
             PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
             PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
 
-            PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
             PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
             PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
 
@@ -75,8 +80,6 @@ static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
             PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
             PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
 
-
-            PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
             PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
             PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
 
@@ -87,10 +90,20 @@ static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
         },
     };
 
+    // Silicon has real access to IOR5 as a GPIO pin (see sleep_pin_wake.rs's
+    // MIO_PADS table), so keep testing it there.
+    let mut teacup_pin_config = common_pin_config.clone();
+    teacup_pin_config
+        .input
+        .insert(PinmuxPeripheralIn::GpioGpio20, PinmuxInsel::Ior5);
+    teacup_pin_config
+        .output
+        .insert(PinmuxMioOut::Ior5, PinmuxOutsel::GpioGpio20);
+
     collection! {
         "hyper310" => common_pin_config.clone(),
-        "hyper340" => common_pin_config.clone(),
-        "teacup" => common_pin_config,
+        "hyper340" => common_pin_config,
+        "teacup" => teacup_pin_config,
     }
 });
 
