@@ -83,6 +83,12 @@
       randcount: "288",
       randtype:  "data"
     },
+    { name:    "RndCnstUrndPerm",
+      type:    "otbn_pkg::urnd_perm_t",
+      desc:    "Compile-time random permutation applied to the primary URND output, directly after the PRNG and before it is distributed to the rest of the design.",
+      randcount: "389",
+      randtype:  "perm"
+    },
     { name:    "SecFixMaiOpSeq"
       type:    "bit"
       default: "0"

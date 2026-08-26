@@ -25,7 +25,10 @@
 
 module otbn_rnd import otbn_pkg::*;
 #(
-  parameter urnd_prng_seed_t       RndCnstUrndPrngSeed      = RndCnstUrndPrngSeedDefault
+  parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
+  // Compile-time permutation applied to the primary URND output, directly after the PRNG and
+  // before it is flopped and fanned out to every URND consumer in the design.
+  parameter urnd_perm_t      RndCnstUrndPerm     = RndCnstUrndPermDefault
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -322,6 +325,7 @@ module otbn_rnd import otbn_pkg::*;
   logic [UrndPartialSeedWidth-1:0] partial_seed;
   logic [StateWidth-1:0] current_state;
   logic [StateWidth-1:0] current_state_blanked;
+  logic [UrndLen-1:0] urnd_data_raw;
 
   prim_trivium #(
     .BiviumVariant(1'b1),
@@ -343,10 +347,15 @@ module otbn_rnd import otbn_pkg::*;
     .seed_iv_i           ('0), // Not connected
     .seed_state_full_i   ('0), // Not connected
     .seed_state_partial_i(partial_seed),
-    .key_o               (urnd_data_d),
+    .key_o               (urnd_data_raw),
     .state_o             (current_state),
     .err_o               (urnd_all_zero_o)
   );
+
+  // Permute the raw PRNG output before it is flopped and distributed as urnd_data_o
+  for (genvar i = 0; i < UrndLen; i++) begin : gen_urnd_perm
+    assign urnd_data_d[i] = urnd_data_raw[RndCnstUrndPerm[i]];
+  end
 
   // Signal urnd_reseed_req_i is high even during reset. Ensure we do not start until
   // reset has been completed by registering it with a resettable flop.
@@ -416,4 +425,20 @@ module otbn_rnd import otbn_pkg::*;
 
   `ASSERT(RndClearOnReqComplete_A, rnd_req_complete |=> ~rnd_valid_q)
   `ASSERT(UrndNoReseedOnReset_1A, start_reseeding_q |-> rst_ni, clk_i, 1'b0)
+
+  // the code below is not meant to be synthesized,
+  // but it is intended to be used in simulation
+  `ifndef SYNTHESIS
+    // Check that the supplied permutation is valid.
+    logic [UrndLen-1:0] perm_test;
+    initial begin : p_perm_check
+      perm_test = '0;
+      for (int k = 0; k < UrndLen; k++) begin
+        perm_test[RndCnstUrndPerm[k]] = 1'b1;
+      end
+      // All bit positions must be marked with 1.
+      `ASSERT_I(PermutationCheck_A, &perm_test)
+    end
+  `endif
+
 endmodule

@@ -698,7 +698,7 @@ class MaskingAcceleratorInterface:
                 and not self.csrs.MAI_CTRL.is_start_bit_set()):
             return
 
-        rand, mask_0, mask_1, cnt = _urnd_fields(self.wsrs.URND.read_unsigned())
+        rand, mask_0, mask_1, cnt = _urnd_fields(self.wsrs.URND.read_unsigned_full())
 
         # Writeback logic:
         # Get the newest result and write it into the output WSRs. This is done before
