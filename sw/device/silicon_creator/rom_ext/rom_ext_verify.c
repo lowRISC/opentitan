@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/usage_constraints.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 
 OT_WARN_UNUSED_RESULT
 rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
@@ -56,10 +57,23 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
                key_alg, keyring->key[*verify_key]->key_domain);
   }
 
+  const void *msg_prefix_1 = NULL;
+  size_t msg_prefix_1_len = 0;
+  uint32_t actual_base = (uint32_t)(uintptr_t)manifest;
+  if (manifest->address_translation == kHardenedBoolTrue) {
+    actual_base = (uint32_t)owner_vma_get((uintptr_t)manifest);
+  }
+
+  if (manifest->manifest_version.major == kManifestVersionMajor3) {
+    msg_prefix_1 = &actual_base;
+    msg_prefix_1_len = sizeof(actual_base);
+  }
+
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
          sizeof(boot_measurements.bl0.data));
 
   hmac_sha256_init();
+  hmac_sha256_update(msg_prefix_1, msg_prefix_1_len);
   // Hash usage constraints.
   manifest_usage_constraints_t usage_constraints_from_hw;
   sigverify_usage_constraints_get(
@@ -83,9 +97,9 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
 
   RETURN_IF_ERROR(owner_verify(
       key_alg, &keyring->key[*verify_key]->data, &manifest->ecdsa_signature,
-      &ext_spx_signature->signature, &usage_constraints_from_hw,
-      sizeof(usage_constraints_from_hw), NULL, 0, digest_region.start,
-      digest_region.length, &act_digest, flash_exec));
+      &ext_spx_signature->signature, msg_prefix_1, msg_prefix_1_len,
+      &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
+      digest_region.start, digest_region.length, &act_digest, flash_exec));
 
   // Perform ISFB checks if the extension is present.
   RETURN_IF_ERROR(

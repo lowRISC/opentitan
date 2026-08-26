@@ -174,6 +174,7 @@ typedef struct manifest_version {
 enum {
   kManifestVersionMajor1 = CHIP_MANIFEST_VERSION_MAJOR_1,
   kManifestVersionMajor2 = CHIP_MANIFEST_VERSION_MAJOR_2,
+  kManifestVersionMajor3 = CHIP_MANIFEST_VERSION_MAJOR_3,
   kManifestVersionMinor1 = CHIP_MANIFEST_VERSION_MINOR_1,
 };
 

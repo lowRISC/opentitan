@@ -87,6 +87,15 @@ _POSITIONS = {
         "otp_img": None,
         "manifest": ":manifest_base_address_default",
     },
+    "owner_slot_a_manifest_v3": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "owner_offset": "{owner_slot_a}",
+        "success": "bl0_slot = AA__\r\n",
+        "otp_img": None,
+        "manifest": ":manifest_version_major_3",
+    },
     "owner_slot_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "{rom_ext_slot_a}",
@@ -241,6 +250,13 @@ manifest(d = {
     "name": "manifest_base_address_default",
     "manifest_base_address": "0xa5a5a5a5",
     "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
+    "name": "manifest_version_major_3",
+    "identifier": hex(CONST.OWNER),
+    "manifest_version_major": hex(CONST.MANIFEST_VERSION_MAJOR_3),
     "visibility": ["//visibility:public"],
 })
 

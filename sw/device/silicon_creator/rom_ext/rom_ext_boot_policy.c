@@ -9,8 +9,9 @@
 // TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
 OT_WARN_UNUSED_RESULT
 static inline rom_error_t manifest_check_rom_ext(const manifest_t *manifest) {
-  // Major version must be `kManifestVersionMajor2`.
-  if (manifest->manifest_version.major != kManifestVersionMajor2) {
+  // Major version must be `kManifestVersionMajor2` or `kManifestVersionMajor3`.
+  if (manifest->manifest_version.major != kManifestVersionMajor2 &&
+      manifest->manifest_version.major != kManifestVersionMajor3) {
     return kErrorManifestBadVersionMajor;
   }
 
