@@ -215,6 +215,28 @@ class RomExtBootPolicySearchTest : public RomExtBootPolicyTest {
   uint8_t *buffer_;
 };
 
+TEST_F(RomExtBootPolicySearchTest, ManifestCheckVersionMajor) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  manifest_t *manifest = (manifest_t *)(buffer_ + kLowOffset);
+  InitManifest(manifest);
+
+  manifest->manifest_version.major = kManifestVersionMajor1;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(manifest, &boot_data),
+            kErrorManifestBadVersionMajor);
+
+  manifest->manifest_version.major = kManifestVersionMajor2;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(manifest, &boot_data), kErrorOk);
+
+  manifest->manifest_version.major = kManifestVersionMajor3;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(manifest, &boot_data), kErrorOk);
+
+  manifest->manifest_version.major = kManifestVersionMajor3 + 1;
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(manifest, &boot_data),
+            kErrorManifestBadVersionMajor);
+}
+
 TEST_F(RomExtBootPolicySearchTest, NoManifests) {
   boot_data_t boot_data{};
   boot_data.identifier = kBootDataIdentifier;

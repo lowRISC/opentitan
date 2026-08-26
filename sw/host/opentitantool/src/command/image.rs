@@ -182,6 +182,7 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         update_length = !manifest.has_length() && update_length;
         image.overwrite_manifest(manifest)?;
+        image.patch_manifest_major_version()?;
 
         // Update image with signed manifest extensions.
         image.add_signed_manifest_extensions(&ext)?;

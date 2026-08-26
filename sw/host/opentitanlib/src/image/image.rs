@@ -18,9 +18,10 @@ use zerocopy::FromBytes;
 use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
-    CHIP_MANIFEST_VERSION_MAJOR2, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
-    MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestExtHeader,
-    ManifestKind, SigverifySpxSignature,
+    CHIP_BL0_IDENTIFIER, CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MAJOR3,
+    CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY,
+    MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestExtHeader, ManifestKind,
+    SigverifySpxSignature, is_allowed_for_legacy_v2_manifest,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
@@ -424,7 +425,9 @@ impl Image {
         //         CHIP_MANIFEST_VERSION_MAJOR2
         //     )
         // );
-        if manifest.manifest_version.major != CHIP_MANIFEST_VERSION_MAJOR2 {
+        if manifest.manifest_version.major != CHIP_MANIFEST_VERSION_MAJOR2
+            && manifest.manifest_version.major != CHIP_MANIFEST_VERSION_MAJOR3
+        {
             log::error!(
                 "Invalid manifest version for ECDSA: {:?}",
                 manifest.manifest_version
@@ -544,13 +547,32 @@ impl Image {
         Ok(())
     }
 
+    /// Patches the manifest major version to v3 if this is an application (BL0) image
+    /// linked at a non-64KB base address that uses the legacy v2 major version.
+    pub fn patch_manifest_major_version(&mut self) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+        if manifest.identifier == CHIP_BL0_IDENTIFIER
+            && !is_allowed_for_legacy_v2_manifest(manifest.manifest_base_address)
+            && manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR2
+        {
+            log::warn!(
+                "Image has non-64KB base address (0x{:08x}) which requires manifest v3; \
+                 automatically patched manifest version from v2 to v3.",
+                manifest.manifest_base_address
+            );
+            manifest.manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR3;
+        }
+        Ok(())
+    }
+
     /// Operates on the signed region of the image.
     pub fn map_signed_region<F, R>(&self, f: F) -> Result<R>
     where
         F: FnOnce(&[u8]) -> R,
     {
-        Ok(f(&self.data.bytes[offset_of!(Manifest, usage_constraints)
-            ..self.borrow_manifest()?.signed_region_end as usize]))
+        let manifest = self.borrow_manifest()?;
+        let tbs = get_presigning_bytes(manifest, &self.data.bytes);
+        Ok(f(&tbs))
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
@@ -559,14 +581,26 @@ impl Image {
     }
 }
 
+/// Helper function to retrieve the To-Be-Signed (presigning) byte stream.
+fn get_presigning_bytes(manifest: &Manifest, raw_data: &[u8]) -> Vec<u8> {
+    let mut tbs = Vec::new();
+    if manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR3 {
+        tbs.extend_from_slice(&manifest.manifest_base_address.to_le_bytes());
+    }
+    tbs.extend_from_slice(
+        &raw_data[offset_of!(Manifest, usage_constraints)..manifest.signed_region_end as usize],
+    );
+    tbs
+}
+
 impl SubImage<'_> {
     /// Operates on the signed region of the image.
     pub fn map_signed_region<F, R>(&self, f: F) -> Result<R>
     where
         F: FnOnce(&[u8]) -> R,
     {
-        Ok(f(&self.data[offset_of!(Manifest, usage_constraints)
-            ..self.manifest.signed_region_end as usize]))
+        let tbs = get_presigning_bytes(self.manifest, self.data);
+        Ok(f(&tbs))
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
@@ -728,5 +762,28 @@ mod tests {
             .read_to_end(&mut res_bytes)
             .unwrap();
         assert_eq!(orig_bytes, res_bytes);
+    }
+
+    #[test]
+    fn test_manifest_v3_digest() {
+        let mut image = Image::read_from_file(&testdata("image/test_image.bin")).unwrap();
+        image.borrow_manifest_mut().unwrap().signed_region_end = 2048;
+        image.borrow_manifest_mut().unwrap().manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR2;
+        image.borrow_manifest_mut().unwrap().manifest_base_address = 0xa0010000;
+        let digest_v2 = image.compute_digest().unwrap();
+
+        // Switch to v3 and non-64k base address.
+        image.borrow_manifest_mut().unwrap().manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR3;
+        image.borrow_manifest_mut().unwrap().manifest_base_address = 0xa0016000;
+        let digest_v3 = image.compute_digest().unwrap();
+
+        assert_ne!(digest_v2, digest_v3);
+
+        let signed_region = &image.data.bytes[offset_of!(Manifest, usage_constraints)..2048];
+        let mut expected_tbs = 0xa0016000u32.to_le_bytes().to_vec();
+        expected_tbs.extend_from_slice(signed_region);
+        let expected_digest = Sha256Digest::hash(&expected_tbs);
+
+        assert_eq!(digest_v3, expected_digest);
     }
 }

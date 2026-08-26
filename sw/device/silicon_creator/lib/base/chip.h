@@ -24,6 +24,7 @@
 // TODO(moidx): Update to a valid number once we figure out a manifest
 // versioning scheme.
 #define CHIP_MANIFEST_VERSION_MAJOR_2 0x0002
+#define CHIP_MANIFEST_VERSION_MAJOR_3 0x0003
 
 /**
  * Number of entries in the manifest extensions table.

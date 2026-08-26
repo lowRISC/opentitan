@@ -283,6 +283,7 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_hmac_, sha256_update);
   EXPECT_CALL(mock_lifecycle_, DeviceId);
   EXPECT_CALL(mock_otp_, read32);
   EXPECT_CALL(mock_otp_, read32);
@@ -304,6 +305,7 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_hmac_, sha256_update);
   EXPECT_CALL(mock_lifecycle_, DeviceId);
   EXPECT_CALL(mock_otp_, read32);
   EXPECT_CALL(mock_otp_, read32);
@@ -441,6 +443,7 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_hmac_, sha256_update);
   EXPECT_CALL(mock_lifecycle_, DeviceId);
   EXPECT_CALL(mock_otp_, read32);
   EXPECT_CALL(mock_otp_, read32);
@@ -462,6 +465,7 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
+  EXPECT_CALL(mock_hmac_, sha256_update);
   EXPECT_CALL(mock_lifecycle_, DeviceId);
   EXPECT_CALL(mock_otp_, read32);
   EXPECT_CALL(mock_otp_, read32);

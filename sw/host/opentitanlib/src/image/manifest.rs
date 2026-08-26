@@ -35,9 +35,19 @@ pub const CHIP_MANIFEST_SIZE: u32 = 1024;
 
 // TODO(moidx): Update to a valid number once we figure out a manifest
 // versioning scheme.
+pub const CHIP_MANIFEST_VERSION_MAJOR3: u16 = 0x0003;
 pub const CHIP_MANIFEST_VERSION_MAJOR2: u16 = 0x0002;
 pub const CHIP_MANIFEST_VERSION_MINOR1: u16 = 0x6c47;
 pub const CHIP_MANIFEST_VERSION_MAJOR1: u16 = 0x71c3;
+
+/// Checks whether the given `manifest_base_address` is one of the standard 64KB base addresses
+/// allowed to use the legacy v2 manifest format.
+pub fn is_allowed_for_legacy_v2_manifest(base_addr: u32) -> bool {
+    matches!(
+        base_addr,
+        0xa0010000 | 0x20010000 | 0x20090000 | MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL
+    )
+}
 pub const CHIP_MANIFEST_EXT_TABLE_COUNT: usize = 15;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const MANIFEST_EXT_ID_SPX_KEY: u32 = 0x94ac01ec;
@@ -337,5 +347,21 @@ mod tests {
         assert_eq!(offset_of!(Manifest, entry_point), 900);
         assert_eq!(offset_of!(Manifest, extensions), 904);
         assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
+    }
+
+    #[test]
+    pub fn test_is_allowed_for_legacy_v2_manifest() {
+        assert!(is_allowed_for_legacy_v2_manifest(0xa0010000));
+        assert!(is_allowed_for_legacy_v2_manifest(0x20010000));
+        assert!(is_allowed_for_legacy_v2_manifest(0x20090000));
+        assert!(is_allowed_for_legacy_v2_manifest(
+            MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL
+        ));
+
+        assert!(!is_allowed_for_legacy_v2_manifest(0xa0016000));
+        assert!(!is_allowed_for_legacy_v2_manifest(0x20016000));
+        assert!(!is_allowed_for_legacy_v2_manifest(0x20096000));
+        assert!(!is_allowed_for_legacy_v2_manifest(0x10000000));
+        assert!(!is_allowed_for_legacy_v2_manifest(0x0));
     }
 }
