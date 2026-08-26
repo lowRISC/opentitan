@@ -1289,6 +1289,25 @@ module rram_ctrl
   // Assertions //
   ////////////////
 
+  // Make sure all outputs are defined
+  `ASSERT_KNOWN(CoreTlODValidKnown_A, core_tl_o.d_valid)
+  `ASSERT_KNOWN(CoreTlOAReadyKnown_A, core_tl_o.a_ready)
+  `ASSERT_KNOWN(HostTlODValidKnown_A, host_tl_o.d_valid)
+  `ASSERT_KNOWN(HostTlOAReadyKnown_A, host_tl_o.a_ready)
+  `ASSERT_KNOWN(OtpMacroOKnown_A, otp_macro_o, clk_otp_i, !rst_otp_ni)
+  `ASSERT_KNOWN(OtpKeyOKnown_A, otp_key_o, clk_otp_i, !rst_otp_ni)
+  `ASSERT_KNOWN(RmaAckOKnown_A, rma_ack_o)
+  `ASSERT_KNOWN(KeymgrOKnown_A, keymgr_o)
+  `ASSERT_KNOWN(PwrmgrOKnown_A, pwrmgr_o)
+  `ASSERT_KNOWN(IntrCorrErrOKnown_A, intr_corr_err_o)
+  `ASSERT_KNOWN(IntrWrEmptyOKnown_A, intr_wr_empty_o)
+  `ASSERT_KNOWN(IntrWrLvlOKnown_A, intr_wr_lvl_o)
+  `ASSERT_KNOWN(IntrRdFullOKnown_A, intr_rd_full_o)
+  `ASSERT_KNOWN(IntrRdLvlOKnown_A, intr_rd_lvl_o)
+  `ASSERT_KNOWN(IntrOpDoneOKnown_A, intr_op_done_o)
+  `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(RramMacroOKnown_A, rram_macro_o)
+
   // Check that the regtool-generated `NumOtpPages` (from rram_ctrl.hjson,
   // via rram_ctrl_reg_pkg) agrees with rram_ctrl_pkg's independently-
   // computed `OtpPages`.
