@@ -1632,6 +1632,7 @@ module darjeeling_pd_main #(
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
+    .RndCnstUrndPerm(RndCnstOtbnUrndPerm),
     .SecFixMaiOpSeq(SecOtbnFixMaiOpSeq),
     .SecFixMacOpSeq(SecOtbnFixMacOpSeq),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),

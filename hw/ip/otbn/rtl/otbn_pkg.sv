@@ -851,7 +851,7 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
 
   // Permutation for the URND permutation in BN MAC used for register clearing and shuffling.
   // Keep in sync with dv/otbnsim/sim/constants.py::BN_MAC_PERMUTATION.
-  // These parameters have been generated with
+  // These parameters have been generated at commit 72ff50ed19 using Python 3.10.13 with
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 3357506447 --prefix "BnMac"
   // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
   parameter int BnMacUrndPermWidth = 256;
@@ -889,6 +889,31 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     256'ha7a0ccdd_b8ec4dc0_6eb1b6e8_52e6f07f_d2ac20c5_c9b2315e_8f222a03_b0f81e20,
     256'ha4b9580e_2418e8b5_c74813e1_14768750_267885b4_9542f237_72b4f2e4_30ca4cd2,
     256'hd2c0e844_c805dc2e_30223335_d3546a50_56eb8beb_edc4c45a_0dcc618a_8d60cab1
+  };
+
+  // Permutation applied to the primary URND output in otbn_rnd, directly after the Bivium PRNG
+  // and before it is flopped and fanned out to every URND consumer in the design.
+  // Keep in sync with dv/otbnsim/sim/constants.py::URND_PERMUTATION.
+  // These parameters have been generated at commit 72ff50ed19 using Python 3.10.13 with
+  // $ ./util/design/gen-lfsr-seed.py --width 389 --seed 3141592653 --prefix ""
+  // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
+  parameter int UrndPermWidth = 389;
+  typedef logic [UrndPermWidth-1:0][$clog2(UrndPermWidth)-1:0] urnd_perm_t;
+  parameter urnd_perm_t RndCnstUrndPermDefault = {
+    173'h0978_8cf1d647_48c85a94_0884c1aa_e1b4c286_869b82e2,
+    256'hed624787_98726008_460f5dbe_5947d383_33426939_a9968ac9_453142a3_73a555e9,
+    256'h2f962b66_2c5885ca_4c8f4b1d_540d58bd_a488a337_318212a1_1b051812_bbc465fd,
+    256'h18642ae9_ebe38989_d0ba9d45_f0125834_3506ff9f_2aafc5eb_cda2b854_062169b5,
+    256'h932cd5c0_37914c53_2ccc221e_6ce49046_d36ac0f8_4ac10c94_1d0d92c1_d972a0db,
+    256'h870e5c6b_6808387f_00029e5b_d2e3fc08_da423b13_b02b3adb_35d27b14_2bca73f1,
+    256'h20e2fad6_71568004_69ddb5a4_15b5d114_e4cc1a34_06b97949_ece1b96b_9446103c,
+    256'h104e6eea_a254df6a_3e202980_769985a2_9f52474a_a52191a8_3a3d4312_a556c35b,
+    256'h628e2a39_0b84d644_988976b0_a7204f44_9b78bdd8_6e8a3e95_2fba18b1_be04a92f,
+    256'h60add12e_0a831589_3f41e9da_416e3f2f_0ba586b4_676d7918_b5ab071a_e894c50a,
+    256'h6edc2180_9408299a_79781605_b69ec51b_fdd4744b_4217e642_10c516cc_1a7ba683,
+    256'h2c61e48d_10f36246_8ee2d181_36087564_a2c13245_733cae48_7a98d62a_d18aa0d0,
+    256'h4faf9c19_6ea3f242_e40d2cdb_ae313051_75684460_de994131_3a714af8_6722a7a6,
+    256'h71047a06_b215bc6e_eefb0b0a_e8a2782f_e111c7e0_a5ce0820_31cfaa34_72de1f4b
   };
 
   // Encoding generated at commit 2f740b6f5b using Python 3.10.19 with:

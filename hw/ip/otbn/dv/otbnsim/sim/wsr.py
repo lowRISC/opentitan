@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import List, Optional, Tuple
-from .constants import WsrAddrs
+from .constants import URND_PERMUTATION, WsrAddrs
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
 from .kmac_ispr import KmacDataWSR
@@ -117,8 +117,13 @@ class URNDWSR(ISPR):
             self._BIVIUM_OUTPUT_WIDTH,
         )
 
+        # The raw randomness undergoes permutation each time it is consumed.
+        # _value_permuted and _next_value_permuted track wether the current URND values have
+        # already been consumed, which saves us expensive permutation computations.
         self._next_value: int = 0
+        self._next_value_permuted: bool = False
         self._value: int = 0
+        self._value_permuted: bool = False
 
         self.running = False
         self.requesting = False
@@ -138,7 +143,14 @@ class URNDWSR(ISPR):
 
     def read_unsigned(self) -> int:
         # The URND WSR only gets the lower self.width bits of the Bivium output
-        return self._value & ((1 << self.width) - 1)
+        return self.read_unsigned_full() & ((1 << self.width) - 1)
+
+    def read_unsigned_full(self) -> int:
+        # Get the full width of the Bivium output
+        if not self._value_permuted:
+            self._value = URND_PERMUTATION.apply(self._value)
+            self._value_permuted = True
+        return self._value
 
     def set_seed(self, value: int) -> None:
         assert value >= 0 and value < 2**Trivium.PART_SEED_SIZE
@@ -150,17 +162,23 @@ class URNDWSR(ISPR):
 
     def pending_value(self) -> int:
         '''Return the Bivium output scheduled by step(), before commit() latches it.'''
+        if not self._next_value_permuted:
+            self._next_value = URND_PERMUTATION.apply(self._next_value)
+            self._next_value_permuted = True
         return self._next_value
 
     def step(self) -> None:
-        # Schedule an state update and readout the keystream.
+        # Schedule a state update and readout the raw keystream. The permutation is applied
+        # only when necessary.
         self._trivium.update()
         self._next_value = self._trivium.keystream()
+        self._next_value_permuted = False
 
     def commit(self) -> None:
         # Step the PRNG one cycle forward.
         self._trivium.step()
         self._value = self._next_value
+        self._value_permuted = self._next_value_permuted
 
         # Stop requesting EDN seeds once all the seed rounds have
         # been completed.

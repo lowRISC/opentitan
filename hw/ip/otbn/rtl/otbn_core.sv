@@ -25,6 +25,8 @@ module otbn_core
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
+  // Compile-time permutation applied to the primary URND output in otbn_rnd
+  parameter urnd_perm_t RndCnstUrndPerm = RndCnstUrndPermDefault,
 
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
@@ -1253,7 +1255,8 @@ module otbn_core
   );
 
   otbn_rnd #(
-    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
+    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
+    .RndCnstUrndPerm(RndCnstUrndPerm)
   ) u_otbn_rnd (
     .clk_i,
     .rst_ni,
