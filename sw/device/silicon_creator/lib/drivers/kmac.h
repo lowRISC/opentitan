@@ -24,6 +24,9 @@ extern "C" {
  * In this mode, KMAC is configured to support sideload and message masking
  * functionality.
  *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function.
+ *
  * @return Error code indicating if the operation succeeded.
  */
 rom_error_t kmac_keymgr_configure(void);
@@ -31,6 +34,9 @@ rom_error_t kmac_keymgr_configure(void);
 /**
  * Configure the KMAC block for KMAC-256 operation with a key loaded by
  * software.
+ *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function.
  *
  * @return Error code indicating if the operation succeeded.
  */
@@ -40,6 +46,9 @@ rom_error_t kmac_kmac256_sw_configure(void);
  * Configure the KMAC block for KMAC-256 operation with a key sideloaded from
  * the keymgr hardware block.
  *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function.
+ *
  * @return Error code indicating if the operation succeeded.
  */
 rom_error_t kmac_kmac256_hw_configure(void);
@@ -47,7 +56,10 @@ rom_error_t kmac_kmac256_hw_configure(void);
 /**
  * Configure the KMAC block at startup for SHAKE-128 operation.
  *
- * Sets the KMAC block to use software entropy and sets the mode to SHAKE-128.
+ * Sets the KMAC block to use EDN entropy and sets the mode to SHAKE-128.
+ *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function.
  *
  * @return Error code indicating if the operation succeeded.
  */
@@ -57,8 +69,10 @@ rom_error_t kmac_shake128_configure(void);
 /**
  * Configure the KMAC block at startup.
  *
- * Sets the KMAC block to use software entropy (since we have no secret inputs
- * for SPHINCS+) and sets the mode to SHAKE-256.
+ * Sets the KMAC block to use EDN entropy and sets the mode to SHAKE-256.
+ *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function.
  *
  * @return Error code indicating if the operation succeeded.
  */
