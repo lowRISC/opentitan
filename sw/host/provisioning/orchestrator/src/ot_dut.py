@@ -261,12 +261,13 @@ class OtDut():
             # Assemble FT command.
             # TODO: autocompute measurements of expected ROM_EXT + Owner FW payloads
             # TODO: add expected ROM_EXT / Owner security versions
+            bootstrap_flag = f"--bootstrap={scrambling_bin}" if scrambling_bin else ""
             cmd = f"""{host_bin}
             --rcfile= \
             --logging=info \
             {host_flags} \
             --elf={individ_elf} \
-            --bootstrap={scrambling_bin} \
+            {bootstrap_flag} \
             --second-bootstrap={fw_bundle_bin} \
             --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
