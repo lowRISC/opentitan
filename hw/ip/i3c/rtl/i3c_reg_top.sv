@@ -9331,9 +9331,9 @@ module i3c_reg_top
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.mx_error_counters.d),
-    .qre    (),
+    .qre    (reg2hw.mx_error_counters.re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.mx_error_counters.q),
     .ds     (),
     .qs     (mx_error_counters_qs)
   );
