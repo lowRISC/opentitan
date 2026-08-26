@@ -180,16 +180,15 @@ task alert_receiver_driver::drive_req();
     // Wait until we are out of reset. Until that happens, respond instantly to any sequence items
     // that come in.
     while (cfg.in_reset) begin
+      alert_esc_seq_item item;
       fork : isolation_fork begin
-        alert_esc_seq_item item;
         fork
           wait (!cfg.in_reset);
           m_receiver_requests.get(item);
         join_any
         disable fork;
-        // Since we are in reset, we ignore any item that we see. Because it was fetched by get() in
-        // alert_base_driver (instead of with get_next_item()), we do not have to declare it done.
       end join
+      if (item != null) seq_item_port.put_response(item);
     end
 
     drive_req_between_resets();
