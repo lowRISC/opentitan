@@ -21,8 +21,8 @@ filesets:
       - rtl/i3c_fifo_pkg.sv
       - rtl/i3c_targ_ccc_pkg.sv
       - rtl/i3c_target_pkg.sv
-      - rtl/i3c_controller_pkg.sv
       - rtl/i3c_timing_pkg.sv
+      - rtl/i3c_controller_pkg.sv
       - rtl/io_sep/i3c_io_pkg.sv
       - rtl/i3c_targ_ext_pkg.sv
       - rtl/i3c_buf_en.sv
@@ -30,6 +30,7 @@ filesets:
       - rtl/i3c_clock_buf_en.sv
       - rtl/i3c_clock_inv_en.sv
       - rtl/i3c_cmd_decode.sv
+      - rtl/i3c_ctrl_req_gen.sv
       - rtl/i3c_controller_ccc.sv
       - rtl/i3c_controller_fsm.sv
       - rtl/i3c_controller_ibi.sv

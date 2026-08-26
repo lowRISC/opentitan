@@ -33,8 +33,10 @@ package i3c_pkg;
 
   // Maximum number of entries in the Controller DAT Cache.
   // - cacheing In-Band Interrupt and Controller-Role Request configuration reduces the latency of
-  //   the Controller's ACK/NACK response.
-  localparam int unsigned DATCacheSize = 8;
+  //   the Controller's ACK/NACK response; otherwise the Controller would need to search the DAT.
+  // - the present simple implementation requires that we have enough cache for all current DAT
+  //   entries; TODO: ratify and simplify, or modify as required.
+  localparam int unsigned DATCacheSize = NumDATEntries;
 
   // Number of Target(s) presented simultaneously on the I3C bus, including the Standby Controller.
   localparam int unsigned NumTargets = 2;

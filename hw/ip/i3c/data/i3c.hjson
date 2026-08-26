@@ -581,7 +581,7 @@
       ]
     }
     { name:     "CTRL_TIME_PP",
-      desc:     '''Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL High signaling.
+      desc:     '''Controller Timing Parameters for SDR/HDR-DDR Push-Pull SCL High signaling.
 
                 This register shall be modified only when the Controller is not connected to the I3C bus.
                 ''',
@@ -590,7 +590,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCHS",
-          desc:   '''Half of the SCL high interval during Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before falling SCL during Push-Pull signaling, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -599,15 +599,15 @@
         { bits:   "15",
           name:   "HCEXT",
           desc:   '''Enable half-cycle SCL extension.
-                  If the field `PP_SCLHI_DIV2` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
-                  If `PP_SCLHI_DIV2` has all bits set then the hardware will determine this setting automatically.
-                  Extending SCL by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
+                  If the field `TCHS` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
+                  If `TCHS` has all bits set then the hardware will determine this setting automatically.
+                  Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
                   '''
           resval: "1"
         }
         { bits:   "9:0",
           name:   "TCHH",
-          desc:   '''Half of the SCL low interval during Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after rising SCL during Push-Pull signaling, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -625,7 +625,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCLS",
-          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling at SDR0 rate/HDR-DDR, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -633,7 +633,7 @@
         }
         { bits:   "9:0",
           name:   "TCLH",
-          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate/HDR-DDR, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -651,7 +651,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCLS",
-          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling at SDR1 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -659,7 +659,7 @@
         }
         { bits:   "9:0",
           name:   "TCLH",
-          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR1 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -677,7 +677,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCLS",
-          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling at SDR2, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -685,7 +685,7 @@
         }
         { bits:   "9:0",
           name:   "TCLH",
-          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR2 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -703,7 +703,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCLS",
-          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling at SDR3 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -711,7 +711,7 @@
         }
         { bits:   "9:0",
           name:   "TCLH",
-          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR3 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -729,7 +729,7 @@
       fields: [
         { bits:   "25:16",
           name:   "TCLS",
-          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1.
+          desc:   '''Duration of setup phase before rising SCL when using Push-Pull signaling at SDR4 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -737,7 +737,7 @@
         }
         { bits:   "9:0",
           name:   "TCLH",
-          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1.
+          desc:   '''Duration of hold phase after falling SCL when using Push-Pull signaling at SDR4 rate, minus 1.
                   This interval is in terms of the IP clock period.
                   If this field has all bits set then the hardware will calculate a suitable value.
                   '''
@@ -2875,8 +2875,9 @@
     { name:     "MX_ERROR_COUNTERS",
       desc:     "Controller Error Counters.",
       swaccess: "ro",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       hwext:    "true",
+      hwre:     "true",
       fields: [
         { bits:   "7:0",
           name:   "CE2_ERROR_COUNT",
@@ -2954,75 +2955,78 @@
       hwext:    "true",
       hwqe:     "true",
       fields: [
-        { bits:   "31:30",
-          name:   "STBY_CR_ENABLE_INIT",
-          desc:   '''Host Controller Secondary Controller Enable.
-                  0 - DISABLED: Secondary Controller operation is disabled.
-                  1 - ACM_INIT: Enabled, but Host Controller initializes in Active Controller mode.
-                  2 - SCM_RUNNING: Enabled, initializes in Standby Controller mode.
-                  3 - SCM_HOT_JOIN: Enabled, Host Controller conditionally becomes a Hot-Joining Device before operating in Standby Controller mode.
-                  '''
-          resval: "0"
+        { bits:     "31:30",
+          name:     "STBY_CR_ENABLE_INIT",
+          desc:     '''Host Controller Secondary Controller Enable.
+                    0 - DISABLED: Secondary Controller operation is disabled.
+                    1 - ACM_INIT: Enabled, but Host Controller initializes in Active Controller mode.
+                    2 - SCM_RUNNING: Enabled, initializes in Standby Controller mode.
+                    3 - SCM_HOT_JOIN: Enabled, Host Controller conditionally becomes a Hot-Joining Device before operating in Standby Controller mode.
+                    '''
+          resval:   "0"
         }
-        { bits:   "20",
-          name:   "RSTACT_DEFBYTE_02",
-          desc:   "RSTACT Support DefByte 0x02",
-          resval: "0"
+        { bits:     "20",
+          name:     "RSTACT_DEFBYTE_02",
+          desc:     "RSTACT Support DefByte 0x02",
+          resval:   "0"
         }
-        { bits:   "15",
-          name:   "DAA_ENTDAA_ENABLE",
-          desc:   "Dynamic Address Method Enable.",
-          resval: "0"
+        { bits:     "15",
+          name:     "DAA_ENTDAA_ENABLE",
+          desc:     "Dynamic Address Method Enable.",
+          resval:   "0"
         }
-        { bits:   "14",
-          name:   "DAA_SETDASA_ENABLE",
-          desc:   "Dynamic Address Method Enable.",
-          resval: "0"
+        { bits:     "14",
+          name:     "DAA_SETDASA_ENABLE",
+          desc:     "Dynamic Address Method Enable.",
+          resval:   "0"
         }
-        { bits:   "13",
-          name:   "DAA_SETAASA_ENABLE",
-          desc:   "Dynamic Address Method Enable.",
-          resval: "0"
+        { bits:     "13",
+          name:     "DAA_SETAASA_ENABLE",
+          desc:     "Dynamic Address Method Enable.",
+          resval:   "0"
         }
-        { bits:   "12",
-          name:   "TARGET_XACT_ENABLE",
-          desc:   "Target Transaction Interface Servicing Enable.",
-          resval: "1"
+        { bits:     "12",
+          name:     "TARGET_XACT_ENABLE",
+          desc:     "Target Transaction Interface Servicing Enable.",
+          resval:   "1"
         }
-        { bits:   "10:8",
-          name:   "BCAST_CCC_IBI_RING",
-          desc:   "Ring Bundle IBI Selector for Broadcast CCC Capture.",
-          resval: "0"
+        { bits:     "10:8",
+          name:     "BCAST_CCC_IBI_RING",
+          desc:     "Ring Bundle IBI Selector for Broadcast CCC Capture.",
+          resval:   "0"
         }
-        { bits:   "5",
-          name:   "CR_REQUEST_SEND",
-          desc:   "Send Controller Role Request.",
-          resval: "0"
+        { bits:     "5",
+          name:     "CR_REQUEST_SEND",
+          desc:     "Send Controller Role Request.",
+          swaccess: "wo",
+          resval:   "0"
         }
-        { bits:   "4",
-          name:   "HANDOFF_DEEP_SLEEP",
-          desc:   "Handoff Deep Sleep.",
-          resval: "0"
+        { bits:     "4",
+          name:     "HANDOFF_DEEP_SLEEP",
+          desc:     "Handoff Deep Sleep."
+          resval:   "0"
         }
-        { bits:   "3",
-          name:   "PRIME_ACCEPT_GETACCCR",
-          desc:   "Prime to Accept Controller Role.",
-          resval: "1"
+        { bits:     "3",
+          name:     "PRIME_ACCEPT_GETACCCR",
+          desc:     "Prime to Accept Controller Role.",
+          resval:   "1"
         }
-        { bits:   "2",
-          name:   "ACR_FSM_OP_SELECT",
-          desc:   "Active Controller Select.",
-          resval: "1"
+        { bits:     "2",
+          name:     "ACR_FSM_OP_SELECT",
+          desc:     "Active Controller Select.",
+          resval:   "1"
         }
-        { bits:   "1",
-          name:   "HANDOFF_DELAY_NACK",
-          desc:   "Handoff Delay NACK.",
-          resval: "0"
+        { bits:     "1",
+          name:     "HANDOFF_DELAY_NACK",
+          desc:     "Handoff Delay NACK.",
+          swaccess: "rw1c",
+          resval:   "0"
         }
-        { bits:   "0",
-          name:   "PENDING_RX_NACK",
-          desc:   "Pending RX NACK.",
-          resval: "0"
+        { bits:     "0",
+          name:     "PENDING_RX_NACK",
+          desc:     "Pending RX NACK.",
+          swaccess: "rw1c",
+          resval:   "0"
         }
       ]
     }

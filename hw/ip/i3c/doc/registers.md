@@ -20,7 +20,7 @@
 | i3c.[`RESET_DET_STATUS`](#reset_det_status)                                 | 0x30     |        4 | Reset detector status.                                                             |
 | i3c.[`CTRL_TIME_SP`](#ctrl_time_sp)                                         | 0x34     |        4 | Controller Timing Parameters for Start and stoP.                                   |
 | i3c.[`CTRL_TIME_OD`](#ctrl_time_od)                                         | 0x38     |        4 | Controller Timing Parameters for Open Drain signaling.                             |
-| i3c.[`CTRL_TIME_PP`](#ctrl_time_pp)                                         | 0x3c     |        4 | Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL High signaling.        |
+| i3c.[`CTRL_TIME_PP`](#ctrl_time_pp)                                         | 0x3c     |        4 | Controller Timing Parameters for SDR/HDR-DDR Push-Pull SCL High signaling.         |
 | i3c.[`CTRL_TIME_SDR0`](#ctrl_time_sdr0)                                     | 0x40     |        4 | Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL Low signaling.         |
 | i3c.[`CTRL_TIME_SDR1`](#ctrl_time_sdr1)                                     | 0x44     |        4 | Controller Timing Parameters for SDR1 Push-Pull SCL Low signaling.                 |
 | i3c.[`CTRL_TIME_SDR2`](#ctrl_time_sdr2)                                     | 0x48     |        4 | Controller Timing Parameters for SDR2 Push-Pull SCL Low signaling.                 |
@@ -568,7 +568,7 @@ This register shall be modified only when the Controller is not connected to the
 |  9:0   |   rw   |  0x3ff  | SCLLO_DIV2 | Half of the SCL low interval during Open Drain signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.  |
 
 ## CTRL_TIME_PP
-Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL High signaling.
+Controller Timing Parameters for SDR/HDR-DDR Push-Pull SCL High signaling.
 
 This register shall be modified only when the Controller is not connected to the I3C bus.
 - Offset: `0x3c`
@@ -590,18 +590,18 @@ This register shall be modified only when the Controller is not connected to the
 |  9:0   |   rw   |  0x3ff  | [TCHH](#ctrl_time_pp--tchh)   |
 
 ### CTRL_TIME_PP . TCHS
-Half of the SCL high interval during Push-Pull signaling, minus 1.
+Duration of setup phase before falling SCL during Push-Pull signaling, minus 1.
 This interval is in terms of the IP clock period.
 If this field has all bits set then the hardware will calculate a suitable value.
 
 ### CTRL_TIME_PP . HCEXT
 Enable half-cycle SCL extension.
-If the field `PP_SCLHI_DIV2` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
-If `PP_SCLHI_DIV2` has all bits set then the hardware will determine this setting automatically.
-Extending SCL by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
+If the field `TCHS` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
+If `TCHS` has all bits set then the hardware will determine this setting automatically.
+Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
 
 ### CTRL_TIME_PP . TCHH
-Half of the SCL low interval during Push-Pull signaling at SDR0 rate, minus 1.
+Duration of hold phase after rising SCL during Push-Pull signaling, minus 1.
 This interval is in terms of the IP clock period.
 If this field has all bits set then the hardware will calculate a suitable value.
 
@@ -619,12 +619,12 @@ This register shall be modified only when the Controller is not connected to the
 {"reg": [{"name": "TCLH", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "TCLS", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                           |
-| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.             |
-| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                           |
-|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                 |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                                    |
+| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling at SDR0 rate/HDR-DDR, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                                    |
+|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate/HDR-DDR, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.  |
 
 ## CTRL_TIME_SDR1
 Controller Timing Parameters for SDR1 Push-Pull SCL Low signaling.
@@ -640,12 +640,12 @@ This register shall be modified only when the Controller is not connected to the
 {"reg": [{"name": "TCLH", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "TCLS", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                           |
-| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.             |
-| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                           |
-|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                            |
+| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling at SDR1 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                            |
+|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR1 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.  |
 
 ## CTRL_TIME_SDR2
 Controller Timing Parameters for SDR2 Push-Pull SCL Low signaling.
@@ -664,9 +664,9 @@ This register shall be modified only when the Controller is not connected to the
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                        |
 |:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 31:26  |        |         |        | Reserved                                                                                                                                                                                                                           |
-| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.             |
+| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling at SDR2, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.     |
 | 15:10  |        |         |        | Reserved                                                                                                                                                                                                                           |
-|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR2 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
 
 ## CTRL_TIME_SDR3
 Controller Timing Parameters for SDR3 Push-Pull SCL Low signaling.
@@ -682,12 +682,12 @@ This register shall be modified only when the Controller is not connected to the
 {"reg": [{"name": "TCLH", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "TCLS", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                           |
-| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.             |
-| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                           |
-|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                            |
+| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling at SDR3 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                            |
+|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR3 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.  |
 
 ## CTRL_TIME_SDR4
 Controller Timing Parameters for SDR4 Push-Pull SCL Low signaling.
@@ -703,12 +703,12 @@ This register shall be modified only when the Controller is not connected to the
 {"reg": [{"name": "TCLH", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "TCLS", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                           |
-| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.             |
-| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                           |
-|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR0 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:26  |        |         |        | Reserved                                                                                                                                                                                                                            |
+| 25:16  |   rw   |  0x3ff  | TCLS   | Duration of setup phase before rising SCL when using Push-Pull signaling at SDR4 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value. |
+| 15:10  |        |         |        | Reserved                                                                                                                                                                                                                            |
+|  9:0   |   rw   |  0x3ff  | TCLH   | Duration of hold phase after falling SCL when using Push-Pull signaling at SDR4 rate, minus 1. This interval is in terms of the IP clock period. If this field has all bits set then the hardware will calculate a suitable value.  |
 
 ## CTRL_TIME_FMP
 Controller Timing Parameters for I2C Fast Mode Plus signaling.
@@ -2418,7 +2418,7 @@ Standby Controller Control
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "PENDING_RX_NACK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "HANDOFF_DELAY_NACK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACR_FSM_OP_SELECT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "PRIME_ACCEPT_GETACCCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "HANDOFF_DEEP_SLEEP", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CR_REQUEST_SEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "BCAST_CCC_IBI_RING", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TARGET_XACT_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_SETAASA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_SETDASA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_ENTDAA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "RSTACT_DEFBYTE_02", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}, {"name": "STBY_CR_ENABLE_INIT", "bits": 2, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "PENDING_RX_NACK", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "HANDOFF_DELAY_NACK", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ACR_FSM_OP_SELECT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "PRIME_ACCEPT_GETACCCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "HANDOFF_DEEP_SLEEP", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CR_REQUEST_SEND", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 2}, {"name": "BCAST_CCC_IBI_RING", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TARGET_XACT_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_SETAASA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_SETDASA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DAA_ENTDAA_ENABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "RSTACT_DEFBYTE_02", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}, {"name": "STBY_CR_ENABLE_INIT", "bits": 2, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                             |
@@ -2434,12 +2434,12 @@ Standby Controller Control
 |   11   |        |         | Reserved                                                         |
 |  10:8  |   rw   |   0x0   | [BCAST_CCC_IBI_RING](#stby_cr_control--bcast_ccc_ibi_ring)       |
 |  7:6   |        |         | Reserved                                                         |
-|   5    |   rw   |   0x0   | [CR_REQUEST_SEND](#stby_cr_control--cr_request_send)             |
+|   5    |   wo   |   0x0   | [CR_REQUEST_SEND](#stby_cr_control--cr_request_send)             |
 |   4    |   rw   |   0x0   | [HANDOFF_DEEP_SLEEP](#stby_cr_control--handoff_deep_sleep)       |
 |   3    |   rw   |   0x1   | [PRIME_ACCEPT_GETACCCR](#stby_cr_control--prime_accept_getacccr) |
 |   2    |   rw   |   0x1   | [ACR_FSM_OP_SELECT](#stby_cr_control--acr_fsm_op_select)         |
-|   1    |   rw   |   0x0   | [HANDOFF_DELAY_NACK](#stby_cr_control--handoff_delay_nack)       |
-|   0    |   rw   |   0x0   | [PENDING_RX_NACK](#stby_cr_control--pending_rx_nack)             |
+|   1    |  rw1c  |   0x0   | [HANDOFF_DELAY_NACK](#stby_cr_control--handoff_delay_nack)       |
+|   0    |  rw1c  |   0x0   | [PENDING_RX_NACK](#stby_cr_control--pending_rx_nack)             |
 
 ### STBY_CR_CONTROL . STBY_CR_ENABLE_INIT
 Host Controller Secondary Controller Enable.

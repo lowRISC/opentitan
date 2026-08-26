@@ -847,7 +847,6 @@ module i3c_reg_top
   logic stby_cr_control_prime_accept_getacccr_wd;
   logic stby_cr_control_handoff_deep_sleep_qs;
   logic stby_cr_control_handoff_deep_sleep_wd;
-  logic stby_cr_control_cr_request_send_qs;
   logic stby_cr_control_cr_request_send_wd;
   logic [2:0] stby_cr_control_bcast_ccc_ibi_ring_qs;
   logic [2:0] stby_cr_control_bcast_ccc_ibi_ring_wd;
@@ -9331,9 +9330,9 @@ module i3c_reg_top
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.mx_error_counters.d),
-    .qre    (),
+    .qre    (reg2hw.mx_error_counters.re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.mx_error_counters.q),
     .ds     (),
     .qs     (mx_error_counters_qs)
   );
@@ -9551,7 +9550,7 @@ module i3c_reg_top
   prim_subreg_ext #(
     .DW    (1)
   ) u_stby_cr_control_cr_request_send (
-    .re     (stby_cr_control_re),
+    .re     (1'b0),
     .we     (stby_cr_control_we),
     .wd     (stby_cr_control_cr_request_send_wd),
     .d      (hw2reg.stby_cr_control.cr_request_send.d),
@@ -9559,7 +9558,7 @@ module i3c_reg_top
     .qe     (stby_cr_control_flds_we[5]),
     .q      (reg2hw.stby_cr_control.cr_request_send.q),
     .ds     (),
-    .qs     (stby_cr_control_cr_request_send_qs)
+    .qs     ()
   );
   assign reg2hw.stby_cr_control.cr_request_send.qe = stby_cr_control_qe;
 
@@ -20525,7 +20524,7 @@ module i3c_reg_top
         reg_rdata_next[2] = stby_cr_control_acr_fsm_op_select_qs;
         reg_rdata_next[3] = stby_cr_control_prime_accept_getacccr_qs;
         reg_rdata_next[4] = stby_cr_control_handoff_deep_sleep_qs;
-        reg_rdata_next[5] = stby_cr_control_cr_request_send_qs;
+        reg_rdata_next[5] = '0;
         reg_rdata_next[10:8] = stby_cr_control_bcast_ccc_ibi_ring_qs;
         reg_rdata_next[12] = stby_cr_control_target_xact_enable_qs;
         reg_rdata_next[13] = stby_cr_control_daa_setaasa_enable_qs;
