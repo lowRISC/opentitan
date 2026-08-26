@@ -179,6 +179,26 @@ BN_MAC_PERMUTATION = sv_perm_to_tuple(256, '''
     256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
 ''')
 
+# Default permutation applied to the primary URND output, directly after the Bivium PRNG. Given as
+# tuple where each entry gives the index of the to be picked element. Keep in sync with
+# otbn_pkg.sv::RndCnstUrndPermDefault.
+URND_PERMUTATION = sv_perm_to_tuple(389, '''
+    173'h0978_8cf1d647_48c85a94_0884c1aa_e1b4c286_869b82e2,
+    256'hed624787_98726008_460f5dbe_5947d383_33426939_a9968ac9_453142a3_73a555e9,
+    256'h2f962b66_2c5885ca_4c8f4b1d_540d58bd_a488a337_318212a1_1b051812_bbc465fd,
+    256'h18642ae9_ebe38989_d0ba9d45_f0125834_3506ff9f_2aafc5eb_cda2b854_062169b5,
+    256'h932cd5c0_37914c53_2ccc221e_6ce49046_d36ac0f8_4ac10c94_1d0d92c1_d972a0db,
+    256'h870e5c6b_6808387f_00029e5b_d2e3fc08_da423b13_b02b3adb_35d27b14_2bca73f1,
+    256'h20e2fad6_71568004_69ddb5a4_15b5d114_e4cc1a34_06b97949_ece1b96b_9446103c,
+    256'h104e6eea_a254df6a_3e202980_769985a2_9f52474a_a52191a8_3a3d4312_a556c35b,
+    256'h628e2a39_0b84d644_988976b0_a7204f44_9b78bdd8_6e8a3e95_2fba18b1_be04a92f,
+    256'h60add12e_0a831589_3f41e9da_416e3f2f_0ba586b4_676d7918_b5ab071a_e894c50a,
+    256'h6edc2180_9408299a_79781605_b69ec51b_fdd4744b_4217e642_10c516cc_1a7ba683,
+    256'h2c61e48d_10f36246_8ee2d181_36087564_a2c13245_733cae48_7a98d62a_d18aa0d0,
+    256'h4faf9c19_6ea3f242_e40d2cdb_ae313051_75684460_de994131_3a714af8_6722a7a6,
+    256'h71047a06_b215bc6e_eefb0b0a_e8a2782f_e111c7e0_a5ce0820_31cfaa34_72de1f4b
+''')
+
 # Default permutation for the URND permutation in MAI, applied on top of URND_PERMUTATION to feed
 # the mask accelerator. Given as tuple where each entry gives the index of the to be picked
 # element. Keep in sync with otbn_pkg.sv::RndCnstMaiUrndPermDefault.

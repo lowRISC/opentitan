@@ -1,7 +1,15 @@
+# Verified that ([w1,w0] + [w3,w2]) mod n == (scalar0 + scalar1) mod n:
+# >>> from ecdsa import NIST256p
+# >>> n = NIST256p.order
+# >>> scalar0 = scalar1 = 0x12bac5b0bd7c77320a210c4be446984ccbb6a02057843d9a2c48e8981128c13393c174a162335f23f
+# >>> w0, w1 = 0x8ca3e87a142668998a94da5c6f0c68a0e7f310ec544a13c805f01c0a0f2da71c, 0x1e5fc6293ed344f65
+# >>> w2, w3 = 0x4582781b4f2005308dc476ee163cc8a0dbec5b80038c892a045d8f74fe2f05e3, 0x1d9d48ecc3455bfc4
+# >>> (w0 + (w1 << 256) + w2 + (w3 << 256)) % n == (scalar0 + scalar1) % n
+
 # Expected values ([w1, w0] = first share hidden scalar):
-w0 = 0xd039c9f71175b51affc4923ccfeb4c4e1019c29588262d4dc15b27bf3d3680ed
-w1 = 0x26e19093a99e6de6
+w0 = 0x8ca3e87a142668998a94da5c6f0c68a0e7f310ec544a13c805f01c0a0f2da71c
+w1 = 0x1e5fc6293ed344f65
 
 # Expected values ([w3, w2] = second share hidden scalar):
-w2 = 0x4fb2f2b4718a3f82c52ca2dddb98ca1acf1513150cdafa04cc0c907581ef53d5
-w3 = 0x1066f43b82a25452a
+w2 = 0x4582781b4f2005308dc476ee163cc8a0dbec5b80038c892a045d8f74fe2f05e3
+w3 = 0x1d9d48ecc3455bfc4
