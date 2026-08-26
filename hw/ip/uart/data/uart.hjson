@@ -133,7 +133,7 @@
       type:   "uni"
       name:   "lsio_trigger"
       desc: '''
-            Self-clearing status trigger for the DMA.
+            Self-clearing status trigger for the UART.
             Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
       '''
       act:    "req"
