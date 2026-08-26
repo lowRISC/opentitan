@@ -2875,12 +2875,13 @@
     { name:     "MX_ERROR_COUNTERS",
       desc:     "Controller Error Counters.",
       swaccess: "ro",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       hwext:    "true",
+      hwre:     "true",
       fields: [
         { bits:   "7:0",
           name:   "CE2_ERROR_COUNT",
-          desc:   "CE2 Error Counter.",
+          desc:   "CE2 Error Counter; resets to zero when read.",
           resval: "0"
         }
       ]

@@ -156,7 +156,7 @@ module i3c_core
   end
   assign enabling = (ctrl_enabled | targ_enabled) & !buf_enabled;
 
-  // Is the final Target operating as a Standby Controller?
+  // Is the first Target operating as a Standby Controller?
   i3c_stby_cr_en_init_e stby_cr_en_init;
   assign stby_cr_en_init = i3c_stby_cr_en_init_e'(hw2reg_o.stby_cr_control.stby_cr_enable_init.d);
   assign stby_cr_enabled = (stby_cr_en_init inside {StbyCrEn_SCMRunning, StbyCrEn_SCMHotJoin});
@@ -398,6 +398,7 @@ module i3c_core
     // Control inputs.
     .sw_reset_i        (ctrl_sw_reset),
     .fifo_rst_i        (fifo_rst),
+    .stby_cr_enabled_i (stby_cr_enabled),
 
     // Configuration settings.
     .reg2hw_i          (reg2hw_i),
@@ -1397,7 +1398,7 @@ module i3c_core
     // Control inputs.
     .enable_i        (ctrl_enabled),
     .sw_reset_i      (ctrl_sw_reset),
-    .hotjoin_ctrl_i  (reg2hw_i.hc_control.hot_join_ctrl.q),
+    .hotjoin_ctrl_i  (hw2reg_o.hc_control.hot_join_ctrl.d),
 
     // Blocked addresses.
     .addr_blocked_i  (addr_blocked),

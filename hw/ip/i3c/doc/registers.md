@@ -2364,10 +2364,10 @@ Controller Error Counters.
 {"reg": [{"name": "CE2_ERROR_COUNT", "bits": 8, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description        |
-|:------:|:------:|:-------:|:----------------|:-------------------|
-|  31:8  |        |         |                 | Reserved           |
-|  7:0   |   ro   |   0x0   | CE2_ERROR_COUNT | CE2 Error Counter. |
+|  Bits  |  Type  |  Reset  | Name            | Description                                  |
+|:------:|:------:|:-------:|:----------------|:---------------------------------------------|
+|  31:8  |        |         |                 | Reserved                                     |
+|  7:0   |   ro   |   0x0   | CE2_ERROR_COUNT | CE2 Error Counter; resets to zero when read. |
 
 ## SCHED_CMDS_DEBUG
 Scheduled Commands Debug

@@ -108,7 +108,8 @@ package i3c_fifo_pkg;
   // Convenience function that clamps the supplied quantity to the specified number of bits for
   // presentation via an HCI register field. This is just an aid to software in the event that
   // FIFO properties have been misconfigured; it should lead to better behavior than wrapping would.
-  function automatic bit [DepthW:0] fifo_lvl_clamp(input [DepthW:0] entries, input int n);
+  function automatic bit [DepthW:0] fifo_lvl_clamp(input logic [DepthW:0] entries,
+                                                   input int n);
     return (DepthW + 1)'(|(entries >> n) ? (('b1 << n) - 'b1) : entries);
   endfunction
 
