@@ -577,7 +577,7 @@ class dv_base_reg_block extends uvm_reg_block;
 
   // Return true if a fetch from rg is allowed because the block that contains it, or one of that
   // block's ancestors, has allows_csr_fetch set.
-  local function bit reg_allows_fetch(uvm_reg rg);
+  static function bit reg_allows_fetch(uvm_reg rg);
     uvm_reg_block     blk = rg.get_parent();
     dv_base_reg_block dv_blk;
 
