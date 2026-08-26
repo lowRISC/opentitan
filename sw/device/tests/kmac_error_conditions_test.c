@@ -185,9 +185,11 @@ status_t test_err_wait_timer_expired(void) {
       .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_wait_timer = 0x001,  // Small wait time out to trigger the error.
       .entropy_prescaler = 0x000,
+      // Trigger an automatic EDN reseed request after the first hash in case
+      // KMAC was already seeded and in StRandReady (e.g. when run under
+      // ROM_EXT).
+      .entropy_hash_threshold = 0x001,
       .entropy_fast_process = kDifToggleDisabled,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
       .message_big_endian = kDifToggleDisabled,
       .output_big_endian = kDifToggleDisabled,
       .sideload = kDifToggleDisabled,
