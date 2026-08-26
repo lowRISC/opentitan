@@ -78,7 +78,7 @@ The input and output signals from the IP block are implemented using SystemVeril
 The input signals consist simply of SCL and SDA with no need to monitor or observe any other signals, but the driver output signals are more likely to vary according to the available I/O drivers and whether the design is to be implemented in an FPGA or an ASIC.
 Two alternative sets of driver outputs are available in the IP block:
 
-### Output Driver Style 1
+### Output Driver Style 1 (`rtl/io_sep/i3c_io_pkg.sv`)
 
  - `sda_pp_en` - Push-pull enable for `sda`.
  - `sda_od_en` - Open drain enable for `sda`.
@@ -88,15 +88,16 @@ Controller only:
  - `scl_en` - Enable for the Serial CLock (SCL) output signal; its state depends upon whether the IP block is the Active Controller.
  - `scl` - SCL output signal, gated by `scl_en`.
 
-### Output Driver Style 2
+### Output Driver Style 2 (`rtl/io_vod/i3c_io_pkg.sv`)
 
- - `sda_en` - Enable for `sda`.
- - `sda_pp_mode` - Determines whether `sda` is driven in push-pull mode (1) or open drain (0).
+ - `sda_en` - Enable(s) for `sda`. Asserted for push-pull low/high output and for open drain low output; deasserted for open drain high output.
  - `sda` - Serial DAta line(s), gated by `sda_en`.
 
 Controller only:
  - `scl_en` - Enable for the Serial CLock (SCL) output signal; its state depends upon whether the IP block is the Active Controller.
  - `scl` - SCL output signal, gated by `scl_en`.
+
+**In the design source, `rtl/io_sep/i3c_io_pkg.sv` and `rtl/io_vod/i3c_io_pkg.sv` both offer implementations of the package `i3c_io_pkg`, so only _one_ of these files shall be included in the build.**
 
 ## Pullups and high-keepers
 
