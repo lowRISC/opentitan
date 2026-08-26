@@ -55,10 +55,6 @@ enum {
 static_assert(kShake256KeccakRateWords <= kStateShareSize,
               "assert SHAKE256 rate is <= share size");
 
-static const uint32_t kEntropySeed[] = {0x5d2a3764, 0x37d3ecba, 0xe1859094,
-                                        0xb153e3fe, 0x09596819, 0x3e85a6e8,
-                                        0xb6dcdaba, 0x50dc409c, 0x11e1ebd1};
-
 /**
  * KMAC configuration parameters.
  */
@@ -152,6 +148,13 @@ static rom_error_t poll_state(bitfield_bit32_index_t bit_index) {
 /**
  * Configure kmac block using `config` parameters.
  *
+ * The entropy complex (EDN0) must be initialized and running before calling
+ * this function. Setting EDN mode and asserting `ENTROPY_READY` triggers an
+ * initial EDN reseed request (regardless of whether hardware is used in KMAC,
+ * cSHAKE, SHAKE, or SHA3 mode). Depending on the mode and the
+ * `ENTROPY_FAST_PROCESS` configuration bit, the hardware will stall if EDN0 is
+ * not delivering entropy.
+ *
  * @param config The kmac configuration parameters.
  *
  * @return Error code indicating if the operation succeeded.
@@ -170,13 +173,21 @@ static rom_error_t kmac_configure(kmac_config_t config) {
       KMAC_ENTROPY_PERIOD_PRESCALER_MASK);
   abs_mmio_write32(kBase + KMAC_ENTROPY_PERIOD_REG_OFFSET, entropy_period_reg);
 
+  // Configure the entropy refresh threshold to the maximum count (1023) so
+  // that automatic PRNG reseed requests to EDN are not triggered unexpectedly
+  // during hashing in KMAC mode. For details, see:
+  //   https://opentitan.org/earlgrey_1.0.0/book/hw/ip/kmac/doc/programmers_guide.html#preventing-potential-deadlocks-in-edn-mode
+  uint32_t entropy_hash_threshold =
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
+  entropy_hash_threshold = bitfield_field32_write(
+      entropy_hash_threshold,
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD,
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_MASK);
+  abs_mmio_write32_shadowed(
+      kBase + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
+      entropy_hash_threshold);
+
   uint32_t cfg_reg = KMAC_CFG_SHADOWED_REG_RESVAL;
-  // Set `CFG.KMAC_EN` bit to 0.
-  // NOTE: If this driver is ever modified to perform an operation with
-  // KMAC_EN=true and use entropy from EDN, then the absorb() function must
-  // poll `STATUS.fifo_depth` to avoid a specific EDN-KMAC-Ibex deadlock
-  // scenario. See `absorb()` and the KMAC documentation for details.
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
   // Set `CFG.KSTRENGTH` field.
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
                                    config.kstrength);
@@ -193,12 +204,10 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
                                  config.sideload);
 
-  // Set `CFG.ENTROPY_MODE` field to use software entropy. SHAKE does not
-  // require any entropy, so there is no reason we should wait for entropy
-  // availability before we start hashing.
+  // Set `CFG.ENTROPY_MODE` field to use EDN entropy.
   cfg_reg =
       bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
-                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE);
+                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
 
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT,
@@ -216,19 +225,6 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
   abs_mmio_write32_shadowed(kBase + KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
-
-  // Write entropy seed register. Even though the values are
-  // irrelevant, these registers must be written for the KMAC block to consider
-  // its entropy "ready" and to begin operation.
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[0]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[1]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[2]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[3]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[4]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[5]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[6]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[7]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[8]);
 
   return kErrorOk;
 }
@@ -317,15 +313,15 @@ rom_error_t kmac_shake256_start(void) {
 }
 
 void kmac_shake256_absorb(const uint8_t *in, size_t inlen) {
-  // This implementation does not poll `STATUS.fifo_depth` as recommended in
-  // the KMAC documentation. Normally, polling is required to prevent a
-  // deadlock scenario between Ibex, KMAC, and EDN. However, in this case it is
-  // safe to skip because `kmac_shake256_configure()` sets KMAC to use
-  // software-only entropy, and sets `kmac_en` to false (so KMAC will not
-  // produce entropy requests anyway). Since KMAC will therefore not block on
-  // EDN, it is guaranteed to keep processing message blocks. For more details,
-  // see the KMAC documentation:
-  //   https://docs.opentitan.org/hw/ip/kmac/doc/#fifo-depth-and-empty-status
+  // This implementation does not poll `STATUS.fifo_depth`. Under normal
+  // operating conditions, SHA3 processes data faster than software pushes to
+  // the Message FIFO. Backpressure stalls Ibex for at most ~100 cycles unless
+  // KMAC blocks waiting for entropy from EDN. Because `kmac_en` is set to false
+  // (SHAKE mode), KMAC does not request fresh entropy from EDN or consume
+  // entropy for message masking, so KMAC will not block on EDN and keeps
+  // processing message blocks without deadlocking. For more details, see the
+  // KMAC documentation on preventing deadlocks in EDN mode:
+  //   https://opentitan.org/earlgrey_1.0.0/book/hw/ip/kmac/doc/programmers_guide.html#preventing-potential-deadlocks-in-edn-mode
 
   // Use byte-wide writes until the input pointer is aligned.
   // Note: writes to the KMAC message FIFO are not required to be aligned.
@@ -347,15 +343,15 @@ void kmac_shake256_absorb(const uint8_t *in, size_t inlen) {
 }
 
 void kmac_shake256_absorb_words(const uint32_t *in, size_t inlen) {
-  // This implementation does not poll `STATUS.fifo_depth` as recommended in
-  // the KMAC documentation. Normally, polling is required to prevent a
-  // deadlock scenario between Ibex, KMAC, and EDN. However, in this case it is
-  // safe to skip because `kmac_shake256_configure()` sets KMAC to use
-  // software-only entropy, and sets `kmac_en` to false (so KMAC will not
-  // produce entropy requests anyway). Since KMAC will therefore not block on
-  // EDN, it is guaranteed to keep processing message blocks. For more details,
-  // see the KMAC documentation:
-  //   https://docs.opentitan.org/hw/ip/kmac/doc/#fifo-depth-and-empty-status
+  // This implementation does not poll `STATUS.fifo_depth`. Under normal
+  // operating conditions, SHA3 processes data faster than software pushes to
+  // the Message FIFO. Backpressure stalls Ibex for at most ~100 cycles unless
+  // KMAC blocks waiting for entropy from EDN. Because `kmac_en` is set to false
+  // (SHAKE mode), KMAC does not request fresh entropy from EDN or consume
+  // entropy for message masking, so KMAC will not block on EDN and keeps
+  // processing message blocks without deadlocking. For more details, see the
+  // KMAC documentation on preventing deadlocks in EDN mode:
+  //   https://opentitan.org/earlgrey_1.0.0/book/hw/ip/kmac/doc/programmers_guide.html#preventing-potential-deadlocks-in-edn-mode
 
   for (; inlen > 0; --inlen, ++in) {
     abs_mmio_write32(kBase + KMAC_MSG_FIFO_REG_OFFSET, *in);

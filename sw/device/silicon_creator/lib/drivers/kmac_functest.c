@@ -216,6 +216,10 @@ bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, kmac_shake256_test);
   EXECUTE_TEST(result, kmac_shake256_unalign_test);
+
+  // Re-enable entropy before running KMAC-256 tests which require EDN entropy.
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+
   EXECUTE_TEST(result, kmac_kmac256_kat_1);
   EXECUTE_TEST(result, kmac_kmac256_kat_2);
   EXECUTE_TEST(result, kmac_kmac256_kat_3);
