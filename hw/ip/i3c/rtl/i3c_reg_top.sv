@@ -1126,7 +1126,7 @@ module i3c_reg_top
   logic [7:0] targ_queue_thld_ctrl_ibi_status_thld_qs;
   logic [7:0] targ_queue_thld_ctrl_ibi_status_thld_wd;
   logic targ_queue_status_level_re;
-  logic [11:0] targ_queue_status_level_rx_desc_lvl_qs;
+  logic [7:0] targ_queue_status_level_rx_desc_lvl_qs;
   logic [11:0] targ_queue_status_level_async_evt_lvl_qs;
   logic targ_buf_thld_ctrl_we;
   logic [11:0] targ_buf_thld_ctrl_rx_segment_size_qs;
@@ -13386,9 +13386,9 @@ module i3c_reg_top
 
 
   // R[targ_queue_status_level]: V(True)
-  //   F[rx_desc_lvl]: 11:0
+  //   F[rx_desc_lvl]: 7:0
   prim_subreg_ext #(
-    .DW    (12)
+    .DW    (8)
   ) u_targ_queue_status_level_rx_desc_lvl (
     .re     (targ_queue_status_level_re),
     .we     (1'b0),
@@ -20740,7 +20740,7 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[132]: begin
-        reg_rdata_next[11:0] = targ_queue_status_level_rx_desc_lvl_qs;
+        reg_rdata_next[7:0] = targ_queue_status_level_rx_desc_lvl_qs;
         reg_rdata_next[27:16] = targ_queue_status_level_async_evt_lvl_qs;
       end
 

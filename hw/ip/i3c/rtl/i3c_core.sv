@@ -22,7 +22,8 @@ module i3c_core
 #(
   parameter int unsigned ClkFreq          = 50_000_000,  // IP clock frequency, Hz.
   parameter bit          PrimaryCtrl      = 1'b1,
-  parameter bit          SecondaryCtrl    = 1'b1,
+  parameter bit          SecondaryCtrl    = 1'b0,
+  parameter bit          Target           = 1'b1,
   parameter int unsigned BufAddrW         = i3c_pkg::BufAddrW,
   parameter int unsigned DataWidth        = 32,
   parameter int unsigned NumSDALanes      = 1,
@@ -383,6 +384,8 @@ module i3c_core
   // Controller core.
   i3c_controller #(
     .ClkFreq        (ClkFreq),
+    .PrimaryCtrl    (PrimaryCtrl),
+    .SecondaryCtrl  (SecondaryCtrl),
     .DataWidth      (DataWidth),
     .FIFODepthW     (FIFODepthW),
     .NumDATEntries  (NumDATEntries),
@@ -1587,9 +1590,10 @@ module i3c_core
   assign hw2reg_o.info.dat_entry_max.d = NumDATEntries - 1;
   assign hw2reg_o.info.version.d       = IPVersion;
   assign hw2reg_o.info.revision.d      = IPRevision;
-  // Controller and Target 'present' indications; neither can presently be unconfigured.
-  assign hw2reg_o.ctrl_status.d = PrimaryCtrl | SecondaryCtrl;
-  assign hw2reg_o.targ_status.present.d = SecondaryCtrl | !PrimaryCtrl;
+  // Controller and Target 'present' indications.
+  // Note: neither can presently be unconfigured, since all instances require all functionality.
+  assign hw2reg_o.ctrl_status.d         = PrimaryCtrl | SecondaryCtrl;
+  assign hw2reg_o.targ_status.present.d = Target | SecondaryCtrl;
 
   // Controller and Target error counting.
   // - CE[3:0] (Table 44), DBR, TE[6:0] (Table 43).
@@ -2054,8 +2058,9 @@ module i3c_core
   assign hw2reg_o.ctrl_cfg_extcap_header.cap_length.d =
             I3C_CTRL_CFG_EXTCAP_HEADER_CAP_LENGTH_RESVAL;
   assign hw2reg_o.ctrl_cfg_extcap_header.cap_id.d = I3C_CTRL_CFG_EXTCAP_HEADER_CAP_ID_RESVAL;
-  // TODO: This value will likely need to be configuration/parameter-dependent.
-  assign hw2reg_o.controller_config.d = 2'b11;
+  // 2'b00 = illegal, 2'b01 = Active Controller only, 2'b10 = Target only, 2'b11 = Ctrl + Standby.
+  assign hw2reg_o.controller_config.d = (PrimaryCtrl | SecondaryCtrl) ? {SecondaryCtrl, 1'b1}
+                                                                      : {Target, 1'b0};
 
   // Dead Bus Recovery (Extended Capability).
   assign hw2reg_o.dbr_extcap_header.cap_length.d = I3C_DBR_EXTCAP_HEADER_CAP_LENGTH_RESVAL;
@@ -2066,45 +2071,50 @@ module i3c_core
   assign hw2reg_o.debug_extcap_header.cap_id.d     = I3C_DEBUG_EXTCAP_HEADER_CAP_ID_RESVAL;
   assign hw2reg_o.sched_cmds_debug.err_occurred.d  = 1'b0;
 
-  // The HCI supports reports up to 31 IBI Status Descriptors and 255 IBI Data Words (HCI Table 94).
+  // The HCI can report up to 31 IBI Status Descriptors and 255 IBI Data Words (HCI Table 94).
   // - software should respect those limits when configuring the message buffer, but here we clamp
-  //   the reported rather than wrapping, just in case.
-  logic [4:0] ibi_status_cnt;
-  logic [7:0] ibi_buffer_lvl;
-  assign ibi_status_cnt = |(fifo_state[FIFO_IBIStD].used >> 5) ? 5'h1f
-                                                               : fifo_state[FIFO_IBIStD].used[4:0];
-  assign ibi_buffer_lvl = |(fifo_state[FIFO_IBIQ].used >> 8) ? 8'hff
-                                                             : fifo_state[FIFO_IBIQ].used[7:0];
-  assign hw2reg_o.queue_status_level.ibi_status_cnt.d = ibi_status_cnt;
-  assign hw2reg_o.queue_status_level.ibi_buffer_lvl.d = ibi_buffer_lvl;
+  //   the reported value rather than wrapping, just in case.
+  // - similarly, the other entry counts presented below are clamped to the maximum representable
+  //   value as a precaution.
+  assign hw2reg_o.queue_status_level.ibi_status_cnt.d =
+         5'(fifo_lvl_clamp(fifo_state[FIFO_IBIStD].used, 5));
+  assign hw2reg_o.queue_status_level.ibi_buffer_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_IBIQ].used, 8));
 
-  // These two fields are specified as _entries_ and not DWORDs; Commands are _two_ DWORDs.
-  assign hw2reg_o.queue_status_level.response_buffer_lvl.d   = fifo_state[FIFO_RspQ].used;
-  assign hw2reg_o.queue_status_level.cmd_queue_free_lvl.d    = fifo_state[FIFO_CmdQ].avail >> 1;
-  assign hw2reg_o.data_buffer_status_level.rx_buf_lvl.d      = fifo_state[FIFO_RxBuf].used;
-  assign hw2reg_o.data_buffer_status_level.tx_buf_free_lvl.d = fifo_state[FIFO_TxBuf].avail;
+  // These two fields are specified as _entries_ and not DWORDs.
+  assign hw2reg_o.queue_status_level.response_buffer_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_RspQ].used, 8));
+  assign hw2reg_o.queue_status_level.cmd_queue_free_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_CmdQ].avail >> 1, 8));  // Commands are _two_ DWORDs.
+  assign hw2reg_o.data_buffer_status_level.rx_buf_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_RxBuf].used, 8));
+  assign hw2reg_o.data_buffer_status_level.tx_buf_free_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_TxBuf].avail, 8));
 
   // Target-side queue levels.
-  assign hw2reg_o.targ_queue_status_level.rx_desc_lvl.d   = fifo_state[FIFO_RxDTarg].used;
-  assign hw2reg_o.targ_queue_status_level.async_evt_lvl.d = fifo_state[FIFO_AsyncTarg].used;
+  assign hw2reg_o.targ_queue_status_level.rx_desc_lvl.d =
+         8'(fifo_lvl_clamp(fifo_state[FIFO_RxDTarg].used, 8));
+  assign hw2reg_o.targ_queue_status_level.async_evt_lvl.d = 12'(fifo_state[FIFO_AsyncTarg].used);
+
   // Target-side data buffer levels.
-  assign hw2reg_o.targ_buf_status_level.rx_buf_lvl.d    = fifo_state[FIFO_RxTarg].used;
-  assign hw2reg_o.targ_buf_status_level.ibi_free_lvl.d  = fifo_state[FIFO_IBITarg].avail;
+  assign hw2reg_o.targ_buf_status_level.rx_buf_lvl.d   = 12'(fifo_state[FIFO_RxTarg].used);
+  assign hw2reg_o.targ_buf_status_level.ibi_free_lvl.d = 12'(fifo_state[FIFO_IBITarg].avail);
+
   // Individual Virtual Target Tx queue levels.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_vt_queue_lvl
     assign hw2reg_o.targ_tx_queue_status_level[t].tx_desc_free_lvl.d =
-           fifo_state[FIFO_TxDTarg0 + t].avail;
+           8'(fifo_lvl_clamp(fifo_state[FIFO_TxDTarg0 + t].avail, 8));
     assign hw2reg_o.targ_tx_queue_status_level[t].tx_buf_free_lvl.d =
-           fifo_state[FIFO_TxTarg0 + t].avail;
+           12'(fifo_state[FIFO_TxTarg0 + t].avail);
+  end
+  // Complete the unused fields too.
+  for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_rem_vt_queue_level
+    assign hw2reg_o.targ_tx_queue_status_level[t].tx_desc_free_lvl.d = 8'b0;
+    assign hw2reg_o.targ_tx_queue_status_level[t].tx_buf_free_lvl.d  = 12'b0;
   end
   // Check that the FIFO numbers are indeed contiguous.
   if (FIFO_TxTarg1  != FIFO_TxTarg0  + 1) $fatal(1, "Tx FIFO identifiers are not contiguous");
   if (FIFO_TxDTarg1 != FIFO_TxDTarg0 + 1) $fatal(1, "Tx Desc FIFO identifiers are not contiguous");
-  // Complete the unused fields too.
-  for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_rem_vt_queue_level
-    assign hw2reg_o.targ_tx_queue_status_level[t].tx_desc_free_lvl.d = 'b0;
-    assign hw2reg_o.targ_tx_queue_status_level[t].tx_buf_free_lvl.d  = 'b0;
-  end
 
   // Scheduled Commands are not supported.
   assign hw2reg_o.sched_cmds_debug.tick_interval.d = '0;

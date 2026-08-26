@@ -402,6 +402,7 @@
     - [Checklist](./hw/ip/i2c/doc/checklist.md)
   - [I3C](./hw/ip/i3c/README.md)
     - [Theory of Operation](./hw/ip/i3c/doc/theory_of_operation.md)
+    - [Design Parameters](./hw/ip/i3c/doc/design_parameters.md)
     - [Integration Notes](./hw/ip/i3c/doc/integration_notes.md)
     - [Design Verification]()
       - [Testplan]()

@@ -4005,7 +4005,7 @@
           desc:   "The number of Asynchronous Event descriptors in the queue.",
           resval: "0"
         }
-        { bits:   "11:0",
+        { bits:   "7:0",
           name:   "RX_DESC_LVL",
           desc:   "The number of descriptors present in the Rx Descriptor queue.",
           resval: "0"

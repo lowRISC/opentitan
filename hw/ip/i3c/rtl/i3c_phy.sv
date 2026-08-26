@@ -31,25 +31,25 @@ module i3c_phy #(
 );
 
   `ifdef VERILATOR
-  // Serial CLock output.
-  assign scl_io = scl_pp_en_i ? scl_i : (scl_pu_en_i ? 1'b1 : 1'bZ);
-  // Serial DA output.
-  for (genvar d = 0; d < NumSDALanes; d++) begin : gen_sda_vlt
-    assign sda_io[d] = sda_pp_en_i ? sda_i[d] :
-        ((sda_od_en_i & !sda_i[d]) ? 1'b0 :
-                      (sda_pu_en_i ? 1'b1 : 1'bZ));
-  end
+    // Serial CLock output.
+    assign scl_io = scl_pp_en_i ? scl_i : (scl_pu_en_i ? 1'b1 : 1'bZ);
+    // Serial DA output.
+    for (genvar d = 0; d < NumSDALanes; d++) begin : gen_sda_vlt
+      assign sda_io[d] = sda_pp_en_i ? sda_i[d] :
+          ((sda_od_en_i & !sda_i[d]) ? 1'b0 :
+                        (sda_pu_en_i ? 1'b1 : 1'bZ));
+    end
   `else
-  // Push-pull drivers.
-  assign (strong0, strong1) scl_io = scl_pp_en_i ? scl_i : 1'bZ;
-  assign (strong0, strong1) sda_io = sda_pp_en_i ? sda_i :   'Z;
-  // Open drain drivers.
-  for (genvar d = 0; d < NumSDALanes; d++) begin : gen_sda
-    assign (strong0, weak1) sda_io[d] = (sda_od_en_i & !sda_i[d]) ? 1'b0 : 1'bZ;
-  end
-  // Pull-ups for open drain operation.
-  assign (weak0, pull1) scl_io = scl_pu_en_i ? 1'b1 : 1'bZ;
-  assign (weak0, pull1) sda_io = sda_pu_en_i ?   '1 :   'Z;
+    // Push-pull drivers.
+    assign (strong0, strong1) scl_io = scl_pp_en_i ? scl_i : 1'bZ;
+    assign (strong0, strong1) sda_io = sda_pp_en_i ? sda_i :   'Z;
+    // Open drain drivers.
+    for (genvar d = 0; d < NumSDALanes; d++) begin : gen_sda
+      assign (strong0, weak1) sda_io[d] = (sda_od_en_i & !sda_i[d]) ? 1'b0 : 1'bZ;
+    end
+    // Pull-ups for open drain operation.
+    assign (weak0, pull1) scl_io = scl_pu_en_i ? 1'b1 : 1'bZ;
+    assign (weak0, pull1) sda_io = sda_pu_en_i ?   '1 :   'Z;
   `endif
 
 endmodule

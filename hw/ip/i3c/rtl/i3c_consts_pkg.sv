@@ -222,7 +222,7 @@ package i3c_consts_pkg;
   typedef enum logic [1:0] {
     RstOpType_Single = 2'b00,
     RstOpType_Reserved,
-    RstOpType_RSTACC,
+    RstOpType_RSTACT,
     RstOpType_Leave
   } i3c_reset_op_type_e;
 

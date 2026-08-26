@@ -2981,20 +2981,20 @@ Target-side control register for setting queue interrupt thresholds.
 Target-side queue levels.
 - Offset: `0x334`
 - Reset default: `0x0`
-- Reset mask: `0xfff0fff`
+- Reset mask: `0xfff00ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_LVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "ASYNC_EVT_LVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "RX_DESC_LVL", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 8}, {"name": "ASYNC_EVT_LVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                   |
 |:------:|:------:|:-------:|:--------------|:--------------------------------------------------------------|
 | 31:28  |        |         |               | Reserved                                                      |
 | 27:16  |   ro   |   0x0   | ASYNC_EVT_LVL | The number of Asynchronous Event descriptors in the queue.    |
-| 15:12  |        |         |               | Reserved                                                      |
-|  11:0  |   ro   |   0x0   | RX_DESC_LVL   | The number of descriptors present in the Rx Descriptor queue. |
+|  15:8  |        |         |               | Reserved                                                      |
+|  7:0   |   ro   |   0x0   | RX_DESC_LVL   | The number of descriptors present in the Rx Descriptor queue. |
 
 ## TARG_BUF_THLD_CTRL
 Target-side control register for setting buffer interrupt thresholds.

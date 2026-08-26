@@ -10,6 +10,7 @@
 `include "prim_assert.sv"
 
 module i3c
+  import i3c_io_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
 #(
@@ -17,7 +18,9 @@ module i3c
   // Is this IP block responsible for configuring the bus?
   parameter bit                     PrimaryCtrl      = 1'b1,
   // Can this IP block operate as a Secondary Controller on the bus?
-  parameter bit                     SecondaryCtrl    = 1'b1,
+  parameter bit                     SecondaryCtrl    = 1'b0,
+  // Include Target functionality even in the absence of Secondary Controller operation?
+  parameter bit                     Target           = 1'b1,
   // Number of target(s) or target group(s) presented simultaneously on the I3C bus,
   // including the Secondary Controller Role.
   parameter int unsigned            NumTargets       = i3c_pkg::NumTargets,
@@ -63,8 +66,8 @@ module i3c
   output top_racl_pkg::racl_error_log_t     racl_error_o,
 
   // I3C Controller I/O signaling.
-  output i3c_io_pkg::i3c_ctrl_bus_drv_t     cio_ctrl_bus_drv_o,
-  input  i3c_io_pkg::i3c_ctrl_bus_obs_t     cio_ctrl_bus_obs_i,
+  output i3c_ctrl_bus_drv_t                 cio_ctrl_bus_drv_o,
+  input  i3c_ctrl_bus_obs_t                 cio_ctrl_bus_obs_i,
 
   // Pull-up enables for open drain intervals.
   output logic                              cio_ctrl_scl_pu_en_o,
@@ -75,8 +78,8 @@ module i3c
   output logic                              cio_sda_hk_en_o,
 
   // I3C Target I/O signaling.
-  output i3c_io_pkg::i3c_targ_bus_drv_t     cio_targ_bus_drv_o,
-  input  i3c_io_pkg::i3c_targ_bus_obs_t     cio_targ_bus_obs_i,
+  output i3c_targ_bus_drv_t                 cio_targ_bus_drv_o,
+  input  i3c_targ_bus_obs_t                 cio_targ_bus_obs_i,
 
   // Target Reset Detector request/response.
   output                                    rstdet_enable_o,
@@ -123,6 +126,10 @@ module i3c
   localparam int unsigned SWDirAddrW = $clog2(I3C_BUFFER_SIZE * 8 / DataWidth);
 
   logic [NumAlerts-1:0] alert_test, alerts;
+
+  // TODO: These drivers should not exist, because the ports should not exist, but it's adding noise
+  // to synthesis logs.
+  assign {cio_ctrl_bus_drv_en_o, cio_targ_bus_drv_en_o} = 'b0;
 
   // Registers.
   i3c_reg2hw_t reg2hw;
@@ -367,6 +374,7 @@ module i3c
     .ClkFreq         (ClkFreq),
     .PrimaryCtrl     (PrimaryCtrl),
     .SecondaryCtrl   (SecondaryCtrl),
+    .Target          (Target),
     .BufAddrW        (BufAddrW),
     .DataWidth       (DataWidth),
     .NumTargets      (NumTargets),
@@ -496,16 +504,28 @@ module i3c
   `ASSERT_KNOWN(CtrlSCLKnown_A, cio_ctrl_bus_drv_o.scl, clk_i, !rst_ni ||
                 !cio_ctrl_bus_drv_o.scl_en)
 
-  `ASSERT_KNOWN(CtrlSDAPPEnKnown_A, cio_ctrl_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CtrlSDAODEnKnown_A, cio_ctrl_bus_drv_o.sda_od_en, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv_o.sda, clk_i, !rst_ni ||
-                (!cio_ctrl_bus_drv_o.sda_pp_en & !cio_ctrl_bus_drv_o.sda_od_en))
+  if (DrvSeparatedEn) begin : gen_ctrl_sep_asserts
+    `ASSERT_KNOWN(CtrlSDAPPEnKnown_A, cio_ctrl_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(CtrlSDAODEnKnown_A, cio_ctrl_bus_drv_o.sda_od_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv_o.sda, clk_i, !rst_ni ||
+                  (!cio_ctrl_bus_drv_o.sda_pp_en & !cio_ctrl_bus_drv_o.sda_od_en))
+  end else begin : gen_ctrl_nosep_asserts
+    `ASSERT_KNOWN(CtrlSDAEnKnown_A, cio_ctrl_bus_drv_o.sda_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv_o.sda, clk_i, !rst_ni ||
+                  !cio_ctrl_bus_drv_o.sda_en)
+  end
 
   // Assert Known for I3C Target outputs
-  `ASSERT_KNOWN(TargSDAPPEnKnown_A, cio_targ_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TargSDAODEnKnown_A, cio_targ_bus_drv_o.sda_od_en, clk_i, !rst_ni)
-  `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv_o.sda, clk_i, !rst_ni ||
-                (!cio_targ_bus_drv_o.sda_pp_en & !cio_targ_bus_drv_o.sda_od_en))
+  if (DrvSeparatedEn) begin : gen_targ_sep_asserts
+    `ASSERT_KNOWN(TargSDAPPEnKnown_A, cio_targ_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(TargSDAODEnKnown_A, cio_targ_bus_drv_o.sda_od_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv_o.sda, clk_i, !rst_ni ||
+                  (!cio_targ_bus_drv_o.sda_pp_en & !cio_targ_bus_drv_o.sda_od_en))
+  end else begin : gen_targ_nosep_asserts
+    `ASSERT_KNOWN(TargSDAEnKnown_A, cio_targ_bus_drv_o.sda_en, clk_i, !rst_ni)
+    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv_o.sda, clk_i, !rst_ni ||
+                  !cio_targ_bus_drv_o.sda_en)
+  end
 
   // Assert Known for alerts
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
