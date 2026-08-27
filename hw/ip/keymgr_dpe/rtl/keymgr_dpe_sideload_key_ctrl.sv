@@ -50,8 +50,8 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 7
   //
-  localparam int StateWidth = 10;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int SideloadStateWidth = 10;
+  typedef enum logic [SideloadStateWidth-1:0] {
     StSideloadReset = 10'b0011111011,
     StSideloadIdle  = 10'b0101000101,
     StSideloadWipe  = 10'b1110110010,
