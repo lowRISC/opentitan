@@ -57,25 +57,25 @@
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "hw_key_req",  // kmac_key_req_t
       type:    "uni",
       name:    "kmac_key",    // kmac_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "hw_key_req",  // hmac_key_req_t
       type:    "uni",
       name:    "hmac_key",    // hmac_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "otbn_key_req",
       type:    "uni",
       name:    "otbn_key",
       act:     "req",
-      package: "keymgr_pkg",
+      package: "keymgr_dpe_pkg",
     },
     { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
@@ -146,67 +146,67 @@
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "keymgr_pkg::lfsr_seed_t"
+      type:      "keymgr_dpe_pkg::lfsr_seed_t"
       randcount: "64",
       randtype:  "data",
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "keymgr_pkg::lfsr_perm_t"
+      type:      "keymgr_dpe_pkg::lfsr_perm_t"
       randcount: "64",
       randtype:  "perm",
     },
     { name:      "RndCnstRandPerm",
       desc:      "Compile-time random permutation for entropy used in share overriding",
-      type:      "keymgr_pkg::rand_perm_t"
+      type:      "keymgr_dpe_pkg::rand_perm_t"
       randcount: "32",
       randtype:  "perm",
     }
     { name:      "RndCnstRevisionSeed",
       desc:      "Compile-time random bits for revision seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstSoftOutputSeed",
       desc:      "Compile-time random bits for software generation seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstHardOutputSeed",
       desc:      "Compile-time random bits for hardware generation seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstAesSeed",
       desc:      "Compile-time random bits for generation seed when aes destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstKmacSeed",
       desc:      "Compile-time random bits for generation seed when kmac destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstOtbnSeed",
       desc:      "Compile-time random bits for generation seed when otbn destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },

@@ -12,10 +12,10 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   typedef bit [kmac_pkg::AppDigestW-1:0]                      digest_t;
   typedef bit [TL_DW-1:0]                                     tl_data_t;
-  typedef bit [keymgr_pkg::KeyWidth-1:0]                      key_t;
-  typedef key_t [keymgr_pkg::Shares-1:0]                      key_shares_t;
-  typedef bit [keymgr_pkg::OtbnKeyWidth-1:0]                  otbn_key_t;
-  typedef otbn_key_t [keymgr_pkg::Shares-1:0]                 otbn_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::KeyWidth-1:0]                  key_t;
+  typedef key_t [keymgr_dpe_pkg::Shares-1:0]                  key_shares_t;
+  typedef bit [keymgr_dpe_pkg::OtbnKeyWidth-1:0]              otbn_key_t;
+  typedef otbn_key_t [keymgr_dpe_pkg::Shares-1:0]             otbn_key_shares_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSaltReg-1:0]      salt_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0] sw_binding_t;
 
@@ -35,7 +35,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [(DpeAdvDataWidth - keymgr_pkg::KeyWidth - keymgr_pkg::SwBindingWidth) - 1 : 0]
+    bit [(DpeAdvDataWidth - keymgr_dpe_pkg::KeyWidth - keymgr_dpe_pkg::SwBindingWidth) - 1 : 0]
                  unused;
     sw_binding_t SoftwareBinding;
     key_t        OwnerSeed;
@@ -43,16 +43,16 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [(DpeAdvDataWidth - keymgr_pkg::SwBindingWidth) - 1 : 0]
+    bit [(DpeAdvDataWidth - keymgr_dpe_pkg::SwBindingWidth) - 1 : 0]
                  unused;
     sw_binding_t SoftwareBinding;
   } adv_sw_data_t;
 
   typedef struct packed {
-    tl_data_t          KeyVersion;
-    salt_t             Salt;
-    keymgr_pkg::seed_t HwDestSeed;
-    keymgr_pkg::seed_t OutputSeed;
+    tl_data_t              KeyVersion;
+    salt_t                 Salt;
+    keymgr_dpe_pkg::seed_t HwDestSeed;
+    keymgr_dpe_pkg::seed_t OutputSeed;
   } gen_data_t;
 
   localparam int KmacDigestBytes = kmac_pkg::AppDigestW / 8;
@@ -95,8 +95,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     begin
       bit valid_found = 1'b0;
       key_shares_t otp_root_key = get_otp_root_key();
-      bit [keymgr_pkg::KeyWidth-1:0] stage_key_unmasked;
-      bit [keymgr_pkg::KeyWidth-1:0] otp_root_key_unmasked;
+      bit [keymgr_dpe_pkg::KeyWidth-1:0] stage_key_unmasked;
+      bit [keymgr_dpe_pkg::KeyWidth-1:0] otp_root_key_unmasked;
       for (int i = 0; i < num_hw_slots; i++) begin
         keymgr_dpe_pkg::keymgr_dpe_slot_t slot = get_key_slot(i);
         if (slot.valid) begin
@@ -343,7 +343,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   endfunction
 
   // Combine the two shares of a masked key to get an unmasked key.
-  virtual function bit [keymgr_pkg::KeyWidth-1:0] get_unmasked_key(key_shares_t two_share_key);
+  virtual function bit [keymgr_dpe_pkg::KeyWidth-1:0] get_unmasked_key(key_shares_t two_share_key);
     return two_share_key[0] ^ two_share_key[1];
   endfunction
 
@@ -378,7 +378,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
               UVM_LOW)
 
     // Rom{0,1}Digest come from the respective ROM Controller; (backdoor-)read them from CSRs.
-    for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
+    for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / TL_DW; i++) begin
       uvm_reg_data_t rdata = csr_peek(ral.rom_ctrl0_regs.digest[i]);
       creator_data.Rom0Digest[TL_DW * i +: TL_DW] = rdata;
       rdata = csr_peek(ral.rom_ctrl1_regs.digest[i]);
@@ -511,7 +511,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   virtual function void check_kmac_digest(key_t     kmac_key,
                                           bit [7:0] data_arr[],
                                           key_t     act_digest);
-    `DV_CHECK_EQ(keymgr_pkg::KeyWidth'(get_kmac_digest(kmac_key, data_arr)),
+    `DV_CHECK_EQ(keymgr_dpe_pkg::KeyWidth'(get_kmac_digest(kmac_key, data_arr)),
                  act_digest)
   endfunction
 
@@ -519,7 +519,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   virtual function void check_kmac_otbn_digest(key_t      kmac_key,
                                                bit [7:0]  data_arr[],
                                                otbn_key_t act_digest);
-    `DV_CHECK_EQ(keymgr_pkg::OtbnKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
+    `DV_CHECK_EQ(keymgr_dpe_pkg::OtbnKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
                  act_digest)
   endfunction
 
@@ -591,7 +591,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   // Backdoor-read keymgr_dpe's SW output.
   virtual function key_shares_t get_sw_output();
     key_shares_t key_shares;
-    for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
+    for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / TL_DW; i++) begin
       uvm_reg_data_t rdata = csr_peek(ral.keymgr_dpe.sw_share0_output[i]);
       key_shares[0][TL_DW * i +: TL_DW] = rdata;
       rdata = csr_peek(ral.keymgr_dpe.sw_share1_output[i]);
@@ -603,7 +603,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   // Backdoor-read keymgr_dpe's HW output at a given path.
   virtual function key_shares_t get_hw_output(string path);
-    keymgr_pkg::hw_key_req_t hw_key;
+    keymgr_dpe_pkg::hw_key_req_t hw_key;
     `DV_CHECK_FATAL(uvm_hdl_read(path, hw_key))
     `DV_CHECK_EQ(hw_key.valid, 1, "Expected HW output key to be valid")
     `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, key_shares_str(hw_key.key)), UVM_LOW)
@@ -612,7 +612,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   virtual function otbn_key_shares_t get_output_otbn();
     string path = "tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.otbn_key_o";
-    keymgr_pkg::otbn_key_req_t otbn_key;
+    keymgr_dpe_pkg::otbn_key_req_t otbn_key;
     `DV_CHECK_FATAL(uvm_hdl_read(path, otbn_key))
     `DV_CHECK_EQ(otbn_key.valid, 1, "Expected OTBN output key to be valid")
     `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, otbn_key_shares_str(otbn_key.key)),

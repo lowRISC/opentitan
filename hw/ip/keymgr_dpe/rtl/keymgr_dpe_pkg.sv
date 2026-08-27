@@ -4,9 +4,6 @@
 
 package keymgr_dpe_pkg;
 
-  // Most of the parameters are directly reused from keymgr_pkg
-  import keymgr_pkg::*;
-
   // Chip Device ID
   parameter int DeviceIdWidth = 256;
   typedef logic [DeviceIdWidth-1:0] keymgr_dpe_device_id_t;
@@ -88,17 +85,41 @@ package keymgr_dpe_pkg;
   // Parameter provided by the keymgr
   parameter int SaltWidth = 32 * keymgr_dpe_reg_pkg::NumSaltReg;
   parameter int KeyVersionWidth = 32;  // Key version length for individual DICE stage
+  parameter int KeyWidth = 256;
+  parameter int OtbnKeyWidth = 384;
+  parameter int KmacDataIfWidth = 64;  // KMAC interface data width
+  parameter int SwBindingWidth = 32 * keymgr_dpe_reg_pkg::NumSwBindingReg;
+  parameter int Shares = 2; // number of key shares
 
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
   parameter int DevIdWidth = 256;
   parameter int MaxWidth = 256;
 
+  // Default Lfsr configurations
+  // These LFSR parameters have been generated with
+  // $ util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+  parameter int LfsrWidth = 64;
+  typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'h22d326255bd24320;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    128'h16108c9f9008aa37e5118d1ec1df64a7,
+    256'h24f3f1b73537f42d38383ee8f897286df81d49ab54b6bbbb666cbd1a16c41252
+  };
+
+  // Random permutation
+  parameter int RandWidth = LfsrWidth / 2;
+  typedef logic [RandWidth-1:0][$clog2(RandWidth)-1:0] rand_perm_t;
+  parameter rand_perm_t RndCnstRandPermDefault = {
+    160'h62089181d2a6be2ce145e2e27099ededbd7dceb0
+  };
+
   // Default seeds
   // These have been generated with the following command by incrementing the --seed argument
   // for every seed.
   // util/design/gen-lfsr-seed.py --width 256 --seed 7535190 --prefix ""
-  // typedef logic [KeyWidth-1:0] seed_t;
+  typedef logic [KeyWidth-1:0] seed_t;
   parameter seed_t RndCnstRevisionSeedDefault =
     256'h69802e51_bacf8874_e650d692_e3d8a646_2d3f158f_0bf7961d_d346f880_b4d52170;
   parameter seed_t RndCnstSoftOutputSeedDefault =
@@ -161,6 +182,28 @@ package keymgr_dpe_pkg;
   parameter keymgr_dpe_owner_seed_t KEYMGR_DPE_OWNER_SEED_DEFAULT = '{
     seed         : 256'hf5052c0f14782d8b066be9f49c0b2000d3643ff3723ea7db972f69cd3e2e3e68,
     seed_valid   : 1'b1
+  };
+
+  // Key connection to various symmetric modules
+  typedef struct packed {
+    logic valid;
+    logic [Shares-1:0][KeyWidth-1:0] key;
+  } hw_key_req_t;
+
+  // Key connection to otbn
+  typedef struct packed {
+    logic valid;
+    logic [Shares-1:0][OtbnKeyWidth-1:0] key;
+  } otbn_key_req_t;
+
+  parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
+    valid: 1'b0,
+    key: {Shares{KeyWidth'(32'hDEADBEEF)}}
+  };
+
+  parameter otbn_key_req_t OTBN_KEY_REQ_DEFAULT = '{
+    valid: 1'b0,
+    key: {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
   };
 
   // Enumeration for operation status

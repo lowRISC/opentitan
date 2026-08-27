@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class key_sideload_base_seq #(
-    parameter type KEY_T = keymgr_pkg::hw_key_req_t
+    parameter type KEY_T = keymgr_dpe_pkg::hw_key_req_t
 ) extends dv_base_seq #(
     .REQ         (key_sideload_item#(KEY_T)),
     .CFG_T       (key_sideload_agent_cfg#(KEY_T)),

@@ -12,10 +12,10 @@ class chip_sw_keymgr_dpe_sideload_kmac_vseq extends chip_sw_keymgr_dpe_key_deriv
   localparam bit [7:0] MsgArr[MessageBytes] = {8'h00, 8'h01, 8'h02, 8'h03};
   localparam string CustomStr = "";
   localparam int DigestBytes = 32;
-  localparam int KeyBytes = keymgr_pkg::KeyWidth / 8;
+  localparam int KeyBytes = keymgr_dpe_pkg::KeyWidth / 8;
 
   virtual task run_test_sequence(key_shares_t creator_key);
-    bit [keymgr_pkg::KeyWidth-1:0] sideload_kmac_key;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] sideload_kmac_key;
     bit [7:0] sideload_key_arr[KeyBytes];
     bit [7:0] digest_arr[DigestBytes];
 

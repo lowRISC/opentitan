@@ -103,7 +103,7 @@ module ascon_sim import ascon_pkg::*;
   logic edn_req;
 
   // Key Manager Interface
-  keymgr_pkg::hw_key_req_t keymgr_key;
+  keymgr_dpe_pkg::hw_key_req_t keymgr_key;
 
   // alerts
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;

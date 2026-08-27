@@ -19,15 +19,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
     // HW_REVISION_SEED
-    bit [keymgr_pkg::KeyWidth-1:0]                                         HardwareRevisionSecret;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     HardwareRevisionSecret;
     // DEVICE_IDENTIFIER
     bit [keymgr_dpe_pkg::DevIdWidth-1:0]                                   DeviceIdentifier;
     // HEALTH_ST_MEASUREMENT
     bit [keymgr_dpe_pkg::HealthStateWidth-1:0]                             HealthMeasurement;
     // ROM_DESCRIPTORS
-    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
+    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
     // CREATOR_SEED
-    bit [keymgr_pkg::KeyWidth-1:0]                                         CreatorRootSecret;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     CreatorRootSecret;
   } adv_creator_data_with_creator_seed_t;
 
   // if boot_stage == 0 without creator seed
@@ -39,34 +39,34 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // HEALTH_ST_MEASUREMENT
     bit [keymgr_dpe_pkg::HealthStateWidth-1:0]                             HealthMeasurement;
     // ROM_DESCRIPTORS
-    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
+    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
     // HW_REVISION_SEED
-    bit [keymgr_pkg::KeyWidth-1:0]                                         HardwareRevisionSecret;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     HardwareRevisionSecret;
   } adv_creator_data_without_creator_seed_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0]
+    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::KeyWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
         unused;
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     // CREATOR_SEED
-    bit [keymgr_pkg::KeyWidth-1:0] CreatorRootSecret;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] CreatorRootSecret;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0]
+    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::KeyWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
         unused;
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     // OWNER SEED
-    bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] OwnerRootSecret;
   } adv_owner_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]
+    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
         unused;
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
@@ -75,8 +75,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   typedef struct packed {
     bit [TL_DW-1:0]      KeyVersion;
     bit [keymgr_dpe_reg_pkg::NumSaltReg-1:0][TL_DW-1:0] Salt;
-    keymgr_pkg::seed_t   KeyID;
-    keymgr_pkg::seed_t   SoftwareExportConstant;
+    keymgr_dpe_pkg::seed_t   KeyID;
+    keymgr_dpe_pkg::seed_t   SoftwareExportConstant;
   } gen_out_data_t;
 
   typedef enum int {
@@ -106,7 +106,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
   keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[keymgr_dpe_env_pkg::DvNumInstHwSlot];
-  bit [keymgr_pkg::KeyWidth-1:0] old_key;
+  bit [keymgr_dpe_pkg::KeyWidth-1:0] old_key;
   // bit used to flag a comparison of key slot is required
   // it's set by the process_kmac_data_rsp() function, during an
   // internal key update
@@ -323,8 +323,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         compare_internal_key_slot = 1;
         // digest is 384 bits wide while internal key is only 256, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key =
-          {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
-           txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
+          {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
+           txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
 
         // Boot stage should increment if we are in the creator or owner stage. If we are in the
         // runtime stage, we do not increment the boot stage.
@@ -377,10 +377,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       // Should occur when a valid OpDpeGenSwOut is issued in the StWorkDpeAvailable state
       UpdateSwOut: begin
         if (!get_fault_err && !get_invalid_op()) begin
-          bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+          bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
           // digest is 384 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
-                             txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
+          sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
+                             txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
@@ -1688,7 +1688,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // err_code/alert is updated when KDF is done
         //if (current_design_state == keymgr_dpe_pkg::StWorkDpeInit) begin
         //  bit [TL_DW-1:0] err_code = get_err_code();
-        //  err_code[keymgr_pkg::ErrInvalidOp] = 1;
+        //  err_code[keymgr_dpe_pkg::ErrInvalidOp] = 1;
         //  // if it's StWorkDpeInit, the Advance OP is ongoing. alert will be sent after the OP
         //  set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
         //  void'(ral.err_code.predict(err_code));
@@ -1697,7 +1697,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         //      wipe secret and move state to Invalid",
         //        UVM_LOW)
         //end
-        //else if (current_op_status != keymgr_pkg::OpWip) begin
+        //else if (current_op_status != keymgr_dpe_pkg::OpWip) begin
         //  update_state(.cyc_dly(2));
         //  `uvm_info(`gfn, "keymgr_dpe_en is Off, wipe secret and move state to Invalid", UVM_LOW)
         //end

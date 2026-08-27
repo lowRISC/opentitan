@@ -8,7 +8,6 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_kmac_if
-  import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
 #(
   parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault,

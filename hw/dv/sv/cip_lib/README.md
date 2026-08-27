@@ -568,13 +568,13 @@ class keymgr_common_vseq extends keymgr_base_vseq;
       SecCmPrimCount: begin
         // more than one prim_count are used, distinguishing them through the path of the primitive.
         if (!uvm_re_match("*.u_reseed_ctrl*", if_proxy.path)) begin
-          exp[keymgr_pkg::FaultReseedCnt] = 1;
+          exp[keymgr_dpe_pkg::FaultReseedCnt] = 1;
         end else begin
-          exp[keymgr_pkg::FaultCtrlCnt] = 1;
+          exp[keymgr_dpe_pkg::FaultCtrlCnt] = 1;
         end
       end
       SecCmPrimSparseFsmFlop: begin
-        exp[keymgr_pkg::FaultCtrlFsm] = 1;
+        exp[keymgr_dpe_pkg::FaultCtrlFsm] = 1;
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase
@@ -582,8 +582,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
     // after an advance, keymgr should enter StInvalid
     keymgr_advance();
-    csr_rd_check(.ptr(ral.op_status), .compare_value(keymgr_pkg::OpDoneFail));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+    csr_rd_check(.ptr(ral.op_status), .compare_value(keymgr_dpe_pkg::OpDoneFail));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StInvalid));
   endtask : check_sec_cm_fi_resp
 ```
 

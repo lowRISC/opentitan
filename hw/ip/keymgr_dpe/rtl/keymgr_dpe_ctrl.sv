@@ -8,7 +8,6 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_ctrl
-  import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 // TODO(#384): Bring back KmacEnMasking parameter

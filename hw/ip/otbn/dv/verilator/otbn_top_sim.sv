@@ -8,7 +8,7 @@ module otbn_top_sim (
 );
   import otbn_pkg::*;
   import edn_pkg::*;
-  import keymgr_pkg::otbn_key_req_t;
+  import keymgr_dpe_pkg::otbn_key_req_t;
 
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = otbn_reg_pkg::OTBN_IMEM_SIZE;
