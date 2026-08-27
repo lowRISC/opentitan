@@ -556,9 +556,9 @@ class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
 ```
 
 5. Override the `check_sec_cm_fi_resp` task in ip_common_vseq to add additional sequences and checks after fault injection.
-This is an example from keymgr, in which CSR `fault_status` will be updated according to the location of the fault and the operation after fault inject will lead design to enter `StInvalid` state.
+This is an example from keymgr_dpe, in which CSR `fault_status` will be updated according to the location of the fault and the operation after fault inject will lead design to enter `StWorkDpeInvalid` state.
 ```systemverilog
-class keymgr_common_vseq extends keymgr_base_vseq;
+class keymgr_dpe_common_vseq extends keymgr_dpe_base_vseq;
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit[TL_DW-1:0] exp;
 
@@ -566,30 +566,40 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
-        // more than one prim_count are used, distinguishing them through the path of the primitive.
         if (!uvm_re_match("*.u_reseed_ctrl*", if_proxy.path)) begin
           exp[keymgr_dpe_pkg::FaultReseedCnt] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultReseedCnt);
+        end else if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) begin
+          exp[keymgr_dpe_pkg::FaultKmacFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultKmacFsm);
         end else begin
           exp[keymgr_dpe_pkg::FaultCtrlCnt] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultCtrlCnt);
         end
       end
       SecCmPrimSparseFsmFlop: begin
-        exp[keymgr_dpe_pkg::FaultCtrlFsm] = 1;
+        if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) begin
+          exp[keymgr_dpe_pkg::FaultKmacFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultKmacFsm);
+        end else if (!uvm_re_match("*.u_sideload_ctrl*", if_proxy.path)) begin
+          exp[keymgr_dpe_pkg::FaultSideFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultSideFsm);
+        end else begin
+          exp[keymgr_dpe_pkg::FaultCtrlFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_dpe_pkg::FaultCtrlFsm);
+        end
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase
     csr_rd_check(.ptr(ral.fault_status), .compare_value(exp));
 
-    // after an advance, keymgr should enter StInvalid
-    keymgr_advance();
-    csr_rd_check(.ptr(ral.op_status), .compare_value(keymgr_dpe_pkg::OpDoneFail));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StInvalid));
+    check_after_fi();
   endtask : check_sec_cm_fi_resp
 ```
 
 6. Fault injection may trigger unexpected SVA errors. Override the `sec_cm_fi_ctrl_svas` function to disable them. `sec_cm_fi_ctrl_svas(.enable(1))` will be invoked before injecting fault. After reset, `sec_cm_fi_ctrl_svas(.enable(0))` will be called to re-enable the SVA checks.
 ```systemverilog
-class keymgr_common_vseq extends keymgr_base_vseq;
+class keymgr_dpe_common_vseq extends keymgr_dpe_base_vseq;
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
