@@ -182,6 +182,7 @@ module i3c_target_fsm
   // Error events.
   output                    async_evt_ovl_o,
   output                    rx_buffer_ovl_o,
+  output                    rx_desc_ovl_o,
   output                    transfer_err_o,
   output                    transfer_aborted_o,
 
@@ -305,6 +306,13 @@ module i3c_target_fsm
   logic [NumTargets-1:0] tx_desc_valid;
   i3c_tti_tx_desc_t tx_desc[NumTargets];
 
+  // Was the arbitration request (toggle-style signalling) processed by the transceiver?
+  logic prev_arb_toggle, arb_toggle_edge;
+  assign arb_toggle_edge = arb_toggle_i ^ prev_arb_toggle;
+
+  // Latched version of the IBI arbiter gnt
+  logic [NumTargets+1:0] arb_gnt_q;
+
   // The single physical Target and FSM implement a number of Virtual Targets.
   // - each Virtual Target has its own Transmit Data Buffer and Tx Descriptor Queue in order to
   //   be ready to respond promptly to a Private Read transfer from the Active Controller.
@@ -385,6 +393,8 @@ module i3c_target_fsm
       end else if (unit_valid & unit_ready) begin
         prev_txd_toggle <= !prev_txd_toggle;
         rdata_first <= 1'b0;
+      end else if (&{tx_rvalid, tx_desc_valid[t], tx_start, !tx_active}) begin
+        rdata_first <= 1'b1;
       end
     end
     assign unit_ready = txd_toggle_i[t] ^ prev_txd_toggle;
@@ -423,7 +433,7 @@ module i3c_target_fsm
     // longer required, or if it's invalid.
     // TODO: We must receive some kind of verdict from the transceiver, not just wait until accepted
     assign tx_desc_consumed = tx_rvalid & (tx_suspended | &{tx_active, rlast, unit_ready});
-    assign tx_desc_rready_o[t] = tx_desc_consumed;
+    assign tx_desc_rready_o[t] = tx_desc_consumed | (arb_toggle_edge & arb_gnt_q[t+2]);
 
     // Suspend transmissions from this Virtual Target in the event of an error.
     assign suspend_tx_o[t] = tx_rvalid & !tx_desc_valid[t];
@@ -460,11 +470,9 @@ module i3c_target_fsm
     // TODO: Idle may imply that the VT has become enabled and shall respond to queues?
     Idle,
 
-    SReq,
-    DBR,
     PrivXfer,
-//    PrivRead,
-//    PrivWrite,
+    // PrivRead,
+    // PrivWrite,
 
     // --- IBI delivery ---
 
@@ -540,7 +548,7 @@ module i3c_target_fsm
       // TODO: ENTDAA perhaps requires a transmission back to CCC?
       CCC_Tx:   state_d = stop_det_i ? CCC_P : (ccc_rsp.req_clast ? CCC : CCC_Tx);
       CCC_P:    state_d = Inactive;
-      default: begin end
+      default:  state_d = Inactive;
     endcase
   end
 
@@ -776,15 +784,17 @@ module i3c_target_fsm
   // Excess Private Write Data from the Active Controller must just be dropped; there is no
   // accept/reject signaling mechanism on I3C SDR.
   // TODO: Provide up-front indication to the transceiver of max DDR length transmission?
-  logic rx_drop;
+  logic rx_drop, rx_flush;
 
   wire dtype_crc  = (trx_rxd_i.dtype == I3CDType_CRCWord);
   wire dtype_data = (trx_rxd_i.dtype inside {I3CDType_DataWord, I3CDType_SDRBytes});
-  wire rx_accepted = &{prv_rvalid, trx_rready_o, dtype_data, !rx_drop};
+  // TODO: trx_rready_o is currently OR-wired to prv_rvalid
+  wire rx_data_beat = prv_rvalid & dtype_data & trx_rready_o;
+  wire rx_accepted  = rx_data_beat & !rx_drop;
 
   // Flooding error has actually occurred.
   logic rx_flood_q;
-  wire rx_flood = &{prv_rvalid, dtype_data, rx_drop};
+  wire rx_flood = rx_data_beat & rx_drop;
 
   // Construction of TTI Rx Descriptors.
   // - an initial descriptor informs the driver of the addressing information, setting `start.`
@@ -797,12 +807,16 @@ module i3c_target_fsm
   i3c_tti_rx_desc_t rx_desc_q, rx_desc_d;
   logic [13:0] next_data_len;
   logic [13:0] rx_data_len;
-  logic rx_desc_wvalid;
+  logic rx_desc_wvalid, rx_desc_accepted;
+  logic rx_desc_stall, rx_active_q;
   always_comb begin
     rx_desc_d = '0;
     rx_desc_d.start       = 1'b1;
     rx_desc_d.complete    = 1'b1;
-    rx_desc_d.status      = trx_rxd_i.status;
+    // Only the loss of received _data_ is reported here; an inability to write the descriptor
+    // itself is reported via `rx_desc_ovl_o` and must not be attributed to this transfer, which
+    // is a later one than the transfer whose descriptor was lost.
+    rx_desc_d.status      = rx_flood_q ? TTIRxStatus_RxOverflow : trx_rxd_i.status;
     rx_desc_d.targets     = (trx_rxd_i.targ_id < NumTargets) ? NumTargets'('b1 << trx_rxd_i.targ_id)
                                                              : NumTargets'(trx_rxd_i.targ_set);
     rx_desc_d.address     = trx_rxd_i.addr;
@@ -810,24 +824,28 @@ module i3c_target_fsm
     rx_desc_d.data_length = rx_data_len;
   end
 
-  // Will we have to drop any more read data at this point?
-  // TODO: rx_data_len will always have even values if trx_rxd_i.dtype != I3CDType_SDRBytes, so
-  //       &rx_data_len will never fire in the DDR case: We therefore need to check for
-  //       &rx_data_len[13:1] in DDR mode instead.
-  assign rx_drop = |{buf_wvalid_q & ~buf_wready_i,  // Transient.
-                     rx_flood_q, &rx_data_len};     // Persistent until the end of the transfer.
+  // The descriptor queue cannot presently accept the descriptor that is already awaiting writing.
+  assign rx_desc_stall = rx_desc_wvalid & !rx_desc_wready_i;
 
-  wire rx_flush = (stop_det_i & |rx_data_len) ||  // SDR
-                  (prv_rvalid & trx_rready_o & dtype_crc); // HDR-DDR
+  // Will we have to drop any more read data at this point?
+  // - note that `rx_flood_q` makes any drop persistent for the remainder of the transfer,
+  //   whatever its cause, so that a transfer is never captured only in part.
   // TODO: rx_data_len will always have even values if trx_rxd_i.dtype != I3CDType_SDRBytes, so
   //       &rx_data_len will never fire in the DDR case: We therefore need to check for
   //       &rx_data_len[13:1] in DDR mode instead.
+  assign rx_drop = |{buf_wvalid_q & !buf_wready_i, // Transient: Data path full.
+                     rx_desc_stall,                // Transient: Descriptor path full.
+                     rx_flood_q, &rx_data_len};    // Persistent until end of the transfer.
+
   // TODO: For SDR, flush is currently only triggered on a per-frame basis on a P. This means that
   //       with frames which contain segments to multiple targets (separated via Sr), all traffic
   //       ends up in the rx buffer with the address in the descriptor set to the target that the
   //       first block of data was meant for.
+  assign rx_flush = (stop_det_i & rx_active_q) ||  // SDR
+                    (prv_rvalid & dtype_crc);      // HDR-DDR
 
-  wire rx_desc_accepted = rx_desc_wvalid & rx_desc_wready_i;
+  // Descriptor written to buffer
+  assign rx_desc_accepted = rx_desc_wvalid & rx_desc_wready_i;
 
   // TODO: tx downcounting and rx upcounting could probably be combined if careful, certainly
   // the adder and perhaps the storage too? We'd have to accommodate the prefetching, probably by
@@ -841,11 +859,13 @@ module i3c_target_fsm
       rx_data_len     <= '0;
       rx_desc_q       <= '0;
       rx_flood_q      <= 1'b0;
+      rx_active_q     <= 1'b0;
     end else if (sw_reset_i) begin
       rx_desc_wvalid  <= 1'b0;
       rx_data_len     <= '0;
       rx_desc_q       <= '0;
       rx_flood_q      <= 1'b0;
+      rx_active_q     <= 1'b0;
     end else if (enable_i) begin
       // Update the count of received bytes.
       if (rx_flush) begin
@@ -854,15 +874,19 @@ module i3c_target_fsm
         rx_data_len <= next_data_len;
       end
       // Writing of the Rx Descriptor when the transfer outcome is known.
-      if (rx_flush) begin
+      // Don't write when the previous descriptor hasn't been accepted yet.
+      if (rx_flush && (!rx_desc_wvalid || rx_desc_wready_i)) begin
         rx_desc_wvalid  <= 1'b1;
         rx_desc_q       <= rx_desc_d;
-      end else if (rx_desc_wvalid & rx_desc_accepted) begin
+      end else if (rx_desc_accepted) begin
         // Rx Descriptor write accepted.
         rx_desc_wvalid  <= 1'b0;
       end
       // Remember that flooding occurred.
-      rx_flood_q  <= rx_flood | (rx_flood_q & ~rx_flush);
+      rx_flood_q  <= rx_flood | (rx_flood_q & !rx_flush);
+      // Remember that data was received, whether or not it had to be dropped; this guarantees
+      // that every transfer terminates and thus that `rx_flood_q` is always cleared.
+      rx_active_q <= rx_data_beat | (rx_active_q & !rx_flush);
     end
   end
 
@@ -870,7 +894,13 @@ module i3c_target_fsm
   assign rx_desc_wdata_o  = rx_desc_q;
 
   // Raise an error interrupt when flooding first occurs.
-  assign rx_buffer_ovl_o = enable_i & rx_flood & ~rx_flood_q;
+  assign rx_buffer_ovl_o = enable_i & rx_flood & !rx_flood_q;
+
+  // Report the loss of an Rx Descriptor; the transfer had completed but the descriptor describing
+  // it could not be written because the previous descriptor was still awaiting acceptance.
+  // Note that the associated data has already been dropped, since `rx_desc_stall` is a term into
+  // `rx_drop`. This is necessary in order for the descriptor and data streams to remain in step.
+  assign rx_desc_ovl_o = enable_i & rx_flush & rx_desc_stall;
 
   // Collect received bytes to form complete DWORDs for buffer writing.
   i3c_dword_collector u_dword_collect (
@@ -899,8 +929,7 @@ module i3c_target_fsm
   */
 
   // Remove the IBI Status Descriptor from the FIFO once we've been granted the bus.
-  logic prev_arb_toggle;
-  assign ibi_desc_rready_o = enable_i & (arb_toggle_i ^ prev_arb_toggle);
+  assign ibi_desc_rready_o = enable_i & arb_toggle_edge & arb_gnt_q[0];
   // TODO: Drop the IBI data immediately for now...
   assign ibi_rready_o = enable_i & ((ibi_desc_rvalid_i & ibi_rvalid_i) | sink_rready[0]);
 
@@ -964,7 +993,7 @@ module i3c_target_fsm
   // Arbitrate amongst IBI, HJ/CRR and any Pending Read Notifications.
   localparam int unsigned IBIArbDataW = $bits(i3c_targ_trx_arb_t);
   i3c_targ_trx_arb_t ibi_arb_in[NumTargets + 2];
-  logic  [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt; // TODO: ibi_arb_gnt currently unused.
+  logic  [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt;
   logic [NumTargetsW-1:0] ibi_targ_id_clamp;
   always_comb begin
     for (int unsigned c = 0; c < NumTargets + 2; c++) ibi_arb_in[c] = '0;
@@ -1025,11 +1054,13 @@ module i3c_target_fsm
     if (!trx_rst_ni) begin
       arb_toggle_o      <= 1'b0;
       arb_data_o        <= '0;
+      arb_gnt_q         <= '0;
       prev_arb_toggle   <= 1'b0;
     end else if (ibi_arb_valid & (arb_toggle_o == prev_arb_toggle)) begin
       arb_toggle_o      <= !arb_toggle_o;
       arb_data_o        <= ibi_arb_data;
-    end else if (arb_toggle_i ^ prev_arb_toggle) begin
+      arb_gnt_q         <= ibi_arb_gnt;
+    end else if (arb_toggle_edge) begin
       prev_arb_toggle   <= arb_toggle_o;
     end
   end
@@ -1154,23 +1185,25 @@ module i3c_target_fsm
   logic                  grp_add;        // Add (write) new group?
   logic                  grp_idx_valid;  // Anything found?
   logic [MaxGroupsW-1:0] grp_idx;        // Indicates the chosen entry.
+  logic                  grp_match_valid, grp_free_valid; // Address found, unused entry found
+  logic [MaxGroupsW-1:0] grp_match_idx,   grp_free_idx;   // Corresponding index
   always_comb begin
-    grp_add       = 1'b1;
-    grp_idx_valid = 1'b0;
-    grp_idx       = '0;
+    grp_match_valid = 1'b0;  grp_free_valid = 1'b0;
+    grp_match_idx   = '0;    grp_free_idx   = '0;
+    // Descending, so that the lowest matching/free entry wins.
     for (int grp = MaxGroups - 1; grp >= 0; grp--) begin
-      // Do we already have configuration for this group address?
       if (reg2hw_i.targ_group[grp].group_addr.q == grp_addr) begin
-        grp_add       = 1'b0;
-        grp_idx_valid = 1'b1;
-        grp_idx       = MaxGroupsW'(grp);
-      end
-      // Is this entry available for use if we do not already have configuration for this group?
-      if (~|reg2hw_i.targ_group[grp].targets.q) begin
-        grp_idx_valid = 1'b1;
-        grp_idx       = MaxGroupsW'(grp);
+        grp_match_valid = 1'b1;
+        grp_match_idx   = MaxGroupsW'(grp);
+      end else if (reg2hw_i.targ_group[grp].targets.q == '0) begin
+        grp_free_valid  = 1'b1;
+        grp_free_idx    = MaxGroupsW'(grp);
       end
     end
+    // An entry already describing this group address always takes precedence.
+    grp_add       = !grp_match_valid;
+    grp_idx_valid = grp_match_valid | grp_free_valid;
+    grp_idx       = grp_match_valid ? grp_match_idx : grp_free_idx;
   end
 
   logic [NumTargets-1:0] targs_curr;
@@ -1183,12 +1216,15 @@ module i3c_target_fsm
   // Just leave group addresses in place when all targets become unsubscribed; we can reallocate
   // those entries above.
   for (genvar grp = 0; grp < MaxGroups; grp++) begin : gen_grp_addr
+    logic [NumTargets-1:0] grp_curr;
+    assign grp_curr           = grp_all ? reg2hw_i.targ_group[grp].targets.q[NumTargets-1:0]
+                                        : targs_curr;
     // Are we adding a new group address?
-    assign grp_addr_de_o[grp] = grp_add & grp_idx_valid & (grp == grp_idx);
+    assign grp_addr_de_o[grp] = grp_set & grp_add & grp_idx_valid & (grp == grp_idx);
     assign grp_addr_d_o[grp]  = grp_addr;
     // Update the list of subscribed targets.
-    assign grp_targ_de_o[grp] = (grp_set | grp_rst) & (grp_idx_valid | grp_all);
-    assign grp_targ_d_o[grp]  = (targs_curr | targs_set) & ~targs_rst;
+    assign grp_targ_de_o[grp] = (grp_set | grp_rst) & (grp_all | (grp_idx_valid & (grp == grp_idx)));
+    assign grp_targ_d_o[grp]  = (grp_curr | targs_set) & ~targs_rst;
   end
 
   // Supply the 'data available' indications to the data sink.
