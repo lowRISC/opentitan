@@ -47,5 +47,6 @@ xmlstarlet
 xsltproc
 xxd
 xz-utils
+yamllint
 zip
 zlib1g-dev
