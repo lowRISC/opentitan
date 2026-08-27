@@ -570,3 +570,41 @@ _check_hint_final_loop_end:
 
 _check_hint_end:
   ret
+
+/**
+ * Check the Hamming weight of the challenge polynomial c (scalar loop).
+ *
+ * The challenge polynomial must contain exactly 60 non-zero coefficients.
+ * This routine calculates this Hamming weight coefficient-by-coefficient
+ * across the 256 coefficients and asserts that it equals 60.
+ *
+ * @param[in] x2: DMEM address of the challenge polynomial c (1024 bytes).
+ * @param[out] w0: 2^256 - 1 if HW(c) == 60, else 0.
+ */
+check_hw_c:
+  li x3, 0  /* Counter for non-zero coefficients */
+
+  /*
+   * Loop over all 256 32-bit coefficients.
+   */
+  loopi 256, 6
+    lw x4, 0(x2)
+    addi x2, x2, 4
+    sub x5, x0, x4      /* x5 = -c_i */
+    or x5, x5, x4       /* x5 = c_i | (-c_i) (MSB is 1 iff c_i != 0) */
+    srli x5, x5, 31     /* x5 = 1 if c_i != 0, else 0 */
+    add x3, x3, x5      /* counter += (c_i != 0) */
+
+  /*
+   * Check if counter (x3) == 60.
+   * If x3 == 60: return w0 = 2^256 - 1.
+   * If x3 != 60: return w0 = 0.
+   */
+  bn.addi w0, w31, 0    /* Default w0 = 0 */
+  li x4, 60
+  bne x3, x4, _check_hw_c_end
+
+  bn.not w0, w31        /* w0 = 2^256 - 1 */
+
+_check_hw_c_end:
+  ret
