@@ -1226,7 +1226,7 @@
       // OTBN OTP scramble key
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
-      // KeyMgr Sideload & KDF function
+      // KeyMgr DPE Sideload & KDF function
       'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
       'otp_ctrl.keymgr_creator_seed'      : ['keymgr_dpe.creator_seed'],
       'otp_ctrl.keymgr_owner_seed'        : ['keymgr_dpe.owner_seed'],
