@@ -1639,7 +1639,7 @@
             - Verify that output is not equal to the plain text.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_sideload_aes"]
+      tests: []
     }
     {
       name: chip_sw_aes_masking_off
@@ -1944,7 +1944,7 @@
             X-ref'ed with chip_kmac_app_keymgr test.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_sideload_kmac"]
+      tests: []
     }
     {
       name: chip_sw_keymgr_sideload_aes
@@ -1953,7 +1953,7 @@
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_sideload_aes"]
+      tests: []
     }
     {
       name: chip_sw_keymgr_sideload_otbn
@@ -1965,7 +1965,7 @@
                Clear the sideload key once done.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_sideload_otbn"]
+      tests: []
     }
     {
       name: chip_sw_keymgr_sideload_kmac_error
@@ -2221,7 +2221,7 @@
 
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
-            - chip_sw_keymgr_key_derivation
+            - chip_sw_keymgr_dpe_key_derivation
             - chip_sw_otbn_mem_scramble
             '''
       stage: V2

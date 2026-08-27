@@ -21,7 +21,7 @@ See the [Developers's guide](developers_guide.md#an-example-program) for an exam
 OTBN protects its data from Ibex in various ways:
 - Ibex cannot read OTBN's memory while it is busy executing a program.
 - Ibex cannot stop OTBN in the middle of execution; it has to wait until OTBN is done.
-- The [key manager][keymgr] can sideload keys directly into OTBN without giving Ibex access to them.
+- The [key manager][keymgr_dpe] can sideload keys directly into OTBN without giving Ibex access to them.
 - If OTBN encounters an error, it will lock itself, meaning that Ibex can't read back any data from the program when OTBN is finished (only an error code from a special register).
 
 All together, this mode of interaction keeps OTBN separate enough from Ibex to act as a security boundary.
@@ -196,4 +196,4 @@ For future versions of OTBN, we are considering:
 - More isolation from Ibex, including potentially giving OTBN its own ROM so that Ibex doesn't need to load secrets into it
 
 [kmac]:  ../../../../hw/ip/kmac/README.md
-[keymgr]:  ../../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../../hw/ip/keymgr_dpe/README.md

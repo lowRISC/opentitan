@@ -239,7 +239,7 @@ Nothing in the configuration is typically secret.
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_config }}
 
 In most cases, the caller needs to provide a configuration before calling algorithms which generate secret keys.
-Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` in the key configuration.
+Callers may request keys from OpenTitan's [key manager block][keymgr_dpe] by setting `hw_backed` in the key configuration.
 In this case, the keyblob is the diversification input for key manager instead of the key material itself.
 See the [key transport](#key-transport) section for more details.
 
@@ -789,7 +789,7 @@ See the [key data structures](#key-data-structures) section for more details.
 
 ### Package hardware-backed keys
 
-Hardware-backed keys are keys whose material is derived based on hardware entropy using OpenTitan's [key manager block][keymgr].
+Hardware-backed keys are keys whose material is derived based on hardware entropy using OpenTitan's [key manager block][keymgr_dpe].
 
 There are two primary modes for using hardware-backed keys:
 1. **Sideloaded Keys (Hardware-only):** The key manager provides the key directly into hardware registers (e.g. for AES or KMAC operations) without exposing the secret key material to software (Ibex CPU).
@@ -998,7 +998,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [hmac-testvectors-rfc]: https://datatracker.ietf.org/doc/html/rfc4231
 [hmac-usage-rfc]: https://datatracker.ietf.org/doc/html/rfc4868
 [kdf-prf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
-[keymgr]:  ../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../hw/ip/keymgr_dpe/README.md
 [kmac]:  ../../../hw/ip/kmac/README.md
 [kwp-spec]: https://csrc.nist.gov/publications/detail/sp/800-38f/final
 [nist-drbg-spec]: https://csrc.nist.gov/publications/detail/sp/800-90a/rev-1/final

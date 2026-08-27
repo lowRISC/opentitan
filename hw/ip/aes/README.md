@@ -60,4 +60,4 @@ Other cipher modes might be added in future versions.
 The AES unit is attached to the chip interconnect bus as a peripheral module.
 Communication with the processor happens through a set of control and status registers (CSRs).
 This includes input/output data and key, as well as status and control information.
-In addition, the AES unit includes a separate interface through which [Key Manager](../keymgr/README.md) can provide the key without exposing it to the processor or other hosts attached to the chip interconnect bus.
+In addition, the AES unit includes a separate interface through which [Key Manager](../keymgr_dpe/README.md) can provide the key without exposing it to the processor or other hosts attached to the chip interconnect bus.
