@@ -357,6 +357,7 @@ module i3c_target
   // Error events reported by the Target core.
   logic async_evt_ovl;
   logic rx_buffer_ovl;
+  logic rx_desc_ovl;
   logic transfer_err;
   logic transfer_aborted;
 
@@ -523,6 +524,7 @@ module i3c_target
     // Error events.
     .async_evt_ovl_o      (async_evt_ovl),
     .rx_buffer_ovl_o      (rx_buffer_ovl),
+    .rx_desc_ovl_o        (rx_desc_ovl),
     .transfer_err_o       (transfer_err),
     .transfer_aborted_o   (transfer_aborted),
 
@@ -632,7 +634,8 @@ module i3c_target
     intr_o.async_evt_ready = !async_empty_i;  // TODO: Need to reconsider if CCC becomes multi-desc?
     intr_o.transfer_abort  = transfer_aborted;
     intr_o.transfer_err    = transfer_err;
-    intr_o.rx_buffer_ovl   = rx_buffer_ovl;
+    // TODO: Make a separate interrupt for rx_desc_ovl.
+    intr_o.rx_buffer_ovl   = rx_buffer_ovl | rx_desc_ovl;
     intr_o.async_evt_ovl   = async_evt_ovl;
 
     // Transmission requires per-Target buffers.
