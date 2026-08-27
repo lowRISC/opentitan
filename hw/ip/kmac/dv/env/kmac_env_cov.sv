@@ -125,7 +125,7 @@ endgroup
 class app_cg_wrap;
   // done signal is sent while Keccak rounds are running
   covergroup app_cg(string name) with function sample(bit single_beat,
-                                                      bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
+                                                      bit [keymgr_dpe_pkg::KmacDataIfWidth/8-1:0] strb,
                                                       bit err,
                                                       bit is_done,
                                                       bit in_keccak);
@@ -181,7 +181,7 @@ class app_cg_wrap;
   endfunction
 
   function void app_sample(bit single_beat,
-                           bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
+                           bit [keymgr_dpe_pkg::KmacDataIfWidth/8-1:0] strb,
                            bit err,
                            bit is_done,
                            bit in_keccak);

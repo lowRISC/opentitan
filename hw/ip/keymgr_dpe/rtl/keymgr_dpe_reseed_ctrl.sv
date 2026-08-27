@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module keymgr_dpe_reseed_ctrl import keymgr_pkg::*; (
+module keymgr_dpe_reseed_ctrl import keymgr_dpe_pkg::*; (
   input clk_i,
   input rst_ni,
   input clk_edn_i,

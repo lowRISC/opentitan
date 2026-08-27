@@ -437,7 +437,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : keymgr_dpe_generate
 
   virtual task keymgr_dpe_rd_clr();
-    bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+    bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
 
     read_sw_shares(sw_share_output);
 
@@ -449,7 +449,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : keymgr_dpe_rd_clr
 
   virtual task read_sw_shares(
-        output bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
+        output bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
     `uvm_info(`gfn, "Read generated output", UVM_MEDIUM)
 
     // read each one out and print it out (nothing to compare it against right now)
