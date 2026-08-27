@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:tlul
     files:

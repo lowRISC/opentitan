@@ -108,14 +108,14 @@ package otp_ctrl_pkg;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
   typedef struct packed {
-    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_root_key_share0;
-    logic                                      creator_root_key_share0_valid;
-    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_root_key_share1;
-    logic                                      creator_root_key_share1_valid;
-    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_seed;
-    logic                                      creator_seed_valid;
-    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] owner_seed;
-    logic                                      owner_seed_valid;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_root_key_share0;
+    logic                                creator_root_key_share0_valid;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_root_key_share1;
+    logic                                creator_root_key_share1_valid;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_seed;
+    logic                                creator_seed_valid;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] owner_seed;
+    logic                                owner_seed_valid;
   } otp_keymgr_key_t;
 
   parameter otp_keymgr_key_t OTP_KEYMGR_KEY_DEFAULT = '{

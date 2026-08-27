@@ -1,32 +1,81 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Keymgr_dpe Package
+//
 
 package keymgr_dpe_pkg;
 
+  ///////////////////////////////////////
+  // Keymgr_dpe: parameters & typedefs //
+  ///////////////////////////////////////
+
   // Chip Device ID
-  parameter int DeviceIdWidth = 256;
-  typedef logic [DeviceIdWidth-1:0] keymgr_dpe_device_id_t;
+  parameter int DeviceIdWidth         = 256;
+  typedef logic [DeviceIdWidth-1:0]   keymgr_dpe_device_id_t;
+  // Width and number of shares for the keymgr_dpe key
+  parameter int KeyWidth              = 256;
+  parameter int Shares                = 2;
+  // Key version length
+  parameter int KeyVersionWidth       = 32;
+  // Width of otbn sideload key
+  parameter int OtbnKeyWidth          = 384;
+  // Data width of KMAC interface
+  parameter int KmacDataIfWidth       = 64;
+  // Width of SW binding value
+  parameter int SwBindingWidth        = 32 * keymgr_dpe_reg_pkg::NumSwBindingReg;
+  // Width calculations
+  // These are the largest calculations in use across all stages
+  parameter int IdDataWidth           = KeyWidth;
+  // key version + salt + key ID + constant
+  parameter int GenDataWidth          = 32 + 32 * keymgr_dpe_reg_pkg::NumSaltReg + KeyWidth*2;
+  // Max Payload Width to derivation function
+  // see security strength description https://keccak.team/keccak.html
+  // The max width here is chosen arbitrarily to ensure we do not get out of hand.
+  // Since KMAC is a MAC operation, the data can be as long as we need.
+  parameter int KDFMaxWidth           = 1984;
+
+
+  /////////////////////////////////////
+  // Keymgr_dpe: Operations & Policy //
+  /////////////////////////////////////
 
   // Enumeration for operation
   typedef enum logic [2:0] {
-    OpDpeAdvance = 0,
-    OpDpeErase = 1,
-    OpDpeGenSwOut = 2,
-    OpDpeGenHwOut = 3,
-    OpDpeDisable = 4,
+    OpDpeAdvance     = 0,
+    OpDpeErase       = 1,
+    OpDpeGenSwOut    = 2,
+    OpDpeGenHwOut    = 3,
+    OpDpeDisable     = 4,
     OpDpeLoadRootKey = 5
   } keymgr_dpe_ops_e;
 
-  // Enumeration for operation (keymgr)
-  typedef enum logic [2:0] {
-    OpAdvance = 0,
-    OpGenId = 1,
-    OpGenSwOut = 2,
-    OpGenHwOut = 3,
-    OpDisable = 4
-  } keymgr_ops_e;
+  // Enumeration for operation status
+  typedef enum logic [1:0] {
+    OpIdle        = 0,
+    OpWip         = 1,
+    OpDoneSuccess = 2,
+    OpDoneFail    = 3
+  } keymgr_dpe_op_status_e;
 
+  // TODO(#354): Define further policy bits and extend this struct
+  typedef struct packed {
+    logic retain_parent;
+    logic exportable;
+    logic allow_child;
+  } keymgr_dpe_policy_t;
+
+  localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
+    retain_parent : 1'b0,
+    exportable    : 1'b0,
+    allow_child   : 1'b1
+  };
+
+
+  /////////////////////
+  // Keymgr_dpe: FSM //
+  /////////////////////
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 9 -n 10 \
@@ -72,31 +121,11 @@ package keymgr_dpe_pkg;
     StWorkDpeInvalid
   } keymgr_dpe_exposed_working_state_e;
 
-  // TODO(#354): Define further policy bits and extend this struct
-  typedef struct packed {
-    logic retain_parent;
-    logic exportable;
-    logic allow_child;
-  } keymgr_dpe_policy_t;
 
-  // Parameter Key Width
-  parameter int KeyMgrKeyWidth = 256;
+  /////////////////////////////////////////////
+  // Keymgr_dpe: Default Lfsr configurations //
+  /////////////////////////////////////////////
 
-  // Parameter provided by the keymgr
-  parameter int SaltWidth = 32 * keymgr_dpe_reg_pkg::NumSaltReg;
-  parameter int KeyVersionWidth = 32;  // Key version length for individual DICE stage
-  parameter int KeyWidth = 256;
-  parameter int OtbnKeyWidth = 384;
-  parameter int KmacDataIfWidth = 64;  // KMAC interface data width
-  parameter int SwBindingWidth = 32 * keymgr_dpe_reg_pkg::NumSwBindingReg;
-  parameter int Shares = 2; // number of key shares
-
-  // These should be defined in another module's package
-  parameter int HealthStateWidth = 128;
-  parameter int DevIdWidth = 256;
-  parameter int MaxWidth = 256;
-
-  // Default Lfsr configurations
   // These LFSR parameters have been generated with
   // $ util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
   parameter int LfsrWidth = 64;
@@ -115,7 +144,11 @@ package keymgr_dpe_pkg;
     160'h62089181d2a6be2ce145e2e27099ededbd7dceb0
   };
 
-  // Default seeds
+
+  ///////////////////////////////
+  // Keymgr_dpe: Default Seeds //
+  ///////////////////////////////
+
   // These have been generated with the following command by incrementing the --seed argument
   // for every seed.
   // util/design/gen-lfsr-seed.py --width 256 --seed 7535190 --prefix ""
@@ -138,33 +171,27 @@ package keymgr_dpe_pkg;
   parameter seed_t RndCnstOtbnSeedDefault =
     256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
 
-  // Width calculations
-  // These are the largest calculations in use across all stages
-  parameter int IdDataWidth = KeyWidth;
-  // key version + salt + key ID + constant
-  parameter int GenDataWidth = 32 + SaltWidth + KeyWidth*2;
-  // Max Payload Width to derivation function
-  // see security strength description https://keccak.team/keccak.html
-  // The max width here is chosen arbitrarily to ensure we do not get out of hand.
-  // Since KMAC is a MAC operation, the data can be as long as we need.
-  parameter int KDFMaxWidth = 1984;
+
+  //////////////////////////////////////
+  // Keymgr_dpe: Secret & Seed Inputs //
+  //////////////////////////////////////
 
   // Input struct for secrets required by the keymgr dpe.
   typedef struct packed {
-    logic [KeyMgrKeyWidth-1:0]  share0;
-    logic                       share0_valid;
-    logic [KeyMgrKeyWidth-1:0]  share1;
-    logic                       share1_valid;
+    logic [KeyWidth-1:0]  share0;
+    logic                 share0_valid;
+    logic [KeyWidth-1:0]  share1;
+    logic                 share1_valid;
   } keymgr_dpe_creator_root_key_t;
 
   typedef struct packed {
-    logic [KeyMgrKeyWidth-1:0]  seed;
-    logic                       seed_valid;
+    logic [KeyWidth-1:0]  seed;
+    logic                 seed_valid;
   } keymgr_dpe_creator_seed_t;
 
   typedef struct packed {
-    logic [KeyMgrKeyWidth-1:0]  seed;
-    logic                       seed_valid;
+    logic [KeyWidth-1:0]  seed;
+    logic                 seed_valid;
   } keymgr_dpe_owner_seed_t;
 
   parameter keymgr_dpe_creator_root_key_t KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT = '{
@@ -184,6 +211,11 @@ package keymgr_dpe_pkg;
     seed_valid   : 1'b1
   };
 
+
+  /////////////////////////////////
+  // Keymgr_dpe: Key Connections //
+  /////////////////////////////////
+
   // Key connection to various symmetric modules
   typedef struct packed {
     logic valid;
@@ -197,23 +229,19 @@ package keymgr_dpe_pkg;
   } otbn_key_req_t;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
-    valid: 1'b0,
-    key: {Shares{KeyWidth'(32'hDEADBEEF)}}
+    valid : 1'b0,
+    key   : {Shares{KeyWidth'(32'hDEADBEEF)}}
   };
 
   parameter otbn_key_req_t OTBN_KEY_REQ_DEFAULT = '{
-    valid: 1'b0,
-    key: {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
+    valid : 1'b0,
+    key   : {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
   };
 
-  // Enumeration for operation status
-  typedef enum logic [1:0] {
-    OpIdle = 0,
-    OpWip = 1,
-    OpDoneSuccess = 2,
-    OpDoneFail = 3
-  } keymgr_dpe_op_status_e;
 
+  ///////////////////////////////////////
+  // Keymgr_dpe: Boot Stage & Key Slot //
+  ///////////////////////////////////////
 
   // Enumeration for boot stage. In the BootStageRuntime stage, there is no limit on the number of
   // advance calls.
@@ -244,11 +272,10 @@ package keymgr_dpe_pkg;
     SlotWipeAll
   } keymgr_dpe_key_update_e;
 
-  localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
-    retain_parent : 1'b0,
-    exportable    : 1'b0,
-    allow_child   : 1'b1
-  };
+
+  /////////////////////////////////////////
+  // Keymgr_dpe: Life Cycle Enable Usage //
+  /////////////////////////////////////////
 
   // Keymgr_dpe requires more lc_en copies than keymgr
   typedef enum logic [2:0] {
@@ -257,7 +284,12 @@ package keymgr_dpe_pkg;
     KeymgrDpeEnBinding,
     KeymgrDpeEnDebug,
     KeymgrDpeEnLast
-  } keymgr_lc_en_usage_e;
+  } keymgr_dpe_lc_en_usage_e;
+
+
+  //////////////////////////
+  // Keymgr_dpe: Sideload //
+  //////////////////////////
 
   // Enumeration for sideload sel
   typedef enum logic [1:0] {
@@ -274,6 +306,18 @@ package keymgr_dpe_pkg;
     OtbnIdx,
     LastIdx
   } keymgr_dpe_sideload_slot_idx_e;
+
+  typedef enum logic [2:0] {
+    SideLoadClrIdle,
+    SideLoadClrAes,
+    SideLoadClrKmac,
+    SideLoadClrOtbn
+  } keymgr_dpe_sideload_clr_e;
+
+
+  /////////////////////////////////
+  // Keymgr_dpe: Errors & Faults //
+  /////////////////////////////////
 
   // keymgr_dpe has 4 categories of errors
   // sync errors  - recoverable errors that happen during keymgr_dpe operation
@@ -342,12 +386,10 @@ package keymgr_dpe_pkg;
     ErrLastPos
   } keymgr_dpe_err_pos_e;
 
-  typedef enum logic [2:0] {
-    SideLoadClrIdle,
-    SideLoadClrAes,
-    SideLoadClrKmac,
-    SideLoadClrOtbn
-  } keymgr_dpe_sideload_clr_e;
+
+  ///////////////////////////
+  // Keymgr_dpe: Functions //
+  ///////////////////////////
 
   // perm_data
   function automatic logic[RandWidth-1:0] perm_data (logic [RandWidth-1:0] data,

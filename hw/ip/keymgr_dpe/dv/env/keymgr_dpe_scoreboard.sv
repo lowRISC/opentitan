@@ -21,9 +21,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // HW_REVISION_SEED
     bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     HardwareRevisionSecret;
     // DEVICE_IDENTIFIER
-    bit [keymgr_dpe_pkg::DevIdWidth-1:0]                                   DeviceIdentifier;
+    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]                                DeviceIdentifier;
     // HEALTH_ST_MEASUREMENT
-    bit [keymgr_dpe_pkg::HealthStateWidth-1:0]                             HealthMeasurement;
+    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]                                HealthMeasurement;
     // ROM_DESCRIPTORS
     bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
     // CREATOR_SEED
@@ -35,9 +35,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
     // DEVICE_IDENTIFIER
-    bit [keymgr_dpe_pkg::DevIdWidth-1:0]                                   DeviceIdentifier;
+    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]                                DeviceIdentifier;
     // HEALTH_ST_MEASUREMENT
-    bit [keymgr_dpe_pkg::HealthStateWidth-1:0]                             HealthMeasurement;
+    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]                                HealthMeasurement;
     // ROM_DESCRIPTORS
     bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
     // HW_REVISION_SEED

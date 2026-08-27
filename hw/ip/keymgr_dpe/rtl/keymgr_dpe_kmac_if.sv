@@ -301,14 +301,14 @@ module keymgr_dpe_kmac_if
     if (clr_err) begin
       inputs_invalid_d = '0;
     end else if (valid) begin
-      inputs_invalid_d[OpAdvance]  = adv_en_i & (inputs_invalid_i[OpAdvance] |
-                                                 inputs_invalid_q[OpAdvance]);
-      inputs_invalid_d[OpGenId]    = id_en_i  & (inputs_invalid_i[OpGenId]   |
-                                                 inputs_invalid_q[OpGenId]);
-      inputs_invalid_d[OpGenSwOut] = gen_en_i & (inputs_invalid_i[OpGenSwOut]|
-                                                 inputs_invalid_q[OpGenSwOut]);
-      inputs_invalid_d[OpGenHwOut] = gen_en_i & (inputs_invalid_i[OpGenHwOut]|
-                                                 inputs_invalid_q[OpGenHwOut]);
+      inputs_invalid_d[OpDpeAdvance]  = adv_en_i & (inputs_invalid_i[OpDpeAdvance] |
+                                                    inputs_invalid_q[OpDpeAdvance]);
+      inputs_invalid_d[OpDpeErase]    = id_en_i  & (inputs_invalid_i[OpDpeErase]   |
+                                                    inputs_invalid_q[OpDpeErase]);
+      inputs_invalid_d[OpDpeGenSwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenSwOut]|
+                                                    inputs_invalid_q[OpDpeGenSwOut]);
+      inputs_invalid_d[OpDpeGenHwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenHwOut]|
+                                                    inputs_invalid_q[OpDpeGenHwOut]);
     end
   end
 
