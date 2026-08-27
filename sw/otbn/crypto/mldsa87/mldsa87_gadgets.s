@@ -119,7 +119,7 @@ sec_decompose:
   addi x5, x0, 8  /* x0 */
   addi x6, x0, 9  /* x1 */
 
-  loopi 32, 16
+  loopi 32, 18
     bn.lid x5, 0(x2)
 
     /*
@@ -143,14 +143,16 @@ sec_decompose:
 
     /* Convert (b0, b1) to Boolean shares. */
     jal x1, sec_a2b_8x32
-    jal x1, sec_unmask_8x32
 
     /*
-     * Part 2: w1 = (b0 ^ b1) mod 16, w0 = b0 - ALPHA * w1.
+     * Part 2: w1 = (b0 mod 16) ^ (b1 mod 16), w0 = b0 - ALPHA * w1.
      */
 
-    /* w1 = b mod 16. */
+    /* w1 = (b0 mod 16) ^ (b1 mod 16). */
     bn.and w0, w0, w6
+    bn.xor w31, w31, w31 /* dummy */
+    bn.and w1, w1, w6
+    jal x1, sec_unmask_8x32
 
     /* w0 = b0 - ALPHA * w1. */
     bn.mulvl.8S w1, w0, w5, 0
