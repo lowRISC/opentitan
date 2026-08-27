@@ -59,7 +59,7 @@ The general procedure for the `ROM_EXT` looks something like this:
     * The number of retries in case verification fails might differ from ROM, and can differ between `ROM_EXT` implementations.
 5. Step the key manager device in order to obtain the Silicon Creator "root key".
     * The root key mixes secret values provisioned by the Silicon Creator at manufacturing time with information about the specific device, the device health state, and `ROM_EXT`. It will differ between devices and between `ROM_EXT` images.
-    * The actual value of the root key is locked inside the [key manager][key-manager] and hidden from software. The key manager starts with the Silicon Creator's secret values (which are also hidden from all software) and advances its state to a new value with each additional piece of information.
+    * The actual value of the root key is locked inside the [key manager][keymgr_dpe] and hidden from software. The key manager starts with the Silicon Creator's secret values (which are also hidden from all software) and advances its state to a new value with each additional piece of information.
     * See the [identities and root keys][identities-keys] page for more details about the intermediate, identity, and root keys.
 6. From the Silicon Creator root key, use the key manager interface to derive the Silicon Creator "identity" key (an ECDSA-P256 key used for [attestation][attestation]) and the Silicon Owner "intermediate key" (a new key manager state which can later be used to derive the Silicon Owner's "identity" key).
     * To create the intermediate key, the key manager starts with the Silicon Creator root key from the ROM stage, and software steps the key manager state by mixing in owner secrets (provisioned by the owner at the time they take ownership of the device) and certain BL0 configuration information.
@@ -197,7 +197,7 @@ However, these are the requirements that the manifest format is required to supp
 [attestation-command]: ../attestation/README.md#attestation-command
 [ibex-epmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
 [identities-keys]: ../identities_and_root_keys/README.md
-[key-manager]: ../../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../../hw/ip/keymgr_dpe/README.md
 [manifest-format]: ../../../../sw/device/silicon_creator/rom_ext/doc/manifest.md
 [rom-epmp]: ../../../../sw/device/silicon_creator/rom/doc/memory_protection.md
 [ot-flash]: #
