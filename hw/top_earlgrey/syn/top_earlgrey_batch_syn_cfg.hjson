@@ -14,7 +14,6 @@
   // Maintain alphabetical order below.
   use_cfgs: [// Block-level synthesis flows.
              "{proj_root}/hw/ip/aes/syn/aes_syn_cfg.hjson",
-             "{proj_root}/hw/ip/keymgr/syn/keymgr_syn_cfg.hjson",
              "{proj_root}/hw/ip/kmac/syn/kmac_syn_cfg.hjson",
              "{proj_root}/hw/ip/lc_ctrl/syn/lc_ctrl_syn_cfg.hjson",
              "{proj_root}/hw/ip/otbn/syn/otbn_syn_cfg.hjson",

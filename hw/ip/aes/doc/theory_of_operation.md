@@ -270,7 +270,7 @@ Typically, systems requiring security above AES-128 go directly for AES-256.
 By default, the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
-Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager](../../keymgr/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
+Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager](../../keymgr_dpe/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
 To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
 Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
