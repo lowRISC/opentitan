@@ -6914,7 +6914,7 @@
         {
           name: keymgr_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: rcv
           width: 1
@@ -6992,7 +6992,7 @@
         {
           name: keymgr_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: rcv
           width: 1
@@ -7143,7 +7143,7 @@
         {
           name: keymgr_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: rcv
           width: 1
@@ -7508,7 +7508,7 @@
         {
           name: keymgr_key
           struct: otbn_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: rcv
           width: 1
@@ -7647,7 +7647,7 @@
         {
           name: aes_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
@@ -7661,7 +7661,7 @@
         {
           name: kmac_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
@@ -7675,7 +7675,7 @@
         {
           name: hmac_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
@@ -7689,7 +7689,7 @@
         {
           name: otbn_key
           struct: otbn_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
@@ -25246,7 +25246,7 @@
       {
         name: keymgr_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: rcv
         width: 1
@@ -25288,7 +25288,7 @@
       {
         name: keymgr_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: rcv
         width: 1
@@ -25315,7 +25315,7 @@
       {
         name: keymgr_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: rcv
         width: 1
@@ -25542,7 +25542,7 @@
       {
         name: keymgr_key
         struct: otbn_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: rcv
         width: 1
@@ -25595,7 +25595,7 @@
       {
         name: aes_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
@@ -25609,7 +25609,7 @@
       {
         name: kmac_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
@@ -25623,7 +25623,7 @@
       {
         name: hmac_key
         struct: hw_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
@@ -25637,7 +25637,7 @@
       {
         name: otbn_key
         struct: otbn_key_req
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
@@ -32919,7 +32919,7 @@
         default: "'0"
       }
       {
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         struct: hw_key_req
         domain: Main
         signame: keymgr_dpe_aes_key
@@ -32928,10 +32928,10 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_pkg::HW_KEY_REQ_DEFAULT
+        default: keymgr_dpe_pkg::HW_KEY_REQ_DEFAULT
       }
       {
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         struct: hw_key_req
         domain: Main
         signame: keymgr_dpe_kmac_key
@@ -32940,10 +32940,10 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_pkg::HW_KEY_REQ_DEFAULT
+        default: keymgr_dpe_pkg::HW_KEY_REQ_DEFAULT
       }
       {
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         struct: hw_key_req
         domain: Main
         signame: keymgr_dpe_hmac_key
@@ -32952,10 +32952,10 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_pkg::HW_KEY_REQ_DEFAULT
+        default: keymgr_dpe_pkg::HW_KEY_REQ_DEFAULT
       }
       {
-        package: keymgr_pkg
+        package: keymgr_dpe_pkg
         struct: otbn_key_req
         domain: Main
         signame: keymgr_dpe_otbn_key
@@ -32964,7 +32964,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_pkg::OTBN_KEY_REQ_DEFAULT
+        default: keymgr_dpe_pkg::OTBN_KEY_REQ_DEFAULT
       }
       {
         package: kmac_pkg
