@@ -41,8 +41,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   typedef struct packed {
     sw_binding_t                                SoftwareBinding;
-    bit [keymgr_dpe_pkg::DevIdWidth-1:0]        DeviceIdentifier;
-    bit [keymgr_dpe_pkg::HealthStateWidth-1:0]  HealthMeasurement;
+    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]     DeviceIdentifier;
+    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]     HealthMeasurement;
     key_t                                       RomDigest;
     key_t                                       HardwareRevisionSeed;
   } adv_creator_data_t;
@@ -453,7 +453,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     creator_data.HardwareRevisionSeed = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrDpeRevisionSeed;
 
     // DeviceIdentifier is stored in OTP; (backdoor-)read it from CSRs.
-    for (int i = 0; i < keymgr_dpe_pkg::DevIdWidth / TL_DW; i++) begin
+    for (int i = 0; i < keymgr_dpe_pkg::DeviceIdWidth / TL_DW; i++) begin
       uvm_reg_data_t rdata = csr_peek(ral.lc_ctrl_regs.device_id[i]);
       creator_data.DeviceIdentifier[TL_DW * i +: TL_DW] = rdata;
     end
