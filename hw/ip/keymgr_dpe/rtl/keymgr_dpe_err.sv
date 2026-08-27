@@ -8,7 +8,6 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_err
-  import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 (

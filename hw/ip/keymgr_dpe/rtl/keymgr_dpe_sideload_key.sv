@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module keymgr_dpe_sideload_key import keymgr_pkg::*; import keymgr_dpe_pkg::*; #(
+module keymgr_dpe_sideload_key import keymgr_dpe_pkg::*; #(
   parameter int Width = KeyWidth
 ) (
   input clk_i,

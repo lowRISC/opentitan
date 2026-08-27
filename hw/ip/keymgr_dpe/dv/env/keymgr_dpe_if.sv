@@ -23,13 +23,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t               owner_seed;
   rom_ctrl_pkg::keymgr_data_t[DvNumRomDigestInputs-1:0] rom_digests;
 
-  keymgr_pkg::hw_key_req_t kmac_key;
-  keymgr_pkg::hw_key_req_t aes_key;
-  keymgr_pkg::otbn_key_req_t otbn_key;
+  keymgr_dpe_pkg::hw_key_req_t kmac_key;
+  keymgr_dpe_pkg::hw_key_req_t aes_key;
+  keymgr_dpe_pkg::otbn_key_req_t otbn_key;
 
-  keymgr_pkg::hw_key_req_t kmac_key_exp;
-  keymgr_pkg::hw_key_req_t aes_key_exp;
-  keymgr_pkg::otbn_key_req_t otbn_key_exp;
+  keymgr_dpe_pkg::hw_key_req_t kmac_key_exp;
+  keymgr_dpe_pkg::hw_key_req_t aes_key_exp;
+  keymgr_dpe_pkg::otbn_key_req_t otbn_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;
@@ -281,8 +281,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
       keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest = keymgr_dpe_pkg::Kmac
   );
-    keymgr_dpe_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
-                                                    key_shares[0][keymgr_pkg::KeyWidth-1:0]};
+    keymgr_dpe_env_pkg::key_shares_t trun_key_shares =
+        {key_shares[1][keymgr_dpe_pkg::KeyWidth-1:0], key_shares[0][keymgr_dpe_pkg::KeyWidth-1:0]};
     case (dest)
       keymgr_dpe_pkg::Kmac: begin
         if (kmac_sideload_status != SideLoadClear) begin
@@ -593,7 +593,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
     join
   end
 
-  function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
+  function automatic void check_invalid_key(keymgr_dpe_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && en_chk) begin
       foreach (keys_a_array[state, dest]) begin
         `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][dest],

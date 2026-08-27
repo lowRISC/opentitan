@@ -23,8 +23,8 @@ class chip_sw_keymgr_dpe_sideload_aes_vseq extends chip_sw_keymgr_dpe_key_deriva
     bit [3:0][3:0][7:0] ciphertext_transposed;
     bit [7:0] digest [16];
     bit [7:0] digest_rev [16];
-    bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key;
-    bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key_rev;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] sideload_aes_key;
+    bit [keymgr_dpe_pkg::KeyWidth-1:0] sideload_aes_key_rev;
 
     // Wait until the sideloaded key is generated
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HW output for Aes from the CreatorRootKey")

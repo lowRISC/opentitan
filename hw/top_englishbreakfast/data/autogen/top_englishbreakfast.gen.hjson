@@ -3681,7 +3681,7 @@
         {
           name: keymgr_key
           struct: hw_key_req
-          package: keymgr_pkg
+          package: keymgr_dpe_pkg
           type: uni
           act: rcv
           width: 1
