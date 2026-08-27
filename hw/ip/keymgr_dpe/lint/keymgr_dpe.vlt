@@ -7,10 +7,9 @@
 `verilator_config
 
 // Waive some width mismatch warnings in keymgr*.sv that come from addressing an
-// array by literal elements of an enum that has an extra entry. For example,
-// keymgr_ops_e contains 4 actual operations plus an "OpDisable" entry, meaning
-// that its elements are represented by $clog2(5) = 3 bits. However, we use its
-// literal values to index into things like the error_o array, which just has an
-// entry for each of the 4 real operations. Because $clog2(4) = 2, Verilator
-// expects to address it with a 2-bit index and generates a warning.
+// array by literal elements of an enum that has extra entries. For example,
+// keymgr_dpe_ops_e has six entries, so its elements are 3 bits wide, while
+// `invalid_data` has four entries, indexed by the operation encoding.
+// Because $clog2(4) = 2, Verilator expects to address it with a 2-bit index and
+// generates a warning.
 lint_off -rule WIDTH -file "*/rtl/keymgr*.sv" -match "Bit extraction of var[*:0]*not * bits."

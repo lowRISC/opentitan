@@ -71,8 +71,8 @@ module keymgr_dpe_kmac_if
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 9
   //
-  localparam int StateWidth = 10;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int KmacIfStateWidth = 10;
+  typedef enum logic [KmacIfStateWidth-1:0] {
     StIdle    = 10'b1110100010,
     StTx      = 10'b0010011011,
     StTxLast  = 10'b0101000000,
@@ -295,20 +295,21 @@ module keymgr_dpe_kmac_if
 
   // The input invalid check is done whenever transactions are ongoing with kmac
   // once set, it cannot be unset until transactions are fully complete
+  // TODO(#31420): Remove the id generation operation
   always_comb begin
     inputs_invalid_d = inputs_invalid_q;
 
     if (clr_err) begin
       inputs_invalid_d = '0;
     end else if (valid) begin
-      inputs_invalid_d[OpAdvance]  = adv_en_i & (inputs_invalid_i[OpAdvance] |
-                                                 inputs_invalid_q[OpAdvance]);
-      inputs_invalid_d[OpGenId]    = id_en_i  & (inputs_invalid_i[OpGenId]   |
-                                                 inputs_invalid_q[OpGenId]);
-      inputs_invalid_d[OpGenSwOut] = gen_en_i & (inputs_invalid_i[OpGenSwOut]|
-                                                 inputs_invalid_q[OpGenSwOut]);
-      inputs_invalid_d[OpGenHwOut] = gen_en_i & (inputs_invalid_i[OpGenHwOut]|
-                                                 inputs_invalid_q[OpGenHwOut]);
+      inputs_invalid_d[OpDpeAdvance]  = adv_en_i & (inputs_invalid_i[OpDpeAdvance] |
+                                                    inputs_invalid_q[OpDpeAdvance]);
+      inputs_invalid_d[OpDpeErase]    = id_en_i  & (inputs_invalid_i[OpDpeErase]   |
+                                                    inputs_invalid_q[OpDpeErase]);
+      inputs_invalid_d[OpDpeGenSwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenSwOut]|
+                                                    inputs_invalid_q[OpDpeGenSwOut]);
+      inputs_invalid_d[OpDpeGenHwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenHwOut]|
+                                                    inputs_invalid_q[OpDpeGenHwOut]);
     end
   end
 

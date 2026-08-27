@@ -607,7 +607,7 @@ module keymgr_dpe
     .owner_seed_i(owner_seed),
     .key_i(curr_active_key),
     .devid_i(device_id_i),
-    .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
+    .health_state_i(lc_keymgr_div_i),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),
     .devid_vld_o(devid_vld),
@@ -669,14 +669,17 @@ module keymgr_dpe
   // `invalid_data` only checks key and message data that goes into KMAC interface is valid.
   // It does not check the validity of the requested operation, with respect to other inputs
   // such as policy violation etc.
+  // This vector is indexed by keymgr_dpe_ops_e. The OpDpeErase entry is unused, since erase
+  // does not use the KMAC interface.
+  // TODO(#31420): give the KMAC interface its own 3-entry index instead of reusing the legacy
+  // keymgr operation encoding, and drop the dead identity-generation path.
   logic [3:0] invalid_data;
-  assign invalid_data[OpAdvance]  = ~key_vld | invalid_advance |
-                                    ~adv_dvalid[active_key_slot.boot_stage];
-  // Keymgr_dpe does not have identity generation, therefore `id_en = 0`. The value of
-  // `invalid_data[OpGenId] does not matter, but assign it to 0 for the sake of lint.
-  assign invalid_data[OpGenId] = 1'b0;
-  assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
-  assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpDpeAdvance] = ~key_vld | invalid_advance |
+                                      ~adv_dvalid[active_key_slot.boot_stage];
+  // OpDpeErase does not use KMAC, so this is a don't-care; assign it to 0 for lint.
+  assign invalid_data[OpDpeErase] = 1'b0;
+  assign invalid_data[OpDpeGenSwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpDpeGenHwOut] = ~key_vld | ~key_version_vld;
 
   // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
@@ -919,8 +922,6 @@ module keymgr_dpe
   logic [KeyVersionWidth-1:0] unused_active_key_version;
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
-
-  `ASSERT_INIT(KeyWidthEqualityCheck_A, KeyMgrKeyWidth == KeyWidth)
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})

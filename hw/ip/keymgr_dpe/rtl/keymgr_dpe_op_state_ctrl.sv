@@ -55,8 +55,8 @@ module keymgr_dpe_op_state_ctrl
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 6
   //
-  localparam int StateWidth = 8;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int OpStateWidth = 8;
+  typedef enum logic [OpStateWidth-1:0] {
     StIdle = 8'b11101110,
     StAdv = 8'b00000101,
     StWait = 8'b01110011,
