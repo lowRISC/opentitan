@@ -185,10 +185,14 @@ sec_leq_8x32:
 
   /* Compute y = x + b mod 2^32. */
   jal x1, sec_add_8x32
+
+  /* Isolate and unmask the MSB y[31] in both shares. */
+  bn.shv.8S w0, w0 >> 31
+  bn.xor w31, w31, w31 /* dummy */
+  bn.shv.8S w1, w1 >> 31
   jal x1, sec_unmask_8x32
 
   /* x = 2^32 - 1 if x <= b, else 0. */
-  bn.shv.8S w0, w0 >> 31
   bn.subv.8S w0, w31, w0
 
   ret
