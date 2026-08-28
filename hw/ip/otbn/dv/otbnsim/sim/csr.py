@@ -6,10 +6,11 @@ from typing import Any, Callable, Dict, List, Optional
 from .constants import CsrAddrs
 from .ext_regs import OTBNExtRegs
 from .flags import FlagGroups
+from .ispr import DumbISPR
 from .kmac_ispr import KmacStatusCSR, KmacCtrlCSR, KmacCfgCSR, KmacStrbCSR
 from .mai_ispr import MaiCtrlCSR, MaiStatusCSR
 from .trace import Trace
-from .wsr import WSRFile
+from .wsr import WSRFile, URNDWSR
 
 
 class WrapperCSR:
@@ -40,6 +41,28 @@ class WrapperCSR:
         self._write_func(value)
 
 
+class UrndCtrlCSR(DumbISPR):
+    '''The URND_CTRL CSR.
+
+    Only issues commands to the URND PRNG and always reads as 0. The command handling lives in the
+    URND WSR.
+    '''
+    def __init__(self, name: str, urnd: URNDWSR):
+        super().__init__(name, 32)
+        self._urnd = urnd
+        self.on_start()
+
+    def read_unsigned(self) -> int:
+        return 0
+
+    def write_unsigned(self, value: int) -> None:
+        # Keep the written value for tracing. We ignore the _value attribute that gets updated when
+        # committing anyway.
+        super().write_unsigned(value)
+        # Forward the write to the URND WSR implementing the URND control logic.
+        self._urnd.write_urnd_ctrl(value)
+
+
 class CSRFile:
     '''A model of the CSR file'''
     def __init__(self, wsrs: WSRFile, ext_regs: OTBNExtRegs) -> None:
@@ -47,6 +70,8 @@ class CSRFile:
         self.RND_PREFETCH = WrapperCSR(
             write_func=lambda val: wsrs.RND.request_value()
         )
+        self.URND_CTRL = UrndCtrlCSR('URND_CTRL', wsrs.URND)
+        self.URND_STATUS = WrapperCSR(read_func=wsrs.URND.read_urnd_status)
         self.KMAC_STATUS = KmacStatusCSR('KMAC_STATUS')
         self.KMAC_CTRL = KmacCtrlCSR('KMAC_CTRL')
         self.KMAC_CFG = KmacCfgCSR('KMAC_CFG')
@@ -63,6 +88,8 @@ class CSRFile:
         self._by_addr: Dict[CsrAddrs, Any] = {
             CsrAddrs.FLAGS: self.flags,
             CsrAddrs.RND_PREFETCH: self.RND_PREFETCH,
+            CsrAddrs.URND_CTRL: self.URND_CTRL,
+            CsrAddrs.URND_STATUS: self.URND_STATUS,
             CsrAddrs.KMAC_STATUS: self.KMAC_STATUS,
             CsrAddrs.KMAC_CTRL: self.KMAC_CTRL,
             CsrAddrs.KMAC_CFG: self.KMAC_CFG,
@@ -140,6 +167,7 @@ class CSRFile:
 
     def commit(self) -> None:
         self.flags.commit()
+        self.URND_CTRL.commit()
         self.KMAC_STATUS.commit()
         self.KMAC_CTRL.commit()
         self.KMAC_CFG.commit()
@@ -149,6 +177,7 @@ class CSRFile:
 
     def abort(self) -> None:
         self.flags.abort()
+        self.URND_CTRL.abort()
         self.KMAC_STATUS.abort()
         self.KMAC_CTRL.abort()
         self.KMAC_CFG.abort()
@@ -160,6 +189,7 @@ class CSRFile:
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
         ret += self.flags.changes()
+        ret += self.URND_CTRL.changes()
         ret += self.KMAC_STATUS.changes()
         ret += self.KMAC_CTRL.changes()
         ret += self.KMAC_CFG.changes()
