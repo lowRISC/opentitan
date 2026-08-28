@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Result, bail};
+use base64ct::Encoding;
 
 use ot_certs::template::Template;
 use ot_certs::template::subst::{Subst, SubstData};
@@ -13,6 +14,8 @@ const EXAMPLE_CERT: &str = include_str!("example.hjson");
 
 const GENERIC_FW_IDS_RAW: &str = include_str!("generic_fw_ids_raw.hjson");
 const EXAMPLE_FW_IDS_RAW_DATA: &str = include_str!("example_fw_ids_raw_data.json");
+const GENERIC_RAW_EXTS: &str = include_str!("generic_raw_exts.hjson");
+const GENERIC_EXTS: &str = include_str!("extensions.hjson");
 
 #[test]
 fn subst_generic() -> Result<()> {
@@ -60,6 +63,50 @@ fn subst_fw_ids_raw() -> Result<()> {
 
     if cert_normal_der != cert_raw_der {
         bail!("re-serialized cert DER does not match pre-serialized cert DER");
+    }
+
+    Ok(())
+}
+
+#[test]
+fn subst_private_extensions_raw() -> Result<()> {
+    let generic_tmpl =
+        Template::from_hjson_str(GENERIC_CERT).expect("failed to parse generic template");
+    let test_data = SubstData::from_json(EXAMPLE_DATA).expect("failed to parse example data");
+    let cert_normal = generic_tmpl.subst(&test_data)?;
+
+    let generic_exts_tmpl =
+        Template::from_hjson_str(GENERIC_EXTS).expect("failed to parse generic exts template");
+    let exts_tmpl = generic_exts_tmpl.subst(&test_data)?;
+    let ext_bytes = ot_certs::x509::generate_private_extensions(&exts_tmpl)?;
+
+    let generic_raw_tmpl = Template::from_hjson_str(GENERIC_RAW_EXTS)
+        .expect("failed to parse generic raw exts template");
+
+    let mut test_raw_data = SubstData::from_json(EXAMPLE_DATA)?;
+    test_raw_data.values.insert(
+        "raw_private_extensions".to_string(),
+        ot_certs::template::subst::SubstValue::ByteArray(ext_bytes),
+    );
+
+    let mut cert_raw = generic_raw_tmpl.subst(&test_raw_data)?;
+    cert_raw.name = "example".to_string();
+
+    let cert_normal_der = ot_certs::x509::generate_certificate(&cert_normal)?;
+    let cert_raw_der = ot_certs::x509::generate_certificate(&cert_raw)?;
+
+    if cert_normal_der != cert_raw_der {
+        println!("cert_normal_der len: {}", cert_normal_der.len());
+        println!("cert_raw_der len:    {}", cert_raw_der.len());
+        println!(
+            "cert_normal_der: {}",
+            base64ct::Base64::encode_string(&cert_normal_der)
+        );
+        println!(
+            "cert_raw_der:    {}",
+            base64ct::Base64::encode_string(&cert_raw_der)
+        );
+        bail!("re-serialized cert DER with raw exts does not match normal cert DER");
     }
 
     Ok(())

@@ -20,8 +20,8 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, Selectable,
-    Signature, SubjectPublicKeyInfo, Value,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, RawOr,
+    Selectable, Signature, SubjectPublicKeyInfo, Value,
 };
 
 pub mod extension;
@@ -254,17 +254,29 @@ pub fn generate_certificate_from_tbs(tbs: Vec<u8>, signature: &Signature) -> Res
     Ok(cert)
 }
 
+/// Generate the DER representation of the private extension list only.
+pub fn generate_private_extensions(tmpl: &template::Template) -> Result<Vec<u8>> {
+    let private_extensions = tmpl.private_extensions()?;
+    let ext_bytes = der::Der::generate(|builder| {
+        for ext in private_extensions {
+            x509::X509::push_cert_extension(builder, ext)?
+        }
+        Ok(())
+    })?;
+    Ok(ext_bytes)
+}
+
 /// Generate a X509 certificate from a template that specifies all variables.
 /// If the template does not specify the values of the signature, a signature
 /// with "zero" values will be generated.
 pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
+    let cert_tmpl = tmpl.certificate()?;
     // Generate TBS.
-    let tbs =
-        der::Der::generate(|builder| x509::X509::push_tbs_certificate(builder, &tmpl.certificate))?;
+    let tbs = der::Der::generate(|builder| x509::X509::push_tbs_certificate(builder, cert_tmpl))?;
     let tbs = Value::Literal(tbs);
     // Generate certificate.
     let cert = der::Der::generate(|builder| {
-        x509::X509::push_certificate(builder, &tbs, &tmpl.certificate.signature)
+        x509::X509::push_certificate(builder, &tbs, &cert_tmpl.signature)
     })?;
     Ok(cert)
 }
@@ -357,7 +369,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         basic_constraints,
         key_usage,
         subject_alt_name: get_subject_alt_name(&x509)?,
-        private_extensions,
+        private_extensions: RawOr::Type(private_extensions),
         signature: Selectable::Value(extract_signature(&x509)?),
     })
 }
