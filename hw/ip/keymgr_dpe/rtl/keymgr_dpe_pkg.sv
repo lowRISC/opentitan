@@ -20,7 +20,7 @@ package keymgr_dpe_pkg;
   // Key version length
   parameter int KeyVersionWidth       = 32;
   // Width of wide sideload key (consumed by OTBN)
-  parameter int WideHwKeyWidth        = 384;
+  parameter int WideHwKeyWidth        = 512;
   // Data width of KMAC interface
   parameter int KmacDataIfWidth       = 64;
   // Width of SW binding value

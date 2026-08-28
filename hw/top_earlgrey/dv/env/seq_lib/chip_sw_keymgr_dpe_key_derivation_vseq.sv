@@ -759,7 +759,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   // Format two shares of an wide HW key.
   virtual function string wide_key_shares_str(wide_key_shares_t shares, string separator = "\n");
-    return $sformatf("384'h%096h%s384'h%096h", shares[0], separator, shares[1]);
+    return $sformatf("512'h%128h%s512'h%128h", shares[0], separator, shares[1]);
   endfunction
 
 endclass : chip_sw_keymgr_dpe_key_derivation_vseq

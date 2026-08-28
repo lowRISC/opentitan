@@ -47,6 +47,10 @@ module keymgr_dpe_kmac_if
 
   // Ensure MaxAdvDataWidth do not remain the default value
   `ASSERT_INIT(MaxAdvDataWidth_A, MaxAdvDataWidth != 1)
+  // Verify the size of the KMAC digest
+  // (OTBN sideload key consumes currently the largest digest)
+  `ASSERT_INIT(DpeSideloadKeySize_A, KeyWidth <= kmac_pkg::AppDigestW)
+  `ASSERT_INIT(DpeSideloadWideKeySize_A, WideHwKeyWidth == kmac_pkg::AppDigestW)
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
