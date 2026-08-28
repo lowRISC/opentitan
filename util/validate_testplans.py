@@ -48,7 +48,7 @@ class SchemaValidator:
                 break
 
         if res == 0:
-            logging.info("No errors found!")
+            logging.info("Success!")
         else:
             logging.info("Errors found - run validation locally with %s", " ".join(sys.argv))
         return res
