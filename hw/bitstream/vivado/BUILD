@@ -38,11 +38,11 @@ fusesoc_hash_and_build(
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
     ],
-    hash_dir = _FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "src/"),
     output_groups = {
         "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
         "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
         "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
+        "files_to_hash": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "src/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],

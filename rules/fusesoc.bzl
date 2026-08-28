@@ -47,6 +47,10 @@ def _fusesoc_build_impl(ctx):
     args.add(cfg_file.path, format = "--config=%s")
 
     for group, files in ctx.attr.output_groups.items():
+        # If hashing only, ignore all output groups but one.
+        if ctx.attr.files_to_hash_only and group != "files_to_hash":
+            continue
+
         deps = []
         for file in files:
             path = "{}/{}".format(build_dir, file)
@@ -75,7 +79,7 @@ def _fusesoc_build_impl(ctx):
     args.add("run")
     args.add(ctx.attr.target, format = "--target=%s")
     args.add("--setup")
-    if not ctx.attr.setup_only:
+    if not ctx.attr.files_to_hash_only:
         args.add("--build")
     args.add(out_dir, format = "--build-root=%s")
 
@@ -129,7 +133,10 @@ fusesoc_build = rule(
                 directory.
             """,
         ),
-        "setup_only": attr.bool(default = False, doc = "If set, only --setup will be passed to fusesoc"),
+        "files_to_hash_only": attr.bool(
+            default = False,
+            doc = "If set, only --setup will be passed to fusesoc and only the files_to_hash output group will be emitted",
+        ),
         "verilator_options": attr.label(),
         "make_options": attr.label(),
         "_fusesoc": attr.label(
@@ -142,25 +149,21 @@ fusesoc_build = rule(
 
 def fusesoc_hash_and_build(
         name,
-        hash_dir,
         # All other attributes of fusesoc_build
         **kwargs):
     """
     This rule is similar to fusesoc_build but in addition, it will also create a target named
-    `{name}_hash` containing the hash of all input files listed by fusesoc. The `hash_dir` argument
-    is the name of subdirectory of the fusesoc build directory which needs to be hashed.
+    `{name}_hash` containing the hash of all input files listed by fusesoc. The output group `files_to_hash`
+    must contain the list of files/directories in the fusesoc build directory which need to be hashed.
     """
     fusesoc_build(
         name = name,
         **kwargs
     )
 
-    kwargs["output_groups"] = {
-        "files_to_hash": [hash_dir],
-    }
     fusesoc_build(
         name = name + "_files_to_hash",
-        setup_only = True,
+        files_to_hash_only = True,
         **kwargs
     )
     hash_files(
