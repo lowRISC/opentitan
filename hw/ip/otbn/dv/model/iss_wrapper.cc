@@ -507,6 +507,14 @@ void ISSWrapper::set_wfi_enabled(bool new_val) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::set_urnd_ctrl_enabled(bool new_val) {
+  std::ostringstream oss;
+
+  oss << "set_urnd_ctrl_enabled " << new_val << "\n";
+
+  run_command(oss.str(), nullptr);
+}
+
 void ISSWrapper::wfi_resume() { run_command("wfi_resume\n", nullptr); }
 
 void ISSWrapper::initial_secure_wipe() {

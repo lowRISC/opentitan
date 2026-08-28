@@ -104,12 +104,27 @@ class RandWSR(ISPR):
 
 
 class URNDWSR(ISPR):
-    '''Models URND PRNG Structure'''
+    '''Models URND PRNG Structure. Includes the URND control interface logic as well as the
+    urnd_ctrl_enabled bit from the CTRL register.
+    '''
 
     _BIVIUM_OUTPUT_WIDTH = 389
 
     def __init__(self, name: str):
         super().__init__(name, 256)
+
+        self.URND_CTRL_ENABLED_OFFSET = 0
+        self.STOPPED_OFFSET = 1
+        self.RESTORING_OFFSET = 2
+        self.USED_WHILE_STOPPED_OFFSET = 3
+        self.STATE_SIZE_OFFSET = 16
+        self.STATE_SIZE_MASK = 0x3ff  # 10 bits
+        self.PART_SEED_SIZE_OFFSET = 26
+        self.PART_SEED_SIZE_MASK = 0x3f  # 6 bits
+
+        self.CMD_STOP_MASK = 0x1
+        self.CMD_START_MASK = 0x2
+        self.CMD_RESTORE_MASK = 0x4
 
         self._trivium = Trivium(
             CipherType.BIVIUM,
@@ -120,9 +135,30 @@ class URNDWSR(ISPR):
         self._next_value: int = 0
         self._value: int = 0
 
+        # Running is not the opposite of stopped. It indicates that the first seeding is done.
         self.running = False
         self.requesting = False
         self.reseed_done = False
+
+        # URND control state and flags.
+        self.stopped = False
+        self.restoring = False
+        self._restore_words_written = 0
+        self.used_while_stopped = False
+
+        # This represents the URND enable bit from the CTRL. It must persist across secure wipes.
+        # Ensure that the URND WSR is not recreated in these cases.
+        self.urnd_ctrl_enabled = False
+
+        # Commands / writes issued by an instruction. Handled when it commits.
+        self._cmd_stop = False
+        self._cmd_start = False
+        self._cmd_restore = False
+        self._pending_restore_word: Optional[int] = None
+
+        # Tracks when URND is used in the current cycle. If used, the PRNG is advanced even if
+        # stopped.
+        self._urnd_consumed = False
 
     def read_u32(self) -> int:
         '''Read a 32-bit unsigned result'''
@@ -135,9 +171,18 @@ class URNDWSR(ISPR):
     def on_start(self) -> None:
         self.running = False
         self.reseed_done = False
+        self.stopped = False
+        self.restoring = False
+        self._restore_words_written = 0
+        self.used_while_stopped = False
+        self._cmd_stop = False
+        self._cmd_start = False
+        self._cmd_restore = False
+        self._pending_restore_word = None
+        self._urnd_consumed = False
 
     def read_unsigned(self) -> int:
-        # The URND WSR only gets the lower self.width bits of the Bivium output
+        # Return the lower self.width bits of the registered Bivium output.
         return self._value & ((1 << self.width) - 1)
 
     def set_seed(self, value: int) -> None:
@@ -149,28 +194,179 @@ class URNDWSR(ISPR):
         self.running = True
 
     def pending_value(self) -> int:
-        '''Return the Bivium output scheduled by step(), before commit() latches it.'''
+        '''Return the Bivium output that will be stored at the end of the cycle.'''
+        # This is used for the MAI counter init during secure wipe. There the count must be loaded
+        # with the next URND value. And in the sim this comes after URND commits. So we peek at the
+        # next value here.
         return self._next_value
 
-    def step(self) -> None:
-        # Schedule an state update and readout the keystream.
+    def write_urnd_ctrl(self, value: int) -> None:
+        '''Register a write to the URND_CTRL CSR.
+
+        This registers any issued commands so that if the instruction commits these can be handled
+        in the next cycle.'''
+        if not self.urnd_ctrl_enabled:
+            return
+        self._cmd_stop = bool(value & self.CMD_STOP_MASK)
+        self._cmd_start = bool(value & self.CMD_START_MASK)
+        self._cmd_restore = bool(value & self.CMD_RESTORE_MASK)
+
+    def read_urnd_status(self) -> int:
+        '''Return the current URND_STATUS CSR value.'''
+        val = ((self.urnd_ctrl_enabled << self.URND_CTRL_ENABLED_OFFSET) |
+               (self.stopped << self.STOPPED_OFFSET) |
+               (self.restoring << self.RESTORING_OFFSET) |
+               (self.used_while_stopped << self.USED_WHILE_STOPPED_OFFSET) |
+               ((Trivium.BIVIUM_STATE_SIZE & self.STATE_SIZE_MASK) << self.STATE_SIZE_OFFSET) |
+               ((Trivium.PART_SEED_SIZE & self.PART_SEED_SIZE_MASK) << self.PART_SEED_SIZE_OFFSET))
+        return val
+
+    def get_state(self) -> int:
+        '''Return the the current PRNG state if URND control is enabled. Otherwise return zero.'''
+        if not self.urnd_ctrl_enabled:
+            return 0
+        return self._trivium.get_state()
+
+    def provide_restore_word(self, value: int) -> None:
+        '''Provide one restore word during a restore process.
+
+        This update must be reverted if the instruction aborts.'''
+        if not self.urnd_ctrl_enabled or not self.restoring:
+            # A write to URND_STATE when not restoring is ignored.
+            return
+        self._pending_restore_word = value & ((1 << Trivium.PART_SEED_SIZE) - 1)
+
+    def mark_consumed(self) -> None:
+        # Force the PRNG to advance this cycle even when stopped.
+        self._urnd_consumed = True
+
+    def step(self, predec_read: bool = False) -> None:
+        # We must advance the stopped PRNG if the current instruction uses URND. This advance is
+        # actually issued when the instruction is predecoded (URND is flopped). We model this by
+        # executing an additional state advance here.
+        if predec_read and self.stopped:
+            self._trivium.update()
+            self._trivium.step()
+            self.used_while_stopped = True
+        # Schedule a state update and compute the keystream for the current state.
+        # The state update is always speculative. The URND commit()/abort() decide whether the
+        # state update actually takes effect.
         self._trivium.update()
+        # The URND value is the registered output of the PRNG, so we latch it here.
         self._next_value = self._trivium.keystream()
 
-    def commit(self) -> None:
-        # Step the PRNG one cycle forward.
-        self._trivium.step()
+    def _advance(self, commit: bool) -> None:
+        '''Model the advances of the PRNG and URND control logic when an instruction ends.'''
+        # If the instruction commits, accept any restore words. Must be done before the PRNG
+        # advances.
+        if commit and self._pending_restore_word is not None:
+            self._trivium.seed(self._pending_restore_word)
+            self._pending_restore_word = None
+            self._restore_words_written += 1
+        else:
+            # If the instruction aborts, discard any restore words.
+            self._pending_restore_word = None
+
+        # The PRNG advances unless software stopped it. However, it still advances if URND is used.
+        # Even an aborted instruction consumes URND if it reads from it.
+        forced = self._urnd_consumed
+        self._urnd_consumed = False
+
+        # The start and stop commands have immediate effect on the PRNG advance. Factor these in
+        # but don't update the state yet. The current state (stopped) is still required.
+        advance = not self.stopped
+        if commit:
+            if self._cmd_start:
+                advance = True
+            elif self._cmd_stop:
+                advance = False
+
+        advance = advance or forced
+
+        # The URND is the registered output of the PRNG. The keystream is computed in step() based
+        # on the current state. Independently of whether the PRNG state is advanced, we must update
+        # the register.
         self._value = self._next_value
 
-        # Stop requesting EDN seeds once all the seed rounds have
-        # been completed.
+        if not advance:
+            # If the PRNG is stopped, we discard the scheduled PRNG state update. This keeps the
+            # PRNG state unchanged and the next step() computes the same keystream again.
+            self._trivium.discard_update()
+
+        # Perform the finally scheduled updates of Trivium.
+        self._trivium.step()
+
+        if self.stopped and forced:
+            self.used_while_stopped = True
+
+        # Stop requesting EDN seeds once all the seed rounds have been completed.
         if self._trivium.seed_done() and self.running:
             self.requesting = False
+
+        if self.restoring:
+            # A restore completes once all state words have been provided.
+            if self._restore_words_written >= self._trivium.seed_rounds:
+                self.restoring = False
+        elif self._cmd_restore and commit:
+            # Handle restore command. A restore command is ignored if we are restoring.
+            self.restoring = True
+            self._restore_words_written = 0
+
+        # Handle start/stop commands once the current state is no longer required.
+        if commit:
+            # START takes priority over STOP.
+            if self._cmd_start:
+                self.stopped = False
+            elif self._cmd_stop:
+                self.stopped = True
+                # STOP clears the sticky flag unless the state was forced to advance in this cycle.
+                if not forced:
+                    self.used_while_stopped = False
+
+        # Prepare the flags to track the next instruction.
+        self._cmd_stop = False
+        self._cmd_start = False
+        self._cmd_restore = False
+
+    def commit(self) -> None:
+        '''Commits the state of the URND WSR.
+        Note this is called twice per cycle during execution. In commit() of state.py the URND
+        commit is extracted for some "idle-ish" cycles. And then whilst executing all WSRs are
+        committed again. Make sure this doesn't break the model.
+        '''
+        self._advance(commit=True)
+
+    def abort(self) -> None:
+        self._advance(commit=False)
 
     def changes(self) -> List[ISPRChange]:
         # Our URND model doesn't track (or report) changes to its internal
         # state.
         raise NotImplementedError
+
+
+class UrndStateWSR(DumbISPR):
+    '''The URND_STATE WSR.
+
+    This gives access to the PRNG state and accepts restore values. The PRNG is modelled in the
+    URND WSR.
+    '''
+    def __init__(self, name: str, urnd: URNDWSR):
+        super().__init__(name, 256)
+        self._urnd = urnd
+        self.on_start()
+
+    def read_unsigned(self) -> int:
+        # The URND control enable check is implemented in the URND WSR.
+        return self._urnd.get_state()
+
+    def write_unsigned(self, value: int) -> None:
+        # SW can write a full WLEN value but the HW only considers the lowest partial seed width
+        # bits. We trace only the actual register value.
+        super().write_unsigned(value & ((1 << Trivium.PART_SEED_SIZE) - 1))
+        # An aborted write to URND_STATE should not provide any restore words. This is handled by
+        # calling abort() on URND when an instruction is aborted.
+        self._urnd.provide_restore_word(value)
 
 
 class KeyTrace(Trace):
@@ -262,6 +458,7 @@ class WSRFile:
         self.MAI_IN0_S1 = MaiInputWSR('MAI_IN0_S1')
         self.MAI_IN1_S0 = MaiInputWSR('MAI_IN1_S0')
         self.MAI_IN1_S1 = MaiInputWSR('MAI_IN1_S1')
+        self.URND_STATE = UrndStateWSR('URND_STATE', self.URND)
 
         self._by_addr = {
             WsrAddrs.MOD: self.MOD,
@@ -280,6 +477,7 @@ class WSRFile:
             WsrAddrs.MAI_IN0_S1: self.MAI_IN0_S1,
             WsrAddrs.MAI_IN1_S0: self.MAI_IN1_S0,
             WsrAddrs.MAI_IN1_S1: self.MAI_IN1_S1,
+            WsrAddrs.URND_STATE: self.URND_STATE,
         }
 
     def on_start(self) -> None:
@@ -339,6 +537,7 @@ class WSRFile:
         self.MAI_IN0_S1.commit()
         self.MAI_IN1_S0.commit()
         self.MAI_IN1_S1.commit()
+        self.URND_STATE.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
@@ -360,6 +559,7 @@ class WSRFile:
         self.MAI_IN0_S1.abort()
         self.MAI_IN1_S0.abort()
         self.MAI_IN1_S1.abort()
+        self.URND_STATE.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -376,6 +576,7 @@ class WSRFile:
         ret += self.MAI_IN0_S1.changes()
         ret += self.MAI_IN1_S0.changes()
         ret += self.MAI_IN1_S1.changes()
+        ret += self.URND_STATE.changes()
         return ret
 
     def set_sideload_keys(self,

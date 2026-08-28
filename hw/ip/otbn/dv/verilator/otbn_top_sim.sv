@@ -111,10 +111,12 @@ module otbn_top_sim (
     .edn_urnd_i                  ( urnd_rsp                   ),
     .edn_urnd_o                  ( urnd_req                   ),
 
+    // Always enable the WFI instruction for this testbench.
     .wfi_enabled_i               ( 1'b1                       ),
     .wfi_pending_o               ( wfi_pending                ),
     .wfi_resume_i                ( wfi_pending_q              ),
 
+    // Always enable the URND control feature for this testbench.
     .urnd_ctrl_enabled_i         ( 1'b1                       ),
 
     .insn_cnt_o                  ( insn_cnt                   ),
@@ -387,7 +389,9 @@ module otbn_top_sim (
     .cmd_i                 ( otbn_pkg::CmdExecute ),
     .cmd_en_i              ( otbn_start ),
 
+    // Match the CTRL configuration bits tied off on u_otbn_core above.
     .wfi_enabled_i         ( 1'b1 ),
+    .urnd_ctrl_enabled_i   ( 1'b1 ),
 
     .lc_escalate_en_i      ( lc_ctrl_pkg::Off ),
     .lc_rma_req_i          ( lc_ctrl_pkg::Off ),

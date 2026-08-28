@@ -34,6 +34,7 @@ module otbn_core_model
 
   // Configuration from the CTRL register
   input  logic               wfi_enabled_i,
+  input  logic               urnd_ctrl_enabled_i,
 
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_rma_req_i,
@@ -75,9 +76,9 @@ module otbn_core_model
   end
 
   // A packed set of bits representing the state of the model. This gets assigned by DPI function
-  // calls that need to update both whether we're running and also error flags at the same time. The
-  // contents are magic simulation values, so get initialized before reset (to avoid stopping the
-  // simulation before it even starts).
+  // calls that need to update both whether we're running and also error flags at the same time.
+  // The contents are magic simulation values, so get initialized before reset (to avoid stopping
+  // the simulation before it even starts).
   int unsigned model_state = 0;
 
   // Extract particular bits of the model_state value.
@@ -167,9 +168,9 @@ module otbn_core_model
   assign start_d = (cmd == CmdExecute) & is_idle;
   assign is_idle = otbn_pkg::status_e'(status_o) == StatusIdle;
 
-  // URND Reseeding is done twice as part of every secure wipe: once before the secure wipe and once
-  // after a first wipe with random data.  A secure wipe happens after reset and when OTBN receives
-  // the `EXECUTE` command.
+  // URND Reseeding is done twice as part of every secure wipe: once before the secure wipe and
+  // once after a first wipe with random data.  A secure wipe happens after reset and when OTBN
+  // receives the `EXECUTE` command.
   typedef enum logic [2:0] {
     OtbnCoreModelUrndStateReset,
     OtbnCoreModelUrndStateAwaitInitialAck,
@@ -333,6 +334,7 @@ module otbn_core_model
   bit failed_reset, failed_lc_escalate, failed_keymgr_value, failed_lc_rma_req;
   bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
   bit failed_set_wfi_enabled;
+  bit failed_set_urnd_ctrl_enabled;
   bit failed_initial_secure_wipe, initial_secure_wipe_started;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -349,6 +351,7 @@ module otbn_core_model
       failed_rnd_cdc <= 0;
       failed_otp_key_cdc <= 0;
       failed_set_wfi_enabled <= 0;
+      failed_set_urnd_ctrl_enabled <= 0;
       failed_initial_secure_wipe <= 0;
       initial_secure_wipe_started <= 0;
       model_state <= 0;
@@ -377,6 +380,10 @@ module otbn_core_model
         failed_set_wfi_enabled <= (otbn_model_set_wfi_enabled(model_handle,
                                                               wfi_enabled_i) != 0);
       end
+      if (!$stable(urnd_ctrl_enabled_i) || $rose(rst_ni)) begin
+        failed_set_urnd_ctrl_enabled
+            <= (otbn_model_set_urnd_ctrl_enabled(model_handle, urnd_ctrl_enabled_i) != 0);
+      end
       if (edn_urnd_cdc_done_i) begin
         failed_urnd_cdc <= (otbn_model_urnd_cdc_done(model_handle) != 0);
       end
@@ -399,8 +406,8 @@ module otbn_core_model
     end
   end
 
-  // If a check is requested, run it on the following negedge. This guarantees that both the ISS and
-  // RTL are "at the end" of a cycle.
+  // If a check is requested, run it on the following negedge. This guarantees that both the ISS
+  // and RTL are "at the end" of a cycle.
   logic check_mismatch_d, check_mismatch_q;
   bit   failed_check;
   always_ff @(negedge clk_i or negedge rst_ni) begin
@@ -473,7 +480,7 @@ module otbn_core_model
                    failed_reset, failed_lc_escalate, failed_keymgr_value,
                    failed_edn_flush, failed_rnd_step, failed_urnd_step,
                    failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc,
-                   failed_set_wfi_enabled,
+                   failed_set_wfi_enabled, failed_set_urnd_ctrl_enabled,
                    failed_initial_secure_wipe, failed_lc_rma_req};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.

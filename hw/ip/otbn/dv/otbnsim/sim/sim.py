@@ -17,6 +17,7 @@ from .trace import Trace
 # new_cnt.
 LoopWarps = Dict[int, Dict[int, int]]
 
+
 # The return type of the Step function: a possible instruction that was
 # executed, together with a list of changes.
 StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
@@ -301,11 +302,16 @@ class OTBNSim:
         # The initial secure wipe *must* be done when executing code.
         assert self.state.init_sec_wipe_is_done()
 
-        self.state.wsrs.URND.step()
+        # The PRNG for URND can be stopped. If it is stopped, any instruction using URND still
+        # forces the PRNG to advance. This advance is issued in the predecode stage because URND is
+        # the flopped PRNG output.
+        predec_read = (self._next_insn is not None and
+                       self._next_insn.reads_urnd_first_cycle())
+        self.state.wsrs.URND.step(predec_read)
 
         # The predecoder samples URND one cycle before a vectorized multiply reaches the execute
         # stage. Advance the sampled offset by one cycle, then resample from the current URND
-        # value.
+        # value. This sampling does not trigger a PRNG advance if it were stopped.
         self.state.mac_rnd_offset = self.state.mac_rnd_offset_predec
         self.state.mac_rnd_offset_predec = permute(BN_MAC_PERMUTATION,
                                                    self.state.wsrs.URND.read_unsigned(),
