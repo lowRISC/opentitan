@@ -356,7 +356,7 @@
     { name: "CONFIG.SHADOW",
       desc: '''
         Various critical registers are shadowed: including operation control, reseed interval,
-        kdf_engine and key max version (creator, owner intermediate, owner).
+        kdf_engine and key max version.
       '''
     }
     { name: "OP.CONFIG.REGWEN",
@@ -377,13 +377,18 @@
     }
     { name: "SW_BINDING.CONFIG.REGWEN",
       desc: '''
-        Software binding is lockable by software in each stage. When keymgr successfully advances,
-        the lock is released to allow the next stage the freedom to program.
+        Software binding is lockable by software in each stage. When keymgr_dpe successfully
+        advances, the lock is released to allow the next stage the freedom to program.
       '''
     }
     { name: "MAX_KEY_VER.CONFIG.REGWEN",
       desc: '''
         Max key version is software lockable.
+      '''
+    }
+    { name: "SLOT_POLICY.CONFIG.REGWEN",
+      desc: '''
+        Slot policy is software lockable.
       '''
     }
     { name: "ENFORCE_SW_BINDING.CTRL.CONSISTENCY",
@@ -412,7 +417,7 @@
     }
     { name: "CONSTANTS.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
+        Basic consistency checks (all 0's or all 1's) for keymgr dpe diversification constants
       '''
     }
     { name: "INTERSIG.CONSISTENCY",
@@ -423,6 +428,11 @@
     { name: "HW.KEY.SW_NOACCESS",
       desc: '''
         Sideload keys are not directly accessible by software.
+      '''
+    }
+    { name: "INTERNAL.KEY.SW_NOACCESS",
+      desc: '''
+        Internal keys are not accessible by software.
       '''
     }
     { name: "OUTPUT_KEYS.CTRL.REDUN",
@@ -453,7 +463,7 @@
     }
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
-        Main control fsm locally escalates based on any detected fault in keymgr.
+        Main control fsm locally escalates based on any detected fault in keymgr dpe.
         When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
         further legal operations from executing.
       '''

@@ -66,6 +66,12 @@
       tests: []
     }
     {
+      name: sec_cm_slot_policy_config_regwen
+      desc: "Verify the countermeasure(s) SLOT_POLICY.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_enforce_sw_binding_ctrl_consistency
       desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.CONSISTENCY."
       stage: V2S
@@ -104,6 +110,12 @@
     {
       name: sec_cm_hw_key_sw_noaccess
       desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_internal_key_sw_noaccess
+      desc: "Verify the countermeasure(s) INTERNAL.KEY.SW_NOACCESS."
       stage: V2S
       tests: []
     }
