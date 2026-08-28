@@ -4,7 +4,7 @@
 {
   name:               "keymgr_dpe",
   human_name:         "Key Manager DPE",
-  one_line_desc:      "Manage multiple DICE sessions in a DPE-compatible way",
+  one_line_desc:      "Managing identities and root keys; shielding confidential assets from sw; Manage multiple DICE sessions in a DPE-compatible way",
   one_paragraph_desc: '''
   Key Manager DPE serves as the core hardware block for DPE. DPE stands for DICE Protection Environment.
   [DPE-version1.0-rev0.6]: https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Protection-Environment-Specification_14february2023-1.pdf
