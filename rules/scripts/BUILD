@@ -45,3 +45,8 @@ py_binary(
     data = ["//third_party/qemu:qemu-system-riscv32"],
     deps = ["@rules_python//python/runfiles"],
 )
+
+py_binary(
+    name = "hash_files",
+    srcs = ["hash_files.py"],
+)

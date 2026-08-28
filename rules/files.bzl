@@ -118,14 +118,17 @@ copy_files = rule(
 )
 
 def _hash_file_map_fname(file):
-    return file.path
+    # We produce the format expected by the hashing script, using the short path as the
+    # hashed file to avoid depending on the bazel configuration.
+    return file.path + "@" + file.short_path
 
 def _hash_files(ctx):
     inputs = ctx.files.src
     if ctx.attr.output_group:
         inputs = getattr(ctx.attr.src[OutputGroupInfo], ctx.attr.output_group).to_list()
 
-    hash_file = ctx.actions.declare_file(ctx.label.name)
+    list_file = ctx.actions.declare_file(ctx.label.name + ".list")
+    hash_file = ctx.actions.declare_file(ctx.label.name + ".hash")
 
     args = ctx.actions.args()
 
@@ -137,22 +140,23 @@ def _hash_files(ctx):
         expand_directories = True,
     )
 
-    # Hash the content of the files. We sort them by filename to ensure a deterministic order.
-    # We also hash the file names themselves together with the content.
-    # The output of sha1sum will be of the form "XXXX -" so we remove only keep the hash.
-    ctx.actions.run_shell(
+    ctx.actions.run(
         inputs = inputs,
-        outputs = [hash_file],
-        command = "echo \"$@\" | sort | xargs tail -v -n +1 | sha1sum | cut -d\\  -f 1 > \"$HASH_FILE\"",
-        arguments = [args],
-        env = {
-            "HASH_FILE": hash_file.path,
-            # Use a fixed local to get a consistent sorting order.
-            "LC_ALL": "en_US.UTF-8",
-        },
+        outputs = [hash_file, list_file],
+        executable = ctx.executable._hash_files,
+        arguments = [
+            "--output-list",
+            list_file.path,
+            "--output-hash",
+            hash_file.path,
+            args,
+        ],
     )
 
-    return [DefaultInfo(files = depset([hash_file]))]
+    return [
+        DefaultInfo(files = depset([hash_file])),
+        OutputGroupInfo(list = depset([list_file])),
+    ]
 
 hash_files = rule(
     implementation = _hash_files,
@@ -166,6 +170,11 @@ hash_files = rule(
         ),
         "output_group": attr.string(
             doc = "Output group to use (optional)",
+        ),
+        "_hash_files": attr.label(
+            default = "//rules/scripts:hash_files",
+            cfg = "exec",
+            executable = True,
         ),
     },
 )
