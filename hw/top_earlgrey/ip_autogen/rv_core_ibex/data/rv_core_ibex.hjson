@@ -683,16 +683,17 @@
     }
     { name: "DATA_REG_SW.INTEGRITY"
       desc: '''
-        Register file integrity checking. Note that whilst the core itself is
-        duplicated (see LOGIC.SHADOW) the register file is not. Protection is
-        provided by an ECC.
+        Register file integrity checking via ECC. The register file is split across two instances:
+        the main core's register file stores data bits only, while the shadow core's register file
+        (see LOGIC.SHADOW) stores the corresponding ECC bits only. ECC checking is performed inside
+        the shadow core.
       '''
     }
     { name: "DATA_REG_SW.GLITCH_DETECT"
       desc: '''
-        This countermeasure augments DATA_REG_SW.INTEGRITY and checks for spurious
-        write-enable signals on the register file by monitoring the one-hot0 property
-        of the individual write-enable strobes.
+        The split register file architecture provides implicit glitch detection. A physical fault
+        that modifies data in the main register file through a glitch will be caught in the shadow
+        core's ECC check.
       '''
     }
     { name: "LOGIC.SHADOW"
@@ -721,6 +722,34 @@
     }
     { name: "ICACHE.MEM.INTEGRITY"
       desc: "ICache memory integrity checking."
+    }
+    { name: "ICACHE.MEM.ADDR_INFECTION"
+      desc: '''
+        ICache data and tag words are XORed with a tweak derived from their cache-line address. A
+        fault causing data to land in the wrong cache index produces a tweak mismatch on read-back.
+      '''
+    }
+    { name: "CORED_TLUL.BUS.LC_GATED"
+      desc: '''
+        Outstanding data-bus TL-UL requests are gated when the CPU is disabled via the life-cycle
+        controller.
+      '''
+    }
+    { name: "TLUL_ADAPTER.LOGIC.SHADOW"
+      desc: '''
+        Address translation and TL-UL adapters (data and instruction interface) run in lockstep with
+        shadow logic protecting both interfaces against faults.
+      '''
+    }
+    { name: "MCOUNTEREN_WRITABLE.CTRL.MUBI"
+      desc: '''
+        Use MuBI signals for critical control signals such as `mcounteren_writable`.
+      '''
+    }
+    { name: "CHERIOT_ENABLE.CTRL.MUBI"
+      desc: '''
+        The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.
+      '''
     }
   ]
 
