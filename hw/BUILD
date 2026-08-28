@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_files")
-load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//rules:fusesoc.bzl", "fusesoc_hash_and_build")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//hw/top:defs.bzl", "opentitan_select_top_attr")
 
@@ -88,7 +88,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-fusesoc_build(
+fusesoc_hash_and_build(
     name = "verilator_real",
     srcs = [
         ":dpi_files",
