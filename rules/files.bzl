@@ -140,6 +140,9 @@ def _hash_files(ctx):
         expand_directories = True,
     )
 
+    # If the command line becomes too big, spill to a file.
+    args.use_param_file("--file-list=%s")
+
     ctx.actions.run(
         inputs = inputs,
         outputs = [hash_file, list_file],
