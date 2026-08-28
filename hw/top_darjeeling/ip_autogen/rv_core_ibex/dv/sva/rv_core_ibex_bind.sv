@@ -9,8 +9,8 @@ module rv_core_ibex_bind;
   ) tlul_assert_host_instr (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_i_o),
-    .d2h  (tl_i_i)
+    .h2d  (corei_tl_h_o),
+    .d2h  (corei_tl_h_i)
   );
 
   bind rv_core_ibex tlul_assert #(
@@ -18,8 +18,8 @@ module rv_core_ibex_bind;
   ) tlul_assert_host_data (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_d_o),
-    .d2h  (tl_d_i)
+    .h2d  (cored_tl_h_o),
+    .d2h  (cored_tl_h_i)
   );
 
 endmodule
