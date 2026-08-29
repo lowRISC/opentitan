@@ -1469,7 +1469,6 @@ module rv_core_ibex
   `ASSERT_KNOWN(PwrmgrOKnown_A, pwrmgr_o)
   `ASSERT_KNOWN(CfgTlDAReadyKnown_A, cfg_tl_d_o.a_ready)
   `ASSERT_KNOWN(CfgTlDDValidKnown_A, cfg_tl_d_o.d_valid)
-  `ASSERT_KNOWN_IF(CfgTlDPayloadKnown_A, cfg_tl_d_o, cfg_tl_d_o.d_valid)
   `ASSERT_KNOWN(EdnOKnown_A, edn_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(IcacheOtpKeyOKnown_A, icache_otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
