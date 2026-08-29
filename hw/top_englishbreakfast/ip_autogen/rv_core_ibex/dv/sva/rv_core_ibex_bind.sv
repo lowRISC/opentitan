@@ -22,4 +22,13 @@ module rv_core_ibex_bind;
     .d2h  (cored_tl_h_i)
   );
 
+  bind rv_core_ibex tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device_cfg (
+    .clk_i,
+    .rst_ni,
+    .h2d  (cfg_tl_d_i),
+    .d2h  (cfg_tl_d_o)
+  );
+
 endmodule

@@ -33,4 +33,13 @@ module ${module_instance_name}_bind;
   );
 
 % endif
+  bind ${module_instance_name} tlul_assert #(
+    .EndpointType("Device")
+  ) tlul_assert_device_cfg (
+    .clk_i,
+    .rst_ni,
+    .h2d  (cfg_tl_d_i),
+    .d2h  (cfg_tl_d_o)
+  );
+
 endmodule
