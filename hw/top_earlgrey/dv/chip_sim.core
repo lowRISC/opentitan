@@ -24,6 +24,7 @@ filesets:
       - lowrisc:earlgrey_dv:clkmgr_sva
       - lowrisc:earlgrey_dv:pwrmgr_sva
       - lowrisc:earlgrey_dv:rstmgr_sva
+      - lowrisc:earlgrey_dv:rv_core_ibex_sva
       - lowrisc:dv:top_earlgrey_sva
       - lowrisc:dv:top_earlgrey_xbar_main_bind
       - lowrisc:dv:top_earlgrey_xbar_peri_bind
