@@ -858,7 +858,16 @@ module i3c_target_trx
   wire buf_shift = tx_supply | rx_sample;
 
   // Bit pair used to update the parity and CRC-5 calculations.
-  wire [1:0] parcrc_bit = transmitting ? {sda_nq[0][8], sda_pq[0][8]} : {sda_pq[0][0], sda_i[0]};
+  // - When transmitting, the pair is taken from the two shift registers.
+  // - For HDR-DDR reception the pair comprises the odd-indexed bit, sampled on the preceding SCL
+  //   rising edge, and the even-indexed bit presently on SDA, which is sampled by this edge.
+  // - For SDR reception there is a single bit per SCL cycle and it is folded into both halves, such
+  //   that `parity_q[0]` accumulates the running odd parity of the byte. Take it from the shift
+  //   register that is sampled on the SCL rising edge, where the Controller guarantees the data to
+  //   be stable.
+  wire [1:0] parcrc_bit = transmitting ? {sda_nq[0][8], sda_pq[0][8]} :
+                          (rx_ddr      ? {sda_pq[0][0], sda_i[0]}
+                                       : {sda_pq[0][0], sda_pq[0][0]});
 
   // Parity calculated on received/transmitted data.
   logic       parity_sdr;
@@ -869,9 +878,12 @@ module i3c_target_trx
   // For reception of SDR Write data it suffices to consult only the first parity bit, which
   // is the XOR of all received data bits, XORed with '1'.
   assign parity_sdr = parity_q[0];
-  // Parity has no history from one data unit to the next, so we just need to initialize it.
-  assign init_parity = (bit_idx >= (ddr_mode ? BitW'(8) : BitW'(8)));
-  assign upd_parity  = (rx_ddr | tx_ddr) & data_bit;
+  // Parity has no history from one data unit to the next, so we just need to initialize it on the
+  // first data bit (SDR) or bit pair (HDR-DDR) of each word; both arrive at `bit_idx` == 8.
+  assign init_parity = (bit_idx == BitW'(8));
+  assign upd_parity = data_bit & (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR,
+                                                  State_RxSDR});
+
 
   // CRC-5 calculated on received/transmitted data.
   logic init_crc, upd_crc;
@@ -885,11 +897,16 @@ module i3c_target_trx
 
   // Do the calculated parity and CRC-5 values match against the received values?
   // TODO: Can we defer the parity checking slightly, to avoid the combinational signal
-  // `parity_error` briefly becoming asserted and causing confusion?
-  // TODO: We are not checking T bit of SDR Write traffic at present.
-  wire parity_match = (parcrc_bit == parity_q);
-  wire parity_check = (state_q == State_RxCmdDDR || state_q == State_RxDataDDR) && last_bit;
-  wire parity_error = parity_check & !parity_match;
+  // `parity_error_ddr` briefly becoming asserted and causing confusion?
+  wire parity_match_ddr = (parcrc_bit == parity_q);
+  wire parity_check_ddr = (state_q == State_RxCmdDDR || state_q == State_RxDataDDR) && last_bit;
+  wire parity_error_ddr = parity_check_ddr && !parity_match_ddr;
+
+  // I3C SDR Write data uses odd parity, so the received T bit should equal `parity_sdr`.
+  // - the T bit is sampled into the shift register on the SCL rising edge within its own bit period.
+  wire parity_match_sdr = (sda_pq[0][0] == parity_sdr);
+  wire parity_check_sdr = (state_q == State_RxSDR) && last_bit;
+  wire parity_error_sdr = parity_check_sdr && !parity_match_sdr;
 
   wire crc5_match = ({sda_pq[0][2], sda_nq[0][1], sda_pq[0][1],
                       sda_nq[0][0], sda_pq[0][0]} == crc5_q);
@@ -1129,8 +1146,8 @@ module i3c_target_trx
         // Present the information, if appropriate.
         if ((last_bit & !enthdr_det) | rxd_sr) begin
           trx_rtoggle_o     <= !trx_rtoggle_o;
-          trx_rxd_o.status  <= parity_error ? TTIRxStatus_ErrParity :
-                                (crc5_error ? TTIRxStatus_ErrCRC    : TTIRxStatus_OK);
+          trx_rxd_o.status  <= (parity_error_sdr | parity_error_ddr) ? TTIRxStatus_ErrParity :
+                               (crc5_error ? TTIRxStatus_ErrCRC : TTIRxStatus_OK);
         end
       end
     end
