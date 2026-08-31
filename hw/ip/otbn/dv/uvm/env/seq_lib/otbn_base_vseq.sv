@@ -870,10 +870,23 @@ class otbn_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  // Mirror each of the registers in regs, returning early on a reset. The reads should not respond
+  // with errors.
+  task mirror_regs(uvm_reg regs[$]);
+    foreach (regs[i]) begin
+      uvm_status_e txn_status;
+
+      regs[i].mirror(txn_status);
+      if (cfg.under_reset) return;
+      if (txn_status != UVM_IS_OK) begin
+        `uvm_error(get_full_name(), $sformatf("Failed to mirror %0s.", regs[i].get_name()))
+      end
+    end
+  endtask
+
   // Task to check if otbn is in locked state. If otbn is indeed locked, then ensure fatal error is
   // asserted and reset the dut.
   virtual task reset_if_locked();
-    uvm_reg_data_t act_val;
     wait (!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
                                                    otbn_pkg::StatusBusySecWipeInt}));
 
@@ -881,11 +894,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     // sure that it has gone out in at most 100 cycles.
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
       fork
-        begin
-          csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
-        end
+        mirror_regs('{ral.status, ral.err_bits, ral.fatal_alert_cause});
         begin
           repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
         end
