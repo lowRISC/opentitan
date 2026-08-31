@@ -57,7 +57,6 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
   endtask
 
   task body();
-    uvm_reg_data_t             act_val;
     string                     elf_path;
     bit [BaseWordsPerWLEN-1:0] used_words;
     bit [BaseWordsPerWLEN-1:0] corrupted_words;
@@ -113,26 +112,12 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
 
       // We should now be in a locked state after the secure wipe.
       `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
-
-      // The scoreboard will have seen the transition to locked state and inferred that it should
-      // see a fatal alert. However, it doesn't really have a way to ensure that we keep generating
-      // them.  Wait for 3 fatal alerts and also read STATUS, ERR_BITS and FATAL_ALERT_CAUSE in
-      // parallel.
-      fork
-        begin
-          csr_utils_pkg::csr_rd(.ptr(ral.status), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.err_bits), .value(act_val));
-          csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val));
-        end
-        begin
-          repeat (3) wait_alert_trigger("fatal", .wait_complete(1));
-        end
-      join
+      reset_if_locked();
+    end else begin
+      // Reset and finish sequence.
+      do_apply_reset = 1'b1;
+      dut_init("HARD");
     end
-
-    // Reset and finish sequence.
-    do_apply_reset = 1'b1;
-    dut_init("HARD");
   endtask
 
 endclass
