@@ -687,13 +687,16 @@ class otbn_base_vseq extends cip_base_vseq #(
     stop_tokens -= 1;
   endtask
 
+  virtual task pre_start();
+    super.pre_start();
+    // Check that cfg.otbn_elf_dir was set by the test
+    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
+  endtask
+
   virtual protected function string pick_elf_path();
     chandle helper;
     int     num_files;
     string  elf_path;
-
-    // Check that cfg.otbn_elf_dir was set by the test
-    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
 
     // Pick an ELF file to use in the test. We have to do this via DPI (because you can't list a
     // directory in pure SystemVerilog). To do so, we have to construct a helper object, which will
