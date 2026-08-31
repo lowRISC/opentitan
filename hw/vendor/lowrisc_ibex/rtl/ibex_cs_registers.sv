@@ -841,6 +841,7 @@ module ibex_cs_registers import ibex_pkg::*, ibex_cheriot_pkg::*; #(
         CSR_DSCRATCH1: dscratch1_en = 1'b1;
 
         // machine counter/timers
+        // SEC_CM: MCOUNTEREN_WRITABLE.CTRL.MUBI
         CSR_MCOUNTEREN:    mcounteren_we    = mcounteren_writable_i == IbexMuBiOn;
         CSR_MCOUNTINHIBIT: mcountinhibit_we = 1'b1;
 
