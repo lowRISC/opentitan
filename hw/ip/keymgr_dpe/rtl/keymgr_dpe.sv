@@ -282,6 +282,7 @@ module keymgr_dpe
   logic sideload_fsm_err;
   logic sideload_sel_err;
   logic key_version_vld;
+  logic dest_sel_oob;
 
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
@@ -383,7 +384,8 @@ module keymgr_dpe
     .kmac_op_err_i(kmac_op_err),
     .kmac_done_err_i(kmac_done_err),
     .kmac_cmd_err_i(kmac_cmd_err),
-    .kmac_data_i(kmac_data_truncated)
+    .kmac_data_i(kmac_data_truncated),
+    .dest_sel_oob_i(dest_sel_oob)
   );
 
   assign hw2reg.start.d  = '0;
@@ -588,6 +590,13 @@ module keymgr_dpe
                                            reg2hw.salt,
                                            dest_seed,
                                            output_key} : {GenLfsrCopies{lfsr[31:0]}};
+  // Indicate if destination selection is out-of-bounds
+  assign dest_sel_oob = !(dest_sel inside {None,
+                                           Aes,
+                                           Kmac,
+                                           Otbn,
+                                           Hmac});
+
   hw_key_req_t curr_active_key;
   assign curr_active_key = '{
     valid: active_key_slot.valid,
