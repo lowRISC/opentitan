@@ -676,9 +676,9 @@ module tb;
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
       rom = new(
           .name  ("mem_bkdr_util[Rom]"),
-          .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
-          .depth ($size(`ROM_MEM_HIER)),
-          .n_bits($bits(`ROM_MEM_HIER)),
+          .path  (`ROM_MEM_PATH),
+          .depth (`ROM_MEM_NUM_TILES * $size(`ROM_MEM_TILE_HIER)),
+          .n_bits(`ROM_MEM_NUM_TILES * $bits(`ROM_MEM_TILE_HIER)),
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
 `else
@@ -686,13 +686,19 @@ module tb;
 `endif
           .key   (top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey),
           .nonce (top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR));
+          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR),
+          .tiling_path         (`ROM_MEM_TILING_PATH),
+          .tiling_suffix_fmt_str(`ROM_MEM_TILING_FMT),
+          .tile_depth          ($size(`ROM_MEM_TILE_HIER)));
       m_mem_bkdr_util[Rom] = rom;
 
       // Knob to skip ROM backdoor logging (for sims that use ROM macro).
       if (!$value$plusargs("skip_rom_bkdr_load=%0b", skip_rom_bkdr_load)) skip_rom_bkdr_load = 0;
-      if (!skip_rom_bkdr_load) begin
-        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
+      // A ROM composed of several tiles is loaded from and written to file inside mem_bkdr_util,
+      // which is tile-aware. The $readmemh/$writememh below can only target the single array of an
+      // untiled ROM.
+      if (!skip_rom_bkdr_load && !rom.is_tiled()) begin
+        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_TILE_HIER)
       end
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)

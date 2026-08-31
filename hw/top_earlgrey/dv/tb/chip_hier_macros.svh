@@ -28,13 +28,13 @@
 `define PWRMGR_HIER           `PD_AON_HIER.u_pwrmgr
 `define OTBN_HIER             `PD_MAIN_HIER.u_otbn
 
-// The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
+// The path to the prim_rom instance in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call
 // in the system-level testbench).
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
-`define ROM_CTRL_INT_PATH     gen_rom_scramble_disabled.u_rom.u_prim_rom.`MEM_ARRAY_SUB
+`define ROM_CTRL_INT_PATH     gen_rom_scramble_disabled.u_rom.u_prim_rom
 `else
-`define ROM_CTRL_INT_PATH     gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.`MEM_ARRAY_SUB
+`define ROM_CTRL_INT_PATH     gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom
 `endif
 
 // Memory hierarchies.
@@ -44,6 +44,9 @@
 `include "rram_ctrl_bkdr_util_hier.svh"
 `define RRAM_DATA_MEM_HIER    `RRAM_MACRO_HIER.`RRAM_DATA_MEM_PATH
 `define RRAM_INFO_MEM_HIER    `RRAM_MACRO_HIER.`RRAM_INFO_MEM_PATH
+// Describes the layout of the ROM memory array of whichever prim_rom implementation is mapped in
+// for this build.
+`include "rom_ctrl_bkdr_util_hier.svh"
 `define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
 `define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
 `define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
@@ -52,7 +55,12 @@
 `define ICACHE1_DATA_MEM_HIER `ICACHE_WAY1_HIER.data_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
+// `ROM_MEM_HIER` is the prim_rom instance and `ROM_MEM_TILE_HIER` the memory array of tile 0, from
+// which the depth and the width of every tile are derived.  `ROM_MEM_PATH` is the `path` argument
+// of `mem_bkdr_util::new`; the prim_rom implementation decides which of the two it is.
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
+`define ROM_MEM_TILE_HIER     `ROM_MEM_HIER.`ROM_MEM_TILE_PATH
+`define ROM_MEM_PATH          `ROM_MEM_BKDR_PATH(`ROM_MEM_HIER)
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define USBDEV_BUF_HIER       `USBDEV_HIER.gen_no_stubbed_memory.u_memory_1p.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

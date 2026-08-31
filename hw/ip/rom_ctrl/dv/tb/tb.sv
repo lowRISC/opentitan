@@ -13,6 +13,9 @@ module tb;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  // Describes the layout of the ROM memory array of whichever prim_rom implementation is mapped in
+  // for this build.
+  `include "rom_ctrl_bkdr_util_hier.svh"
 
   wire                        clk, rst_n;
   bit                         digest_cal_done;
@@ -88,17 +91,27 @@ module tb;
        );
 
   // Instantiate the memory backdoor util instance.
+  //
+  // `ROM_CTRL_MEM_HIER` is the `prim_rom` instance, not the memory array: the ROM may be composed
+  // of several arrays (one per tile), so depth and width are derived from one tile and scaled by
+  // the number of tiles.
   `define ROM_CTRL_MEM_HIER \
-    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.mem
+    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom
+  `define ROM_CTRL_MEM_TILE_HIER `ROM_CTRL_MEM_HIER.`ROM_MEM_TILE_PATH
 
   initial begin
     rom_ctrl_bkdr_util m_rom_ctrl_bkdr_util;
     m_rom_ctrl_bkdr_util = new(.name  ("rom_ctrl_bkdr_util"),
-                               .path  (`DV_STRINGIFY(`ROM_CTRL_MEM_HIER)),
-                               .depth ($size(`ROM_CTRL_MEM_HIER)),
-                               .n_bits($bits(`ROM_CTRL_MEM_HIER)),
+                               .path  (`ROM_MEM_BKDR_PATH(`ROM_CTRL_MEM_HIER)),
+                               .depth (`ROM_MEM_NUM_TILES *
+                                       $size(`ROM_CTRL_MEM_TILE_HIER)),
+                               .n_bits(`ROM_MEM_NUM_TILES *
+                                       $bits(`ROM_CTRL_MEM_TILE_HIER)),
                                .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-                               .key(dut.RndCnstScrKey), .nonce(dut.RndCnstScrNonce));
+                               .key(dut.RndCnstScrKey), .nonce(dut.RndCnstScrNonce),
+                               .tiling_path(`ROM_MEM_TILING_PATH),
+                               .tiling_suffix_fmt_str(`ROM_MEM_TILING_FMT),
+                               .tile_depth($size(`ROM_CTRL_MEM_TILE_HIER)));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -148,6 +161,7 @@ module tb;
   `ASSERT(KmacResponseBeforePwmgrDone_A,
           pwrmgr_data.done != prim_mubi_pkg::MuBi4False |-> after_kmac_handshake,
           clk, rst_n)
+  `undef ROM_CTRL_MEM_TILE_HIER
   `undef ROM_CTRL_MEM_HIER
 
 endmodule

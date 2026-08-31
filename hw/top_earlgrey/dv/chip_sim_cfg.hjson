@@ -25,10 +25,14 @@
   // build resolves them correctly either way, but naming the top mapping makes
   // the choice explicit and keeps the FuseSoC log free of
   // non-deterministic-selection warnings.
+  // The DV environment additionally depends on the virtual rram_ctrl_bkdr_util
+  // and rom_ctrl_bkdr_util_hier cores, which describe the layout of the RRAM
+  // and the ROM memory array.
   // Note that the imported cfg already supplies the prim mapping, and dvsim
   // appends these lists rather than replacing them.
   sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_earlgrey_asic:0.1",
-                       "--mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1"]
+                       "--mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1",
+                       "--mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"]
 
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn:-no_dv"
