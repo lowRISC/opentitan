@@ -87,7 +87,10 @@ module keymgr_dpe_ctrl
   input prng_reseed_done_i,
   input prng_reseed_ack_i,
   output logic prng_reseed_req_o,
-  output logic prng_en_o
+  output logic prng_en_o,
+
+  // Out-of-bound checks
+  input logic dest_sel_oob_i
 );
 
   localparam int EntropyWidth = LfsrWidth / 2;
@@ -693,7 +696,9 @@ module keymgr_dpe_ctrl
 
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
-  assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
+  assign invalid_gen = gen_req & (~active_key_slot_o.valid |
+                                  ~key_version_vld_o |
+                                  dest_sel_oob_i);
 
   assign invalid_load = load_req & (~root_key_i.valid      |
                                     destination_slot_valid |
