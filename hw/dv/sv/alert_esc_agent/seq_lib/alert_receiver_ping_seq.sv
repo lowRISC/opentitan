@@ -20,6 +20,9 @@ endfunction : new
 
 task alert_receiver_ping_seq::body();
   forever begin
+    // Items submitted while cfg.in_reset is asserted are discarded by the driver so there is no point
+    // creating a new item until reset has cleared
+    if (cfg.in_reset) wait (!cfg.in_reset);
     req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     // Randomise the item to be a ping request. When driven, the item will "wait around" for
