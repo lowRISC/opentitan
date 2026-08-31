@@ -1,0 +1,28 @@
+#!/usr/bin/sh
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This pre-commit hook adds the line `(commit is original to earlgrey_1.0.0)`
+# to non-cherry-picked commits made to branches off of `earlgrey_1.0.0`.
+
+COMMIT_MSG_FILE="$1"
+
+# Don't add the `original` line if this is a cherry-picked commit.
+if grep -q 'cherry picked from commit' "$COMMIT_MSG_FILE"; then
+  exit 0
+fi
+
+# If the current `HEAD` (line starting with `*`) is a descendent of the
+# `earlgrey_1.0.0` branch, then add the line.
+if git branch --contains earlgrey_1.0.0 | grep '^\*' -q; then
+  # Add origin line at bottom of commit message (but above comments):
+  git -c trailer.separators='' interpret-trailers --trailer \
+    '(commit is original to earlgrey_1.0.0)'                \
+    --in-place "$COMMIT_MSG_FILE"
+
+  # Remove the NUL byte that Git adds:
+  tmp="$(mktemp)"
+  cp "$COMMIT_MSG_FILE" "$tmp"
+  tr -d '\000' < "$tmp" > "$COMMIT_MSG_FILE"
+fi
