@@ -660,11 +660,67 @@ class mem_bkdr_util extends uvm_object;
     $fclose(fh);
   endfunction
 
+  // Returns 1 if the memory is composed of more than one tile.
+  //
+  // The `$readmemh` and `$writememh` system tasks invoked by `MEM_BKDR_UTIL_FILE_OP` can only
+  // target a single unpacked array, so tiled memories need the file operations below instead.
+  virtual function bit is_tiled();
+    return tile_depth < depth;
+  endfunction
+
+  // Load the memory from a VMEM file through the tile-aware `write()`.
+  //
+  // `$readmemh` cannot target a tiled memory, because its tiles are separate arrays, but it can
+  // fill a temporary array of the same depth. Parsing the file therefore stays with the system
+  // task, exactly as for an untiled memory, and only the deposit is done word by word.
+  protected virtual task load_mem_from_file_tiled(string file);
+    // Words that the file does not cover keep this value and are not written, so that a partial
+    // image does not clobber the rest of the memory.
+    row_data_t unset = 'x;
+    row_data_t mem_words[] = new[depth];
+
+    foreach (mem_words[i]) mem_words[i] = unset;
+
+    `uvm_info(`gfn, $sformatf("Loading mem from file:\n%0s", file), UVM_LOW)
+    $readmemh(file, mem_words);
+
+    foreach (mem_words[i]) begin
+      if (mem_words[i] !== unset) write(i * bytes_per_word, mem_words[i]);
+    end
+  endtask
+
+  // Write the memory to a VMEM file one word at a time, through the tile-aware `read()`.
+  //
+  // `$writememh` cannot serve here either: besides not being able to target a tiled memory, it
+  // would write the full width of `row_data_t` rather than the width of the memory.
+  protected virtual function void write_mem_to_file_tiled(string file);
+    int    fh;
+    string word;
+    int    num_digits = (width + 3) / 4;
+
+    fh = $fopen(file, "w");
+    `DV_CHECK_FATAL(fh != 0, $sformatf("Could not open %0s for writing.", file))
+
+    for (int i = 0; i < depth; i++) begin
+      // `read()` returns a full `row_data_t`, and a field width in a format specifier pads rather
+      // than truncates, so keep the low-order digits of the formatted value to get one word of the
+      // memory width, like `$writememh` writes.
+      word = $sformatf("%h", read(i * bytes_per_word));
+      $fwrite(fh, "%0s\n", word.substr(word.len() - num_digits, word.len() - 1));
+    end
+
+    $fclose(fh);
+  endfunction
+
   // load mem from file
   virtual task load_mem_from_file(string file, bit recompute_ecc = 0);
     check_file(file, "r");
-    this.file = file;
-    ->readmemh_event;
+    if (is_tiled()) begin
+      load_mem_from_file_tiled(file);
+    end else begin
+      this.file = file;
+      ->readmemh_event;
+    end
     // The delay below avoids a race condition between this mem backdoor load and a subsequent
     // backdoor write to a particular location.
     #0;
@@ -696,8 +752,12 @@ class mem_bkdr_util extends uvm_object;
   // save mem contents to file
   virtual function void write_mem_to_file(string file);
     check_file(file, "w");
-    this.file = file;
-    ->writememh_event;
+    if (is_tiled()) begin
+      write_mem_to_file_tiled(file);
+    end else begin
+      this.file = file;
+      ->writememh_event;
+    end
   endfunction
 
   // Print the contents of the memory.
@@ -788,6 +848,10 @@ endclass
 //
 // inst is the mem_bkdr_util instance created in the testbench module.
 // path is the raw path to the memory element in the design.
+//
+// This serves a memory that is a single unpacked array. A tiled memory, for which
+// mem_bkdr_util::is_tiled() returns 1, is handled inside the class instead and never triggers the
+// events below, so the testbench does not need to invoke this macro for it.
 `define MEM_BKDR_UTIL_FILE_OP(inst, path) \
   fork \
     forever begin \
