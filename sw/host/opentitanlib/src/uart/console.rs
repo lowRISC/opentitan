@@ -338,7 +338,7 @@ impl UartConsole {
     fn process_input<T>(
         &mut self,
         device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsFd)>,
+        stdin: &mut Option<&mut dyn ReadAsFd>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
@@ -378,16 +378,16 @@ impl UartConsole {
     fn interact_once<T>(
         &mut self,
         device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsFd)>,
+        stdin: &mut Option<&mut dyn ReadAsFd>,
         stdout: &mut Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
-        if let Some(deadline) = &self.deadline {
-            if Instant::now() > *deadline {
-                return Ok(ExitStatus::Timeout);
-            }
+        if let Some(deadline) = &self.deadline
+            && Instant::now() > *deadline
+        {
+            return Ok(ExitStatus::Timeout);
         }
         // This _should_ really use unix `poll` in the conventional way
         // to learn when the console or uart file descriptors become ready,
@@ -408,7 +408,7 @@ impl UartConsole {
         self.process_input(device, stdin)
     }
 
-    pub fn captures(&self, status: ExitStatus) -> Option<Captures> {
+    pub fn captures(&self, status: ExitStatus) -> Option<Captures<'_>> {
         let active_buffer = self.get_active_buffer();
         match status {
             ExitStatus::ExitSuccess => self

@@ -365,12 +365,11 @@ impl AttributeMap {
                     AttributeType::Value,
                     AttrData::Redacted(Redacted::RedactedByHsm),
                 );
-            } else if let Ok(attrs) = session.get_attributes(object, &[attr]) {
-                if let Some(attr_obj) = attrs.into_iter().next() {
-                    if let Ok((ty, val)) = into_kv(&attr_obj) {
-                        map.insert(ty, val);
-                    }
-                }
+            } else if let Ok(attrs) = session.get_attributes(object, &[attr])
+                && let Some(attr_obj) = attrs.into_iter().next()
+                && let Ok((ty, val)) = into_kv(&attr_obj)
+            {
+                map.insert(ty, val);
             }
         });
 

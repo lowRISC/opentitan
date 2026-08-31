@@ -180,10 +180,10 @@ impl QemuUsbHost {
         usb_serial: Option<&str>,
     ) -> UsbResult<bool> {
         // Parsing cannot fail because it was parsed during enumeration.
-        if let Some((usb_vid, usb_pid)) = usb_vid_pid {
-            if device.get_vendor_id() != usb_vid || device.get_product_id() != usb_pid {
-                return Ok(false);
-            }
+        if let Some((usb_vid, usb_pid)) = usb_vid_pid
+            && (device.get_vendor_id() != usb_vid || device.get_product_id() != usb_pid)
+        {
+            return Ok(false);
         }
 
         if let Some((class, subclass, protocol)) = usb_protocol {
@@ -192,11 +192,12 @@ impl QemuUsbHost {
             let config = device.active_configuration()?;
             let mut found = false;
             for intf in config.interface_alt_settings() {
-                if let Ok(desc) = intf.descriptor() {
-                    if desc.class == class && desc.subclass == subclass && desc.protocol == protocol
-                    {
-                        found = true;
-                    }
+                if let Ok(desc) = intf.descriptor()
+                    && desc.class == class
+                    && desc.subclass == subclass
+                    && desc.protocol == protocol
+                {
+                    found = true;
                 }
             }
             if !found {
@@ -370,7 +371,7 @@ impl UsbDevice for QemuUsbDevice {
     }
 
     /// Return the currently active configuration's descriptor.
-    fn active_configuration(&self) -> anyhow::Result<desc::Configuration> {
+    fn active_configuration(&self) -> anyhow::Result<desc::Configuration<'_>> {
         Ok(desc::Configuration::new(
             &self.dev_info.configurations[self.active_cfg_idx],
         ))

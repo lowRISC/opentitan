@@ -125,7 +125,7 @@ fn write_bigint_as_u32<W: Write>(
 ) -> Result<()> {
     let chunk = std::mem::size_of::<u32>();
     assert!(
-        number.len() % chunk == 0,
+        number.len().is_multiple_of(chunk),
         "the big integer size is not a multiple of 4 bytes"
     );
     for (idx, num) in number.windows(chunk).step_by(chunk).enumerate() {

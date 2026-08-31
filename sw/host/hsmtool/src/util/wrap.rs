@@ -62,7 +62,7 @@ impl Wrap {
     const CKM_THALES_AES_KW: u64 = CKM_VENDOR_DEFINED | 0x00000170;
     const CKM_THALES_AES_KWP: u64 = CKM_VENDOR_DEFINED | 0x00000171;
 
-    pub fn mechanism(&self) -> Result<Mechanism> {
+    pub fn mechanism(&self) -> Result<Mechanism<'_>> {
         match self {
             Wrap::AesKeyWrap => Ok(Mechanism::AesKeyWrap),
             Wrap::AesKeyWrapPad => Ok(Mechanism::AesKeyWrapPad),

@@ -353,7 +353,7 @@ fn test_opendrain(
         .output
         .clone()
         .into_iter()
-        .filter(|&(mio, _)| pad_filter.iter().any(|&o| o == mio))
+        .filter(|&(mio, _)| pad_filter.contains(&mio))
         .collect();
     let opendrain_attrs: HashMap<_, _> = opendrain_outputs
         .keys()
