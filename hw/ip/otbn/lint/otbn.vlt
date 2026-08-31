@@ -16,6 +16,7 @@ lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wm
 // perm_test is only used in an assertion (which Verilator doesn't see).
 lint_off -rule UNUSED -file "*/rtl/otbn_mai.sv" -match "Signal is not used: 'perm_test'"
 lint_off -rule UNUSED -file "*/rtl/otbn_rnd.sv" -match "Signal is not used: 'perm_test'"
+lint_off -rule UNUSED -file "*/rtl/otbn_mac_bignum.sv" -match "Signal is not used: 'perm_test'"
 
 split_var -module "otbn_controller" -var "err_bits"
 
