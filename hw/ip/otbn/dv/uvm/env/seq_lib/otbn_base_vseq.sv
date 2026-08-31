@@ -35,6 +35,9 @@ class otbn_base_vseq extends cip_base_vseq #(
   // sideload sequencer will get upset if we kill a process that's waiting for a grant from it).
   protected int unsigned stop_tokens = 0;
 
+  // The bit position of the DONE interrupt in the register.
+  int unsigned DONE_INTR_POSITION = 0;
+
   // Saved TL agent configuration
   typedef struct {
     bit          valid;
@@ -808,6 +811,14 @@ class otbn_base_vseq extends cip_base_vseq #(
     if (cfg.clk_rst_vif.rst_n && !cfg.intr_vif.pins[0]) begin
       @(negedge cfg.clk_rst_vif.rst_n or posedge cfg.intr_vif.pins[0]);
     end
+  endtask
+
+  task check_done_interrupt(bit check_set, bit clear);
+    check_interrupts(.interrupts(1 << DONE_INTR_POSITION), .check_set(check_set), .clear(clear));
+  endtask
+
+  task cfg_done_interrupt(bit enable);
+    cfg_interrupts(.interrupts(1 << DONE_INTR_POSITION), .enable(enable));
   endtask
 
   // Overridden from cip_base_vseq
