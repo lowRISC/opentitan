@@ -5,7 +5,7 @@
 use anyhow::{Context, Result};
 
 use std::cell::{RefCell, RefMut};
-use std::io::{ErrorKind, Read, Write};
+use std::io::{BufReader, ErrorKind, Read, Write};
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -49,7 +49,7 @@ impl Ti50Uart {
         Ok(process.get_state())
     }
 
-    pub fn get_socket(&self) -> Result<RefMut<UnixStream>> {
+    pub fn get_socket(&self) -> Result<RefMut<'_, UnixStream>> {
         Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
             socket.as_mut().unwrap()
         }))
@@ -132,11 +132,10 @@ impl Uart for Ti50Uart {
 
     /// Clears the UART RX buffer.
     fn clear_rx_buffer(&self) -> Result<()> {
+        let mut socket = self.get_socket()?;
+        let reader = BufReader::new(Read::by_ref(&mut *socket));
         // Iterators are lazy, consume using `count()`.
-        Read::by_ref(&mut *self.get_socket()?)
-            .bytes()
-            .take_while(Result::is_ok)
-            .count();
+        reader.bytes().take_while(Result::is_ok).count();
         Ok(())
     }
 }

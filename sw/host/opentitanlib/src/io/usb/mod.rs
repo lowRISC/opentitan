@@ -61,7 +61,7 @@ pub trait UsbDevice {
     fn device_descriptor(&self) -> desc::Device<'_>;
 
     /// Return the currently active configuration's descriptor.
-    fn active_configuration(&self) -> Result<desc::Configuration>;
+    fn active_configuration(&self) -> Result<desc::Configuration<'_>>;
 
     /// Return the device's bus number.
     fn bus_number(&self) -> u8;

@@ -191,26 +191,26 @@ impl PersoBlobParser {
     }
 
     pub fn get_obj_version(data: &[u8]) -> Result<SupportedPersoTlvVersion> {
-        if let Ok(ver_obj_header) = PersoTlvTypesV0::get_obj_header(data) {
-            if ver_obj_header.obj_type == ObjType::PersoBlobVersion {
-                let expected_size = std::mem::size_of::<
-                    <PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType,
-                >() + std::mem::size_of::<PersoBlobVersionObj>();
-                if ver_obj_header.obj_size != expected_size {
-                    bail!(
-                        "Invalid version object size {}, expected {}",
-                        ver_obj_header.obj_size,
-                        expected_size
-                    );
-                }
-                let header_len =
-                    std::mem::size_of::<<PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType>();
-                let ver = u16::from_be_bytes(data[header_len..][..2].try_into()?);
-                if ver != 1 {
-                    bail!("Unsupported version object: {ver}");
-                }
-                return Ok(SupportedPersoTlvVersion::V1);
+        if let Ok(ver_obj_header) = PersoTlvTypesV0::get_obj_header(data)
+            && ver_obj_header.obj_type == ObjType::PersoBlobVersion
+        {
+            let expected_size = std::mem::size_of::<
+                <PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType,
+            >() + std::mem::size_of::<PersoBlobVersionObj>();
+            if ver_obj_header.obj_size != expected_size {
+                bail!(
+                    "Invalid version object size {}, expected {}",
+                    ver_obj_header.obj_size,
+                    expected_size
+                );
             }
+            let header_len =
+                std::mem::size_of::<<PersoTlvTypesV0 as PersoTlvTypes>::ObjHeaderType>();
+            let ver = u16::from_be_bytes(data[header_len..][..2].try_into()?);
+            if ver != 1 {
+                bail!("Unsupported version object: {ver}");
+            }
+            return Ok(SupportedPersoTlvVersion::V1);
         }
         Ok(SupportedPersoTlvVersion::V0)
     }
@@ -412,7 +412,7 @@ trait PersoTlvTypes {
     }
 
     // Extract certificate payload header from the input buffer.
-    fn get_cert(data: &[u8]) -> Result<CertWithHeader> {
+    fn get_cert(data: &[u8]) -> Result<CertWithHeader<'_>> {
         let header_len = std::mem::size_of::<Self::CertHeaderType>();
 
         if header_len > data.len() {

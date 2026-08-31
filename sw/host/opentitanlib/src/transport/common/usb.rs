@@ -356,7 +356,7 @@ impl UsbDevice for RusbDevice {
         desc::Device::new(&self.device_desc)
     }
 
-    fn active_configuration(&self) -> Result<desc::Configuration> {
+    fn active_configuration(&self) -> Result<desc::Configuration<'_>> {
         let active_cfg_val = self
             .handle
             .active_configuration()
@@ -364,10 +364,10 @@ impl UsbDevice for RusbDevice {
         // Find the configuration matching the currently active one.
         for cfg in self.configurations.iter() {
             let cfg = desc::Configuration::new(cfg);
-            if let Ok(desc) = cfg.descriptor() {
-                if desc.config_val == active_cfg_val {
-                    return Ok(cfg);
-                }
+            if let Ok(desc) = cfg.descriptor()
+                && desc.config_val == active_cfg_val
+            {
+                return Ok(cfg);
             }
         }
         anyhow::bail!("No configuration corresponds to the configuration value {active_cfg_val:?}")

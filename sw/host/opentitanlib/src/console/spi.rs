@@ -90,10 +90,10 @@ impl<'a> SpiConsoleDevice<'a> {
         // whilst the device is still processing the previous. For such targets,
         // add additional synchronization by waiting for the TX-indicator pin
         // to go low after reading the header.
-        if let Some(ready_pin) = self.get_tx_ready_pin()? {
-            if self.wait_tx_ready_deassert {
-                while ready_pin.read()? {}
-            }
+        if let Some(ready_pin) = self.get_tx_ready_pin()?
+            && self.wait_tx_ready_deassert
+        {
+            while ready_pin.read()? {}
         }
 
         let magic_number: u32 = u32::from_le_bytes(header[0..4].try_into().unwrap());
