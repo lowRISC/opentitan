@@ -253,6 +253,12 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
                                      &input->data[index * kAesBlockNumBytes],
                                      kAesBlockNumBytes));
 
+    // Verify that the plaintext block was copied correctly.
+    HARDENED_CHECK_EQ(consttime_memeq_byte(
+                          block->data, &input->data[index * kAesBlockNumBytes],
+                          kAesBlockNumBytes),
+                      kHardenedBoolTrue);
+
     // Verify input buffer
     HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input));
     return OTCRYPTO_OK;
@@ -467,6 +473,8 @@ static otcrypto_status_t otcrypto_aes_impl(
       HARDENED_TRY(randomized_bytecopy(
           &cipher_output->data[(i - block_offset) * kAesBlockNumBytes],
           block_out.data, kAesBlockNumBytes));
+    } else {
+      HARDENED_CHECK_EQ(cipher_output, NULL);
     }
   }
   // Check that the loop ran for the correct number of iterations.
@@ -484,6 +492,8 @@ static otcrypto_status_t otcrypto_aes_impl(
       HARDENED_TRY(randomized_bytecopy(
           &cipher_output->data[(input_nblocks - i) * kAesBlockNumBytes],
           block_out.data, kAesBlockNumBytes));
+    } else {
+      HARDENED_CHECK_EQ(cipher_output, NULL);
     }
   }
   // Check that the loop ran for the correct number of iterations.
