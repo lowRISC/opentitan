@@ -114,7 +114,7 @@ impl QemuGpio {
     /// QEMU will send these when the state of the pins has changed in some way.
     /// Frames have the following format:
     ///
-    /// ```
+    /// ```text
     /// <command>:<value>\r\n
     /// ```
     ///
@@ -175,13 +175,13 @@ impl QemuGpio {
 
     /// Send a GPIO command frame to QEMU telling it about how we're driving the pins.
     ///
-    /// See [`process_frames`] for a description of the frame format.
+    /// See [`QemuGpio::process_frames`] for a description of the frame format.
     ///
     /// Frame commands currently supported by QEMU are:
     ///
     /// * `I:<value>`:  the inputs to the device's pads are now `<value>`, if driven.
     /// * `M:<value>`:  the inputs are masked with `<value>`, meaning driven/connected.
-    /// * `R:00000000`: ask QEMU to repeat the last `D` and `O` frames (see [`process_frames`]).
+    /// * `R:00000000`: ask QEMU to repeat the last `D` and `O` frames (see [`QemuGpio::process_frames`]).
     pub fn send_frame(&mut self, cmd: char, value: u32) -> anyhow::Result<()> {
         writeln!(self.stream.get_mut(), "{cmd}:{value:08x}")
             .context("failed to send GPIO frame")?;

@@ -19,9 +19,9 @@ pub struct QemuOpts {
     pub qemu_monitor_socket: Option<PathBuf>,
 
     /// Paths to the Socket / PTY connected to QEMU devices.
-    /// Takes arbitrary mappings in the format '<DEVICE_NAME>:<PATH>' where
-    /// <DEVICE_NAME> is the corresponding QEMU CharDev ID and <PATH> is the
-    /// path that should be used for that CharDev.
+    /// Takes arbitrary mappings in the format `<DEVICE_NAME>:<PATH>` where
+    /// `<DEVICE_NAME>` is the corresponding QEMU CharDev ID and `<PATH>`
+    /// is the path that should be used for that CharDev.
     ///
     /// By default, these paths are retrieved & parsed from the QEMU monitor,
     /// but if QEMU was provided a relative path and the working directory has

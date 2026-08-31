@@ -132,7 +132,7 @@ pub trait Transport {
     fn uart(&self, _instance: &str) -> Result<Rc<dyn Uart>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Uart).into())
     }
-    /// Returns a [`Usb`] implementation.
+    /// Returns a [`UsbContext`] implementation.
     fn usb(&self) -> Result<Rc<dyn UsbContext>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Usb).into())
     }
