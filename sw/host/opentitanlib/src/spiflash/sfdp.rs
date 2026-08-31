@@ -983,11 +983,11 @@ impl TryFrom<&[u8]> for Sfdp {
             let start = ph.offset as usize;
             let end = start + ph.dwords as usize * 4;
             let data = buf.get(start..end).ok_or(Error::SliceRange(start, end))?;
-            if ph.id == Self::LOWRISC_JEDEC_ID {
-                if let Ok(s) = Sdfu::try_from(data) {
-                    sdfu = Some(s);
-                    continue;
-                }
+            if ph.id == Self::LOWRISC_JEDEC_ID
+                && let Ok(s) = Sdfu::try_from(data)
+            {
+                sdfu = Some(s);
+                continue;
             }
             params.push(UnknownParams::try_from(data)?);
         }

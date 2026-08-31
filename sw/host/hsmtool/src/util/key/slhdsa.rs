@@ -550,11 +550,11 @@ impl From<SlhDsaPublicKey> for AttributeMap {
 }
 
 pub trait SlhDsaMechanism {
-    fn slh_dsa_mechanism(&self) -> Mechanism;
+    fn slh_dsa_mechanism(&self) -> Mechanism<'_>;
 }
 
 impl SlhDsaMechanism for SpxDomain {
-    fn slh_dsa_mechanism(&self) -> Mechanism {
+    fn slh_dsa_mechanism(&self) -> Mechanism<'_> {
         match self {
             SpxDomain::None | SpxDomain::Pure => {
                 Mechanism::SlhDsa(SignAdditionalContext::new(HedgeType::Preferred, None))

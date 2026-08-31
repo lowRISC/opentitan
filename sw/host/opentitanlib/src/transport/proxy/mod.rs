@@ -121,10 +121,10 @@ impl Inner {
     fn process_async_data(&self, channel: u32, msg: AsyncMessage) -> Result<()> {
         match msg {
             AsyncMessage::UartData { data } => {
-                if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel) {
-                    if let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance) {
-                        uart_record.pipe_sender.write_all(&data)?;
-                    }
+                if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel)
+                    && let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance)
+                {
+                    uart_record.pipe_sender.write_all(&data)?;
                 }
             }
         }

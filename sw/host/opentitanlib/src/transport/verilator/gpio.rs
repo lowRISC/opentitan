@@ -138,10 +138,10 @@ impl GpioInner {
                     }
                 }
                 Err(e) => {
-                    if let Some(ioerr) = e.downcast_ref::<io::Error>() {
-                        if ioerr.kind() == ErrorKind::TimedOut {
-                            break;
-                        }
+                    if let Some(ioerr) = e.downcast_ref::<io::Error>()
+                        && ioerr.kind() == ErrorKind::TimedOut
+                    {
+                        break;
                     }
                     return Err(e).context("GPIO read error");
                 }

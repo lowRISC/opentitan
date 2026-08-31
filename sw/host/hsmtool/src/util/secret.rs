@@ -59,7 +59,7 @@ impl Secret {
         }
     }
 
-    fn keygen_mechanism(&self) -> Result<Mechanism> {
+    fn keygen_mechanism(&self) -> Result<Mechanism<'_>> {
         match self {
             Secret::Aes => Ok(Mechanism::AesKeyGen),
             Secret::GenericSecret => Ok(Mechanism::GenericSecretKeyGen),

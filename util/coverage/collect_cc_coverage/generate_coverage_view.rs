@@ -13,7 +13,7 @@
 //! - `RUNFILES_DIR`: Location of the test's runfiles.
 //! - `VERBOSE_COVERAGE`: Print debug info from the coverage scripts.
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use core::iter::DoubleEndedIterator;
 use object::{Object, ObjectSection};
@@ -24,7 +24,7 @@ use std::fmt::Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use coverage_lib::{ProfileData, debug_environ, llvm_cov_export, llvm_profdata_merge};
+use coverage_lib::{debug_environ, llvm_cov_export, llvm_profdata_merge, ProfileData};
 
 /// Source files that should not correlate with DWARF line info.
 ///

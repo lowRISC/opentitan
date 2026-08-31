@@ -72,10 +72,10 @@ impl<T: std::fmt::Debug> GetValue<T> for Option<Value<T>> {
 
 fn find_openssl_bin() -> Result<std::path::PathBuf> {
     let r = Runfiles::create()?;
-    if let Some(path) = rlocation!(r, "openssl/openssl") {
-        if path.exists() {
-            return Ok(path);
-        }
+    if let Some(path) = rlocation!(r, "openssl/openssl")
+        && path.exists()
+    {
+        return Ok(path);
     }
     anyhow::bail!("Could not find @openssl//:openssl binary in runfiles");
 }
