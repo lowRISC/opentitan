@@ -25,6 +25,9 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
   //
   //  key:   A 128-bit key used to encrypt every word in the ROM.
   //  nonce: A 64-bit nonce used as part of data encryption, but also for address scrambling.
+  //
+  // The tiling arguments are forwarded unchanged to mem_bkdr_util::new. They are needed for a
+  // technology-specific prim_rom that composes the ROM from several memory macros.
   function new(string                    name = "",
                string                    path,
                int unsigned              depth,
@@ -35,9 +38,13 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
                mem_bkdr_util_row_adapter row_adapter = null,
                int                       num_prince_rounds_half = 3,
                int                       extra_bits_per_subword = 0,
-               int unsigned              system_base_addr = 0);
+               int unsigned              system_base_addr = 0,
+               string                    tiling_path,
+               string                    tiling_suffix_fmt_str,
+               uint32_t                  tile_depth);
     super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter,
-              num_prince_rounds_half, extra_bits_per_subword, system_base_addr);
+              num_prince_rounds_half, extra_bits_per_subword, system_base_addr, tiling_path,
+              tiling_suffix_fmt_str, tile_depth);
 
     m_key   = new[128];
     m_key = {<<{key}};

@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"
+description: "Layout of the ROM memory array for the DV backdoor"
+virtual:
+  - lowrisc:virtual_dv:rom_ctrl_bkdr_util_hier
+
+filesets:
+  files_dv:
+    files:
+      - rom_ctrl_bkdr_util_hier.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+mapping:
+  "lowrisc:virtual_dv:rom_ctrl_bkdr_util_hier": "lowrisc:dv:rom_ctrl_bkdr_util_hier"
+
+targets:
+  default:
+    filesets:
+      - files_dv

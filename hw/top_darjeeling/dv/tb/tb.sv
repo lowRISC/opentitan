@@ -422,7 +422,11 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR),
+          // The ROM is a single memory array, so it has no tiles.
+          .tiling_path         (""),
+          .tiling_suffix_fmt_str(""),
+          .tile_depth          ($size(`ROM0_MEM_HIER)));
       m_mem_bkdr_util[Rom0] = rom0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom0], `ROM0_MEM_HIER)
 
@@ -439,7 +443,11 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR),
+          // The ROM is a single memory array, so it has no tiles.
+          .tiling_path         (""),
+          .tiling_suffix_fmt_str(""),
+          .tile_depth          ($size(`ROM1_MEM_HIER)));
       m_mem_bkdr_util[Rom1] = rom1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom1], `ROM1_MEM_HIER)
 

@@ -17,6 +17,11 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:rom_ctrl_sim:0.1
 
+  // Map the virtual rom_ctrl_bkdr_util_hier core, which describes the layout of the ROM memory
+  // array, to its open-source implementation.  Picking the implementation explicitly keeps the
+  // FuseSoC log free of non-deterministic-selection warnings.
+  sv_flist_gen_flags: ["--mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"]
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/rom_ctrl/data/rom_ctrl_testplan.hjson"
 

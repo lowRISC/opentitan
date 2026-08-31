@@ -173,7 +173,7 @@
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:dv:rom_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1 --mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
           //    {    name: rstmgr
