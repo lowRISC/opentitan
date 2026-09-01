@@ -12,17 +12,17 @@
 // - For HardwareRevisionSecret, use the constant values in design.
 // - Configure the keymgr dpe and derive the `CreatorRootKey` from the UDS.
 // - Verify the correctness of the generated `CreatorRootKey`.
-// - Generate keys for OTBN / AES / KMAC / SW and verify each of the generated keys.
+// - Generate keys for OTBN / AES / KMAC / SW / HMAC and verify each of the generated keys.
 // - Derive the `OwnerIntKey` from `CreatorRootKey`.
 // - Verify the correctness of the generated `OwnerIntKey`.
-// - Generate keys for OTBN / AES / KMAC / SW and verify each of the generated keys.
+// - Generate keys for OTBN / AES / KMAC / SW / HMAC and verify each of the generated keys.
 // - Derive the `OwnerKey` from `OwnerIntKey`.
 // - Verify the correctness of the generated `OwnerKey`.
-// - Generate keys for OTBN / AES / KMAC / SW and verify each of the generated keys.
+// - Generate keys for OTBN / AES / KMAC / SW / HMAC and verify each of the generated keys.
 // - Derive the `OwnerKey` again to generate custom DPE context without overwriting
 //   the `OwnerKey`.
 // - Verify the correctness of the generated custom DPE context.
-// - Generate keys for OTBN / AES / KMAC / SW and verify each of the generated keys.
+// - Generate keys for OTBN / AES / KMAC / SW / HMAC and verify each of the generated keys.
 // - Generate keys for OTBN / SW from `OwnerKey` and verify each of the generated keys.
 
 class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
@@ -227,6 +227,15 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d0),
                            .salt({32'h945642d9, 32'hfbcbc925, 32'hdb7b0691, 32'hcd973f4d,
                                   32'h278e051d, 32'h0d9f1f0d, 32'h45eff95b, 32'hb1ad6ba7}));
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HMAC output from CreatorRootKey")
+    check_generated_output(.key_shares(creator_key),
+                           // These values must match those passed in SW. (Ideally, we would
+                           // backdoor-load them into SW to remove the redundancy, but that's no
+                           // immediate priority.)
+                           .dest(keymgr_dpe_pkg::Hmac),
+                           .version('d0),
+                           .salt({32'h59f92ba4, 32'ha2573816, 32'h35624f4d, 32'hd8dda033,
+                                  32'hc0849c20, 32'h61adbcf9, 32'h2c8e9f64, 32'h063fa1ad}));
 
     // Wait for keymgr_dpe to have advanced to boot stage 1 and thus have consumed the associated
     // values (creator seed etc.).
@@ -279,6 +288,12 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d3),
                            .salt({32'h564712d4, 32'h7ab745f5, 32'h5fa8faa9, 32'h77fce728,
                                   32'hffa3fd3c, 32'h876930f2, 32'h593b54d4, 32'ha75e231b}));
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HMAC output from OwnerIntKey")
+    check_generated_output(.key_shares(owner_int_key),
+                           .dest(keymgr_dpe_pkg::Hmac),
+                           .version('d3),
+                           .salt({32'ha467cafe, 32'h42e0ef13, 32'he64101ba, 32'he0221071,
+                                  32'h46ef443e, 32'hbbc3700a, 32'hccb2a0d4, 32'hb2354a72}));
 
     // Wait for keymgr_dpe to have advanced to boot stage 2 and thus have consumed the owner seed
     // and the owner SW binding.
@@ -331,6 +346,12 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d3),
                            .salt({32'h3f184f9b, 32'hd4af6765, 32'h8abeb221, 32'haae3ca52,
                                   32'h29f7114f, 32'hf5bf3e01, 32'h6a961bc2, 32'hec932d64}));
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HMAC output from OwnerKey")
+    check_generated_output(.key_shares(owner_key),
+                           .dest(keymgr_dpe_pkg::Hmac),
+                           .version('d3),
+                           .salt({32'h2bdb8455, 32'h849e3f58, 32'he6bfa71a, 32'h922813d2,
+                                  32'h36f3d03f, 32'h05e900bc, 32'heecc922c, 32'h79c94846}));
 
     // Wait for keymgr_dpe to have advanced to boot stage 3.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe derived new DPE context from OwnerKey")
@@ -395,6 +416,13 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version(32'h40),
                            .salt({32'h06896da3, 32'h9ce2c0da, 32'haa23a965, 32'h108e57ca,
                                   32'hd926d474, 32'hb6ae40fc, 32'ha65d1375, 32'h6ee7be64}));
+    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
+        $sformatf("KeymgrDpe generated HMAC output from DPE context in slot %0d", derived_key_slot_idx))
+    check_generated_output(.key_shares(derived_key),
+                           .dest(keymgr_dpe_pkg::Hmac),
+                           .version(32'h40),
+                           .salt({32'h4fd6e6ae, 32'h8fd4b340, 32'h81cc5630, 32'hc421ac99,
+                                  32'h618befcf, 32'h33fb5e4e, 32'h7a500515, 32'h7666861f}));
 
     // Verify that the additional outputs generated from boot stage 3 and 4 keys, which should still
     // be available, match the expectation.
