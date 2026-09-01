@@ -149,6 +149,28 @@ typedef struct dif_usbdev_config {
 } dif_usbdev_config_t;
 
 /**
+ * Test mode of USB device. These are mutually exclusive.
+ */
+typedef enum dif_usbdev_test_mode {
+  /**
+   * Normal operation; no test mode is enabled.
+   */
+  kDifUsbdevTestModeNone,
+  /**
+   * Oscillator test mode. usbdev transmits a continuous 0101 pattern for
+   * evaluating the reference clock's quality. This may also be useful for
+   * electrical compliance testing. It is present in all versions.
+   */
+  kDifUsbdevTestModeTxOsc,
+  /**
+   * Packet transmission test mode. usbdev transmits a programmed IN data
+   * packet continuously until a Bus Reset is received. This is NOT present
+   * in Earl Grey silicon.
+   */
+  kDifUsbdevTestModeTxPacket,
+} dif_usbdev_test_mode_t;
+
+/**
  * Configures a USB device with runtime information.
  *
  * This function should need to be called once for the lifetime of `handle`.
@@ -793,18 +815,15 @@ dif_result_t dif_usbdev_status_get_rx_fifo_empty(const dif_usbdev_t *usbdev,
                                                  bool *is_empty);
 
 /**
- * Control whether oscillator test mode is enabled.
- *
- * In oscillator test mode, usbdev transmits a continuous 0101 pattern for
- * evaluating the reference clock's quality.
+ * Enable a test mode, or disable all test modes.
  *
  * @param usbdev A USB device.
- * @param enable Whether the test mode should be enabled.
+ * @param mode The test mode should be enabled, if any.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_usbdev_set_osc_test_mode(const dif_usbdev_t *usbdev,
-                                          dif_toggle_t enable);
+dif_result_t dif_usbdev_set_test_mode(const dif_usbdev_t *usbdev,
+                                      dif_usbdev_test_mode_t mode);
 
 /**
  * Control whether the AON wake module is active.
