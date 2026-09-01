@@ -34,8 +34,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   typedef bit [TL_DW-1:0]                                     tl_data_t;
   typedef bit [keymgr_dpe_pkg::KeyWidth-1:0]                  key_t;
   typedef key_t [keymgr_dpe_pkg::Shares-1:0]                  key_shares_t;
-  typedef bit [keymgr_dpe_pkg::WideHwKeyWidth-1:0]            otbn_key_t;
-  typedef otbn_key_t [keymgr_dpe_pkg::Shares-1:0]             otbn_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::WideHwKeyWidth-1:0]            wide_key_t;
+  typedef wide_key_t [keymgr_dpe_pkg::Shares-1:0]             wide_key_shares_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSaltReg-1:0]      salt_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0] sw_binding_t;
 
@@ -426,8 +426,12 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return result;
   endfunction
 
-  // Combine the two shares of a masked key to get an unmasked key.
-  virtual function bit [keymgr_dpe_pkg::KeyWidth-1:0] get_unmasked_key(key_shares_t two_share_key);
+  // Combine the two shares of a masked (wide) key to get an unmasked key.
+  virtual function key_t get_unmasked_key(key_shares_t two_share_key);
+    return two_share_key[0] ^ two_share_key[1];
+  endfunction
+
+  virtual function wide_key_t get_unmasked_wide_key(wide_key_shares_t two_share_key);
     return two_share_key[0] ^ two_share_key[1];
   endfunction
 
@@ -625,10 +629,10 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                  act_digest)
   endfunction
 
-  // Same as `check_kmac_digest` but for OTBN, which uses wider values.
-  virtual function void check_kmac_otbn_digest(key_t      kmac_key,
+  // Same as `check_kmac_digest` but for wide keys
+  virtual function void check_kmac_wide_digest(key_t      kmac_key,
                                                bit [7:0]  data_arr[],
-                                               otbn_key_t act_digest);
+                                               wide_key_t act_digest);
     `DV_CHECK_EQ(keymgr_dpe_pkg::WideHwKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
                  act_digest)
   endfunction
@@ -672,12 +676,11 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                                                salt_t                        salt);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = get_gen_data(.key_version(version), .salt(salt), .dest(dest));
+    // Outputs generated for OTBN have a different width.
     if (dest == keymgr_dpe_pkg::Otbn) begin
-      // Outputs generated for OTBN have a different width.
-      otbn_key_shares_t output_shares = get_output_otbn();
-      check_kmac_otbn_digest(get_unmasked_key(key_shares),
+      check_kmac_wide_digest(get_unmasked_key(key_shares),
                              data_arr,
-                             output_shares[1] ^ output_shares[0]);
+                             get_unmasked_wide_key(get_wide_output(.dest(dest))));
     end else begin
       check_kmac_digest(get_unmasked_key(key_shares),
                         data_arr,
@@ -693,7 +696,22 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.aes_key_o");
       keymgr_dpe_pkg::Kmac: return get_hw_output(
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.kmac_key_o");
-      keymgr_dpe_pkg::Otbn: `dv_fatal("Illegal use of this function; use `get_output_otbn` instead!")
+      keymgr_dpe_pkg::Otbn: `dv_fatal(
+          "Illegal use of this function; use `get_wide_hw_output` instead!")
+      default: `dv_fatal("Illegal destination (DV bug)!")
+    endcase
+  endfunction
+
+  virtual function wide_key_shares_t get_wide_output(keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest);
+    unique case (dest)
+      keymgr_dpe_pkg::Otbn: return get_wide_hw_output(
+          "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.otbn_key_o");
+      keymgr_dpe_pkg::None: `dv_fatal(
+          "Illegal use of this function; use `get_hw_output` instead!")
+      keymgr_dpe_pkg::Aes: `dv_fatal(
+          "Illegal use of this function; use `get_hw_output` instead!")
+      keymgr_dpe_pkg::Kmac: `dv_fatal(
+          "Illegal use of this function; use `get_hw_output` instead!")
       default: `dv_fatal("Illegal destination (DV bug)!")
     endcase
   endfunction
@@ -720,14 +738,13 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return hw_key.key;
   endfunction
 
-  virtual function otbn_key_shares_t get_output_otbn();
-    string path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.otbn_key_o";
-    keymgr_dpe_pkg::wide_hw_key_req_t otbn_key;
-    `DV_CHECK_FATAL(uvm_hdl_read(path, otbn_key))
-    `DV_CHECK_EQ(otbn_key.valid, 1, "Expected OTBN output key to be valid")
-    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, otbn_key_shares_str(otbn_key.key)),
+  virtual function wide_key_shares_t get_wide_hw_output(string path);
+    keymgr_dpe_pkg::wide_hw_key_req_t wide_hw_key;
+    `DV_CHECK_FATAL(uvm_hdl_read(path, wide_hw_key))
+    `DV_CHECK_EQ(wide_hw_key.valid, 1, "Expected wide HW output key to be valid")
+    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, wide_key_shares_str(wide_hw_key.key)),
               UVM_LOW)
-    return otbn_key.key;
+    return wide_hw_key.key;
   endfunction
 
   // Format a key.
@@ -740,8 +757,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return $sformatf("%s%s%s", key_str(key_shares[0]), separator, key_str(key_shares[1]));
   endfunction
 
-  // Format two shares of an OTBN key.
-  virtual function string otbn_key_shares_str(otbn_key_shares_t shares, string separator = "\n");
+  // Format two shares of an wide HW key.
+  virtual function string wide_key_shares_str(wide_key_shares_t shares, string separator = "\n");
     return $sformatf("384'h%096h%s384'h%096h", shares[0], separator, shares[1]);
   endfunction
 
