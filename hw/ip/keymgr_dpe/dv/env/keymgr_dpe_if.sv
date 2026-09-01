@@ -25,11 +25,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   keymgr_dpe_pkg::hw_key_req_t kmac_key;
   keymgr_dpe_pkg::hw_key_req_t aes_key;
-  keymgr_dpe_pkg::otbn_key_req_t otbn_key;
+  keymgr_dpe_pkg::wide_hw_key_req_t otbn_key;
 
   keymgr_dpe_pkg::hw_key_req_t kmac_key_exp;
   keymgr_dpe_pkg::hw_key_req_t aes_key_exp;
-  keymgr_dpe_pkg::otbn_key_req_t otbn_key_exp;
+  keymgr_dpe_pkg::wide_hw_key_req_t otbn_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;

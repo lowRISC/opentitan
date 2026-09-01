@@ -46,7 +46,7 @@ module keymgr_dpe
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
   output hw_key_req_t hmac_key_o,
-  output otbn_key_req_t otbn_key_o,
+  output wide_hw_key_req_t otbn_key_o,
 
   // data interface to/from crypto modules
   output kmac_pkg::app_req_t kmac_data_o,
