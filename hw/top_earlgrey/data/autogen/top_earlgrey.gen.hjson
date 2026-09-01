@@ -7507,7 +7507,7 @@
         }
         {
           name: keymgr_key
-          struct: otbn_key_req
+          struct: wide_hw_key_req
           package: keymgr_dpe_pkg
           type: uni
           act: rcv
@@ -7688,7 +7688,7 @@
         }
         {
           name: otbn_key
-          struct: otbn_key_req
+          struct: wide_hw_key_req
           package: keymgr_dpe_pkg
           type: uni
           act: req
@@ -25541,7 +25541,7 @@
       }
       {
         name: keymgr_key
-        struct: otbn_key_req
+        struct: wide_hw_key_req
         package: keymgr_dpe_pkg
         type: uni
         act: rcv
@@ -25636,7 +25636,7 @@
       }
       {
         name: otbn_key
-        struct: otbn_key_req
+        struct: wide_hw_key_req
         package: keymgr_dpe_pkg
         type: uni
         act: req
@@ -32956,7 +32956,7 @@
       }
       {
         package: keymgr_dpe_pkg
-        struct: otbn_key_req
+        struct: wide_hw_key_req
         domain: Main
         signame: keymgr_dpe_otbn_key
         width: 1
@@ -32964,7 +32964,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: keymgr_dpe_pkg::OTBN_KEY_REQ_DEFAULT
+        default: keymgr_dpe_pkg::WIDE_HW_KEY_REQ_DEFAULT
       }
       {
         package: kmac_pkg

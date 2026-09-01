@@ -664,7 +664,7 @@ module earlgrey_pd_main #(
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_hmac_key;
-  keymgr_dpe_pkg::otbn_key_req_t       keymgr_dpe_otbn_key;
+  keymgr_dpe_pkg::wide_hw_key_req_t       keymgr_dpe_otbn_key;
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
