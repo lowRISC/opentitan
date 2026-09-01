@@ -67,10 +67,10 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
 
   logic keys_en;
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
-  logic [Shares-1:0][OtbnKeyWidth-1:0] data_truncated_otbn;
+  logic [Shares-1:0][WideHwKeyWidth-1:0] data_truncated_wide;
   for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign data_truncated[i]      = data_i[i][KeyWidth-1:0];
-    assign data_truncated_otbn[i] = data_i[i][OtbnKeyWidth-1:0];
+    assign data_truncated_wide[i] = data_i[i][WideHwKeyWidth-1:0];
   end
 
   // clear all keys when selected by software, or when
@@ -161,7 +161,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   );
 
   keymgr_dpe_sideload_key #(
-    .Width(OtbnKeyWidth)
+    .Width(WideHwKeyWidth)
   ) u_otbn_key (
     .clk_i,
     .rst_ni,
@@ -170,7 +170,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .set_i(data_valid_i & slot_sel[OtbnIdx]),
     .clr_i(slot_clr[OtbnIdx]),
     .entropy_i(entropy_i),
-    .key_i(data_truncated_otbn),
+    .key_i(data_truncated_wide),
     .valid_o(otbn_key_o.valid),
     .key_o(otbn_key_o.key)
   );
@@ -231,7 +231,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
 
   // The sideload keys are truncated from the KMAC output. Hence the width of the KMAC
   // output needs to be at least size of the largest key.
-  `ASSERT_INIT(OtbnKeyFitsInDigest_A, OtbnKeyWidth <= kmac_pkg::AppDigestW)
+  `ASSERT_INIT(OtbnKeyFitsInDigest_A, WideHwKeyWidth <= kmac_pkg::AppDigestW)
   `ASSERT_INIT(KeyFitsInDigest_A, KeyWidth <= kmac_pkg::AppDigestW)
 
 endmodule // keymgr_dpe_sideload_key_ctrl

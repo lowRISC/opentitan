@@ -19,8 +19,8 @@ package keymgr_dpe_pkg;
   parameter int Shares                = 2;
   // Key version length
   parameter int KeyVersionWidth       = 32;
-  // Width of otbn sideload key
-  parameter int OtbnKeyWidth          = 384;
+  // Width of wide sideload key (consumed by OTBN)
+  parameter int WideHwKeyWidth        = 384;
   // Data width of KMAC interface
   parameter int KmacDataIfWidth       = 64;
   // Width of SW binding value
@@ -225,7 +225,7 @@ package keymgr_dpe_pkg;
   // Key connection to otbn
   typedef struct packed {
     logic valid;
-    logic [Shares-1:0][OtbnKeyWidth-1:0] key;
+    logic [Shares-1:0][WideHwKeyWidth-1:0] key;
   } wide_hw_key_req_t;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
@@ -235,7 +235,7 @@ package keymgr_dpe_pkg;
 
   parameter wide_hw_key_req_t WIDE_HW_KEY_REQ_DEFAULT = '{
     valid : 1'b0,
-    key   : {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
+    key   : {Shares{WideHwKeyWidth'(32'hDEADBEEF)}}
   };
 
 
