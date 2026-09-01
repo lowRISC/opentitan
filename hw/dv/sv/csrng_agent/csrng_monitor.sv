@@ -65,11 +65,7 @@ class csrng_monitor extends dv_reactive_monitor #(
             if (i == 0) begin
               cs_item.acmd  = acmd_e'(item.h_data[3:0]);
               cs_item.clen  = item.h_data[7:4];
-              if (item.h_data[11:8] == MuBi4True) begin
-                cs_item.flags = MuBi4True;
-              end else begin
-                cs_item.flags = MuBi4False;
-              end
+              cs_item.flags = mubi4_t'(item.h_data[11:8]);
               cs_item.glen  = item.h_data[23:12];
               cs_item.cmd_data_q.delete();
             end else begin
