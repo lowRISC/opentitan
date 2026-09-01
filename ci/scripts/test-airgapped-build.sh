@@ -14,19 +14,14 @@ fi
 # Clean out bazel cache so no remnants exist for test.
 "${PWD}/bazel-airgapped/bazel" clean --expunge
 
-# Remove the airgapped network namespace.
-remove_airgapped_netns() {
-  sudo ip netns delete airgapped
-}
-trap remove_airgapped_netns EXIT
-
-# Set up a network namespace named "airgapped" with access to loopback.
-sudo ip netns add airgapped
-sudo ip netns exec airgapped ip addr add 127.0.0.1/8 dev lo
-sudo ip netns exec airgapped ip link set dev lo up
-
-# Enter the network namespace and perform several builds.
-sudo ip netns exec airgapped sudo -u "$USER" \
+# Enter a network namespace and perform several builds. `-r` maps us to uid 0
+# in a new user namespace, which avoids needing real root but means tools
+# without HOME in their action env (e.g. rustfmt) resolve ~ to the unreadable
+# /root, hence the tmpfs. Loopback must be up to reach the bazel server.
+unshare -rnm bash -c '
+    ip link set dev lo up &&
+    mount -t tmpfs tmpfs /root &&
+    exec "$@"' -- \
   env \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
     OT_AIRGAPPED="true"                                              \
