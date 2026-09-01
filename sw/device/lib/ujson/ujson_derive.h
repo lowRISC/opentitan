@@ -49,12 +49,26 @@
         OT_EVAL(ujson_struct_field_array(type_ name_, __VA_ARGS__)); \
     ) /*endif*/
 
+#define ujson_struct_field_optional(name_, type_, ...) \
+    uint8_t has_##name_; \
+    OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+    ( /*then*/ \
+        type_ name_; \
+    , /*else*/ \
+        OT_EVAL(ujson_struct_field_array(type_ name_, __VA_ARGS__)); \
+    ) /*endif*/
+
 #define ujson_struct_string(name_, size_, ...) \
     ujson_struct_field(name_, char, ##__VA_ARGS__, size_)
 
 #define UJSON_DECLARE_STRUCT(formal_name_, name_, decl_, ...) \
     typedef struct formal_name_ { \
         decl_(ujson_struct_field, ujson_struct_string) \
+    } name_
+
+#define UJSON_DECLARE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ...) \
+    typedef struct formal_name_ { \
+        decl_(ujson_struct_field, ujson_struct_string, ujson_struct_field_optional) \
     } name_
 
 #define ujson_enum_value(formal_name_, name_, ...) \
@@ -73,6 +87,8 @@
 
 // Helper to count number of fields.
 #define ujson_count(name_, type_, ...) +1
+#define ujson_count_optional(name_, type_, ...) \
+    + ((self->has_##name_ == 0) ? 0 : 1)
 
 //////////////////////////////////////////////////////////////////////
 // Serialize Implementation
@@ -105,6 +121,22 @@
         if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
     }
 
+#define ujson_ser_field_optional(name_, type_, ...) { \
+        if (self->has_##name_ != 0) { \
+            TRY(ujson_serialize_string(uj, #name_)); \
+            TRY(ujson_putbuf(uj, ":", 1)); \
+            OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+            ( /*then*/ \
+                TRY(ujson_serialize_##type_(uj, &self->name_)); \
+            , /*else*/ \
+                  const type_ *p = (const type_*)self->name_; \
+                  OT_EVAL(ujson_ser_loop( \
+                          TRY(ujson_serialize_##type_(uj, p++)), __VA_ARGS__)) \
+            ) /*endif*/ \
+            if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
+        } \
+    }
+
 #define ujson_ser_string(name_, size_, ...) { \
         TRY(ujson_serialize_string(uj, #name_)); \
         TRY(ujson_putbuf(uj, ":", 1)); \
@@ -135,11 +167,37 @@
     } \
     extern const int __never_referenced___here_to_eat_a_semicolon[]
 
+#define UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING_OPT_FIELDS(name_, decl_) \
+    status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) { \
+        size_t nfield = decl_(ujson_count, ujson_count, ujson_count_optional); \
+        uj->str_size = 0; \
+        TRY(ujson_putbuf(uj, "{", 1)); \
+        decl_(ujson_ser_field, ujson_ser_string, ujson_ser_field_optional) \
+        if (max_size > uj->str_size + 1) { \
+          for (size_t i = 0; i < max_size - uj->str_size - 1; i++) { \
+            TRY(ujson_putbuf(uj, " ", 1)); \
+          } \
+        } \
+        TRY(ujson_putbuf(uj, "}", 1)); \
+        return OK_STATUS(); \
+    } \
+    extern const int __never_referenced___here_to_eat_a_semicolon[]
+
 #define UJSON_IMPL_SERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
         size_t nfield = decl_(ujson_count, ujson_count); \
         TRY(ujson_putbuf(uj, "{", 1)); \
         decl_(ujson_ser_field, ujson_ser_string) \
+        TRY(ujson_putbuf(uj, "}", 1)); \
+        return OK_STATUS(); \
+    } \
+    extern const int __never_referenced___here_to_eat_a_semicolon[]
+
+#define UJSON_IMPL_SERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
+    status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
+        size_t nfield = decl_(ujson_count, ujson_count, ujson_count_optional); \
+        TRY(ujson_putbuf(uj, "{", 1)); \
+        decl_(ujson_ser_field, ujson_ser_string, ujson_ser_field_optional) \
         TRY(ujson_putbuf(uj, "}", 1)); \
         return OK_STATUS(); \
     } \
@@ -205,6 +263,20 @@
         ) /*endif*/ \
     }
 
+#define ujson_de_field_optional(name_, type_, ...) \
+    else if (ujson_streq(key, #name_)) { \
+        OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+        ( /*then*/ \
+            TRY(ujson_deserialize_##type_(uj, &self->name_)); \
+            self->has_##name_ = 1; \
+        , /*else*/ \
+            type_ *p = (type_*)self->name_; \
+            OT_EVAL(ujson_de_loop(1, \
+                TRY(ujson_deserialize_##type_(uj, p++)), __VA_ARGS__)) \
+            self->has_##name_ = 1; \
+        ) /*endif*/ \
+    }
+
 #define ujson_de_string(name_, size_, ...) \
     else if (ujson_streq(key, #name_)) { \
         OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
@@ -216,6 +288,11 @@
                 TRY(ujson_parse_qs(uj, p, sizeof(self->name_))); p+=size_, __VA_ARGS__)) \
         ) /*endif*/ \
     }
+
+#define ujson_de_init_field(name_, type_, ...)
+#define ujson_de_init_string(name_, type_, ...)
+#define ujson_de_init_field_optional(name_, type_, ...) \
+      self->has_##name_ = 0;
 
 #define UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
@@ -231,6 +308,29 @@
             TRY(ujson_consume(uj, ':')); \
             if (0) {} \
             decl_(ujson_de_field, ujson_de_string) \
+            else { \
+                return INVALID_ARGUMENT(); \
+            } \
+        } \
+        return OK_STATUS(); \
+    } \
+    extern const int __never_referenced___here_to_eat_a_semicolon[]
+
+#define UJSON_IMPL_DESERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
+    status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
+        decl_(ujson_de_init_field, ujson_de_init_string, ujson_de_init_field_optional) \
+        size_t nfield = 0; \
+        char key[128]; \
+        uj->str_size = 0; \
+        TRY(ujson_consume(uj, '{')); \
+        while(TRY(ujson_consume_maybe(uj, '}')) == 0) { \
+            if (nfield++ > 0) { \
+                TRY(ujson_consume(uj, ',')); \
+            } \
+            TRY(ujson_parse_qs(uj, key, sizeof(key))); \
+            TRY(ujson_consume(uj, ':')); \
+            if (0) {} \
+            decl_(ujson_de_field, ujson_de_string, ujson_de_field_optional) \
             else { \
                 return INVALID_ARGUMENT(); \
             } \
@@ -282,10 +382,26 @@
         status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) \
     ) /*endif*/
 
+#define UJSON_SERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_SERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) \
+    ) /*endif*/
+
 #define UJSON_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
     OT_IIF(UJSON_SERDE_IMPL) \
     ( /*then*/ \
         UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) \
+    ) /*endif*/
+
+#define UJSON_SERIALIZE_STRUCT_WITH_PADDING_OPT_FIELDS(name_, decl_) \
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING_OPT_FIELDS(name_, decl_) \
     , /*else*/ \
         status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) \
     ) /*endif*/
@@ -302,6 +418,14 @@
     OT_IIF(UJSON_SERDE_IMPL) \
     ( /*then*/ \
         UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
+    ) /*endif*/
+
+#define UJSON_DESERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_DESERIALIZE_STRUCT_OPT_FIELDS(name_, decl_) \
     , /*else*/ \
         status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
     ) /*endif*/
@@ -323,6 +447,12 @@
   UJSON_SERIALIZE_STRUCT(name_, decl_);                            \
   UJSON_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_);               \
   UJSON_DESERIALIZE_STRUCT(name_, decl_)
+
+#define UJSON_SERDE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ...)        \
+  UJSON_DECLARE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ##__VA_ARGS__); \
+  UJSON_SERIALIZE_STRUCT_OPT_FIELDS(name_, decl_);                            \
+  UJSON_SERIALIZE_STRUCT_WITH_PADDING_OPT_FIELDS(name_, decl_);               \
+  UJSON_DESERIALIZE_STRUCT_OPT_FIELDS(name_, decl_)
 
 #define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...)          \
   UJSON_DECLARE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__);   \

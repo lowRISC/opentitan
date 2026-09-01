@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/example.h"
+#include "sw/device/lib/ujson/ujson.h"
 
 status_t stdio_getc(void *context) {
   int ch = fgetc(stdin);
@@ -80,6 +81,27 @@ status_t roundtrip(const char *name) {
     TRY(check_crc32(&uj));
     ujson_crc32_reset(&uj);
     TRY(ujson_serialize_misc_t(&uj, &x));
+    printf("\n%x", ujson_crc32_finish(&uj));
+  } else if (!strcmp(name, "foo_optional_1")) {
+    foo_optional_1_t x = {0};
+    TRY(ujson_deserialize_foo_optional_1_t(&uj, &x));
+    TRY(check_crc32(&uj));
+    ujson_crc32_reset(&uj);
+    TRY(ujson_serialize_foo_optional_1_t(&uj, &x));
+    printf("\n%x", ujson_crc32_finish(&uj));
+  } else if (!strcmp(name, "foo_optional_2")) {
+    foo_optional_2_t x = {0};
+    TRY(ujson_deserialize_foo_optional_2_t(&uj, &x));
+    TRY(check_crc32(&uj));
+    ujson_crc32_reset(&uj);
+    TRY(ujson_serialize_foo_optional_2_t(&uj, &x));
+    printf("\n%x", ujson_crc32_finish(&uj));
+  } else if (!strcmp(name, "foo_optional_3")) {
+    foo_optional_3_t x = {0};
+    TRY(ujson_deserialize_foo_optional_3_t(&uj, &x));
+    TRY(check_crc32(&uj));
+    ujson_crc32_reset(&uj);
+    TRY(ujson_serialize_foo_optional_3_t(&uj, &x));
     printf("\n%x", ujson_crc32_finish(&uj));
   } else {
     return INVALID_ARGUMENT();

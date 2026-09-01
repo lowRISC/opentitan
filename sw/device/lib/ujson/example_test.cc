@@ -4,8 +4,12 @@
 
 #include "sw/device/lib/ujson/example.h"
 
+#include <algorithm>
+#include <array>
 #include <cstring>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <optional>
 #include <string>
 
 #include "sw/device/lib/base/status.h"
@@ -212,5 +216,349 @@ TEST(Derive, FuzzyBoolDeserialize) {
   EXPECT_EQ(d, static_cast<fuzzy_bool>(35));
   EXPECT_EQ(ujson_crc32_finish(&uj), 0xe301b3ec);
 }
+
+struct FooOptional1DeriveParam {
+  int32_t foo1_val;
+  std::array<int32_t, 2> foo2_val;
+  const char *message_val;
+  std::optional<uint32_t> bar1_val;
+  std::optional<std::array<uint32_t, 2>> bar2_val;
+  const char *json_data;
+};
+
+class FooOptional1Derive
+    : public testing::TestWithParam<FooOptional1DeriveParam> {};
+
+TEST_P(FooOptional1Derive, Serialize) {
+  const auto p = GetParam();
+  foo_optional_1_t d;
+  d.foo1 = p.foo1_val;
+  std::copy_n(p.foo2_val.begin(), p.foo2_val.size(), d.foo2);
+  std::strncpy(d.message, p.message_val, sizeof(d.message));
+
+  d.has_bar1 = 0;
+  if (p.bar1_val.has_value()) {
+    d.has_bar1 = 1;
+    d.bar1 = *p.bar1_val;
+  }
+
+  d.has_bar2 = 0;
+  if (p.bar2_val.has_value()) {
+    d.has_bar2 = 1;
+    std::copy_n(p.bar2_val->begin(), p.bar2_val->size(), d.bar2);
+  }
+
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_serialize_foo_optional_1_t(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), p.json_data);
+}
+
+TEST_P(FooOptional1Derive, Deserialize) {
+  const auto p = GetParam();
+  foo_optional_1_t d;
+  SourceSink ss(p.json_data);
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_deserialize_foo_optional_1_t(&uj, &d)));
+
+  EXPECT_EQ(d.foo1, p.foo1_val);
+  EXPECT_THAT(d.foo2, testing::ElementsAreArray(p.foo2_val));
+  EXPECT_THAT(d.message, testing::StrEq(p.message_val));
+
+  if (p.bar1_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar1), 0);
+    EXPECT_THAT(d.bar1, *p.bar1_val);
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar1), 0);
+  }
+
+  if (p.bar2_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar2), 0);
+    EXPECT_THAT(d.bar2, testing::ElementsAreArray(*p.bar2_val));
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar2), 0);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FooOptional1SerializeDeserializeTests, FooOptional1Derive,
+    testing::Values(
+        FooOptional1DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","bar1":654,"bar2":[321,987]})json",
+        },
+        FooOptional1DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 0,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({0, 0}),
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","bar1":0,"bar2":[0,0]})json",
+        },
+        FooOptional1DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","bar2":[321,987]})json",
+        },
+        FooOptional1DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","bar1":654})json",
+        },
+        FooOptional1DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        }));
+
+struct FooOptional2DeriveParam {
+  int32_t foo1_val;
+  std::array<int32_t, 2> foo2_val;
+  const char *message_val;
+  std::optional<uint32_t> bar1_val;
+  std::optional<std::array<uint32_t, 2>> bar2_val;
+  const char *json_data;
+};
+
+class FooOptional2Derive
+    : public testing::TestWithParam<FooOptional2DeriveParam> {};
+
+TEST_P(FooOptional2Derive, Serialize) {
+  const auto p = GetParam();
+  foo_optional_2_t d;
+  d.foo1 = p.foo1_val;
+  std::copy_n(p.foo2_val.begin(), p.foo2_val.size(), d.foo2);
+  std::strncpy(d.message, p.message_val, sizeof(d.message));
+
+  d.has_bar1 = 0;
+  if (p.bar1_val.has_value()) {
+    d.has_bar1 = 1;
+    d.bar1 = *p.bar1_val;
+  }
+
+  d.has_bar2 = 0;
+  if (p.bar2_val.has_value()) {
+    d.has_bar2 = 1;
+    std::copy_n(p.bar2_val->begin(), p.bar2_val->size(), d.bar2);
+  }
+
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_serialize_foo_optional_2_t(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), p.json_data);
+}
+
+TEST_P(FooOptional2Derive, Deserialize) {
+  const auto p = GetParam();
+  foo_optional_2_t d;
+  SourceSink ss(p.json_data);
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_deserialize_foo_optional_2_t(&uj, &d)));
+
+  EXPECT_EQ(d.foo1, p.foo1_val);
+  EXPECT_THAT(d.foo2, testing::ElementsAreArray(p.foo2_val));
+  EXPECT_THAT(d.message, testing::StrEq(p.message_val));
+
+  if (p.bar1_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar1), 0);
+    EXPECT_THAT(d.bar1, *p.bar1_val);
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar1), 0);
+  }
+
+  if (p.bar2_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar2), 0);
+    EXPECT_THAT(d.bar2, testing::ElementsAreArray(*p.bar2_val));
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar2), 0);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FooOptional2SerializeDeserializeTests, FooOptional2Derive,
+    testing::Values(
+        FooOptional2DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"bar1":654,"bar2":[321,987],"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        },
+        FooOptional2DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 0,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({0, 0}),
+            .json_data =
+                R"json({"bar1":0,"bar2":[0,0],"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        },
+        FooOptional2DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"bar2":[321,987],"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        },
+        FooOptional2DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"bar1":654,"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        },
+        FooOptional2DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!"})json",
+        }));
+
+struct FooOptional3DeriveParam {
+  int32_t foo1_val;
+  std::array<int32_t, 2> foo2_val;
+  int32_t foo3_val;
+  const char *message_val;
+  std::optional<uint32_t> bar1_val;
+  std::optional<std::array<uint32_t, 2>> bar2_val;
+  const char *json_data;
+};
+
+class FooOptional3Derive
+    : public testing::TestWithParam<FooOptional3DeriveParam> {};
+
+TEST_P(FooOptional3Derive, Serialize) {
+  const auto p = GetParam();
+  foo_optional_3_t d;
+  d.foo1 = p.foo1_val;
+  std::copy_n(p.foo2_val.begin(), p.foo2_val.size(), d.foo2);
+  std::strncpy(d.message, p.message_val, sizeof(d.message));
+  d.foo3 = p.foo3_val;
+
+  d.has_bar1 = 0;
+  if (p.bar1_val.has_value()) {
+    d.has_bar1 = 1;
+    d.bar1 = *p.bar1_val;
+  }
+
+  d.has_bar2 = 0;
+  if (p.bar2_val.has_value()) {
+    d.has_bar2 = 1;
+    std::copy_n(p.bar2_val->begin(), p.bar2_val->size(), d.bar2);
+  }
+
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_serialize_foo_optional_3_t(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), p.json_data);
+}
+
+TEST_P(FooOptional3Derive, Deserialize) {
+  const auto p = GetParam();
+  foo_optional_3_t d;
+  SourceSink ss(p.json_data);
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_deserialize_foo_optional_3_t(&uj, &d)));
+
+  EXPECT_EQ(d.foo1, p.foo1_val);
+  EXPECT_THAT(d.foo2, testing::ElementsAreArray(p.foo2_val));
+  EXPECT_THAT(d.message, testing::StrEq(p.message_val));
+  EXPECT_EQ(d.foo3, p.foo3_val);
+
+  if (p.bar1_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar1), 0);
+    EXPECT_THAT(d.bar1, *p.bar1_val);
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar1), 0);
+  }
+
+  if (p.bar2_val.has_value()) {
+    EXPECT_NE(static_cast<uint32_t>(d.has_bar2), 0);
+    EXPECT_THAT(d.bar2, testing::ElementsAreArray(*p.bar2_val));
+  } else {
+    EXPECT_EQ(static_cast<uint32_t>(d.has_bar2), 0);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    FooOptional3SerializeDeserializeTests, FooOptional3Derive,
+    testing::Values(
+        FooOptional3DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .foo3_val = 150,
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"foo1":456,"bar1":654,"foo2":[123,789],"message":"Hello world!","bar2":[321,987],"foo3":150})json",
+        },
+        FooOptional3DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .foo3_val = 150,
+            .message_val = "Hello world!",
+            .bar1_val = 0,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({0, 0}),
+            .json_data =
+                R"json({"foo1":456,"bar1":0,"foo2":[123,789],"message":"Hello world!","bar2":[0,0],"foo3":150})json",
+        },
+        FooOptional3DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .foo3_val = 150,
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::make_optional<std::array<uint32_t, 2>>({321, 987}),
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","bar2":[321,987],"foo3":150})json",
+        },
+        FooOptional3DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .foo3_val = 150,
+            .message_val = "Hello world!",
+            .bar1_val = 654,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"foo1":456,"bar1":654,"foo2":[123,789],"message":"Hello world!","foo3":150})json",
+        },
+        FooOptional3DeriveParam{
+            .foo1_val = 456,
+            .foo2_val = {123, 789},
+            .foo3_val = 150,
+            .message_val = "Hello world!",
+            .bar1_val = std::nullopt,
+            .bar2_val = std::nullopt,
+            .json_data =
+                R"json({"foo1":456,"foo2":[123,789],"message":"Hello world!","foo3":150})json",
+        }));
 
 }  // namespace
