@@ -9,6 +9,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(csrng_scoreboard)
 
+  // The SW command that is currently being assembled from CMD_REQ writes (and, for a generate
+  // command, from GENBITS reads). Once complete it is passed to the per-app command processing
+  // through the SW app's command fifo, just like the items that the agents monitor for the HW apps.
+  csrng_item                                              sw_cmd_in_progress;
+
   csrng_item                                              cs_item[];
   push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item[],
                                                           es_item_q[][$];
@@ -56,10 +61,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     genbits_fips_received = new[cfg.m_num_apps];
     cmd_flag0_previous    = new[cfg.m_num_apps];
 
-    csrng_cmd_fifo   = new[cfg.m_num_hw_apps];
+    // There is a command fifo for every app. The fifos of the HW apps are connected to the
+    // monitors of the corresponding agents in csrng_env; the fifo of the SW app is filled by
+    // this scoreboard when it observes accesses to the CMD_REQ and GENBITS registers.
+    csrng_cmd_fifo   = new[cfg.m_num_apps];
     entropy_src_fifo = new("entropy_src_fifo", this);
 
-    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
+    for (int i = 0; i < cfg.m_num_apps; i++) begin
       csrng_cmd_fifo[i] = new($sformatf("csrng_cmd_fifo[%0d]", i), this);
     end
 
@@ -77,10 +85,15 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     fork
       collect_seeds();
-      handle_disable();
+      forever begin
+        wait(cfg.under_reset);
+        `uvm_info(`gfn, "Reset detected, clearing scoreboard state.", UVM_LOW)
+        handle_disable();
+        wait(!cfg.under_reset);
+      end
     join_none;
 
-    for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
+    for (int i = 0; i < cfg.m_num_apps; i++) begin
       automatic int j = i;
       fork
         begin
@@ -90,34 +103,22 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual protected task handle_disable();
-    forever begin
-      wait(cfg.under_reset == 0)
-      csr_spinwait(.ptr(ral.ctrl.enable),
-                   .exp_data(MuBi4False),
-                   .backdoor(1),
-                   .timeout_ns(1_000_000_000) /* practically forever */);
-      `uvm_info(`gfn, "CSRNG disabled, clearing scoreboard state.", UVM_MEDIUM)
-      entropy_src_fifo.flush();
-      hw_genbits = '0;
-      more_cmd_data = 0;
-      for (int i = 0; i < cfg.m_num_apps; i++) begin
-        if (i != cfg.m_sw_app_idx) csrng_cmd_fifo[i].flush();
-        es_item_q[i].delete();
-        hw_genbits_reg_q.delete();
-        prd_genbits_q[i].delete();
-        ctr_drbg_uninstantiate(i);
-        cs_data[i] = '0;
-        es_data[i] = '0;
-        fips[i] = '0;
-        cmd_sts[i] = CMD_STS_SUCCESS;
-      end
-      csr_spinwait(.ptr(ral.ctrl.enable),
-                   .exp_data(MuBi4True),
-                   .backdoor(1),
-                   .timeout_ns(1_000_000_000) /* practically forever */);
+  function void handle_disable();
+    entropy_src_fifo.flush();
+    hw_genbits = '0;
+    more_cmd_data = 0;
+    for (int i = 0; i < cfg.m_num_apps; i++) begin
+      csrng_cmd_fifo[i].flush();
+      es_item_q[i].delete();
+      hw_genbits_reg_q.delete();
+      prd_genbits_q[i].delete();
+      ctr_drbg_uninstantiate(i);
+      cs_data[i] = '0;
+      es_data[i] = '0;
+      fips[i] = '0;
+      cmd_sts[i] = CMD_STS_SUCCESS;
     end
-  endtask
+  endfunction
 
   // Wait for an item in the entropy source queue or for CSRNG getting disabled, whichever happens
   // first.  Return whether CSRNG was disabled in the `disabled` output.
@@ -203,87 +204,42 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "regwen": begin
       end
       "ctrl": begin
+        if (addr_phase_write) begin
+          if (mubi4_t'(item.a_data[3:0]) == MuBi4False) begin
+            `uvm_info(`gfn, "CSRNG disabled, clearing scoreboard state.", UVM_LOW)
+            handle_disable();
+          end
+        end
       end
       "cmd_req": begin
         if (addr_phase_write) begin
           if (!more_cmd_data) begin
-            cs_item[sw_app] = csrng_item::type_id::create($sformatf("cs_item[%0d]", sw_app));
-            cs_item[sw_app].acmd  = acmd_e'(item.a_data[3:0]);
-            cs_item[sw_app].clen  = item.a_data[7:4];
-            if (item.a_data[11:8] == MuBi4True) begin
-              cs_item[sw_app].flags = MuBi4True;
-            end
-            else begin
-              cs_item[sw_app].flags = MuBi4False;
-            end
-            cs_item[sw_app].glen  = item.a_data[23:12];
-            more_cmd_data = cs_item[sw_app].clen;
-          end
-          else begin
+            // Command header received; parse it
+            sw_cmd_in_progress = csrng_item::type_id::create("sw_cmd_in_progress");
+            sw_cmd_in_progress.acmd  = acmd_e'(item.a_data[3:0]);
+            sw_cmd_in_progress.clen  = item.a_data[7:4];
+            sw_cmd_in_progress.flags = (item.a_data[11:8] == MuBi4True) ? MuBi4True : MuBi4False;
+            sw_cmd_in_progress.glen  = item.a_data[23:12];
+            more_cmd_data = sw_cmd_in_progress.clen;
+          end else begin
             more_cmd_data -= 1;
-            cs_item[sw_app].cmd_data_q.push_back(item.a_data);
+            sw_cmd_in_progress.cmd_data_q.push_back(item.a_data);
           end
-          cov_vif.cg_cmds_sample(sw_app, cs_item[sw_app], cmd_flag0_previous[sw_app]);
+
           if (!more_cmd_data) begin
-            for (int i = 0; i < cs_item[sw_app].cmd_data_q.size(); i++) begin
-              cs_data[sw_app] = (cs_item[sw_app].cmd_data_q[i] << i * CmdBusWidth) +
-                  cs_data[sw_app];
-            end
-            case (cs_item[sw_app].acmd)
-              INS: begin
-                // Record previous flag0 only after INS or RES commands.
-                cmd_flag0_previous[sw_app] = cs_item[sw_app].flags;
-                if (cs_item[sw_app].flags != MuBi4True) begin
-                  // Get seed
-                  bit disabled;
-                  wait_es_item_or_disable(sw_app, disabled);
-                  if (disabled) begin
-                    `uvm_info(`gfn,
-                        "Stopping to wait for entropy due to disable - Instantiate of the SW app",
-                        UVM_MEDIUM)
-                    return;
-                  end
-                  es_item[sw_app] = es_item_q[sw_app].pop_front;
-                  es_data[sw_app] = es_item[sw_app].d_data[CSRNG_BUS_WIDTH-1:0];
-                  fips[sw_app]    = es_item[sw_app].d_data[CSRNG_BUS_WIDTH];
-                end
-                ctr_drbg_instantiate(sw_app, es_data[sw_app], cs_data[sw_app], fips[sw_app]);
+            // All packets belonging to current command have been received
+            case (sw_cmd_in_progress.acmd)
+              INS, UNI, RES, UPD: begin
+                csrng_cmd_fifo[sw_app].write(sw_cmd_in_progress);
               end
-              RES: begin
-                // Record previous flag0 only after INS or RES commands.
-                cmd_flag0_previous[sw_app] = cs_item[sw_app].flags;
-                if (cs_item[sw_app].flags != MuBi4True) begin
-                  // Get seed
-                  bit disabled;
-                  wait_es_item_or_disable(sw_app, disabled);
-                  if (disabled) begin
-                    `uvm_info(`gfn,
-                        "Stopping to wait for entropy due to disable - Reseed of the SW app",
-                        UVM_MEDIUM)
-                    return;
-                  end
-                  es_item[sw_app] = es_item_q[sw_app].pop_front;
-                  es_data[sw_app] = es_item[sw_app].d_data[CSRNG_BUS_WIDTH-1:0];
-                  fips[sw_app]    = es_item[sw_app].d_data[CSRNG_BUS_WIDTH];
-                end
-                ctr_drbg_reseed(sw_app, es_data[sw_app], cs_data[sw_app], fips[sw_app]);
-              end
-              UPD: begin
-                ctr_drbg_update(sw_app, cs_data[sw_app]);
-              end
-              UNI: begin
-                ctr_drbg_uninstantiate(sw_app);
+              GEN: begin
+                // handled in the `genbits` CSR, nothing to do here..
               end
               default: begin
-                if (!GEN) begin
-                  // Expect the next acknowledgement to return an error.
-                  cmd_sts[sw_app] = CMD_STS_INVALID_ACMD;
-                end
+                // Expect the next acknowledgement to return an error.
+                cmd_sts[sw_app] = CMD_STS_INVALID_ACMD;
               end
             endcase
-            cs_data[sw_app] = 'h0;
-            es_data[sw_app] = 'h0;
-            fips[sw_app]    = 'h0;
           end
         end
       end
@@ -310,19 +266,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "genbits_vld": begin
         do_read_check = 1'b0;
-        if (data_phase_read) begin
-          cov_vif.cg_csrng_genbits_sample(
-              .genbits_fips(item.d_data[1]),
-              .genbits_fips_previous(genbits_fips_previous[sw_app]),
-              .app(sw_app),
-              .valid(item.d_data[0]),
-              .record_transition(genbits_fips_received[sw_app] && item.d_data[0]));
-          // Record the previous fips bit only if the current valid bit is high.
-          if (item.d_data[0]) begin
-            genbits_fips_previous[sw_app] = item.d_data[1];
-            genbits_fips_received[sw_app] = 1'b1;
-          end
-        end
       end
       "genbits": begin
         // Only trace genbits if the genbits_vld flag is high. Since the flag is cleared
@@ -332,7 +275,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         // reads. For the last read we can just check whether there is only one word left.
         csr_rd(.ptr(ral.genbits_vld), .value(read_data), .blocking(1'b1), .backdoor(1'b1));
         last_word = (hw_genbits_reg_q.size() == (GENBITS_BUS_WIDTH/TL_DW - 1));
-        genbits_valid = read_data & 1'b1;
+        genbits_valid = read_data[0];
         if (genbits_valid || last_word) begin
           do_read_check = 1'b0;
           if (data_phase_read) begin
@@ -345,27 +288,24 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             );
             hw_genbits_reg_q.push_back(item.d_data);
             // Check if the FIPS compliance bit is set correctly.
-            `DV_CHECK_EQ_FATAL((read_data >> 1) & 1'b1, cfg.compliance[sw_app])
+            `DV_CHECK_EQ_FATAL(read_data[1], cfg.compliance[sw_app])
           end
+
+          // One full genbit block available; push to genbits queue
           if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/TL_DW) begin
             for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
               hw_genbits += hw_genbits_reg_q[i] << i*TL_DW;
             end
-            cs_item[sw_app].genbits_q.push_back(hw_genbits);
+            sw_cmd_in_progress.genbits_q.push_back(hw_genbits);
+            sw_cmd_in_progress.fips_q.push_back(read_data[1]);
             hw_genbits_reg_q.delete();
             hw_genbits = '0;
           end
-          if (cs_item[sw_app].genbits_q.size() == cs_item[sw_app].glen) begin
-            for (int i = 0; i < cs_item[sw_app].cmd_data_q.size(); i++) begin
-              cs_data[sw_app] = (cs_item[sw_app].cmd_data_q[i] << i * CmdBusWidth) +
-                  cs_data[sw_app];
-            end
-            ctr_drbg_generate(sw_app, cs_item[sw_app].glen, cs_data[sw_app]);
-            for (int i = 0; i < cs_item[sw_app].glen; i++) begin
-              `DV_CHECK_EQ_FATAL(cs_item[sw_app].genbits_q[i], prd_genbits_q[sw_app][i])
-            end
-            prd_genbits_q[sw_app].delete();
-            cs_data[sw_app] = 'h0;
+
+          // All requested blocks generated; run golden model and compare
+          if (sw_cmd_in_progress.genbits_q.size() == sw_cmd_in_progress.glen) begin
+            // Push item into queue
+            csrng_cmd_fifo[sw_app].write(sw_cmd_in_progress);
           end
         end
       end
@@ -467,7 +407,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [BLOCK_LEN-1:0]         output_block;
     bit [63:0]                  mod_val;
 
-    `uvm_info(`gfn, $sformatf("Update of app %0d", app), UVM_MEDIUM)
     // If the instance was not instantiated then the next acknowledge should return an error.
     if (!cfg.status[app]) begin
       cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
@@ -530,6 +469,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Reseed of app %0d", app), UVM_MEDIUM)
+    // Reseeding can only be done with already instantiated instances.
+    if (!cfg.status[app]) begin
+      cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
+    end
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b0;
@@ -558,7 +501,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [63:0]                    mod_val;
 
     `uvm_info(`gfn, $sformatf("Generate of app %0d", app), UVM_MEDIUM)
-    if (cfg.reseed_counter[app] == `gmv(ral.reseed_interval)) begin
+    // Only already instantiated instances can generate random bits.
+    if (!cfg.status[app]) begin
+      cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
+    end else if (cfg.reseed_counter[app] == `gmv(ral.reseed_interval)) begin
       cmd_sts[app] = CMD_STS_RESEED_CNT_EXCEEDED;
     end
     if (additional_input) begin
@@ -603,8 +549,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       entropy_src_fifo.get(es_item);
       if (cfg.lc_hw_debug_en == On) begin
         es_item.d_data = es_item.d_data ^ LC_HW_DEBUG_EN_ON_DATA;
-      end
-      else begin
+      end else begin
         es_item.d_data = es_item.d_data ^ LC_HW_DEBUG_EN_OFF_DATA;
       end
       // Need to access rtl signal to determine which APP won arbitration
@@ -620,7 +565,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                  initial_fips_received[cmd_arb_idx]);
       initial_fips_received[cmd_arb_idx] = 1'b1;
       previous_fips[cmd_arb_idx] = es_item.d_data[CSRNG_BUS_WIDTH];
-     end
+    end
   endtask
 
   task process_csrng_cmd_fifo(uint app);
@@ -630,8 +575,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       es_data[app] = '0;
       fips[app]    = 1'b0;
 
-      // Check if the command status response is equal to the expected status.
-      `DV_CHECK_EQ_FATAL(cs_item[app].status, cmd_sts[app])
+      // Check if the command status response is equal to the expected status. Items for the SW app
+      // are assembled by this scoreboard and carry no status; the status that SW sees is checked
+      // when the SW_CMD_STS register is read.
+      if (app != cfg.m_sw_app_idx) begin
+        `DV_CHECK_EQ_FATAL(cs_item[app].status, cmd_sts[app])
+      end
       for (int i = 0; i < cs_item[app].cmd_data_q.size(); i++) begin
         cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CmdBusWidth) +
                        cs_data[app];
@@ -639,7 +588,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       cov_vif.cg_cmds_sample(app, cs_item[app], cmd_flag0_previous[app]);
 
       case (cs_item[app].acmd)
-        INS: begin
+        INS, RES: begin
           // Record previous flag0 only after INS or RES commands.
           cmd_flag0_previous[app] = cs_item[app].flags;
           if (cs_item[app].flags != MuBi4True) begin
@@ -648,16 +597,19 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             wait_es_item_or_disable(app, disabled);
             if (disabled) begin
               `uvm_info(`gfn,
-                  $sformatf("Stopping to wait for entropy due to disable - Instantiate of app %0d",
-                      app),
-                  UVM_MEDIUM)
+                  $sformatf("Aborting wait for entropy due to CSRNG disable during %s of app %0d",
+                  cs_item[app].acmd.name(), app), UVM_MEDIUM)
               continue;
             end
             es_item[app] = es_item_q[app].pop_front();
             es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
             fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
           end
-          ctr_drbg_instantiate(app, es_data[app], cs_data[app], fips[app]);
+          if (cs_item[app].acmd == INS) begin
+            ctr_drbg_instantiate(app, es_data[app], cs_data[app], fips[app]);
+          end else begin
+            ctr_drbg_reseed(app, es_data[app], cs_data[app], fips[app]);
+          end
         end
         GEN: begin
           ctr_drbg_generate(app, cs_item[app].glen, cs_data[app]);
@@ -671,36 +623,18 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                 .app(app),
                 .valid(1'b1),
                 .record_transition(genbits_fips_received[app]));
-            genbits_fips_previous[cfg.m_sw_app_idx] = cs_item[app].fips_q[i];
-            genbits_fips_received[cfg.m_sw_app_idx] = 1'b1;
+            genbits_fips_previous[app] = cs_item[app].fips_q[i];
+            genbits_fips_received[app] = 1'b1;
           end
           // Deletes the predicted genbits before the next comparison.
           prd_genbits_q[app].delete();
         end
+        UPD: begin
+          `uvm_info(`gfn, $sformatf("Update of app %0d", app), UVM_MEDIUM)
+          ctr_drbg_update(app, cs_data[app]);
+        end
         UNI: begin
           ctr_drbg_uninstantiate(app);
-        end
-        RES: begin
-          // Record previous flag0 only after INS or RES commands.
-          cmd_flag0_previous[app] = cs_item[app].flags;
-          if (cs_item[app].flags != MuBi4True) begin
-            // Get seed
-            bit disabled;
-            wait_es_item_or_disable(app, disabled);
-            if (disabled) begin
-              `uvm_info(`gfn,
-                  $sformatf("Stopping to wait for entropy due to disable - Reseed of app %0d", app),
-                  UVM_MEDIUM)
-              continue;
-            end
-            es_item[app] = es_item_q[app].pop_front();
-            es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
-            fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
-          end
-          ctr_drbg_reseed(app, es_data[app], cs_data[app], fips[app]);
-        end
-        UPD: begin
-          ctr_drbg_update(app, cs_data[app]);
         end
         default: begin
           // Expect the next acknowledgement to return an error.
