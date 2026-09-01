@@ -129,15 +129,15 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
  * Inputs needed to generate certificates during personalization.
  *
  * Valid `dice_mldsa_auth_key_key_id` must be provided when
- * `generate_mldsa_uds_cert` is true
+ * `generate_mldsa_uds_cert` is non-zero
  */
 // clang-format off
-#define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
+#define STRUCT_MANUF_CERTGEN_INPUTS(field, string, field_optional) \
     field(dice_auth_key_key_id, uint8_t, 20) \
     field(ext_auth_key_key_id, uint8_t, 20) \
-    field(dice_mldsa_auth_key_key_id, uint8_t, 20) \
-    field(generate_mldsa_uds_cert, bool)
-UJSON_SERDE_STRUCT(ManufCertgenInputs, \
+    field_optional(dice_mldsa_auth_key_key_id, uint8_t, 20) \
+    field_optional(generate_mldsa_uds_cert, uint8_t)
+UJSON_SERDE_STRUCT_OPT_FIELDS(ManufCertgenInputs, \
                    manuf_certgen_inputs_t, \
                    STRUCT_MANUF_CERTGEN_INPUTS);
 // clang-format on
