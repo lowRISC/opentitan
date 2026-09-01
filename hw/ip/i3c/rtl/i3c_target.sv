@@ -558,12 +558,14 @@ module i3c_target
       .src_toggle_i(txd_toggle_out[t]),
       .src_toggle_o(txd_toggle_in[t]),
       .src_data_i  (txd_data_out[t]),
+
       // SCL-clocked domain.
-      .clk_dst_i   (scl_ni),
-      .rst_dst_ni  (trx_rst_ni),
-      .dst_valid_o (trx_dvalid_o[t]),
-      .dst_ready_i (trx_dready_i[t]),
-      .dst_data_o  (trx_dreq_o[t])
+      .clk_dst_i     (scl_ni),
+      .rst_dst_ni    (trx_rst_ni),
+      .dst_valid_o   (trx_dvalid_o[t]),
+      .dst_ready_i   (trx_dready_i[t]),
+      .dst_data_o    (trx_dreq_o[t]),
+      .dst_dataloss_o()
     );
   end
 
@@ -579,12 +581,14 @@ module i3c_target
     .src_toggle_i(txc_toggle_out),
     .src_toggle_o(txc_toggle_in),
     .src_data_i  (txc_data_out),
+
     // SCL-clocked domain.
-    .clk_dst_i   (scl_ni),
-    .rst_dst_ni  (trx_rst_ni),
-    .dst_valid_o (trx_ctvalid_o),
-    .dst_ready_i (trx_ctready_i),
-    .dst_data_o  (trx_ctreq_o)
+    .clk_dst_i     (scl_ni),
+    .rst_dst_ni    (trx_rst_ni),
+    .dst_valid_o   (trx_ctvalid_o),
+    .dst_ready_i   (trx_ctready_i),
+    .dst_data_o    (trx_ctreq_o),
+    .dst_dataloss_o()
   );
 
   // Send arbitration requests to the transceiver.
@@ -598,28 +602,34 @@ module i3c_target
     .src_toggle_i(arb_toggle_out),
     .src_toggle_o(arb_toggle_in),
     .src_data_i  (arb_data),
+
     // SCL-clocked domain.
-    .clk_dst_i   (scl_ni),
-    .rst_dst_ni  (trx_rst_ni),
-    .dst_valid_o (trx_avalid_o),
-    .dst_ready_i (trx_aready_i),
-    .dst_data_o  (trx_areq_o)
+    .clk_dst_i     (scl_ni),
+    .rst_dst_ni    (trx_rst_ni),
+    .dst_valid_o   (trx_avalid_o),
+    .dst_ready_i   (trx_aready_i),
+    .dst_data_o    (trx_areq_o),
+    .dst_dataloss_o()
   );
 
   // Synchronize the received data into the IP clock domain.
-  i3c_sync_data #(.Width($bits(i3c_targ_trx_rxd_t))) u_trx_rxd_sync (
-    // Source clock domain.
+  i3c_sync_data #(
+    .Width($bits(i3c_targ_trx_rxd_t))
+  ) u_trx_rxd_sync (
+    // SCL-clocked domain.
     .clk_src_i   (1'b0),  // Not used.
     .rst_src_ni  (1'b1),  // Not used.
     .src_toggle_i(trx_rtoggle_i),
     .src_toggle_o(),  // Not used.
     .src_data_i  (trx_rxd_i),
-    // Destination clock domain.
-    .clk_dst_i   (clk_i),
-    .rst_dst_ni  (trx_rst_ni),
-    .dst_valid_o (trx_rvalid),
-    .dst_ready_i (trx_rready),
-    .dst_data_o  (trx_rxd)
+
+    // IP block domain.
+    .clk_dst_i     (clk_i),
+    .rst_dst_ni    (trx_rst_ni),
+    .dst_valid_o   (trx_rvalid),
+    .dst_ready_i   (trx_rready),
+    .dst_data_o    (trx_rxd),
+    .dst_dataloss_o()
   );
 
   // Interrupt generation.
