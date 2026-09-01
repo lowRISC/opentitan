@@ -71,7 +71,7 @@
       act:     "req",
       package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "otbn_key_req",
+    { struct:  "wide_hw_key_req",
       type:    "uni",
       name:    "otbn_key",
       act:     "req",

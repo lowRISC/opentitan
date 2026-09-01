@@ -8,7 +8,7 @@ module otbn_top_sim (
 );
   import otbn_pkg::*;
   import edn_pkg::*;
-  import keymgr_dpe_pkg::otbn_key_req_t;
+  import keymgr_dpe_pkg::wide_hw_key_req_t;
 
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = otbn_reg_pkg::OTBN_IMEM_SIZE;
@@ -62,7 +62,7 @@ module otbn_top_sim (
   logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
   assign sideload_key_shares[0] = {12{32'hDEADBEEF}};
   assign sideload_key_shares[1] = {12{32'hBAADF00D}};
-  otbn_key_req_t keymgr_key;
+  wide_hw_key_req_t keymgr_key;
   assign keymgr_key.key[0] = sideload_key_shares[0];
   assign keymgr_key.key[1] = sideload_key_shares[1];
   assign keymgr_key.valid  = 1'b1;

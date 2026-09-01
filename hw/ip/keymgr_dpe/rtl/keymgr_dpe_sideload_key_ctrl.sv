@@ -22,7 +22,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output otbn_key_req_t otbn_key_o,
+  output wide_hw_key_req_t otbn_key_o,
   output logic sideload_sel_err_o,
   output logic fsm_err_o
 );

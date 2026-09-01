@@ -241,7 +241,7 @@
     },
 
     // Key sideload
-    { struct:  "otbn_key_req"
+    { struct:  "wide_hw_key_req"
       type:    "uni"
       name:    "keymgr_key"
       act:     "rcv"
