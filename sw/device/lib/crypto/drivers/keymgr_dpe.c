@@ -133,7 +133,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
  * It is not supported to use additional hw binding (used by the Creator /
  * OwnerInt / Owner Key generation).
  *
- * @param dest (NONE, AES, OTBN, or KMAC)
+ * @param dest (NONE, AES, OTBN, KMAC or HMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
  * @param src source slot for key generation
  * @param dst destination slot for key generation
@@ -159,7 +159,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
 /**
  * Verify the control register of the keymgr dpe.
  *
- * @param dest (NONE, AES, OTBN, or KMAC)
+ * @param dest (NONE, AES, OTBN, KMAC or HMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
  * @param src source slot for key generation
  * @param dst destination slot for key generation
@@ -265,6 +265,22 @@ status_t keymgr_dpe_generate_key_otbn(
   return OTCRYPTO_OK;
 }
 
+status_t keymgr_dpe_generate_key_hmac(
+    keymgr_dpe_diversification_t diversification) {
+  // Ensure the keymgr dpe is idle.
+  HARDENED_TRY(keymgr_dpe_is_idle());
+
+  // Set the control register to generate an HMAC key.
+  WRITE_CTRL(HMAC, GENERATE_HW, diversification.slot_src_sel, 0);
+
+  // Start the operation and wait for it to complete.
+  HARDENED_TRY(keymgr_dpe_key_gen_start(diversification));
+  HARDENED_TRY(keymgr_dpe_wait_until_done());
+  // Check the control register.
+  VERIFY_CTRL(HMAC, GENERATE_HW, diversification.slot_src_sel, 0);
+  return OTCRYPTO_OK;
+}
+
 /**
  * Clear the requested sideload slot.
  *
@@ -272,6 +288,7 @@ status_t keymgr_dpe_generate_key_otbn(
  *   - KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_AES
  *   - KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_KMAC
  *   - KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_OTBN
+ *   - KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_HMAC
  *
  * @param slot Value to write to the SIDELOAD_CLEAR register.
  */
@@ -312,4 +329,8 @@ status_t keymgr_dpe_sideload_clear_kmac(void) {
 
 status_t keymgr_dpe_sideload_clear_otbn(void) {
   return keymgr_dpe_sideload_clear(KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_OTBN);
+}
+
+status_t keymgr_dpe_sideload_clear_hmac(void) {
+  return keymgr_dpe_sideload_clear(KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_HMAC);
 }
