@@ -70,7 +70,12 @@ rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
       manifest->length > CHIP_BL0_SIZE_MAX) {
     return kErrorBootPolicyBadLength;
   }
-  if (manifest->security_version < boot_data->min_security_version_bl0) {
+  // Sanity check boot_data to reject a bogus pointer.
+  HARDENED_CHECK_EQ(boot_data->identifier, kBootDataIdentifier);
+  // Launder both values to ensure they are reloaded from memory for the
+  // hardened check.
+  if (launder32(manifest->security_version) <
+      launder32(boot_data->min_security_version_bl0)) {
     return kErrorBootPolicyRollback;
   }
   HARDENED_CHECK_GE(manifest->security_version,

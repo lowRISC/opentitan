@@ -24,6 +24,7 @@ class RomExtBootPolicyTest : public rom_test::RomTest {
 // TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
 TEST_F(RomExtBootPolicyTest, DISABLED_ManifestCheck) {
   boot_data_t boot_data{{0}};
+  boot_data.identifier = kBootDataIdentifier;
 
   manifest_t manifest{};
   manifest.identifier = CHIP_BL0_IDENTIFIER;
@@ -46,6 +47,7 @@ TEST_F(RomExtBootPolicyTest, DISABLED_ManifestCheck) {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadIdentifier) {
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   manifest_t manifest{};
 
   EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
@@ -54,6 +56,7 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadIdentifier) {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadLength) {
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   manifest_t manifest{};
   manifest.identifier = CHIP_BL0_IDENTIFIER;
 
@@ -68,6 +71,7 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadLength) {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadBl0SecVer) {
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   boot_data.min_security_version_bl0 = 1;
 
   manifest_t manifest{};
@@ -81,6 +85,7 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadBl0SecVer) {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadSignedRegion) {
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   boot_data.min_security_version_bl0 = 1;
 
   manifest_t manifest{};
@@ -96,6 +101,7 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadSignedRegion) {
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadEntryPoint) {
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   boot_data.min_security_version_bl0 = 1;
 
   manifest_t manifest{};
@@ -132,6 +138,7 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
       .WillOnce(Return(&manifest_b));
 
   boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
   if (GetParam().primary == kBootSlotA) {
     boot_data.primary_bl0_slot = kBootSlotA;
   } else {

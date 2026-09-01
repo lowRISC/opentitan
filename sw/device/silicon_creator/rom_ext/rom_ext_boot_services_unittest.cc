@@ -40,7 +40,7 @@ constexpr uint32_t kUnlock =
 class RomExtBootServicesTest : public rom_test::RomTest {
  protected:
   boot_svc_msg_t boot_svc_msg{};
-  boot_data_t boot_data{};
+  boot_data_t boot_data{.identifier = kBootDataIdentifier};
   boot_log_t boot_log{};
   lifecycle_state_t lc_state{};
   owner_application_keyring_t keyring{};
