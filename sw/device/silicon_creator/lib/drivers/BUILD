@@ -23,6 +23,10 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EXEC_ENV_SILICON_ROM_EXT",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -613,6 +617,34 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "csrng",
+    srcs = ["csrng.c"],
+    hdrs = ["csrng.h"],
+    deps = [
+        "//hw/ip/csrng/data:csrng_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "csrng_unittest",
+    srcs = ["csrng_unittest.cc"],
+    deps = [
+        ":csrng",
+        "//hw/ip/csrng/data:csrng_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "rnd",
     srcs = dual_inputs(
@@ -686,6 +718,26 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+opentitan_test(
+    name = "csrng_functest",
+    srcs = ["csrng_functest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EXT_EXEC_ENV_SILICON_ROM_EXT,
+    ),
+    deps = [
+        ":csrng",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
     ],
