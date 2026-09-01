@@ -243,6 +243,7 @@ module i3c_core
     .enable_i   (targ_enabled),
     .sw_reset_i (targ_sw_reset),
     // TODO: Error conditions requiring a reset shall be received and handled here.
+    .te_recov_i (1'b0),
 
     // Bus monitoring.
     .bus_avail_i(targ_bus_avail),
