@@ -52,6 +52,14 @@ sku_cert(
 )
 
 sku_cert(
+    name = "emulation_dice_mldsa_ca",
+    certificate = "//sw/device/silicon_creator/manuf/keys/fake:dice_mldsa_ca.pem",
+    key_file = "//sw/device/silicon_creator/manuf/keys/fake:sk_mldsa.pkcs8.der",
+    key_id = "0xd405c538_59e4b71b_97c4df27_52e76419_42050936",
+    key_type = "Raw",
+)
+
+sku_cert(
     name = "emulation_ext_ca",
     certificate = "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
     key_file = "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
@@ -74,6 +82,31 @@ sku_cfg(
     scrambling_bins = ["//sw/device/silicon_creator/manuf/base:ft_flash_scramble_emulation"],
     si_creator = "nuvoton",
     sku_name = "emulation",
+    target_lc_state = "prod",
+    token_encrypt_key = "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
+)
+
+sku_cfg(
+    name = "emulation_dice_mldsa",
+    testonly = True,
+    dice_ca = ":emulation_dice_ca",
+    dice_mldsa_ca = ":emulation_dice_mldsa_ca",
+    dice_mldsa_certs_from_device = [
+        "PQ_UDS_44",
+        "PQ_UDS_87",
+    ],
+    dice_mldsa_certs_to_device = ["PQ_UDS_44"],
+    ext_ca = ":emulation_ext_ca",
+    otp = "em00",
+    owner_fw_boot_str = "Bare metal PASS!",
+    package = "npcr10",
+    perso_bin_suffix = "ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin",
+    perso_bins = ["//sw/device/silicon_creator/manuf/base:ft_personalize_emulation_dice_mldsa"],
+    product = "earlgrey_a2",
+    scrambling_bin_suffix = "ft_flash_scramble_{sku}_{target}.prod_key_0.prod_key_0.signed.bin",
+    scrambling_bins = ["//sw/device/silicon_creator/manuf/base:ft_flash_scramble_emulation_dice_mldsa"],
+    si_creator = "nuvoton",
+    sku_name = "emulation_dice_mldsa",
     target_lc_state = "prod",
     token_encrypt_key = "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
 )

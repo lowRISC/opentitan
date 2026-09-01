@@ -251,6 +251,8 @@ class OtDut():
         ca_config_dict = {
             "dice": self.sku_config.dice_ca.to_dict_entry(),
         }
+        if self.sku_config.dice_mldsa_certs_from_device:
+            ca_config_dict["dice_mldsa"] = self.sku_config.dice_mldsa_ca.to_dict_entry()
         if self.sku_config.ext_ca:
             ca_config_dict["ext"] = self.sku_config.ext_ca.to_dict_entry()
 
@@ -287,6 +289,13 @@ class OtDut():
             # Enable UJSON message logging.
             if self.log_ujson_payloads:
                 cmd += " --log-ujson-payloads"
+
+            if self.sku_config.dice_mldsa_certs_from_device:
+                cmd += " --timeout=120s"
+                cmd += "".join(" --dice-mldsa-certs-from-device={}".format(cert_name)
+                               for cert_name in self.sku_config.dice_mldsa_certs_from_device)
+                cmd += "".join(" --dice-mldsa-certs-to-device={}".format(cert_name)
+                               for cert_name in self.sku_config.dice_mldsa_certs_to_device)
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
