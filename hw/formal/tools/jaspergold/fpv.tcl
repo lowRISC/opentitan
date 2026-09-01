@@ -283,6 +283,11 @@ if {$env(TASK) ne ""} {
 
 report
 
+# Machine-readable property listing, one quoted row per property. Scoped like the `report` above,
+# so rom_ctrl and otbn, which prove properties in their own AFTER_LOAD tasks, are undercounted
+# here even though parse-formal-report.py picks them up from the log.
+report -csv -include_type -file fpv_props.csv -force
+
 #-------------------------------------------------------------------------
 # check coverage and report
 #-------------------------------------------------------------------------
@@ -295,7 +300,28 @@ if {$env(COV) == 1} {
     puts "Waiving items optimized in synthesis from $file"
     source $file
 
-    check_cov -report -task ${cov_tasks} -force -exclude { reset waived }
+    # The returned dict is the only place with full instance paths and absolute counts; the
+    # reports indent the hierarchy and round to a percentage. Capturing it still prints the
+    # table, so keep this the only check_cov -report call: parse-formal-report.py wants exactly
+    # one match.
+    set cov_summary [check_cov -report -task ${cov_tasks} -force -exclude { reset waived }]
+
     check_cov -report -no_return -report_file cover.html -task ${cov_tasks} \
                       -html -force -exclude { reset waived }
+
+    # Written last, so a failure here does not cost the proof results or cover.html. An empty
+    # dict leaves no file, because an empty file would look like zero coverage. Both cases warn
+    # and neither fails the run.
+    if {[string trim ${cov_summary}] eq ""} {
+        puts "WARNING: no coverage figures returned, so fpv_cov_summary.tcldict is not written."
+    } else {
+        set write_failed [catch {
+            set cov_summary_file [open fpv_cov_summary.tcldict w]
+            puts ${cov_summary_file} ${cov_summary}
+            close ${cov_summary_file}
+        } write_message]
+        if {${write_failed}} {
+            puts "WARNING: cannot write fpv_cov_summary.tcldict: ${write_message}"
+        }
+    }
 }
