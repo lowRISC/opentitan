@@ -31,4 +31,16 @@ class rv_dm_base_test extends cip_base_test #(
     test_timeout_ns = 300_000_000;  // 300ms.
   endfunction : build_phase
 
+  virtual function void configure_sequence(uvm_sequence seq);
+    rv_dm_base_vseq vseq;
+
+    super.configure_sequence(seq);
+
+    if (!$cast(vseq, seq)) begin
+      `uvm_fatal(get_full_name(), "Cannot configure sequence: it is not an rv_dm_base_vseq.")
+    end
+
+    vseq.m_mode_sequencer = env.m_mode_agent.sequencer;
+  endfunction
+
 endclass : rv_dm_base_test
