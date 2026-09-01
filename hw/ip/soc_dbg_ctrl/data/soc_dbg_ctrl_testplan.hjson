@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "soc_dbg_ctrl"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
@@ -11,29 +10,24 @@
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the soc_dbg_ctrl.
+            Verify the soc_dbg_ctrl policy bus and decoding logic.
 
-            **Stimulus**:
-            - TBD
+            Stimulus:
+              - Let the soc_dbg_state_i be in SocDbgStProd
+              - Write a random valid debug category to DEBUG_POLICY_CATEGORY_SHADOWED
+              - Randomize DEBUG_POLICY_RELOCKED between Mubi4::True and Mubi4::False
+              - Write DEBUG_POLICY_VALID_SHADOWED to Mubi4::True
 
-            **Checks**:
-            - TBD
+            Checking:
+              - The attacked soc_dbg_ctrl_decode module decodes must decode the debug policy bus
+                correctly, i.e., the signals relocked_o, cat2_dbg_o, cat3_dbg_o, cat4_dbg_o reflect
+                the written configuration.
             '''
       stage: V1
       tests: ["soc_dbg_ctrl_smoke"]
     }
-    {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      stage: V1
-      tests: []
-    }
   ]
 
   covergroups: [
-    {
-      name: soc_dbg_ctrl_feature_cg
-      desc: '''Describe the functionality covered by this covergroup.'''
-    }
   ]
 }
