@@ -285,9 +285,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
         key_shares[1][keymgr_dpe_pkg::KeyWidth-1:0],
         key_shares[0][keymgr_dpe_pkg::KeyWidth-1:0]
       };
-    keymgr_dpe_env_pkg::otbn_key_shares_t otbn_key_shares = {
-        key_shares[1][keymgr_dpe_pkg::OtbnKeyWidth-1:0],
-        key_shares[0][keymgr_dpe_pkg::OtbnKeyWidth-1:0]
+    keymgr_dpe_env_pkg::wide_key_shares_t wide_key_shares = {
+        key_shares[1][keymgr_dpe_pkg::WideHwKeyWidth-1:0],
+        key_shares[0][keymgr_dpe_pkg::WideHwKeyWidth-1:0]
       };
     case (dest)
       keymgr_dpe_pkg::Kmac: begin
@@ -307,7 +307,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
       keymgr_dpe_pkg::Otbn: begin
         if (otbn_sideload_status != SideLoadClear) begin
           // only otbn uses full 384 bits digest data
-          otbn_key_exp         <= '{1'b1, otbn_key_shares};
+          otbn_key_exp         <= '{1'b1, wide_key_shares};
           otbn_sideload_status <= SideLoadAvail;
         end
       end
