@@ -165,4 +165,186 @@ mod test {
         assert_eq!(before, after);
         Ok(())
     }
+
+    #[test]
+    fn test_foo_optional_1() -> Result<()> {
+        let before = example::FooOptional1 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(1),
+            bar2: Some([345, 678].into()),
+        };
+        let after = roundtrip("foo_optional_1", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional1>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional1 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(0),
+            bar2: Some([0, 0].into()),
+        };
+        let after = roundtrip("foo_optional_1", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional1>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional1 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: Some([345, 789].into()),
+        };
+        let after = roundtrip("foo_optional_1", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional1>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional1 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(4),
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_1", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional1>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional1 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_1", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional1>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_foo_optional_2() -> Result<()> {
+        let before = example::FooOptional2 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(1),
+            bar2: Some([345, 678].into()),
+        };
+        let after = roundtrip("foo_optional_2", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional2>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional2 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(0),
+            bar2: Some([0, 0].into()),
+        };
+        let after = roundtrip("foo_optional_2", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional2>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional2 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: Some([345, 789].into()),
+        };
+        let after = roundtrip("foo_optional_2", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional2>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional2 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: Some(4),
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_2", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional2>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional2 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_2", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional2>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_foo_optional_3() -> Result<()> {
+        let before = example::FooOptional3 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            foo3: 150,
+            message: "Hello world!".into(),
+            bar1: Some(1),
+            bar2: Some([345, 678].into()),
+        };
+        let after = roundtrip("foo_optional_3", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional3>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional3 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            foo3: 150,
+            message: "Hello world!".into(),
+            bar1: Some(0),
+            bar2: Some([0, 0].into()),
+        };
+        let after = roundtrip("foo_optional_3", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional3>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional3 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            foo3: 150,
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: Some([345, 789].into()),
+        };
+        let after = roundtrip("foo_optional_3", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional3>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional3 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            foo3: 150,
+            message: "Hello world!".into(),
+            bar1: Some(4),
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_3", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional3>(&after)?;
+        assert_eq!(before, after);
+
+        let before = example::FooOptional3 {
+            foo1: 321,
+            foo2: [987, 654].into(),
+            foo3: 150,
+            message: "Hello world!".into(),
+            bar1: None,
+            bar2: None,
+        };
+        let after = roundtrip("foo_optional_3", &serde_json::to_string(&before)?, true)?;
+        let after = serde_json::from_str::<example::FooOptional3>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
 }
