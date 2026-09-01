@@ -162,16 +162,24 @@
             '''
     }
     {
-      name: csrng_sfifo_cg
+      name: csrng_app_sfifo_cg
       desc: '''
-            Covers each app's stage FIFO statuses.
-            - cp_hw0_cmd_depth, cp_hw1_cmd_depth, cp_sw_cmd_depth : Covers current number of commands in FIFO
-            - cp_hw0_genbits_depth, cp_hw1_genbits_depth, cp_sw_genbits_depth : Covers current number of genbit responses in FIFO
+            Covers the stage FIFO statuses of a single app. One instance of this covergroup exists per app.
+            - cp_cmd_depth : Covers current number of commands in FIFO
+            - cp_genbits_depth : Covers current number of genbit responses in FIFO
+            - cmd_push_cross : command FIFO fill status x command FIFO write valid x command FIFO write ready
+            - cmd_pop_cross : command FIFO fill status x command FIFO read ready
+            - genbits_pop_cross : genbits FIFO fill status x genbits FIFO read valid x genbits FIFO read ready
+            '''
+    }
+    {
+      name: csrng_sfifo_depth_cross_cg
+      desc: '''
+            Covers the stage FIFO statuses of the apps against each other. A cross has a fixed
+            number of items, so this covergroup names individual apps and is only instantiated for
+            a design with two HW apps and one SW app.
             - cmd_depth_cross : Cross for checking each command FIFO status in different apps
             - genbits_depth_cross : Cross for checking genbits FIFO status in different apps
-            - hw0_cmd_push_cross, hw1_cmd_push_cross, sw_cmd_push_cross : command FIFO fill status x command FIFO write valid x command FIFO write ready
-            - hw0_cmd_pop_cross, hw1_cmd_pop_cross, sw_cmd_pop_cross : command FIFO fill status x command FIFO read ready
-            - hw0_genbits_pop_cross, hw1_genbits_pop_cross, sw_genbits_pop_cross : genbits FIFO fill status x genbits FIFO read valid x genbits FIFO read ready
             '''
     }
     {

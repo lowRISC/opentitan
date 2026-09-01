@@ -15,10 +15,14 @@ interface csrng_cov_if (
   import prim_mubi_pkg::*;
   `include "dv_fcov_macros.svh"
 
-  // The maximum number of HW apps that the types in this interface can support.
-  localparam int unsigned MaxNumHwApps = 4;
+  // The number of apps in the design that this interface is bound into, and the index of its SW
+  // app. The HW apps come first, so the SW app's index is also the number of HW apps. Coverpoint
+  // bins and generate loops need these at elaboration time, which is why they are taken from the
+  // register package instead of the env config.
+  localparam int unsigned NumApps  = csrng_reg_pkg::NumApps;
+  localparam int unsigned SwAppIdx = NumApps - 1;
 
-  // A bitmask of HW apps (of width governed by the MaxNumHwApps localparam)
+  // A bitmask of HW apps (of width governed by csrng_env_pkg::MaxNumHwApps)
   typedef bit [MaxNumHwApps-1:0] app_mask_t;
 
   // A queue of app_mask_t items (given a named type so that it can be returned by a function)
@@ -27,148 +31,98 @@ interface csrng_cov_if (
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
 
-  logic [1:0] hw0_cmd_depth;
-  logic [1:0] hw1_cmd_depth;
-  logic [1:0] sw_cmd_depth;
+  // Per-app views of the command stage signals that the FIFO covergroups below watch. These are
+  // sized by MaxNumApps rather than NumApps so that the depth cross further down, which names
+  // individual apps, is always in range. Only the bottom NumApps entries are driven.
+  logic [1:0] app_cmd_depth[MaxNumApps];
+  logic       app_cmd_rdy[MaxNumApps], app_cmd_vld[MaxNumApps], app_cmd_pop[MaxNumApps];
+  logic       app_genbits_depth[MaxNumApps];
+  logic       app_genbits_rdy[MaxNumApps], app_genbits_vld[MaxNumApps];
 
-  logic hw0_cmd_rdy, hw0_cmd_vld, hw0_cmd_pop;
-  logic hw1_cmd_rdy, hw1_cmd_vld, hw1_cmd_pop;
-  logic sw_cmd_rdy, sw_cmd_vld, sw_cmd_pop;
-
-  logic hw0_genbits_rdy, hw0_genbits_vld, hw0_genbits_depth;
-  logic hw1_genbits_rdy, hw1_genbits_vld, hw1_genbits_depth;
-  logic sw_genbits_rdy, sw_genbits_vld, sw_genbits_depth;
-
-  assign hw0_cmd_depth = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.sfifo_cmd_depth;
-  assign hw1_cmd_depth = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.sfifo_cmd_depth;
-  assign sw_cmd_depth = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.sfifo_cmd_depth;
-
-  assign hw0_genbits_depth =
-    u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
-  assign hw1_genbits_depth =
-    u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
-  assign sw_genbits_depth =
-    u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
-
-  assign hw0_cmd_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_vld_i;
-  assign hw0_cmd_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_rdy_o;
-  assign hw0_cmd_pop = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_fifo_pop;
-  assign hw1_cmd_vld = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_vld_i;
-  assign hw1_cmd_rdy = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_rdy_o;
-  assign hw1_cmd_pop = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_fifo_pop;
-  assign sw_cmd_vld = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_vld_i;
-  assign sw_cmd_rdy = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_rdy_o;
-  assign sw_cmd_pop = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_fifo_pop;
-
-  assign hw0_genbits_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_vld_o;
-  assign hw0_genbits_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_rdy_i;
-  assign hw1_genbits_vld = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.genbits_vld_o;
-  assign hw1_genbits_rdy = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.genbits_rdy_i;
-  assign sw_genbits_vld = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.genbits_vld_o;
-  assign sw_genbits_rdy = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.genbits_rdy_i;
+  for (genvar i = 0; i < NumApps; i++) begin : gen_app_signals
+    assign app_cmd_depth[i] = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth;
+    assign app_cmd_vld[i]   = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_vld_i;
+    assign app_cmd_rdy[i]   = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o;
+    assign app_cmd_pop[i]   = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_fifo_pop;
+    assign app_genbits_depth[i] =
+      u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
+    assign app_genbits_vld[i] = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.genbits_vld_o;
+    assign app_genbits_rdy[i] = u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.genbits_rdy_i;
+  end
 
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
-  covergroup csrng_sfifo_cg @(posedge clk_i);
-    option.name         = "csrng_sfifo_cg";
+  // The command and genbits FIFO coverage of a single app. One instance of this is created for
+  // every app further down. This avoids hand-written copies of the same coverpoints and crosses.
+  covergroup csrng_app_sfifo_cg (int unsigned app) @(posedge clk_i);
+    // Give every instance its own name so that the per-app coverage is reported separately.
+    option.name         = $sformatf("csrng_app_sfifo_cg_%0d", app);
     option.per_instance = 1;
 
-    // HW0 App
-    cp_hw0_cmd_depth: coverpoint hw0_cmd_depth{
+    cp_cmd_depth: coverpoint app_cmd_depth[app] {
       illegal_bins more_than_depth = {3};
     }
-    cp_hw0_genbits_depth: coverpoint hw0_genbits_depth;
-    hw0_cmd_push_cross: cross cp_hw0_cmd_depth, hw0_cmd_vld, hw0_cmd_rdy{
+    cp_cmd_vld: coverpoint app_cmd_vld[app];
+    cp_cmd_rdy: coverpoint app_cmd_rdy[app];
+    cp_cmd_pop: coverpoint app_cmd_pop[app];
+
+    cp_genbits_depth: coverpoint app_genbits_depth[app];
+    cp_genbits_vld: coverpoint app_genbits_vld[app];
+    cp_genbits_rdy: coverpoint app_genbits_rdy[app];
+
+    cmd_push_cross: cross cp_cmd_depth, cp_cmd_vld, cp_cmd_rdy{
       // Note: The csrng_err and csrng_intr tests inject different types of errors into various
       // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
       // We thus use assertions to detect such illegal states that can be disabled if needed.
-      ignore_bins not_full_and_not_ready = !binsof(cp_hw0_cmd_depth) intersect {2}
-                                           with (!hw0_cmd_rdy);
-      ignore_bins full_and_ready = binsof(cp_hw0_cmd_depth) intersect {2} with (hw0_cmd_rdy);
+      ignore_bins not_full_and_not_ready = !binsof(cp_cmd_depth) intersect {2}
+                                           with (!cp_cmd_rdy);
+      ignore_bins full_and_ready = binsof(cp_cmd_depth) intersect {2} with (cp_cmd_rdy);
     }
-    hw0_cmd_pop_cross: cross cp_hw0_cmd_depth, hw0_cmd_pop{
+    cmd_pop_cross: cross cp_cmd_depth, cp_cmd_pop{
       // Note: The csrng_err and csrng_intr tests inject different types of errors into various
       // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
       // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
       // in the same alert, we don't need to test every possible alert condition for every
       // possible FIFO and thus ignore this particular cross point.
-      ignore_bins empty_and_pop = binsof(cp_hw0_cmd_depth) intersect {0}
-                                  with (hw0_cmd_pop);
+      ignore_bins empty_and_pop = binsof(cp_cmd_depth) intersect {0}
+                                  with (cp_cmd_pop);
     }
-    hw0_genbits_pop_cross: cross cp_hw0_genbits_depth, hw0_genbits_vld, hw0_genbits_rdy{
+    genbits_pop_cross: cross cp_genbits_depth, cp_genbits_vld, cp_genbits_rdy{
       // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
       // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
       // testing will help us to hit those cross points.
       illegal_bins empty_and_valid =
-        binsof(cp_hw0_genbits_depth) intersect {0} with (hw0_genbits_vld);
+        binsof(cp_genbits_depth) intersect {0} with (cp_genbits_vld);
     }
+  endgroup : csrng_app_sfifo_cg
 
-    // HW1 App
-    cp_hw1_cmd_depth: coverpoint hw1_cmd_depth{
+  // The crosses of the FIFO depths of all apps against each other. A cross has a fixed number of
+  // items, so this cannot be written for a variable number of apps and instead names the apps of
+  // the three-app configuration. It is only instantiated for that configuration, where apps 0, 1
+  // and SwAppIdx are all of them; the per-app coverage above applies whatever the app count.
+  covergroup csrng_sfifo_depth_cross_cg @(posedge clk_i);
+    option.name         = "csrng_sfifo_depth_cross_cg";
+    option.per_instance = 1;
+
+    cp_hw0_cmd_depth: coverpoint app_cmd_depth[0] {
       illegal_bins more_than_depth = {3};
     }
-    cp_hw1_genbits_depth: coverpoint hw1_genbits_depth;
-    hw1_cmd_push_cross: cross cp_hw1_cmd_depth, hw1_cmd_vld, hw1_cmd_rdy{
-      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
-      // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
-      // We thus use assertions to detect such illegal states that can be disabled if needed.
-      ignore_bins not_full_and_not_ready = !binsof(cp_hw1_cmd_depth) intersect {2}
-                                           with (!hw1_cmd_rdy);
-      ignore_bins full_and_ready = binsof(cp_hw1_cmd_depth) intersect {2} with (hw1_cmd_rdy);
-    }
-    hw1_cmd_pop_cross: cross cp_hw1_cmd_depth, hw1_cmd_pop{
-      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
-      // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
-      // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
-      // in the same alert, we don't need to test every possible alert condition for every
-      // possible FIFO and thus ignore this particular cross point.
-      ignore_bins empty_and_pop = binsof(cp_hw1_cmd_depth) intersect {0}
-                                  with (hw1_cmd_pop);
-    }
-    hw1_genbits_pop_cross: cross cp_hw1_genbits_depth, hw1_genbits_vld, hw1_genbits_rdy{
-      // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
-      // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
-      // testing will help us to hit those cross points.
-      illegal_bins empty_and_valid =
-        binsof(cp_hw1_genbits_depth) intersect {0} with (hw1_genbits_vld);
-    }
-
-    // SW App
-    cp_sw_cmd_depth: coverpoint sw_cmd_depth{
+    cp_hw1_cmd_depth: coverpoint app_cmd_depth[1] {
       illegal_bins more_than_depth = {3};
     }
-    cp_sw_genbits_depth: coverpoint sw_genbits_depth;
-    sw_cmd_push_cross: cross cp_sw_cmd_depth, sw_cmd_vld, sw_cmd_rdy{
-      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
-      // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
-      // We thus use assertions to detect such illegal states that can be disabled if needed.
-      ignore_bins not_full_and_not_ready = !binsof(cp_sw_cmd_depth) intersect {2}
-                                           with (!sw_cmd_rdy);
-      ignore_bins full_and_ready = binsof(cp_sw_cmd_depth) intersect {2} with (sw_cmd_rdy);
-    }
-    sw_cmd_pop_cross: cross cp_sw_cmd_depth, sw_cmd_pop{
-      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
-      // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
-      // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
-      // in the same alert, we don't need to test every possible alert condition for every
-      // possible FIFO and thus ignore this particular cross point.
-      ignore_bins empty_and_pop = binsof(cp_sw_cmd_depth) intersect {0}
-                                  with (sw_cmd_pop);
-    }
-    sw_genbits_pop_cross: cross cp_sw_genbits_depth, sw_genbits_vld, sw_genbits_rdy{
-      // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
-      // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
-      // testing will help us to hit those cross points.
-      illegal_bins empty_and_valid =
-        binsof(cp_sw_genbits_depth) intersect {0} with (sw_genbits_vld);
+    cp_sw_cmd_depth: coverpoint app_cmd_depth[SwAppIdx] {
+      illegal_bins more_than_depth = {3};
     }
 
-    // Crosses between Apps
+    cp_hw0_genbits_depth: coverpoint app_genbits_depth[0];
+    cp_hw1_genbits_depth: coverpoint app_genbits_depth[1];
+    cp_sw_genbits_depth: coverpoint app_genbits_depth[SwAppIdx];
+
     cmd_depth_cross: cross cp_hw0_cmd_depth, cp_hw1_cmd_depth, cp_sw_cmd_depth;
     genbits_depth_cross: cross cp_hw0_genbits_depth, cp_hw1_genbits_depth, cp_sw_genbits_depth;
-  endgroup : csrng_sfifo_cg
+  endgroup : csrng_sfifo_depth_cross_cg
 
 
   covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
@@ -506,9 +460,9 @@ interface csrng_cov_if (
     }
 
     cp_genbits_app: coverpoint app {
-      bins software = { SW_APP };
-      bins hardware = { [0:SW_APP-1] };
-      ignore_bins invalid_app = { [SW_APP+1:$] };
+      bins software = { SwAppIdx };
+      bins hardware = { [0:SwAppIdx-1] };
+      ignore_bins invalid_app = { [SwAppIdx+1:$] };
     }
 
     // Coverpoint for the valid bit.
@@ -534,9 +488,9 @@ interface csrng_cov_if (
     }
 
     cp_app: coverpoint app {
-      bins software = { SW_APP };
-      bins hardware = { [0:SW_APP-1] };
-      ignore_bins invalid_app = { [SW_APP+1:$] };
+      bins software = { SwAppIdx };
+      bins hardware = { [0:SwAppIdx-1] };
+      ignore_bins invalid_app = { [SwAppIdx+1:$] };
     }
 
     // Coverpoint for all of the possible transitions of the compliance bit.
@@ -565,9 +519,9 @@ interface csrng_cov_if (
     }
 
     cp_app: coverpoint app {
-      bins software = { SW_APP };
-      bins hardware = { [0:SW_APP-1] };
-      ignore_bins invalid_app = { [SW_APP+1:$] };
+      bins software = { SwAppIdx };
+      bins hardware = { [0:SwAppIdx-1] };
+      ignore_bins invalid_app = { [SwAppIdx+1:$] };
     }
 
     // Coverpoint for all of the possible transitions of the fips bit.
@@ -581,7 +535,17 @@ interface csrng_cov_if (
     fips_transition_app_cross: cross cp_fips_transition, cp_app;
   endgroup
 
-  `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
+  // One instance of the per-app FIFO coverage for every app
+  for (genvar i = 0; i < NumApps; i++) begin : gen_app_sfifo_cg
+    `DV_FCOV_INSTANTIATE_CG(csrng_app_sfifo_cg, en_full_cov, (i))
+  end
+
+  // The cross-app depth crosses only cover every app in the three-app configuration.
+  // Only instantiate it for that configuration.
+  if (NumApps == 3) begin : gen_sfifo_depth_cross_cg
+    `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_depth_cross_cg, en_full_cov)
+  end
+
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
@@ -601,7 +565,7 @@ interface csrng_cov_if (
     if (num_hw_apps > MaxNumHwApps) begin
       `uvm_error($sformatf("%m"),
                  $sformatf({"Interface bound into a csrng instance with NumHwApps = %0d, ",
-                            "but the interface only supports up to %0d HW apps."},
+                            "but the environment only supports up to %0d HW apps."},
                            num_hw_apps, MaxNumHwApps))
     end
 
