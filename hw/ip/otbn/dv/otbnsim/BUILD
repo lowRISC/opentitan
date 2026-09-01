@@ -9,9 +9,18 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "standalone",
     srcs = ["standalone.py"],
+    imports = [
+        # //hw/ip/otbn/dv/otbnsim:
+        #   hw.ip.otbn.dv.otbnsim.sim
+        ".",
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        "../../util",
+    ],
     deps = [
         "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
         "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
         "//hw/ip/otbn/dv/otbnsim/sim:stats",
+        "//hw/ip/otbn/util/shared:testcase",
     ],
 )

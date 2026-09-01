@@ -10,6 +10,11 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "otbn_as",
     srcs = ["otbn_as.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:bit_ranges",
         "//hw/ip/otbn/util/shared:encoding",
@@ -22,6 +27,11 @@ py_binary(
 py_binary(
     name = "otbn_ld",
     srcs = ["otbn_ld.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:mem_layout",
         "//hw/ip/otbn/util/shared:toolchain",
@@ -32,6 +42,11 @@ py_binary(
 py_binary(
     name = "otbn_objdump",
     srcs = ["otbn_objdump.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:insn_yaml",
         "//hw/ip/otbn/util/shared:toolchain",
@@ -41,8 +56,14 @@ py_binary(
 py_binary(
     name = "check_const_time",
     srcs = ["check_const_time.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:constants",
         "//hw/ip/otbn/util/shared:control_flow",
         "//hw/ip/otbn/util/shared:decode",
         "//hw/ip/otbn/util/shared:information_flow_analysis",
@@ -53,6 +74,11 @@ py_binary(
 py_binary(
     name = "get_instruction_count_range",
     srcs = ["get_instruction_count_range.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:decode",
         "//hw/ip/otbn/util/shared:instruction_count_range",
@@ -62,10 +88,18 @@ py_binary(
 py_binary(
     name = "otbn_sim_test",
     srcs = ["otbn_sim_test.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        ".",
+    ],
     deps = [
         "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:dmem_dump",
+        "//hw/ip/otbn/util/shared:elf",
         "//hw/ip/otbn/util/shared:mem_layout",
         "//hw/ip/otbn/util/shared:reg_dump",
+        "//hw/ip/otbn/util/shared:testcase",
         requirement("pyelftools"),
     ],
 )
@@ -73,10 +107,15 @@ py_binary(
 py_binary(
     name = "otbn_fi_campaign",
     srcs = ["otbn_fi_campaign.py"],
-    imports = ["../dv/otbnsim"],
+    imports = [
+        # //hw/ip/otbn/dv/otbnsim:
+        #   hw.ip.otbn.dv.otbnsim.sim
+        "../dv/otbnsim",
+    ],
     deps = [
         "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
         "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        "//hw/ip/otbn/dv/otbnsim/sim:state",
         requirement("pyelftools"),
     ],
 )
@@ -85,10 +124,17 @@ py_binary(
     name = "otbn_tvla_campaign",
     srcs = ["otbn_tvla_campaign.py"],
     data = ["//hw/ip/otbn/dv/otbnsim:standalone"],
-    imports = ["../dv/otbnsim"],
+    imports = [
+        # //hw/ip/otbn/dv/otbnsim:
+        #   hw.ip.otbn.dv.otbnsim.sim
+        "../dv/otbnsim",
+    ],
     deps = [
+        "//hw/ip/otbn/dv/otbnsim/sim:isa",
         "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
         "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        "//hw/ip/otbn/dv/otbnsim/sim:state",
+        "//hw/ip/otbn/dv/otbnsim/sim:trace",
         requirement("pyelftools"),
     ],
 )

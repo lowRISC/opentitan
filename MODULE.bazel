@@ -14,6 +14,9 @@ bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "openssl", version = "3.5.5.bcr.4")
 
+# Not a direct dep but we need a newer one to fix airgapped build.
+bazel_dep(name = "protobuf", version = "33.0")
+
 # Dev dependencies:
 bazel_dep(
     name = "buildifier_prebuilt",
@@ -197,7 +200,7 @@ use_repo(llvm, "llvm_toolchain_llvm")
 ################### originally from "//third_party/python:python.MODULE.bazel
 
 # Dependencies:
-bazel_dep(name = "rules_python", version = "1.2.0")
+bazel_dep(name = "rules_python", version = "2.2.0")
 
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
