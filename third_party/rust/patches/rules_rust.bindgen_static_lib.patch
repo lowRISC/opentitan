@@ -1,7 +1,7 @@
 diff --git a/extensions/bindgen/private/bindgen.bzl b/extensions/bindgen/private/bindgen.bzl
 --- private/bindgen.bzl
 +++ private/bindgen.bzl
-@@ -152,11 +152,6 @@ def _generate_cc_link_build_info(ctx, cc_lib):
+@@ -157,11 +157,6 @@ def _generate_cc_link_build_info(ctx, cc_lib):
                  linker_search_paths.append(lib.pic_static_library.dirname)
                  compile_data.append(lib.pic_static_library)
  
