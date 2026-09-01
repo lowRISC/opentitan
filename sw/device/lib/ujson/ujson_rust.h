@@ -37,6 +37,14 @@
 // clang-format off
 rust_attr[allow(unused_imports)]
 use opentitanlib::test_utils::status::status_t;
+use std::default::Default;
+
+fn is_default_value<T>(val: &T) -> bool
+where
+    T: Default + PartialEq,
+{
+    val == &T::default()
+}
 
 // clang-format is turned off; as scary as these macros look, they look
 // even scarier after clang-format is done with them.
@@ -57,6 +65,16 @@ use opentitanlib::test_utils::status::status_t;
         name_: OT_EVAL(ujson_struct_field_array(type_, __VA_ARGS__)) \
     ) /*endif*/,
 
+#define ujson_struct_field_optional(name_, type_, ...) \
+    OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+    ( /*then*/ \
+      rust_attr[serde(skip_serializing_if = "is_default_value")] \
+      pub name_: type_ \
+    , /*else*/ \
+      rust_attr[serde(skip_serializing_if = "arrayvec::ArrayVec::is_empty")] \
+      pub name_: OT_EVAL(ujson_struct_field_array(type_, __VA_ARGS__)) \
+    ) /*endif*/,
+
 #define ujson_struct_string(name_, size_, ...) \
     ujson_struct_field(name_, String, ##__VA_ARGS__)
 
@@ -70,6 +88,20 @@ use opentitanlib::test_utils::status::status_t;
     rust_attr[allow(non_camel_case_types)] \
     pub struct name_ { \
         decl_(ujson_struct_field, ujson_struct_string) \
+    } \
+    rust_attr[allow(dead_code)] \
+    pub type formal_name_ = name_ /*eat_semicolon*/
+
+#define UJSON_DECLARE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ...) \
+    OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+    ( /*then*/ \
+        rust_attr[derive(RUST_DEFAULT_DERIVE)] /*transform into #[...] */ \
+    , /*else*/ \
+        rust_attr[derive(__VA_ARGS__)] /*transform into #[...] */ \
+    ) /*endif*/ \
+    rust_attr[allow(non_camel_case_types)] \
+    pub struct name_ { \
+        decl_(ujson_struct_field, ujson_struct_string, ujson_struct_field_optional) \
     } \
     rust_attr[allow(dead_code)] \
     pub type formal_name_ = name_ /*eat_semicolon*/
@@ -104,6 +136,9 @@ use opentitanlib::test_utils::status::status_t;
 //////////////////////////////////////////////////////////////////////
 #define UJSON_SERDE_STRUCT(formal_name_, name_, decl_, ...) \
   UJSON_DECLARE_STRUCT(formal_name_, name_, decl_, ##__VA_ARGS__)
+
+#define UJSON_SERDE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ...) \
+  UJSON_DECLARE_STRUCT_OPT_FIELDS(formal_name_, name_, decl_, ##__VA_ARGS__)
 
 #define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...) \
   UJSON_DECLARE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__)
