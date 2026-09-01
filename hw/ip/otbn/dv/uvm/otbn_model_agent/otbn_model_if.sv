@@ -8,7 +8,7 @@
 // do the right thing.
 
 interface otbn_model_if
-  import keymgr_dpe_pkg::otbn_key_req_t;
+  import keymgr_dpe_pkg::wide_hw_key_req_t;
 #(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
@@ -17,7 +17,7 @@ interface otbn_model_if
 ) (
   input logic clk_i,
   input logic rst_ni,
-  input otbn_key_req_t keymgr_key_i
+  input wide_hw_key_req_t keymgr_key_i
 );
   import uvm_pkg::*;
 
