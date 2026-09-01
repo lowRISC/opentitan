@@ -11,7 +11,8 @@
 // the OpenTitan spi_host UVC (spi_host_sequencer_h).
 //
 // After configuration, the primary interface for sequences to make use of this are the methods:
-// - host_spi_console_read_wait_for()
+// - host_spi_console_poll_reads()
+// - host_spi_console_read_wait_for_polled_str()
 // - host_spi_console_read_payload()
 // - host_spi_console_write_when_ready()
 //
@@ -40,10 +41,10 @@ package ottf_spi_console_pkg;
   // require tuning for significantly different use cases.
   // Note that this stimulus may be timing-sensitive due to interactions with the software running
   // the DEVICE-side of the OTTF SPI Console, so test appropriately if changing these values.
-  uint await_flow_ctrl_timeout_ns  = 200_000_000; // 200ms
-  uint wait_on_busy_timeout_ns     = 200_000_000; // 200ms
-  uint write_completion_timeout_ns = 200_000_000; // 200ms
-  uint min_interval_ns             =       3_000; //   3us
+  uint await_flow_ctrl_timeout_ns  = 1_000_000_000; // 1s
+  uint wait_on_busy_timeout_ns     =   200_000_000; // 200ms
+  uint write_completion_timeout_ns =   200_000_000; // 200ms
+  uint min_interval_ns             =         3_000; //   3us
 
   // Typical opcodes used by SPI NOR-flash devices.
   // Ensure that both parties are using the same encodings.
