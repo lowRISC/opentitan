@@ -16,6 +16,7 @@ package rv_dm_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
+  import rv_dm_mode_agent_pkg::*;
   import rv_dm_regs_ral_pkg::*;
   import rv_dm_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;
@@ -35,6 +36,20 @@ package rv_dm_env_pkg;
   // See hw/ip/rm_dm/data/rv_dm.hjson for alert names.
   parameter uint NUM_ALERTS = rv_dm_reg_pkg::NumAlerts;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
+
+  typedef enum {
+    // TLUL host SBA assertions (triggered by injecting intg errors on the response channel)
+    SbaAssertions,
+    // FSM state assertions inside lifecycle gates
+    LcGateAssertions,
+    // Assertions about copies in the replicated lifecycle enable signal
+    LcCopySVAs,
+    // Assertions in the enable checker (which tracks whether the enable signals are gating
+    // interfaces properly)
+    EnableCheckerSVAs,
+
+    NumAssertionTypes
+  } assertion_type_e;
 
   // package sources
   `include "rv_dm_env_cfg.sv"
