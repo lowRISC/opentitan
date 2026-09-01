@@ -21,6 +21,12 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // before randomising this object.
   int unsigned m_num_apps;
 
+  // The index of the SW app.
+  //
+  // The HW apps come first (at indices 0 to m_num_hw_apps-1) and the SW app sits above them, so
+  // this is always equal to m_num_hw_apps. Also gets set by set_num_hw_apps().
+  int unsigned m_sw_app_idx;
+
   rand entropy_src_agent_cfg_t m_entropy_src_agent_cfg;
 
   // A CSRNG agent config for each HW application. These are created by the test calling
@@ -56,12 +62,15 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand bit                    sw_app;
 
   rand mubi4_t   enable, sw_app_enable, read_int_state, fips_force_enable;
-  rand bit [2:0] fips_force;
   rand bit [3:0] lc_hw_debug_en;
   rand bit [7:0] otp_en_cs_sw_app_read;
 
   rand bit       int_state_read_enable_regwen;
-  rand bit [2:0] int_state_read_enable;
+
+  // One bit per app (HW apps first, then the SW app), so only the bottom m_num_apps bits of these
+  // are meaningful.
+  rand bit [MaxNumApps-1:0] fips_force;
+  rand bit [MaxNumApps-1:0] int_state_read_enable;
 
   rand fatal_err_e      which_fatal_err;
   rand err_code_e       which_err_code;
@@ -71,10 +80,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand which_cnt_e      which_cnt;
   rand which_aes_cm_e   which_aes_cm;
 
-  bit                                    compliance[MaxNumHwApps + 1], status[MaxNumHwApps + 1];
-  bit [csrng_env_pkg::KEY_LEN-1:0]       key[MaxNumHwApps + 1];
-  bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[MaxNumHwApps + 1];
-  bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[MaxNumHwApps + 1];
+  bit                                    compliance[MaxNumApps], status[MaxNumApps];
+  bit [csrng_env_pkg::KEY_LEN-1:0]       key[MaxNumApps];
+  bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[MaxNumApps];
+  bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[MaxNumApps];
 
   int Sp2VWidth = 3;
 
@@ -147,6 +156,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // The bits in hw_app should only be set if they correspond to an actual HW app
   constraint hw_app_c { (hw_app >> m_num_hw_apps) == 0; }
+
+  // The per-app bitmasks should only have bits set that correspond to an actual app
+  constraint fips_force_c { (fips_force >> m_num_apps) == 0; }
+  constraint int_state_read_enable_mask_c { (int_state_read_enable >> m_num_apps) == 0; }
 
   // Behind the aes_cipher_sm_err error code, there are which_aes_cm.num() countermeasures each of
   // which can be stimulated by forcing the Sp2VWidth independent logic rails. We bias error
@@ -233,6 +246,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
     m_num_hw_apps = num_hw_apps;
     m_num_apps    = num_hw_apps + 1;
+    m_sw_app_idx  = num_hw_apps;
   endfunction
 
   // Re-randomize enable and disable delays.  This is intended to be called between iterations in
@@ -299,13 +313,13 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   endfunction
 
   // Check internal state w/ optional compare
-  task check_internal_state(uint app = SW_APP, bit compare = 0);
+  task check_internal_state(uint app, bit compare = 0);
     bit [TL_DW-1:0]                      rdata;
     bit                                  hw_compliance, hw_status;
     bit [csrng_env_pkg::KEY_LEN-1:0]     hw_key;
     bit [csrng_env_pkg::BLOCK_LEN-1:0]   hw_v;
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0] hw_reseed_counter;
-    bit [2:0]                            csr_int_state_read_enable;
+    bit [MaxNumApps-1:0]                 csr_int_state_read_enable;
 
     // The dedicated RESEED_COUNTER CSR is always readable.
     bit [csrng_env_pkg::RSD_CTR_LEN-1:0] csr_reseed_counter;
