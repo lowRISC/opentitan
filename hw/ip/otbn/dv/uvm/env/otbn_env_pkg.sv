@@ -57,8 +57,8 @@ package otbn_env_pkg;
   typedef virtual otbn_ssctrl_if   ssctrl_vif;
   typedef virtual otbn_escalate_if escalate_vif;
   typedef logic [TL_AIW-1:0]       tl_source_t;
-  typedef key_sideload_agent#(keymgr_dpe_pkg::otbn_key_req_t) otbn_sideload_agent;
-  typedef key_sideload_agent_cfg#(keymgr_dpe_pkg::otbn_key_req_t) otbn_sideload_agent_cfg;
+  typedef key_sideload_agent#(keymgr_dpe_pkg::wide_hw_key_req_t) otbn_sideload_agent;
+  typedef key_sideload_agent_cfg#(keymgr_dpe_pkg::wide_hw_key_req_t) otbn_sideload_agent_cfg;
 
   typedef push_pull_agent#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_agent;
   typedef push_pull_agent_cfg#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_agent_cfg;

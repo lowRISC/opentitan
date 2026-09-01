@@ -222,18 +222,18 @@ package keymgr_dpe_pkg;
     logic [Shares-1:0][KeyWidth-1:0] key;
   } hw_key_req_t;
 
-  // Key connection to otbn
+  // Key connection to modules consuming wide keys
   typedef struct packed {
     logic valid;
     logic [Shares-1:0][OtbnKeyWidth-1:0] key;
-  } otbn_key_req_t;
+  } wide_hw_key_req_t;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
     valid : 1'b0,
     key   : {Shares{KeyWidth'(32'hDEADBEEF)}}
   };
 
-  parameter otbn_key_req_t OTBN_KEY_REQ_DEFAULT = '{
+  parameter wide_hw_key_req_t WIDE_HW_KEY_REQ_DEFAULT = '{
     valid : 1'b0,
     key   : {Shares{OtbnKeyWidth'(32'hDEADBEEF)}}
   };

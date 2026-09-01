@@ -612,7 +612,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   virtual function otbn_key_shares_t get_output_otbn();
     string path = "tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.otbn_key_o";
-    keymgr_dpe_pkg::otbn_key_req_t otbn_key;
+    keymgr_dpe_pkg::wide_hw_key_req_t otbn_key;
     `DV_CHECK_FATAL(uvm_hdl_read(path, otbn_key))
     `DV_CHECK_EQ(otbn_key.valid, 1, "Expected OTBN output key to be valid")
     `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, otbn_key_shares_str(otbn_key.key)),
