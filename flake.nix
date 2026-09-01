@@ -134,6 +134,7 @@
           pkgs.lrzsz
           # check-lock-files regenerates python-requirements.txt via `uv pip compile`.
           uv
+          pkgs.iproute2
         ];
         # Point the Bazel bindgen toolchain at a nixpkgs libclang (see
         # third_party/rust/extensions.bzl): the LLVM release Bazel would download
