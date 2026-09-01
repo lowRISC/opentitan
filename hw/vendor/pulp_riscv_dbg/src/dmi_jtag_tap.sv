@@ -185,19 +185,19 @@ module dmi_jtag_tap #(
   // ----------------
   // DFT
   // ----------------
-  logic tck_n;
-
-  prim_clock_inv #(
-    .HasScanMode(1'b1),
-    .NoFpgaBufG(1'b1)
-  ) i_tck_inv (
-    .clk_i      ( tck_i      ),
-    .clk_no     ( tck_n      ),
-    .scanmode_i ( testmode_i )
-  );
+  //logic tck_n;
+  //
+  //prim_clock_inv #(
+  //  .HasScanMode(1'b1),
+  //  .NoFpgaBufG(1'b1)
+  //) i_tck_inv (
+  //  .clk_i      ( tck_i      ),
+  //  .clk_no     ( tck_n      ),
+  //  .scanmode_i ( testmode_i )
+  //);
 
   // TDO changes state at negative edge of TCK
-  always_ff @(posedge tck_n, negedge trst_ni) begin : p_tdo_regs
+  always_ff @(negedge tck_i, negedge trst_ni) begin : p_tdo_regs
     if (!trst_ni) begin
       td_o     <= 1'b0;
       tdo_oe_o <= 1'b0;
