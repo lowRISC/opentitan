@@ -34,7 +34,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   typedef bit [TL_DW-1:0]                                     tl_data_t;
   typedef bit [keymgr_dpe_pkg::KeyWidth-1:0]                  key_t;
   typedef key_t [keymgr_dpe_pkg::Shares-1:0]                  key_shares_t;
-  typedef bit [keymgr_dpe_pkg::OtbnKeyWidth-1:0]              otbn_key_t;
+  typedef bit [keymgr_dpe_pkg::WideHwKeyWidth-1:0]            otbn_key_t;
   typedef otbn_key_t [keymgr_dpe_pkg::Shares-1:0]             otbn_key_shares_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSaltReg-1:0]      salt_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0] sw_binding_t;
@@ -629,7 +629,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   virtual function void check_kmac_otbn_digest(key_t      kmac_key,
                                                bit [7:0]  data_arr[],
                                                otbn_key_t act_digest);
-    `DV_CHECK_EQ(keymgr_dpe_pkg::OtbnKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
+    `DV_CHECK_EQ(keymgr_dpe_pkg::WideHwKeyWidth'(get_kmac_digest(kmac_key, data_arr)),
                  act_digest)
   endfunction
 

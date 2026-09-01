@@ -159,7 +159,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   );
 
   keymgr_dpe_sideload_key #(
-    .Width(OtbnKeyWidth)
+    .Width(WideHwKeyWidth)
   ) u_otbn_key (
     .clk_i,
     .rst_ni,
