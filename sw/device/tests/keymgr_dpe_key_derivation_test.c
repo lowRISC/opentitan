@@ -93,7 +93,7 @@ bool key_derivation_test(void) {
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated KMAC output from CreatorRootKey");
 
-  // Generate AES output from the from CreatorRootKey.
+  // Generate AES output from the CreatorRootKey.
   gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
@@ -109,6 +109,23 @@ bool key_derivation_test(void) {
   generate(&gen_params);
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated AES output from CreatorRootKey");
+
+  // Generate HMAC output from the CreatorRootKey.
+  gen_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;
+  gen_params.version = 0;
+  gen_params.salt[7] = 0x59f92ba4;
+  gen_params.salt[6] = 0xa2573816;
+  gen_params.salt[5] = 0x35624f4d;
+  gen_params.salt[4] = 0xd8dda033;
+  gen_params.salt[3] = 0xc0849c20;
+  gen_params.salt[2] = 0x61adbcf9;
+  gen_params.salt[1] = 0x2c8e9f64;
+  gen_params.salt[0] = 0x063fa1ad;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated HMAC output from CreatorRootKey");
 
   // Advance the DPE context with the parameter defined in kOwnerIntKeyParams
   // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
@@ -190,6 +207,23 @@ bool key_derivation_test(void) {
   generate(&gen_params);
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated OTBN output from OwnerIntKey");
+
+  // Generate HMAC output from the OwnerIntKey.
+  gen_params.slot_src_sel = kOwnerIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;
+  gen_params.version = 3;
+  gen_params.salt[7] = 0xa467cafe;
+  gen_params.salt[6] = 0x42e0ef13;
+  gen_params.salt[5] = 0xe64101ba;
+  gen_params.salt[4] = 0xe0221071;
+  gen_params.salt[3] = 0x46ef443e;
+  gen_params.salt[2] = 0xbbc3700a;
+  gen_params.salt[1] = 0xccb2a0d4;
+  gen_params.salt[0] = 0xb2354a72;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated HMAC output from OwnerIntKey");
 
   // Advance the DPE context with the parameter defined in kOwnerKeyParams
   // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
@@ -281,6 +315,23 @@ bool key_derivation_test(void) {
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated OTBN output from OwnerKey");
 
+  // Generate HMAC output from the OwnerKey.
+  gen_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;
+  gen_params.version = 3;
+  gen_params.salt[7] = 0x2bdb8455;
+  gen_params.salt[6] = 0x849e3f58;
+  gen_params.salt[5] = 0xe6bfa71a;
+  gen_params.salt[4] = 0x922813d2;
+  gen_params.salt[3] = 0x36f3d03f;
+  gen_params.salt[2] = 0x05e900bc;
+  gen_params.salt[1] = 0xeecc922c;
+  gen_params.salt[0] = 0x79c94846;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated HMAC output from OwnerKey");
+
   // Derive a DPE context from the OwnerKey without overwriting the
   // OwnerKey.
   adv_params.slot_src_sel = kOwnerKeyParams.slot_dst_sel;
@@ -371,6 +422,24 @@ bool key_derivation_test(void) {
   generate(&gen_params);
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated KMAC output from DPE context in slot %0d",
+           adv_params.slot_dst_sel);
+
+  // Generate HMAC output from the boot stage 3 key.
+  gen_params.slot_src_sel = 3;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;
+  gen_params.version = 0x40;
+  gen_params.salt[7] = 0x4fd6e6ae;
+  gen_params.salt[6] = 0x8fd4b340;
+  gen_params.salt[5] = 0x81cc5630;
+  gen_params.salt[4] = 0xc421ac99;
+  gen_params.salt[3] = 0x618befcf;
+  gen_params.salt[2] = 0x33fb5e4e;
+  gen_params.salt[1] = 0x7a500515;
+  gen_params.salt[0] = 0x7666861f;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated HMAC output from DPE context in slot %0d",
            adv_params.slot_dst_sel);
 
   // Generate some additional outputs from the owner root keys, which
