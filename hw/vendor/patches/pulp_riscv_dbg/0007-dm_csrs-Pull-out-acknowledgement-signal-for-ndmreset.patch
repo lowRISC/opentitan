@@ -1,7 +1,7 @@
 From 91dd09788d0151fb48b85fa32eb07e9e1b0b0dd3 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Thu, 14 Mar 2024 09:36:40 -0700
-Subject: [PATCH 7/7] [dm_csrs] Pull out acknowledgement signal for ndmreset
+Subject: [dm_csrs] Pull out acknowledgement signal for ndmreset
 
 This signal can be used to implement more accurate ndmreset completion
 tracking outside of RV_DM.
