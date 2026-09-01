@@ -26,7 +26,9 @@ unshare -rnm bash -c '
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
     OT_AIRGAPPED="true"                                              \
     BITSTREAM="--offline latest"                                     \
-   "${PWD}/bazel-airgapped/bazel" build                              \
+   "${PWD}/bazel-airgapped/bazel"                                    \
+    --nohome_rc --nosystem_rc                                        \
+    build                                                            \
     --vendor_dir="${PWD}/bazel-airgapped/bazel-vendor"               \
     --define DISABLE_VERILATOR_BUILD=true                            \
     //sw/device/silicon_creator/rom:mask_rom                         \
