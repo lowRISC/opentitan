@@ -10,7 +10,7 @@ module prim_secded_hamming_76_68_tb (
   input        [67:0] data_i,
   output logic [67:0] data_o,
   output logic [75:0] encoded_o,
-  output logic [7:0] syndrome_o,
+  output logic [7:0]  syndrome_o,
   output logic [1:0]  err_o,
   input        [75:0] error_inject_i
 );
