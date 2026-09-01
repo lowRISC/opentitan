@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdbool.h>
+
 #ifdef __linux__
 #include <linux/limits.h>
 #include <pty.h>
@@ -12,7 +14,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,71 +23,34 @@
 #include <unistd.h>
 
 #include "spidpi.h"
-#ifdef VERILATOR
 #include "verilator_sim_ctrl.h"
-#endif
 
 // This holds the necessary SPI state.
-#define MAX_TRANSACTION 4
+
 struct spidpi_ctx {
   int loglevel;
-  char ptyname[64];
   int host;
   int device;
+  FILE *log_file;
   FILE *mon_file;
-  char mon_pathname[PATH_MAX];
   void *mon;
-  int tick;
-  int cpol;
-  int cpha;
-  int msbfirst;  // shift direction
-  int nout;
-  int bout;
-  int nin;
-  int bin;
-  int din;
-  int nmax;
-  char driving;
-  int state;
-  char buf[MAX_TRANSACTION];
+  unsigned tick;
+  uint8_t rx;
+  uint8_t tx;
+  bool push_tx;
 };
 
-// SPI Host States
-#define SP_IDLE 0
-#define SP_CSFALL 1
-#define SP_DMOVE 2
-#define SP_LASTBIT 3
-#define SP_CSRISE 4
-#define SP_FINISH 99
-
-// Enable this define to stop tracing at cycle 4
-// and resume at the first SPI packet
-// #define CONTROL_TRACE
-
 void *spidpi_create(const char *name, int mode, int loglevel) {
-  int i;
   struct spidpi_ctx *ctx =
       (struct spidpi_ctx *)calloc(1, sizeof(struct spidpi_ctx));
   assert(ctx);
 
   ctx->loglevel = loglevel;
-  ctx->mon = monitor_spi_init(mode);
   ctx->tick = 0;
-  ctx->msbfirst = 1;
-  ctx->nmax = MAX_TRANSACTION;
-  ctx->nin = 0;
-  ctx->nout = 0;
-  ctx->bout = 0;
-  ctx->state = SP_IDLE;
-  /* mode is CPOL << 1 | CPHA
-   * cpol = 0 --> external clock matches internal
-   * cpha = 0 --> drive on internal falling edge, capture on rising
-   */
-  ctx->cpol = ((mode == 0) || (mode == 2)) ? 0 : 1;
-  ctx->cpha = ((mode == 1) || (mode == 3)) ? 1 : 0;
-  /* CPOL = 1 for clock idle high */
-  ctx->driving = P2D_CSB | ((ctx->cpol) ? P2D_SCK : 0);
+  ctx->rx = P2D_CSB;
+  ctx->tx = 0;
   char cwd[PATH_MAX];
+  char ptyname[64];
   char *cwd_rv;
   cwd_rv = getcwd(cwd, sizeof(cwd));
   assert(cwd_rv != NULL);
@@ -98,7 +62,7 @@ void *spidpi_create(const char *name, int mode, int loglevel) {
   rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
   assert(rv != -1);
 
-  rv = ttyname_r(ctx->device, ctx->ptyname, 64);
+  rv = ttyname_r(ctx->device, ptyname, 64);
   assert(rv == 0 && "ttyname_r failed");
 
   int cur_flags = fcntl(ctx->host, F_GETFL, 0);
@@ -106,147 +70,115 @@ void *spidpi_create(const char *name, int mode, int loglevel) {
   int new_flags = fcntl(ctx->host, F_SETFL, cur_flags | O_NONBLOCK);
   assert(new_flags != -1 && "Unable to set FD flags");
 
+  // might be worth getting rid of this blahblahblah
   printf(
       "\n"
       "SPI: Created %s for %s. Connect to it with any terminal program, e.g.\n"
       "$ screen %s\n"
       "NOTE: a SPI transaction is run for every 4 characters entered.\n",
-      ctx->ptyname, name, ctx->ptyname);
+      ptyname, name, ptyname);
 
-  rv = snprintf(ctx->mon_pathname, PATH_MAX, "%s/%s.log", cwd, name);
-  assert(rv <= PATH_MAX && rv > 0);
-  ctx->mon_file = fopen(ctx->mon_pathname, "w");
-  if (ctx->mon_file == NULL) {
-    fprintf(stderr, "SPI: Unable to open file at %s: %s\n", ctx->mon_pathname,
-            strerror(errno));
-    return NULL;
+  char *spi_log = getenv("VERILATOR_SPI_LOG");
+
+  // check if some logging files are requested
+  if (spi_log) {
+    // log SPI as ASCII-art signals (very verbose)
+    char log_pathname[PATH_MAX];
+    if (strchr(spi_log, 'M')) {
+      // keep original name to avoid breaking some existing tool
+      rv = snprintf(log_pathname, PATH_MAX, "%s/%s.log", cwd, name);
+      assert(rv < PATH_MAX && rv > 0);
+      ctx->mon_file = fopen(log_pathname, "wt");
+      if (ctx->mon_file == NULL) {
+        fprintf(stderr, "SPI: Unable to open file at %s: %s\n", log_pathname,
+                strerror(errno));
+        free(ctx);
+        return NULL;
+      }
+      setlinebuf(ctx->mon_file);
+      ctx->mon = monitor_spi_init(mode);
+      printf(
+          "SPI: Monitor output file created at %s. Works well with tail:\n"
+          "$ tail -f %s\n",
+          log_pathname, log_pathname);
+    }
+
+    // log SPI PTY protocol (communication with peer)
+    if (strchr(spi_log, 'P')) {
+      rv = snprintf(log_pathname, PATH_MAX, "%s/%s.pty.log", cwd, name);
+      assert(rv < PATH_MAX && rv > 0);
+      ctx->log_file = fopen(log_pathname, "wt");
+      if (!ctx->log_file) {
+        fprintf(stderr, "SPI: Unable to open file at %s: %s\n", log_pathname,
+                strerror(errno));
+        setlinebuf(ctx->log_file);
+      } else {
+        printf("SPI: PTY output file created at %s.\n", log_pathname);
+      }
+    }
   }
-  // more useful for tail -f
-  setlinebuf(ctx->mon_file);
-  printf(
-      "SPI: Monitor output file created at %s. Works well with tail:\n"
-      "$ tail -f %s\n",
-      ctx->mon_pathname, ctx->mon_pathname);
+
+  ctx->push_tx = false;
 
   return (void *)ctx;
 }
 
-char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
+__attribute__((noinline)) uint8_t spidpi_tick2(void *ctx_void,
+                                               const svLogicVecVal *d2p_data) {
   struct spidpi_ctx *ctx = (struct spidpi_ctx *)ctx_void;
   assert(ctx);
-  int d2p = d2p_data->aval;
+
+  ctx->tx = d2p_data->aval & (D2P_SDO | D2P_SDO_EN);
+
+  if (ctx->push_tx) {
+    /* add '0' in ASCII so that it easier to debug */
+    uint8_t out_byte = 0x30 | ctx->tx;
+    if (ctx->log_file) {
+      fprintf(ctx->log_file, "@%u tx:%01x\n", ctx->tick, ctx->tx);
+      fflush(ctx->log_file);
+    }
+    ctx->push_tx = false;
+    (void)write(ctx->host, &out_byte, sizeof(out_byte));
+  }
 
   // Will tick at the host clock
   ctx->tick++;
 
-#ifdef VERILATOR
-#ifdef CONTROL_TRACE
-  if (ctx->tick == 4) {
-    VerilatorSimCtrl::GetInstance().TraceOff();
+  if (ctx->mon && ctx->mon_file) {
+    monitor_spi(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick, ctx->rx,
+                ctx->tx);
   }
-#endif
-#endif
 
-  monitor_spi(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick, ctx->driving,
-              d2p);
-
-  if (ctx->state == SP_IDLE) {
-    int n = read(ctx->host, &(ctx->buf[ctx->nin]), ctx->nmax - ctx->nin);
-    if (n == -1) {
-      if (errno != EAGAIN) {
-        fprintf(stderr, "Read on SPI FIFO gave %s\n", strerror(errno));
-      }
-    } else {
-      ctx->nin += n;
-      if (ctx->nin == ctx->nmax) {
-        ctx->nout = 0;
-        ctx->nin = 0;
-        ctx->bout = ctx->msbfirst ? 0x80 : 0x01;
-        ctx->bin = ctx->msbfirst ? 0x80 : 0x01;
-        ctx->din = 0;
-        ctx->state = SP_CSFALL;
-#ifdef VERILATOR
-#ifdef CONTROL_TRACE
-        VerilatorSimCtrl::GetInstance().TraceOn();
-#endif
-#endif
-      }
-    }
-  }
   // SPI clock toggles every 4th tick (i.e. freq=primary_frequency/8)
-  if ((ctx->tick & 3) || (ctx->state == SP_IDLE)) {
-    return ctx->driving;
+  if (ctx->tick & 3) {
+    return ctx->rx;
   }
 
-  // Only get here on sck edges when active
-  int internal_sck = (ctx->tick & 4) ? 1 : 0;
-  int set_sck = (internal_sck ? P2D_SCK : 0);
-  if (ctx->cpol) {
-    set_sck ^= P2D_SCK;
+  uint8_t in_byte;
+
+  int n = read(ctx->host, &in_byte, sizeof(in_byte));
+  if (n == -1) {
+    if (errno != EAGAIN) {
+      fprintf(stderr, "Read on SPI FIFO gave %s\n", strerror(errno));
+    }
+    return ctx->rx;
   }
 
-  if (internal_sck == ctx->cpha) {
-    // host driving edge (falling for mode 0)
-    switch (ctx->state) {
-      case SP_DMOVE:
-        // SCLK low, CSB low
-        ctx->driving =
-            set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0;
-        ctx->bout = (ctx->msbfirst) ? ctx->bout >> 1 : ctx->bout << 1;
-        if ((ctx->bout & 0xff) == 0) {
-          ctx->bout = ctx->msbfirst ? 0x80 : 0x01;
-          ctx->nout++;
-          if (ctx->nout == ctx->nmax) {
-            ctx->state = SP_LASTBIT;
-          }
-        }
-        break;
-      case SP_LASTBIT:
-        ctx->state = SP_CSRISE;
-        // fallthrough
-      default:
-        ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
-        break;
-    }
-  } else {
-    // host other edge (rising for mode 0)
-    switch (ctx->state) {
-        // Read input data (opposite edge to sending)
-        // both DMOVE and LASTBIT states are data moving ones!
-      case SP_DMOVE:
-      case SP_LASTBIT:
-        ctx->din = ctx->din | ((d2p & D2P_SDO) ? ctx->bin : 0);
-        ctx->bin = (ctx->msbfirst) ? ctx->bin >> 1 : ctx->bin << 1;
-        if (ctx->bin == 0) {
-          int rv = write(ctx->host, &(ctx->din), 1);
-          assert(rv == 1 && "write() failed.");
-          ctx->bin = (ctx->msbfirst) ? 0x80 : 0x01;
-          ctx->din = 0;
-        }
-        ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
-        break;
-      case SP_CSFALL:
-        // CSB low, drive SDI to first bit
-        ctx->driving =
-            (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
-        ctx->state = SP_DMOVE;
-        break;
-      case SP_CSRISE:
-        // CSB high, clock stopped
-        ctx->driving = P2D_CSB;
-        ctx->state = SP_IDLE;
-        break;
-      case SP_FINISH:
-#ifdef VERILATOR
-        VerilatorSimCtrl::GetInstance().RequestStop(true);
-#endif
-        break;
-      default:
-        ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
-        break;
-    }
+  /* filter MSB so that ASCII-encoded digit can be accepted (for debug) */
+  in_byte &= P2D_SCK | P2D_CSB | P2D_SDI;
+  ctx->rx = in_byte;
+  ctx->push_tx = true;
+
+  if (ctx->log_file) {
+    fprintf(ctx->log_file, "@%u rx:%01x\n", ctx->tick, ctx->rx);
+    fflush(ctx->log_file);
   }
-  return ctx->driving;
+
+  return ctx->rx;
+}
+
+uint8_t spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
+  return spidpi_tick2(ctx_void, d2p_data);
 }
 
 void spidpi_close(void *ctx_void) {
@@ -254,6 +186,12 @@ void spidpi_close(void *ctx_void) {
   if (!ctx) {
     return;
   }
-  fclose(ctx->mon_file);
+  if (ctx->mon_file) {
+    fclose(ctx->mon_file);
+  }
+  if (ctx->log_file) {
+    fprintf(ctx->log_file, "%u ticks\n");
+    fclose(ctx->log_file);
+  }
   free(ctx);
 }
