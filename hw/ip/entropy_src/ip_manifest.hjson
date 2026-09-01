@@ -1,0 +1,19 @@
+{
+  "name": "entropy_src",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/entropy_src_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "rng16bits",
+      "cfg": "dv/entropy_src_rng16bits_sim_cfg.hjson"
+    },
+    {
+      "variant": "rng4bits",
+      "cfg": "dv/entropy_src_rng4bits_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

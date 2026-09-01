@@ -1,0 +1,10 @@
+{
+  "name": "aon_timer",
+  "sim": [
+    {
+      "cfg": "dv/aon_timer_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

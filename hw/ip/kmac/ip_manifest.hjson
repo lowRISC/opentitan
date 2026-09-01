@@ -1,0 +1,19 @@
+{
+  "name": "kmac",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/kmac_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "masked",
+      "cfg": "dv/kmac_masked_sim_cfg.hjson"
+    },
+    {
+      "variant": "unmasked",
+      "cfg": "dv/kmac_unmasked_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
