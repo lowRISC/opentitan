@@ -1598,6 +1598,13 @@
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
     }
     {
+      name: chip_sw_keymgr_dpe_sideload_hmac
+      uvm_test_seq: chip_sw_keymgr_dpe_sideload_hmac_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_sideload_hmac_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    }
+    {
       name: chip_sw_kmac_mode_cshake
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:kmac_mode_cshake_test:1:new_rules"]
