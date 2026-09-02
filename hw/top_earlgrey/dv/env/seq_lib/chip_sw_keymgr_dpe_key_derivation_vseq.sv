@@ -738,12 +738,22 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual function wide_key_shares_t get_wide_hw_output(string path);
-    keymgr_dpe_pkg::wide_hw_key_req_t wide_hw_key;
-    `DV_CHECK_FATAL(uvm_hdl_read(path, wide_hw_key))
-    `DV_CHECK_EQ(wide_hw_key.valid, 1, "Expected wide HW output key to be valid")
-    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, wide_key_shares_str(wide_hw_key.key)),
+    wide_key_shares_t key_shares;
+    logic             valid;
+    string            field_path;
+    // `wide_hw_key_req_t` is wider than what `uvm_hdl_read` can return in one go (1024 bits by
+    // default), so read `valid` and each key share separately.
+    // `DV_CHECK_FATAL can't take "" as an input, so build the path separately.
+    field_path = {path, ".valid"};
+    `DV_CHECK_FATAL(uvm_hdl_read(field_path, valid))
+    `DV_CHECK_EQ(valid, 1, "Expected wide HW output key to be valid")
+    for (int i = 0; i < keymgr_dpe_pkg::Shares; i++) begin
+      field_path = $sformatf("%s.key[%0d]", path, i);
+      `DV_CHECK_FATAL(uvm_hdl_read(field_path, key_shares[i]))
+    end
+    `uvm_info(`gfn, $sformatf("HW Output at %s:\n%s", path, wide_key_shares_str(key_shares)),
               UVM_LOW)
-    return wide_hw_key.key;
+    return key_shares;
   endfunction
 
   // Format a key.
