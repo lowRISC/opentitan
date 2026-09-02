@@ -118,6 +118,7 @@ filegroup(
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",
+        "@openssl",
         "@sc_hsm",
     ],
 )
