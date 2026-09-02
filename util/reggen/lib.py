@@ -152,6 +152,21 @@ def check_bool(obj: object, what: str) -> bool:
     raise ValueError(f'{what} is of type {type(obj).__name__}, not a bool.')
 
 
+def check_partition(obj: object, what: str, allow_both: bool = False) -> str:
+    '''Check that obj is a valid IP-split partition specifier.
+
+    Legal values are 'primary' and 'secondary' (plus 'both' when allow_both is
+    set, as used for parameters). Raises a ValueError otherwise; the what
+    argument names the object.
+    '''
+    as_str = check_str(obj, what)
+    legal = ['primary', 'secondary'] + (['both'] if allow_both else [])
+    if as_str not in legal:
+        raise ValueError(f'{what} is {as_str!r}, but must be one of '
+                         f'{", ".join(legal)}.')
+    return as_str
+
+
 def check_list(obj: object, what: str) -> List[object]:
     '''Check that the given object is a list
 

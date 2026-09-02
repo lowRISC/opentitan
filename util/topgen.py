@@ -49,7 +49,7 @@ from topgen.merge import (
     commit_interrupt_modules, commit_outgoing_alert_modules,
     commit_outgoing_interrupt_modules, connect_clocks,
     create_alert_lpgs, elaborate_instance, extract_clocks,
-    commit_alert_connections)
+    commit_alert_connections, normalize_partition_connections)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
@@ -155,7 +155,7 @@ def ipgen_hjson_render(template_name: str, topname: str,
 
 
 def ipgen_render(template_name: str, topname: str, params: ParamsT,
-                 out_path: Path) -> None:
+                 out_path: Path, keep_docs: bool = False) -> None:
     """ Render an IP template for a specific toplevel using ipgen.
 
     The generated IP block is placed in the "ip_autogen" directory of the
@@ -166,10 +166,12 @@ def ipgen_render(template_name: str, topname: str, params: ParamsT,
     (module_name, ip_template,
      ip_config) = _ipgen_render_prelude(template_name, topname, params)
 
+    preserve_patterns = ['**/*.md'] if keep_docs else None
     try:
         renderer = IpBlockRenderer(ip_template, ip_config)
         renderer.render(out_path / "ip_autogen" / module_name,
-                        overwrite_output_dir=True)
+                        overwrite_output_dir=True,
+                        preserve_patterns=preserve_patterns)
     except TemplateRenderError as e:
         log.error(e.verbose_str())
         sys.exit(1)
@@ -268,7 +270,7 @@ def generate_xbars(top: ConfigT, out_path: Path) -> None:
 
 
 def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
-                   out_path: Path) -> None:
+                   out_path: Path, keep_docs: bool = False) -> None:
     topname = top["name"]
     template_name = module["template_type"]
     module_name = module["type"]
@@ -282,7 +284,7 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
         raise ValueError(
             f"Unexpected uniquified name: expected {module_instance_name}, "
             f"got {uniq_name}")
-    ipgen_render(module["template_type"], topname, params, out_path)
+    ipgen_render(module["template_type"], topname, params, out_path, keep_docs)
 
 
 def _get_alert_handler_params(top: ConfigT, name: str) -> ParamsT:
@@ -604,9 +606,12 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     # sw controlled resets: dict indexed by device containing the clock
     sw_rsts = OrderedDict([(r.name, r.clock.name)
                            for r in reset_obj.get_sw_resets()])
-    # rst_ni
+    # rst_ni (from the primary partition; a connection may be a bare net-name
+    # string or a {name, domain} dict).
     rstmgr = find_module(top["module"], "rstmgr")
-    rst_ni = rstmgr["reset_connections"]
+    rst_ni_conn = rstmgr["reset_connections"]["rst_ni"]
+    rst_ni_name = (rst_ni_conn["name"]
+                   if isinstance(rst_ni_conn, dict) else rst_ni_conn)
 
     # leaf resets
     leaf_rsts = reset_obj.get_generated_resets()
@@ -627,7 +632,7 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "sw_rsts": sw_rsts,
         "output_rsts": output_rsts,
         "leaf_rsts": leaf_rsts,
-        "rst_ni": rst_ni['rst_ni']['name'],
+        "rst_ni": rst_ni_name,
         "export_rsts": top["exported_rsts"],
         "with_alert_handler": with_alert_handler,
     })
@@ -1414,6 +1419,10 @@ def _process_top(
     errors found in the process.
     """
     # Prepare the topcfg.
+    # Split-IP instances specify their clock/reset/clock_group connections in a
+    # nested per-partition form; fold this into the flat primary form (plus
+    # '<key>_secondary' companions) before any consumer looks at them.
+    normalize_partition_connections(topcfg)
     extract_clocks(topcfg)
     ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
                                         args.hjson_path)
@@ -1475,6 +1484,8 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # TODO, there are no interdependencies between ips so do them in any
     # order, which means could just iterate over all in the topcfg.
 
+    keep_docs = getattr(args, 'keep_ip_docs', False)
+
     def generate_modules(template_type: str,
                          single_instance: bool,
                          get_params: Callable[[Dict, Dict, Path], None] = None) -> None:
@@ -1488,7 +1499,7 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
                 params = get_params(*args)
             else:
                 params = _get_basic_ipgen_params(topcfg, template_type)
-            generate_ipgen(topcfg, module, params, out_path)
+            generate_ipgen(topcfg, module, params, out_path, keep_docs)
 
     ipgens_by_template_type = defaultdict(list)
     for m in topcfg["module"]:
@@ -1729,6 +1740,16 @@ def main():
                         type=str,
                         default=None,
                         help='A hjson file describing vendor defined fields.')
+
+    parser.add_argument(
+        '--keep-ip-docs',
+        action='store_true',
+        default=False,
+        help='Preserve existing .md files in ip_autogen directories that are '
+             'not produced by ipgen (e.g. registers.md). Useful during '
+             'development to avoid having to regenerate docs after each '
+             'topgen run.'
+    )
 
     args = parser.parse_args()
 

@@ -6,7 +6,8 @@ from typing import Sequence
 
 from reggen.access import JsonEnum
 from reggen.bits import Bits
-from reggen.lib import check_keys, check_name, check_str, check_int, check_bool, check_list
+from reggen.lib import (check_keys, check_name, check_str, check_int,
+                        check_bool, check_list, check_partition)
 from reggen.signal import Signal
 
 
@@ -21,8 +22,9 @@ _intr_type_map = {'event': IntrType.Event, 'status': IntrType.Status}
 class Interrupt(Signal):
 
     def __init__(self, name: str, desc: str, bits: Bits, auto_split: bool,
-                 intr_type: IntrType, default_val: bool):
-        super().__init__(name, desc, bits)
+                 intr_type: IntrType, default_val: bool,
+                 partition: str = 'primary'):
+        super().__init__(name, desc, bits, partition=partition)
         self.intr_type = intr_type
         self.auto_split = auto_split
         self.default_val = default_val
@@ -30,7 +32,7 @@ class Interrupt(Signal):
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Interrupt':
         rd = check_keys(raw, what, ['name', 'desc'],
-                        ['width', 'type', 'auto_split', 'default'])
+                        ['width', 'type', 'auto_split', 'default', 'partition'])
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
@@ -46,6 +48,8 @@ class Interrupt(Signal):
                                   'intr_type field of ' + what)
         auto_split = check_bool(rd.get('auto_split', False),
                                 'auto_split of ' + what)
+        partition = check_partition(rd.get('partition', 'primary'),
+                                    'partition field of ' + what)
 
         try:
             intr_type = _intr_type_map[intr_type_str.lower()]
@@ -59,7 +63,8 @@ class Interrupt(Signal):
             raise RuntimeError('Interrupt {} is of Event type and cannot '
                                'have a nonzero default'.format(name))
 
-        return Interrupt(name, desc, bits, auto_split, intr_type, default_val)
+        return Interrupt(name, desc, bits, auto_split, intr_type, default_val,
+                         partition)
 
     @staticmethod
     def from_raw_list(what: str, raw: object) -> Sequence['Interrupt']:

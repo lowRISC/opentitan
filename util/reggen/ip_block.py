@@ -118,6 +118,13 @@ OPTIONAL_FIELDS = {
     'expose_reg_if': ['pb', 'if set, expose reg interface in reg2hw signal'],
     'interrupt_list': ['lnw', "list of peripheral interrupts"],
     'inter_signal_list': ['l', "list of inter-module signals"],
+    'is_split_ip': [
+        'pb', "if set, this IP is split into a primary and secondary "
+        "partition across two power domains (default false)"
+    ],
+    'clocking_secondary': [
+        'l', "clocking for the secondary partition of a split IP"
+    ],
     'no_auto_alert_regs': [
         's', "Set to true to suppress automatic "
         "generation of alert test registers. "
@@ -193,6 +200,11 @@ class IpBlock:
     features: list[Feature]
     node: str = ''
     alias_impl: str | None = None
+    # Split-IP support: whether this IP is split across two power domains, and
+    # (if so) the clocking of its secondary partition. Both default to the
+    # non-split case.
+    is_split_ip: bool = False
+    clocking_secondary: Optional[Clocking] = None
 
     def __post_init__(self) -> None:
         assert isinstance(self.reg_blocks, dict)
@@ -352,6 +364,18 @@ class IpBlock:
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
 
+        is_split_ip = check_bool(rd.get('is_split_ip', False),
+                                 'is_split_ip field of ' + what)
+
+        # The secondary partition's clocking. Parsed only when non-empty; an
+        # unclocked secondary partition simply omits it (or leaves it empty).
+        r_clocking_secondary = rd.get('clocking_secondary')
+        if r_clocking_secondary:
+            clocking_secondary: Optional[Clocking] = Clocking.from_raw(
+                r_clocking_secondary, 'clocking_secondary field of ' + what)
+        else:
+            clocking_secondary = None
+
         # Build register block if IP really defined registers. IPs with an empty list of registers
         # but auto-generated registers should still be built.
         if "registers" in rd:
@@ -408,7 +432,9 @@ class IpBlock:
                        memories, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
-                       countermeasures, features, node)
+                       countermeasures, features, node,
+                       is_split_ip=is_split_ip,
+                       clocking_secondary=clocking_secondary)
 
     @staticmethod
     def from_text(txt: str,
@@ -571,6 +597,12 @@ class IpBlock:
 
         ret['clocking'] = self.clocking.items
 
+        # Only emitted for split IPs, so non-split IPs see no change.
+        if self.is_split_ip:
+            ret['is_split_ip'] = self.is_split_ip
+        if self.clocking_secondary is not None:
+            ret['clocking_secondary'] = self.clocking_secondary.items
+
         inouts, inputs, outputs = self.xputs
         if inouts:
             ret['available_inout_list'] = inouts
@@ -627,6 +659,16 @@ class IpBlock:
         '''Return primary clock of an block'''
 
         return self.clocking.primary
+
+    def get_secondary_clock(self) -> Optional[ClockingItem]:
+        '''Return the primary clock of the secondary partition, if any.
+
+        Returns None for non-split IPs or split IPs whose secondary partition
+        is unclocked.
+        '''
+        if self.clocking_secondary is None:
+            return None
+        return self.clocking_secondary.primary
 
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:

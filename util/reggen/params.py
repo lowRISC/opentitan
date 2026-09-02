@@ -6,7 +6,8 @@ import re
 from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
-from reggen.lib import check_keys, check_str, check_int, check_bool, check_list
+from reggen.lib import (check_keys, check_str, check_int, check_bool,
+                        check_list, check_partition)
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the item"],
@@ -25,10 +26,23 @@ OPTIONAL_FIELDS = {
         's', "unpacked dimensions of parameter e.g. [16] for a single "
         "unpacked dimension of size 16. none by default"
     ],
+    'partition': [
+        's', "for split IPs, the partition this parameter is emitted into: "
+        "'primary' (default), 'secondary' or 'both'"
+    ],
 }
 
 
 class BaseParam:
+
+    # For split IPs, the partition ('primary' / 'secondary' / 'both') whose
+    # module header(s) this parameter is emitted into. Kept as a class-level
+    # default so it is absent from an instance's __dict__ unless explicitly set
+    # to a non-default value in _parse_parameter. This matters because topgen
+    # serializes leftover objects via `default=vars` (their __dict__), so an
+    # unconditional instance attribute would leak `partition: primary` into
+    # every generated config.
+    partition = 'primary'
 
     def __init__(self, name: str, desc: Optional[str], param_type: str,
                  unpacked_dimensions: Optional[str]):
@@ -52,6 +66,9 @@ class BaseParam:
         rd['type'] = self.param_type
         if self.unpacked_dimensions is not None:
             rd['unpacked_dimensions'] = self.unpacked_dimensions
+        # Only emitted for split IPs, so non-split IPs see no change.
+        if self.partition != 'primary':
+            rd['partition'] = self.partition
         return rd
 
 
@@ -146,6 +163,10 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
             check_str(r_unpacked_dimensions,
                       'unpacked_dimensions field of ' + where)
 
+    partition = check_partition(rd.get('partition', 'primary'),
+                                'partition field of ' + where,
+                                allow_both=True)
+
     # TODO: We should probably check that any register called RndCnstFoo has
     #       randtype and randcount.
     if name.lower().startswith('rndcnst') and 'randtype' in rd:
@@ -200,7 +221,10 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                 'meaning that the parameter is exposed to the top-level. '
                 'This is incompatible with being a random netlist constant.')
 
-        return RandParameter(name, desc, param_type, randcount, randtype)
+        rand_param = RandParameter(name, desc, param_type, randcount, randtype)
+        if partition != 'primary':
+            rand_param.partition = partition
+        return rand_param
 
     # This doesn't have a name like a random netlist constant. Check that it
     # doesn't define randcount or randtype.
@@ -238,7 +262,10 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                 'meaning that the parameter is exposed to the top-level. '
                 'This is incompatible with being a memory size parameter.')
 
-        return MemSizeParameter(name, desc, param_type)
+        memsize_param = MemSizeParameter(name, desc, param_type)
+        if partition != 'primary':
+            memsize_param.partition = partition
+        return memsize_param
 
     r_type = rd.get('type')
     if r_type is None:
@@ -259,13 +286,17 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                       f'default field of {name}, (an integer parameter)')
 
     if local and expose:
-        return Parameter(name, desc, param_type, unpacked_dimensions, default,
-                         local, expose)
+        param: BaseParam = Parameter(name, desc, param_type,
+                                     unpacked_dimensions, default, local,
+                                     expose)
     elif local:
-        return LocalParam(name, desc, param_type, unpacked_dimensions, default)
+        param = LocalParam(name, desc, param_type, unpacked_dimensions, default)
     else:
-        return Parameter(name, desc, param_type, unpacked_dimensions, default,
-                         local, expose)
+        param = Parameter(name, desc, param_type, unpacked_dimensions, default,
+                          local, expose)
+    if partition != 'primary':
+        param.partition = partition
+    return param
 
 
 # Note: With a modern enough Python, we'd like this to derive from
