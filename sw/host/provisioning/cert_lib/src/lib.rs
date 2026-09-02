@@ -26,6 +26,7 @@ use ot_certs::CertFormat;
 use ot_certs::cbor;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::generate_certificate_from_tbs;
+use runfiles::{Runfiles, rlocation};
 
 /// Certificate Authority key type.
 #[derive(Debug, Clone, Deserialize)]
@@ -64,12 +65,24 @@ pub struct CaConfig {
     pub key: String,
 }
 
+fn find_openssl_bin() -> Result<std::path::PathBuf> {
+    let r = Runfiles::create()?;
+    if let Some(path) = rlocation!(r, "openssl/openssl") {
+        if path.exists() {
+            return Ok(path);
+        }
+        bail!("openssl binary ({:?}) does not exist!", path);
+    }
+    bail!("Could not create @openssl//:openssl binary runfile path");
+}
+
 /// Execute an openssl invocation, passing the args[] as command line parameters.
 ///
 /// The intended use is openssl x509 certificate verification. cert_num is the
 /// number of the certificate in the list of certificates being validated.
 fn openssl_command(args: &[&str]) -> Result<()> {
-    let o = Command::new("openssl").args(args).output()?;
+    let openssl_bin = find_openssl_bin()?;
+    let o = Command::new(openssl_bin).args(args).output()?;
     if !o.status.success() {
         log::error!(
             "openssl output:\n{}",
