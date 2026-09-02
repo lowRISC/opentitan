@@ -168,7 +168,8 @@
   sw_build_device: sim_dv
 
   // Add a default build option to indicate it is a top-level DV testbench.
-  build_opts: ["+define+TOP_LEVEL_DV"]
+  // Increase the width for `uvm_hdl_read` to 2048 bits
+  build_opts: ["+define+TOP_LEVEL_DV", "+define+UVM_HDL_MAX_WIDTH=2048"]
 
   // Add build modes.
   build_modes: [
