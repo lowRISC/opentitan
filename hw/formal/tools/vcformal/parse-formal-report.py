@@ -13,6 +13,13 @@ import sys
 import hjson
 
 
+# The engine this parser reports on. common_formal_cfg.hjson invokes
+# `{formal_root}/tools/{tool}/parse-formal-report.py`, so the directory holding this script is the
+# tool name by the flow's own contract, and an expected-failure file uses that name to scope a
+# waiver to one engine.
+TOOL = Path(__file__).resolve().parent.name
+
+
 def extract_messages(str_buffer, patterns):
     '''Extract messages matching patterns from str_buffer as a dictionary.
 
@@ -78,8 +85,41 @@ def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
     return results
 
 
-def get_expected_failures(exp_failure_path):
-    '''Return the expected failing properties from a hjson file, or an empty dict if there are none.
+def select_tool_waivers(exp_failures, tool, exp_failure_path):
+    '''Return the waivers in an expected-failure file that apply to one tool.
+
+    Two shapes are accepted. A file whose top-level values are lists is the flat form, which
+    applies to every engine and is what every file in the tree was before sections existed. A file
+    whose top-level values are mappings is keyed by tool name, and only the section naming this
+    engine applies.
+
+    Sections are what make a waiver correct across engines, because a property name is only
+    meaningful to the engine that emits it. The `:precondition1` cover items every file in the tree
+    waives are synthesised by JasperGold and have no VC Formal equivalent, so a flat file waiving
+    them has VC Formal count all three as failures for being absent.
+    '''
+    if not exp_failures:
+        return {}
+
+    values = list(exp_failures.values())
+    if all(isinstance(value, list) for value in values):
+        return exp_failures
+
+    if all(isinstance(value, dict) for value in values):
+        waivers = exp_failures.get(tool)
+        if waivers is None:
+            log.info("%s has no %s section, so no property is waived for this engine.",
+                     exp_failure_path, tool)
+            return {}
+        return waivers
+
+    log.error("%s mixes per-tool sections with bare categories, so it cannot be read. "
+              "No property is waived.", exp_failure_path)
+    return {}
+
+
+def get_expected_failures(exp_failure_path, tool):
+    '''Return the expected failing properties that apply to one tool, or an empty dict if none.
 
     An unreadable or malformed file yields an empty dict, so no property is waived and nothing the
     run failed is hidden. It must not raise instead: the exception would escape into the caller's
@@ -91,7 +131,7 @@ def get_expected_failures(exp_failure_path):
 
     try:
         with Path(exp_failure_path).open() as f:
-            return hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+            exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
     except OSError as err:
         log.error("Cannot read the expected-failure file %s: %s. No property is waived.",
                   exp_failure_path, err)
@@ -100,6 +140,8 @@ def get_expected_failures(exp_failure_path):
         log.error("Cannot parse the expected-failure file %s: %s. No property is waived.",
                   exp_failure_path, err)
         return {}
+
+    return select_tool_waivers(exp_failures, tool, exp_failure_path)
 
 
 def format_percentage(good, bad):
@@ -154,7 +196,7 @@ def get_results(logpath, exp_failure_path):
             results = OrderedDict()
             full_file = f.read()
             results["messages"] = parse_message(full_file)
-            results["exp_failures"] = get_expected_failures(exp_failure_path)
+            results["exp_failures"] = get_expected_failures(exp_failure_path, TOOL)
             summary = get_summary(full_file, results["exp_failures"])
             if summary:
                 results["summary"] = summary
