@@ -29,7 +29,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [Reset shadowed interface](../../../dv/sv/common_ifs/README.md)  // TODO add something in this doc about this interface.
 * [TileLink host interface for the core CSRs](../../../dv/sv/tl_agent/README.md)
 * [TileLink host interface for the JTAG registers](../../../dv/sv/tl_agent/README.md)
-* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_if`](../../../dv/sv/alert_agent/README.md))
 * [Interface from the life cycle manager](../../lc_ctrl/dv/README.md)
 
 ### Common DV utility components
@@ -54,7 +54,7 @@ Some of them in use are:
 The `tl_agent` monitor supplies partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `soc_dbg_ctrl` scoreboard.
 
 ### Alert_agent
-`soc_dbg_ctrl` testbench instantiates (already handled in CIP base env) [alert_agents](../../../dv/sv/alert_esc_agent/README.md):
+`soc_dbg_ctrl` testbench instantiates (already handled in CIP base env) [alert_agents](../../../dv/sv/alert_agent/README.md):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in SOC_DBG_CTRL device.
 

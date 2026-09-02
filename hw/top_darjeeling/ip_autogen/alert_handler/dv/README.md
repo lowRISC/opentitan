@@ -30,7 +30,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * ALERT_HANDLER IOs
-* Alerts and escalations([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Alert interfaces ([`alert_if`](../../../../dv/sv/alert_agent/README.md))
+* Escalation interfaces ([`esc_if`](../../../../dv/sv/esc_agent/README.md))
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md#pins_if))
 
 The alert_handler testbench environment can be reused in chip level testing.
@@ -52,9 +53,11 @@ ALERT_HANDLER testbench instantiates (already handled in CIP base env) [tl_agent
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ALERT_HANDLER device.
 
-### ALERT_ESC Agent
-[ALERT_ESC agent](../../../../dv/sv/alert_esc_agent/README.md) is used to drive and monitor transmitter and receiver pairs for the alerts and escalators.
-Alert_handler DUT includes alert_receivers and esc_senders, so the alert_esc agent will drive output signals of the alert_senders and esc_receivers.
+### The alert agent
+[alert agent](../../../../dv/sv/alert_agent/README.md) is used to model alert senders of connected blocks.
+
+### The escalation agent
+[esc_agent](../../../../dv/sv/esc_agent/README.md) is used to model a receiver for escalations from `alert_handler`.
 
 ### UVM RAL Model
 The ALERT_HANDLER RAL model is created with the [`ralgen`](../../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.

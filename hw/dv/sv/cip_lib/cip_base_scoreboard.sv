@@ -14,7 +14,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)   tl_d_chan_fifos[string];
 
   // Alert_fifo to notify scb if DUT sends an alert
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
+  uvm_tlm_analysis_fifo #(alert_seq_item) alert_fifos[string];
 
   // EDN fifo
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifos[];
@@ -239,20 +239,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       automatic string alert_name = i;
       fork
         forever begin
-          alert_esc_seq_item item;
+          alert_seq_item item;
           alert_fifos[alert_name].get(item);
-          `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_esc_item: \n%0s",
+          `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_item: \n%0s",
                                     cfg.en_scb, item.sprint), UVM_DEBUG)
           if (!cfg.en_scb) continue;
-          if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
-              item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
+          if (item.m_trans_type == AlertSigTrans && !item.m_ping_timeout &&
+              item.m_alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response.
           // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
           // disable signal integrity checking via `check_alert_sig_int_err` flag.
-          end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
+          end else if (check_alert_sig_int_err && item.m_trans_type == AlertIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
-          end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
+          end else if (item.m_ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
           end
         end
@@ -263,7 +263,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Called at the start of each alert handshake. The default implementation depends on the
   // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
   // expected_alert[alert_name].expected).
-  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void on_alert(string alert_name, alert_seq_item item);
     if (do_alert_check) begin
       `DV_CHECK_EQ(expected_alert[alert_name].expected, 1,
                    $sformatf("alert %0s triggered unexpectedly", alert_name))
@@ -272,14 +272,14 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
-  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void process_alert(string alert_name, alert_seq_item item);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
 
     `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s", alert_name,
-                              item.alert_handshake_sta), UVM_DEBUG)
-    if (item.alert_handshake_sta == AlertReceived) begin
+                              item.m_alert_handshake_sta), UVM_DEBUG)
+    if (item.m_alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       on_alert(alert_name, item);
       ++alert_count[alert_name];
@@ -335,18 +335,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // This task is safe to kill at any time.
   task wait_slower_n_cycles(int unsigned         count,
                             virtual clk_rst_if   clk_rst_vif,
-                            virtual alert_esc_if alert_esc_vif);
+                            virtual alert_if     alert_vif);
     fork : isolation_fork begin
       fork
         // This is the main process of the task: it waits count clocks on each interface, using
         // fork/join to wait until the slower one is finished.
         fork
           clk_rst_vif.wait_n_clks(count);
-          repeat (count) @(negedge alert_esc_vif.clk);
+          repeat (count) @(negedge alert_vif.clk);
         join
         // These two processes wait for a reset to be asserted on one of the interfaces
         wait (!clk_rst_vif.rst_n);
-        wait (!alert_esc_vif.rst_n);
+        wait (!alert_vif.rst_n);
       join_any
 
       // At this point, there have either been count negative edges of each clock or one of the
@@ -358,7 +358,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
   // it should not clear the `expected_alert[alert_name].expected` flag
   local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
-    alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+    alert_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
 
     // A snapshot of the number of ping requests that have been seen when this task starts.
     int unsigned ping_count = agent_cfg.ping_count;
@@ -373,7 +373,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     //
     // - Finally, the +1 is to give one extra negedge clock to avoid historically seen race
     //   conditions.
-    int unsigned max_cycles_til_alert = (alert_esc_agent_pkg::ALERT_B2B_DELAY +
+    int unsigned max_cycles_til_alert = (alert_agent_pkg::ALERT_B2B_DELAY +
                                          expected_alert[alert_name].max_delay +
                                          1);
 
@@ -421,7 +421,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                           "(Max wait calculated ALERT_B2B_DELAY + max_delay + 1 = %0d + %0d + 1)"},
                          max_cycles_til_alert,
                          alert_name,
-                         alert_esc_agent_pkg::ALERT_B2B_DELAY,
+                         alert_agent_pkg::ALERT_B2B_DELAY,
                          expected_alert[alert_name].max_delay))
   endtask
 

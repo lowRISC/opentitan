@@ -38,7 +38,7 @@ The following interfaces are also used, which the testbench instantiates, connec
 - An interface `usb20_block_if` representing the USB interface between the `usb20_agent` and the DUT.
 This interface carries additional signals that are not part of the USB.
 This additionally both permits the testing of all bus configurations and presently aids the operation of the usb20_monitor which requires knowledge of whether the USB is being driven by the agent or the DUT.
-- An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
+- An [alert interface](../../../dv/sv/alert_agent/README.md)
 - Interrupts, modeled with the basic [`pins_if`](../../../dv/sv/common_ifs/README.md) interface.
 - An interface `usbdev_osc_tuning_if` which provides access to the timing reference information of the DUT, allowing the USBDEV clock to be adjusted to track the signaling frequency of the USB host controller.
 - A final interface 'host_clk_rst_if' is also situated within the testbench, which allows the clock frequency of the `usb20_agent` or USB DPI model to be varied to simulate a frequency mismatch between the host controller and the DUT.

@@ -31,9 +31,9 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   // bus is associated.
   local tl_reg_adapter #(tl_seq_item) m_tl_reg_adapters[string];
 
-  // An associative array of alert/escalation agents, keyed by the names of the different possible
-  // alerts (from cfg.list_of_alerts).
-  local alert_esc_agent               m_alert_agent[string];
+  // An associative array of alert agents, keyed by the names of the different possible alerts (from
+  // cfg.list_of_alerts).
+  local alert_agent                   m_alert_agent[string];
 
   // A dynamic array of agents for EDN interfaces. This has cfg.num_edn items
   local edn_push_pull_agent_t         m_edn_pull_agent[];
@@ -86,9 +86,9 @@ function void cip_base_env::build_phase(uvm_phase phase);
     string agent_name = {"m_alert_agent_", alert_name};
     string common_seq_type;
     void'($value$plusargs("run_%0s", common_seq_type));
-    m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
-    uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
-        cfg.m_alert_agent_cfgs[alert_name]);
+    m_alert_agent[alert_name] = alert_agent::type_id::create(agent_name, this);
+    uvm_config_db#(alert_agent_cfg)::set(this, agent_name, "cfg",
+                                         cfg.m_alert_agent_cfgs[alert_name]);
     cfg.m_alert_agent_cfgs[alert_name].en_cov = cfg.en_cov;
     cfg.m_alert_agent_cfgs[alert_name].clk_freq_mhz = int'(cfg.clk_freq_mhz);
 
@@ -159,8 +159,14 @@ function void cip_base_env::connect_phase(uvm_phase phase);
   end
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
-    m_alert_agent[alert_name].monitor.alert_esc_port.connect(
-        scoreboard.alert_fifos[alert_name].analysis_export);
+    alert_agent agent = m_alert_agent[alert_name];
+
+    if (agent.m_alert_port == null) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Agent for alert %0s has no alert port in its monitor", alert_name))
+    end
+
+    agent.m_alert_port.connect(scoreboard.alert_fifos[alert_name].analysis_export);
   end
 
   foreach (cfg.m_tl_agent_cfgs[i]) begin
@@ -173,7 +179,7 @@ function void cip_base_env::connect_phase(uvm_phase phase);
   end
   foreach(cfg.list_of_alerts[i]) begin
     if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
-      virtual_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[i]] =
+      virtual_sequencer.m_alert_sequencers[cfg.list_of_alerts[i]] =
           m_alert_agent[cfg.list_of_alerts[i]].sequencer;
     end
   end

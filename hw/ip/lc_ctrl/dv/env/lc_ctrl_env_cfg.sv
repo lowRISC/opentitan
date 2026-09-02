@@ -13,8 +13,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
     .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
   ) m_otp_prog_pull_agent_cfg;
-  alert_esc_agent_cfg m_esc_scrap_state1_agent_cfg;
-  alert_esc_agent_cfg m_esc_scrap_state0_agent_cfg;
+  esc_agent_cfg m_esc_scrap_state1_agent_cfg;
+  esc_agent_cfg m_esc_scrap_state0_agent_cfg;
   jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   kmac_app_agent_cfg m_kmac_app_agent_cfg;
 
@@ -89,15 +89,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     m_otp_prog_pull_agent_cfg.in_bidirectional_mode = 1;
 
 
-    m_esc_scrap_state1_agent_cfg =
-        alert_esc_agent_cfg::type_id::create("m_esc_scrap_state1_agent_cfg");
+    m_esc_scrap_state1_agent_cfg = esc_agent_cfg::type_id::create("m_esc_scrap_state1_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state1_agent_cfg)
-    m_esc_scrap_state1_agent_cfg.is_alert = 0;
 
-    m_esc_scrap_state0_agent_cfg =
-        alert_esc_agent_cfg::type_id::create("m_esc_scrap_state0_agent_cfg");
+    m_esc_scrap_state0_agent_cfg = esc_agent_cfg::type_id::create("m_esc_scrap_state0_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state0_agent_cfg)
-    m_esc_scrap_state0_agent_cfg.is_alert = 0;
 
     m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
 

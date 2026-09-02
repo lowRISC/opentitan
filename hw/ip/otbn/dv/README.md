@@ -43,7 +43,7 @@ OTBN has the following interfaces:
   In the OpenTitan SoC, this will be the Ibex core.
 - Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
 - One interrupt
-- An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
+- An [alert interface](../../../dv/sv/alert_agent/README.md)
 - A life cycle escalation interface
 - An OTP: for example, see earlgrey's [OTP](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md) connection
 - Two [EDN](../../edn/README.md) connections

@@ -570,7 +570,7 @@
   - [SRAM Scrambler](./hw/ip/prim/doc/prim_ram_1p_scr.md)
 
 - [Common SystemVerilog and UVM Components](./hw/dv/sv/README.md)
-  - [ALERT_ESC Agent](./hw/dv/sv/alert_esc_agent/README.md)
+  - [Alert agent](./hw/dv/sv/alert_agent/README.md)
   - [Bus Params Package](./hw/dv/sv/bus_params_pkg/README.md)
   - [Comportable IP Testbench Architecture](./hw/dv/sv/cip_lib/README.md)
   - [Common Interfaces](./hw/dv/sv/common_ifs/README.md)
@@ -578,6 +578,7 @@
   - [CSRNG Agent](./hw/dv/sv/csrng_agent/README.md)
   - [DV Library Classes](./hw/dv/sv/dv_lib/README.md)
   - [DV Utils](./hw/dv/sv/dv_utils/README.md)
+  - [Escalation agent](./hw/dv/sv/esc_agent/README.md)
   - [FLASH_PHY_PRIM Agent](./hw/dv/sv/flash_phy_prim_agent/README.md)
   - [I2C Agent](./hw/dv/sv/i2c_agent/README.md)
   - [JTAG Agent](./hw/dv/sv/jtag_agent/README.md)

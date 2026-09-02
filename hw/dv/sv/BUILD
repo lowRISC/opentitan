@@ -20,7 +20,8 @@ filegroup(
         "**/*.md",
         "**/*.svg",
     ]) + [
-        "//hw/dv/sv/alert_esc_agent/data:doc_files",
+        "//hw/dv/sv/alert_agent/data:doc_files",
+        "//hw/dv/sv/esc_agent/data:doc_files",
         "//hw/dv/sv/mem_bkdr_scb/data:doc_files",
     ],
 )

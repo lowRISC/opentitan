@@ -37,7 +37,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md) for the debug memory space (which only contains the alert register).
 * [TileLink device interface](../../../dv/sv/tl_agent/README.md) for the SBA interface that is used by the JTAG debugger to access the whole chip.
 * [JTAG interface](../../../dv/sv/jtag_agent/README.md) to act as an external JTAG host.
-* [Alert and escalation interface](../../../dv/sv/alert_esc_agent/README.md) for the alert interface.
+* [Alert interface](../../../dv/sv/alert_agent/README.md).
   * The instantiation and hookup of this interface is done using the standardized common macro `` `DV_ALERT_IF_CONNECT`` defined in `hw/dv/sv/dv_utils/dv_macros.svh`.
 * RV_DM interface for driving / sampling the remaining DUT IOs
   * Inputs driven / sampled: `lc_hw_debug_en_i`, `scanmode_i`, `scan_rst_ni`, `unavailable_i`
@@ -59,7 +59,7 @@ This provides the ability to drive and independently monitor random traffic via 
 
 ### Alert_agent
 
-RV_DM testbench instantiates an [alert_agent](../../../dv/sv/alert_esc_agent/README.md).
+The RV_DM testbench instantiates an [alert_agent](../../../dv/sv/alert_agent/README.md).
 This is already done in the CIP base environment.
 It uses a string array of alert names to associate each instance of an alert signal. RV_DM exposes only a single alert signal, so this array is set to ["fatal_fault"].
 This alert is wired from the bus integrity logic.
