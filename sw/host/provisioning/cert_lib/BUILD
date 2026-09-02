@@ -24,7 +24,10 @@ rust_library(
         ":mldsa_signing_for_test": ["mldsa_experimental_signing"],
         "//conditions:default": [],
     }),
-    data = ["//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem"],
+    data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
+        "@openssl",
+    ],
     edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
@@ -41,6 +44,7 @@ rust_library(
         "@crate_index//:p256",
         "@crate_index//:serde",
         "@hwtrust",
+        "@rules_rust//rust/runfiles",
     ],
 )
 
