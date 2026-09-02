@@ -6,11 +6,32 @@
 import argparse
 import logging as log
 import re
-from pathlib import Path
-from collections import OrderedDict
 import sys
+from collections import OrderedDict
+from pathlib import Path
 
 import hjson
+
+# The parser's directory names its engine in common_formal_cfg.hjson.
+TOOL = Path(__file__).resolve().parent.name
+
+# Reject sections that name no supported engine.
+KNOWN_TOOLS = frozenset(
+    entry.name for entry in Path(__file__).resolve().parent.parent.iterdir()
+    if (entry / Path(__file__).name).is_file())
+
+# common_formal_cfg.hjson treats ERROR-level diagnostics as build failures.
+
+SUMMARY_PATTERNS = [("errors", r"^ERROR: .*"), ("errors", r"^\[ERROR.*"),
+                    ("warnings", r"^WARNING: .*"), ("warnings", r"^\[WARN.*"),
+                    ("proven", r"^\[\d+\].*proven.*"),
+                    ("cex", r"^\[\d+\].*cex.*"),
+                    ("covered", r"^\[\d+\].*covered.*"),
+                    ("undetermined", r"^\[\d+\].*undetermined.*"),
+                    ("unreachable", r"^\[\d+\].*unreachable.*")]
+
+# Accept only categories counted in the summary.
+WAIVER_CATEGORIES = frozenset(key for key, _ in SUMMARY_PATTERNS)
 
 
 def extract_messages(str_buffer, patterns):
@@ -28,42 +49,35 @@ def extract_messages(str_buffer, patterns):
 
 
 def drop_expected_messages(key, matched, exp_unproven_properties):
-    '''Drop one matched message per expected property, and flag the ones that are absent.
+    '''Drop uniquely matched properties and report stale or ambiguous waivers.
 
-    Matching is by substring, so an expected property drops exactly one message rather than every
-    message it appears in: one entry in the expected-failure file waives one property. An entry
-    matching nothing is reported and left in the count, because a waiver naming a property the run
-    did not produce is either stale or misspelled and must not pass unnoticed.
+    Keep stale-entry placeholders separate so later waivers cannot match them.
     '''
     remaining = list(matched)
+    unmatched = []
     for unproven_property in exp_unproven_properties:
-        found = next((item for item in remaining if unproven_property in item), None)
-        if found is None:
+        found = [item for item in remaining if unproven_property in item]
+        if not found:
             log.error(
                 "Expected %s property '%s' is not in the report, so it is counted as a failure. "
-                "The expected-failure file is stale or the name is wrong.", key,
-                unproven_property)
-            remaining.append("Fail to find this property: " + unproven_property)
+                "The expected-failure file is stale or the name is wrong.",
+                key, unproven_property)
+            unmatched.append("Fail to find this property: " +
+                             unproven_property)
+        elif len(found) > 1:
+            log.error(
+                "Expected %s property '%s' matches %d messages, so it is ambiguous and waives "
+                "none of them. Give the property name in full.", key,
+                unproven_property, len(found))
         else:
-            remaining.remove(found)
+            remaining.remove(found[0])
 
-    return remaining
+    return remaining + unmatched
 
 
 def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
-    '''Extract messages matching patterns from str_buffer as a dictionary.
-
-    The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
-    and the total count of all matches in str_buffer are stored in a dictionary under
-    the paired key.
-    If `exp_unproven_properties` is given, each property expected to fail under a key drops one
-    match from that key's count, and a property that is not there is counted as a failure instead.
-    See drop_expected_messages.
-    Several patterns may share one key, so the matches are gathered per key before the expected
-    properties are dropped. Dropping them per pattern would instead apply a waiver once for every
-    pattern under the key, and a waiver removing a message under one pattern while being reported
-    absent under the next leaves the count unchanged.
-    '''
+    '''Count matches by category, then apply each waiver once.'''
+    # Combine patterns first: some statuses share a category.
     matched = OrderedDict()
     for key, pattern in patterns:
         matched.setdefault(key, [])
@@ -72,7 +86,8 @@ def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
     results = OrderedDict()
     for key, messages in matched.items():
         if exp_unproven_properties and key in exp_unproven_properties:
-            messages = drop_expected_messages(key, messages, exp_unproven_properties[key])
+            messages = drop_expected_messages(key, messages,
+                                              exp_unproven_properties[key])
         results[key] = len(messages)
 
     return results
@@ -98,42 +113,92 @@ def parse_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def get_expected_failures(exp_failure_path):
-    '''Return the expected failing properties from a hjson file, or an empty dict if there are none.
+def check_waiver_categories(waivers, exp_failure_path):
+    '''Validate category names and property-name lists.'''
+    for category, properties in waivers.items():
+        if category not in WAIVER_CATEGORIES:
+            log.error(
+                "%s names category '%s', which is not one this parser counts. Expected one of "
+                "%s. No property is waived.", exp_failure_path, category,
+                ", ".join(sorted(WAIVER_CATEGORIES)))
+            return {}
 
-    An unreadable or malformed file yields an empty dict, so no property is waived and nothing the
-    run failed is hidden. It must not raise instead: the exception would escape into the caller's
-    own `except IOError`, which would report the log file as the one that could not be opened and
-    then leave main() to fail on a results dictionary that was never filled in.
-    '''
+        if not isinstance(properties, list) or not all(
+                isinstance(p, str) and p.strip() for p in properties):
+            log.error(
+                "%s category '%s' must hold a list of nonempty property names. "
+                "No property is waived.", exp_failure_path, category)
+            return {}
+
+    return waivers
+
+
+def select_tool_waivers(exp_failures, tool, exp_failure_path):
+    '''Read legacy flat waivers or the section for the selected engine.'''
+    if not isinstance(exp_failures, dict):
+        log.error(
+            "%s must contain a mapping of categories or engine sections. "
+            "No property is waived.", exp_failure_path)
+        return {}
+
+    if not exp_failures:
+        return {}
+
+    values = list(exp_failures.values())
+    if all(isinstance(value, list) for value in values):
+        return check_waiver_categories(exp_failures, exp_failure_path)
+
+    if all(isinstance(value, dict) for value in values):
+        unknown = sorted(set(exp_failures) - KNOWN_TOOLS)
+        if unknown:
+            log.error(
+                "%s has section(s) %s, which name no engine with a parser. Expected one of %s. "
+                "No property is waived.", exp_failure_path, ", ".join(unknown),
+                ", ".join(sorted(KNOWN_TOOLS)))
+            return {}
+
+        waivers = exp_failures.get(tool)
+        if waivers is None:
+            log.info(
+                "%s has no %s section, so no property is waived for this engine.",
+                exp_failure_path, tool)
+            return {}
+        return check_waiver_categories(waivers, exp_failure_path)
+
+    log.error(
+        "%s mixes per-tool sections with bare categories, so it cannot be read. "
+        "No property is waived.", exp_failure_path)
+    return {}
+
+
+def get_expected_failures(exp_failure_path, tool):
+    '''Read expected failures, reporting invalid files without waiving anything.'''
     if not exp_failure_path:
         return {}
 
     try:
         with Path(exp_failure_path).open() as f:
-            return hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+            exp_failures = hjson.load(f,
+                                      use_decimal=True,
+                                      object_pairs_hook=OrderedDict)
     except OSError as err:
-        log.error("Cannot read the expected-failure file %s: %s. No property is waived.",
-                  exp_failure_path, err)
+        log.error(
+            "Cannot read the expected-failure file %s: %s. No property is waived.",
+            exp_failure_path, err)
         return {}
     except ValueError as err:
-        log.error("Cannot parse the expected-failure file %s: %s. No property is waived.",
-                  exp_failure_path, err)
+        log.error(
+            "Cannot parse the expected-failure file %s: %s. No property is waived.",
+            exp_failure_path, err)
         return {}
+
+    return select_tool_waivers(exp_failures, tool, exp_failure_path)
 
 
 def get_summary(str_buffer, exp_failures):
     '''Count errors, warnings, and property status from the log file'''
-    message_patterns = [("errors", r"^ERROR: .*"),
-                        ("errors", r"^\[ERROR.*"),
-                        ("warnings", r"^WARNING: .*"),
-                        ("warnings", r"^\[WARN.*"),
-                        ("proven", r"^\[\d+\].*proven.*"),
-                        ("cex", r"^\[\d+\].*cex.*"),
-                        ("covered", r"^\[\d+\].*covered.*"),
-                        ("undetermined", r"^\[\d+\].*undetermined.*"),
-                        ("unreachable", r"^\[\d+\].*unreachable.*")]
-    summary = extract_messages_count(str_buffer, message_patterns, exp_failures)
+    summary = extract_messages_count(str_buffer, SUMMARY_PATTERNS,
+                                     exp_failures)
 
     summary["pass_rate"] = format_percentage(summary["proven"],
                                              summary["cex"] + summary["undetermined"] +
@@ -151,7 +216,8 @@ def get_results(logpath, exp_failure_path):
             full_file = f.read()
             results["messages"] = parse_message(full_file)
 
-            results["exp_failures"] = get_expected_failures(exp_failure_path)
+            results["exp_failures"] = get_expected_failures(
+                exp_failure_path, TOOL)
 
             results["summary"] = get_summary(full_file, results["exp_failures"])
             return results
@@ -247,13 +313,14 @@ def main():
                         help=('Tesbench name. '
                               'By default is empty, used for coverage parsing.'))
 
-    parser.add_argument('--exp-fail-path',
-                        type=str,
-                        default=None,
-                        help=('The path of a hjson file that contains expected failing properties.'
-                              '''By default is empty, used only if there are properties that are
-                               expected to fail. If input is an empty string, will treat it as not
-                               passing a file.'''))
+    parser.add_argument(
+        '--exp-fail-path',
+        type=str,
+        default=None,
+        help=(
+            'Path to an expected-failure Hjson file. Categories can be at the '
+            'top level (all engines) or under engine-name sections. '
+            'An empty path applies no waivers.'))
 
     args = parser.parse_args()
 
