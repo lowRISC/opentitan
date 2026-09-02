@@ -682,7 +682,7 @@ module rram_phy_rd
   // If any fifo shows an integrity error
   assign fifo_err_o = |{meta_fifo_err, rd_fifo_err, mask_fifo_err};
 
-  // SEC_CM: PHY_RD_BUF.CTRL.INTEGRITY
+  // SEC_CM: PHY_RD_BUF.CTRL.INTEGRITY, MEM.READBACK
   // Integrity error if a verify operation found a mismatch
   assign intg_err_o = |buf_intg_err;
 

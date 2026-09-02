@@ -302,6 +302,23 @@
     { name: "WR_TL_LC_GATE.FSM.SPARSE",
       desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
     }
+    { name: "MEM.READBACK",
+      desc: '''
+            Every RRAM read is issued twice (a shadow read).
+            If the two results differ, it indicates the data was manipulated during the read process (e.g. by a fault injection attack), and a fatal alert is raised.
+            '''
+    }
+    { name: "MEM.INTEGRITY",
+      desc: '''
+            The RRAM macro computes ECC for every stored word.
+            rram_ctrl controls whether ECC is enabled per region or info page (ecc_en), and captures the location and count of correctable errors in CORR_ERR_LOC/CORR_ERR_CNT.
+            '''
+    }
+    { name: "OTP.MEM.INTEGRITY",
+      desc: '''
+            Each OTP word is protected with an additional 8-bit Hamming(72,64) integrity syndrome, stored separately in the OTP integrity page, on top of the RRAM macro's own ECC.
+            '''
+    }
   ]
 
   param_list: [
