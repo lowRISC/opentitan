@@ -19,7 +19,7 @@ package keymgr_dpe_pkg;
   parameter int Shares                = 2;
   // Key version length
   parameter int KeyVersionWidth       = 32;
-  // Width of wide sideload key (consumed by OTBN)
+  // Width of wide sideload key (consumed by OTBN / HMAC)
   parameter int WideHwKeyWidth        = 512;
   // Data width of KMAC interface
   parameter int KmacDataIfWidth       = 64;
@@ -170,6 +170,9 @@ package keymgr_dpe_pkg;
     256'hc57f4c0b_b308e83f_3fc4bc63_d87dd67d_9071dc1c_e19484c8_3c94fb97_dd634369;
   parameter seed_t RndCnstOtbnSeedDefault =
     256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
+  // seed argument: --seed 7535201
+  parameter seed_t RndCnstHmacSeedDefault =
+    256'h64812715_c6be53f9_e159a531_3e2e534c_af6357aa_68dbd6a0_852693ca_490f6810;
 
 
   //////////////////////////////////////
@@ -222,7 +225,7 @@ package keymgr_dpe_pkg;
     logic [Shares-1:0][KeyWidth-1:0] key;
   } hw_key_req_t;
 
-  // Key connection to otbn
+  // Key connection to otbn / hmac
   typedef struct packed {
     logic valid;
     logic [Shares-1:0][WideHwKeyWidth-1:0] key;
@@ -292,18 +295,20 @@ package keymgr_dpe_pkg;
   //////////////////////////
 
   // Enumeration for sideload sel
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     None,
     Aes,
     Kmac,
-    Otbn
+    Otbn,
+    Hmac
   } keymgr_dpe_key_dest_e;
 
   // Enumeration for actual key slot idx
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     AesIdx,
     KmacIdx,
     OtbnIdx,
+    HmacIdx,
     LastIdx
   } keymgr_dpe_sideload_slot_idx_e;
 
@@ -311,7 +316,8 @@ package keymgr_dpe_pkg;
     SideLoadClrIdle,
     SideLoadClrAes,
     SideLoadClrKmac,
-    SideLoadClrOtbn
+    SideLoadClrOtbn,
+    SideLoadClrHmac
   } keymgr_dpe_sideload_clr_e;
 
 
