@@ -27,37 +27,53 @@ def extract_messages(str_buffer, patterns):
     return results
 
 
+def drop_expected_messages(key, matched, exp_unproven_properties):
+    '''Drop one matched message per expected property, and flag the ones that are absent.
+
+    Matching is by substring, so an expected property drops exactly one message rather than every
+    message it appears in: one entry in the expected-failure file waives one property. An entry
+    matching nothing is reported and left in the count, because a waiver naming a property the run
+    did not produce is either stale or misspelled and must not pass unnoticed.
+    '''
+    remaining = list(matched)
+    for unproven_property in exp_unproven_properties:
+        found = next((item for item in remaining if unproven_property in item), None)
+        if found is None:
+            log.error(
+                "Expected %s property '%s' is not in the report, so it is counted as a failure. "
+                "The expected-failure file is stale or the name is wrong.", key,
+                unproven_property)
+            remaining.append("Fail to find this property: " + unproven_property)
+        else:
+            remaining.remove(found)
+
+    return remaining
+
+
 def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
-    '''Extract messages matching patterns from full_file as a dictionary.
+    '''Extract messages matching patterns from str_buffer as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and the total count of all matches in str_buffer are stored in a dictionary under
     the paired key.
-    If input argument `exp_unproven_properties` is not None, the total count will not
-    include the expected properties. However, if the expected are not found in its
-    category, will add the properties to the category.
+    If `exp_unproven_properties` is given, each property expected to fail under a key drops one
+    match from that key's count, and a property that is not there is counted as a failure instead.
+    See drop_expected_messages.
+    Several patterns may share one key, so the matches are gathered per key before the expected
+    properties are dropped. Dropping them per pattern would instead apply a waiver once for every
+    pattern under the key, and a waiver removing a message under one pattern while being reported
+    absent under the next leaves the count unchanged.
     '''
-    results = OrderedDict()
+    matched = OrderedDict()
     for key, pattern in patterns:
-        results.setdefault(key, 0)
+        matched.setdefault(key, [])
+        matched[key] += re.findall(pattern, str_buffer, flags=re.MULTILINE)
 
+    results = OrderedDict()
+    for key, messages in matched.items():
         if exp_unproven_properties and key in exp_unproven_properties:
-            matched_pattern = re.findall(pattern, str_buffer, flags=re.MULTILINE)
-            for unproven_property in exp_unproven_properties[key]:
-                unproven_property_found = 0
-                for item in matched_pattern:
-                    # If the expected unproven property is found, remove the item from the
-                    # list of matched_pattern.
-                    if unproven_property in item:
-                        matched_pattern.remove(item)
-                        unproven_property_found = 1
-                # If expected unproven property is not found, add the property to the
-                # list of matched pattern.
-                if not unproven_property_found:
-                    matched_pattern.append("Fail to find this property: " + unproven_property)
-            results[key] += len(matched_pattern)
-        else:
-            results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
+            messages = drop_expected_messages(key, messages, exp_unproven_properties[key])
+        results[key] = len(messages)
 
     return results
 
@@ -83,17 +99,27 @@ def parse_message(str_buffer):
 
 
 def get_expected_failures(exp_failure_path):
-    '''Get expected fail properties from a hjson file otherwise return None.'''
-    if exp_failure_path is None or exp_failure_path == "":
+    '''Return the expected failing properties from a hjson file, or an empty dict if there are none.
+
+    An unreadable or malformed file yields an empty dict, so no property is waived and nothing the
+    run failed is hidden. It must not raise instead: the exception would escape into the caller's
+    own `except IOError`, which would report the log file as the one that could not be opened and
+    then leave main() to fail on a results dictionary that was never filled in.
+    '''
+    if not exp_failure_path:
         return {}
-    else:
-        try:
-            with open(exp_failure_path, 'r') as f:
-                exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
-                return exp_failures
-        except ValueError:
-            log.error("{} not found".format(exp_failure_path))
-            return {}
+
+    try:
+        with Path(exp_failure_path).open() as f:
+            return hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+    except OSError as err:
+        log.error("Cannot read the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
+    except ValueError as err:
+        log.error("Cannot parse the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
 
 
 def get_summary(str_buffer, exp_failures):

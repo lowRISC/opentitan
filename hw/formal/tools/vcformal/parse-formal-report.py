@@ -27,19 +27,79 @@ def extract_messages(str_buffer, patterns):
     return results
 
 
-def extract_messages_count(str_buffer, patterns):
-    '''Extract messages matching patterns from full_file as a dictionary.
+def drop_expected_messages(key, matched, exp_unproven_properties):
+    '''Drop one matched message per expected property, and flag the ones that are absent.
+
+    Matching is by substring, so an expected property drops exactly one message rather than every
+    message it appears in: one entry in the expected-failure file waives one property. An entry
+    matching nothing is reported and left in the count, because a waiver naming a property the run
+    did not produce is either stale or misspelled and must not pass unnoticed.
+    '''
+    remaining = list(matched)
+    for unproven_property in exp_unproven_properties:
+        found = next((item for item in remaining if unproven_property in item), None)
+        if found is None:
+            log.error(
+                "Expected %s property '%s' is not in the report, so it is counted as a failure. "
+                "The expected-failure file is stale or the name is wrong.", key,
+                unproven_property)
+            remaining.append("Fail to find this property: " + unproven_property)
+        else:
+            remaining.remove(found)
+
+    return remaining
+
+
+def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
+    '''Extract messages matching patterns from str_buffer as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and the total count of all matches in str_buffer are stored in a dictionary under
     the paired key.
+    If `exp_unproven_properties` is given, each property expected to fail under a key drops one
+    match from that key's count, and a property that is not there is counted as a failure instead.
+    See drop_expected_messages.
+    Several patterns may share one key, so the matches are gathered per key before the expected
+    properties are dropped. Dropping them per pattern would instead apply a waiver once for every
+    pattern under the key, and a waiver removing a message under one pattern while being reported
+    absent under the next leaves the count unchanged.
     '''
-    results = OrderedDict()
+    matched = OrderedDict()
     for key, pattern in patterns:
-        results.setdefault(key, 0)
-        results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
+        matched.setdefault(key, [])
+        matched[key] += re.findall(pattern, str_buffer, flags=re.MULTILINE)
+
+    results = OrderedDict()
+    for key, messages in matched.items():
+        if exp_unproven_properties and key in exp_unproven_properties:
+            messages = drop_expected_messages(key, messages, exp_unproven_properties[key])
+        results[key] = len(messages)
 
     return results
+
+
+def get_expected_failures(exp_failure_path):
+    '''Return the expected failing properties from a hjson file, or an empty dict if there are none.
+
+    An unreadable or malformed file yields an empty dict, so no property is waived and nothing the
+    run failed is hidden. It must not raise instead: the exception would escape into the caller's
+    own `except IOError`, which would report the log file as the one that could not be opened and
+    then leave main() to fail on a results dictionary that was never filled in.
+    '''
+    if not exp_failure_path:
+        return {}
+
+    try:
+        with Path(exp_failure_path).open() as f:
+            return hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+    except OSError as err:
+        log.error("Cannot read the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
+    except ValueError as err:
+        log.error("Cannot parse the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
 
 
 def format_percentage(good, bad):
@@ -64,7 +124,7 @@ def parse_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def get_summary(str_buffer):
+def get_summary(str_buffer, exp_failures):
     '''Count errors, warnings, and property status from the log file'''
     message_patterns = [("errors", r"^Error.*"),
                         ("errors", r"^\[Error.*"),
@@ -77,7 +137,7 @@ def get_summary(str_buffer):
                         ("covered", r"^\d+,cover,covered,.*"),
                         ("unreachable", r"^\d+,cover,uncoverable,.*"),
                         ("undetermined", r"^\d+,cover,inconclusive,.*")]
-    summary = extract_messages_count(str_buffer, message_patterns)
+    summary = extract_messages_count(str_buffer, message_patterns, exp_failures)
 
     summary["pass_rate"] = format_percentage(summary["proven"],
                                              summary["cex"] + summary["undetermined"])
@@ -87,14 +147,15 @@ def get_summary(str_buffer):
     return summary
 
 
-def get_results(logpath):
+def get_results(logpath, exp_failure_path):
     '''Parse log file and extract info to a dictionary'''
     try:
         with Path(logpath).open() as f:
             results = OrderedDict()
             full_file = f.read()
             results["messages"] = parse_message(full_file)
-            summary = get_summary(full_file)
+            results["exp_failures"] = get_expected_failures(exp_failure_path)
+            summary = get_summary(full_file, results["exp_failures"])
             if summary:
                 results["summary"] = summary
             return results
@@ -190,9 +251,17 @@ def main():
                         default=None,
                         help=('Tesbench name. '
                               'By default is empty, used for coverage parsing.'))
+    parser.add_argument('--exp-fail-path',
+                        type=str,
+                        default=None,
+                        help=('The path of a hjson file that contains expected failing properties.'
+                              '''By default is empty, used only if there are properties that are
+                               expected to fail. If input is an empty string, will treat it as not
+                               passing a file.'''))
+
     args = parser.parse_args()
 
-    results = get_results(args.logpath)
+    results = get_results(args.logpath, args.exp_fail_path)
 
     if args.cov:
         results["coverage"] = get_cov_results(args.logpath, args.dut)
