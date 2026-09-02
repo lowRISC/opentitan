@@ -663,7 +663,7 @@ module earlgrey_pd_main #(
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
-  keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_hmac_key;
+  keymgr_dpe_pkg::wide_hw_key_req_t       keymgr_dpe_hmac_key;
   keymgr_dpe_pkg::wide_hw_key_req_t       keymgr_dpe_otbn_key;
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
@@ -2239,6 +2239,7 @@ module earlgrey_pd_main #(
     .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
     .RndCnstOtbnSeed(RndCnstKeymgrDpeOtbnSeed),
+    .RndCnstHmacSeed(RndCnstKeymgrDpeHmacSeed),
     .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
     .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
     .NumBootStages(KeymgrDpeNumBootStages),
