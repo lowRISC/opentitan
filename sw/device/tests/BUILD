@@ -2563,6 +2563,45 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "keymgr_dpe_sideload_hmac_test",
+    srcs = ["keymgr_dpe_sideload_hmac_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            # Test uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
+        },
+    ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//hw/top:hmac_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top:kmac_c_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "keymgr_dpe_sideload_otbn_test",
     srcs = ["keymgr_dpe_sideload_otbn_test.c"],
     exec_env = dicts.add(
