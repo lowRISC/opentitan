@@ -194,6 +194,7 @@ The only difference is that the input messages are 0-padded to another length pa
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
 * The selected source slot is valid.
+* The `DEST_SEL` contains one of the fix valid sideload destination (None, AES, KMAC, OTBN, HMAC).
 
 ### Erase slot
 

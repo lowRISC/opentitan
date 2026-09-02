@@ -88,12 +88,13 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
       bit aes_sl_avail,
       bit kmac_sl_avail,
       bit otbn_sl_avail,
+      bit hmac_sl_avail,
       bit regwen
   );
     sideload_clear_cp: coverpoint sideload_clear {
       bins clear_none  = {0};
-      bins clear_one[] = {[1:3]};
-      bins clear_all   = {[4:$]};
+      bins clear_one[] = {[1:4]};
+      bins clear_all   = {[5:$]};
     }
     // the state where sideload_clear occurs
     state_cp:          coverpoint state;
@@ -102,11 +103,12 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     aes_sl_avail_cp:   coverpoint aes_sl_avail;
     kmac_sl_avail_cp:  coverpoint kmac_sl_avail;
     otbn_sl_avail_cp:  coverpoint otbn_sl_avail;
+    hmac_sl_avail_cp:  coverpoint hmac_sl_avail;
     regwen_cp:         coverpoint regwen;
 
     sideload_clear_x_state_op_cross: cross sideload_clear, state, op;
     sideload_clear_x_sl_avail_cross: cross sideload_clear_cp, aes_sl_avail, kmac_sl_avail,
-                                           otbn_sl_avail;
+                                           otbn_sl_avail, hmac_sl_avail;
     sideload_clear_x_regwen_cross:   cross sideload_clear_cp, regwen_cp;
   endgroup
 
