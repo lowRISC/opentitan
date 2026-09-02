@@ -24,6 +24,7 @@ module keymgr_dpe
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
+  parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
   // Number of instantiated HW slots
   parameter int unsigned NumInstHwSlot         = 4,
@@ -45,7 +46,7 @@ module keymgr_dpe
   // key interface to crypto modules
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output hw_key_req_t hmac_key_o,
+  output wide_hw_key_req_t hmac_key_o,
   output wide_hw_key_req_t otbn_key_o,
 
   // data interface to/from crypto modules
@@ -109,25 +110,17 @@ module keymgr_dpe
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
 
-  // TODO(#31026): Provide a sideload key to the hmac
-  localparam int NumOutBufBits = $bits(hw_key_req_t);
-  prim_buf #(
-    .Width  (NumOutBufBits)
-  ) u_anchor_buf (
-    .in_i   ('0),
-    .out_o  (hmac_key_o)
-  );
-
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 7;
+  localparam int TotalSeedWidth = KeyWidth * 8;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
   seed_t aes_seed;
   seed_t otbn_seed;
   seed_t kmac_seed;
+  seed_t hmac_seed;
   seed_t none_seed;
 
   localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
@@ -136,6 +129,7 @@ module keymgr_dpe
                                                         RndCnstAesSeed,
                                                         RndCnstOtbnSeed,
                                                         RndCnstKmacSeed,
+                                                        RndCnstHmacSeed,
                                                         RndCnstNoneSeed};
 
   prim_sec_anchor_const #(
@@ -148,6 +142,7 @@ module keymgr_dpe
             aes_seed,
             otbn_seed,
             kmac_seed,
+            hmac_seed,
             none_seed})
   );
 
@@ -576,9 +571,18 @@ module keymgr_dpe
   logic [KeyWidth-1:0] dest_seed;
 
   assign dest_sel = keymgr_dpe_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
-  assign dest_seed = dest_sel == Aes  ? aes_seed  :
-                       dest_sel == Kmac ? kmac_seed :
-                       dest_sel == Otbn ? otbn_seed : none_seed;
+
+  always_comb begin : gen_seed_selection
+    dest_seed = none_seed;
+    unique case (dest_sel)
+      Aes:      dest_seed = aes_seed;
+      Kmac:     dest_seed = kmac_seed;
+      Otbn:     dest_seed = otbn_seed;
+      Hmac:     dest_seed = hmac_seed;
+      default : dest_seed = none_seed;
+    endcase
+  end
+
   assign output_key = mubi4_test_true_strict(hw_key_sel) ? hard_output_seed :
                       soft_output_seed;
   assign gen_in = active_key_slot.valid ? {reg2hw.key_version,
@@ -730,6 +734,7 @@ module keymgr_dpe
     .prng_en_o(sideload_lfsr_en),
     .aes_key_o,
     .otbn_key_o,
+    .hmac_key_o,
     .kmac_key_o,
     .sideload_sel_err_o(sideload_sel_err),
     .fsm_err_o(sideload_fsm_err)

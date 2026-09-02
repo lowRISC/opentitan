@@ -22,6 +22,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
+  output wide_hw_key_req_t hmac_key_o,
   output wide_hw_key_req_t otbn_key_o,
   output logic sideload_sel_err_o,
   output logic fsm_err_o
@@ -79,11 +80,13 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
                         !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
-                                            SideLoadClrOtbn});
+                                            SideLoadClrOtbn,
+                                            SideLoadClrHmac});
 
   assign slot_clr[AesIdx]  = clr_all_keys | (clr_key_i == SideLoadClrAes);
   assign slot_clr[KmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrKmac);
   assign slot_clr[OtbnIdx] = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
+  assign slot_clr[HmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrHmac);
 
   logic clr;
   assign clr = |slot_clr;
@@ -144,6 +147,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   assign slot_sel[AesIdx] = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[AesIdx]);
   assign slot_sel[KmacIdx] = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[KmacIdx]);
   assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
+  assign slot_sel[HmacIdx] = (dest_sel_i == Hmac) & mubi4_test_true_strict(hw_key_sel[HmacIdx]);
 
   keymgr_dpe_sideload_key u_aes_key (
     .clk_i,
@@ -171,6 +175,21 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .key_i(data_i),
     .valid_o(otbn_key_o.valid),
     .key_o(otbn_key_o.key)
+  );
+
+  keymgr_dpe_sideload_key #(
+    .Width(WideHwKeyWidth)
+  ) u_hmac_key (
+    .clk_i,
+    .rst_ni,
+    .en_i(keys_en),
+    .set_en_i(data_en_i),
+    .set_i(data_valid_i & slot_sel[HmacIdx]),
+    .clr_i(slot_clr[HmacIdx]),
+    .entropy_i(entropy_i),
+    .key_i(data_i),
+    .valid_o(hmac_key_o.valid),
+    .key_o(hmac_key_o.key)
   );
 
   hw_key_req_t kmac_sideload_key;
@@ -205,6 +224,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   assign valids[AesIdx] = aes_key_o.valid;
   assign valids[KmacIdx] = kmac_sideload_key.valid;
   assign valids[OtbnIdx] = otbn_key_o.valid;
+  assign valids[HmacIdx] = hmac_key_o.valid;
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.

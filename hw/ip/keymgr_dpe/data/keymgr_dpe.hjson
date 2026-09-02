@@ -65,7 +65,7 @@
       act:     "req",
       package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "hw_key_req",  // hmac_key_req_t
+    { struct:  "wide_hw_key_req",  // hmac_key_req_t
       type:    "uni",
       name:    "hmac_key",    // hmac_key_o (req)
       act:     "req",
@@ -199,6 +199,13 @@
 
     { name:      "RndCnstOtbnSeed",
       desc:      "Compile-time random bits for generation seed when otbn destination selected",
+      type:      "keymgr_dpe_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstHmacSeed",
+      desc:      "Compile-time random bits for generation seed when hmac destination selected",
       type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
@@ -514,7 +521,7 @@ countermeasures: [
           ],
         },
 
-        { bits: "13:12",
+        { bits: "13:11",
           name: "DEST_SEL",
           desc: '''
             When the OPERATION field is programmed to generate output, this field selects
@@ -550,6 +557,12 @@ countermeasures: [
 
                 Generating a hardware 512-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
                 When generating for software, this is not a concern.
+                '''
+            },
+            { value: "4",
+              name: "HMAC",
+              desc: '''
+                HMAC selected.  Note for HMAC hardware operations, the generated output is 512-bits.
                 '''
             },
           ]
@@ -622,6 +635,12 @@ countermeasures: [
               name: "OTBN",
               desc: '''
                 The OTBN sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "4",
+              name: "HMAC",
+              desc: '''
+                The HMAC sideload key is continuously cleared with entropy.
                 '''
             },
           ]
