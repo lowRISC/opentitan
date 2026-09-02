@@ -614,6 +614,11 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
         gen_data.OutputSeed = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrDpeHardOutputSeed;
       end
 
+      keymgr_dpe_pkg::Hmac: begin // HW -> HMAC
+        gen_data.HwDestSeed = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrDpeHmacSeed;
+        gen_data.OutputSeed = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrDpeHardOutputSeed;
+      end
+
       default: `dv_fatal("Illegal destination (DV bug)!")
     endcase
 
@@ -676,8 +681,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                                                salt_t                        salt);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = get_gen_data(.key_version(version), .salt(salt), .dest(dest));
-    // Outputs generated for OTBN have a different width.
-    if (dest == keymgr_dpe_pkg::Otbn) begin
+    // Outputs generated for OTBN / HMAC have a different width.
+    if ((dest == keymgr_dpe_pkg::Otbn) || (dest == keymgr_dpe_pkg::Hmac)) begin
       check_kmac_wide_digest(get_unmasked_key(key_shares),
                              data_arr,
                              get_unmasked_wide_key(get_wide_output(.dest(dest))));
@@ -696,7 +701,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.aes_key_o");
       keymgr_dpe_pkg::Kmac: return get_hw_output(
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.kmac_key_o");
-      keymgr_dpe_pkg::Otbn: `dv_fatal(
+      keymgr_dpe_pkg::Otbn,
+      keymgr_dpe_pkg::Hmac: `dv_fatal(
           "Illegal use of this function; use `get_wide_hw_output` instead!")
       default: `dv_fatal("Illegal destination (DV bug)!")
     endcase
@@ -706,10 +712,10 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     unique case (dest)
       keymgr_dpe_pkg::Otbn: return get_wide_hw_output(
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.otbn_key_o");
-      keymgr_dpe_pkg::None: `dv_fatal(
-          "Illegal use of this function; use `get_hw_output` instead!")
-      keymgr_dpe_pkg::Aes: `dv_fatal(
-          "Illegal use of this function; use `get_hw_output` instead!")
+      keymgr_dpe_pkg::Hmac: return get_wide_hw_output(
+          "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.hmac_key_o");
+      keymgr_dpe_pkg::None,
+      keymgr_dpe_pkg::Aes,
       keymgr_dpe_pkg::Kmac: `dv_fatal(
           "Illegal use of this function; use `get_hw_output` instead!")
       default: `dv_fatal("Illegal destination (DV bug)!")
