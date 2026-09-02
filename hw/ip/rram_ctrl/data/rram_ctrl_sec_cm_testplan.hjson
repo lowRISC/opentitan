@@ -179,5 +179,23 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_mem_readback
+      desc: "Verify the countermeasure(s) MEM.READBACK."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_integrity
+      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_otp_mem_integrity
+      desc: "Verify the countermeasure(s) OTP.MEM.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
   ]
 }
