@@ -749,4 +749,19 @@ module otbn_mac_bignum
           predec_i.acc_merger_en |-> $onehot(predec_i.acc_qw_sel),
           clk_i, !rst_ni || predec_error_o || state_err_o)
 
+  // the code below is not meant to be synthesized,
+  // but it is intended to be used in simulation
+  `ifndef SYNTHESIS
+    // Check that the supplied permutation is valid.
+    logic [WLEN-1:0] perm_test;
+    initial begin : p_perm_check
+      perm_test = '0;
+      for (int k = 0; k < WLEN; k++) begin
+        perm_test[RndCnstBnMacUrndPerm[k]] = 1'b1;
+      end
+      // All bit positions must be marked with 1.
+      `ASSERT_I(PermutationCheck_A, &perm_test)
+    end
+  `endif
+
 endmodule

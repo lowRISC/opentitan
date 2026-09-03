@@ -1632,11 +1632,13 @@ module darjeeling_pd_main #(
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
+    .RndCnstUrndPerm(RndCnstOtbnUrndPerm),
     .SecFixMaiOpSeq(SecOtbnFixMaiOpSeq),
     .SecFixMacOpSeq(SecOtbnFixMacOpSeq),
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
     .FeatStubMai(OtbnFeatStubMai),
     .RndCnstBnMacUrndPerm(RndCnstOtbnBnMacUrndPerm),
+    .RndCnstMaiUrndPerm(RndCnstOtbnMaiUrndPerm),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (

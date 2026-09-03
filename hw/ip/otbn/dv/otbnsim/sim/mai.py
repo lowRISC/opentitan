@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple
 
+from .constants import MAI_URND_PERMUTATION, permute
 from .csr import CSRFile
 from .ispr import DumbISPR
 from .mai_ispr import MaiOperation
@@ -31,11 +32,14 @@ def _mod_smear(mod: int) -> int:
 def _urnd_fields(urnd_val: int) -> Tuple[int, int, int, int]:
     """Unpack a 389-bit Bivium keystream word into its named fields.
 
+    The raw word is first run through the MAI URND permutation, then sliced as:
+
     [321:0]   rand:     322-bit HPC3 gadget randomness
     [353:322] mask_0:   32-bit remask share 0
     [385:354] mask_1:   32-bit remask share 1
     [388:386] cnt:      3-bit starting counter offset
     """
+    urnd_val = permute(MAI_URND_PERMUTATION, urnd_val)
     rand = urnd_val & ((1 << 322) - 1)
     mask_0 = (urnd_val >> 322) & _MASK32
     mask_1 = (urnd_val >> 354) & _MASK32

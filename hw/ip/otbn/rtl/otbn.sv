@@ -21,6 +21,8 @@ module otbn
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
+  // Compile-time permutation applied to the primary URND output in otbn_rnd
+  parameter urnd_perm_t RndCnstUrndPerm = RndCnstUrndPermDefault,
 
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
@@ -35,6 +37,9 @@ module otbn
 
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
+  // Compile-time permutation for URND permutation in MAI
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault,
 
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
@@ -1172,11 +1177,13 @@ module otbn
     .DmemSizeByte(DmemSizeByte),
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
+    .RndCnstUrndPerm(RndCnstUrndPerm),
     .SecFixMaiOpSeq(SecFixMaiOpSeq),
     .SecFixMacOpSeq(SecFixMacOpSeq),
     .FeatStubMai(FeatStubMai),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
-    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm),
+    .RndCnstMaiUrndPerm(RndCnstMaiUrndPerm)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),

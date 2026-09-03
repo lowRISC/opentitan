@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import List, Optional, Tuple
-from .constants import WsrAddrs
+from .constants import URND_PERMUTATION, WsrAddrs, permute
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
 from .kmac_ispr import KmacDataWSR
@@ -153,9 +153,10 @@ class URNDWSR(ISPR):
         return self._next_value
 
     def step(self) -> None:
-        # Schedule an state update and readout the keystream.
+        # Schedule an state update and readout the keystream. The raw keystream is permuted here,
+        # directly after the PRNG.
         self._trivium.update()
-        self._next_value = self._trivium.keystream()
+        self._next_value = permute(URND_PERMUTATION, self._trivium.keystream())
 
     def commit(self) -> None:
         # Step the PRNG one cycle forward.

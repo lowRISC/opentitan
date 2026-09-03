@@ -8,7 +8,9 @@ module otbn_mai
   import otbn_pkg::*;
 #(
   // Masking accelerator interface will not randomize operand start indexes
-  parameter bit SecFixMaiOpSeq = 1'b0
+  parameter bit SecFixMaiOpSeq = 1'b0,
+  // Compile-time permutation for the URND randomness feeding the mask accelerator
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault
 )(
   input  logic clk_i,
   input  logic rst_ni,
@@ -202,7 +204,15 @@ module otbn_mai
   // mask_0  ( 32b): remask_rand_i[0], per-handshake re-masking word for adder input share 0
   // mask_1  ( 32b): remask_rand_i[1], per-handshake re-masking word for adder input share 1
   // cnt     (  3b): seeds the batch-counter start offset
-  assign mai_ma_urnd   = urnd_data_i;
+  //
+  // mai_ma_urnd is derived from a permutation of urnd_data_i rather than from urnd_data_i
+  // directly, so that it does not correspond bit-for-bit to the raw URND wire positions.
+  logic [UrndLen-1:0] urnd_permutation;
+  for (genvar i = 0; i < UrndLen; i++) begin : gen_urnd_perm
+    assign urnd_permutation[i] = urnd_data_i[RndCnstMaiUrndPerm[i]];
+  end
+
+  assign mai_ma_urnd   = urnd_permutation;
   assign mai_ispr_urnd = urnd_data_i;
   assign unused_urnd   = ^mai_ispr_urnd.rsvd;
 
@@ -599,5 +609,20 @@ module otbn_mai
   // inside the MA. These must remain stable also during a secure wipe.
   `ASSERT(ModStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mod_lsw))
   `ASSERT(MaskOpStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mask_op_q))
+
+  // the code below is not meant to be synthesized,
+  // but it is intended to be used in simulation
+  `ifndef SYNTHESIS
+    // Check that the supplied permutation is valid.
+    logic [UrndLen-1:0] perm_test;
+    initial begin : p_perm_check
+      perm_test = '0;
+      for (int k = 0; k < UrndLen; k++) begin
+        perm_test[RndCnstMaiUrndPerm[k]] = 1'b1;
+      end
+      // All bit positions must be marked with 1.
+      `ASSERT_I(PermutationCheck_A, &perm_test)
+    end
+  `endif
 
 endmodule
