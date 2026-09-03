@@ -60,6 +60,10 @@ Otherwise all advance requests are rejected that specify this slot as its source
 *  If `retain_parent` is set to `true`/`1`, then the parent slot remains valid after an advance call.
 Otherwise, after the derivation of a child slot, the DPE context of the parent slot is removed automatically.
 
+With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time through the `METADATA_LOW` and `METADATA_HIGH` registers.
+Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
+`METADATA_LOW.VERSION` reports `max_key_version`, while `METADATA_HIGH` report `valid`, `boot_stage` and `key_policy` respectively.
+
 ## Key Manager State
 
 The key manager working state represents the current working state of the key manager and it is decoupled from the DICE hierarchy.
