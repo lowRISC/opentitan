@@ -36,6 +36,8 @@ package rram_ctrl_env_pkg;
   parameter uint OTP_CLK_FREQ_MHZ = 24;
 
   // Types
+  typedef virtual rram_ctrl_otp_key_if otp_key_vif_t;
+
   typedef enum bit [1:0] {
     AddrRead  = 0,
     AddrWrite = 1,
@@ -56,4 +58,9 @@ package rram_ctrl_env_pkg;
   } rram_ctrl_intr_e;
 
   // Functions
+
+  // Package sources
+  `include "rram_ctrl_env_cfg.sv"
+  `include "rram_ctrl_env_cov.sv"
+  `include "rram_ctrl_virtual_sequencer.sv"
 endpackage : rram_ctrl_env_pkg
