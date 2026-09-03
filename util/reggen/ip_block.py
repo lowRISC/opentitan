@@ -172,6 +172,16 @@ OPTIONAL_REVISIONS_FIELDS = {
 }
 
 
+def _for_partition(items: Sequence[Any], partition: Optional[str]) -> list[Any]:
+    '''Filter items by the partition they were declared in.
+
+    A partition of None returns every item.
+    '''
+    if partition is None:
+        return list(items)
+    return [item for item in items if item.partition == partition]
+
+
 def _declared_partitions(clocking: Clocking,
                          alerts: Sequence[Alert],
                          interrupts: Sequence[Interrupt],
@@ -731,6 +741,9 @@ class IpBlock:
         '''Return the primary clock of the given partition of a block'''
 
         return self.clocking.get_primary_clock(partition)
+
+    def alerts_for(self, partition: Optional[str] = PART_PRIMARY) -> list[Alert]:
+        return _for_partition(self.alerts, partition)
 
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:
