@@ -16,6 +16,9 @@ module i3c_stby_cr_regs
   input               clk_i,
   input               rst_ni,
 
+  // Software reset for Controller registers.
+  input               sw_reset_i,
+
   // Software register access.
   input  i3c_reg2hw_t reg2hw_i,
   // Currently the Active Controller?
@@ -39,56 +42,63 @@ module i3c_stby_cr_regs
   output i3c_hw2reg_stby_cr_ccc_config_rstact_params_reg_t  stby_cr_config_rstact_o
 );
 
+  // Reset all register state.
+  // - this happens in response to the asynchronous IP block reset and in response to software
+  //   writing 1 to `RESET_CONTROL.SOFT_RST`.
+  task automatic reset_registers;
+    // Fields within STBY_CR_CONTROL.
+    stby_cr_control_o.stby_cr_enable_init.d   <= I3C_STBY_CR_CONTROL_STBY_CR_ENABLE_INIT_RESVAL;
+    stby_cr_control_o.rstact_defbyte_02.d     <= I3C_STBY_CR_CONTROL_RSTACT_DEFBYTE_02_RESVAL;
+    stby_cr_control_o.daa_entdaa_enable.d     <= I3C_STBY_CR_CONTROL_DAA_ENTDAA_ENABLE_RESVAL;
+    stby_cr_control_o.daa_setdasa_enable.d    <= I3C_STBY_CR_CONTROL_DAA_SETDASA_ENABLE_RESVAL;
+    stby_cr_control_o.daa_setaasa_enable.d    <= I3C_STBY_CR_CONTROL_DAA_SETAASA_ENABLE_RESVAL;
+    stby_cr_control_o.target_xact_enable.d    <= I3C_STBY_CR_CONTROL_TARGET_XACT_ENABLE_RESVAL;
+    stby_cr_control_o.bcast_ccc_ibi_ring.d    <= I3C_STBY_CR_CONTROL_BCAST_CCC_IBI_RING_RESVAL;
+    stby_cr_control_o.cr_request_send.d       <= I3C_STBY_CR_CONTROL_CR_REQUEST_SEND_RESVAL;
+    stby_cr_control_o.handoff_deep_sleep.d    <= I3C_STBY_CR_CONTROL_HANDOFF_DEEP_SLEEP_RESVAL;
+    stby_cr_control_o.prime_accept_getacccr.d <= I3C_STBY_CR_CONTROL_PRIME_ACCEPT_GETACCCR_RESVAL;
+    stby_cr_control_o.acr_fsm_op_select.d     <= I3C_STBY_CR_CONTROL_ACR_FSM_OP_SELECT_RESVAL;
+    stby_cr_control_o.handoff_delay_nack.d    <= I3C_STBY_CR_CONTROL_HANDOFF_DELAY_NACK_RESVAL;
+    stby_cr_control_o.pending_rx_nack.d       <= I3C_STBY_CR_CONTROL_PENDING_RX_NACK_RESVAL;
+
+    // Fields within STBY_CR_DEVICE_ADDR.
+    stby_cr_device_addr_o.dynamic_addr_valid.d <=
+      I3C_STBY_CR_DEVICE_ADDR_DYNAMIC_ADDR_VALID_RESVAL;
+    stby_cr_device_addr_o.dynamic_addr.d       <= I3C_STBY_CR_DEVICE_ADDR_DYNAMIC_ADDR_RESVAL;
+    stby_cr_device_addr_o.static_addr_valid.d  <=
+      I3C_STBY_CR_DEVICE_ADDR_STATIC_ADDR_VALID_RESVAL;
+    stby_cr_device_addr_o.static_addr.d        <= I3C_STBY_CR_DEVICE_ADDR_STATIC_ADDR_RESVAL;
+
+    // Fields within STBY_CR_DEVICE_CHAR.
+    stby_cr_device_char_o.bcr_fixed.d <= I3C_STBY_CR_DEVICE_CHAR_BCR_FIXED_RESVAL;
+    stby_cr_device_char_o.bcr_var.d   <= I3C_STBY_CR_DEVICE_CHAR_BCR_VAR_RESVAL;
+    stby_cr_device_char_o.dcr.d       <= I3C_STBY_CR_DEVICE_CHAR_DCR_RESVAL;
+    stby_cr_device_char_o.pid_hi.d    <= I3C_STBY_CR_DEVICE_CHAR_PID_HI_RESVAL;
+
+    // STBY_CR_DEVICE_PID_LO.
+    stby_cr_device_pid_lo_o.d <= I3C_STBY_CR_DEVICE_PID_LO_PID_LO_RESVAL;
+
+    // STBY_CR_CCC_CONFIG_GETCAPS
+    stby_cr_config_getcaps_o.f2_crcap2_dev_interact.d <=
+      I3C_STBY_CR_CCC_CONFIG_GETCAPS_F2_CRCAP2_DEV_INTERACT_RESVAL;
+    stby_cr_config_getcaps_o.f2_crcap1_bus_config.d   <=
+      I3C_STBY_CR_CCC_CONFIG_GETCAPS_F2_CRCAP1_BUS_CONFIG_RESVAL;
+
+    // STBY_CR_CCC_CONFIG_RSTACT_PARAMS
+    stby_cr_config_rstact_o.reset_dynamic_addr.d    <=
+      I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_DYNAMIC_ADDR_RESVAL;
+    stby_cr_config_rstact_o.reset_time_target.d     <=
+      I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_TARGET_RESVAL;
+    stby_cr_config_rstact_o.reset_time_peripheral.d <=
+      I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_PERIPHERAL_RESVAL;
+    stby_cr_config_rstact_o.rst_action.d            <=
+      I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RST_ACTION_RESVAL;
+  endtask
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      // Fields within STBY_CR_CONTROL.
-      stby_cr_control_o.stby_cr_enable_init.d   <= I3C_STBY_CR_CONTROL_STBY_CR_ENABLE_INIT_RESVAL;
-      stby_cr_control_o.rstact_defbyte_02.d     <= I3C_STBY_CR_CONTROL_RSTACT_DEFBYTE_02_RESVAL;
-      stby_cr_control_o.daa_entdaa_enable.d     <= I3C_STBY_CR_CONTROL_DAA_ENTDAA_ENABLE_RESVAL;
-      stby_cr_control_o.daa_setdasa_enable.d    <= I3C_STBY_CR_CONTROL_DAA_SETDASA_ENABLE_RESVAL;
-      stby_cr_control_o.daa_setaasa_enable.d    <= I3C_STBY_CR_CONTROL_DAA_SETAASA_ENABLE_RESVAL;
-      stby_cr_control_o.target_xact_enable.d    <= I3C_STBY_CR_CONTROL_TARGET_XACT_ENABLE_RESVAL;
-      stby_cr_control_o.bcast_ccc_ibi_ring.d    <= I3C_STBY_CR_CONTROL_BCAST_CCC_IBI_RING_RESVAL;
-      stby_cr_control_o.cr_request_send.d       <= I3C_STBY_CR_CONTROL_CR_REQUEST_SEND_RESVAL;
-      stby_cr_control_o.handoff_deep_sleep.d    <= I3C_STBY_CR_CONTROL_HANDOFF_DEEP_SLEEP_RESVAL;
-      stby_cr_control_o.prime_accept_getacccr.d <= I3C_STBY_CR_CONTROL_PRIME_ACCEPT_GETACCCR_RESVAL;
-      stby_cr_control_o.acr_fsm_op_select.d     <= I3C_STBY_CR_CONTROL_ACR_FSM_OP_SELECT_RESVAL;
-      stby_cr_control_o.handoff_delay_nack.d    <= I3C_STBY_CR_CONTROL_HANDOFF_DELAY_NACK_RESVAL;
-      stby_cr_control_o.pending_rx_nack.d       <= I3C_STBY_CR_CONTROL_PENDING_RX_NACK_RESVAL;
-
-      // Fields within STBY_CR_DEVICE_ADDR.
-      stby_cr_device_addr_o.dynamic_addr_valid.d <=
-        I3C_STBY_CR_DEVICE_ADDR_DYNAMIC_ADDR_VALID_RESVAL;
-      stby_cr_device_addr_o.dynamic_addr.d       <= I3C_STBY_CR_DEVICE_ADDR_DYNAMIC_ADDR_RESVAL;
-      stby_cr_device_addr_o.static_addr_valid.d  <=
-        I3C_STBY_CR_DEVICE_ADDR_STATIC_ADDR_VALID_RESVAL;
-      stby_cr_device_addr_o.static_addr.d        <= I3C_STBY_CR_DEVICE_ADDR_STATIC_ADDR_RESVAL;
-
-      // Fields within STBY_CR_DEVICE_CHAR.
-      stby_cr_device_char_o.bcr_fixed.d <= I3C_STBY_CR_DEVICE_CHAR_BCR_FIXED_RESVAL;
-      stby_cr_device_char_o.bcr_var.d   <= I3C_STBY_CR_DEVICE_CHAR_BCR_VAR_RESVAL;
-      stby_cr_device_char_o.dcr.d       <= I3C_STBY_CR_DEVICE_CHAR_DCR_RESVAL;
-      stby_cr_device_char_o.pid_hi.d    <= I3C_STBY_CR_DEVICE_CHAR_PID_HI_RESVAL;
-
-      // STBY_CR_DEVICE_PID_LO.
-      stby_cr_device_pid_lo_o.d <= I3C_STBY_CR_DEVICE_PID_LO_PID_LO_RESVAL;
-
-      // STBY_CR_CCC_CONFIG_GETCAPS
-      stby_cr_config_getcaps_o.f2_crcap2_dev_interact.d <=
-        I3C_STBY_CR_CCC_CONFIG_GETCAPS_F2_CRCAP2_DEV_INTERACT_RESVAL;
-      stby_cr_config_getcaps_o.f2_crcap1_bus_config.d   <=
-        I3C_STBY_CR_CCC_CONFIG_GETCAPS_F2_CRCAP1_BUS_CONFIG_RESVAL;
-
-      // STBY_CR_CCC_CONFIG_RSTACT_PARAMS
-      stby_cr_config_rstact_o.reset_dynamic_addr.d    <=
-        I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_DYNAMIC_ADDR_RESVAL;
-      stby_cr_config_rstact_o.reset_time_target.d     <=
-        I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_TARGET_RESVAL;
-      stby_cr_config_rstact_o.reset_time_peripheral.d <=
-        I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_PERIPHERAL_RESVAL;
-      stby_cr_config_rstact_o.rst_action.d            <=
-        I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RST_ACTION_RESVAL;
-    end else begin
+    if (!rst_ni) reset_registers();
+    else if (sw_reset_i) reset_registers();
+    else begin
       // Note that because we're using the `hw2reg` structures and implementing `hwext` registers,
       // the stored state (for reading) is unfortunately in the `d` fields, and the `q` fields of
       // the corresponding `reg2hw` structures convey the new write data from the software.

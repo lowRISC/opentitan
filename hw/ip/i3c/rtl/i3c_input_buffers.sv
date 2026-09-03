@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Connection and buffering of SCL and SDA signals from the I3C bus into the Target-side logic.
+// Connection and buffering of SCL and SDA signals from the I3C bus into the Target-side logic and,
+// as a separate instantiation, into the Target Reset detector logic.
 //
 // - connection must only occur when the bus is known to be inactive, to prevent traffic being
 //   misinterpreted.

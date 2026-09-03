@@ -267,8 +267,9 @@
           name:     "RESET",
           desc:     '''Software reset of Target logic.
 
-                    Iff the Standby Controller support is disabled by clearing `STBY_CR_SUPPORT`, writing '1' to this field will reset all of the Target-side logic.
-                    To reset the Target-side logic when Standby Controller support is enabled, software shall instead use the `SOFT_RST` field of the HCI-specified `RESET_CONTROL` register, whether or not the Controller is currently the Active Controller.
+                    Writing '1' to this field will reset all of the Target-side logic and registers.
+                    When the Standby Controller is enabled, this will also reset the registers of the Standby Controller, disabling it.
+                    To reset only the Standby Controller whilst it is enabled, software should use the `SOFT_RST` field of the HCI-specified `RESET_CONTROL` register instead, to avoid impacting other Virtual Targets.
                     ''',
           hwqe:     "true",
           swaccess: "wo",
@@ -343,7 +344,13 @@
         }
         { bits:     "30",
           name:     "ACTIVE",
-          desc:     "Indicates whether the Target functionality is presently active, as opposed to under reset.",
+          desc:     "Indicates whether the Target logic is presently active, as opposed to under reset.",
+          hwaccess: "hwo",
+          resval:   "0"
+        }
+        { bits:     "29",
+          name:     "CONNECTED",
+          desc:     "Indicates whether the Target logic is connected to the bus and monitoring traffic.",
           hwaccess: "hwo",
           resval:   "0"
         }

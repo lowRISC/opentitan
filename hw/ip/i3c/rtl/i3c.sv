@@ -395,6 +395,11 @@ module i3c
     .reg2hw_i        (reg2hw),
     .hw2reg_o        (hw2reg),
 
+    // Software resets for the Controller registers.
+    .hci_soft_rst_o  (),  // Host Controller Interface (HCI) registers.
+    .tti_soft_rst_o  (),  // Target Transaction Interface (TTI) registers.
+    .sc_soft_rst_o   (),  // Standby Controller registers.
+
     // HCI Command Queue Port access.
     // HCI Response Queue Port access.
     // HCI XFER_DATA_PORT access.
@@ -499,7 +504,7 @@ module i3c
     );
   end
 
-  // Assert Known for I3C Controller outputs
+  // Assert Known for I3C Controller outputs.
   `ASSERT_KNOWN(CtrlSCLEnKnown_A, cio_ctrl_bus_drv_o.scl_en, clk_i, !rst_ni)
   `ASSERT_KNOWN(CtrlSCLKnown_A, cio_ctrl_bus_drv_o.scl, clk_i, !rst_ni ||
                 !cio_ctrl_bus_drv_o.scl_en)
@@ -515,7 +520,15 @@ module i3c
                   !cio_ctrl_bus_drv_o.sda_en)
   end
 
-  // Assert Known for I3C Target outputs
+  // Assert Known for Controller-driven pull-up enables.
+  `ASSERT_KNOWN(CtrlSCLPUEnKnown_A, cio_ctrl_scl_pu_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(CtrlSDAPUEnKnown_A, cio_ctrl_sda_pu_en_o, clk_i, !rst_ni)
+
+  // Assert Known for Controller-driven high-keeper enables.
+  `ASSERT_KNOWN(SCLHKEnKnown_A, cio_scl_hk_en_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(SDAHKEnKnown_A, cio_sda_hk_en_o, clk_i, !rst_ni)
+
+  // Assert Known for I3C Target outputs.
   if (DrvSeparatedEn) begin : gen_targ_sep_asserts
     `ASSERT_KNOWN(TargSDAPPEnKnown_A, cio_targ_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
     `ASSERT_KNOWN(TargSDAODEnKnown_A, cio_targ_bus_drv_o.sda_od_en, clk_i, !rst_ni)
@@ -527,13 +540,17 @@ module i3c
                   !cio_targ_bus_drv_o.sda_en)
   end
 
-  // Assert Known for alerts
+  // Assert Known for Target-driven Reset Detector outputs.
+  `ASSERT_KNOWN(RstDetEnKnown_A, rstdet_enable_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(RstDetReqKnown_A, rstdet_req_o, clk_i, !rst_ni)
+
+  // Assert Known for alerts.
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
-  // Alert assertions for reg_we onehot check
+  // Alert assertions for reg_we onehot check.
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 
-  // Assert Known for interrupts
+  // Assert Known for interrupts.
   `ASSERT_KNOWN(IntrHCIKnown_A, intr_hci_o)
   `ASSERT_KNOWN(IntrTargKnown_A, intr_targ_o)
 
