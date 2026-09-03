@@ -575,7 +575,11 @@ def idx_of_last_module_with_params(top: ConfigT, domain: str = "") -> int:
 
     if domain != "":
         default_domain = top["power"]["default"]
-        modlist = [m for m in top["module"] if m.get("domain", default_domain) == domain]
+        modlist = [
+            m for m in top["module"]
+            if m.get("domain", default_domain) == domain or
+            m.get("domain_secondary") == domain
+        ]
     else:
         modlist = top["module"]
 
@@ -588,7 +592,12 @@ def idx_of_last_module_with_params(top: ConfigT, domain: str = "") -> int:
 
 def get_all_modules(top: ConfigT, domain: str = ""):
     if domain != "":
-        return [m for m in top["module"] if m.get("domain") == domain]
+        # A split IP has a partition in each of the power domains it names, so
+        # it is returned for both passes.
+        return [
+            m for m in top["module"]
+            if m.get("domain") == domain or m.get("domain_secondary") == domain
+        ]
     else:
         return top["module"]
 
@@ -646,6 +655,20 @@ def partition_key(key: str, partition: str = PART_PRIMARY) -> str:
 def alert_conn_key(module_name: str, partition: str = PART_PRIMARY) -> str:
     '''Key of a module's entry in top['alert_connections'].'''
     return partition_key('module_' + module_name, partition)
+
+
+# Infix of the module type and instance name of a split IP's partitions.
+PARTITION_INFIX = '_part_'
+
+
+def get_module_partitions(module: ConfigT, domain: str) -> List[str]:
+    '''Return the partitions of a module that are in the given power domain.'''
+    partitions = []
+    if module.get('domain') == domain:
+        partitions.append(PART_PRIMARY)
+    if module.get('domain_secondary') == domain:
+        partitions.append(PART_SECONDARY)
+    return partitions
 
 
 # Template functions
@@ -960,18 +983,30 @@ def get_io_enum_literal(sig: Dict, prefix: str) -> str:
     return name.as_camel_case()
 
 
-def get_params(top: ConfigT, module: ConfigT) -> List[str]:
+def get_params(top: ConfigT, module: ConfigT,
+               partition: str = PART_PRIMARY
+               ) -> Tuple[bool, List[Tuple[str, str]]]:
     """Return the parameters for a given module including implicit parameters
        but excluding RACL parameters, which are handled in a separate template.
+
+    For split IPs, `partition` selects which partition's parameters and alert
+    async configuration are emitted. A parameter is included when its own
+    'partition' is 'both' or matches `partition`. The alert async_expr is
+    taken from that partition's alert connection.
     """
     param_items = []
-    alert_info = top["alert_connections"].get("module_" + module["name"], {})
-    has_racl_params = bool(module.get("racl_mappings"))
+    alert_info = top["alert_connections"].get(
+        alert_conn_key(module["name"], partition), {})
+    has_racl_params = (bool(module.get("racl_mappings")) and
+                       partition == PART_PRIMARY)
     if alert_info:
         param_items.append((".AlertAsyncOn", alert_info["async_expr"]))
     if alert_info or module.get("template_type") == "alert_handler":
         param_items.append((".AlertSkewCycles", "top_pkg::AlertSkewCycles"))
     for param in module["param_list"]:
+        # 'both' parameters are emitted into every partition.
+        if param.get("partition", PART_PRIMARY) not in (PART_BOTH, partition):
+            continue
         is_exposed = check_bool(param.get("expose", False), f"expose field of {param['name']}")
         has_random_type = param.get("randtype")
         param_key = "name_top" if (is_exposed or has_random_type) else "default"

@@ -20,35 +20,56 @@ if not lib.is_inst(m):
   continue
 
 block = name_to_block[m['type']]
-inouts, inputs, outputs = block.xputs
+
+## For split IPs, determine which partition(s) are emitted in this power domain.
+is_split = m.get("is_split_ip", False)
+%>\
+% for partition in lib.get_module_partitions(m, domain):
+<%
+## An unclocked partition of a split IP has no clock / reset connections.
+clock_connections = m.get(lib.partition_key("clock_connections", partition)) or {}
+reset_connections = m.get(lib.partition_key("reset_connections", partition)) or {}
+
+part_suffix = lib.PARTITION_INFIX + partition if is_split else ""
+mod_type = m["type"] + part_suffix
+inst_name = m["name"] + part_suffix
+
+inouts, inputs, outputs = block.xputs_for(partition)
+interrupts = block.interrupts_for(partition)
+inter_signals = [s for s in m.get("inter_signal_list", [])
+                 if s.get("partition", lib.PART_PRIMARY) == partition]
 
 port_list = inputs + outputs + inouts
 max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
-max_intrwidth = (max(len(x.name) for x in block.interrupts)
-                 if block.interrupts else 0)
-alert_info = top["alert_connections"].get("module_" + m["name"], {})
-has_params, param_items = lib.get_params(top, m)
+max_intrwidth = (max(len(x.name) for x in interrupts)
+                 if interrupts else 0)
 
-has_scan = block.scan or block.scan_reset or block.scan_en
-has_interrupts = len(block.interrupts) > 0
+alert_info = top["alert_connections"].get(lib.alert_conn_key(m["name"], partition), {})
+has_params, param_items = lib.get_params(top, m, partition)
+
+## Scan / DFT ports are emitted only for the primary partition of a split IP.
+has_scan = (block.scan or block.scan_reset or block.scan_en) and partition == lib.PART_PRIMARY
+has_interrupts = len(interrupts) > 0
 has_cio_inputs = len(inputs + inouts) > 0
 has_cio_outputs = len(outputs + inouts) > 0
 %>\
   % if has_params:
-  ${m["type"]} #(
+  ${mod_type} #(
+    % if partition == lib.PART_PRIMARY:
 <%include file="/toplevel_snippets/racl_parameters.tpl" args="module=m, top=top, block=block"/>\
+    % endif
     % for param_name, param_value in param_items:
     ${param_name}(${param_value})${"," if not loop.last else ""}
     % endfor
-  ) u_${m["name"]} (
+  ) u_${inst_name} (
   % else:
-  ${m["type"]} u_${m["name"]} (
+  ${mod_type} u_${inst_name} (
   % endif
     // Clock and reset connections
-  % for k, v in m["clock_connections"].items():
+  % for k, v in clock_connections.items():
     .${k}(${v}),
   % endfor
-  % for port, reset in m["reset_connections"].items():
+  % for port, reset in reset_connections.items():
 <%
     is_shadowed_port = lib.is_shadowed_port(block, port)
     unmanaged_reset = is_unmanaged_reset(top, reset['name'])
@@ -77,7 +98,7 @@ has_cio_outputs = len(outputs + inouts) > 0
 
 % if has_interrupts:
     // Interrupts
-  % for intr in block.interrupts:
+  % for intr in interrupts:
     % if "outgoing_interrupt" in m:
 <%
       intr_group = m["outgoing_interrupt"]
@@ -102,7 +123,9 @@ has_cio_outputs = len(outputs + inouts) > 0
     .alert_rx_i(${alert_info["rx_expr"]}),
 % endif\
 
+% if partition == lib.PART_PRIMARY:
 <%include file="/toplevel_snippets/racl_signals.tpl" args="module=m, top=top, block=block"/>\
+% endif
 
 % if has_cio_inputs:
     // CIO inputs
@@ -121,9 +144,9 @@ has_cio_outputs = len(outputs + inouts) > 0
 
 % endif\
 
-% if m.get('inter_signal_list'):
+% if inter_signals:
     // Inter-module signals
-  % for sig in m['inter_signal_list']:
+  % for sig in inter_signals:
 <%
 if m.get("template_type") in ["rv_plic", "pinmux", "alert_handler"]:
   term = ","
@@ -181,4 +204,5 @@ else:
 % endif
   );
 
+% endfor
 % endfor

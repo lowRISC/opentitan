@@ -745,6 +745,18 @@ class IpBlock:
     def alerts_for(self, partition: Optional[str] = PART_PRIMARY) -> list[Alert]:
         return _for_partition(self.alerts, partition)
 
+    def interrupts_for(self,
+                       partition: Optional[str] = PART_PRIMARY) -> list[Interrupt]:
+        return _for_partition(self.interrupts, partition)
+
+    def xputs_for(
+        self, partition: Optional[str] = PART_PRIMARY
+    ) -> tuple[list[Signal], list[Signal], list[Signal]]:
+        inouts, inputs, outputs = self.xputs
+        return (_for_partition(inouts, partition),
+                _for_partition(inputs, partition),
+                _for_partition(outputs, partition))
+
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:
         '''Check RTL annotations against countermeasure list of this block'''
