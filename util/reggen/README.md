@@ -1099,6 +1099,97 @@ For example:
 # define UART_CTRL_RXBLVL_BREAK16        3
 ```
 
+## Split IPs
+
+An IP can be marked as split by setting `is_split_ip: true`.
+This assumes the IP is designed in two sv partitions `<ip>_part_primary.sv` and `<ip>_part_secondary.sv` where each partition can be instantiated in a different power domain.
+See topgen how to specify which partition is assigned to which domain.
+
+Each partition can be clocked separately.
+A split IP specifies the `clocking` as a dict per partition instead of a single list:
+
+```hjson
+clocking: {
+  primary: [
+    { clock: "clk_aon_i", reset: "rst_aon_ni" }
+  ]
+  secondary: [
+    { clock: "clk_i", reset: "rst_ni" }
+  ]
+}
+```
+
+Each partition can have its own alerts, interrupts, I/Os, wakeup or reset-request signals, inter-module connections and parameters.
+These are defined the same way as regular IPs define these.
+To assign, e.g., an alert to the secondary partition, the `partition: "secondary"` attribute must be set.
+The partition defaults to `primary` otherwise.
+Names of signals, alerts, etc must only be unique per partition.
+See [intra-IP connections](#intra-ip-connections) for how to connect the two partitions with each other.
+```
+alert_list: [
+  { name: "my_alert",
+    desc: "My alert in the secondary partition."
+    partition: "secondary"
+  }
+]
+```
+
+All registers, scan/DFT signals and the RACL connections are always in the primary partition only.
+
+Note that reggen internally uses the order of the specified alerts and interrupts to number the bits in their registers.
+In theory, all consumers of this data should use the reggen generated constants.
+For SW, there are header files generated.
+For RTL, reggen currently only generates an enum giving this information for alerts.
+In quite a few places, DV therefore uses hardcoded constants for interrupts.
+To avoid breaking existing code, reggen enforces that any primary interrupt/alert comes before any secondary.
+
+Parameters can be assigned additionally to both partitions by specifying `both`.
+```
+param_list: [
+  { name: "MyParam",
+    desc: "MyParam description",
+    type: "int",
+    default: "32",
+    local: "true",
+    partition: "both",
+  },
+]
+```
+
+### Intra-IP connections
+
+A split IP must define connections between the two partitions in the following way (tool limitation as of now).
+These connections between the two partitions are called intra-IP connections.
+The important limitations are:
+- The names must match exactly.
+- Only the `uni` type is supported.
+
+For a bidirectional connection, two separate signal definitions are required.
+Like regular inter-module signals, this requires that a struct `<ip>_intra_p2s` is defined in the IP's package.
+
+```
+{ struct:  "<ip>_intra_p2s",
+  type:    "uni",
+  name:    "intra_p2s",
+  act:     "req",
+  partition: "primary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Primary-to-secondary partition signal.
+  '''
+},
+{ struct:  "<ip>_intra_p2s",
+  type:    "uni",
+  name:    "intra_p2s",
+  act:     "rcv",
+  partition: "secondary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Primary-to-secondary partition signal.
+  '''
+},
+```
+
 ## Generating documentation
 
 The register tool can be used standalone to generate HTML documentation of the registers.
