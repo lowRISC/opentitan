@@ -1002,6 +1002,68 @@ countermeasures: [
       ]
     },
 
+    { multireg: {
+        cname: "KEYMGR",
+        name: "METADATA_LOW",
+        desc: '''
+          Read metadata (low word) for each instantiated HW slot.
+
+          Together with METADATA_HIGH, this register lets software inspect the non-secret
+          metadata of the DPE context.
+        ''',
+        count: "NumMaxHwSlot",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "31:0",
+              name: "VERSION",
+              desc: '''
+                Maximum key version allowed for key derived from this DPE context.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "METADATA_HIGH",
+        desc: '''
+          Read metadata (high word) for each instantiated HW slot.
+
+          Together with METADATA_LOW, this register lets software inspect the non-secret
+          metadata of the DPE context.
+        ''',
+        count: "NumMaxHwSlot",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "0",
+              name: "VALID",
+              desc: '''
+                Set if the DPE context held in this slot is valid.
+              ''',
+              resval: "0"
+            },
+            { bits: "2:1",
+              name: "BOOT_STAGE",
+              desc: '''
+                Boot stage associated with the DPE context held in this slot.
+              ''',
+              resval: "0"
+            },
+            { bits: "5:3",
+              name: "POLICY",
+              desc: '''
+                Policy bits applied to the DPE context held in this slot.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
     { name: "ERR_CODE",
       desc: '''
         Key manager error code.
