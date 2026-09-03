@@ -159,7 +159,7 @@ module dm_csrs #(
 
 
   dm::dmstatus_t      dmstatus;
-  dm::dmcontrol_t     dmcontrol_d, dmcontrol_q;
+  dm::dmcontrol_t     dmcontrol_d, dmcontrol_q, dmcontrol_read;
   dm::abstractcs_t    abstractcs;
   dm::cmderr_e        cmderr_d, cmderr_q;
   dm::command_t       command_d, command_q;
@@ -267,6 +267,9 @@ module dm_csrs #(
 
     // default assignments
     havereset_d_aligned = NrHartsAligned'(havereset_q);
+    dmcontrol_read      = dmcontrol_q;
+    dmcontrol_read.haltreq   = 1'b0;
+    dmcontrol_read.resumereq = 1'b0;
     dmcontrol_d         = dmcontrol_q;
     cmderr_d            = cmderr_q;
     command_d           = command_q;
@@ -304,7 +307,7 @@ module dm_csrs #(
             end
           end
         end
-        dm::DMControl:    resp_queue_inp.data = dmcontrol_q;
+        dm::DMControl:    resp_queue_inp.data = dmcontrol_read;
         dm::DMStatus:     resp_queue_inp.data = dmstatus;
         dm::Hartinfo:     resp_queue_inp.data = hartinfo_aligned[selected_hart];
         dm::AbstractCS:   resp_queue_inp.data = abstractcs;
