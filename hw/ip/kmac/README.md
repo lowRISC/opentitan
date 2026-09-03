@@ -28,6 +28,7 @@ See that document for integration overview within the broader OpenTitan top leve
 - Peak performance of the Keccak core (at 100 MHz):
   - SHA3-224: 3.43 B/cycle, 2.74 Gbit/s (masking disabled) - 1.26 B/cycle, 1.01 Gbit/s (DOM)
   - SHA3-512: 2.18 B/cycle, 1.75 Gbit/s (masking disabled) - 0.69 B/cycle, 549 Mbit/s (DOM)
+- Support for saving and restoring the internal state to enable interleaving different message streams
 
 ## Description
 
