@@ -350,7 +350,9 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
 
         // fifo related muxing
         sw_wready_o      = wr_fifo_wready_i;
-        wr_fifo_wvalid_o = sw_wvalid_i;
+        // wr_fifo may only be programmed once a write is active (state_q == StSw);
+        // drop all writes instead of stalling the bus on wr_fifo_wready_i.
+        wr_fifo_wvalid_o = sw_wvalid_i & (state_q == StSw);
         wr_fifo_wdata_o  = sw_wdata_i;
 
         rd_ctrl_rready_o = sw_rready_i;
