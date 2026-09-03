@@ -122,8 +122,6 @@ module i3c_controller
   // Timing parameters; Target- and transfer-invariant.
   output         [TmCycW-1:0] tcas_d2_o,
   output         [TmCycW-1:0] tcbp_d2_o,
-  output         [TmCycW-1:0] todch_d2_o,
-  output         [TmCycW-1:0] todcl_d2_o,
   output                      enable_hc_scl_o,
 
   // Retrying of NACKed commands.
@@ -139,7 +137,6 @@ module i3c_controller
   input                       trx_avalid_i,
   input  i3c_ctrl_trx_arb_t   trx_arb_i,
   output                      trx_aready_o,
-  output                      trx_arb_nack_o,
 
   // Read data from the transceiver.
   input                       trx_rdvalid_i,
@@ -240,13 +237,17 @@ module i3c_controller
   // by the Controller FSM hardware.
   i3c_datc_wdata_t sw_datc_wdata;
   i3c_dat_entry_t sw_dat_entry;
-  wire sw_datc_we = &{sw_dat_req_i, sw_dat_gnt_o, sw_dat_we_i, !sw_dat_addr_i[0]};  // Lowest word.
+  // The upper word of the DAT entry conveys the `AUTOCMD_MODE` field (bus signaling speed), whilst
+  // the lower word conveys the other fields.
+  wire [1:0] sw_datc_we = {2{sw_dat_req_i & sw_dat_gnt_o & sw_dat_we_i}} &
+                          {sw_dat_addr_i[0], !sw_dat_addr_i[0]};
   wire [DATAddrW-1:0] sw_datc_widx = sw_dat_addr_i[DATAddrW:1];  // Entry index.
   assign sw_dat_entry = i3c_dat_entry_t'({2{sw_dat_wdata_i}});   // Reinterpret write data.
-  assign sw_datc_wdata.dyn_addr    = sw_dat_entry.dynamic_address;
-  assign sw_datc_wdata.ibi_payload = sw_dat_entry.ibi_payload;
-  assign sw_datc_wdata.ibi_reject  = sw_dat_entry.ibi_reject;
-  assign sw_datc_wdata.crr_reject  = sw_dat_entry.crr_reject;
+  assign sw_datc_wdata.dyn_addr     = sw_dat_entry.dynamic_address;
+  assign sw_datc_wdata.ibi_payload  = sw_dat_entry.ibi_payload;
+  assign sw_datc_wdata.ibi_reject   = sw_dat_entry.ibi_reject;
+  assign sw_datc_wdata.crr_reject   = sw_dat_entry.crr_reject;
+  assign sw_datc_wdata.autocmd_mode = i3c_xfer_mode_e'(sw_dat_entry.autocmd_mode);
 
   // Core state machine for Command/Response processing.
   i3c_controller_fsm #(
@@ -348,9 +349,6 @@ module i3c_controller
     // Timing parameterss; target- and transfer-invariant.
     .tcas_d2_o         (tcas_d2_o),
     .tcbp_d2_o         (tcbp_d2_o),
-    .todch_d2_o        (todch_d2_o),
-    .todcl_d2_o        (todcl_d2_o),
-
     // Configuration signals to the transceiver logic.
     .enable_hc_scl_o   (enable_hc_scl_o),
 
@@ -367,7 +365,6 @@ module i3c_controller
     .trx_avalid_i      (trx_avalid_i),
     .trx_arb_i         (trx_arb_i),
     .trx_aready_o      (trx_aready_o),
-    .trx_arb_nack_o    (trx_arb_nack_o),
 
     // Read data from the transceiver.
     .trx_rdvalid_i     (trx_rdvalid_i),

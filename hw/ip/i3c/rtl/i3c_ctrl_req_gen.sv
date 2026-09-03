@@ -5,6 +5,7 @@
 // Combinational module that constructs the requests from the Controller Core to the transceiver.
 
 module i3c_ctrl_req_gen
+  import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_ctrl_ccc_pkg::*;
   import i3c_pkg::*;
@@ -21,10 +22,14 @@ module i3c_ctrl_req_gen
   input i3c_ctrl_fsm_state_e  state_i,
 
   // Information about the current Command Descriptor and transfer.
+  input i3c_ctrl_trans_type_e trans_type_i,
   input i3c_ctrl_cmd_state_t  cmd_state_i,
   input i3c_ctrl_cmd_attrs_t  cmd_attrs_i,
   input i3c_dat_mem_t         dat_entry_i,
-  input                       i3c_first_i,
+  // Additional state-specific information.
+  input                       i3c_first_i,  // CmdArb, WaitAckb, SendAckb
+  input                       send_nack_i,  // SendAckb
+  input i3c_xfer_mode_e       xfer_mode_i,
 
   // Data transmission.
   input       [DataWidth-1:0] tx_data_i,
@@ -37,8 +42,6 @@ module i3c_ctrl_req_gen
   // Timing parameters; target- and transfer-invariant.
   output         [TmCycW-1:0] tcas_d2_o,
   output         [TmCycW-1:0] tcbp_d2_o,
-  output         [TmCycW-1:0] todch_d2_o,
-  output         [TmCycW-1:0] todcl_d2_o,
 
   // Using I3C Broadcast Address?
   output                      addr_bcst_o,
@@ -50,61 +53,83 @@ module i3c_ctrl_req_gen
   import i3c_consts_pkg::*;
   import i3c_timing_pkg::*;
 
-  // Two parameters specify the signaling mode, and thus the timing parameters.
-  i3c_xfer_mode_e mode;
-  logic i2c;  // This disambiguates `mode` because it is overloaded.
-  always_comb begin
-    // The timing for the body of the transfer comes from the command attributes which is typically
-    // informed by the DAT entry for the Target/Group, but some FSM states need to control it
-    // explicitly, e.g. fetching of an In-Band Interrupt payload.
-    mode = cmd_attrs_i.mode;
-    i2c  = cmd_attrs_i.i2c;
-    case (state_i)
-      // HDR Exit/Restart signaling.
-      ExitHDR,
-      ReStHDR: begin
-        mode = XferMode_HDRDDR;
-        i2c  = 1'b0;
-      end
-
-      // Arbitrable Address Header, i.e. following a Start,
-      CmdArb: begin
-        mode = i3c_xfer_mode_e'(XferMode_I2CFM);
-        i2c  = 1'b1;
-      end
-
-      CmdAddr,          // Address Header, following Repeated Start.
-      EnterDDR,         // HDR-DDR entry.
-      IBIRxData,        // IBI Payload Reception.
-      CCC,              // Common Command Code handling.
-      DirectDrv: begin  // Software direct-driving of pins.
-        mode = XferMode_SDR0;
-        i2c  = 1'b0;
-      end
-
-      default: begin end  // Nothing to do; not all FSM states need to modify the signaling speed.
-    endcase
-  end
-
   // Speed index for the current command.
   // - a single software-programmed value is used for SDR1-SDR4, but scaled accordingly.
-  logic [2:0] sn;
+  logic [3:0] sn;
   always_comb begin
-    case ({i2c, mode})
-      // I2C signaling modes.
-      {1'b1, XferMode_I2CUDR3},
-      {1'b1, XferMode_I2CUDR2},
-      {1'b1, XferMode_I2CUDR1},
-      {1'b1, XferMode_I2CFM}:     sn = 3'b110;
-      {1'b1, XferMode_I2CFMPlus}: sn = 3'b101;
-      // Supported SDR/HDR signaling modes.
-      {1'b0, XferMode_SDR4}:      sn = 3'b100;
-      {1'b0, XferMode_SDR3}:      sn = 3'b011;
-      {1'b0, XferMode_SDR2}:      sn = 3'b010;
-      {1'b0, XferMode_SDR1}:      sn = 3'b001;
-      // The default timing covers SDR0 and HDR-DDR.
-      default:                    sn = 3'b000;
-    endcase
+    if (&{state_i inside {CmdArb, WaitAckb, SendAckb},
+          trans_type_i == TransType_Cmd, addr_bcst_o}) begin
+      // Starting a Command-initiated transfer to the I3C Broadcast Address.
+      // - if this is still our first attempt without success, we operate at the slower speed index
+      //   so that I3C-capable devices receive the traffic and know to disable their spike filters.
+      sn = i3c_first_i ? 4'h8 : 4'h7;
+    end else begin : gen_sn
+      i3c_xfer_mode_e mode;
+      logic i2c;  // This disambiguates `mode` because it is overloaded.
+
+      // The timing for the body of the transfer comes from the command attributes which is
+      // typically informed by the DAT entry for the Target/Group, but some FSM states need to
+      // control it explicitly, e.g. fetching of an In-Band Interrupt payload.
+      //
+      // Note: for Common Command Code handling we use the fields from the Command Descriptor.
+      mode = cmd_attrs_i.mode;
+      i2c  = cmd_attrs_i.i2c;
+
+      case (state_i)
+        // HDR Exit/Restart signaling.
+        ExitHDR,
+        ReStHDR: begin
+          mode = XferMode_HDRDDR;
+          i2c  = 1'b0;
+        end
+
+        // Arbitrable Address Header, i.e. following a Start. The first I3C Broadcast address header
+        // is handled above.
+        CmdArb,
+        WaitAckb,
+        SendAckb: begin
+          mode = i3c_xfer_mode_e'(XferMode_I2CFM);
+          i2c  = 1'b0;
+        end
+
+        // IBI Payload Reception.
+        // - the I3C Basic Specification does not appear to stipulate the speed of IBI Payload
+        //   signaling but presumably Targets will have the same performance limitations for IBI
+        //   Read data as for Private Read data, so we capture the `AUTOCMD_MODE` field in the
+        //   DAT cache and use that.
+        IBIRxData: begin
+          mode = xfer_mode_i;
+          i2c  = 1'b0;
+        end
+
+        CmdAddr,          // Address Header, following Repeated Start.
+        // All Targets must be able to accept the following at SDR0 rate.
+        EnterDDR,         // HDR-DDR entry.
+        DirectDrv: begin  // Software direct-driving of pins.
+          mode = XferMode_SDR0;
+          i2c  = 1'b0;
+        end
+
+        default: begin end  // Nothing to do; not all FSM states need to modify the signaling speed.
+      endcase
+
+      // Translate these two parameters into a speed index.
+      case ({i2c, mode})
+        // I2C signaling modes.
+        {1'b1, XferMode_I2CUDR3},
+        {1'b1, XferMode_I2CUDR2},
+        {1'b1, XferMode_I2CUDR1},
+        {1'b1, XferMode_I2CFM}:     sn = 4'h6;
+        {1'b1, XferMode_I2CFMPlus}: sn = 4'h5;
+        // Supported SDR/HDR signaling modes.
+        {1'b0, XferMode_SDR4}:      sn = 4'h4;
+        {1'b0, XferMode_SDR3}:      sn = 4'h3;
+        {1'b0, XferMode_SDR2}:      sn = 4'h2;
+        {1'b0, XferMode_SDR1}:      sn = 4'h1;
+        // The default timing covers SDR0 and HDR-DDR.
+        default:                    sn = 4'h0;
+      endcase
+    end
   end
 
   // ----- Default hardware-calculated timing parameters. -----
@@ -116,11 +141,10 @@ module i3c_ctrl_req_gen
 
   wire [TmCycW-1:0] hw_tcas_d2  = tm_cycles_init(ClkFreq, ceil_div(TCAS, 2));
   wire [TmCycW-1:0] hw_tcbp_d2  = tm_cycles_init(ClkFreq, ceil_div(TCBP, 2));
-  wire [TmCycW-1:0] hw_todch_d2 = tm_cycles_init(ClkFreq, ceil_div(TDIGH, 2));
-  wire [TmCycW-1:0] hw_todcl_d2 = tm_cycles_init(ClkFreq, ceil_div(TLOW_OD, 2));
 
   // Hardware-calculated default timing parameters for the various modes.
   tm_params_t tmhw_sdr0, tmhw_sdr1, tmhw_sdr2, tmhw_sdr3, tmhw_sdr4, tmhw_fmp, tmhw_fm;
+  tm_params_t tmhw_od, tmhw_od1;
   // SDR signaling.
   assign tmhw_sdr0 = tm_params(ClkFreq, TDIGH, TPERIOD_SDR0);  // Also HDR-DDR.
   assign tmhw_sdr1 = tm_params(ClkFreq, TDIGH, TPERIOD_SDR1);
@@ -130,23 +154,27 @@ module i3c_ctrl_req_gen
   // I2C signaling.
   assign tmhw_fmp  = tm_params(ClkFreq, TDIGH_FMP, TPERIOD_FMP);
   assign tmhw_fm   = tm_params(ClkFreq, TDIGH_FM,  TPERIOD_FM);
+  // Open Drain signaling (Arbitrable Address Headers).
+  assign tmhw_od   = tm_params(ClkFreq, TDIGH,      TPERIOD_OD);
+  assign tmhw_od1  = tm_params(ClkFreq, THIGH_INIT, TPERIOD_OD1);
 
   // Hardware-calculated default timing parameters for the current mode.
   tm_params_t tm_hw;
-  assign tm_hw = {tmhw_fm, tmhw_fmp, tmhw_sdr4, tmhw_sdr3, tmhw_sdr2, tmhw_sdr1, tmhw_sdr0} >>
+  assign tm_hw = {tmhw_od1, tmhw_od,  // Open Drain signaling.
+                  tmhw_fm, tmhw_fmp,  // I2C modes.
+                  tmhw_sdr4, tmhw_sdr3, tmhw_sdr2, tmhw_sdr1, tmhw_sdr0} >>  // SDR and HDR-DDR.
                  (sn * $bits(tm_params_t));
 
   // ----- Software-programmed timing parameters. -----
 
   wire [TmCycW-1:0] sw_tcas_d2  = reg2hw_i.ctrl_time_sp.tcas_div2.q;
   wire [TmCycW-1:0] sw_tcbp_d2  = reg2hw_i.ctrl_time_sp.tcbp_div2.q;
-  wire [TmCycW-1:0] sw_todch_d2 = reg2hw_i.ctrl_time_od.sclhi_div2.q;
-  wire [TmCycW-1:0] sw_todcl_d2 = reg2hw_i.ctrl_time_od.scllo_div2.q;
 
   // Collect the potential software override values from the register API.
   // - nomenclature: tcls - time Clock Lo Setup (i.e. before rising edge).
   //                 tchh - time Clock Hi Hold (i.e. after rising edge).
   tm_params_t tmsw_sdr0, tmsw_sdr1, tmsw_sdr2, tmsw_sdr3, tmsw_sdr4, tmsw_fmp, tmsw_fm;
+  tm_params_t tmsw_od, tmsw_od1;
   // Programmed timings for push-pull SCL high.
   // - this is the same for all SDR modes and HDR-DDR, to be suppressed by I2C spike filters.
   assign tmsw_sdr0.tchh  = reg2hw_i.ctrl_time_pp.tchh.q;
@@ -192,19 +220,32 @@ module i3c_ctrl_req_gen
   assign tmsw_fm.tchs  = reg2hw_i.ctrl_time_fm.sclhi_div2.q;
   assign tmsw_fm.hcext = 1'b0;
   assign tmsw_fm.tclh  = reg2hw_i.ctrl_time_fm.scllo_div2.q;
+  // Programmed timing for Open Drain signaling.
+  // - SCL high interval has the normal SDR0 timing, including any half-cycle extension.
+  assign tmsw_od.tcls  = reg2hw_i.ctrl_time_od.scllo_div2.q;
+  assign tmsw_od.tchh  = reg2hw_i.ctrl_time_pp.tchh.q;
+  assign tmsw_od.tchs  = reg2hw_i.ctrl_time_pp.tchs.q;
+  assign tmsw_od.hcext = reg2hw_i.ctrl_time_pp.hcext.q;
+  assign tmsw_od.tclh  = reg2hw_i.ctrl_time_od.scllo_div2.q;
+  // Programmed timing for Open Drain signaling of first I3C Broadcast Address.
+  // - this requires a longer SCL high interval to pass through enabled spike filters.
+  assign tmsw_od1.tcls  = reg2hw_i.ctrl_time_od.scllo_div2.q;
+  assign tmsw_od1.tchh  = reg2hw_i.ctrl_time_od.sclhi_div2.q;
+  assign tmsw_od1.tchs  = reg2hw_i.ctrl_time_od.sclhi_div2.q;
+  assign tmsw_od1.hcext = 1'b0;
+  assign tmsw_od1.tclh  = reg2hw_i.ctrl_time_od.scllo_div2.q;
 
   // Software-programmed default timing parameters for the current mode.
   tm_params_t tm_sw;
-  assign tm_sw = {tmsw_fm, tmsw_fmp, tmsw_sdr4, tmsw_sdr3, tmsw_sdr2, tmsw_sdr1, tmsw_sdr0} >>
+  assign tm_sw = {tmsw_od1, tmsw_od,  // Open Drain signaling.
+                  tmsw_fm, tmsw_fmp,  // I2C modes.
+                  tmsw_sdr4, tmsw_sdr3, tmsw_sdr2, tmsw_sdr1, tmsw_sdr0} >>  // SDR and HDR-DDR.
                  (sn * $bits(tm_params_t));
 
   // ----- Choose between hardware and software candidates. -----
   // Start/stoP timings.
   assign tcas_d2_o = &sw_tcas_d2 ? hw_tcas_d2[TmCycW-1:0] : sw_tcas_d2;
   assign tcbp_d2_o = &sw_tcbp_d2 ? hw_tcbp_d2[TmCycW-1:0] : sw_tcbp_d2;
-  // Open drain timings; target- and transfer-invariant.
-  assign todch_d2_o = &sw_todch_d2 ? hw_todch_d2[TmCycW-1:0] : sw_todch_d2;
-  assign todcl_d2_o = &sw_todcl_d2 ? hw_todcl_d2[TmCycW-1:0] : sw_todcl_d2;
 
   // Push-pull timings; transfer-dependent.
   i3c_ctrl_timing_t tm_sel;
@@ -227,7 +268,8 @@ module i3c_ctrl_req_gen
     addr_wdata = {dat_entry_i.dynamic_address[22:16], cmd_attrs_i.rnw} << (DataWidth - 8);
     if (addr_bcst_o) begin
       addr_wdata = Addr_Broadcast << (DataWidth - 7);
-    // SETDASA is always sent to the programmed static address, and this is all I2C devices have.
+    // SETDASA is always sent to the programmed static address, and I2C devices have only static
+    // addresses.
     end else if (cmd_attrs_i.ccc == SETDASA || cmd_attrs_i.i2c) begin  // HCI 6.3.1
       addr_wdata = {dat_entry_i.static_address, cmd_attrs_i.rnw} << (DataWidth - 8);
     end
@@ -237,6 +279,7 @@ module i3c_ctrl_req_gen
   assign trx_dvalid_o = |{state_i inside {StartSDR, StopSDR, RepStSDR,
                                           EnterDDR, ExitHDR, ReStHDR,
                                           CmdArb, CmdAddr,
+                                          WaitAckb, SendAckb,
                                           CmdWord,
                                           TxData, TxCRC,  // Transmit data.
                                           RxData, RxCRC,  // Request data reception.
@@ -266,7 +309,8 @@ module i3c_ctrl_req_gen
       // Arbitrable Address Header, i.e. following a Start.
       CmdArb: begin
         trx_dreq_o.req = CReqType_ArbAddr;
-        if (cmd_state_i.available) begin
+        if (trans_type_i == TransType_Cmd) begin
+          // We are contending for the bus, attempting to address a Target/Group.
           trx_dreq_o.wdata = addr_wdata;
         end else begin
           // Start request from Target; drive out all '1's so that we will lose the arbitration.
@@ -278,6 +322,20 @@ module i3c_ctrl_req_gen
       CmdAddr: begin
         trx_dreq_o.req = CReqType_Address;
         trx_dreq_o.wdata = addr_wdata;
+      end
+
+      // Awaiting ACK/NACK response to our attempted transmission.
+      WaitAckb: begin
+        // TODO: Receive not transmit; different request type, drop rnw?
+        trx_dreq_o.req   = CReqType_AckNack;
+        trx_dreq_o.rx    = 1'b1;
+      end
+
+      // Sending ACK/NACK response when we lost arbitration or did not contend;
+      // indicates acceptance or rejection of IBI, CRR or Hot-Join.
+      SendAckb: begin
+        trx_dreq_o.req   = CReqType_AckNack;
+        trx_dreq_o.wdata = send_nack_i << (DataWidth - 1);
       end
 
       // HDR-DDR entry.
