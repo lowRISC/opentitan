@@ -65,4 +65,5 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
   `include "rram_ctrl_scoreboard.sv"
+  `include "rram_ctrl_vseq_list.sv"
 endpackage : rram_ctrl_env_pkg
