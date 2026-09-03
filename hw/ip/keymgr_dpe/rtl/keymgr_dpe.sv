@@ -289,6 +289,14 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
 
+  for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
+    assign hw2reg.metadata_high[i].valid.d = '0;
+    assign hw2reg.metadata_high[i].exportable_policy.d = '0;
+    assign hw2reg.metadata_high[i].retain_parent_policy.d = '0;
+    assign hw2reg.metadata_high[i].allow_child_policy.d = '0;
+    assign hw2reg.metadata_high[i].boot_stage.d = '0;
+    assign hw2reg.metadata_low[i].d = '0;
+  end
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];

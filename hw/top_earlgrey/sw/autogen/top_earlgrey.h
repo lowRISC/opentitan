@@ -676,7 +676,7 @@ extern "C" {
  * address between #TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR and
  * `TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR + TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES 0x100u
+#define TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES 0x200u
 
 /**
  * Peripheral base address for csrng in top earlgrey.
