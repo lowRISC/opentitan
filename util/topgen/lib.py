@@ -16,7 +16,7 @@ from basegen.lib import Name
 from basegen.typing import ConfigT, ParamsT
 from mako.template import Template
 from reggen.ip_block import IpBlock
-from reggen.lib import PART_PRIMARY, PART_SECONDARY, check_bool
+from reggen.lib import PART_BOTH, PART_PRIMARY, PART_SECONDARY, check_bool
 from version_file import VersionInformation
 
 # Ignore flake8 warning as the function is used in the template
@@ -604,6 +604,38 @@ def get_domain_of_partition(module: ConfigT, partition: str = PART_PRIMARY,
 def get_domain_of_signal(module: Dict, sig: OrderedDict):
     '''Power domain of a inter-module signal endpoint.'''
     return get_domain_of_partition(module, sig.get('partition', PART_PRIMARY))
+
+
+# The instance keys a split IP describes per partition. The canonical key
+# always holds the primary partition's value and '<key>_secondary' the
+# secondary partition's value.
+PARTITIONED_KEYS = ('clock_srcs', 'clock_group', 'reset_connections')
+
+
+def secondary_key(key: str) -> str:
+    '''Name of the key holding a split instance's secondary partition value.'''
+    return f'{key}_secondary'
+
+
+def get_partitions_of(module: ConfigT) -> List[str]:
+    if 'domain_secondary' in module:
+        return [PART_PRIMARY, PART_SECONDARY]
+    return [PART_PRIMARY]
+
+
+def get_conns_for(end_point: ConfigT, key: str) -> List[Tuple[str, ConfigT]]:
+    '''Return (partition, connections) for every partition a `key` describes.
+
+    The canonical key holds the primary partition's connections and
+    '<key>_secondary' the secondary partition's.
+    '''
+    result = []
+    for partition, name in ((PART_PRIMARY, key),
+                            (PART_SECONDARY, secondary_key(key))):
+        conns = end_point.get(name)
+        if conns is not None:
+            result.append((partition, conns))
+    return result
 
 
 # Template functions
