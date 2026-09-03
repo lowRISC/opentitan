@@ -367,7 +367,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for keymgr_dpe in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES = 32'h200;
 
   /**
    * Peripheral base address for csrng in top earlgrey.
