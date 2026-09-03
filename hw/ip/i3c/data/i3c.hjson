@@ -343,7 +343,13 @@
         }
         { bits:     "30",
           name:     "ACTIVE",
-          desc:     "Indicates whether the Target functionality is presently active, as opposed to under reset.",
+          desc:     "Indicates whether the Target logic is presently active, as opposed to under reset.",
+          hwaccess: "hwo",
+          resval:   "0"
+        }
+        { bits:     "29",
+          name:     "CONNECTED",
+          desc:     "Indicates whether the Target logic is connected to the bus and monitoring traffic.",
           hwaccess: "hwo",
           resval:   "0"
         }

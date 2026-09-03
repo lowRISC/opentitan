@@ -10,7 +10,7 @@
 package i3c_io_pkg;
   import i3c_pkg::*;
 
-  // Single driver enable signal.
+  // Separated enable signals for push-pull and open drain drivers.
   parameter bit DrvSeparatedEn = 1'b1;
 
   // State of Controller driver enables.

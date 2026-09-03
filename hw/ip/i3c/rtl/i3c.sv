@@ -395,6 +395,10 @@ module i3c
     .reg2hw_i        (reg2hw),
     .hw2reg_o        (hw2reg),
 
+    // Software resets for the Controller registers.
+    .hc_soft_rst_o   (),  // Host Controller registers.
+    .sc_soft_rst_o   (),  // Standby Controller registers.
+
     // HCI Command Queue Port access.
     // HCI Response Queue Port access.
     // HCI XFER_DATA_PORT access.

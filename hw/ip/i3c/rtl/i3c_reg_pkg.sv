@@ -1582,6 +1582,9 @@ package i3c_reg_pkg;
     } active;
     struct packed {
       logic        d;
+    } connected;
+    struct packed {
+      logic        d;
     } protocol_error;
     struct packed {
       logic        d;
@@ -2770,12 +2773,12 @@ package i3c_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    i3c_hw2reg_intr_state_reg_t intr_state; // [2036:2033]
-    i3c_hw2reg_info_reg_t info; // [2032:2004]
-    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2003:2003]
-    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2002:1983]
-    i3c_hw2reg_targ_control_reg_t targ_control; // [1982:1981]
-    i3c_hw2reg_targ_status_reg_t targ_status; // [1980:1952]
+    i3c_hw2reg_intr_state_reg_t intr_state; // [2037:2034]
+    i3c_hw2reg_info_reg_t info; // [2033:2005]
+    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2004:2004]
+    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2003:1984]
+    i3c_hw2reg_targ_control_reg_t targ_control; // [1983:1982]
+    i3c_hw2reg_targ_status_reg_t targ_status; // [1981:1952]
     i3c_hw2reg_targ_sink_status_reg_t targ_sink_status; // [1951:1939]
     i3c_hw2reg_reset_det_status_reg_t reset_det_status; // [1938:1931]
     i3c_hw2reg_buffer_ctrl_reg_t buffer_ctrl; // [1930:1929]
@@ -3063,6 +3066,7 @@ package i3c_reg_pkg;
   parameter logic [0:0] I3C_TARG_STATUS_RSTACT_VIRT_TARG_DET_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_VTM_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_PROTOCOL_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] I3C_TARG_STATUS_CONNECTED_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_ACTIVE_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_PRESENT_RESVAL = 1'h 1;
   parameter logic [26:0] I3C_TARG_SINK_STATUS_RESVAL = 27'h 0;
