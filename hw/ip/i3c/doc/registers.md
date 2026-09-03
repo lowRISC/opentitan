@@ -353,8 +353,9 @@ Target Control register.
 ### TARG_CONTROL . RESET
 Software reset of Target logic.
 
-Iff the Standby Controller support is disabled by clearing `STBY_CR_SUPPORT`, writing '1' to this field will reset all of the Target-side logic.
-To reset the Target-side logic when Standby Controller support is enabled, software shall instead use the `SOFT_RST` field of the HCI-specified `RESET_CONTROL` register, whether or not the Controller is currently the Active Controller.
+Writing '1' to this field will reset all of the Target-side logic and registers.
+When the Standby Controller is enabled, this will also reset the registers of the Standby Controller, disabling it.
+To reset only the Standby Controller whilst it is enabled, software should use the `SOFT_RST` field of the HCI-specified `RESET_CONTROL` register instead, to avoid impacting other Virtual Targets.
 
 ### TARG_CONTROL . HJ_REQUEST
 Issue Hot-Join request.
@@ -387,19 +388,20 @@ In this configuration the Controller-side logic must remain the Active Controlle
 Target-side Status register
 - Offset: `0x20`
 - Reset default: `0x80000000`
-- Reset mask: `0xc7ffffff`
+- Reset mask: `0xe7ffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                               |
 |:------:|:------:|:-------:|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |   31   |   ro   |   0x1   | PRESENT              | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
-|   30   |   ro   |   0x0   | ACTIVE               | Indicates whether the Target functionality is presently active, as opposed to under reset.                                                                                                                                                                |
-| 29:27  |        |         |                      | Reserved                                                                                                                                                                                                                                                  |
+|   30   |   ro   |   0x0   | ACTIVE               | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
+|   29   |   ro   |   0x0   | CONNECTED            | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
+| 28:27  |        |         |                      | Reserved                                                                                                                                                                                                                                                  |
 |   26   |   ro   |   0x0   | PROTOCOL_ERROR       | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
 |   25   |   ro   |   0x0   | VTM                  | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
 |   24   |   ro   |   0x0   | RSTACT_VIRT_TARG_DET | RSTACT Virtual Target Detect.                                                                                                                                                                                                                             |

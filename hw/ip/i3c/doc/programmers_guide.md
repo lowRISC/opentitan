@@ -92,3 +92,14 @@ Clock frequencies:
  - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
  - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
  - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting; shifts are increased by 5.
+
+# IBI Payload Fetching
+
+A number of I3C Targets are too slow to be able to return data for Private Read transfers at the full SDR0/HDR-DDR signaling speed.
+
+When the Host Controller is issuing a Private Read transfer, the signaling mode/rate is specified in a Command Descriptor, but when fetching the payload data for an In-Band Interrupt, there is no Command Descriptor available so the hardware cannot determine the required signaling speed.
+
+The HCI Specification does, however, allow the specification of a signaling mode for 'Auto-Command' reads (HCI Table 130, `AUTOCMD_MODE` field), so this IP block also uses the value in that field when fetching the IBI payload data.
+If that field has been set to HDR-DDR for Auto-Command operation, the IBI Payload of the device will be fetched with SDR0 signaling, since IBIs are not supported in HDR modes.
+
+If a Target is known, through retrieval of its maxRd value (4.3.7.3.18), to be too slow to support SDR0 signaling, the `AUTOCMD_MODE` of its DAT entry should be set to a lower signaling speed before the collection of In-Band Interrupt payloads from that Target is enabled.
