@@ -369,8 +369,6 @@ module i3c_core
   // Timing parameters; target- and transfer-invariant.
   logic [TmCycW-1:0] ctrl_tcas_d2;
   logic [TmCycW-1:0] ctrl_tcbp_d2;
-  logic [TmCycW-1:0] ctrl_todch_d2;
-  logic [TmCycW-1:0] ctrl_todcl_d2;
   // Enable use of the half-cycle SCL extension?
   logic ctrl_enable_hc_scl;
 
@@ -491,8 +489,6 @@ module i3c_core
     // Timing parameters; target- and transfer-invariant.
     .tcas_d2_o         (ctrl_tcas_d2),
     .tcbp_d2_o         (ctrl_tcbp_d2),
-    .todch_d2_o        (ctrl_todch_d2),
-    .todcl_d2_o        (ctrl_todcl_d2),
 
     // Configuration signals to the transceiver logic.
     .enable_hc_scl_o   (ctrl_enable_hc_scl),
@@ -1431,8 +1427,6 @@ module i3c_core
     // Timing parameters; target- and transfer-invariant.
     .tcas_d2_i       (ctrl_tcas_d2),
     .tcbp_d2_i       (ctrl_tcbp_d2),
-    .todch_d2_i      (ctrl_todch_d2),
-    .todcl_d2_i      (ctrl_todcl_d2),
     // Enable the use of the half-cycle SCL extension?
     .enable_hc_scl_i (ctrl_enable_hc_scl),
 

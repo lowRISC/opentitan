@@ -5,6 +5,7 @@
 // Device Address Table cache.
 
 module i3c_dat_cache
+  import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_pkg::*;
 #(
@@ -26,7 +27,7 @@ module i3c_dat_cache
 
   // Update an entry within the cache, if present.
   // - used when the driver software writes to a DAT entry.
-  input                   we_i,
+  input             [1:0] we_i,
   input    [DATAddrW-1:0] widx_i,
   input  i3c_datc_wdata_t wdata_i,
 
@@ -43,6 +44,7 @@ module i3c_dat_cache
   output logic            ibi_payload_o,
   output logic            ibi_reject_o,
   output logic            crr_reject_o,
+  output i3c_xfer_mode_e  xfer_mode_o,
 
   // Interface to DAT memory for walking the table.
   // - TODO: with the present simple implementation this is not required.
@@ -93,7 +95,7 @@ module i3c_dat_cache
   end
 
   // Request may be granted immediately with this simple implementation.
-  assign rgnt_o = re_i & |{rmatched, !raddr_valid};
+  assign rgnt_o = re_i;
   // Valid details found?
   // - all requests will be denied if the device properties could not be found; this signal may be
   //   used to notify driver software that a Target is attempting to communicate but is not known
@@ -113,6 +115,12 @@ module i3c_dat_cache
   assign ibi_payload_o = |ibi_payload;  // Default to no payload.
   assign ibi_reject_o  = &ibi_reject;   // Default to rejecting IBI.
   assign crr_reject_o  = &crr_reject;   // Default to rejecting CRR.
+  always_comb begin : gen_xfer_mode
+    xfer_mode_o = XferMode_SDR0;        // Default to SDR0 (full rate) signaling.
+    for (int unsigned e = 0; e < CacheSize; e++) begin
+      if (rmatched[e]) xfer_mode_o = entry[e].autocmd_mode;
+    end
+  end
 
   // Handle write accesses.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -127,7 +135,16 @@ module i3c_dat_cache
       // Note: updating of the cache is not clock-gated with `enable_i` as a precaution against
       //       software modifying the Device Address Table whilst the Controller is not enabled;
       //       it's important that the DAT and the cache remain consistent.
-      if (we_i) entry[widx_i] <= wdata_i;
+      //
+      // The lower word of the DAT entry holds most of the information that we need...
+      if (we_i[0]) begin
+        entry[widx_i].dyn_addr    <= wdata_i.dyn_addr;
+        entry[widx_i].ibi_payload <= wdata_i.ibi_payload;
+        entry[widx_i].ibi_reject  <= wdata_i.ibi_reject;
+        entry[widx_i].crr_reject  <= wdata_i.crr_reject;
+      end
+      // ... but the transfer mode (`AUTOCMD_MODE`) is held in the upper word.
+      if (we_i[1]) entry[widx_i].autocmd_mode <= wdata_i.autocmd_mode;
     end
   end
 
