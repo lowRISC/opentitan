@@ -45,6 +45,7 @@ module keymgr_dpe_ctrl
   input [KeyVersionWidth-1:0] max_key_version_i,
   input [KeyVersionWidth-1:0] key_version_i,
   output key_version_vld_o,
+  output keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata_o,
 
   output logic op_done_o,
   output keymgr_dpe_op_status_e status_o,
@@ -139,6 +140,16 @@ module keymgr_dpe_ctrl
   assign advance_cmd    = op_start_i & (op_i == OpDpeAdvance)  & en_i;
   assign gen_hw_key_cmd = op_start_i & (op_i == OpDpeGenHwOut) & en_i;
   assign disable_cmd    = op_start_i & (op_i == OpDpeDisable)  & en_i;
+
+  // Forward all metadata to the sw register
+  for (genvar i = 0; i < NumInstHwSlot; i++) begin : gen_metadata_output
+    assign metadata_o[i] = {
+      key_slots_q[i].key_policy,
+      key_slots_q[i].boot_stage,
+      key_slots_q[i].valid,
+      key_slots_q[i].max_key_version
+    };
+  end
 
   ///////////////////////////
   //  interaction between main control fsm and operation fsm

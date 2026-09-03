@@ -262,6 +262,14 @@ package keymgr_dpe_pkg;
     keymgr_dpe_policy_t key_policy;
   } keymgr_dpe_slot_t;
 
+  // internal metadata for each slot
+  typedef struct packed {
+    keymgr_dpe_policy_t key_policy;
+    keymgr_dpe_boot_stage_e boot_stage;
+    logic valid;
+    logic [KeyVersionWidth-1:0] max_key_version;
+  } keymgr_dpe_metadata_slot_t;
+
   typedef enum logic [2:0] {
     SlotUpdateIdle,
     SlotDestRandomize,

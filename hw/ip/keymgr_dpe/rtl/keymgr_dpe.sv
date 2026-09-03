@@ -289,15 +289,20 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
 
+  keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata;
   for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
-    assign hw2reg.metadata_high[i].valid.de = 1'b1;
-    assign hw2reg.metadata_high[i].valid.d = '0;
-    assign hw2reg.metadata_high[i].policy.de = 1'b1;
-    assign hw2reg.metadata_high[i].policy.d = '0;
-    assign hw2reg.metadata_high[i].boot_stage.de = 1'b1;
-    assign hw2reg.metadata_high[i].boot_stage.d = '0;
-    assign hw2reg.metadata_low[i].de = 1'b1;
-    assign hw2reg.metadata_low[i].d = '0;
+    // Enable the metadata if the slot exists
+    assign hw2reg.metadata_high[i].valid.de = (i < NumInstHwSlot);
+    assign hw2reg.metadata_high[i].policy.de = (i < NumInstHwSlot);
+    assign hw2reg.metadata_high[i].boot_stage.de = (i < NumInstHwSlot);
+    assign hw2reg.metadata_low[i].de = (i < NumInstHwSlot);
+
+    assign {
+      hw2reg.metadata_high[i].policy.d,
+      hw2reg.metadata_high[i].boot_stage.d,
+      hw2reg.metadata_high[i].valid.d,
+      hw2reg.metadata_low[i].d
+    } = (i < NumInstHwSlot) ? metadata[i] : '0;
   end
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
@@ -374,6 +379,7 @@ module keymgr_dpe
     .max_key_version_i(reg2hw.max_key_ver_shadowed),
     .key_version_i(reg2hw.key_version),
     .key_version_vld_o(key_version_vld),
+    .metadata_o(metadata),
     .op_start_i(op_start),
     .op_done_o(op_done),
     .init_o(init),
@@ -932,6 +938,9 @@ module keymgr_dpe
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+
+  // Verify the metadata do not exceed the width of the sw registers
+  `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
 
   // Verify the number of instanciated HW slots
   `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)
