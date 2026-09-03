@@ -6,11 +6,12 @@ import logging as log
 import re
 from collections import OrderedDict
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from reggen.ip_block import IpBlock
 from reggen.inter_signal import InterSignal
 from reggen.params import Parameter
+from reggen.lib import PART_PRIMARY
 from reggen.validate import check_int
 from topgen import lib
 
@@ -208,10 +209,48 @@ def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
                                        rsp_s="tl_" + esc_name)
 
 
+def autoconnect_intra_ip(topcfg: OrderedDict):
+    """Auto-connect the intra-IP (inter-partition) signals of split IPs.
+
+    Inter-module signals of a split IP are unique per partition rather than per
+    IP. To have unique names, we name the signals: "<inst>.<sig>.<partition>".
+    """
+    for module in topcfg["module"]:
+        if not module.get("is_split_ip"):
+            continue
+
+        # Group this IP's inter-module signals by name.
+        by_name = OrderedDict()
+        for sig in module.get("inter_signal_list", []):
+            by_name.setdefault(sig["name"], []).append(sig)
+
+        for name, entries in by_name.items():
+            drivers = [e for e in entries if e.get("act") == "req"]
+            receivers = [e for e in entries if e.get("act") == "rcv"]
+            for drv in drivers:
+                drv_partition = drv.get("partition", PART_PRIMARY)
+                for rcv in receivers:
+                    rcv_partition = rcv.get("partition", PART_PRIMARY)
+                    # Only connect across partitions (an intra-IP crossing). If
+                    # both partitions are in the same domain, the regular
+                    # inter-module logic handles the connections.
+                    if drv_partition == rcv_partition:
+                        continue
+                    add_intermodule_connection(obj=topcfg,
+                                               req_m=module["name"],
+                                               req_s=f"{name}.{drv_partition}",
+                                               rsp_m=module["name"],
+                                               rsp_s=f"{name}.{rcv_partition}")
+
+
 def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Matching the connection based on the naming rule
-    between {memory, module} <-> Xbar.
+    between {memory, module} <-> Xbar as well as intra IP connections for split
+    IPs.
     """
+
+    # Auto connect the intra-IP inter-partition signals of split IPs
+    autoconnect_intra_ip(topcfg)
 
     # Add xbar connection to the modules, memories
     for xbar in topcfg["xbar"]:
@@ -340,7 +379,7 @@ def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "r
     module = lib.get_module_by_name(topcfg, sig['inst_name'], True)
     assert module is not None, f"Module {sig['inst_name']} associated with signal" \
                                f"{sig['name']} not found in topcfg."
-    domain = module.get('domain')
+    domain = lib.get_domain_of_signal(module, sig)
     assert domain is not None, f"Module {sig['inst_name']} has no power domain attribute."
 
     # Make sure to provide a value for the `netname` key
@@ -664,11 +703,11 @@ def elab_intermodule(topcfg: OrderedDict):
         log.info("{req} --> {rsps}".format(req=req, rsps=rsps))
 
         # Split index
-        req_module, req_signal, _req_index = filter_index(req)
+        req_module, req_signal, _, req_partition = filter_index(req)
 
         # get the module signal
         req_struct = find_intermodule_signal(list_of_intersignals, req_module,
-                                             req_signal)
+                                             req_signal, req_partition)
 
         # decide signal format based on the `key`
         sig_name = intersignal_format(req_struct)
@@ -681,9 +720,10 @@ def elab_intermodule(topcfg: OrderedDict):
             package = req_struct["package"]
         else:
             for rsp in rsps:
-                rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
+                rsp_module, rsp_signal, _, rsp_partition = filter_index(rsp)
                 rsp_struct = find_intermodule_signal(list_of_intersignals,
-                                                     rsp_module, rsp_signal)
+                                                     rsp_module, rsp_signal,
+                                                     rsp_partition)
                 if "package" in rsp_struct:
                     package = rsp_struct["package"]
                     break
@@ -693,12 +733,17 @@ def elab_intermodule(topcfg: OrderedDict):
         # Check multi-PD
         rsp_pds = []
         rsp_structs = []
-        req_pd = lib.get_module_by_name(topcfg, req_struct['inst_name'], True)['domain']
+        req_pd = lib.get_domain_of_signal(
+            lib.get_module_by_name(topcfg, req_struct['inst_name'], True),
+            req_struct)
         for rsp in rsps:
-            rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
+            rsp_module, rsp_signal, _, rsp_partition = filter_index(rsp)
             rsp_struct = find_intermodule_signal(list_of_intersignals,
-                                                 rsp_module, rsp_signal)
-            rsp_pd = lib.get_module_by_name(topcfg, rsp_struct['inst_name'], True)['domain']
+                                                 rsp_module, rsp_signal,
+                                                 rsp_partition)
+            rsp_pd = lib.get_domain_of_signal(
+                lib.get_module_by_name(topcfg, rsp_struct['inst_name'], True),
+                rsp_struct)
             rsp_struct['domain'] = rsp_pd
             rsp_structs.append(rsp_struct)
 
@@ -766,10 +811,11 @@ def elab_intermodule(topcfg: OrderedDict):
 
         for i, rsp in enumerate(rsps):
             # Split index
-            rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
+            rsp_module, rsp_signal, _, rsp_partition = filter_index(rsp)
 
             rsp_struct = find_intermodule_signal(list_of_intersignals,
-                                                 rsp_module, rsp_signal)
+                                                 rsp_module, rsp_signal,
+                                                 rsp_partition)
 
             # Determine the signal name
             rsp_struct["top_signame"] = sig_name
@@ -792,11 +838,13 @@ def elab_intermodule(topcfg: OrderedDict):
         topcfg["inter_module"]["top"] = []
 
     for s in topcfg["inter_module"]["top"]:
-        sig_m, sig_s, sig_i = filter_index(s)
+        sig_m, sig_s, sig_i, sig_partition = filter_index(s)
         assert sig_i == -1, 'top net connection should not use bit index'
-        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
+        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s,
+                                      sig_partition)
         sig_name = intersignal_format(sig)
-        domain = lib.get_module_by_name(topcfg, sig['inst_name'], True)['domain']
+        domain = lib.get_domain_of_signal(
+            lib.get_module_by_name(topcfg, sig['inst_name'], True), sig)
         sig["top_signame"] = sig_name
         if "index" not in sig:
             sig["index"] = -1
@@ -833,9 +881,10 @@ def elab_intermodule(topcfg: OrderedDict):
     topcfg["inter_signal"].setdefault('external', [])
 
     for s, port in topcfg["inter_module"]["external"].items():
-        sig_m, sig_s, sig_i = filter_index(s)
+        sig_m, sig_s, sig_i, sig_partition = filter_index(s)
         assert sig_i == -1, 'top net connection should not use bit index'
-        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
+        sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s,
+                                      sig_partition)
 
         # To append `_o` or `_i` suffix to netname
         sig['external'] = True
@@ -882,33 +931,42 @@ def elab_intermodule(topcfg: OrderedDict):
         del topcfg["pinmux"]["inter_pd"]
 
 
-def filter_index(signame: str) -> Tuple[str, str, int]:
-    """If the signal has array indicator `[N]` then split and return name and
-    array index. If not, array index is -1.
+def filter_index(signame: str) -> Tuple[str, str, int, Optional[str]]:
+    """Split an inter-module signal reference into its parts.
 
-    param signame module.sig{[N]}
+    Format: `module.sig{.partition}{[N]}`
 
-    result (module_name, signal_name, array_index)
+    The optional `.partition` qualifier disambiguates a split IP's per-partition
+    inter-module signals.
+    If the signal has an array indicator `[N]` the index is returned,
+    otherwise -1.
+
+    result (module_name, signal_name, array_index, partition)
     """
-    m = re.match(r'(\w+)\.(\w+)(\[(\d+)\])*', signame)
+    m = re.match(r'(\w+)\.(\w+)(?:\.(\w+))?(?:\[(\d+)\])*', signame)
 
     if not m:
         # Cannot match the pattern
-        return "", "", -1
+        return "", "", -1, None
 
-    if m.group(3):
-        # array index is not None
-        return m.group(1), m.group(2), m.group(4)
+    partition = m.group(3)
+    # group(4) is the digits of the (last) `[N]`, if any.
+    index = m.group(4) if m.group(4) is not None else -1
 
-    return m.group(1), m.group(2), -1
+    return m.group(1), m.group(2), index, partition
 
 
-def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
+def find_intermodule_signal(sig_list, m_name, s_name,
+                            partition: Optional[str] = None) -> Dict:
     """Return the intermodule signal structure
+
+    When `partition` is given, only signals belonging to that partition are
+    considered.
     """
 
     filtered = [
         x for x in sig_list if x["name"] == s_name and x["inst_name"] == m_name
+        and (partition is None or x.get("partition", PART_PRIMARY) == partition)
     ]
 
     if len(filtered) == 1:
@@ -997,13 +1055,13 @@ def find_otherside_modules(topcfg: OrderedDict, m,
             # return rsps after splitting module instance name and the port
             result = []
             for rsp in rsps:
-                rsp_m, rsp_s, _rsp_i = filter_index(rsp)
+                rsp_m, rsp_s, _, _ = filter_index(rsp)
                 result.append(('connect', rsp_m, rsp_s))
             return result
 
         for rsp in rsps:
             if signame == rsp:
-                req_m, req_s, _req_i = filter_index(req)
+                req_m, req_s, _, _ = filter_index(req)
                 return [('connect', req_m, req_s)]
 
     # if reaches here, it means either the format is wrong, or floating port.
@@ -1040,7 +1098,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         # If key is format #2, then length of value list shall be 1
         # If one of the value is format #2, then the key should be 1 bit width and
         # entries of value list should be 1
-        req_m, req_s, req_i = filter_index(req)
+        req_m, req_s, req_i, req_partition = filter_index(req)
 
         if req_s == "":
             log.error(
@@ -1055,7 +1113,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             continue
 
         req_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
-                                             req_m, req_s)
+                                             req_m, req_s, req_partition)
 
         err, req_struct = check_intermodule_field(req_struct)
         error += err
@@ -1072,7 +1130,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
         # Check rsp format
         for i, rsp in enumerate(rsps):
-            rsp_m, rsp_s, rsp_i = filter_index(rsp)
+            rsp_m, rsp_s, rsp_i, rsp_partition = filter_index(rsp)
             if rsp_s == "":
                 log.error(
                     "Cannot parse the inter-module signal key '{req}->{rsp}'".
@@ -1080,7 +1138,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 error += 1
 
             rsp_struct = find_intermodule_signal(
-                topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
+                topcfg["inter_signal"]["signals"], rsp_m, rsp_s, rsp_partition)
 
             err, rsp_struct = check_intermodule_field(rsp_struct)
             error += err
@@ -1201,13 +1259,13 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
     for item in topcfg["inter_module"]["top"] + list(
             topcfg["inter_module"]["external"].keys()):
-        sig_m, sig_s, sig_i = filter_index(item)
+        sig_m, sig_s, sig_i, sig_partition = filter_index(item)
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))
             total_error += 1
 
         sig_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
-                                             sig_m, sig_s)
+                                             sig_m, sig_s, sig_partition)
         err, sig_struct = check_intermodule_field(sig_struct)
         total_error += err
 
