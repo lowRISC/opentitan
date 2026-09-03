@@ -69,4 +69,5 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_scoreboard.sv"
+  `include "rram_ctrl_env.sv"
 endpackage : rram_ctrl_env_pkg
