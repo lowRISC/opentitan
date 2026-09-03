@@ -290,9 +290,12 @@ module i3c_target_fsm
   end
   assign protocol_error_o = protocol_error_q;  // to register interface.
 
-  // TODO: Protocol errors are not yet detected; see Table 27.
-  assign protocol_error_de = 1'b0;
-  assign protocol_error_d  = 1'b0;
+  // TODO(#31068): Protocol errors are not yet detected/set; only the GETSTATUS-triggered clear
+  // (Table 27) is connected so far (from the Target CCC handling below).
+  logic protocol_error_de_ccc;
+  logic protocol_error_d_ccc;
+  assign protocol_error_de = protocol_error_de_ccc;
+  assign protocol_error_d  = protocol_error_d_ccc;
 
   // Under software control, the hardware may read and drop DWORDs from any transmit buffer.
   // - IBI is source 0, so that it does not vary with the number of configured targets.
@@ -664,48 +667,50 @@ module i3c_target_fsm
   // Target-side Common Command Code handling.
   i3c_target_ccc #(
     .NumTargets(NumTargets)
-  ) u_targ_ccc (
+  ) u_target_ccc (
     // CCC handling enabled and active?
-    .enable_i         (ccc_enabled),
+    .enable_i(ccc_enabled),
 
     // Configuration.
-    .reg2hw_i         (reg2hw_i),
+    .reg2hw_i(reg2hw_i),
 
     // Register state, including the CCC itself.
-    .r_i              (reg_state),
+    .r_i(reg_state),
 
     // Requests from the Target FSM.
-    .ccc_req_i        (ccc_req),
+    .ccc_req_i(ccc_req),
 
     // Responses to the Target FSM.
-    .ccc_rsp_o        (ccc_rsp),
+    .ccc_rsp_o(ccc_rsp),
 
     // Writes to register state.
-    .dynaddr_de_o     (dynaddr_de_o),
-    .dynaddr_valid_d_o(dynaddr_valid_d_o),
-    .dynaddr_d_o      (dynaddr_d_o),
-    .mwl_de_o         (mwl_de_o),
-    .mrl_de_o         (mrl_de_o),
-    .ibi_de_o         (ibi_de_o),
-    .mwl_d_o          (mwl_d_o),
-    .mrl_d_o          (mrl_d_o),
-    .ibi_d_o          (ibi_d_o),
-    .endis_event_o    (endis_event_o),
-    .rstact_de_o      (rstact_de_o),
-    .rstact_d_o       (rstact_d_o),
-    .grp_set_o        (grp_set),
-    .grp_rst_o        (grp_rst),
-    .grp_all_o        (grp_all),
-    .grp_addr_o       (grp_addr),
-    .grp_targets_o    (grp_targets),
-    .act_state_de_o   (act_state_de_o),
-    .act_state_d_o    (act_state_d_o),
-    .endxfer_cand_de_o(endxfer_cand_de_o),
-    .endxfer_cand_d_o (endxfer_cand_d_o),
-    .endxfer_de_o     (endxfer_de_o),
-    .endxfer_d_o      (endxfer_d_o),
-    .test_mode_de_o   (test_mode_de),
-    .test_mode_d_o    (test_mode_d)
+    .dynaddr_de_o       (dynaddr_de_o),
+    .dynaddr_valid_d_o  (dynaddr_valid_d_o),
+    .dynaddr_d_o        (dynaddr_d_o),
+    .mwl_de_o           (mwl_de_o),
+    .mrl_de_o           (mrl_de_o),
+    .ibi_de_o           (ibi_de_o),
+    .mwl_d_o            (mwl_d_o),
+    .mrl_d_o            (mrl_d_o),
+    .ibi_d_o            (ibi_d_o),
+    .endis_event_o      (endis_event_o),
+    .rstact_de_o        (rstact_de_o),
+    .rstact_d_o         (rstact_d_o),
+    .grp_set_o          (grp_set),
+    .grp_rst_o          (grp_rst),
+    .grp_all_o          (grp_all),
+    .grp_addr_o         (grp_addr),
+    .grp_targets_o      (grp_targets),
+    .act_state_de_o     (act_state_de_o),
+    .act_state_d_o      (act_state_d_o),
+    .endxfer_cand_de_o  (endxfer_cand_de_o),
+    .endxfer_cand_d_o   (endxfer_cand_d_o),
+    .endxfer_de_o       (endxfer_de_o),
+    .endxfer_d_o        (endxfer_d_o),
+    .test_mode_de_o     (test_mode_de),
+    .test_mode_d_o      (test_mode_d),
+    .protocol_error_de_o(protocol_error_de_ccc),
+    .protocol_error_d_o (protocol_error_d_ccc)
   );
 
   // Transmission outcome; for completion signaling and error reporting.
@@ -1128,9 +1133,8 @@ module i3c_target_fsm
 
   // Writing of Asynchronous Events descriptors into the queue.
   i3c_targ_async_events #(
-    .NumTargets (NumTargets),
-    .DataWidth  (DataWidth),
-    .FIFODepthW (FIFODepthW)
+    .NumTargets(NumTargets),
+    .DataWidth (DataWidth)
   ) u_async_evt (
     .clk_i           (clk_i),
     .rst_ni          (rst_ni),
@@ -1159,12 +1163,10 @@ module i3c_target_fsm
     .suspend_tx_i    (suspend_tx_o),
     .ibi_suspend_tx_i(ibi_suspend_tx_o),
 
-    // CCC traffic.
-    .ccc_traffic_i   (ccc_req.en),
+    // CCC request and current state of CCC handling.
+    .ccc_req_i       (ccc_req),
     // Register state
     .r_i             (reg_state),
-    // Current state of CCC handling.
-    .ccc_req_i       (ccc_req),
 
     // Bus Events.
     .bus_events_i    (bus_events),

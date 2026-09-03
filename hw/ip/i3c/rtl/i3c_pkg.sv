@@ -531,7 +531,7 @@ package i3c_pkg;
     // Note that we need only be concerned with those CCCs that are supported by the Target;
     // the Target transceiver logic is responsible for rejecting or ignoring CCCs/DEFBs that are not
     // supported.
-    return ccc inside {ENTTM, RSTACTB, GETSTATUS, ENDXFER, GETMXDS, GETCAPS, RSTACT};
+    return ccc inside {ENTTM, RSTACTB, GETSTATUS, ENDXFER, ENDXFERB, GETMXDS, GETCAPS, RSTACT};
   endfunction
 
   // Indicates whether the Target supports the given Direct Common Control Command.
