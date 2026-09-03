@@ -48,10 +48,19 @@
   uvm_test: rram_ctrl_base_test
   uvm_test_seq: rram_ctrl_base_vseq
 
-  // No block-specific tests yet - only the generic common CIP tests (csr/mem/intr/alert/tl_access/
-  // stress) pulled in via import_cfgs above are available at this point.
-  tests: []
+  // List of test specifications.
+  tests: [
+    {
+      name: rram_ctrl_smoke
+      uvm_test_seq: rram_ctrl_smoke_vseq
+    }
+  ]
 
   // List of regressions.
-  regressions: []
+  regressions: [
+    {
+      name: smoke
+      tests: ["rram_ctrl_smoke"]
+    }
+  ]
 }
