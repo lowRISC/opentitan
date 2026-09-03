@@ -4,9 +4,9 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t, permute
+from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t
 from .decode import EmptyInsn
-from .isa import OTBNInsn
+from .isa import BnVecVecMul, OTBNInsn
 from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
@@ -304,17 +304,16 @@ class OTBNSim:
         self.state.wsrs.URND.step()
 
         # The predecoder samples URND one cycle before a vectorized multiply reaches the execute
-        # stage. Advance the sampled offset by one cycle, then resample from the current URND
-        # value.
+        # stage. Advance the sampled offset by one cycle here. the resample happens at the end of
+        # this function, once we know what will execute next cycle.
         self.state.mac_rnd_offset = self.state.mac_rnd_offset_predec
-        self.state.mac_rnd_offset_predec = permute(BN_MAC_PERMUTATION,
-                                                   self.state.wsrs.URND.read_unsigned(),
-                                                   2, 192)
 
         insn = self._next_insn
         if insn is None:
             self.state.take_injected_err_bits()
-            return (None, self._on_stall(verbose, fetch_next=True))
+            result = (None, self._on_stall(verbose, fetch_next=True))
+            self._update_mac_rnd_offset_predec()
+            return result
 
         # If there is an RMA request, we treat it a bit like a fatal error, and
         # abort any instruction that's currently running
@@ -381,9 +380,22 @@ class OTBNSim:
                        self.state.stall_requested())
 
         if not sim_stalled:
-            return (insn, self._on_retire(verbose, insn))
+            retired_insn, changes = insn, self._on_retire(verbose, insn)
+        else:
+            retired_insn, changes = None, self._on_stall(verbose, fetch_next=False)
 
-        return (None, self._on_stall(verbose, fetch_next=False))
+        self._update_mac_rnd_offset_predec()
+        return (retired_insn, changes)
+
+    def _update_mac_rnd_offset_predec(self) -> None:
+        '''Resample the URND predecode used by vectorized multiplies for next cycle.
+
+        Only BnVecVecMul instructions ever read state.mac_rnd_offset, so skip the expensive
+        permutation entirely when we already know next cycle's instruction won't need it.
+        '''
+        if isinstance(self._next_insn, BnVecVecMul):
+            self.state.mac_rnd_offset_predec = BN_MAC_PERMUTATION.apply(
+                self.state.wsrs.URND.read_unsigned(), 2, 192)
 
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
