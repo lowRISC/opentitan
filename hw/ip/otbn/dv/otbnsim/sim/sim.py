@@ -4,7 +4,7 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t, permute
+from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
@@ -136,6 +136,7 @@ class OTBNSim:
         if verbose:
             self._print_trace(pc_before, disasm, changes)
 
+        self._update_mac_rnd_offset_predec()
         return changes
 
     def _delayed_insn_cnt_zero(self, delay_if_locking: int) -> None:
@@ -304,12 +305,9 @@ class OTBNSim:
         self.state.wsrs.URND.step()
 
         # The predecoder samples URND one cycle before a vectorized multiply reaches the execute
-        # stage. Advance the sampled offset by one cycle, then resample from the current URND
-        # value.
+        # stage. Advance the sampled offset by one cycle here. The resample happens at the end of
+        # this function, once we know what will execute next cycle.
         self.state.mac_rnd_offset = self.state.mac_rnd_offset_predec
-        self.state.mac_rnd_offset_predec = permute(BN_MAC_PERMUTATION,
-                                                   self.state.wsrs.URND.read_unsigned(),
-                                                   2, 192)
 
         insn = self._next_insn
         if insn is None:
@@ -384,6 +382,16 @@ class OTBNSim:
             return (insn, self._on_retire(verbose, insn))
 
         return (None, self._on_stall(verbose, fetch_next=False))
+
+    def _update_mac_rnd_offset_predec(self) -> None:
+        '''Resample the URND predecode used by vectorized multiplies for next cycle.
+
+        Only instructions with samples_urnd set require a sampling of URND, so skip the
+        permutation entirely when we already know next cycle's instruction won't need it.
+        '''
+        if self._next_insn is not None and self._next_insn.samples_urnd:
+            self.state.mac_rnd_offset_predec = BN_MAC_PERMUTATION.apply(
+                self.state.wsrs.URND.read_unsigned(), 2, 192)
 
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
