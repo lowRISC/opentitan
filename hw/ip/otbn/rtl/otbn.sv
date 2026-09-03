@@ -405,7 +405,7 @@ module otbn
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
   // Always grant to bus accesses, when OTBN is running a dummy response is returned
-  assign imem_gnt_bus = imem_req_bus;
+  assign imem_gnt_bus = 1'b1;
 
   tlul_adapter_sram #(
     .SramAw          (ImemIndexWidth),
@@ -660,7 +660,7 @@ module otbn
   // DMEM access from main TL-UL bus
   logic dmem_gnt_bus;
   // Always grant to bus accesses, when OTBN is running a dummy response is returned
-  assign dmem_gnt_bus = dmem_req_bus;
+  assign dmem_gnt_bus = 1'b1;
 
   tlul_adapter_sram #(
     .SramAw          (DmemBusIndexWidth),
