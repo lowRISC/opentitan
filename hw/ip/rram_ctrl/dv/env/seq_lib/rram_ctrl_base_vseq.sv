@@ -24,6 +24,69 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   extern task dut_init(string reset_kind = "HARD");
   extern task rram_ctrl_init();
 
+  // Simple model for the OTP key seeds
+  virtual task otp_model();
+    logic [KeyWidth-1:0] otp_addr_key;
+    logic [KeyWidth-1:0] otp_addr_rand_key;
+    logic [KeyWidth-1:0] otp_data_key;
+    logic [KeyWidth-1:0] otp_data_rand_key;
+
+    `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
+
+    // Create random keys
+    otp_addr_key      = {$urandom, $urandom, $urandom, $urandom};
+    otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_key      = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+
+    // Initial Values
+    cfg.otp_key_vif.otp_key_rsp.addr_ack   = 1'b0;
+    cfg.otp_key_vif.otp_key_rsp.data_ack   = 1'b0;
+    cfg.otp_key_vif.otp_key_rsp.seed_valid = 1'b0;
+    cfg.otp_key_vif.otp_key_rsp.key        = '0;
+    cfg.otp_key_vif.otp_key_rsp.rand_key   = '0;
+
+    // Note 'some values' appear in both branches of this fork, this is OK because the
+    // branches never run together by design.
+    // The order is always 'addr' followed by 'data'.
+    fork
+      forever begin // addr
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
+        @(posedge cfg.otp_key_vif.otp_key_req.addr_req);
+        `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
+          otp_addr_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
+          otp_addr_rand_key), UVM_MEDIUM)
+        cfg.otp_key_vif.otp_key_rsp.key = otp_addr_key;
+        cfg.otp_key_vif.otp_key_rsp.rand_key = otp_addr_rand_key;
+        cfg.otp_key_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.otp_key_vif.otp_key_rsp.addr_ack = 1'b1;
+        @(negedge cfg.otp_key_vif.otp_key_req.addr_req);
+        #1ns; // Positive Hold
+        cfg.otp_key_vif.otp_key_rsp.addr_ack = 1'b0;
+        cfg.otp_key_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+      forever begin // data
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
+        @(posedge cfg.otp_key_vif.otp_key_req.data_req);
+        cfg.otp_key_vif.otp_key_rsp.key = otp_data_key;
+        cfg.otp_key_vif.otp_key_rsp.rand_key = otp_data_rand_key;
+        `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
+          otp_data_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Data Rand Key Applied to DUT : otp_data_rand_key : %0x",
+          otp_data_rand_key), UVM_MEDIUM)
+        cfg.otp_key_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.otp_key_vif.otp_key_rsp.data_ack = 1'b1;
+        @(negedge cfg.otp_key_vif.otp_key_req.data_req);
+        #1ns; // Positive Hold
+        cfg.otp_key_vif.otp_key_rsp.data_ack = 1'b0;
+        cfg.otp_key_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+    join_none
+  endtask : otp_model
+
 endclass : rram_ctrl_base_vseq
 
 function rram_ctrl_base_vseq::new(string name="");
@@ -54,7 +117,11 @@ endtask : apply_resets_concurrently
 
 // setup inputs for DUT
 task rram_ctrl_base_vseq::pre_start();
+
+  otp_model();  // Start OTP Model
+
   super.pre_start();
+
 endtask : pre_start
 
 // initializes the DUT
