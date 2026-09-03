@@ -121,54 +121,154 @@ class WsrAddrs(IntEnum):
     MAI_IN1_S1 = 15
 
 
-def sv_perm_to_tuple(num_elems: int, literal: str) -> Tuple[int, ...]:
-    '''Convert a string of a system verilog permutation literal into a tuple of indices pairs.
+class Permutation:
+    '''A fixed bit permutation with precomputed chunked lookup tables.
 
-    literal is the raw string of a permutation of type:
-    logic [num_elems-1:0][$clog2(num_elems)-1:0].
-    This packed representation is expected to have the first index in the least significant bits.
-
-    Each entry of the returned permutation gives the index of the bit to be picked, i.e. bit i of
-    the permutation is bit perm[i] of data.
+    The permutation is computed using `_CHUNK_BITS` wide segments. For each chunk position,
+    a table maps every possible chunk value to its contribution to the final permuted output,
+    with bits already shifted into their final output positions. Once the permutation tables
+    are created, apply() does one lookup and one OR per chunk to compute the final result.
     '''
-    elem_width = (num_elems - 1).bit_length()
-    # Drop the "<width>'h" prefixes and everything that is not a hex digit.
-    value = int(re.sub(r"\d+'h|[^0-9a-fA-F]", '', literal), 16)
-    assert value.bit_length() <= num_elems * elem_width
-    # Extract the indexes from the packed value. The first index is in the least significant bits.
-    mask = (1 << elem_width) - 1
-    perm = tuple((value >> (i * elem_width)) & mask for i in range(num_elems))
-    assert sorted(perm) == list(range(num_elems))
-    return perm
 
+    _CHUNK_BITS = 16
+    _SLICE_DIRECT_MAX = 16
 
-def permute(perm: Tuple[int, ...], data: int,
-            num_bits: Optional[int] = None,
-            first_bit: int = 0) -> int:
-    '''Permute the bits of the data according to the given permutation.
+    def __init__(self, num_elems: int, literal: str):
+        '''Builds the permutation tables from a SystemVerilog permutation literal.
 
-    data is the to be permuted value.
+        Args:
+            num_elems: The total number of bits the permutation operates on.
+            literal: A SystemVerilog string literal representing the mapping.
+        '''
+        perm, self._perm_inv = self._decode_literal(num_elems, literal)
+        self._n = len(perm)
+        self._tables = self._build_tables(perm)
 
-    num_bits and first_bit select a slice of the permutation: permutation[first_bit +: num_bits].
-    The returned slice is right aligned, so bit first_bit of the permutation ends up in bit 0 of
-    the result. The bits are zero-indexed.
-    By default the full permutation is returned.
-    '''
-    if num_bits is None:
-        num_bits = len(perm)
-    assert num_bits <= len(perm)
-    assert data.bit_length() <= len(perm)
-    assert first_bit >= 0
-    assert first_bit + num_bits <= len(perm)
-    result = 0
-    for i in range(first_bit, first_bit + num_bits):
-        result |= ((data >> perm[i]) & 1) << (i - first_bit)
-    return result
+    @staticmethod
+    def _decode_literal(num_elems: int, literal: str) -> Tuple[int, ...]:
+        '''Parses a SystemVerilog literal and inverts it into an input-to-output mapping.
+
+        The raw SystemVerilog literal encodes the permutation as a packed array where
+        the i-th field specifies the source input bit to be routed to output bit i.
+
+        Because the `_build_tables` method groups input bits into chunks, it requires
+        the inverse mapping: identifying the destination output bit for a given input bit.
+        This method performs that inversion dynamically during parsing.
+
+        Args:
+            num_elems: The total number of bits the permutation operates on.
+            literal: A SystemVerilog string literal representing the mapping (e.g., "8'h63").
+
+        Returns:
+            A tuple of length `num_elems`. The value at index `j` represents the
+            destination output bit for input bit `j`.
+        '''
+        # Compute the width of one element and the corresponding bit mask.
+        elem_width = (num_elems - 1).bit_length()
+        mask = (1 << elem_width) - 1
+
+        # Drop everything that is not a hex digit and parse as a base-16 integer.
+        value = int(re.sub(r"\d+'h|[^0-9a-fA-F]", '', literal), 16)
+        assert value.bit_length() <= num_elems * elem_width
+
+        # Build the inverted mapping tuple (input_index -> output_index)
+        perm = [-1] * num_elems
+        perm_inv = [-1] * num_elems
+        for out_bit in range(num_elems):
+            in_bit = (value >> (out_bit * elem_width)) & mask
+            assert 0 <= in_bit < num_elems
+            assert perm[in_bit] == -1
+            perm[in_bit] = out_bit
+            perm_inv[out_bit] = in_bit
+
+        return tuple(perm), tuple(perm_inv)
+
+    ChunkData = Tuple[int, int, Tuple[int, ...]]
+
+    def _build_tables(self, perm: Tuple[int, ...]) -> Tuple[ChunkData, ...]:
+        '''Precomputes the chunked lookup tables used by apply().
+
+        This method slices the input mapping into chunks of `_CHUNK_BITS`. For each
+        chunk, it generates a lookup table mapping all possible input values
+        (up to 2^_CHUNK_BITS) to their final, pre-shifted output contributions.
+        This allows `apply()` to compute the full permutation using just a few array
+        lookups and bitwise ORs.
+
+        Args:
+            perm: A tuple where the value at index `j` represents the destination
+                  output bit for input bit `j`.
+
+        Returns:
+            A tuple of `ChunkData` structures. Each `ChunkData` is a 3-element tuple:
+                1. lo (int): The starting bit index of this chunk (used for shifting).
+                2. chunk_mask (int): The bitmask used to extract this chunk's value.
+                3. table (Tuple[int, ...]): The precomputed lookup table mapping
+                   the chunk's raw value to its final permuted output contribution.
+        '''
+        tables = []
+        # Process the permutation mapping in blocks of size _CHUNK_BITS.
+        for lo in range(0, len(perm), self._CHUNK_BITS):
+            chunk_perm = perm[lo:lo + self._CHUNK_BITS]
+            chunk_mask = (1 << len(chunk_perm)) - 1
+            table = []
+            # Calculate the pre-shifted output for every possible value this chunk could hold.
+            for chunk_val in range(chunk_mask + 1):
+                contribution = 0
+                # Loop over each in_bit to out_bit mapping inside the current chunk.
+                for in_bit, out_bit in enumerate(chunk_perm):
+                    if chunk_val & (1 << in_bit):
+                        contribution |= (1 << out_bit)
+                table.append(contribution)
+            tables.append((lo, chunk_mask, tuple(table)))
+        return tuple(tables)
+
+    def apply(self, data: int, num_bits: Optional[int] = None, first_bit: int = 0) -> int:
+        '''Permutes the bits of `data` using the precomputed lookup tables.
+
+        The permutation is applied in chunks of `_CHUNK_BITS`. For each chunk, the
+        precomputed shifted values are looked up and combined using bitwise ORs to
+        construct the full permuted result instantly.
+
+        Args:
+            data: The integer value whose bits will be permuted.
+            num_bits: The number of bits to return from the final permuted result.
+            first_bit: The starting bit index of the output slice to return.
+
+        Returns:
+            The permuted integer. If `first_bit` and `num_bits` are specified,
+            the returned value represents the slice `output[first_bit : first_bit + num_bits]`,
+            right-aligned so that `first_bit` becomes bit 0 of the result.
+        '''
+        if num_bits is None:
+            num_bits = self._n
+        assert num_bits <= self._n
+        assert data.bit_length() <= self._n
+        assert first_bit >= 0
+        assert first_bit + num_bits <= self._n
+
+        # Small slice: read only the source bits it needs.
+        if num_bits != self._n and num_bits <= self._SLICE_DIRECT_MAX:
+            result = 0
+            for i in range(num_bits):
+                result |= ((data >> self._perm_inv[first_bit + i]) & 1) << i
+            return result
+
+        # Apply the permutation across all chunks and merge the results.
+        full = 0
+        for lo, chunk_mask, table in self._tables:
+            full |= table[(data >> lo) & chunk_mask]
+
+        # Return the full result immediately if no slicing was requested.
+        if first_bit == 0 and num_bits == self._n:
+            return full
+
+        # Shift down to right-align to first_bit, then mask to num_bits length.
+        return (full >> first_bit) & ((1 << num_bits) - 1)
 
 
 # Default permutation for the URND permutation in BN MAC. Given as tuple where each entry gives the
 # index of the to be picked element. Keep in sync with otbn_pkg.sv::RndCnstBnMacUrndPermDefault.
-BN_MAC_PERMUTATION = sv_perm_to_tuple(256, '''
+BN_MAC_PERMUTATION = Permutation(256, '''
     256'h5883853c_f22faef4_c975ab18_050bfc6b_b9193e1b_450d686e_5de1cdb5_a02a1532,
     256'ha3e9dd76_8278f6d4_33f74bd9_edbabd7f_721c5a4e_0c23a6f0_34a477db_84947998,
     256'h6d0affec_df12e025_0fb41ab3_3bdc90e5_ce279907_91227bf1_e4505bcc_2b4c31be,
