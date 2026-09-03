@@ -15,7 +15,8 @@
 
     {
       name: xcelium_aes_model_build_opts
-      build_opts: ["-I{build_dir}/fusesoc-work/src/{aes_model_src_dir}", "-lcrypto"]
+      // Xcelium compiles the sources in place, not the FuseSoC export, see dvsim/xcelium.hjson
+      build_opts: ["-I{proj_root}/hw/ip/aes/model", "-lcrypto"]
     }
   ]
 }
