@@ -66,7 +66,7 @@ xint | x for undefined otherwise int
 bitrange | bit number as decimal integer, or bit-range as decimal integers msb:lsb
 list | comma separated list enclosed in `[]`
 name list | comma separated list enclosed in `[]` of one or more groups that have just name and dscr keys. e.g. `{ name: "name", desc: "description"}`
-name list+ | name list that optionally contains a width
+name list+ | name list that optionally contains a width, and for split IPs an optional partition key naming the partition that owns the entry.
 parameter list | parameter list having default value optionally
 group | comma separated group of key:value enclosed in `{}`
 list of group | comma separated group of key:value enclosed in `{}` the second entry of the list is the sub group format
