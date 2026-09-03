@@ -1613,6 +1613,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_kmac_save_restore_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:kmac_save_restore_smoketest:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_kmac_mode_kmac_jitter_en
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:kmac_mode_kmac_test:1:new_rules"]
