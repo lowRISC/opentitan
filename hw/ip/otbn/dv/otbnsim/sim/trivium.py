@@ -36,6 +36,12 @@ class CipherType(IntEnum):
     BIVIUM = 1
 
 
+# Constant masks used for bit reversals in the state manipulations.
+MASK_93 = (1 << 93) - 1
+MASK_84 = (1 << 84) - 1
+MASK_111 = (1 << 111) - 1
+
+
 class Trivium:
     """This is a cycle-accurate model of the OpenTitan Trivium primitive.
 
@@ -219,14 +225,36 @@ class Trivium:
         """Returns true if the seeding procedure has been completed."""
         return self.seed_rounds == self.seed_counter
 
+    def get_state(self) -> int:
+        """Return the current state as a little-endian integer (bit j = state[j]).
+
+        This is the inverse of _int_to_regs."""
+        # Revert bit order by converting to a string, reversing the string, and converting back to
+        # an int. Do this for all state parts and concatenate them.
+        reg1, reg2 = self.state[0], self.state[1]
+        val = int(f"{reg1:093b}"[::-1], 2)
+        val |= int(f"{reg2:084b}"[::-1], 2) << 93
+        if self.cipher_type == CipherType.TRIVIUM:
+            val |= int(f"{self.state[2]:0111b}"[::-1], 2) << 177
+        return val
+
+    def discard_update(self) -> None:
+        """Drop a scheduled state update without applying it.
+
+        Any scheduled seed is left intact so a seed can still be injected on a
+        cycle where the state is not allowed to advance."""
+        self.next_state = None
+
     @staticmethod
     def _int_to_regs(val: int, cipher_type: CipherType) -> Tuple[int, ...]:
         """Convert a little-endian integer (bit j = state[j]) to a register
         tuple using reversed-bit storage: bit (N-1-j) of reg = state[j]."""
-        reg1 = sum(((val >> j) & 1) << (92 - j) for j in range(93))
-        reg2 = sum(((val >> (93 + j)) & 1) << (83 - j) for j in range(84))
+        # Inverse of get_state: a per-register bit reversal done via string
+        # formatting to keep the work in C rather than a per-bit Python loop.
+        reg1 = int(f"{val & MASK_93:093b}"[::-1], 2)
+        reg2 = int(f"{(val >> 93) & MASK_84:084b}"[::-1], 2)
         if cipher_type == CipherType.TRIVIUM:
-            reg3 = sum(((val >> (177 + j)) & 1) << (110 - j) for j in range(111))
+            reg3 = int(f"{(val >> 177) & MASK_111:0111b}"[::-1], 2)
             return reg1, reg2, reg3
         return reg1, reg2
 
