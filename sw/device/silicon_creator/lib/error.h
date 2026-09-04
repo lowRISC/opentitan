@@ -294,12 +294,12 @@ typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
  *
  * @param expr_ An expression which results in a `rom_error_t`.
  */
-#define RETURN_IF_ERROR(expr_)        \
-  do {                                \
-    rom_error_t local_error_ = expr_; \
-    if (local_error_ != kErrorOk) {   \
-      return local_error_;            \
-    }                                 \
+#define RETURN_IF_ERROR(expr_)          \
+  do {                                  \
+    rom_error_t local_error_ = (expr_); \
+    if (local_error_ != kErrorOk) {     \
+      return local_error_;              \
+    }                                   \
   } while (false)
 
 /**
