@@ -55,7 +55,7 @@ The software is able to read the current state of key manager, however it never 
 ## Versioned Key Generation
 
 SW needs to configure the following registers:
-*  Set `CONTROL_SHADOWED.DST_SEL` for either of of the use cases {`AES`, `KMAC`, `OTBN`}.
+*  Set `CONTROL_SHADOWED.DST_SEL` for either of of the use cases {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 *  Set `CONTROL_SHADOWED.OPERATION` to either of {Generate SW Operation, Generate HW Operation}.
 *  Set `CONTROL_SHADOWED.SLOT_SRC_SEL` to select the source slot whose secret will be used to generate the key.
 *  Set `SALT` and `KEY_VERSION` registers.

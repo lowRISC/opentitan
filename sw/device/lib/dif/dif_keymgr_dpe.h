@@ -50,6 +50,7 @@ typedef enum dif_keymgr_sideload_clr {
   kDifKeymgrDpeSideLoadClearAes = 1,
   kDifKeymgrDpeSideLoadClearKmac = 2,
   kDifKeymgrDpeSideLoadClearOtbn = 3,
+  kDifKeymgrDpeSideLoadClearHmac = 4,
   // Using different value than those enumerated above should clear all slots,
   // so we can use the mask value of this field to denote ALL case.
   kDifKeymgrDpeSideLoadClearAll = 7,
@@ -131,6 +132,11 @@ typedef enum dif_keymgr_dpe_key_dest {
    * if sideload key).
    */
   kDifKeymgrDpeKeyDestOtbn = 3,
+  /**
+   * Diversify the generated key for HMAC (and load it to HMAC peripheral port
+   * if sideload key).
+   */
+  kDifKeymgrDpeKeyDestHmac = 4,
 } dif_keymgr_dpe_key_dest_t;
 
 /**
@@ -138,7 +144,7 @@ typedef enum dif_keymgr_dpe_key_dest {
  */
 typedef struct dif_keymgr_dpe_generate_params {
   /**
-   * Destination for {AES, KMAC, OTBN}, which is used for diversification.
+   * Destination for {AES, KMAC, OTBN, HMAC}, which is used for diversification.
    */
   dif_keymgr_dpe_key_dest_t key_dest;
 

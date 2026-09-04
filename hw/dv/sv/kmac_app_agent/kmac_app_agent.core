@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:kmac_pkg
     files:
       - kmac_app_if.sv

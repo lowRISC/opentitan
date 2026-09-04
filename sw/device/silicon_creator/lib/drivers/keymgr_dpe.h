@@ -152,6 +152,7 @@ typedef enum sc_keymgr_dpe_dest {
   kScKeymgrDPEDestAes = 1,
   kScKeymgrDPEDestKmac = 2,
   kScKeymgrDPEDestOtbn = 3,
+  kScKeymgrDPEDestHmac = 4,
 } sc_keymgr_dpe_dest_t;
 
 /**

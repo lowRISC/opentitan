@@ -965,7 +965,7 @@ module englishbreakfast_pd_main #(
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
     .edn_o(),
     .edn_i(edn_pkg::EDN_RSP_DEFAULT),
-    .keymgr_key_i(keymgr_pkg::HW_KEY_REQ_DEFAULT),
+    .keymgr_key_i(keymgr_dpe_pkg::HW_KEY_REQ_DEFAULT),
     .tl_i(aes_tl_req),
     .tl_o(aes_tl_rsp)
   );
