@@ -23,6 +23,11 @@
   // RAL spec - used to generate the RAL model.
   ral_spec: "{self_dir}/../data/otp_ctrl.hjson"
 
+  // Pin ambiguous virtual cores (rnd_cnst_pkg, ast_pkg, ...) to ${topname}'s.
+  // Otherwise FuseSoC's arbitrary pick can flip to another top and break
+  // the build. dvsim appends this to the prim mapping from the imported cfg.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:top_${topname}:0.1"]
+
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
