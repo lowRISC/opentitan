@@ -19,7 +19,7 @@ The OTP functionality is constructed through an open-source OTP controller and a
 
 The OTP controller provides:
 - An open-source abstraction interface that software can use to interact with a proprietary OTP block underneath.
-- An open-source abstraction interface that hardware components (for example [life cycle controller](../../../ip/lc_ctrl/README.md) and [key manager](../../../ip/keymgr/README.md)) can use to interact with a proprietary OTP block underneath.
+- An open-source abstraction interface that hardware components (for example [life cycle controller](../../../ip/lc_ctrl/README.md) and [key manager](../../../ip/keymgr_dpe/README.md)) can use to interact with a proprietary OTP block underneath.
 - High level logical security protection, such as integrity checks and scrambling of sensitive content.
 - Software isolation for when OTP contents are readable and programmable.
 

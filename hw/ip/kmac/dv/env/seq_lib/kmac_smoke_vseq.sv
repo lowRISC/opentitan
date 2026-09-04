@@ -103,8 +103,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   // Do a full message hash, repeated num_trans times
   task body();
 
-    logic [keymgr_pkg::KeyWidth-1:0] sideload_share0;
-    logic [keymgr_pkg::KeyWidth-1:0] sideload_share1;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] sideload_share0;
+    logic [keymgr_dpe_pkg::KeyWidth-1:0] sideload_share1;
     key_sideload_set_seq sideload_seq;
 
     `uvm_info(`gfn, $sformatf("Starting %0d message hashes", num_trans), UVM_LOW)

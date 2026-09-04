@@ -196,4 +196,4 @@ For future versions of OTBN, we are considering:
 - More isolation from Ibex, including potentially giving OTBN its own ROM so that Ibex doesn't need to load secrets into it
 
 [kmac]:  ../../../../hw/ip/kmac/README.md
-[keymgr]:  ../../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../../hw/ip/keymgr_dpe/README.md
