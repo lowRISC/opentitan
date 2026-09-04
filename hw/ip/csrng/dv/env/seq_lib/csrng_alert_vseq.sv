@@ -160,7 +160,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req Register - Generate Command.
     cs_item.acmd  = csrng_pkg::GEN;
@@ -168,7 +168,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req - Uninstantiate Command.
     cs_item.acmd  = csrng_pkg::UNI;
@@ -176,7 +176,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req - Instantiate Command.
     cs_item.acmd  = csrng_pkg::INS;
@@ -184,7 +184,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req Register - Generate Command.
     cs_item.acmd  = csrng_pkg::GEN;
@@ -192,7 +192,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
     cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
