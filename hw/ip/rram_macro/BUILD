@@ -20,5 +20,11 @@ filegroup(
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = glob(
+        [
+            "**/*.md",
+            "**/*.svg",
+        ],
+        allow_empty = True,
+    ),
 )

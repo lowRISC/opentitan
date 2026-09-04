@@ -86,6 +86,8 @@ filegroup(
         "//hw/ip/pattgen:doc_files",
         "//hw/ip/prim:doc_files",
         "//hw/ip/rom_ctrl:doc_files",
+        "//hw/ip/rram_ctrl:doc_files",
+        "//hw/ip/rram_macro:doc_files",
         "//hw/ip/rv_dm:doc_files",
         "//hw/ip/rv_timer:doc_files",
         "//hw/ip/soc_dbg_ctrl:doc_files",

@@ -296,6 +296,8 @@ module rram_ctrl_lcmgr
   // the word is stored directly. On the second pass (validate_q == 1) the new
   // read value is ANDed with the stored value: if any bit differs between the
   // two reads, the stored word is silently corrupted resulting in a wrong seed.
+  // TODO(31004): a mismatch between the two reads is not detected or flagged
+  // via seed_err. See https://github.com/lowRISC/opentitan/issues/31004.
   logic [NumSeeds-1:0][SeedReads-1:0][BusWidth-1:0] seeds_d;
 
   always_comb begin

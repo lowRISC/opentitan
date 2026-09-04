@@ -403,6 +403,7 @@ module rram_ctrl
   assign hw2reg.std_fault_status.ctrl_fifo_err.de   = wr_fifo_err;
 
   // Location of the last correctable error
+  // SEC_CM: MEM.INTEGRITY
   assign hw2reg.corr_err_loc.addr.d = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
   assign hw2reg.corr_err_loc.addr.de = phy_ecc_corr_err;
   assign hw2reg.corr_err_loc.part.d  = logic'(phy_ecc_corr_part);

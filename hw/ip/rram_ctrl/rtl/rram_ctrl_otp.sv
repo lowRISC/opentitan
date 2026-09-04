@@ -288,6 +288,7 @@ module rram_ctrl_otp
   ////////////////////////////////
 
   // Integrity computation
+  // SEC_CM: OTP.MEM.INTEGRITY
   // Instantiate secded encoder and decoder based on parameters.
   `include "prim_secded_inc.svh"
   logic [OtpIntgDataWidth-1:0] unused_data, data_plain;
