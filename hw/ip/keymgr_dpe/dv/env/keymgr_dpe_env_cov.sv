@@ -41,15 +41,15 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   covergroup state_and_op_cg with function sample(
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
       keymgr_dpe_pkg::keymgr_dpe_ops_e op,
-      keymgr_pkg::keymgr_op_status_e op_status,
+      keymgr_dpe_pkg::keymgr_dpe_op_status_e op_status,
       keymgr_dpe_cdi_type_e cdi,
-      keymgr_pkg::keymgr_key_dest_e dest
+      keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest
   );
     state_cp:     coverpoint state;
     op_cp:        coverpoint op;
     op_status_cp: coverpoint op_status {
       // only sample when op is done
-      ignore_bins illegal = {keymgr_pkg::OpIdle, keymgr_pkg::OpWip};
+      ignore_bins illegal = {keymgr_dpe_pkg::OpIdle, keymgr_dpe_pkg::OpWip};
     }
     cdi_cp:       coverpoint cdi iff (!(op inside {
       keymgr_dpe_pkg::OpDpeAdvance,
@@ -110,11 +110,11 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     sideload_clear_x_regwen_cross:   cross sideload_clear_cp, regwen_cp;
   endgroup
 
-  covergroup err_code_cg with function sample(keymgr_pkg::keymgr_err_pos_e err_code);
+  covergroup err_code_cg with function sample(keymgr_dpe_pkg::keymgr_dpe_err_pos_e err_code);
     err_code_cp: coverpoint err_code {
       // this is done in a direct test
-      ignore_bins ignore = {keymgr_pkg::ErrShadowUpdate};
-      illegal_bins illegal = {keymgr_pkg::ErrLastPos};
+      ignore_bins ignore = {keymgr_dpe_pkg::ErrShadowUpdate};
+      illegal_bins illegal = {keymgr_dpe_pkg::ErrLastPos};
     }
   endgroup
 
@@ -123,11 +123,11 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     invalid_hw_input_cp: coverpoint invalid_hw_input;
   endgroup
 
-  covergroup fault_status_cg with function sample(keymgr_pkg::keymgr_fault_pos_e fault);
+  covergroup fault_status_cg with function sample(keymgr_dpe_pkg::keymgr_dpe_fault_pos_e fault);
     fault_cp: coverpoint fault {
       // these are done in a direct test
-      ignore_bins ignore = {keymgr_pkg::FaultRegIntg, keymgr_pkg::FaultShadow};
-      illegal_bins illegal = {keymgr_pkg::FaultLastPos};
+      ignore_bins ignore = {keymgr_dpe_pkg::FaultRegIntg, keymgr_dpe_pkg::FaultShadow};
+      illegal_bins illegal = {keymgr_dpe_pkg::FaultLastPos};
     }
   endgroup
 

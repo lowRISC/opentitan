@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager interface to kmac
+// Key manager dpe interface to kmac
 //
 
 `include "prim_assert.sv"
 
-module keymgr_kmac_if
-  import keymgr_pkg::*;
+module keymgr_dpe_kmac_if
+  import keymgr_dpe_pkg::*;
 #(
   parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault,
-  parameter int MaxAdvDataWidth         = AdvDataWidth
+  parameter int MaxAdvDataWidth         = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -23,7 +23,7 @@ module keymgr_kmac_if
   input [3:0] inputs_invalid_i,
   output logic inputs_invalid_o,
 
-  // keymgr control to select appropriate inputs
+  // keymgr dpe control to select appropriate inputs
   input adv_en_i,
   input id_en_i,
   input gen_en_i,
@@ -45,6 +45,8 @@ module keymgr_kmac_if
   output logic cmd_error_o
 );
 
+  // Ensure MaxAdvDataWidth do not remain the default value
+  `ASSERT_INIT(MaxAdvDataWidth_A, MaxAdvDataWidth != 1)
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
@@ -299,14 +301,14 @@ module keymgr_kmac_if
     if (clr_err) begin
       inputs_invalid_d = '0;
     end else if (valid) begin
-      inputs_invalid_d[OpAdvance]  = adv_en_i & (inputs_invalid_i[OpAdvance] |
-                                                 inputs_invalid_q[OpAdvance]);
-      inputs_invalid_d[OpGenId]    = id_en_i  & (inputs_invalid_i[OpGenId]   |
-                                                 inputs_invalid_q[OpGenId]);
-      inputs_invalid_d[OpGenSwOut] = gen_en_i & (inputs_invalid_i[OpGenSwOut]|
-                                                 inputs_invalid_q[OpGenSwOut]);
-      inputs_invalid_d[OpGenHwOut] = gen_en_i & (inputs_invalid_i[OpGenHwOut]|
-                                                 inputs_invalid_q[OpGenHwOut]);
+      inputs_invalid_d[OpDpeAdvance]  = adv_en_i & (inputs_invalid_i[OpDpeAdvance] |
+                                                    inputs_invalid_q[OpDpeAdvance]);
+      inputs_invalid_d[OpDpeErase]    = id_en_i  & (inputs_invalid_i[OpDpeErase]   |
+                                                    inputs_invalid_q[OpDpeErase]);
+      inputs_invalid_d[OpDpeGenSwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenSwOut]|
+                                                    inputs_invalid_q[OpDpeGenSwOut]);
+      inputs_invalid_d[OpDpeGenHwOut] = gen_en_i & (inputs_invalid_i[OpDpeGenHwOut]|
+                                                    inputs_invalid_q[OpDpeGenHwOut]);
     end
   end
 
@@ -405,4 +407,4 @@ module keymgr_kmac_if
   `ASSERT(LastStrb_A, valid |-> strb != '0)
 
 
-endmodule // keymgr_kmac_if
+endmodule // keymgr_dpe_kmac_if

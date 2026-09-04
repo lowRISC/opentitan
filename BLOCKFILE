@@ -32,7 +32,7 @@ hw/vendor/pulp_riscv_dbg/src/*
 hw/vendor/pulp_riscv_dbg/debug_rom/*
 
 # IP block RTL for blocks that require a higher scrutiny on changes to maintain
-# stability (Ascon, DMA and Key Manager DPE are not blocked). Note that nothing
+# stability (Ascon and DMA are not blocked). Note that nothing
 # under ip_templates is listed here. It's important for the rendered versions of
 # those to remain stable for the tops that use them but the templates themselves
 # can change.
@@ -44,7 +44,7 @@ hw/ip/edn/rtl/*
 hw/ip/entropy_src/rtl/*
 hw/ip/hmac/rtl/*
 hw/ip/i2c/rtl/*
-hw/ip/keymgr/rtl/*
+# hw/ip/keymgr_dpe/rtl/*
 hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
@@ -73,7 +73,7 @@ hw/ip/rv_timer/data/rv_timer.hjson
 hw/ip/spi_host/data/spi_host.hjson
 hw/ip/spi_device/data/spi_device.hjson
 hw/ip/adc_ctrl/data/adc_ctrl.hjson
-hw/ip/keymgr/data/keymgr.hjson
+# hw/ip/keymgr_dpe/data/keymgr_dpe.hjson
 hw/ip/edn/data/edn.hjson
 hw/ip/csrng/data/csrng.hjson
 hw/ip/usbdev/data/usbdev.hjson

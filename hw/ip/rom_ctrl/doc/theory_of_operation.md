@@ -68,7 +68,7 @@ Once the last word has been sent, the FSM releases the multiplexer; this now swi
 The top eight words in ROM (by logical address) are interpreted as a 256-bit expected hash.
 This is taken by the checker FSM (ignoring ECC bits) and will be compared with the digest that is read back from the KMAC block.
 
-Once it comes back, the digest is forwarded directly to the [Key Manager](../../keymgr/README.md).
+Once it comes back, the digest is forwarded directly to the [keymgr_dpe](../../keymgr_dpe/README.md).
 It is also compared with the hash that was read from the top eight words of ROM.
 On a match, `pwrmgr_data_o.good` is signalled as `MuBi4True`.
 In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.

@@ -39,8 +39,8 @@ module aes_core
   input  logic                        entropy_masking_ack_i,
   input  logic     [EntropyWidth-1:0] entropy_masking_i,
 
-  // Key manager (keymgr) key sideload interface
-  input  keymgr_pkg::hw_key_req_t     keymgr_key_i,
+  // Key manager (keymgr_dpe) key sideload interface
+  input  keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,

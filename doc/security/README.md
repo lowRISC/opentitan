@@ -103,7 +103,7 @@ Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both HMAC-SHA256
 and SHA256 modes of operation.
 
-### [Key Manager][keymgr]
+### [Key Manager DPE][keymgr_dpe]
 
 Hardware backed symmetric key generation and storage providing key isolation
 from software.
@@ -139,7 +139,7 @@ implementation will be hardware accelerated using [OTBN][otbn].
 [entropy_source]: ../../hw/ip/entropy_src/README.md
 [hmac]: ../../hw/ip/hmac/README.md
 [implementation_guidelines]: ./implementation_guidelines/hardware/README.md
-[keymgr]: ../../hw/ip/keymgr/README.md
+[keymgr_dpe]: ../../hw/ip/keymgr_dpe/README.md
 [logical_security_model]: ./logical_security_model/README.md
 [otbn]: ../../hw/ip/otbn/README.md
 [pentest_framework]: ./pentest_framework/README.md
