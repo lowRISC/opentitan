@@ -381,6 +381,7 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/cert",
+            "//sw/device/silicon_creator/lib/cert:dice_mldsa_api",
             "//sw/device/silicon_creator/lib/cert:dice_storage",
             "//sw/device/silicon_creator/lib/cert:uds_template_library",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
