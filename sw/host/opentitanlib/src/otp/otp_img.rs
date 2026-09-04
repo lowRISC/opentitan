@@ -124,7 +124,7 @@ pub trait OtpRead {
 
 impl OtpRead for OtpImg {
     fn read32_offset(&self, name: &str, offset: usize) -> Result<u32> {
-        if offset % 4 != 0 {
+        if !offset.is_multiple_of(4) {
             bail!("offset not word aligned");
         }
         Ok(

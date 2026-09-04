@@ -80,10 +80,10 @@ impl SubstValue {
             VariableType::Selector { num_choices } => self.parse_as_selector(num_choices),
         }?;
 
-        if var_type.use_msb_tweak() {
-            if let SubstValue::ByteArray(bytes) = parsed {
-                return Ok(SubstValue::TweakedByteArray(bytes));
-            }
+        if var_type.use_msb_tweak()
+            && let SubstValue::ByteArray(bytes) = parsed
+        {
+            return Ok(SubstValue::TweakedByteArray(bytes));
         }
         Ok(parsed)
     }

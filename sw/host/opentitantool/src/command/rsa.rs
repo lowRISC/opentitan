@@ -44,15 +44,6 @@ pub struct RsaKeyInfo {
     pub rr: RR,
 }
 
-#[derive(serde::Serialize)]
-pub struct RsaKeyInfoInWords {
-    pub key_num_bits: usize,
-    pub modulus: Vec<String>,
-    pub public_exponent: Vec<String>,
-    pub n0_inv: Vec<String>,
-    pub rr: Vec<String>,
-}
-
 /// Show public information of a private or public RSA key
 #[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
@@ -134,7 +125,7 @@ fn write_bigint_as_u32<W: Write>(
 ) -> Result<()> {
     let chunk = std::mem::size_of::<u32>();
     assert!(
-        number.len() % chunk == 0,
+        number.len().is_multiple_of(chunk),
         "the big integer size is not a multiple of 4 bytes"
     );
     for (idx, num) in number.windows(chunk).step_by(chunk).enumerate() {

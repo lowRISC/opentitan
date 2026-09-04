@@ -28,8 +28,8 @@ use std::env;
 use std::fs;
 
 use coverage_lib::{
-    ProfileCounter, ProfileRegistry, debug_environ, debug_log, llvm_cov_export,
-    llvm_profdata_merge, search_by_extension,
+    debug_environ, debug_log, llvm_cov_export, llvm_profdata_merge, search_by_extension,
+    ProfileCounter, ProfileRegistry,
 };
 
 #[derive(Debug, Parser)]

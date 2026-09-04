@@ -8,11 +8,12 @@ module(name = "lowrisc_opentitan")
 bazel_dep(name = "abseil-cpp", version = "20240116.1")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
+bazel_dep(name = "openssl", version = "3.5.5.bcr.4")
+bazel_dep(name = "opentitan_signing_infra", version = "0.0.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.4")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "openssl", version = "3.5.5.bcr.4")
 
 # Dev dependencies:
 bazel_dep(
@@ -29,6 +30,14 @@ archive_override(
     integrity = "sha256-Nl/mfYFo/uGg/DrqS7gFiL9yHcT8g7QEY7CetQiXzaM=",
     strip_prefix = "misc-linters-20240823_01",
     urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20240823_01.tar.gz"],
+)
+
+# Overrides and patches:
+archive_override(
+    module_name = "opentitan_signing_infra",
+    integrity = "sha256-v7WqgkRbp0J9xz9PRTF+935XE2aQBKO37eajLUtIOQ8=",
+    strip_prefix = "opentitan-signing-infra-2026-09-03-release-1",
+    urls = ["https://github.com/lowRISC/opentitan-signing-infra/archive/refs/tags/2026-09-03-release-1.tar.gz"],
 )
 
 ################### originally from //third_party/rust:rust.MODULE.bazel
@@ -74,18 +83,19 @@ rust.repository_set(
     edition = "2024",
     exec_triple = "x86_64-unknown-linux-gnu",
     sha256s = {
-        "2025-02-01/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "66ccb5f3a2c5cdb39f5534780badf7a26b58c073d471202cf4dda51344d273a1",
-        "2025-02-01/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "be9738606ca7ff73ab078b25c9ea4ab4ab1ea3ffda5d4045eb97b06ad3ca204a",
-        "2025-02-01/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "4845961be1fc05df253962fe95090366ca361d50e18dd41e14c4364f58b44f79",
-        "2025-02-01/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "3259d5aac58f3a913543fe30899da4ed32244c57135f6a9f78236c9dfaca4bcf",
-        "2025-02-01/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "b1e32eb35f4bddb77d47f616f6d89bf8141b4dd78a9f494d35253a9a366f6013",
+        "2025-08-01/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "9bbeaf5d3fc7247d31463a9083aa251c995cc50662c8219e7a2254d76a72a9a4",
+        "2025-08-01/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "9ae5f3cd8f557c4f6df522597c69d14398cf604cfaed2b83e767c4b77a7eaaf6",
+        "2025-08-01/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "106463c284e48e4904c717471eeec2be5cc83a9d2cae8d6e948b52438cad2e69",
+        "2025-08-01/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "e342e305d7927cc288d386983b2bc253cfad3776b113386e903d0b302648ef47",
+        "2025-08-01/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "3c0ceb46a252647a1d4c7116d9ccae684fa5e42aaf3296419febd2c962c3b41d",
     },
     target_compatible_with = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
     ],
     target_triple = "x86_64-unknown-linux-gnu",
-    versions = ["nightly/2025-02-01"],
+    # Use nightly that Rust 1.90 branches from.
+    versions = ["nightly/2025-08-01"],
 )
 rust.repository_set(
     name = "rust_tock",
@@ -129,30 +139,6 @@ crate.annotation(
     gen_binaries = ["mdbook"],
     patch_args = ["-p1"],
     patches = ["@lowrisc_opentitan//third_party/rust/patches:mdbook-landing-page-links.patch"],
-    repositories = ["crate_index"],
-)
-crate.annotation(
-    crate = "cryptoki",
-    patch_args = ["-p2"],
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
-    ],
-    repositories = ["crate_index"],
-)
-crate.annotation(
-    additive_build_file_content = """
-        filegroup(
-            name = "binding_srcs",
-            srcs = [
-                "src/lib.rs",
-                "src/bindings/x86_64-unknown-linux-gnu.rs",
-            ],
-        )
-    """,
-    crate = "cryptoki-sys",
-    extra_aliased_targets = {
-        "cryptoki-sys-binding-srcs": "binding_srcs",
-    },
     repositories = ["crate_index"],
 )
 
@@ -385,3 +371,5 @@ provisioning_exts_hook(name = "provisioning_exts")
 register_toolchains("//rules/opentitan:localtools")
 
 register_toolchains("//toolchain:cc_toolchain_opentitan")
+
+register_toolchains("//toolchain:latest_opentitantool_toolchain")

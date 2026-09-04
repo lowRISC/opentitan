@@ -98,7 +98,7 @@ impl Uart for QemuUart {
         self.serial_port.nonblocking_help()
     }
 
-    fn borrow_fd(&self) -> Result<BorrowedFd> {
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
         self.serial_port.borrow_fd()
     }
 }

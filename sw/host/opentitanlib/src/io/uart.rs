@@ -129,7 +129,7 @@ pub trait Uart {
         Ok(Rc::new(NoNonblockingHelp))
     }
 
-    fn borrow_fd(&self) -> Result<BorrowedFd> {
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
         Err(TransportError::UnsupportedOperation.into())
     }
 }
