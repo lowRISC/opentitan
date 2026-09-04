@@ -171,7 +171,10 @@
 
     // Ensure that the RISC-V JTAG agent uses DMI rather than direct TL-UL;
     // this is required by the JTAG mailbox interface.
-    "+define+USE_DMI_INTERFACE"
+    "+define+USE_DMI_INTERFACE",
+
+    // Increase the width for `uvm_hdl_read` to 2048 bits
+    "+define+UVM_HDL_MAX_WIDTH=2048"
   ]
 
   // Add build modes.
@@ -1665,7 +1668,6 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
-              "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
@@ -1675,7 +1677,6 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
-              "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]

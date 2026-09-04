@@ -214,7 +214,7 @@
       type:    "uni"
       name:    "keymgr_key"
       act:     "rcv"
-      package: "keymgr_pkg"
+      package: "keymgr_dpe_pkg"
     }
     { struct:  "app"
       type:    "req_rsp"

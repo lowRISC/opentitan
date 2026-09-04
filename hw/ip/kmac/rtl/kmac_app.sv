@@ -47,7 +47,7 @@ module kmac_app
   output logic         sw_ready_o,
 
   // KeyMgr Sideload Key interface
-  input keymgr_pkg::hw_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // Application Message in/ Digest out interface + control signals
   input  app_req_t [NumAppIntf-1:0] app_i,
@@ -1285,7 +1285,7 @@ module kmac_app
   end else begin : g_unmasked_key
     always_comb begin
       keymgr_key[0] = '0;
-      for (int i = 0; i < keymgr_pkg::Shares; i++) begin
+      for (int i = 0; i < keymgr_dpe_pkg::Shares; i++) begin
         keymgr_key[0][KeyMgrKeyW-1:0] ^= keymgr_key_i.key[i];
       end
     end

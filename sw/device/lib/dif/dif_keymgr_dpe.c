@@ -121,6 +121,9 @@ static_assert(kDifKeymgrDpeKeyDestKmac ==
 static_assert(kDifKeymgrDpeKeyDestOtbn ==
                   KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN,
               "Key destination macros must match the values from its enum.");
+static_assert(kDifKeymgrDpeKeyDestHmac ==
+                  KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_HMAC,
+              "Key destination macros must match the values from its enum.");
 
 /**
  * Ensure that SW-visible FSM values match the one defined as SW enum.
