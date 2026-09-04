@@ -215,7 +215,10 @@ def doc_tbl_line(outfile: TextIO, key: str, use: Optional[str],
                  desc: Any) -> None:
     if use is not None:
         desc_key, desc_txt = desc
-        val_type = (validate.val_types[desc_key][0]
+        # A key that accepts more than one type lists its type codes separated
+        # by '|', e.g. 'l|g' for a key that is either a list or a group.
+        val_type = (' or '.join(validate.val_types[k][0]
+                                for k in desc_key.split('|'))
                     if desc_key is not None else None)
     else:
         assert isinstance(desc, str)
