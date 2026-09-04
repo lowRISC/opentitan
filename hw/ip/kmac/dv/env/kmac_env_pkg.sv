@@ -19,7 +19,7 @@ package kmac_env_pkg;
   import kmac_app_agent_pkg::*;
   import kmac_ral_pkg::*;
   import kmac_pkg::*;
-  import keymgr_pkg::*;
+  import keymgr_dpe_pkg::*;
   import key_sideload_agent_pkg::*;
   import sec_cm_pkg::*;
 
