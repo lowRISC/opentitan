@@ -214,11 +214,26 @@ cc_library(
 )
 
 cc_library(
+    name = "dice_mldsa_api",
+    hdrs = ["dice_mldsa.h"],
+    deps = [
+        ":cert",
+        ":dice_keys",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+    ],
+)
+
+cc_library(
     name = "dice_mldsa",
     srcs = ["dice_mldsa.c"],
     deps = [
         ":cert",
         ":dice_api",
+        ":dice_mldsa_api",
         ":dice_storage",
         ":ram_msg",
         ":seeds",
@@ -233,17 +248,32 @@ cc_library(
         "//sw/device/silicon_creator/lib/cert:cdi_hybrid_template_library",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
         "//sw/device/silicon_creator/lib/cert:dice_keys",
+        "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
+        "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/rom_ext:rom_ext_boot_policy_ptrs",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
         "//third_party/embedpqc:mldsa44_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
+    ],
+)
+
+cc_library(
+    name = "dice_mldsa_empty",
+    srcs = ["dice_mldsa_empty.c"],
+    deps = [
+        ":cert",
+        ":dice_mldsa_api",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
     ],
 )
 

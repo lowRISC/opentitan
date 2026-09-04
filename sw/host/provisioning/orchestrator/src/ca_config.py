@@ -12,7 +12,7 @@ from util import resolve_runfile
 @dataclass
 class CaConfig:
     """Class for Certificate Authority configuration."""
-    name: str  # valid: must be in ["dice_ca", "ext_ca"]
+    name: str  # valid: must be in ["dice_ca", "dice_mldsa_ca", "ext_ca"]
     certificate: str  # valid: any valid path to a CA PEM file
     key_type: str  # valid: must be in ["Raw", "Token"]
     key_id: str  # valid: 160-bit serial number of CA certificate
@@ -34,8 +34,8 @@ class CaConfig:
     def validate(self) -> None:
         """Validates this object's attributes."""
         # Validate name.
-        if self.name not in {"dice_ca", "ext_ca"}:
-            raise ValueError("CA name must be in [\"dice_ca\", \"ext_ca\"]")
+        if self.name not in {"dice_ca", "dice_mldsa_ca", "ext_ca"}:
+            raise ValueError("CA name must be in [\"dice_ca\", \"dice_mldsa_ca\", \"ext_ca\"]")
         # Validate key_type.
         if self.key_type not in {"Raw", "Token"}:
             raise ValueError("CA key type must be in [\"Raw\", \"Token\"]")

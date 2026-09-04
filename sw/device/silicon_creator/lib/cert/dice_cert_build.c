@@ -57,6 +57,9 @@ rom_error_t dice_uds_tbs_cert_build(
   // Generate the TBS certificate.
   uds_tbs_values_t uds_tbs_params = {0};
 
+  uds_tbs_params.creator_pub_key_alg = kUdsKeygenAlgEcdsaP256;
+  uds_tbs_params.signature_alg = kUdsSignatureAlgEcdsaP256;
+
   TEMPLATE_SET(uds_tbs_params, Uds, OtpCreatorSwCfgHash,
                otp_creator_sw_cfg_measurement->digest);
   TEMPLATE_SET(uds_tbs_params, Uds, OtpOwnerSwCfgHash,

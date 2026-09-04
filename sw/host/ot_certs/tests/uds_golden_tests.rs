@@ -49,3 +49,5 @@ fn compare_uds_ecdsa_endorsed_cert() {
 
     assert_eq!(endorsed_cert, GOLDEN_ECDSA_ENDORSED_CERT_OUTPUT_DATA);
 }
+
+// TODO: Add golden tests for MLDSA certificates once end-to-end provisioning test supports it
