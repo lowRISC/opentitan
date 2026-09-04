@@ -84,4 +84,16 @@ work as "Submitted on behalf of a third-party: [named here]".
 8. You agree to notify the Project of any facts or circumstances of which you
 become aware that would make these representations inaccurate in any respect.
 
+9. Tool and AI-Generated Contributions. If any portion of Your Contribution is
+generated, assisted, or created by an automated tool, including but not limited
+to artificial intelligence (AI) systems, such Contribution must be intentionally
+submitted by You. By submitting such a Contribution, You represent that You have
+reasonably reviewed and understand the generated material, and You take full
+responsibility for the submission. If you have not reasonably reviewed and
+understood the generated material, you must not submit the Contribution.
+Furthermore, You agree to disclose the use of such tools in Your submission
+(such as within a commit message or pull request) as directed by the Project.
+You explicitly agree that the tool-generated material constitutes Your Contribution
+ and is bound by all terms, licenses, and representations of this Agreement.
+
 Please sign: __________________________________ Date: ________________
