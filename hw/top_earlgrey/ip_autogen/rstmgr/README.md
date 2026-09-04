@@ -21,3 +21,11 @@ This document describes the functionality of the reset controller and its intera
 *   Always-on alert crash dump register.
 *   Always-on CPU crash dump register.
 *   Reset consistency checks.
+*   To reduce power consumption during deep sleep this IP supports:
+  * A split architecture to allow separation of AON from power-gated logic.
+  * All high frequency logic resides in the power-gated domain.
+  * Unconditional reset management is place in the AON domain.
+  * Conditional reset management is place in the power-gated domain.
+  * The CSRs are placed in the power-gated domain and therefore require mandatory re-initialisation after deep sleep.
+  * Critical state is retained in the AON domain.
+  * This leaves minimal logic for the AON domain.
