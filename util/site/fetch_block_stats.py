@@ -31,7 +31,7 @@ block_level_urls = {
     "gpio": "hw/top_earlgrey/ip_autogen/gpio/dv/latest/",
     "hmac": "hw/ip/hmac/dv/latest/",
     "i2c": "hw/ip/i2c/dv/latest/",
-    "key-manager": "hw/ip/keymgr/dv/latest/",
+    "key-manager-dpe": "hw/ip/keymgr_dpe/dv/latest/",
     "kmac": "hw/ip/kmac_masked/dv/latest/",
     "life-cycle": "hw/ip/lc_ctrl/dv/latest/",
     "otbn": "hw/ip/otbn/dv/uvm/latest/",

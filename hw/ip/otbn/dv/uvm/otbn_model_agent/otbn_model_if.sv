@@ -8,7 +8,7 @@
 // do the right thing.
 
 interface otbn_model_if
-  import keymgr_pkg::otbn_key_req_t;
+  import keymgr_dpe_pkg::otbn_key_req_t;
 #(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
