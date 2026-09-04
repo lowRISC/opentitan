@@ -75,7 +75,7 @@ const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
 };
 
 // ML-DSA UDS attestation key diversifier constants.
-const sc_keymgr_diversification_t kMldsaUdsKeymgrDiversifier = {
+const sc_keymgr_diversification_t kMldsa44UdsKeymgrDiversifier = {
     .salt =
         {
             0xc4fb8ad2,
@@ -90,8 +90,23 @@ const sc_keymgr_diversification_t kMldsaUdsKeymgrDiversifier = {
     .version = 0,
 };
 
+const sc_keymgr_diversification_t kMldsa87UdsKeymgrDiversifier = {
+    .salt =
+        {
+            0xe99e7925,
+            0x400ae269,
+            0x3fbcd8aa,
+            0xeb6a5f83,
+            0x19187f97,
+            0x2b345e09,
+            0x1be6629f,
+            0x5297f218,
+        },
+    .version = 0,
+};
+
 // ML-DSA CDI_0 attestation key diversifier constants.
-const sc_keymgr_diversification_t kMldsaCdi0KeymgrDiversifier = {
+const sc_keymgr_diversification_t kMldsa44Cdi0KeymgrDiversifier = {
     .salt =
         {
             0xf98bbbb7,
@@ -106,8 +121,23 @@ const sc_keymgr_diversification_t kMldsaCdi0KeymgrDiversifier = {
     .version = 0,
 };
 
+const sc_keymgr_diversification_t kMldsa87Cdi0KeymgrDiversifier = {
+    .salt =
+        {
+            0x3547a824,
+            0x38d7b581,
+            0x577165fb,
+            0x0ce6ce17,
+            0x37f43828,
+            0x2cb11798,
+            0xd13d78e7,
+            0xfd67e2f4,
+        },
+    .version = 0,
+};
+
 // ML-DSA CDI_1 attestation key diversifier constants.
-const sc_keymgr_diversification_t kMldsaCdi1KeymgrDiversifier = {
+const sc_keymgr_diversification_t kMldsa44Cdi1KeymgrDiversifier = {
     .salt =
         {
             0xe2fe21da,
@@ -122,23 +152,59 @@ const sc_keymgr_diversification_t kMldsaCdi1KeymgrDiversifier = {
     .version = 0,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyMldsaUds = {
+const sc_keymgr_diversification_t kMldsa87Cdi1KeymgrDiversifier = {
+    .salt =
+        {
+            0x4db2a610,
+            0x405b7748,
+            0xba3ba3eb,
+            0xdc928ebb,
+            0xd658b44c,
+            0x16a0fc10,
+            0x2cbe44cd,
+            0x6ec31567,
+        },
+    .version = 0,
+};
+
+const sc_keymgr_ecc_key_t kDiceKeyMldsa44Uds = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = kFlashInfoFieldMldsaUdsKeySeedIdx,
-    .keymgr_diversifier = &kMldsaUdsKeymgrDiversifier,
+    .keymgr_diversifier = &kMldsa44UdsKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateCreatorRootKey,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyMldsaCdi0 = {
+const sc_keymgr_ecc_key_t kDiceKeyMldsa44Cdi0 = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = kFlashInfoFieldMldsaCdi0KeySeedIdx,
-    .keymgr_diversifier = &kMldsaCdi0KeymgrDiversifier,
+    .keymgr_diversifier = &kMldsa44Cdi0KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyMldsaCdi1 = {
+const sc_keymgr_ecc_key_t kDiceKeyMldsa44Cdi1 = {
     .type = kScKeymgrKeyTypeAttestation,
     .keygen_seed_idx = kFlashInfoFieldMldsaCdi1KeySeedIdx,
-    .keymgr_diversifier = &kMldsaCdi1KeymgrDiversifier,
+    .keymgr_diversifier = &kMldsa44Cdi1KeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerKey,
+};
+
+const sc_keymgr_ecc_key_t kDiceKeyMldsa87Uds = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = kFlashInfoFieldMldsaUdsKeySeedIdx,
+    .keymgr_diversifier = &kMldsa87UdsKeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateCreatorRootKey,
+};
+
+const sc_keymgr_ecc_key_t kDiceKeyMldsa87Cdi0 = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = kFlashInfoFieldMldsaCdi0KeySeedIdx,
+    .keymgr_diversifier = &kMldsa87Cdi0KeymgrDiversifier,
+    .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
+};
+
+const sc_keymgr_ecc_key_t kDiceKeyMldsa87Cdi1 = {
+    .type = kScKeymgrKeyTypeAttestation,
+    .keygen_seed_idx = kFlashInfoFieldMldsaCdi1KeySeedIdx,
+    .keymgr_diversifier = &kMldsa87Cdi1KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
