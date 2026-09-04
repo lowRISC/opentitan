@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:paths.bzl", "to_rlocation_path")
+
 def _exclude_files_impl(ctx):
     out = []
     for src in ctx.files.srcs:
@@ -66,15 +68,14 @@ def _copy_files(ctx):
         if _matches_filter(file.basename, ctx.attr.filter):
             files.append(file)
 
+    dest_rlocation = to_rlocation_path(ctx, ctx.file.relative_to)
+
+    file_rlocations = [to_rlocation_path(ctx, f) for f in files]
+
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     substitutions = {
-        # This is maybe a bit naughty: we rely on the fact that the `package`
-        # portion of the `relative_to` label looks just like the dirname
-        # of the file and the package is relative to the root of the
-        # workspace in which the rule resides.
-        "__DEST__": ctx.attr.relative_to.label.package,
-        "__FILES__": " ".join([f.path for f in files]),
-        "__WORKSPACE__": ctx.attr.workspace_env,
+        "__DEST_RLOCATION__": dest_rlocation,
+        "__FILES__": " ".join(file_rlocations),
     }
     ctx.actions.expand_template(
         template = ctx.file._runner,
@@ -83,8 +84,11 @@ def _copy_files(ctx):
         is_executable = True,
     )
 
+    runfiles = ctx.runfiles(files = files + [ctx.file.relative_to])
+    runfiles = runfiles.merge(ctx.attr._runfiles_lib[DefaultInfo].default_runfiles)
+
     return [DefaultInfo(
-        runfiles = ctx.runfiles(files = files),
+        runfiles = runfiles,
         executable = out_file,
     )]
 
@@ -107,11 +111,14 @@ copy_files = rule(
         ),
         "workspace_env": attr.string(
             default = "BUILD_WORKSPACE_DIRECTORY",
-            doc = "An environment variable that holds the path to the root of the workspace.",
+            doc = "Deprecated: Destination directory is now automatically discovered from relative_to.",
         ),
         "_runner": attr.label(
             default = "//rules/scripts:copy_files.template.sh",
             allow_single_file = True,
+        ),
+        "_runfiles_lib": attr.label(
+            default = "@bazel_tools//tools/bash/runfiles",
         ),
     },
     executable = True,
