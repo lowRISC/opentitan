@@ -38,7 +38,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
@@ -46,7 +46,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req Register - Uninstantiate Command
     cs_item.acmd  = csrng_pkg::UNI;
@@ -54,7 +54,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
   endtask // test_cs_cmd_req_done
 
   task test_cs_entropy_req();
@@ -66,7 +66,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4False;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
@@ -74,7 +74,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4False;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
     // Expect/Clear interrupt bit
     csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b1));
@@ -89,7 +89,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.m_sw_app_idx, cs_item);
   endtask // test_cs_entropy_req
 
   task trigger_invalid_acmd_sts_err(uint app);
@@ -100,7 +100,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(app, cs_item, .exp_sts(CMD_STS_INVALID_ACMD));
 
-    if (app != SW_APP) begin
+    if (app != cfg.m_sw_app_idx) begin
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
@@ -127,7 +127,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(app, cs_item, .exp_sts(CMD_STS_INVALID_CMD_SEQ), .await_genbits(0));
 
-    if (app != SW_APP) begin
+    if (app != cfg.m_sw_app_idx) begin
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
@@ -164,7 +164,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(app, cs_item, .exp_sts(CMD_STS_RESEED_CNT_EXCEEDED), .await_genbits(0));
 
-    if (app != SW_APP) begin
+    if (app != cfg.m_sw_app_idx) begin
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
@@ -328,7 +328,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
     // Test the command status response errors and for the HW apps
     // the cs_hw_inst_exc interrupt.
-    for (int app = 0; app <= SW_APP; app++) begin
+    for (int app = 0; app < cfg.m_num_apps; app++) begin
       test_cmd_sts_errs(app);
     end
 

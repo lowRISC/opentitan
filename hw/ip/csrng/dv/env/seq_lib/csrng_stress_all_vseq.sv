@@ -18,6 +18,11 @@ class csrng_stress_all_vseq extends csrng_base_vseq;
       csrng_base_vseq csrng_vseq;
       uint           seq_idx = $urandom_range(0, seq_names.size - 1);
 
+      // Stop starting new sub-sequences once a reset is imminent or in progress. The env sets
+      // can_reset_with_csr_accesses, so run_seq_with_rand_reset_vseq expects this sequence to have
+      // completed by the time it de-asserts the reset again.
+      if (cfg.stop_transaction_generators()) return;
+
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(csrng_vseq, seq)
 
