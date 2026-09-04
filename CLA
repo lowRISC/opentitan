@@ -1,5 +1,5 @@
 lowRISC CIC
-Contributor License Agreement ("Agreement") v1.0
+Contributor License Agreement ("Agreement") v1.1
 
 You accept and agree to the following terms and conditions for Your present and
 future Contributions submitted to the Project. Except for the license granted
@@ -29,6 +29,10 @@ systems, and issue tracking systems that are managed by, or on behalf of, the
 Project for the purpose of discussing and improving the Work, but excluding
 communication that is conspicuously marked or otherwise designated in writing
 by You as "Not a Contribution."
+
+"Project" means the open source project identified by name in the associated
+README.md file and comprising the collection of hardware, software, utility
+and documentation files saved in this repository.
 
 2. Grant of Copyright License. Subject to the terms and conditions of this
 Agreement, You hereby grant to the Project and to recipients of software
