@@ -317,6 +317,7 @@ module ibex_icache import ibex_pkg::*; #(
   /////////////////////
   // Tweak Infection //
   /////////////////////
+  // SEC_CM: ICACHE.MEM.ADDR_INFECTION
   if (TweakInfection) begin : gen_tweak_infection
     // Before writing the data to the data bank, XOR the tweak on top of the data.
     // When reading back the data, undo this XOR.
