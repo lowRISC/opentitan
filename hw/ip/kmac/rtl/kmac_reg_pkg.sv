@@ -220,6 +220,12 @@ package kmac_reg_pkg;
     } fifo_depth;
     struct packed {
       logic        d;
+    } entropy_reseeding;
+    struct packed {
+      logic        d;
+    } entropy_ready;
+    struct packed {
+      logic        d;
     } sha3_squeeze;
     struct packed {
       logic        d;
@@ -259,9 +265,9 @@ package kmac_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [62:57]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [56:56]
-    kmac_hw2reg_status_reg_t status; // [55:44]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [64:59]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [58:58]
+    kmac_hw2reg_status_reg_t status; // [57:44]
     kmac_hw2reg_entropy_refresh_hash_cnt_reg_t entropy_refresh_hash_cnt; // [43:33]
     kmac_hw2reg_err_code_reg_t err_code; // [32:0]
   } kmac_hw2reg_t;
@@ -338,6 +344,8 @@ package kmac_reg_pkg;
   parameter logic [10:0] KMAC_CMD_RESVAL = 11'h 0;
   parameter logic [17:0] KMAC_STATUS_RESVAL = 18'h 4001;
   parameter logic [0:0] KMAC_STATUS_SHA3_IDLE_RESVAL = 1'h 1;
+  parameter logic [0:0] KMAC_STATUS_ENTROPY_READY_RESVAL = 1'h 0;
+  parameter logic [0:0] KMAC_STATUS_ENTROPY_RESEEDING_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_STATUS_ALERT_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
