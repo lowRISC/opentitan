@@ -195,6 +195,9 @@ RUST_TARGETS = [
     "//sw/host/tests/xmodem:lrzsz_test",
     "//sw/host/tests/xmodem:xmodem",
     "//sw/host/sphincsplus:sphincsplus",
+    "//util/coverage/collect_cc_coverage:collect_cc_coverage",
+    "//util/coverage/collect_cc_coverage:coverage_lib",
+    "//util/coverage/collect_cc_coverage:generate_coverage_view",
 ]
 
 rustfmt_test(
