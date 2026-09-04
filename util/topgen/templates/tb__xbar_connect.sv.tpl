@@ -108,6 +108,7 @@ inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
 
+## A split IP hosts its TL bus interface in the primary partition.
 power_domain = lib.find_module_by_name(top["module"] + top["xbar"], inst_name).get("domain").lower()
 %>\
     % if node["type"] == "host" and not node["xbar"]:

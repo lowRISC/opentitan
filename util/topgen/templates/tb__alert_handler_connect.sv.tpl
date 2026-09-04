@@ -7,18 +7,27 @@
 <%
   index = 0
   module_name = ""
+  module_partition = ""
   default_pd = top["power"]["default"]
 %>\
 % for alert in top["alert"]:
-  % if alert["module_name"] == module_name:
+<% partition = alert.get("partition", lib.PART_PRIMARY) %>\
+  % if alert["module_name"] == module_name and partition == module_partition:
 <% index = index + 1 %>\
   % else:
 <%
   module_name = alert["module_name"]
+  module_partition = partition
   index = 0
-  module_pd = lib.find_module_by_name(top["module"], module_name).get("domain")
+  module = lib.find_module_by_name(top["module"], module_name)
+  ## A split IP emits one instance per partition, each in its own power domain
+  ## with its own alert bus. An alert belongs to the partition declaring it.
+  inst_name = module_name
+  if module.get("is_split_ip"):
+    inst_name += lib.PARTITION_INFIX + partition
+  module_pd = lib.get_domain_of_partition(module, partition, default_pd)
   hier_str = f"`PD_{module_pd.upper()}_HIER"
 %>\
   % endif
-assign alert_if[${loop.index}].alert_tx = ${hier_str}.u_${module_name}.alert_tx_o[${index}];
+assign alert_if[${loop.index}].alert_tx = ${hier_str}.u_${inst_name}.alert_tx_o[${index}];
 % endfor

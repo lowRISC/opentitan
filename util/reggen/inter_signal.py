@@ -4,8 +4,8 @@
 
 from typing import Dict, Optional, Union
 
-from reggen.lib import (check_int, check_keys, check_name, check_optional_str,
-                        check_str)
+from reggen.lib import (PART_PRIMARY, check_int, check_keys, check_name, check_optional_str,
+                        check_partition, check_str)
 from reggen.params import ReggenParams, Parameter
 
 
@@ -13,7 +13,8 @@ class InterSignal:
 
     def __init__(self, name: str, desc: Optional[str], struct: str,
                  package: Optional[str], signal_type: str, act: str,
-                 width: Union[int, Parameter], default: Optional[str]):
+                 width: Union[int, Parameter], default: Optional[str],
+                 partition: str = PART_PRIMARY):
         if isinstance(width, Parameter):
             if isinstance(width.default, int):
                 assert 0 < width.default
@@ -27,12 +28,13 @@ class InterSignal:
         self.act = act
         self.width = width
         self.default = default
+        self.partition = partition
 
     @staticmethod
     def from_raw(params: ReggenParams, what: str,
                  raw: object) -> 'InterSignal':
         rd = check_keys(raw, what, ['name', 'struct', 'type', 'act'],
-                        ['desc', 'package', 'width', 'default'])
+                        ['desc', 'package', 'width', 'default', 'partition'])
 
         name = check_name(rd['name'], 'name field of ' + what)
 
@@ -55,6 +57,8 @@ class InterSignal:
 
         default = check_optional_str(rd.get('default'),
                                      'default field of ' + what)
+        partition = check_partition(rd.get('partition', PART_PRIMARY),
+                                    'partition field of ' + what)
         width: Union[int, Parameter] = 1
         width_p = params.get(rd.get('width'), 1)
         if isinstance(width_p, Parameter):
@@ -72,7 +76,7 @@ class InterSignal:
                 raise ValueError(f'width field of {what} is not positive.')
 
         return InterSignal(name, desc, struct, package, signal_type, act,
-                           width, default)
+                           width, default, partition)
 
     def _asdict(self) -> Dict[str, object]:
         ret = {'name': self.name}  # type: Dict[str, object]
@@ -86,6 +90,10 @@ class InterSignal:
         ret['width'] = self.width
         if self.default is not None:
             ret['default'] = self.default
+        # Only emitted for split IPs, so non-split IPs see default attribute.
+        # TODO: Consider always exporting so no check is needed where topgen reads this.
+        if self.partition != PART_PRIMARY:
+            ret['partition'] = self.partition
 
         return ret
 

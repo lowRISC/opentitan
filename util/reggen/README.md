@@ -44,7 +44,7 @@ xint | x for undefined otherwise int
 bitrange | bit number as decimal integer, or bit-range as decimal integers msb:lsb
 list | comma separated list enclosed in `[]`
 name list | comma separated list enclosed in `[]` of one or more groups that have just name and dscr keys. e.g. `{ name: "name", desc: "description"}`
-name list+ | name list that optionally contains a width
+name list+ | name list that optionally contains a width, and for split IPs an optional partition key naming the partition that owns the entry.
 parameter list | parameter list having default value optionally
 group | comma separated group of key:value enclosed in `{}`
 list of group | comma separated group of key:value enclosed in `{}` the second entry of the list is the sub group format
@@ -94,7 +94,7 @@ Key | Kind | Type | Description of Value
 --- | ---- | ---- | --------------------
 name | required | string | name of the component
 cip_id | required | int | unique comportable IP identifier
-clocking | required | list | clocking for the device
+clocking | required | list or group | clocking for the device. Non split IPs have a list. Split IPs have a dict with a list per partition.
 bus_interfaces | required | list | bus interfaces for the device
 human_name | optional | string | human-readable name of the component
 one_line_desc | optional | string | one-line description of the component
@@ -118,6 +118,7 @@ available_output_list | optional | name list+ | list of available peripheral out
 expose_reg_if | optional | python Bool | if set, expose reg interface in reg2hw signal
 interrupt_list | optional | name list+ | list of peripheral interrupts
 inter_signal_list | optional | list | list of inter-module signals
+is_split_ip | optional | python Bool | if set, this IP is split into partitions. Defaults to false.
 no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
 no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
 param_list | optional | parameter list | list of parameters of the IP
@@ -1096,6 +1097,97 @@ For example:
 # define UART_CTRL_RXBLVL_BREAK4         1
 # define UART_CTRL_RXBLVL_BREAK8         2
 # define UART_CTRL_RXBLVL_BREAK16        3
+```
+
+## Split IPs
+
+An IP can be marked as split by setting `is_split_ip: true`.
+This assumes the IP is designed in two sv partitions `<ip>_part_primary.sv` and `<ip>_part_secondary.sv` where each partition can be instantiated in a different power domain.
+See topgen how to specify which partition is assigned to which domain.
+
+Each partition can be clocked separately.
+A split IP specifies the `clocking` as a dict per partition instead of a single list:
+
+```hjson
+clocking: {
+  primary: [
+    { clock: "clk_aon_i", reset: "rst_aon_ni" }
+  ]
+  secondary: [
+    { clock: "clk_i", reset: "rst_ni" }
+  ]
+}
+```
+
+Each partition can have its own alerts, interrupts, I/Os, wakeup or reset-request signals, inter-module connections and parameters.
+These are defined the same way as regular IPs define these.
+To assign, e.g., an alert to the secondary partition, the `partition: "secondary"` attribute must be set.
+The partition defaults to `primary` otherwise.
+Names of signals, alerts, etc must only be unique per partition.
+See [intra-IP connections](#intra-ip-connections) for how to connect the two partitions with each other.
+```
+alert_list: [
+  { name: "my_alert",
+    desc: "My alert in the secondary partition."
+    partition: "secondary"
+  }
+]
+```
+
+All registers, scan/DFT signals and the RACL connections are always in the primary partition only.
+
+Note that reggen internally uses the order of the specified alerts and interrupts to number the bits in their registers.
+In theory, all consumers of this data should use the reggen generated constants.
+For SW, there are header files generated.
+For RTL, reggen currently only generates an enum giving this information for alerts.
+In quite a few places, DV therefore uses hardcoded constants for interrupts.
+To avoid breaking existing code, reggen enforces that any primary interrupt/alert comes before any secondary.
+
+Parameters can be assigned additionally to both partitions by specifying `both`.
+```
+param_list: [
+  { name: "MyParam",
+    desc: "MyParam description",
+    type: "int",
+    default: "32",
+    local: "true",
+    partition: "both",
+  },
+]
+```
+
+### Intra-IP connections
+
+A split IP must define connections between the two partitions in the following way (tool limitation as of now).
+These connections between the two partitions are called intra-IP connections.
+The important limitations are:
+- The names must match exactly.
+- Only the `uni` type is supported.
+
+For a bidirectional connection, two separate signal definitions are required.
+Like regular inter-module signals, this requires that a struct `<ip>_intra_p2s` is defined in the IP's package.
+
+```
+{ struct:  "<ip>_intra_p2s",
+  type:    "uni",
+  name:    "intra_p2s",
+  act:     "req",
+  partition: "primary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Primary-to-secondary partition signal.
+  '''
+},
+{ struct:  "<ip>_intra_p2s",
+  type:    "uni",
+  name:    "intra_p2s",
+  act:     "rcv",
+  partition: "secondary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Primary-to-secondary partition signal.
+  '''
+},
 ```
 
 ## Generating documentation

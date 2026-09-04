@@ -45,12 +45,17 @@ for rst in output_rsts:
 for m in lib.get_all_modules(top, domain=domain):
   if not lib.is_inst(m):
     continue
-  for clock_sig in m.get("clock_connections").values():
-    unused_clocks.discard(clock_sig)
-  for port, reset in m.get("reset_connections").items():
-    unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain))
-    if lib.is_shadowed_port(name_to_block[m['type']], port):
-      unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain, True))
+  # A split IP contributes the clocks / resets of every partition emitted in
+  # this power domain.
+  for partition in lib.get_module_partitions(m, domain):
+    clock_connections = m.get(lib.partition_key("clock_connections", partition)) or {}
+    for clock_sig in clock_connections.values():
+      unused_clocks.discard(clock_sig)
+    reset_connections = m.get(lib.partition_key("reset_connections", partition)) or {}
+    for port, reset in reset_connections.items():
+      unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain))
+      if lib.is_shadowed_port(name_to_block[m['type']], port):
+        unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain, True))
 %>\
 % if domain_has_alert_handler:
   // Alert handler low power groups (LPGs)

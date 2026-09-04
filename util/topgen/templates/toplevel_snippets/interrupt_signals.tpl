@@ -11,16 +11,17 @@
 % endfor
   // Interrupt source list
 % for m in lib.get_all_modules(top, domain):
-<%
-  block = name_to_block[m['type']]
-%>\
     % if not lib.is_inst(m) or "outgoing_interrupt" in m:
 <% continue %>
     % endif
-    % for intr in block.interrupts:
-      % if "outgoing_interrupt" in m:
-          <% continue %>
-      % endif
+<%
+  block = name_to_block[m['type']]
+  ## A split IP is returned in every power domain it occupies, so declare each
+  ## interrupt only in the domain of the partition that owns it.
+  interrupts = [i for p in lib.get_module_partitions(m, domain)
+                for i in block.interrupts_for(p)]
+%>\
+    % for intr in interrupts:
       % if intr.bits.width() != 1:
   logic [${intr.bits.width()-1}:0] intr_${m["name"]}_${intr.name};
       % else:

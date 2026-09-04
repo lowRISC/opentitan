@@ -4,7 +4,7 @@
 '''Code representing an IP block for reggen'''
 
 import logging as log
-from typing import Sequence, Optional
+from typing import Any, Optional, Sequence
 from dataclasses import dataclass
 
 import hjson  # type: ignore
@@ -15,8 +15,8 @@ from reggen.countermeasure import CounterMeasure
 from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
-from reggen.lib import (check_bool, check_int, check_keys, check_list,
-                        check_name)
+from reggen.lib import (PART_BOTH, PARTITIONS, PART_PRIMARY, PART_SECONDARY, check_bool,
+                        check_int, check_keys, check_list, check_name)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
@@ -89,7 +89,10 @@ OPTIONAL_ALIAS_FIELDS: dict[str, list[str]] = {}
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
     'cip_id': ['d', "unique comportable IP identifier"],
-    'clocking': ['l', "clocking for the device"],
+    'clocking': [
+        'l|g', "clocking for the device. Non split IPs have a list. "
+        "Split IPs have a dict with a list per partition."
+    ],
     'bus_interfaces': ['l', "bus interfaces for the device"],
 }
 
@@ -118,6 +121,9 @@ OPTIONAL_FIELDS = {
     'expose_reg_if': ['pb', 'if set, expose reg interface in reg2hw signal'],
     'interrupt_list': ['lnw', "list of peripheral interrupts"],
     'inter_signal_list': ['l', "list of inter-module signals"],
+    'is_split_ip': [
+        'pb', "if set, this IP is split into partitions. Defaults to false."
+    ],
     'no_auto_alert_regs': [
         's', "Set to true to suppress automatic "
         "generation of alert test registers. "
@@ -166,6 +172,65 @@ OPTIONAL_REVISIONS_FIELDS = {
 }
 
 
+def _for_partition(items: Sequence[Any], partition: Optional[str]) -> list[Any]:
+    '''Filter items by the partition they were declared in.
+
+    A partition of None returns every item.
+    '''
+    if partition is None:
+        return list(items)
+    return [item for item in items if item.partition == partition]
+
+
+def _declared_partitions(clocking: Clocking,
+                         alerts: Sequence[Alert],
+                         interrupts: Sequence[Interrupt],
+                         inter_signals: Sequence[InterSignal],
+                         signals: Sequence[Signal]) -> dict[str, list[str]]:
+    '''Detect all declared partitions.
+
+    Parameters never declare a partition.
+
+    Return a dict mapping each partition to a list of the names of what has declared it.
+    Useful for error reporting.
+    '''
+    declared: dict[str, list[str]] = {}
+
+    declaring_items: list[tuple[str, Sequence[Any]]] = [
+        ("clock", clocking.items_for(None)),
+        ("alert", alerts),
+        ("interrupt", interrupts),
+        ("inter-signal", inter_signals),
+        ("signal", signals),
+    ]
+
+    for prefix, items in declaring_items:
+        for item in items:
+            name = item.clock if prefix == "clock" else item.name
+            declared.setdefault(item.partition, []).append(f'{prefix} {name}')
+
+    return declared
+
+
+def _add_generated_localparam(params: ReggenParams, what: str, name: str,
+                              desc: str, value: str) -> None:
+    '''Add an auto-generated integer localparam to params.'''
+    existing = params.get(name)
+    if existing is not None:
+        if (not isinstance(existing, LocalParam) or
+                existing.param_type != 'int' or existing.value != value):
+            raise ValueError(f'Conflicting definition of {name} parameter '
+                             f'in {what}.')
+        return
+
+    params.add(
+        LocalParam(name=name,
+                   desc=desc,
+                   param_type='int',
+                   value=value,
+                   unpacked_dimensions=None))
+
+
 @dataclass
 class IpBlock:
     name: str
@@ -191,7 +256,9 @@ class IpBlock:
     scan_en: bool
     countermeasures: list[CounterMeasure]
     features: list[Feature]
+    partitions: list[str]
     node: str = ''
+    is_split_ip: bool = False
     alias_impl: str | None = None
 
     def __post_init__(self) -> None:
@@ -317,22 +384,10 @@ class IpBlock:
                             what, len(alerts), regwidth))
                 init_block.make_alert_regs(alerts)
 
-        # Generate a NumAlerts parameter
+        # Generate a NumAlerts parameter, the IP wide alert count.
         if alerts:
-            existing_param = params.get('NumAlerts')
-            if existing_param is not None:
-                if ((not isinstance(existing_param, LocalParam) or
-                     existing_param.param_type != 'int' or
-                     existing_param.value != str(len(alerts)))):
-                    raise ValueError('Conflicting definition of NumAlerts '
-                                     f'parameter in {what}.')
-            else:
-                params.add(
-                    LocalParam(name='NumAlerts',
-                               desc='Number of alerts',
-                               param_type='int',
-                               value=str(len(alerts)),
-                               unpacked_dimensions=None))
+            _add_generated_localparam(params, what, 'NumAlerts',
+                                      'Number of alerts', str(len(alerts)))
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 
@@ -351,6 +406,9 @@ class IpBlock:
 
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
+
+        is_split_ip = check_bool(rd.get('is_split_ip', False),
+                                 'is_split_ip field of ' + what)
 
         # Build register block if IP really defined registers. IPs with an empty list of registers
         # but auto-generated registers should still be built.
@@ -376,6 +434,57 @@ class IpBlock:
                                        rd.get('wakeup_list', []))
         rst_reqs = Signal.from_raw_list('reset_request_list for block ' + name,
                                         rd.get('reset_request_list', []))
+
+        # The is_split_ip serves as validation that splitting is intended.
+        # Validate that:
+        # - All parameters map to declared partitions.
+        # - If is_split_ip is set, then the secondary partition must be
+        #   declared.
+        # - If is_split_ip is not set, then the secondary partition must not be
+        #   declared.
+
+        # Detect what partitions are declared by the IP by searching through
+        # all applicable fields. Parameters don't declare partitions.
+        declared = _declared_partitions(clocking, alerts, interrupts,
+                                        inter_signals,
+                                        # flatten all signals to a list
+                                        [s for x in xputs for s in x] +
+                                        list(wakeups) + list(rst_reqs))
+        partitions = [p for p in PARTITIONS if p in declared]
+
+        # Validate parameters
+        for param in params.by_name.values():
+            if param.partition == PART_BOTH:
+                if not is_split_ip:
+                    raise ValueError(
+                        f'{what} assigns parameter {param.name} to both '
+                        f'partitions, but is not marked is_split_ip.')
+            elif param.partition not in partitions:
+                raise ValueError(
+                    f'{what} assigns parameter {param.name} to the '
+                    f'{param.partition} partition, but the block has no such '
+                    f'partition.')
+
+        # Validate is_split_ip setting
+        if is_split_ip and PART_SECONDARY not in declared:
+            raise ValueError(
+                f'{what} is marked is_split_ip, but nothing is assigned to '
+                'its secondary partition.')
+        if not is_split_ip and PART_SECONDARY in declared:
+            raise ValueError(
+                f'{what} assigns {", ".join(declared[PART_SECONDARY])} to the '
+                'secondary partition, but is not marked is_split_ip.')
+
+        # A split IP additionally needs an alert count per partition, since each
+        # partition module carries only its own alerts. Generated here, once the
+        # partitions are known.
+        if alerts and len(partitions) > 1:
+            for partition in partitions:
+                count = len([a for a in alerts if a.partition == partition])
+                _add_generated_localparam(
+                    params, what, f'NumAlerts{partition.capitalize()}',
+                    f'Number of alerts in the {partition} partition',
+                    str(count))
 
         expose_reg_if = check_bool(rd.get('expose_reg_if', False),
                                    'expose_reg_if field of ' + what)
@@ -408,7 +517,7 @@ class IpBlock:
                        memories, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
-                       countermeasures, features, node)
+                       countermeasures, features, partitions, node, is_split_ip)
 
     @staticmethod
     def from_text(txt: str,
@@ -569,7 +678,12 @@ class IpBlock:
         ret['inter_signal_list'] = self.inter_signals
         ret['bus_interfaces'] = self.bus_interfaces.as_dicts()
 
-        ret['clocking'] = self.clocking.items
+        ret['clocking'] = self.clocking.as_raw()
+
+        # Only emitted for split IPs, so non-split IPs see default attribute.
+        # TODO: Consider always exporting so no check is needed where topgen reads this.
+        if self.is_split_ip:
+            ret['is_split_ip'] = self.is_split_ip
 
         inouts, inputs, outputs = self.xputs
         if inouts:
@@ -623,10 +737,25 @@ class IpBlock:
         # if we are here, then no one has a shadowed register
         return False
 
-    def get_primary_clock(self) -> ClockingItem:
-        '''Return primary clock of an block'''
+    def get_primary_clock(self, partition: str = PART_PRIMARY) -> Optional[ClockingItem]:
+        '''Return the primary clock of the given partition of a block'''
 
-        return self.clocking.primary
+        return self.clocking.get_primary_clock(partition)
+
+    def alerts_for(self, partition: Optional[str] = PART_PRIMARY) -> list[Alert]:
+        return _for_partition(self.alerts, partition)
+
+    def interrupts_for(self,
+                       partition: Optional[str] = PART_PRIMARY) -> list[Interrupt]:
+        return _for_partition(self.interrupts, partition)
+
+    def xputs_for(
+        self, partition: Optional[str] = PART_PRIMARY
+    ) -> tuple[list[Signal], list[Signal], list[Signal]]:
+        inouts, inputs, outputs = self.xputs
+        return (_for_partition(inouts, partition),
+                _for_partition(inputs, partition),
+                _for_partition(outputs, partition))
 
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:

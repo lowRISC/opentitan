@@ -42,14 +42,15 @@ from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
-from topgen.lib import find_module, find_modules, load_cfg, write_file_secure, get_ipgen_params
+from topgen.lib import (find_module, find_modules, load_cfg, write_file_secure, get_ipgen_params,
+                        get_conns_for, get_domain_of_partition)
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
     amend_reset_request, amend_resets, amend_wkup, commit_alert_modules,
     commit_interrupt_modules, commit_outgoing_alert_modules,
     commit_outgoing_interrupt_modules, connect_clocks,
     create_alert_lpgs, elaborate_instance, extract_clocks,
-    commit_alert_connections)
+    commit_alert_connections, normalize_partition_connections)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
@@ -604,7 +605,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     # sw controlled resets: dict indexed by device containing the clock
     sw_rsts = OrderedDict([(r.name, r.clock.name)
                            for r in reset_obj.get_sw_resets()])
-    # rst_ni
+    # rst_ni. The rstmgr's registers, and hence its reset tree, live in the
+    # primary partition.
     rstmgr = find_module(top["module"], "rstmgr")
     rst_ni = rstmgr["reset_connections"]
 
@@ -1173,19 +1175,16 @@ def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                         helper=rs_helper)
 
 
-def _amend_block_reset_connections(module: ConfigT,
+def _amend_block_reset_connections(end_point: ConfigT,
                                    default_power_domain: str) -> None:
-    for port, reset in module["reset_connections"].items():
-        if isinstance(reset, str):
-            if "domain" not in module:
-                domain = default_power_domain
-            else:
-                domain = module["domain"]
-
-            module["reset_connections"][port] = {
-                'name': reset,
-                'domain': domain,
-            }
+    for partition, reset_connections in get_conns_for(end_point, "reset_connections"):
+        domain = get_domain_of_partition(end_point, partition, default_power_domain)
+        for port, reset in reset_connections.items():
+            if isinstance(reset, str):
+                reset_connections[port] = {
+                    'name': reset,
+                    'domain': domain,
+                }
 
 
 def amend_reset_connections(topcfg: ConfigT) -> None:
@@ -1195,7 +1194,8 @@ def amend_reset_connections(topcfg: ConfigT) -> None:
     The reset_connections are dictionaries keyed by a port name and
     with a value that can be just a string or a dictionary with a name
     and a domain. When the value is just a string determine the domain
-    as the module's domain, or the default domain from the topcfg.
+    as the domain of the partition it belongs to, or the default domain
+    from the topcfg.
     """
     default_power_domain = topcfg["power"]["default"]
     for module in topcfg["module"]:
@@ -1413,7 +1413,6 @@ def _process_top(
     them to further populate the top config. It can raise exceptions for
     errors found in the process.
     """
-    # Prepare the topcfg.
     extract_clocks(topcfg)
     ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
                                         args.hjson_path)
@@ -1773,6 +1772,10 @@ def main():
     cfg_path = Path(args.topcfg).parents[1]
 
     topcfg = load_cfg(args.topcfg)
+
+    # Flatten a split instance's per-partition connections into the canonical
+    # and '_secondary' keys.
+    normalize_partition_connections(topcfg)
 
     # Load the seed config from the separate configuration file
     seed_cfg = load_cfg(args.seedcfg)
