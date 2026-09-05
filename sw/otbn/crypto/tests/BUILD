@@ -1054,6 +1054,21 @@ otbn_sim_test(
     ],
 )
 
+alias(
+    name = "sha256_masked_test",
+    actual = "//sw/otbn/crypto/sha2/tests:sha256_masked_test",
+)
+
+alias(
+    name = "sha384_masked_test",
+    actual = "//sw/otbn/crypto/sha2/tests:sha384_masked_test",
+)
+
+alias(
+    name = "sha512_masked_test",
+    actual = "//sw/otbn/crypto/sha2/tests:sha512_masked_test",
+)
+
 otbn_consttime_test(
     name = "sha256_consttime",
     # All secrets are stored in DMEM; timing is permitted to depend on the
