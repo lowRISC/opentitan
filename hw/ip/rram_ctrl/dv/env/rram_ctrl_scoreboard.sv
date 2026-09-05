@@ -1,0 +1,381 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+class rram_ctrl_scoreboard extends cip_base_scoreboard #(
+    .CFG_T(rram_ctrl_env_cfg),
+    .RAL_T(rram_ctrl_core_reg_block),
+    .COV_T(rram_ctrl_env_cov)
+  );
+  `uvm_component_utils(rram_ctrl_scoreboard)
+
+  // Local variables
+
+  // Standard SV/UVM methods
+  extern function new(string name="", uvm_component parent=null);
+  extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
+  extern function void check_phase(uvm_phase phase);
+
+  // Class specific methods
+  extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
+  extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+    tl_phase_e tl_phase);
+  extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
+    tl_phase_e tl_phase);
+  extern function void reset(string kind = "HARD");
+endclass : rram_ctrl_scoreboard
+
+
+function rram_ctrl_scoreboard::new(string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction : new
+
+function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  // TODO: remove once support alert checking
+  do_alert_check = 0;
+endfunction : build_phase
+
+function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+endfunction : connect_phase
+
+task rram_ctrl_scoreboard::run_phase(uvm_phase phase);
+  super.run_phase(phase);
+  wait(cfg.under_reset);
+  forever begin
+    wait(!cfg.under_reset);
+    // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+    // processes at the same level from the parent classes
+    fork begin : isolation_fork
+      fork
+        begin : main_thread
+          fork
+            // TODO remove this entire forever loop and replace it with something more meaningful
+            // it's just a placeholder to avoid simulation hanging
+            forever begin
+              cfg.clk_rst_vif.wait_clks(1);
+            end
+          join
+          wait fork;  // To ensure it will be killed only when the reset will occur
+        end
+        begin : reset_thread
+          wait(cfg.under_reset);
+        end
+      join_any
+      disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+    end join
+  end
+endtask : run_phase
+
+task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item,
+                                                tl_channels_e channel,
+                                                string ral_name);
+  bit            write    = item.is_write();
+  uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+  tl_phase_e     tl_phase;
+
+  if (!write && channel == AddrChannel) tl_phase = AddrRead;
+  if ( write && channel == AddrChannel) tl_phase = AddrWrite;
+  if (!write && channel == DataChannel) tl_phase = DataRead;
+  if ( write && channel == DataChannel) tl_phase = DataWrite;
+
+  if (ral_name == ral.get_name()) begin
+    process_tl_core_access(item, csr_addr, tl_phase);
+  end else if (ral_name == cfg.prim_ral_name) begin
+    process_tl_prim_access(item, csr_addr, tl_phase);
+  end else if (ral_name == cfg.host_ral_name) begin
+
+  end else begin
+    `uvm_fatal(`gfn, $sformatf("Specified RAL name %0s doesn't exist!", ral_name))
+  end
+endtask : process_tl_access
+
+task rram_ctrl_scoreboard::process_tl_core_access(
+  tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
+  string  ral_name      = ral.get_name();
+  bit     do_read_check = 1;
+  bit     csr_access = 0;
+  uvm_reg csr;
+
+  // If fifo access
+  if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
+
+  // If access was to a valid CSR, get the CSR handle
+  end else begin
+    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
+    if (csr != null) begin
+      csr_access = 1;
+    end else begin
+      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+    end
+  end
+
+  if (csr_access) begin
+    // If incoming access is a write to a valid csr, then make updates right away
+    if (tl_phase == AddrWrite) begin
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+    end
+
+    do_read_check = 0;  // TODO disable read check for now, this line should be removed later
+
+    // Process the CRS req:
+    //  - for write, update local variable and fifo at address phase
+    //  - for read, update prediction at address phase and compare at data phase
+    case (csr.get_name())
+      // Add individual case item for each csr
+      "intr_state": begin
+        // FIXME
+      end
+      "intr_enable": begin
+        // FIXME
+      end
+      "intr_test": begin
+        // FIXME
+      end
+      "alert_test": begin
+        // FIXME
+      end
+      "dis": begin
+        // FIXME
+      end
+      "exec": begin
+        // FIXME
+      end
+      "init": begin
+        // FIXME
+      end
+      "ctrl_regwen": begin
+        // FIXME
+      end
+      "control": begin
+        // FIXME
+      end
+      "addr": begin
+        // FIXME
+      end
+      "write_abort": begin
+        // FIXME
+      end
+      "region_cfg_regwen_0": begin
+        // FIXME
+      end
+      "region_cfg_regwen_1": begin
+        // FIXME
+      end
+      "region_cfg_regwen_2": begin
+        // FIXME
+      end
+      "region_cfg_regwen_3": begin
+        // FIXME
+      end
+      "region_cfg_regwen_4": begin
+        // FIXME
+      end
+      "region_cfg_regwen_5": begin
+        // FIXME
+      end
+      "region_cfg_regwen_6": begin
+        // FIXME
+      end
+      "region_cfg_regwen_7": begin
+        // FIXME
+      end
+      "region_cfg_regwen_8": begin
+        // FIXME
+      end
+      "region_cfg_regwen_9": begin
+        // FIXME
+      end
+      "mp_region_cfg_0": begin
+        // FIXME
+      end
+      "mp_region_cfg_1": begin
+        // FIXME
+      end
+      "mp_region_cfg_2": begin
+        // FIXME
+      end
+      "mp_region_cfg_3": begin
+        // FIXME
+      end
+      "mp_region_cfg_4": begin
+        // FIXME
+      end
+      "mp_region_cfg_5": begin
+        // FIXME
+      end
+      "mp_region_cfg_6": begin
+        // FIXME
+      end
+      "mp_region_cfg_7": begin
+        // FIXME
+      end
+      "mp_region_cfg_8": begin
+        // FIXME
+      end
+      "mp_region_cfg_9": begin
+        // FIXME
+      end
+      "mp_region_0": begin
+        // FIXME
+      end
+      "mp_region_1": begin
+        // FIXME
+      end
+      "mp_region_2": begin
+        // FIXME
+      end
+      "mp_region_3": begin
+        // FIXME
+      end
+      "mp_region_4": begin
+        // FIXME
+      end
+      "mp_region_5": begin
+        // FIXME
+      end
+      "mp_region_6": begin
+        // FIXME
+      end
+      "mp_region_7": begin
+        // FIXME
+      end
+      "mp_region_8": begin
+        // FIXME
+      end
+      "mp_region_9": begin
+        // FIXME
+      end
+      "default_region": begin
+        // FIXME
+      end
+      "info_regwen_0": begin
+        // FIXME
+      end
+      "info_regwen_1": begin
+        // FIXME
+      end
+      "info_regwen_2": begin
+        // FIXME
+      end
+      "info_regwen_3": begin
+        // FIXME
+      end
+      "info_regwen_4": begin
+        // FIXME
+      end
+      "info_regwen_5": begin
+        // FIXME
+      end
+      "info_regwen_6": begin
+        // FIXME
+      end
+      "info_regwen_7": begin
+        // FIXME
+      end
+      "info_page_cfg_0": begin
+        // FIXME
+      end
+      "info_page_cfg_1": begin
+        // FIXME
+      end
+      "info_page_cfg_2": begin
+        // FIXME
+      end
+      "info_page_cfg_3": begin
+        // FIXME
+      end
+      "info_page_cfg_4": begin
+        // FIXME
+      end
+      "info_page_cfg_5": begin
+        // FIXME
+      end
+      "info_page_cfg_6": begin
+        // FIXME
+      end
+      "info_page_cfg_7": begin
+        // FIXME
+      end
+      "hw_info_cfg_override": begin
+        // FIXME
+      end
+      "op_status": begin
+        // FIXME
+      end
+      "status": begin
+        // FIXME
+      end
+      "err_code": begin
+        // FIXME
+      end
+      "std_fault_status": begin
+        // FIXME
+      end
+      "fault_status": begin
+        // FIXME
+      end
+      "err_addr": begin
+        // FIXME
+      end
+      "ecc_single_err_cnt": begin
+        // FIXME
+      end
+      "ecc_single_err_addr": begin
+        // FIXME
+      end
+      "phy_alert_cfg": begin
+        // FIXME
+      end
+      "phy_status": begin
+        // FIXME
+      end
+      "scratch": begin
+        // FIXME
+      end
+      "fifo_lvl": begin
+        // FIXME
+      end
+      "fifo_clr": begin
+        // FIXME
+      end
+      "curr_fifo_lvl": begin
+        // FIXME
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
+      end
+    endcase
+
+    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+    if (tl_phase == DataRead) begin
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                     $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
+  end
+endtask : process_tl_core_access
+
+task rram_ctrl_scoreboard::process_tl_prim_access(
+  tl_seq_item item, uvm_reg_addr_t csr_addr, tl_phase_e tl_phase);
+  string  ral_name      = cfg.prim_ral_name;
+  bit     do_read_check = 1;
+  uvm_reg csr;
+  // TODO
+  `uvm_info(`gfn, "Tmp debug: tl_prim_access detected", UVM_LOW)
+endtask : process_tl_prim_access
+
+function void rram_ctrl_scoreboard::reset(string kind = "HARD");
+  super.reset(kind);
+  // Reset local fifos queues and variables
+endfunction : reset
+
+function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
+  super.check_phase(phase);
+  // Post test checks - ensure that all local fifos and queues are empty
+endfunction : check_phase

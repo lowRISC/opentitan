@@ -132,8 +132,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [RRAM_CTRL DV document](../dv/README.md)
+Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [RRAM_CTRL Testplan](../dv/README.md#testplan)
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
