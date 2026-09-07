@@ -18,7 +18,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:prim:onehot
       - lowrisc:prim:blanker
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
       - lowrisc:prim:onehot_check

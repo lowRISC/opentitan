@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager input checks
+// Key manager dpe input checks
 // Checks input data for errors
 
 `include "prim_assert.sv"
 
 // We should also check for input validity
-module keymgr_input_checks import keymgr_pkg::*; #(
+module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
   parameter bit          KmacEnMasking      = 1'b1,
   parameter int unsigned NumRomDigestInputs = 1
 ) (
@@ -18,8 +18,8 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   input [31:0] key_version_i,
   input [KeyWidth-1:0] creator_seed_i,
   input [KeyWidth-1:0] owner_seed_i,
-  input [DevIdWidth-1:0] devid_i,
-  input [HealthStateWidth-1:0] health_state_i,
+  input [DeviceIdWidth-1:0] devid_i,
+  input lc_ctrl_pkg::lc_keymgr_div_t health_state_i,
   output logic creator_seed_vld_o,
   output logic owner_seed_vld_o,
   output logic devid_vld_o,
@@ -28,6 +28,13 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   output logic key_vld_o,
   output logic rom_digest_vld_o
 );
+
+  // Common width to which all checked inputs are extended
+  localparam int MaxWidth = KeyWidth;
+  `ASSERT_INIT(MaxWidthCovers_A, (MaxWidth >= DeviceIdWidth) &&
+                                 (MaxWidth >= $bits(lc_ctrl_pkg::lc_keymgr_div_t)) &&
+                                 (MaxWidth >= $bits(rom_ctrl_pkg::keymgr_data_t) - 1))
+
   // checks for all 0's or all 1's of value
   function automatic logic valid_chk (logic [MaxWidth-1:0] value);
     return |value & ~&value;
@@ -56,7 +63,7 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   );
 
   prim_msb_extend #(
-    .InWidth(DevIdWidth),
+    .InWidth(DeviceIdWidth),
     .OutWidth(MaxWidth)
   ) u_devid (
     .in_i(devid_i),
@@ -64,7 +71,7 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   );
 
   prim_msb_extend #(
-    .InWidth(HealthStateWidth),
+    .InWidth(lc_ctrl_pkg::LcKeymgrDivWidth),
     .OutWidth(MaxWidth)
   ) u_health_state (
     .in_i(health_state_i),
@@ -118,4 +125,4 @@ module keymgr_input_checks import keymgr_pkg::*; #(
     end
   end
 
-endmodule // keymgr_input_checks
+endmodule // keymgr_dpe_input_checks

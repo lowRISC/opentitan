@@ -8,7 +8,6 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_ctrl
-  import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 // TODO(#384): Bring back KmacEnMasking parameter
@@ -46,9 +45,10 @@ module keymgr_dpe_ctrl
   input [KeyVersionWidth-1:0] max_key_version_i,
   input [KeyVersionWidth-1:0] key_version_i,
   output key_version_vld_o,
+  output keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata_o,
 
   output logic op_done_o,
-  output keymgr_op_status_e status_o,
+  output keymgr_dpe_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
   output logic [FaultLastPos-1:0] fault_o,
   output logic data_hw_en_o,
@@ -141,6 +141,16 @@ module keymgr_dpe_ctrl
   assign gen_hw_key_cmd = op_start_i & (op_i == OpDpeGenHwOut) & en_i;
   assign disable_cmd    = op_start_i & (op_i == OpDpeDisable)  & en_i;
 
+  // Forward all metadata to the sw register
+  for (genvar i = 0; i < NumInstHwSlot; i++) begin : gen_metadata_output
+    assign metadata_o[i] = {
+      key_slots_q[i].key_policy,
+      key_slots_q[i].boot_stage,
+      key_slots_q[i].valid,
+      key_slots_q[i].max_key_version
+    };
+  end
+
   ///////////////////////////
   //  interaction between main control fsm and operation fsm
   ///////////////////////////
@@ -221,7 +231,7 @@ module keymgr_dpe_ctrl
   ///////////////////////////
 
   // Upon entering StCtrlDisabled or StCtrlInvalid, the PRNG is kept advancing until it has been
-  // reseeded twice (through the reseeding mechanism inside keymgr_reseed_ctrl.sv).
+  // reseeded twice (through the reseeding mechanism inside keymgr_dpe_reseed_ctrl.sv).
   logic [1:0] prng_en_dis_inv_d, prng_en_dis_inv_q;
   logic prng_en_dis_inv_set;
 
@@ -648,7 +658,7 @@ module keymgr_dpe_ctrl
   ///////////////////////////////
 
   logic data_fsm_err;
-  keymgr_data_en_state u_data_en (
+  keymgr_dpe_data_en_state u_data_en (
     .clk_i,
     .rst_ni,
     .hw_sel_i(hw_sel_o),
@@ -710,7 +720,7 @@ module keymgr_dpe_ctrl
   logic unused_exportable_bit;
   assign unused_exportable_bit = active_slot_policy.exportable;
 
-  keymgr_err u_err (
+  keymgr_dpe_err u_err (
     .clk_i,
     .rst_ni,
     .invalid_op_i(invalid_op),

@@ -267,7 +267,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for keymgr_dpe in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES = 32'h200;
 
   /**
    * Peripheral base address for csrng in top darjeeling.

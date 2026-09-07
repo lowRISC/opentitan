@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager CFGEN
+// Key manager dpe CFGEN
 // TBD This should be enhanced in the future to contain a shadow copy
 
 `include "prim_assert.sv"
 
-module keymgr_cfg_en #(
+module keymgr_dpe_cfg_en #(
   // controls whether clear has an effect on output value during non-init
   parameter bit NonInitClr = 1'b1
 ) (
@@ -60,4 +60,4 @@ module keymgr_cfg_en #(
     end
   end
 
-endmodule // keymgr_cfg_en
+endmodule // keymgr_dpe_cfg_en
