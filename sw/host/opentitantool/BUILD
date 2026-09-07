@@ -43,6 +43,12 @@ rust_binary(
         "src/main.rs",
     ],
     edition = "2024",
+    link_deps = [
+        "//util:bfv_decoder",
+    ] + select({
+        "//rules:static_link_host_tools_enabled": ["@libudev_zero"],
+        "//conditions:default": [],
+    }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -59,7 +65,6 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
         "//sw/host/sphincsplus",
-        "//util:bfv_decoder",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:directories",
@@ -77,10 +82,7 @@ rust_binary(
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
         "@lowrisc_serde_annotate//serde_annotate",
-    ] + select({
-        "//rules:static_link_host_tools_enabled": ["@libudev_zero"],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 pkg_files(
