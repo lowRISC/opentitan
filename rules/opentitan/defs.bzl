@@ -494,11 +494,19 @@ def opentitan_test(
                         fail("attribute {} is not configurable and must have the same values for the following exec_env: {}".format(arg, env_list))
                 test_kwargs[arg] = first_val
             else:
-                select_args = {
-                    ev_to_top_map[env]: all_test_kwargs[env][arg]
-                    for env in env_list
-                }
-                test_kwargs[arg] = opentitan_select_top(select_args, default)
+                # Create a select to use the correct value depending on the top.
+                # However, doing so has a disadvantage because nested select() are not
+                # allowed in bazel so if the value itself contains a select, this will not work.
+                # As a workaround for now, try to be smart and do not emit a select() if there is
+                # only one value.
+                if len(env_list) > 1:
+                    select_args = {
+                        ev_to_top_map[env]: all_test_kwargs[env][arg]
+                        for env in env_list
+                    }
+                    test_kwargs[arg] = opentitan_select_top(select_args, default)
+                elif len(env_list) == 1:
+                    test_kwargs[arg] = all_test_kwargs[env_list[0]][arg]
 
         test_name = "{}_{}".format(name, suffix)
         all_tests.append(":" + test_name)
