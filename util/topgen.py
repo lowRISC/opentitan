@@ -2040,7 +2040,7 @@ def main():
             "aes": ["lowrisc:ip:aes"],
             "kmac": ["lowrisc:ip:kmac_pkg"],
             "otbn": ["lowrisc:ip:otbn_pkg"],
-            "keymgr_dpe": ["lowrisc:ip:keymgr_pkg"],
+            "keymgr_dpe": ["lowrisc:ip:keymgr_dpe_pkg"],
             "csrng": ["lowrisc:ip:csrng_pkg"],
             "rram_ctrl": ["lowrisc:ip:rram_ctrl_pkg"],
         }
