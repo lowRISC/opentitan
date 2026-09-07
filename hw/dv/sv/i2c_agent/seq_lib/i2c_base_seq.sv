@@ -29,9 +29,6 @@ class i2c_base_seq extends dv_base_seq #(
   // it. It is also possible to push_back() new items piecemeal while the sequence is running.
   REQ req_q[$];
 
-  // Set this bit via. seq_stop() to immediately halt the sequence.
-  protected bit stop;
-
   `uvm_object_utils(i2c_base_seq)
   `uvm_object_new
 
@@ -53,7 +50,7 @@ class i2c_base_seq extends dv_base_seq #(
 
   virtual task body();
     case (cfg.if_mode)
-      Device: while (!stop) begin // Agent-Target
+      Device: forever begin // Agent-Target
         // Get reactive agent items from the i2c_monitor, and use them to monitor the in-progress
         // transaction and to drive the bus accordingly.
         inp_xfer = null;
@@ -82,20 +79,10 @@ class i2c_base_seq extends dv_base_seq #(
   //
   virtual task get_in_progress_transfer_item(output i2c_item inp_xfer,
                                              input i2c_analysis_fifo fifo);
-    fork begin: iso_fork
-      fork
-        // Block until a new item arrives from the monitor
-        begin
-          i2c_item item;
-          fifo.get(item);
-          `downcast(inp_xfer, item)
-        end
-        // If seq_stop() is called, break out of the above wait-state immediately.
-        wait (stop);
-      join_any
-      #0;
-      disable fork;
-    end: iso_fork join
+    // Block until a new item arrives from the monitor
+    i2c_item item;
+    fifo.get(item);
+    `downcast(inp_xfer, item)
   endtask : get_in_progress_transfer_item
 
 
@@ -186,15 +173,6 @@ class i2c_base_seq extends dv_base_seq #(
     finish_item(req);
     get_response(rsp);
   endtask : send_host_mode_txn
-
-
-  // This routine can be called to gracefully end the sequence immediately
-  //
-  virtual task seq_stop();
-    stop = 1'b1;
-    wait_for_sequence_state(UVM_FINISHED);
-  endtask : seq_stop
-
 
   // Override the uvm print implementation to only show the '.drv_type' and any associated data
   // of each item in the 'req_q'.
