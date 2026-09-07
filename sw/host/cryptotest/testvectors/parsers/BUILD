@@ -19,12 +19,25 @@ py_test(
         "cryptotest_util.py",
         "cryptotest_util_test.py",
     ],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     visibility = ["//visibility:private"],
+    deps = [
+        ":cryptotest_util",
+    ],
 )
 
 py_binary(
     name = "nist_aes_parser",
     srcs = ["nist_aes_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -34,6 +47,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_aes_gcm_parser",
     srcs = ["nist_cavp_aes_gcm_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -43,6 +61,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_drbg_parser",
     srcs = ["nist_cavp_drbg_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -52,6 +75,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_ecdsa_parser",
     srcs = ["nist_cavp_ecdsa_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -61,6 +89,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_aes_kw_parser",
     srcs = ["nist_cavp_aes_kw_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -80,6 +113,11 @@ py_binary(
 py_binary(
     name = "hjson_hash_parser",
     srcs = ["hjson_hash_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("hjson"),
@@ -90,6 +128,11 @@ py_binary(
 py_binary(
     name = "random_ecdsa_generator",
     srcs = ["random_ecdsa_generator.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -100,6 +143,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_hash_parser",
     srcs = ["nist_cavp_hash_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -109,6 +157,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_hmac_parser",
     srcs = ["nist_cavp_hmac_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -118,6 +171,11 @@ py_binary(
 py_binary(
     name = "random_hmac_generator",
     srcs = ["random_hmac_generator.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -137,6 +195,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_ecdh_parser",
     srcs = ["nist_cavp_ecdh_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -156,6 +219,11 @@ py_binary(
 py_binary(
     name = "hjson_kmac_parser",
     srcs = ["hjson_kmac_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("hjson"),
@@ -174,6 +242,11 @@ py_binary(
 py_binary(
     name = "nist_cavp_rsa_parser",
     srcs = ["nist_cavp_rsa_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -183,6 +256,11 @@ py_binary(
 py_binary(
     name = "rsp_sphincsplus_parser",
     srcs = ["rsp_sphincsplus_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -201,6 +279,11 @@ py_binary(
 py_binary(
     name = "wycheproof_rsa_parser",
     srcs = ["wycheproof_rsa_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("jsonschema"),
@@ -210,6 +293,11 @@ py_binary(
 py_binary(
     name = "hjson_rsa_parser",
     srcs = ["hjson_rsa_parser.py"],
+    imports = [
+        # //sw/host/cryptotest/testvectors/parsers:
+        #   sw.host.cryptotest.testvectors.parsers.cryptotest_util
+        ".",
+    ],
     deps = [
         ":cryptotest_util",
         requirement("hjson"),
