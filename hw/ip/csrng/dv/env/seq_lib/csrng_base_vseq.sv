@@ -104,7 +104,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     else begin
       cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
     end
-    if (app != SW_APP) begin
+    if (app != cfg.m_sw_app_idx) begin
       if (edn_under_reset()) begin
         `uvm_info(`gfn, "HW app stopped due to EDN reset", UVM_HIGH)
         return;
