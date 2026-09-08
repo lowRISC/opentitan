@@ -118,7 +118,7 @@ provided to the UART, and `f_baud` is the desired baud rate (in bits per second)
 
 $$ NCO = 16 \times {{2^{$bits(NCO)} \times f\_{baud}} \over {f\_{pclk}}} $$
 
-The formula above depends on the NCO CSR width.
+The formula above depends on the NCO field width.
 The logic creates a x16 tick when the NCO counter overflows.
 So, the computed baud rate from NCO value is below.
 
