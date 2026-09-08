@@ -67,8 +67,8 @@ returned high the glitch is ignored. After it detects the START bit,
 the RX module samples at the center of each bit-time and gathers
 incoming serial bits into a character buffer. If the STOP bit is
 detected as high and the optional parity bit is correct the data byte
-is pushed into a 32 byte deep RX FIFO. The data can be read out by
-reading [`RDATA`](registers.md#rdata) register.
+is pushed into a 64 byte deep RX FIFO. The data can be read out by
+reading the [`RDATA`](registers.md#rdata) register.
 
 This behavior of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
