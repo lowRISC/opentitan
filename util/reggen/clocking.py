@@ -66,7 +66,7 @@ class ClockingItem:
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
         if self.clock is not None:
-            ret['clock'] = self.clock,
+            ret['clock'] = self.clock
         if self.reset is not None:
             ret['reset'] = self.reset
         if self.idle is not None:
