@@ -43,6 +43,7 @@ python3-wheel
 python-is-python3
 srecord
 tree
+usbutils
 xmlstarlet
 xsltproc
 xxd
