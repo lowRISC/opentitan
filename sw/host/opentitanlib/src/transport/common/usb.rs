@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result, bail, ensure};
 use rusb::{self, UsbContext};
+use std::fs;
 use std::time::{Duration, Instant};
 
 use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
@@ -447,6 +448,7 @@ pub struct UsbHub {
 }
 
 // USB hub operation.
+#[derive(Debug, Copy, Clone)]
 pub enum UsbHubOp {
     // Power-off a specific port.
     PowerOff,
@@ -517,14 +519,52 @@ impl UsbHub {
         Ok(status[0] as u16 | (status[1] as u16) << 8)
     }
 
+    fn try_sysfs_op(&self, op: UsbHubOp, port: u8) -> Result<()> {
+        let disable_content = match op {
+            UsbHubOp::PowerOn => b"0",
+            UsbHubOp::PowerOff => b"1",
+            _ => bail!("operation not supported by the kernel"),
+        };
+        // The device location string is <bus>-<port1>.<port2>...
+        let hub_ports = self
+            .handle
+            .port_numbers()?
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(".");
+        let dev_loc = format!("{}-{}", self.handle.bus_number(), hub_ports);
+        let cfg = self.handle.active_configuration()?.descriptor()?.config_val;
+        let disable_file_path =
+            format!("/sys/bus/usb/devices/{dev_loc}:{cfg}.0/{dev_loc}-port{port}/disable");
+        ensure!(
+            fs::exists(&disable_file_path).unwrap_or(false),
+            "sysfs file {} not found, are you using a very old kernel?",
+            disable_file_path
+        );
+        fs::write(&disable_file_path, disable_content)
+            .with_context(|| format!("Unable to write {}", disable_file_path))?;
+        log::info!("Hub operation {op:?} performed using the sysfs interface");
+        Ok(())
+    }
+
     // Perform an operation.
     pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
-        let (feature_index, set_feature, human_op) = match op {
-            UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
-            UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
-            UsbHubOp::Reset => (PORT_RESET, true, "reset"),
-            UsbHubOp::PowerOn => (PORT_POWER, true, "power on"),
-            UsbHubOp::PowerOff => (PORT_POWER, false, "power off"),
+        // For power-off/on operations, it is much better to go through the kernel interface
+        // if possible, otherwise the kernel might not notice that the device was connected/disconnected.
+        match self.try_sysfs_op(op, port) {
+            Ok(()) => return Ok(()),
+            Err(err) => log::error!(
+                "Could not perform hub operation {op:?} using sysfs, falling back to direct hub operations: {err:#}"
+            ),
+        }
+
+        let (feature_index, set_feature) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true),
+            UsbHubOp::Resume => (PORT_SUSPEND, false),
+            UsbHubOp::Reset => (PORT_RESET, true),
+            UsbHubOp::PowerOn => (PORT_POWER, true),
+            UsbHubOp::PowerOff => (PORT_POWER, false),
         };
         let req = if set_feature {
             rusb::constants::LIBUSB_REQUEST_SET_FEATURE
@@ -548,24 +588,21 @@ impl UsbHub {
             timeout,
         )?;
         // Wait until port has changed status.
-        if check_status {
-            let start = Instant::now();
-            loop {
-                let port_status = self.port_status(port, timeout)?;
-                if port_status & port_status_mask == port_status_after {
-                    break;
-                }
-                if start.elapsed() >= timeout {
-                    bail!(
-                        "Trying to {} port {} but port did not change status (last status was {:x})",
-                        human_op,
-                        port,
-                        port_status
-                    );
-                }
-            }
-            log::info!("{} performed in {:#?}", human_op, start.elapsed());
+        if !check_status {
+            return Ok(());
         }
+        let start = Instant::now();
+        loop {
+            let port_status = self.port_status(port, timeout)?;
+            if port_status & port_status_mask == port_status_after {
+                break;
+            }
+            ensure!(
+                start.elapsed() <= timeout,
+                "Trying to {op:?} port {port} but port did not change status (last status was {port_status:x})",
+            );
+        }
+        log::info!("Hub operation {op:?} performed in {:#?}", start.elapsed());
 
         Ok(())
     }

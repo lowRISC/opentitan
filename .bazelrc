@@ -156,3 +156,10 @@ run --sandbox_explicit_pseudoterminal
 # Enable strict action env. This will prevent `PATH` and `LD_LIBRARY_PATH` from being passed into the sandbox
 # which would help the cacheability.
 build --incompatible_strict_action_env
+
+# Due to a Chip Whisperer design problem, the test harnesses may need to power on and off some hub ports on
+# the CW340 internal hub. Doing so properly requires writing to some files under /sys, specifically
+# /sys/bus/usb/devices/.../...-port.../disable
+# Therefore we need to make /sys writable, otherwise the code will fallback to directly manipulating the hub
+# using control operations which may confuse the kernel and lead to hard to debug problems.
+test --sandbox_writable_path=/sys/
