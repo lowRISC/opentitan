@@ -96,7 +96,7 @@ The interface has an additional address signal on top of the valid, ready, and d
 
 ![](../doc/sha3-padding.svg)
 
-The hashing process begins when the software issues the start command to [`CMD`](registers.md#cmd) .
+The hashing process begins when the software issues the Start command to [`CMD`](registers.md#cmd) , or resumes a saved context with the Continue command.
 If cSHAKE is enabled, the padding logic expands the prefix value (`N || S` above) into a block size.
 The block size is determined by the [`CFG_SHADOWED.kstrength`](registers.md#cfg_shadowed) .
 If the value is 128, the block size will be 168 bytes.
@@ -111,7 +111,30 @@ After the software writes the message bitstream, it should issue the Process com
 The padding logic, after receiving the Process command, appends proper ending bits with respect to the [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) value.
 The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
-![](../doc/sha3-padding-fsm.svg)
+```mermaid
+stateDiagram-v2
+[*] --> StPadIdle
+
+StPadIdle --> StPrefix: Start command && cSHAKE
+StPadIdle --> StMessage: Start command && !cSHAKE, or Continue command
+
+StPrefix --> StPrefixWait: prefix block sent
+StPrefixWait --> StMessage: keccak_f completed
+
+StMessage --> StMessage: partial message word latched
+StMessage --> StMessageWait: message block sent
+StMessageWait --> StMessage: keccak_f completed
+
+StMessage --> StPad: Process command && message drained
+StMessage --> StPadIdle: Stop command && message drained
+
+StPad --> StPadRun: last word of the block
+StPad --> StPad01: not the last word of the block
+StPad01 --> StPadFlush: block filled
+StPadRun --> StPadFlush
+
+StPadFlush --> StPadIdle: keccak_f completed
+```
 
 After the Keccak round completes the last block, the padding logic asserts an `absorbed` signal to notify the software.
 The signal generates the `kmac_done` interrupt.
@@ -120,6 +143,11 @@ If the output length is greater than the Keccak block rate in SHAKE and cSHAKE m
 
 The software completes the operation by issuing Done command after reading the digest.
 The padding logic clears internal variables and goes back to Idle state.
+
+Instead of the Process command, the software may issue the Stop command to save the current context.
+The padding logic then ends the message state without entering any of the padding states, as an intermediate sponge state must not be padded, and it asserts a `stopped` signal instead of `absorbed`.
+The Continue command resumes such a context: it enters the message state directly, skipping the prefix that the Start command sends in cSHAKE mode.
+See [KMAC/SHA3 context switching](programmers_guide.md#kmacsha3-context-switching) for the full procedure.
 
 ### Padding for KMAC
 
@@ -207,10 +235,15 @@ If `EnMasking` is set, the upper 256B of the window is the second share of the K
 The software can read both of the Keccak state shares and can recover the plain, unmasked digest value by XORing the two shares.
 If `EnMasking` is not set, the upper half of the window reads as zero.
 
-The Keccak state is valid after the sponge absorbing process is completed.
+The Keccak state is valid after the sponge absorbing process is completed or the absorbing process has been stopped to save a context.
 While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
+
+The Keccak state can also be written such that software can restore a previously saved context.
+Writes are only accepted after software claimed the block with the StateWrite command and while the Keccak round logic is idle.
+[`STATUS.state_write`](registers.md#status--state_write) shows whether both conditions are met.
+The StateWrite command also clears the Keccak state, so a restore always starts from a known state and resumes only the context written afterwards.
 
 ### Application Interfaces
 
@@ -392,6 +425,10 @@ stateDiagram-v2
 
 StIdle --> StAppCfg: app selected
 StIdle --> StSw: Start command
+StIdle --> StStateWrite: StateWrite command
+
+StStateWrite --> StSw: Continue command
+StStateWrite --> StIdle: Done command
 
 StSw --> StIdle: Done command
 
@@ -806,3 +843,22 @@ The lower 3bits of the [`ERR_CODE`](registers.md#err_code) contains the received
 
 This error, however, does not stop the KMAC HWIP.
 The incorrect command is dropped at the following datapath, SHA3 core.
+
+#### SwStopNotBlockAligned (0x0A)
+
+A context can only be saved at the boundary of complete message blocks (when the rate is full), as bytes that have been written but not yet absorbed are not part of the Keccak state.
+If the SW issues the Stop command after an incomplete block, the KMAC_ERRCHK module reports the `SwStopNotBlockAligned` error.
+
+The absorbing stage is ended anyway and the Keccak state is exposed, but it does not represent a valid context.
+The KMAC_ERRCHK module still moves into the Stopped state, so the SW has to complete the operation with the Done command before it can start a new one.
+The lower 3 bits of [`ERR_CODE`](registers.md#err_code) contain the state of the KMAC_ERRCHK module.
+
+#### SwSaveRestoreSideload (0x0B)
+
+Saving a context while a sideloaded key is used would hand the key to the SW.
+The Keccak function is a public permutation, so the SW can undo the absorb of every message block it wrote itself, one inversion per block, until it reaches the state after the secret key block and recovers the key.
+This works for any saved state, so there is no point in the absorbing stage at which a context could be exposed safely.
+The KMAC_ERRCHK module therefore reports the `SwSaveRestoreSideload` error if the SW issues the Stop, the StateWrite, or the Continue command while [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) is set.
+
+This error blocks the command, so neither a context is exposed nor one is restored.
+The lower 6 bits of [`ERR_CODE`](registers.md#err_code) contain the received command from the SW.
