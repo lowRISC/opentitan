@@ -27,11 +27,13 @@
   // non-deterministic-selection warnings.
   // The DV environment additionally depends on the virtual
   // rom_ctrl_bkdr_util_hier core, which describes the layout of the ROM memory
-  // array.
+  // array, and the virtual mem_bkdr_util_hier core, which sram_ctrl_bkdr_util
+  // depends on directly.
   // Note that the imported cfg already supplies the prim mapping, and dvsim
   // appends these lists rather than replacing them.
   sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_darjeeling_asic:0.1",
-                       "--mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"]
+                       "--mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1",
+                       "--mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"]
 
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/{top_chip}/data/chip_testplan.hjson:-conn:-no_dv"

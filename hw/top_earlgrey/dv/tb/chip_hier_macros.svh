@@ -38,7 +38,6 @@
 `endif
 
 // Memory hierarchies.
-`define MEM_ARRAY_SUB         mem
 // Defines `RRAM_DATA_MEM_PATH`/`RRAM_INFO_MEM_PATH`, resolved to whichever rram_ctrl_bkdr_util
 // implementation (open-source or vendor) is mapped in for this build.
 `include "rram_ctrl_bkdr_util_hier.svh"
@@ -49,18 +48,39 @@
 `include "rom_ctrl_bkdr_util_hier.svh"
 `define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
 `define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
-`define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define ICACHE1_TAG_MEM_HIER  `ICACHE_WAY1_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define ICACHE0_DATA_MEM_HIER `ICACHE_WAY0_HIER.data_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define ICACHE1_DATA_MEM_HIER `ICACHE_WAY1_HIER.data_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
+
+// `..._MEM_INST_HIER` is the memory's `prim_ram_1p` instance. `..._MEM_PATH` is its HDL path
+// string, used as the `path` arg of `mem_bkdr_util::new`/`sram_ctrl_bkdr_util::new`.
+// `..._MEM_TILE_HIER` is the array itself, used by `$size()`/`$bits()`/`` `MEM_BKDR_UTIL_FILE_OP` ``;
+// it's only defined for a never-tiled/bit-sliced memory.
+`define ICACHE0_TAG_MEM_INST_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define ICACHE1_TAG_MEM_INST_HIER  `ICACHE_WAY1_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define ICACHE0_DATA_MEM_INST_HIER `ICACHE_WAY0_HIER.data_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define ICACHE1_DATA_MEM_INST_HIER `ICACHE_WAY1_HIER.data_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define RAM_MAIN_MEM_INST_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define RAM_RET_MEM_INST_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define OTBN_IMEM_MEM_INST_HIER    `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define OTBN_DMEM_MEM_INST_HIER    `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem
+`define USBDEV_BUF_MEM_INST_HIER   `USBDEV_HIER.gen_no_stubbed_memory.u_memory_1p.gen_ram_inst[0].u_mem
+`include "mem_bkdr_util_hier.svh"
+
+`define ICACHE0_TAG_MEM_PATH  `DV_STRINGIFY(`ICACHE0_TAG_MEM_INST_HIER.`ICACHE_TAG_MEM_TILE_PATH)
+`define ICACHE1_TAG_MEM_PATH  `DV_STRINGIFY(`ICACHE1_TAG_MEM_INST_HIER.`ICACHE_TAG_MEM_TILE_PATH)
+`define ICACHE0_DATA_MEM_PATH `DV_STRINGIFY(`ICACHE0_DATA_MEM_INST_HIER.`ICACHE_DATA_MEM_TILE_PATH)
+`define ICACHE1_DATA_MEM_PATH `DV_STRINGIFY(`ICACHE1_DATA_MEM_INST_HIER.`ICACHE_DATA_MEM_TILE_PATH)
+`define RAM_MAIN_MEM_TILE_HIER `RAM_MAIN_MEM_INST_HIER.`RAM_MAIN_MEM_TILE_PATH
+`define RAM_MAIN_MEM_PATH      `RAM_MAIN_MEM_BKDR_PATH(`RAM_MAIN_MEM_INST_HIER)
+`define RAM_RET_MEM_PATH       `DV_STRINGIFY(`RAM_RET_MEM_INST_HIER.`RAM_RET_MEM_TILE_PATH)
+`define OTBN_IMEM_MEM_PATH     `DV_STRINGIFY(`OTBN_IMEM_MEM_INST_HIER.`OTBN_IMEM_MEM_TILE_PATH)
+// OTBN_DMEM may be bit-sliced across several macro instances (see mem_bkdr_util_hier.svh), so its
+// `path` needs the per-implementation `OTBN_DMEM_MEM_BKDR_PATH` macro-function, the same way
+// RAM_MAIN's does for address-tiling.
+`define OTBN_DMEM_MEM_PATH     `OTBN_DMEM_MEM_BKDR_PATH(`OTBN_DMEM_MEM_INST_HIER)
+`define USBDEV_BUF_MEM_PATH    `DV_STRINGIFY(`USBDEV_BUF_MEM_INST_HIER.`USBDEV_BUF_MEM_TILE_PATH)
+
 // `ROM_MEM_HIER` is the prim_rom instance and `ROM_MEM_TILE_HIER` the memory array of tile 0, from
 // which the depth and the width of every tile are derived.  `ROM_MEM_PATH` is the `path` argument
 // of `mem_bkdr_util::new`; the prim_rom implementation decides which of the two it is.
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
 `define ROM_MEM_TILE_HIER     `ROM_MEM_HIER.`ROM_MEM_TILE_PATH
 `define ROM_MEM_PATH          `ROM_MEM_BKDR_PATH(`ROM_MEM_HIER)
-`define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
-`define USBDEV_BUF_HIER       `USBDEV_HIER.gen_no_stubbed_memory.u_memory_1p.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
