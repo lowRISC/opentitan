@@ -11,6 +11,7 @@ from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import argparse
 import unittest
@@ -38,8 +39,14 @@ MAX_SKIPS_PER_LOOP = 2
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
 parser.add_argument("--bootstrap", type=str)
+parser.add_argument(
+    "--force-trace",
+    action="store_true",
+    help="Force re-running PC tracing even if trace log exists",
+)
 parser.add_argument("--rom_ext", type=str)
 parser.add_argument("--rom", type=str)
+utils.add_test_selection_args(parser)
 
 args, config_args = parser.parse_known_args()
 
@@ -74,8 +81,12 @@ def read_uart_output():
 
 
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
-    gdb.close_gdb()
-    target.start_openocd(startup_delay=0.2, print_output=False)
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
+    target.start_openocd(startup_delay=0.3, print_output=False)
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
     gdb.reset_target()
     gdb.send_command(f"set $pc={jump_address}")
@@ -105,7 +116,7 @@ def re_initialize(gdb, jump_address, print_output=False):
         timeout += 1
         gdb.close_gdb()
         response = read_uart_output()
-        target.start_openocd(print_output=False)
+        target.start_openocd(startup_delay=0.3, print_output=False)
 
     # Connect to GDB
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
@@ -132,7 +143,7 @@ class FiSimOwnerUpgrade(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -206,21 +217,48 @@ class FiSimOwnerUpgrade(unittest.TestCase):
                     ],
                 )
                 gdb.send_command("c", check_response=False)
-
                 start_time = time.time()
                 initial_timeout_stopped = False
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    gdb = reset_target_and_gdb(gdb, jump_address)
+                    gdb.setup_pc_trace(
+                        pc_trace_file,
+                        trace_start_address,
+                        trace_end_address,
+                        skip_addrs=[
+                            upsert_register_address,
+                        ],
+                    )
+                    gdb.send_command("c", check_response=False)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print(
+                        "No initial break point found, can be a misfire, try again",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -356,7 +394,7 @@ if __name__ == "__main__":
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the test result path
-    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
     # Get the rom path.
@@ -393,7 +431,14 @@ if __name__ == "__main__":
     rom_ext_parser = DisParser(rom_ext_dis_path)
     rom_parser = DisParser(rom_dis_path)
 
+    unittest_argv = utils.get_selected_test_argv(
+        FiSimOwnerUpgrade,
+        requested_name=args.test,
+        config_args=config_args,
+        list_tests=args.list_tests,
+    )
+
     print("ROM disassembly is found in ", rom_dis_path, flush=True)
     print("ROM_EXT disassembly is found in ", rom_ext_dis_path, flush=True)
 
-    unittest.main(argv=[sys.argv[0]])
+    unittest.main(argv=unittest_argv)

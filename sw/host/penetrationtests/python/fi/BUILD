@@ -181,6 +181,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -200,6 +201,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -219,6 +221,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -238,6 +241,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -252,6 +256,26 @@ py_binary(
     deps = [
         "//sw/host/penetrationtests/python/fi:fi_unit_gdb_commands",
         "//sw/host/penetrationtests/python/util:common_library",
+        "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
+        "@rules_python//python/runfiles",
+    ],
+)
+
+py_binary(
+    name = "fi_rom_ext_imm_skip_python_gdb_test",
+    testonly = True,
+    srcs = ["gdb_testing/fi_rom_ext_imm_skip_python_gdb_test.py"],
+    data = [
+        "//sw/host/opentitantool",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb",
+    ],
+    deps = [
+        "//sw/host/penetrationtests/python/util:dis_parser",
+        "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
@@ -339,6 +363,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -358,6 +383,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -377,6 +403,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )

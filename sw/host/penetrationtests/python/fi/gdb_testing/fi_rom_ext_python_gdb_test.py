@@ -11,6 +11,7 @@ from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import argparse
 import unittest
@@ -37,8 +38,13 @@ MAX_SKIPS_PER_LOOP = 2
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
 parser.add_argument("--bootstrap", type=str)
+parser.add_argument(
+    "--force-trace",
+    action="store_true",
+    help="Force re-running PC tracing even if trace log exists",
+)
 parser.add_argument("--rom_ext", type=str)
-parser.add_argument("--rom", type=str)
+utils.add_test_selection_args(parser)
 
 args, config_args = parser.parse_known_args()
 
@@ -73,10 +79,22 @@ def read_uart_output():
 
 
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
-    gdb.close_gdb()
-    target.start_openocd(startup_delay=0.2, print_output=False)
+    # Fast path: if OpenOCD direct session is alive, reset target to halt state and set PC
+    if gdb and getattr(gdb, "use_ocd_direct", False):
+        try:
+            gdb.reset_target(halt=True)
+            gdb.send_command(f"set $pc={jump_address}")
+            target.dump_all()
+            gdb.cleanup_skip()
+            return gdb
+        except Exception:
+            pass
+
+    if gdb:
+        gdb.close_gdb()
+    target.start_openocd(startup_delay=0.3, print_output=False)
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
-    gdb.reset_target()
+    gdb.reset_target(halt=True)
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
     return gdb
@@ -84,12 +102,13 @@ def reset_target_and_gdb(gdb, jump_address, print_output=False):
 
 # Only called when we encounter an issue where we want to re-flash everything
 def re_initialize(gdb, jump_address, print_output=False):
-    gdb.close_gdb()
+    if gdb:
+        gdb.close_gdb()
     target.close_openocd()
     target.clear_bitstream()
     target.initialize_target(print_output=print_output)
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
-    gdb.reset_target()
+    gdb.reset_target(halt=True)
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
     return gdb
@@ -109,7 +128,7 @@ class RomExtFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -154,21 +173,42 @@ class RomExtFiSim(unittest.TestCase):
                     trace_end_address,
                 )
                 gdb.send_command("c", check_response=False)
-
                 start_time = time.time()
                 initial_timeout_stopped = False
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    gdb = reset_target_and_gdb(gdb, jump_address)
+                    gdb.setup_pc_trace(
+                        pc_trace_file,
+                        trace_start_address,
+                        trace_end_address,
+                    )
+                    gdb.send_command("c", check_response=False)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -240,9 +280,8 @@ class RomExtFiSim(unittest.TestCase):
                                             print("Timeout, reflashing", flush=True)
                                             gdb = re_initialize(gdb, jump_address)
                                 else:
-                                    print("No break point found, something went wrong", flush=True)
-                                    # Just to be safe that nothing went into flash, we reflash
-                                    gdb = re_initialize(gdb, jump_address)
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    gdb = reset_target_and_gdb(gdb, jump_address)
 
                         except (TimeoutError, serial.SerialException) as e:
                             print("Timeout error, retrying", flush=True)
@@ -263,6 +302,13 @@ class RomExtFiSim(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    unittest_argv = utils.get_selected_test_argv(
+        RomExtFiSim,
+        requested_name=args.test,
+        config_args=config_args,
+        list_tests=args.list_tests,
+    )
+
     r = Runfiles.Create()
     # Get the openocd path.
     openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
@@ -281,7 +327,7 @@ if __name__ == "__main__":
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the test result path
-    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
     # Get the rom path.
@@ -318,7 +364,4 @@ if __name__ == "__main__":
     rom_ext_parser = DisParser(rom_ext_dis_path)
     rom_parser = DisParser(rom_dis_path)
 
-    print("ROM disassembly is found in ", rom_dis_path, flush=True)
-    print("ROM_EXT disassembly is found in ", rom_ext_dis_path, flush=True)
-
-    unittest.main(argv=[sys.argv[0]])
+    unittest.main(argv=unittest_argv)
