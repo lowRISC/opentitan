@@ -77,7 +77,6 @@ TEST_F(ConfigTest, DefaultTxRxEnabled) {
                                            {UART_CTRL_RX_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }
 
@@ -87,7 +86,6 @@ TEST_F(ConfigTest, DefaultTxEnabled) {
                                            {UART_CTRL_TX_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
   config_.rx_enable = kDifToggleDisabled;
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }
@@ -98,7 +96,6 @@ TEST_F(ConfigTest, DefaultRxEnabled) {
                                            {UART_CTRL_RX_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
   config_.tx_enable = kDifToggleDisabled;
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }
@@ -106,7 +103,6 @@ TEST_F(ConfigTest, DefaultRxEnabled) {
 TEST_F(ConfigTest, DefaultTxRxDisabled) {
   ExpectDeviceReset();
   EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {{UART_CTRL_NCO_OFFSET, 1}});
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
   config_.tx_enable = kDifToggleDisabled;
   config_.rx_enable = kDifToggleDisabled;
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
@@ -125,8 +121,6 @@ TEST_F(ConfigTest, ParityEven) {
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
 
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
-
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }
 
@@ -143,8 +137,6 @@ TEST_F(ConfigTest, ParityOdd) {
                                            {UART_CTRL_PARITY_ODD_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-
-  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
 }

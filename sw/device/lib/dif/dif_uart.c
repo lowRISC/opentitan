@@ -152,9 +152,6 @@ dif_result_t dif_uart_configure(const dif_uart_t *uart,
   }
   mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
 
-  // Disable interrupts.
-  mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
-
   return kDifOk;
 }
 
