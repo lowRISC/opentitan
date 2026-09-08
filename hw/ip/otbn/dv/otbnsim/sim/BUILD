@@ -141,6 +141,7 @@ py_library(
     srcs = ["standalonesim.py"],
     deps = [
         ":sim",
+        ":state",
     ],
 )
 

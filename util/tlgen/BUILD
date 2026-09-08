@@ -20,10 +20,15 @@ py_library(
         "validate.py",
         "xbar.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         "//util/reggen:validate",
-        requirement("mako"),
         requirement("importlib_resources"),
+        requirement("mako"),
     ],
 )
 

@@ -20,6 +20,9 @@ py_test(
 py_library(
     name = "coverage_data",
     srcs = ["coverage_data.py"],
+    deps = [
+        ":lcov",
+    ],
 )
 
 py_test(
@@ -54,6 +57,7 @@ py_test(
     name = "collect_test",
     srcs = ["collect_test.py"],
     deps = [
+        ":collect",
         ":collect_lib",
         ":coverage_data",
         ":lcov",
