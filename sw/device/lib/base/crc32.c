@@ -10,26 +10,37 @@
 #include "sw/device/lib/base/memory.h"
 
 #ifdef OT_PLATFORM_RV32
+enum {
+  /**
+   * CRC32 polynomial.
+   */
+  kCrc32Poly = 0xedb88320,
+  kCrc32Mu = 0xf7011641,
+};
+
+OT_WARN_UNUSED_RESULT
+static uint32_t crc32_i(uint32_t x) {
+  uint32_t result;
+  asm(".option push;"
+      ".option arch, +zbc;"
+      "clmul %[result], %[x], %[mu];"
+      "clmulr %[result], %[result], %[poly];"
+      ".option pop;"
+      : [result] "=&r"(result)
+      : [x] "r"(x), [mu] "r"(kCrc32Mu), [poly] "r"(kCrc32Poly));
+  return result;
+}
+
 OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   ctx ^= byte;
-  asm(".option push;"
-      ".option arch, +zbr0p93;"
-      "crc32.b %0, %1;"
-      ".option pop;"
-      : "+r"(ctx));
-  return ctx;
+  return crc32_i(ctx << 24) ^ (ctx >> 8);
 }
 
 OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
   ctx ^= word;
-  asm(".option push;"
-      ".option arch, +zbr0p93;"
-      "crc32.w %0, %1;"
-      ".option pop;"
-      : "+r"(ctx));
-  return ctx;
+  return crc32_i(ctx);
 }
 #else
 enum {
