@@ -181,6 +181,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -200,6 +201,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -219,6 +221,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -238,6 +241,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -273,6 +277,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
@@ -358,6 +363,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:dis_parser",
         "//sw/host/penetrationtests/python/util:gdb_controller",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
     ],
 )
