@@ -2905,7 +2905,7 @@
      x="416"
      y="350.07196"
      id="text10833"
-     transform="translate(-256.7256,5.3817459)"><tspan
+     transform="translate(-256.7256,5.1590531)"><tspan
        sodipodi:role="line"
        id="tspan10831"
        x="416"
@@ -2916,53 +2916,64 @@
      x="393.71356"
      y="366.21396"
      id="text10837"
-     transform="translate(-234.57002,2.7250268)"><tspan
+     transform="translate(-225.5473,-0.83805727)"><tspan
        sodipodi:role="line"
        id="tspan10835"
        x="393.71356"
-       y="366.21396">intr_rx_watermark_o</tspan></text>
+       y="366.21396">intr_tx_empty_o</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
      x="376.5"
      y="379.85568"
      id="text10841"
-     transform="translate(-212.58107,2.5685824)"><tspan
+     transform="translate(-216.85148,-4.8843235)"><tspan
        sodipodi:role="line"
        id="tspan10839"
        x="376.5"
-       y="379.85568">intr_tx_overflow_o</tspan></text>
+       y="379.85568">intr_rx_watermark_o</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
      x="376.5"
      y="390.08612"
      id="text10845"
-     transform="translate(-212.71193,5.8234234)"><tspan
+     transform="translate(-205.80024,-5.4134341)"><tspan
        sodipodi:role="line"
        id="tspan10843"
        x="376.5"
-       y="390.08612">intr_rx_overflow_o</tspan></text>
+       y="390.08612">intr_tx_done_o</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
      x="362.37891"
      y="405.29755"
      id="text10849"
-     transform="translate(-201.62404,4.0972769)"><tspan
+     transform="translate(-198.42146,-10.692625)"><tspan
        sodipodi:role="line"
        id="tspan10847"
        x="362.37891"
-       y="405.29755">intr_rx_frame_err_o</tspan></text>
+       y="405.29755">intr_rx_overflow_o</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
      x="352.05078"
      y="421.12216"
      id="text10853"
-     transform="translate(-190.92873,1.7579407)"><tspan
+     transform="translate(-190.87397,-17.075113)"><tspan
        sodipodi:role="line"
        id="tspan10851"
+       x="352.05078"
+       y="421.12216">intr_rx_frame_err_o</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.25;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:middle;white-space:normal;shape-padding:0;shape-margin:0;inline-size:0;vector-effect:none;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
+     x="352.05078"
+     y="421.12216"
+     id="text10853-3"
+     transform="translate(-190.4828,-7.0981381)"><tspan
+       sodipodi:role="line"
+       id="tspan10851-6"
        x="352.05078"
        y="421.12216">intr_rx_break_err_o</tspan></text>
   <text
@@ -2971,7 +2982,7 @@
      x="346.43048"
      y="431.84247"
      id="text10857"
-     transform="translate(-181.09944,4.5229135)"><tspan
+     transform="translate(-181.36322,-8.5329059)"><tspan
        sodipodi:role="line"
        id="tspan10855"
        x="346.43048"
@@ -2982,7 +2993,7 @@
      x="327.5"
      y="444.29337"
      id="text10861"
-     transform="translate(-166.64943,5.1197955)"><tspan
+     transform="translate(-165.37077,-11.43522)"><tspan
        sodipodi:role="line"
        id="tspan10859"
        x="327.5"
@@ -2993,12 +3004,12 @@
      x="367.95703"
      y="444.29337"
      id="text10861-8"
-     transform="translate(-166.1006,18.562106)"><tspan
-       sodipodi:role="line"
+     transform="translate(-169.65912,-2.0123315)"><tspan
        id="tspan10859-0"
        x="367.95703"
        y="444.29337"
-       style="text-align:end;text-anchor:end">lsio_trigger_o</tspan></text>
+       style="text-align:end;text-anchor:end"
+       sodipodi:role="line">lsio_trigger_o</tspan></text>
   <g
      id="g12623"
      transform="translate(60.264154)">
