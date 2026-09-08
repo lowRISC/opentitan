@@ -24,9 +24,7 @@ import serial
 ignored_keys_set = set(["status"])
 opentitantool_path = ""
 log_dir = ""
-rom_ext_elf_path = ""
 rom_elf_path = ""
-rom_ext_parser = None
 rom_parser = None
 target = None
 
@@ -37,6 +35,8 @@ MAX_SKIPS_PER_LOOP = 2
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
 parser.add_argument(
     "--force-trace",
@@ -49,6 +49,8 @@ utils.add_test_selection_args(parser)
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 ROM_EXT = args.rom_ext
 ROM = args.rom
@@ -79,21 +81,27 @@ def read_uart_output():
 
 
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
-    # Fast path: if OpenOCD direct session is alive, reset target to halt state and set PC
-    if gdb and getattr(gdb, "use_ocd_direct", False):
+    # Fast path: if GDB session is alive, reset target to halt state and set PC
+    if gdb and getattr(gdb, "gdb_process", None) and gdb.gdb_process.poll() is None:
         try:
+            gdb.cleanup_skip()
             gdb.reset_target(halt=True)
             gdb.send_command(f"set $pc={jump_address}")
-            target.dump_all()
-            gdb.cleanup_skip()
-            return gdb
+            if gdb.get_program_counter() is not None:
+                target.dump_all()
+                return gdb
         except Exception:
             pass
 
     if gdb:
-        gdb.close_gdb()
-    target.start_openocd(startup_delay=0.3, print_output=False)
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
+    target.reset_target()
+    time.sleep(0.05)
+    target.start_openocd(startup_delay=1.0, print_output=False)
+    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
     gdb.reset_target(halt=True)
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
@@ -103,25 +111,28 @@ def reset_target_and_gdb(gdb, jump_address, print_output=False):
 # Only called when we encounter an issue where we want to re-flash everything
 def re_initialize(gdb, jump_address, print_output=False):
     if gdb:
-        gdb.close_gdb()
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
     target.close_openocd()
     target.clear_bitstream()
     target.initialize_target(print_output=print_output)
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
     gdb.reset_target(halt=True)
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
     return gdb
 
 
-class RomExtFiSimRollback(unittest.TestCase):
-    def test_rom_ext_rollback(self):
-        print("Starting the rom_ext rollback test")
+class RomExtImmSkipFiSim(unittest.TestCase):
+    def test_rom_ext_imm_skip_fi(self):
+        print("Starting the rom_ext immutable check skip test")
 
         # Directory for the trace log files
-        pc_trace_file = os.path.join(log_dir, "rom_ext_rollback_pc_trace.log")
+        pc_trace_file = os.path.join(log_dir, "rom_ext_imm_skip_pc_trace.log")
         # Directory for the the log of the campaign
-        campaign_file = os.path.join(log_dir, "rom_ext_rollback_test_campaign.log")
+        campaign_file = os.path.join(log_dir, "rom_ext_imm_skip_test_campaign.log")
 
         successful_faults = 0
         total_attacks = 0
@@ -140,19 +151,52 @@ class RomExtFiSimRollback(unittest.TestCase):
                 jump_address = rom_parser.get_function_start_address("kRomStartRmaSpinSkip")
 
                 # Connect to GDB
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path)
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
 
                 # Reset the device and halt it immediately
                 gdb.reset_target()
                 gdb.send_command(f"set $pc={jump_address}")
 
-                # We perform the tracing over the rom_ext_start function
-                trace_start_address = rom_ext_parser.get_inlined_function_address("rom_ext_start")
-                # We expect with the test that we end up in shutdown
-                trace_end_address = rom_ext_parser.get_function_start_address("shutdown_finalize")
+                # Trace rom_verify_immutable_section to capture all instructions
+                # evaluating the immutable ROM_EXT
+
+                # Functions where we can get GDB to jump over via temporary breakpoints.
+                upsert_register_address = rom_parser.get_function_start_address("upsert_register")
+                otp_read32_address = rom_parser.get_function_start_address("otp_read32")
+                otp_read_address = rom_parser.get_function_start_address("otp_read")
+                hmac_update_address = rom_parser.get_function_start_address("hmac_sha256_update")
+                hmac_final_address = rom_parser.get_function_start_address(
+                    "hmac_sha256_final_truncated"
+                )
+                skip_addrs = [
+                    addr
+                    for addr in [
+                        upsert_register_address,
+                        otp_read32_address,
+                        otp_read_address,
+                        hmac_update_address,
+                        hmac_final_address,
+                    ]
+                    if addr is not None
+                ]
+                print(
+                    f"Trace skip addresses: upsert_register={upsert_register_address}, "
+                    f"otp_read32={otp_read32_address}, otp_read={otp_read_address}, "
+                    f"hmac_sha256_update={hmac_update_address}, "
+                    f"hmac_sha256_final_truncated={hmac_final_address}",
+                    flush=True,
+                )
+
+                # We start from rom_verify_immutable_section to trace the immutable check
+                trace_start_address = rom_parser.get_function_start_address(
+                    "rom_verify_immutable_section"
+                )
+                trace_end_address = rom_parser.get_function_end_address(
+                    "rom_verify_immutable_section"
+                )
 
                 print(
-                    "Start and stop addresses for the rom_ext: ",
+                    "Start and stop addresses for the rom trace: ",
                     trace_start_address,
                     trace_end_address,
                     flush=True,
@@ -169,6 +213,7 @@ class RomExtFiSimRollback(unittest.TestCase):
                     pc_trace_file,
                     trace_start_address,
                     trace_end_address,
+                    skip_addrs=skip_addrs,
                 )
                 gdb.send_command("c", check_response=False)
                 start_time = time.time()
@@ -192,6 +237,7 @@ class RomExtFiSimRollback(unittest.TestCase):
                         pc_trace_file,
                         trace_start_address,
                         trace_end_address,
+                        skip_addrs=skip_addrs,
                     )
                     gdb.send_command("c", check_response=False)
                     start_time = time.time()
@@ -218,6 +264,9 @@ class RomExtFiSimRollback(unittest.TestCase):
                     print("Final tracing timeout reached")
                     sys.exit(1)
 
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb, jump_address)
+
                 # Parse and truncate the trace log to get all PCs in a list
                 pc_list = gdb.parse_pc_trace_file(pc_trace_file)
                 # Get the unique PCs and annotate their occurence count
@@ -241,7 +290,7 @@ class RomExtFiSimRollback(unittest.TestCase):
                             # If we have a timeout, we continue to the next iteration
                             with IterationTimeout(seconds=60):
                                 gdb.apply_instruction_skip(
-                                    pc, rom_ext_parser.parse_next_instruction(pc), i_count
+                                    pc, rom_parser.parse_next_instruction(pc), i_count
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -301,7 +350,7 @@ class RomExtFiSimRollback(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest_argv = utils.get_selected_test_argv(
-        RomExtFiSimRollback,
+        RomExtImmSkipFiSim,
         requested_name=args.test,
         config_args=config_args,
         list_tests=args.list_tests,
@@ -324,6 +373,13 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the test result path
     log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
@@ -334,12 +390,6 @@ if __name__ == "__main__":
     rom_dis_path = rom_path.replace(".39.scr.vmem", ".dis")
     # And the path for the elf.
     rom_elf_path = rom_path.replace(".39.scr.vmem", ".elf")
-    # Get the rom_ext path.
-    rom_ext_path = r.Rlocation("lowrisc_opentitan/" + ROM_EXT)
-    # Get the disassembly path.
-    rom_ext_dis_path = rom_ext_path.replace(".prod_key_0.prod_key_0.signed.bin", ".dis")
-    # And the path for the elf.
-    rom_ext_elf_path = rom_ext_path.replace(".prod_key_0.prod_key_0.signed.bin", ".elf")
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -359,7 +409,6 @@ if __name__ == "__main__":
     )
 
     target = targets.Target(target_cfg)
-    rom_ext_parser = DisParser(rom_ext_dis_path)
     rom_parser = DisParser(rom_dis_path)
 
     unittest.main(argv=unittest_argv)

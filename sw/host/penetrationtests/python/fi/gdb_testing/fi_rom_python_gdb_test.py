@@ -11,6 +11,7 @@ from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import argparse
 import unittest
@@ -33,13 +34,22 @@ MAX_SKIPS_PER_LOOP = 2
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
-parser.add_argument("--bootstrap", type=str)
-parser.add_argument("--rom_ext", type=str)
 parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
+parser.add_argument("--bootstrap", type=str)
+parser.add_argument(
+    "--force-trace",
+    action="store_true",
+    help="Force re-running PC tracing even if trace log exists",
+)
+parser.add_argument("--rom_ext", type=str)
+utils.add_test_selection_args(parser)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 ROM_EXT = args.rom_ext
 ROM = args.rom
@@ -70,10 +80,28 @@ def read_uart_output():
 
 
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
-    gdb.close_gdb()
-    target.start_openocd(startup_delay=0.2, print_output=False)
+    # Fast path: if GDB session is alive, reset target to halt state and set PC
+    if gdb and getattr(gdb, "gdb_process", None) and gdb.gdb_process.poll() is None:
+        try:
+            gdb.cleanup_skip()
+            gdb.reset_target(halt=True)
+            gdb.send_command(f"set $pc={jump_address}")
+            if gdb.get_program_counter() is not None:
+                target.dump_all()
+                return gdb
+        except Exception:
+            pass
+
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
+    target.reset_target()
+    time.sleep(0.05)
+    target.start_openocd(startup_delay=1.0, print_output=False)
     gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_elf_path)
-    gdb.reset_target()
+    gdb.reset_target(halt=True)
     gdb.send_command(f"set $pc={jump_address}")
     target.dump_all()
     return gdb
@@ -84,7 +112,8 @@ class RomFiSim(unittest.TestCase):
         print("Starting the rom secure boot test")
 
         # Directory for the trace log files
-        pc_trace_file = os.path.join(log_dir, "rom_secure_boot_pc_trace.log")
+        pc_trace_file_1 = os.path.join(log_dir, "rom_secure_boot_pc_trace_1.log")
+        pc_trace_file_2 = os.path.join(log_dir, "rom_secure_boot_pc_trace_2.log")
         # Directory for the the log of the campaign
         campaign_file = os.path.join(log_dir, "rom_secure_boot_test_campaign.log")
 
@@ -93,7 +122,7 @@ class RomFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -111,6 +140,8 @@ class RomFiSim(unittest.TestCase):
                 gdb.reset_target()
                 gdb.send_command(f"set $pc={jump_address}")
 
+                # Tracing in done in two steps to jump over sc_otbn_cmd_run which makes GDB hang
+
                 # Functions where we can get GDB to jump over
                 upsert_register_address = rom_parser.get_function_start_address("upsert_register")
 
@@ -120,16 +151,16 @@ class RomFiSim(unittest.TestCase):
                     "sigverify_ecdsa_p256_key_id_get"
                 )
 
-                # We expect with the test that we end up in shutdown_finalize
-                trace_end_address = rom_parser.get_function_start_address("shutdown_finalize")
+                # We stop tracing when we execute the p256 verify in the otbn
+                trace_end_address = rom_parser.get_function_start_address("sc_otbn_cmd_run")
 
                 print(
-                    "Start and stop addresses for the rom: ",
+                    "Start and stop addresses for the rom for trace 1: ",
                     trace_start_address,
                     trace_end_address,
                     flush=True,
                 )
-                print("Trace data is logged in ", pc_trace_file, flush=True)
+                print("First trace data is logged in ", pc_trace_file_1, flush=True)
 
                 # Start the tracing
                 # We set a short timeout to detect whether GDB has connected properly
@@ -138,27 +169,129 @@ class RomFiSim(unittest.TestCase):
                 total_timeout = 60 * 60 * 5
 
                 gdb.setup_pc_trace(
-                    pc_trace_file,
+                    pc_trace_file_1,
                     trace_start_address,
                     trace_end_address,
                     skip_addrs=[upsert_register_address],
                 )
                 gdb.send_command("c", check_response=False)
-
                 start_time = time.time()
                 initial_timeout_stopped = False
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    gdb = reset_target_and_gdb(gdb, jump_address)
+                    gdb.setup_pc_trace(
+                        pc_trace_file_1,
+                        trace_start_address,
+                        trace_end_address,
+                        skip_addrs=[upsert_register_address],
+                    )
+                    gdb.send_command("c", check_response=False)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb, jump_address)
+
+                # We ready the second part of the trace
+
+                # We start from sc_otbn_dmem_read which reads p256 verify's results from otbn
+                trace_start_address = rom_parser.get_function_start_address("sc_otbn_dmem_read")
+
+                # We expect with the test that we end up in shutdown_finalize
+                trace_end_address = rom_parser.get_function_start_address("shutdown_finalize")
+
+                print(
+                    "Start and stop addresses for the rom for trace 2: ",
+                    trace_start_address,
+                    trace_end_address,
+                    flush=True,
+                )
+                print("Second trace data is logged in ", pc_trace_file_2, flush=True)
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 20
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(
+                    pc_trace_file_2,
+                    trace_start_address,
+                    trace_end_address,
+                    skip_addrs=[upsert_register_address],
+                )
+                gdb.send_command("c", check_response=False)
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    gdb = reset_target_and_gdb(gdb, jump_address)
+                    gdb.setup_pc_trace(
+                        pc_trace_file_2,
+                        trace_start_address,
+                        trace_end_address,
+                        skip_addrs=[upsert_register_address],
+                    )
+                    gdb.send_command("c", check_response=False)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(read_uart_output()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -171,7 +304,8 @@ class RomFiSim(unittest.TestCase):
                     sys.exit(1)
 
                 # Parse and truncate the trace log to get all PCs in a list
-                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file_1)
+                pc_list.extend(gdb.parse_pc_trace_file(pc_trace_file_2))
                 # Get the unique PCs and annotate their occurence count
                 pc_count_dict = Counter(pc_list)
                 if len(pc_count_dict) <= 0:
@@ -240,6 +374,13 @@ class RomFiSim(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    unittest_argv = utils.get_selected_test_argv(
+        RomFiSim,
+        requested_name=args.test,
+        config_args=config_args,
+        list_tests=args.list_tests,
+    )
+
     r = Runfiles.Create()
     # Get the openocd path.
     openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
@@ -257,8 +398,15 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the test result path
-    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
     # Get the rom path.
@@ -310,6 +458,4 @@ if __name__ == "__main__":
     target = targets.Target(target_cfg)
     rom_parser = DisParser(rom_dis_path)
 
-    print("ROM disassembly is found in ", rom_dis_path, flush=True)
-
-    unittest.main(argv=[sys.argv[0]])
+    unittest.main(argv=unittest_argv)
