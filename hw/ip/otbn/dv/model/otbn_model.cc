@@ -583,6 +583,22 @@ int OtbnModel::set_wfi_enabled(unsigned char new_val) {
   return 0;
 }
 
+int OtbnModel::set_urnd_ctrl_enabled(unsigned char new_val) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->set_urnd_ctrl_enabled(new_val);
+  } catch (const std::exception &err) {
+    std::cerr << "Error when setting urnd_ctrl_enabled bit in ISS: "
+              << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
 int OtbnModel::wfi_resume() {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -1090,6 +1106,11 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model,
 int otbn_model_set_wfi_enabled(OtbnModel *model, unsigned char new_val) {
   assert(model);
   return model->set_wfi_enabled(new_val);
+}
+
+int otbn_model_set_urnd_ctrl_enabled(OtbnModel *model, unsigned char new_val) {
+  assert(model);
+  return model->set_urnd_ctrl_enabled(new_val);
 }
 
 void otbn_model_tolerate_result_mismatch(OtbnModel *model,

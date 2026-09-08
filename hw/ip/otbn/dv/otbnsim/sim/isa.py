@@ -98,6 +98,16 @@ class OTBNInsn:
         self._disasm = (pc, disasm)
         return disasm
 
+    def reads_urnd_first_cycle(self) -> bool:
+        '''Whether insn reads URND on its first execute cycle.
+
+        Required to control the PRNG advance logic. If the PRNG is stopped and this instruction
+        uses URND, the predecoder issues an advance one cycle before the instruction executes.
+        Required as URND is the flopped PRNG output.
+
+        Most instructions do not read URND, so this is false by default.'''
+        return False
+
     @staticmethod
     def to_2s_complement(value: int) -> int:
         '''Interpret the signed value as a 2's complement u32'''

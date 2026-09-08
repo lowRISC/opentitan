@@ -377,6 +377,15 @@ def on_wfi_resume(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     return None
 
 
+def on_set_urnd_ctrl_enabled(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('set_urnd_ctrl_enabled', 1, args)
+    new_val = read_word('enabled', args[0], 1)
+    assert new_val in [0, 1]
+    sim.state.urnd_ctrl_enabled = new_val != 0
+
+    return None
+
+
 def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('set_keymgr_value', 3, args)
     key0 = read_word('key0', args[0], 384)
@@ -464,6 +473,7 @@ _HANDLERS = {
     'set_software_errs_fatal': on_set_software_errs_fatal,
     'set_wfi_enabled': on_set_wfi_enabled,
     'wfi_resume': on_wfi_resume,
+    'set_urnd_ctrl_enabled': on_set_urnd_ctrl_enabled,
 }
 
 
