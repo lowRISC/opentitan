@@ -173,7 +173,9 @@
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:dv:rom_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1 --mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1"
+                  // mem_bkdr_util_hier is virtual. rom_ctrl_bkdr_util depends
+                  // on sram_ctrl_bkdr_util, which depends on it directly.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1 --mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1 --mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
           //    {    name: rstmgr
@@ -215,7 +217,9 @@
              {    name: sram_ctrl
                   fusesoc_core: lowrisc:dv:sram_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  // mem_bkdr_util_hier is virtual: sram_ctrl_bkdr_util depends
+                  // on it directly.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1 --mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"
                   rel_path: "hw/ip/sram_ctrl/dv/lint/{tool}"
              },
              {    name: uart
