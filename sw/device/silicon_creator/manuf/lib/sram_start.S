@@ -4,7 +4,7 @@
 
 #include "sram_start.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_memory.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 

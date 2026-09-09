@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_memory.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

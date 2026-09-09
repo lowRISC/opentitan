@@ -13,16 +13,16 @@
 #if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
+#include "hw/top_englishbreakfast/sw/autogen/top_memory.h"
 
 #elif defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_memory.h"
 
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_memory.h"
 
 #else
 #error unsupported top

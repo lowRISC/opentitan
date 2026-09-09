@@ -2181,8 +2181,8 @@ waive --rule=line-length --location="{rnd_cnst_sv_file}"
                                 addr_space=addr_space['name'],
                                 gencmd=gencmd_c)
 
-                # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}_memory.h"
-                memory_cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}_memory.h"
+                # "toplevel_memory.h.tpl" -> "sw/autogen/top{addr_space_suffix}_memory.h"
+                memory_cheader_path = cformat_dir / f"top{addr_space_suffix}_memory.h"
                 render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                                 memory_cheader_path,
                                 addr_space=addr_space['name'],
