@@ -11,7 +11,7 @@
 The TX/RX serial lines are high when idle.
 Data starts with a START bit (high idle state deasserts, **1**-->**0**) followed by 8 data bits.
 The least significant bit is sent first.
-If the parity feature is turned on then an odd or even parity bit follows after the data bits.
+If the parity feature is turned on, then an odd or even parity bit follows after the data bits.
 Finally a STOP (**1**) bit completes one byte of data transfer.
 
 ```wavejson
@@ -45,7 +45,7 @@ Finally a STOP (**1**) bit completes one byte of data transfer.
 
 ### Transmission
 
-A write to [`WDATA`](registers.md#wdata) enqueues a data byte into the 32 byte deep write FIFO, which triggers the transmit module to start UART TX serial data transfer.
+A write to [`WDATA`](registers.md#wdata) enqueues a data byte into the 32-byte write FIFO, which triggers the transmit module to start UART TX serial data transfer.
 The TX module dequeues the byte from the FIFO and shifts it bit by bit out to the UART TX pin on positive edges of the baud clock.
 
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out when TX is enabled.
@@ -60,16 +60,16 @@ The RX module oversamples the RX input pin at 16x the requested baud clock.
 When the input is detected low the receiver will check half a bit-time later (i.e. 8 cycles of the oversample clock) that the line is still low before detecting the START bit.
 If the line has returned high the glitch is ignored.
 After it detects the START bit, the RX module samples at the center of each bit-time and gathers incoming serial bits into a character buffer.
-If the STOP bit is detected as high and the optional parity bit is correct the data byte is pushed into a 64 byte deep RX FIFO.
+If the STOP bit is detected as high and the optional parity bit is correct the data byte is pushed into a 64-byte RX FIFO.
 The data can be read out by reading the [`RDATA`](registers.md#rdata) register.
 
 This behavior of the receiver can be used to compute the approximate baud clock frequency error that can be tolerated between the transmitter at the other end of the cable and the receiver.
 The initial sample point is aligned with the center of the START bit.
-The receiver will then sample every 16 cycles of the 16 x baud clock, the diagram below shows the number of ticks after the centering that each bit is captured.
+The receiver will then sample every 16 cycles of the oversampling clock, the diagram below shows the number of ticks after the centering that each bit is captured.
 Because of the frequency difference between the transmitter and receiver the actual sample point will drift compared to the ideal center of the bit.
 In order to correctly receive the STOP bit it must be sampled between the "early" and "late" points shown on the diagram, which are half a bit-time or 8 ticks of the 16x baud clock before or after the center.
-If the transmitter is considered "ideal" then the local clock must thus differ by no more than plus or minus 8 ticks in 144 or approximately +/- 5.5%.
-If parity is enabled the stop bit will be a bit time later, so this becomes 8/160 or about +/- 5%.
+If the transmitter is considered "ideal", then the local clock must thus differ by no more than plus or minus 8 ticks in 144, or approximately +/- 5.5%.
+If parity is enabled the stop bit will be a bit time later, so this becomes 8/160, or about +/- 5%.
 
 ```wavejson
 {
