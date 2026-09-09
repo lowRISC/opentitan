@@ -10,21 +10,12 @@
 #include "hw/top/edn_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
 
-#if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 #include "hw/top/otp_ctrl_regs.h"
+#include "top_memory.h"
+
+#if defined(OPENTITAN_IS_ENGLISHBREAKFAST) || defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_englishbreakfast/sw/autogen/top_memory.h"
-
-#elif defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top/otp_ctrl_regs.h"
-#include "hw/top/sensor_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_memory.h"
-
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_memory.h"
-
-#else
+#elif !defined(OPENTITAN_IS_DARJEELING)
 #error unsupported top
 #endif
 

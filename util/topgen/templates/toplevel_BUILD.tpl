@@ -20,6 +20,7 @@ cc_library(
         "${top_name}.h",
         "top_memory.h",
     ],
+    strip_include_prefix = "/hw/${top_name}/sw/autogen",
     defines = ["OPENTITAN_IS_${top["name"].upper()}"],
     target_compatible_with = opentitan_require_top("${top["name"]}"),
 )

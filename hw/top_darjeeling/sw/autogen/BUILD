@@ -21,6 +21,7 @@ cc_library(
         "top_darjeeling.h",
         "top_memory.h",
     ],
+    strip_include_prefix = "/hw/top_darjeeling/sw/autogen",
     defines = ["OPENTITAN_IS_DARJEELING"],
     target_compatible_with = opentitan_require_top("darjeeling"),
 )
