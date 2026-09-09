@@ -1450,9 +1450,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     # XBAR check
     error += check_target(top, xbar_name_to_block, Target(TargetType.XBAR))
 
-    # Power domain check
-    check_power_domains(top)
-
     # Check the split configuration
     check_split_config(top)
 

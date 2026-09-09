@@ -22,11 +22,11 @@
       domain: Main
     }
   }
+  domain: Main
   clock_connections:
   {
     clk_mbx_i: clkmgr_clocks_i.clk_main_infra
   }
-  domain: Main
   connections:
   {
     mbx:

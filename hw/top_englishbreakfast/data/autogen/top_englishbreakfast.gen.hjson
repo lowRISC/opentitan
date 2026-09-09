@@ -491,6 +491,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_peri
@@ -563,7 +564,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: uart1
@@ -582,6 +582,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_peri
@@ -654,7 +655,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: gpio
@@ -679,6 +679,7 @@
       }
       attr: ipgen
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_peri
@@ -783,7 +784,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: spi_device
@@ -803,6 +803,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_peri
@@ -930,7 +931,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: spi_host0
@@ -949,6 +949,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_peri
@@ -1045,7 +1046,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: rv_timer
@@ -1064,6 +1064,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_timers
@@ -1122,7 +1123,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: usbdev
@@ -1147,6 +1147,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_usb_peri
@@ -1429,7 +1430,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: pwrmgr
@@ -3003,6 +3003,7 @@
         }
       }
       attr: reggen_only
+      domain: Main
       clock_connections:
       {
         clk_ast_tlul_i: clkmgr_clocks_i.clk_io_div4_secure
@@ -3036,7 +3037,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: flash_ctrl
@@ -3103,6 +3103,7 @@
       }
       attr: ipgen
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_infra
@@ -3407,7 +3408,6 @@
         }
       ]
       generate_dif: true
-      domain: Main
     }
     {
       name: rv_plic
@@ -3432,6 +3432,7 @@
         rv_core_ibex
       ]
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_secure
@@ -3501,7 +3502,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: aes
@@ -3532,6 +3532,7 @@
         SecSBoxImpl: aes_pkg::SBoxImplDom
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_aes
@@ -3711,7 +3712,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
     {
       name: sram_ctrl_main
@@ -3762,6 +3762,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_secure
@@ -3977,7 +3978,6 @@
         }
       ]
       generate_dif: true
-      domain: Main
     }
     {
       name: rom_ctrl
@@ -4022,6 +4022,7 @@
         SecDisableScrambling: 1'b1
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_infra
@@ -4146,7 +4147,6 @@
         }
       ]
       generate_dif: true
-      domain: Main
     }
     {
       name: rv_core_ibex
@@ -4212,6 +4212,7 @@
         }
       }
       outgoing_alert: englishbreakfast
+      domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_main_infra
@@ -4833,7 +4834,6 @@
         }
       }
       generate_dif: true
-      domain: Main
     }
   ]
   port:
@@ -5153,12 +5153,12 @@
           domain: Main
         }
       }
+      domain: Main
       clock_connections:
       {
         clk_main_i: clkmgr_clocks_i.clk_main_infra
         clk_fixed_i: clkmgr_clocks_i.clk_io_div4_infra
       }
-      domain: Main
       connections:
       {
         rv_core_ibex.corei:
@@ -5656,13 +5656,13 @@
           domain: Main
         }
       }
+      domain: Main
       clock_connections:
       {
         clk_peri_i: clkmgr_clocks_i.clk_io_div4_infra
         clk_spi_host0_i: clkmgr_clocks_i.clk_io_infra
         clk_usb_i: clkmgr_clocks_i.clk_usb_infra
       }
-      domain: Main
       connections:
       {
         main:
