@@ -91,7 +91,7 @@ _rom_ext_start_boot:
   /**
    * Call the .rom_ext_immutable first if it's not called by ROM.
    */
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_TRUE
