@@ -7,12 +7,10 @@ import textwrap
 import topgen.lib as lib
 
 addr_space_obj = lib.get_addr_space(top, addr_space)
-addr_space_suffix = lib.get_addr_space_suffix(addr_space_obj)
-header_suffix = (top["name"] + addr_space_suffix).upper()
 %>\
 
-#ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
-#define ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
+#ifndef ${helper.header_macro_prefix}_TOP_MEMORY_H_
+#define ${helper.header_macro_prefix}_TOP_MEMORY_H_
 
 /**
  * @file
@@ -34,8 +32,8 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
 
-    base_addr_name = region.base_addr_name().as_c_define()
-    size_bytes_name = region.size_bytes_name().as_c_define()
+    base_addr_name = region.base_addr_name(top_agnostic=True).as_c_define()
+    size_bytes_name = region.size_bytes_name(top_agnostic=True).as_c_define()
 
 %>\
 /**
@@ -56,8 +54,8 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
 
-    base_addr_name = region.base_addr_name().as_c_define()
-    size_bytes_name = region.size_bytes_name().as_c_define()
+    base_addr_name = region.base_addr_name(top_agnostic=True).as_c_define()
+    size_bytes_name = region.size_bytes_name(top_agnostic=True).as_c_define()
 %>\
 /**
  * Peripheral base address for ${if_desc} in top ${top["name"]}.
@@ -86,20 +84,20 @@ header_suffix = (top["name"] + addr_space_suffix).upper()
  * ${l}
 % endfor
  */
-#define ${subspace_range.base_addr_name().as_c_define()} ${"0x{:X}".format(subspace_range.base_addr)}
-#define ${subspace_range.size_bytes_name().as_c_define()} ${"0x{:X}".format(subspace_range.size_bytes)}
+#define ${subspace_range.base_addr_name(top_agnostic=True).as_c_define()} ${"0x{:X}".format(subspace_range.base_addr)}
+#define ${subspace_range.size_bytes_name(top_agnostic=True).as_c_define()} ${"0x{:X}".format(subspace_range.size_bytes)}
 % endfor
 
 % if lib.has_module_type(top, "rram_ctrl") or lib.has_module_type(top, "flash_ctrl"):
   % if lib.has_module_type(top, "rram_ctrl"):
-#define TOP_${header_suffix}_NVM_BASE_ADDR TOP_${header_suffix}_RRAM_CTRL_HOST_BASE_ADDR
-#define TOP_${header_suffix}_NVM_SIZE_BYTES TOP_${header_suffix}_RRAM_CTRL_HOST_SIZE_BYTES
+#define TOP_NVM_BASE_ADDR TOP_RRAM_CTRL_HOST_BASE_ADDR
+#define TOP_NVM_SIZE_BYTES TOP_RRAM_CTRL_HOST_SIZE_BYTES
   % else:
-#define TOP_${header_suffix}_NVM_BASE_ADDR TOP_${header_suffix}_FLASH_CTRL_MEM_BASE_ADDR
-#define TOP_${header_suffix}_NVM_SIZE_BYTES TOP_${header_suffix}_FLASH_CTRL_MEM_SIZE_BYTES
+#define TOP_NVM_BASE_ADDR TOP_FLASH_CTRL_MEM_BASE_ADDR
+#define TOP_NVM_SIZE_BYTES TOP_FLASH_CTRL_MEM_SIZE_BYTES
   % endif
 
 % endif
 #endif  // __ASSEMBLER__
 
-#endif  // ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
+#endif  // ${helper.header_macro_prefix}_TOP_MEMORY_H_

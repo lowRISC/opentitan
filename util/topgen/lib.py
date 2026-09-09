@@ -300,34 +300,44 @@ class MemoryRegion(object):
             addr_space_suffix = addr_space_suffix[1:]
             addr_space_name = Name.from_snake_case(addr_space_suffix)
             self.name = top_name + addr_space_name + name
+            self._top_agnostic_name = Name(["top"]) + addr_space_name + name
         else:
             self.name = top_name + name
+            self._top_agnostic_name = Name(["top"]) + name
         self.short_name = name
         self.base_addr = base_addr
         self.size_bytes = size_bytes
         self.size_words = (size_bytes + 3) // 4
 
-    def base_addr_name(self, short=False) -> str:
+    def base_addr_name(self, short=False, top_agnostic=False) -> Name:
         if short:
             return self.short_name + Name(["base", "addr"])
+        elif top_agnostic:
+            return self._top_agnostic_name + Name(["base", "addr"])
         else:
             return self.name + Name(["base", "addr"])
 
-    def offset_name(self, short=False) -> str:
+    def offset_name(self, short=False, top_agnostic=False) -> Name:
         if short:
             return self.short_name + Name(["offset"])
+        elif top_agnostic:
+            return self._top_agnostic_name + Name(["offset"])
         else:
             return self.name + Name(["offset"])
 
-    def size_bytes_name(self, short=False) -> str:
+    def size_bytes_name(self, short=False, top_agnostic=False) -> Name:
         if short:
             return self.short_name + Name(["size", "bytes"])
+        elif top_agnostic:
+            return self._top_agnostic_name + Name(["size", "bytes"])
         else:
             return self.name + Name(["size", "bytes"])
 
-    def size_words_name(self, short=False) -> str:
+    def size_words_name(self, short=False, top_agnostic=False) -> Name:
         if short:
             return self.short_name + Name(["size", "words"])
+        elif top_agnostic:
+            return self._top_agnostic_name + Name(["size", "words"])
         else:
             return self.name + Name(["size", "words"])
 
