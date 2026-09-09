@@ -26,7 +26,7 @@
 _asm_exception_handler:
 .L_exception_loop:
   // Request a system reset.
-  li t0, TOP_EARLGREY_RSTMGR_BASE_ADDR
+  li t0, TOP_RSTMGR_BASE_ADDR
   li t1, MULTIBIT_ASM_BOOL4_TRUE
   sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
@@ -34,7 +34,7 @@ _asm_exception_handler:
   //
   // This is done after requesting a reset so that this function will
   // work even if it is executing from RRAM.
-  li t0, TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR
+  li t0, TOP_RRAM_CTRL_CORE_BASE_ADDR
   sw zero, RRAM_CTRL_DIS_REG_OFFSET(t0)
 
   wfi
