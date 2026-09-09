@@ -104,7 +104,7 @@ nvm_exception_handler:
   bne  a1, a2, .L_not_a_rram_error
 
   // Check if there is an RRAM error.
-  li   a3, TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR
+  li   a3, TOP_RRAM_CTRL_CORE_BASE_ADDR
   lw   a1, RRAM_CTRL_FAULT_STATUS_REG_OFFSET(a3)
   andi a1, a1, PHY_RELBL_ERROR
   beqz a1, .L_not_a_rram_error
