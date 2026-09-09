@@ -638,6 +638,16 @@ def get_conns_for(end_point: ConfigT, key: str) -> List[Tuple[str, ConfigT]]:
     return result
 
 
+def partition_key(key: str, partition: str = PART_PRIMARY) -> str:
+    '''Name of the key holding the given partition's value for `key`.'''
+    return secondary_key(key) if partition == PART_SECONDARY else key
+
+
+def alert_conn_key(module_name: str, partition: str = PART_PRIMARY) -> str:
+    '''Key of a module's entry in top['alert_connections'].'''
+    return partition_key('module_' + module_name, partition)
+
+
 # Template functions
 def ljust(x, width):
     return "{:<{width}}".format(x, width=width)
