@@ -977,6 +977,21 @@ def check_intermodule_field(sig: OrderedDict,
     return error, sig
 
 
+def resolve_intermodule_width(topcfg: OrderedDict, width, module_name: str) -> int:
+    """Resolve an inter-module signal width to an int.
+
+    The width may be a plain int or a (possibly exposed) Parameter. Exposed parameters are resolved
+    against the given module's param_decl overrides if present.
+    """
+    if isinstance(width, Parameter):
+        if width.expose:
+            module = lib.get_module_by_name(topcfg, module_name)
+            return int(module.get('param_decl', {}).get(width.name, width.default))
+        return int(width.default)
+    assert isinstance(width, int)
+    return width
+
+
 def find_otherside_modules(topcfg: OrderedDict, m,
                            s) -> List[Tuple[str, str, str]]:
     """Find far-end port based on given module and signal name
@@ -1060,6 +1075,9 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         err, req_struct = check_intermodule_field(req_struct)
         error += err
 
+        # Resolve the requester width to an int. It may still be a parameter.
+        req_width = resolve_intermodule_width(topcfg, req_struct["width"], req_m)
+
         if req_i != -1 and len(rsps) != 1:
             # Array format should have one entry
             log.error(
@@ -1085,19 +1103,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             err, rsp_struct = check_intermodule_field(rsp_struct)
             error += err
 
-            if isinstance(rsp_struct["width"], Parameter):
-                param = rsp_struct["width"]
-                if param.expose:
-                    # If it's a top-level exposed parameter, we need to find
-                    # definition from there
-                    module = lib.get_module_by_name(topcfg, req_m)
-                    width = int(module['param_decl'].get(
-                        param.name, param.default))
-                else:
-                    width = int(rsp_struct["width"].default)
-            else:
-                width = rsp_struct["width"]
-                assert isinstance(rsp_struct["width"], int)
+            width = resolve_intermodule_width(topcfg, rsp_struct["width"], rsp_m)
 
             total_width += width
             widths.append(width)
@@ -1125,9 +1131,10 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                         actual=rsp_struct["type"]))
                 error += 1
 
-            # If len(rsps) is 1, then the width should be matched to req
-            if req_struct["width"] != 1:
-                if rsp_struct["width"] not in [1, req_struct["width"]]:
+            # If the requester is an array, each responder must be either a
+            # scalar (broadcast) or an array of the same width.
+            if req_width != 1:
+                if width not in [1, req_width]:
                     log.error(
                         "If req {req} is an array, "
                         "rsp {rsp} shall be non-array or array with same width"
