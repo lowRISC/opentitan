@@ -15,7 +15,7 @@
  * file with the INTERRUPT_HANDLER preprocessor symbol defined to be the
  * name of the general interrupt handler for the respective target.
  */
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "hw/top/rram_ctrl_regs.h"

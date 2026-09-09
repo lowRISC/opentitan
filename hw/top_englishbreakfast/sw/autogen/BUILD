@@ -19,7 +19,7 @@ cc_library(
     ],
     hdrs = [
         "top_englishbreakfast.h",
-        "top_englishbreakfast_memory.h",
+        "top_memory.h",
     ],
     defines = ["OPENTITAN_IS_ENGLISHBREAKFAST"],
     target_compatible_with = opentitan_require_top("englishbreakfast"),
