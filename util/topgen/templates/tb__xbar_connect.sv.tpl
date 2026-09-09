@@ -108,7 +108,12 @@ inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
 
-power_domain = lib.find_module_by_name(top["module"] + top["xbar"], inst_name).get("domain").lower()
+## A split IP hosts its TL bus interface in the primary partition, so drive the
+## primary partition instance (u_<name>_part_primary).
+module = lib.find_module_by_name(top["module"] + top["xbar"], inst_name)
+power_domain = module.get("domain").lower()
+if module.get("is_split_ip"):
+  inst_name += lib.PARTITION_INFIX + lib.PART_PRIMARY
 %>\
     % if node["type"] == "host" and not node["xbar"]:
     `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain})

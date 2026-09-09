@@ -8,6 +8,7 @@
   clkmgr = lib.find_module(top['module'], 'clkmgr')
   rstmgr = lib.find_module(top['module'], 'rstmgr')
   domain_clkmgr = clkmgr.get('domain')
+  ## The reset tree is driven by the rstmgr's primary partition.
   domain_rstmgr = rstmgr.get('domain')
 %>\
 % if domain_clkmgr == domain:

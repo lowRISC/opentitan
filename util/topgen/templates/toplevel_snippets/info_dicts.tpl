@@ -21,6 +21,7 @@ for m in top['module']:
     continue
   block = name_to_block[m['type']]
   if block.scan_en:
+    # Scan / DFT ports are emitted for the primary partition only.
     feature_info['has_scan_en'][m['domain']] = True
 
 if feature_info['has_pinmux']:
