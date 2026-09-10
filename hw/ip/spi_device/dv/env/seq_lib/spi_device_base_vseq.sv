@@ -52,7 +52,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.spi_cfg_sema.put();
   endtask : dut_init
 
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     delay_after_reset_before_access_csr();
     super.read_and_check_all_csrs_after_reset();
   endtask

@@ -32,6 +32,7 @@ from raclgen.lib import DEFAULT_RACL_CONFIG
 from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window, vendor_specific
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
+from reggen.window import Window
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
@@ -372,7 +373,8 @@ def generate_outgoing_alerts(top: ConfigT, out_path: Path) -> None:
 
     for alert_group, alerts in top['outgoing_alert'].items():
         # Outgoing alert definition
-        # 'outgoing_alerts.hjson.tpl' -> 'data/autogen/{top_name}.sv'
+        # 'outgoing_alerts.hjson.tpl' ->
+        # 'data/autogen/outgoing_alerts_{alert_group}.hjson'
         render_template(TOPGEN_TEMPLATE_PATH / 'outgoing_alerts.hjson.tpl',
                         out_path / 'data' / 'autogen' /
                         f'outgoing_alerts_{alert_group}.hjson',
@@ -394,7 +396,8 @@ def generate_outgoing_interrupts(top: ConfigT, out_path: Path) -> None:
 
     for interrupt_group, interrupts in top["outgoing_interrupt"].items():
         # Outgoing interrupt definition
-        # "outgoing_interrupts.hjson.tpl" -> "data/autogen/{top_name}.sv"
+        # "outgoing_interrupts.hjson.tpl" ->
+        # "data/autogen/outgoing_interrupts_{interrupt_group}.hjson"
         render_template(TOPGEN_TEMPLATE_PATH / "outgoing_interrupts.hjson.tpl",
                         out_path / "data" / "autogen" /
                         f"outgoing_interrupts_{interrupt_group}.hjson",
@@ -819,8 +822,7 @@ def _get_basic_ipgen_params(topcfg: Dict[str, object], template_type: str) -> Di
     return ipgen_params
 
 
-def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
-                      alt_hjson_path: str) -> None:
+def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str) -> None:
     """Generate the regfile for top_only IPs."""
     log.info("Generating top only modules")
 
@@ -839,24 +841,101 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
     # construct top ral block
     regwidth = int(top["datawidth"])
     assert regwidth % 8 == 0
-    addrsep = regwidth // 8
 
     # Generate a map from instance name to the block that it instantiates,
     # together with a map of interface addresses.
     inst_to_block: Dict[str, str] = {}
+    inst_to_domain: Dict[str, str] = {}
     if_addrs: Dict[Tuple[str, Optional[str]], int] = {}
     attrs: Dict[str, str] = {}
 
     for module in top["module"]:
         inst_name = module["name"]
         block_name = module["type"]
+        block_domain = module["domain"]
         block = name_to_block[block_name]
         if "attr" in module:
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
-        for if_name in block.reg_blocks.keys():
+        inst_to_domain[inst_name] = block_domain
+
+    # The top-level might customise modules that it instantiates with a dict
+    # under the "memory" key. If a module gets instantiated twice with
+    # different customisations, we'll need to define a type for each and give
+    # them different names.
+    #
+    # Compute a map from type name to a list of pairs (mod_name, maybe_block)
+    # where mod_name is the name of a module instance and block is either None
+    # (if that instance was not customised) or an IpBlock that describes the
+    # customised version of the type.
+    overrides: dict[str, list[tuple[str, None | IpBlock]]] = defaultdict(list)
+    for mod_instance in top["module"]:
+        mod_name = mod_instance.get("name")
+        type_name = mod_instance.get("type")
+        maybe_block = get_overridden_block(mod_instance, name_to_block, regwidth)
+
+        overrides[type_name].append((mod_name, maybe_block))
+
+    # Now work through the named types in overrides and update the block types
+    # to match.
+    for type_name, overrides_for_type in overrides.items():
+        original_mod_names: list[str] = []
+        other_values: list[tuple[str, IpBlock]] = []
+        for mod_name, maybe_block in overrides_for_type:
+            if maybe_block is None:
+                original_mod_names.append(mod_name)
+            else:
+                other_values.append((mod_name, maybe_block))
+
+        # If other_values is empty, there were no overrides for the block
+        # called type_name and there is nothing to do.
+        if not other_values:
+            continue
+
+        # If original_mod_names is empty and other_values has only one item
+        # then the type was used exactly once and was customised that time. In
+        # which case, we can just override the old type with the customized
+        # one.
+        if len(other_values) == 1 and not original_mod_names:
+            name_to_block[type_name] = other_values[0][1]
+            continue
+
+        # This is the interesting case. There are multiple instances of the
+        # type and at least one of them is customised.
+        std_type_name = f"standard_{type_name}"
+        name_to_block[std_type_name] = name_to_block[type_name]
+        del name_to_block[type_name]
+
+        for mod_name in original_mod_names:
+            inst_to_block[mod_name] = std_type_name
+
+        for mod_name, new_block in other_values:
+            new_type_name = f"{mod_name}_{type_name}"
+            if new_type_name in name_to_block:
+                msg = (f"When customizing {type_name} for the module "
+                       f"{mod_name}, we would like to define a type called "
+                       f"{new_type_name}. But that type already has a block.")
+                raise ValueError(msg)
+
+            name_to_block[new_type_name] = new_block
+            inst_to_block[mod_name] = new_type_name
+
+    # Now that all the blocks have been adjusted as necessary and given memory
+    # windows, compute an appropriate if_addrs list to pass to the Top
+    # constructor.
+    for module in top["module"]:
+        inst_name = module["name"]
+        type_name = inst_to_block[inst_name]
+        block = name_to_block[type_name]
+
+        for if_name in block.reg_blocks:
             base_addrs = module["base_addrs"].get(if_name)
+
+            # If this interface has no base address, that's fine: it just means
+            # that the interface isn't being connected in this top-level. For
+            # example, the Earlgrey top-level doesn't connect the DMI TLUL
+            # interface (but Darjeeling does).
             if base_addrs is None:
                 continue
 
@@ -864,106 +943,168 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
                        for (asid, addr) in base_addrs.items()}
             if_addrs[(inst_name, if_name)] = if_addr
 
-    # Top-level may override the mem setting. Store the new type to
-    # name_to_block. If no other instance uses the original type, delete it
-    original_types = set()
-    for module in top["module"]:
-        if "memory" in module.keys() and len(module["memory"]) > 0:
-            mod_name = module["name"]
-            newtype = "{}_{}".format(module["type"], mod_name)
-            assert newtype not in name_to_block
-
-            # Take a copy of the block-level description of the thing that is
-            # being instantiated as mod_name (so that we can configure it).
-            block = deepcopy(name_to_block[module["type"]])
-
-            # Update name_to_block and inst_to_block so that they point at the
-            # new, more specific, information about the block.
-            name_to_block[newtype] = block
-            inst_to_block[mod_name] = newtype
-
-            original_types.add(module["type"])
-
-            # The instantiation might have requested a specific configuration
-            # for some of the memories of the block. Apply that here.
-            for mem_name, item in module["memory"].items():
-                block_mem = block.memories.get(mem_name)
-                if block_mem is None:
-                    raise ValueError(f"The definition of {block.name} "
-                                     f"(instantiated as {mod_name}) doesn't "
-                                     f"declare a memory called {mem_name}.")
-
-                # We only support memories with at most a single window (if
-                # there are several, we don't know which one to customise)
-                if len(block_mem.windows) > 1:
-                    raise ValueError(f"The block {block.name} declares "
-                                     f"multiple windows for its {mem_name} "
-                                     f"memory, so topgen can't configure that "
-                                     "memory.")
-
-                # This is the new window to use
-                win = create_mem(mem_name, item, addrsep, regwidth)
-
-                # If the block doesn't define a window for this memory, we can
-                # just make one. If it *does* define a window we can overwrite
-                # it, but want to make sure we won't mess things up.
-                if not block_mem.windows:
-                    block_mem.windows = [win]
-                else:
-                    blk_win = block_mem.windows[0]
-
-                    # Check we end up with the same number of "items" in the
-                    # window (the window size divided by addrsep)
-                    if win.items != blk_win.items:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} doesn't match number "
-                                         f"of items for {mem_name}. Instance: "
-                                         f"{win.items}; blk: {blk_win.items}")
-
-                    # Check the byte_write setting matches
-                    if win.byte_write != blk_win.byte_write:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with byte_write="
-                                         f"{win.byte_write}, but the block "
-                                         f"declares it {blk_win.byte_write}.")
-
-                    # Check the data_intg_passthru setting matches
-                    if win.data_intg_passthru != blk_win.data_intg_passthru:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with data_intg_passthru="
-                                         f"{win.data_intg_passthru}, but the "
-                                         f"block declares it as "
-                                         f"{blk_win.data_intg_passthru}.")
-
-                    # If we get here, the two definitions matched. Use the new
-                    # one.
-                    block_mem.windows[0] = win
-
-                # At the moment the RAL template does not know about memories
-                # but it knows about windows in memory blocks. Therefoe we
-                # create an empty register block for RAL.
-                if_name = mem_name
-                block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
-                                                               windows = block_mem.windows)
-
-                if_addr = {
-                    asid: int(addr, 0)
-                    for (asid, addr) in module["base_addrs"][if_name].items()
-                }
-                if_addrs[(mod_name, if_name)] = if_addr
-
-    for t in original_types:
-        if t not in inst_to_block.values():
-            del name_to_block[t]
-
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
-    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
+    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block, inst_to_domain,
                if_addrs, [], attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))
+
+
+def get_overridden_block(mod_instance: dict[str, object],
+                         name_to_block: IpBlocksT,
+                         regwidth: int) -> IpBlock | None:
+    """Return an overridden version of the block for an instance if there is one.
+
+    If the instance doesn't define "memory" (which defines a window for the
+    memory on the block) then this returns None. If it *does* define "memory",
+    maybe_block returns a customised version of the block.
+
+    Args:
+
+      mod_instance:  A dictionary describing the instance of the module (parsed
+                     from hjson by topgen).
+
+      name_to_block: A map from type name to IpBlock object.
+
+      regwidth:      The number of bits per register.
+    """
+    mod_name = mod_instance.get("name")
+    if not mod_name:
+        raise ValueError("Module instance does not have a nonempty name.")
+
+    type_name = mod_instance.get("type")
+    if not type_name:
+        msg = f"Module instance called {mod_name} has no type."
+        raise ValueError(msg)
+
+    new_windows = mod_instance.get("memory", {})
+
+    # Note that this considers there to be no specialised windows if the
+    # "memory" field is an empty dictionary. This is necessary because the
+    # function gets called on instances that may have attributes that are then
+    # applied to the instance by calling the elaborate_instance() function.
+    # That function, in turn, always defines an empty list for "memory" if
+    # there wasn't one before.
+    if not new_windows:
+        return None
+
+    if not isinstance(new_windows, dict):
+        msg = ("Module instance has a memory field that is not a dict. "
+               f"It is actually: {new_windows}")
+        raise TypeError(msg)
+
+    # We *do* have a customisation for the memory for this block. Take a copy
+    # of the thing that is being modified, which should be an IpBlock.
+    old_block = name_to_block.get(type_name)
+    if old_block is None:
+        msg = (f"Module instance called {mod_name} specifies a type name of "
+               f"{type_name}, but that is not in name_to_block.")
+        raise ValueError(msg)
+
+    if not isinstance(old_block, IpBlock):
+        msg = f"Block for type name {type_name} is not an IpBlock."
+        raise TypeError(msg)
+
+    where = (f"in the override for the module type {type_name} "
+             f"in module instance {mod_name}")
+
+    new_block = deepcopy(old_block)
+    customize_memories(new_block, new_windows, regwidth, where)
+    return new_block
+
+
+def customize_memories(block: IpBlock,
+                       new_windows: dict[str, dict],
+                       regwidth: int,
+                       where: str) -> None:
+    """Update the memories in block with the overridden windows.
+
+    This operates in place on block, modifying it by adding the windows
+    described in new_windows.
+
+    Args:
+
+      block:       The IpBlock to configure (in place)
+
+      new_windows: A map from memory name to a dictionary defining a window
+                   that should be used for the memory (instead of whatever was
+                   there before).
+
+      regwidth:    The register width in bits (controls the generated windows).
+
+      where:       A description of where the override is being made (for error
+                   messages).
+    """
+    for mem_name, win_desc in new_windows.items():
+        memory = block.memories.get(mem_name)
+        if memory is None:
+            msg = (f"Cannot add window to the memory called {mem_name} "
+                   f"{where}: that block doesn't declare "
+                   "a memory with that name.")
+            raise ValueError(msg)
+
+        # We only support memories with at most a single window (if there are
+        # several, we don't know which one to customise)
+        if len(memory.windows) > 1:
+            msg = (f"Cannot set a window for the memory called {mem_name} "
+                   f"{where}: the block defines multiple windows for that "
+                   f"memory, so topgen doesn't know which to configure.")
+            raise ValueError(msg)
+
+        # This is the new window to use
+        addrsep = (regwidth + 7) // 8
+        new_window: Window = create_mem(mem_name, win_desc, addrsep, regwidth)
+
+        # If there was a window before, check that it is consistent with the
+        # new one.
+        if memory.windows:
+            win_where = f"at the window for memory called {mem_name} {where}"
+            check_windows_consistent(memory.windows[0], new_window, win_where)
+
+        memory.windows = [new_window]
+
+        # The RAL template doesn't currently know about memories, but it *does*
+        # know about windows to memory blocks. To represent the memory, we
+        # create an register block with no registers but with the window we
+        # just defined.
+        if_name = mem_name
+        block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
+                                                       windows = memory.windows)
+
+
+def check_windows_consistent(old_window: Window, new_window: Window, where: str) -> None:
+    """Raise an error if the two windows aren't consistent.
+
+    Args:
+
+      old_window: The window that is being overridden.
+
+      new_window: The replacement for old_window.
+
+      where:      A description of where the override is being made (for error
+                  messages).
+    """
+    # Check we end up with the same number of "items" in the window (the window
+    # size divided by addrsep)
+    if new_window.items != old_window.items:
+        msg = (f"Mismatch in number of items in the window (overriding "
+               f"{old_window.items} with {new_window.items}) {where}.")
+        raise ValueError(msg)
+
+    # Check the byte_write setting matches
+    if new_window.byte_write != old_window.byte_write:
+        msg = (f"Mismatch in byte_write setting in the window (overriding "
+               f"{old_window.byte_write} with {new_window.byte_write}) "
+               f"{where}.")
+        raise ValueError(msg)
+
+    # Check the data_intg_passthru setting matches
+    if new_window.data_intg_passthru != old_window.data_intg_passthru:
+        msg = (f"Mismatch in data_intg_passthru setting in the window "
+               f"(overriding {old_window.data_intg_passthru} with "
+               f"{new_window.data_intg_passthru}) {where}.")
+        raise ValueError(msg)
 
 
 def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) -> window.Window:
@@ -1063,32 +1204,50 @@ def amend_reset_connections(topcfg: ConfigT) -> None:
         _amend_block_reset_connections(xbar, default_power_domain)
 
 
-def create_generic_ip_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
+def create_generic_ip_blocks(topcfg: ConfigT,
+                             alias_cfgs: dict[str, ConfigT],
                              cfg_path: Path,
-                             out_path: Path) -> Dict[str, IpAttrs]:
-    """Create IpAttrs for each generic ip type.
+                             alt_hjson_path: Path | None) -> dict[str, IpAttrs]:
+    """Return a dictionary mapping each non-ipgen ip type in topcfg to an IpAttrs.
 
-    Most importantly, IpAttrs holds the IpBlock.
+    The IP types in topcfg will be looked up by parsing an hjson file in
+    IP_RAW_PATH (hw/ip) unless they are specific to the top-level, in which
+    case the hjson file is found under cfg_path.
 
-    Raise an exception if any module's "attr" flag is invalid.
+    If alt_hjson_path is supplied, a file under that path may override the
+    default for the type that was found.
+
+    The function raises an exception if any module's "attr" flag is invalid.
+
+    Args:
+      topcfg: Top configuration (from which we extract a list of IPs)
+      alias_cfgs: Map from IP name to ConfigT which may supply an overridden
+                  version of an IP block.
+      cfg_path: Path of a directory under which we can find top-specific IP blocks
+      alt_hjson_path: If not None, the path of a directory that can supply
+                      an overridden version of IP blocks
     """
 
     def handle_instance(top_only: bool) -> None:
-        if top_only:
-            hjson_path = cfg_path / "ip" / ip_type / "data" / f"{ip_type}.hjson"
-        else:
-            hjson_path = IP_RAW_PATH / ip_type / "data" / f"{ip_type}.hjson"
-        if ip_type in ip_attrs:
-            ip_attrs[ip_type].instances.append(instance)
-        else:
+        search_path = (cfg_path / "ip") if top_only else IP_RAW_PATH
+        hjson_path = search_path / ip_type / "data" / f"{ip_type}.hjson"
+        if alt_hjson_path is not None:
+            alt_path = alt_hjson_path / f"{ip_type}.hjson"
+            if alt_path.exists():
+                hjson_path = alt_path
+        attrs = ip_attrs.get(ip_type)
+        if attrs is None:
             ip_block = IpBlock.from_path(str(hjson_path), [])
-            if ip_type in alias_cfgs:
-                ip_block = ip_block.alias_from_raw(
-                    False, alias_cfgs[ip_type], f"alias file for {ip_type}")
-            ip_attrs[ip_type] = IpAttrs(ip_block=ip_block,
-                                        hjson_path=hjson_path,
-                                        top_only=top_only,
-                                        instances=[instance])
+            alias = alias_cfgs.get(ip_type)
+            if alias is not None:
+                ip_block.alias_from_raw(
+                    False, alias, f"alias file for {ip_type}")
+            attrs = IpAttrs(ip_block=ip_block,
+                            hjson_path=hjson_path,
+                            top_only=top_only,
+                            instances=[])
+            ip_attrs[ip_type] = attrs
+        attrs.instances.append(instance)
 
     ip_attrs = {}
     invalid_attr_instances = []
@@ -1116,8 +1275,8 @@ def create_ipgen_ip_block(topname: str, template_name: str, module_name: str,
                           alias_cfgs: Dict[str, ConfigT]) -> IpBlock:
     ip_block = ipgen_hjson_render(template_name, topname, params)
     if module_name in alias_cfgs:
-        ip_block = ip_block.alias_from_raw(False, alias_cfgs[module_name],
-                                           f"alias file for {module_name}")
+        ip_block.alias_from_raw(False, alias_cfgs[module_name],
+                                f"alias file for {module_name}")
     return ip_block
 
 
@@ -1212,7 +1371,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
 
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
-        amend_pinmux_io(topcfg, name_to_block)
+        amend_pinmux_io(topcfg, name_to_block, allow_missing_blocks=True)
         instance = ipgen_instances["pinmux"][0]
         insert_ip_attrs(instance, _get_pinmux_params(topcfg))
 
@@ -1256,7 +1415,8 @@ def _process_top(
     """
     # Prepare the topcfg.
     extract_clocks(topcfg)
-    ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path, out_path)
+    ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
+                                        args.hjson_path)
     name_to_block = {name: attrs.ip_block for name, attrs in ip_attrs.items()}
     ipgen_attrs = create_ipgen_blocks(topcfg, alias_cfgs, cfg_path, out_path,
                                       name_to_block)
@@ -1358,8 +1518,11 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # Generate outgoing interrupts
     generate_outgoing_interrupts(topcfg, out_path)
 
+    # The OTP memory map is read from the source tree (`cfg_path`, as in
+    # create_ipgen_blocks), not from the output directory: it is an input to
+    # generation, so it is not necessarily present under `out_path`.
     generate_modules("otp_ctrl", single_instance=True,
-                     get_params=lambda topcfg: _get_otp_ctrl_params(topcfg, out_path))
+                     get_params=lambda topcfg: _get_otp_ctrl_params(topcfg, cfg_path))
 
     # Generate Pinmux
     generate_modules("pinmux", single_instance=True, get_params=_get_pinmux_params)
@@ -1472,12 +1635,12 @@ def main():
              Module is created under rtl/. (default: dir(topcfg)/..)
              """)  # yapf: disable
     parser.add_argument("--hjson-path",
-                        help="""
-          If defined, topgen uses supplied path to search for ip hjson.
-          This applies only to ip's with the `reggen_only` attribute.
-          If an hjson is located both in the conventional path and the alternate
-          path, the alternate path has priority.
-        """)
+                        help="""If defined, topgen uses supplied path to search
+                        for ip hjson. This applies only to ip's with the
+                        `reggen_only` attribute. If an hjson is located both in
+                        the conventional path and the alternate path, the
+                        alternate path has priority.""",
+                        type=Path)
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose")
     parser.add_argument(
         '--version-stamp',
@@ -1670,7 +1833,11 @@ def main():
     # file). Since we don't have a better way at the moment, we dump all output
     # into a temporary directory, and delete it after the fact, retaining only
     # the toplevel configuration.
-    if args.top_ral:
+    #
+    # --check-cm does the same: it is a read-only check, so it renders the
+    # blocks it inspects into the temporary directory rather than half-
+    # regenerating the source tree (see below).
+    if args.top_ral or args.check_cm:
         out_path_gen = Path(tempfile.mkdtemp())
     else:
         out_path_gen = out_path
@@ -1725,6 +1892,37 @@ def main():
     # Generic Inter-module connection
     im.elab_intermodule(completecfg)
 
+    # Check countermeasures for all blocks.
+    #
+    # This is a check, not a generation step, so it must not touch the source
+    # tree. It needs the ipgen blocks' Hjson and RTL and nothing else topgen
+    # produces, so render just those, into the temporary directory that
+    # `name_to_hjson` already points at (`out_path_gen`, set up above). The
+    # remaining generation steps are skipped: they would leave the tree
+    # half-generated, because the checked-in files are the output of the *full*
+    # `make top_and_cmdgen` flow -- topgen's own later steps (e.g. the pinmux
+    # pinout docs from gen_top_docs.py) plus a `cmdgen -u` pass that fills in
+    # the CMDGEN blocks the templates emit empty.
+    if args.check_cm:
+        # Re-set the seed, as the generation below uses the same RNG again from
+        # the beginning.
+        SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
+        generate_full_ipgens(args, completecfg, name_to_block, alias_cfgs,
+                             cfg_path, out_path_gen)
+
+        # Change verbosity to log.INFO to see an okay confirmation message:
+        # the log level is set to log.ERROR upon start to avoid the chatter
+        # of the regular topgen elaboration.
+        log_level = log.DEBUG if args.verbose else log.INFO
+        log.basicConfig(format="%(levelname)s: %(message)s",
+                        level=log_level,
+                        force=True)
+
+        okay = _check_countermeasures(completecfg, name_to_block,
+                                      name_to_hjson)
+        shutil.rmtree(out_path_gen, ignore_errors=True)
+        sys.exit(0 if okay else 1)
+
     # Dump the complete top config
     dump_completecfg(completecfg, out_path)
 
@@ -1747,7 +1945,7 @@ def main():
         m["type"]
         for m in completecfg["module"] if lib.is_top_reggen(m)
     }
-    generate_top_only(top_only_ips, out_path, top_name, args.hjson_path)
+    generate_top_only(top_only_ips, out_path, top_name)
     # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
     SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
 
@@ -1768,20 +1966,6 @@ def main():
                       version_stamp, SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
         if args.rust_only:
             sys.exit(0)
-
-    # Check countermeasures for all blocks.
-    if args.check_cm:
-        # Change verbosity to log.INFO to see an okay confirmation message:
-        # the log level is set to log.ERROR upon start to avoid the chatter
-        # of the regular topgen elaboration.
-        log_level = log.DEBUG if args.verbose else log.INFO
-        log.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log_level,
-                        force=True)
-
-        okay = _check_countermeasures(completecfg, name_to_block,
-                                      name_to_hjson)
-        sys.exit(0 if okay else 1)
 
     if not args.no_top or args.top_only:
 
@@ -1804,18 +1988,23 @@ def main():
         # Top and chiplevel templates are top-specific
         top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
 
-        # SystemVerilog Top:
-        # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-        render_template(top_template_path / "toplevel.sv.tpl",
-                        out_path / "rtl" / "autogen" / f"{top_name}.sv",
+        # Render all SystemVerilog power domains
+        # "{top_name}_pd_{domain}.sv.tpl" -> "rtl/autogen/{top_name}_pd_{domain}.sv"
+        for domain in completecfg["power"]["domains"]:
+            render_template(top_template_path / f"{topname}_pd_{domain.lower()}.sv.tpl",
+                            out_path / "rtl" / "autogen" / f"{topname}_pd_{domain.lower()}.sv",
+                            gencmd=gencmd_sv)
+
+        # Top-level wrapper which instantiates all power domains rendered above
+        render_template(top_template_path / f"top_{topname}.sv.tpl",
+                        out_path / f"rtl/autogen/top_{topname}.sv",
                         gencmd=gencmd_sv)
 
-        # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
+        # Target-specific (ASIC, FPGA, Verilator, etc) chip-levels. Contain AST, padring,
+        # physical cells and the top wrapper above.
         for target in completecfg["targets"]:
-            target_name = target["name"]
             render_template(top_template_path / "chiplevel.sv.tpl",
-                            out_path /
-                            f"rtl/autogen/chip_{topname}_{target_name}.sv",
+                            out_path / f"rtl/autogen/chip_{topname}_{target['name']}.sv",
                             gencmd=gencmd_sv,
                             target=target)
 
@@ -1851,8 +2040,9 @@ def main():
             "aes": ["lowrisc:ip:aes"],
             "kmac": ["lowrisc:ip:kmac_pkg"],
             "otbn": ["lowrisc:ip:otbn_pkg"],
-            "keymgr": ["lowrisc:ip:keymgr_pkg"],
+            "keymgr_dpe": ["lowrisc:ip:keymgr_pkg"],
             "csrng": ["lowrisc:ip:csrng_pkg"],
+            "rram_ctrl": ["lowrisc:ip:rram_ctrl_pkg"],
         }
 
         for m in completecfg["module"]:

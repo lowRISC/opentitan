@@ -230,5 +230,5 @@ opentitantool \
 cd $REPO_TOP
 bazel run //sw/host/opentitantool -- \
    image manifest show \
-   $PWD/bazel-bin/signing/examples/hello_world_fpga_cw310.signed.bin
+   $PWD/bazel-bin/signing/examples/hello_world_fpga_cw340.signed.bin
 ```

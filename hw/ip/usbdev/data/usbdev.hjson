@@ -160,17 +160,11 @@
       struct:  "logic",
       width:   "1"
     },
-    { struct:  "ram_1p_cfg",
+    { name:    "ram_cfg",
       package: "prim_ram_1p_pkg",
-      type:    "uni",
-      name:    "ram_cfg",
-      act:     "rcv"
-    }
-    { struct:  "ram_1p_cfg_rsp",
-      package: "prim_ram_1p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_rsp",
-      act:     "req"
+      struct:  "ram_1p_cfg",
+      act:     "rsp",
+      type:    "req_rsp"
     }
   ]
   param_list: [

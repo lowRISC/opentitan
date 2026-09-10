@@ -123,10 +123,10 @@ OT_NOINLINE void test_memrchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
 OTTF_DEFINE_TEST_CONFIG();
 
 // Each value of `expected_max_num_cycles` was determined experimentally by
-// testing on a CW310 FPGA with the following command:
+// testing on a CW340 FPGA with the following command:
 //
 //   $ ./bazelisk.sh test --copt -O2 --test_output=all \
-//       //sw/device/lib/base:memory_perftest_fpga_cw310
+//       //sw/device/lib/base:memory_perftest_fpga_cw340
 //
 // There are a handful of reasons why the expected number of cycles for this
 // test might be inaccurate. Here are a few of them:

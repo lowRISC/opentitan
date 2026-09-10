@@ -4,6 +4,7 @@
 
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
@@ -25,29 +26,42 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "main_lib",
-    srcs = [
-        "imm_section.c",
-        "imm_section_start.S",
+    name = "imm_section_start",
+    srcs = ["imm_section_start.S"],
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
+    deps = [
+        "//hw/top:top_lib",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/coverage:api_asm",
     ],
+)
+
+cc_library(
+    name = "main_lib",
+    srcs = ["imm_section.c"],
     hdrs = ["imm_section.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":imm_section_epmp",
+        ":imm_section_start",
         ":imm_section_version_def",
-        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:uart_runtime",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/base:static_dice",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
@@ -83,13 +97,15 @@ cc_library(
     name = "imm_section_epmp",
     srcs = ["imm_section_epmp.c"],
     hdrs = ["imm_section_epmp.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
@@ -99,8 +115,9 @@ ld_library(
     name = "ld_common",
     includes = ["imm_section_common.ld"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
         "//sw/device/silicon_creator/lib/base:static_dice_sections",
     ],
@@ -112,7 +129,7 @@ ld_library(
         script = "imm_section_slot_{}.ld".format(slot),
         deps = [
             ":ld_common",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+            "//hw/top:top_ld",
         ],
     )
     for slot in SLOTS

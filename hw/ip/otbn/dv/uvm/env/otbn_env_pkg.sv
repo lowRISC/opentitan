@@ -64,6 +64,30 @@ package otbn_env_pkg;
   typedef push_pull_agent_cfg#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_agent_cfg;
   typedef virtual push_pull_if#(.DeviceDataWidth(KEY_RSP_DATA_SIZE)) otp_key_vif;
 
+  // The layout of the ERR_BITS register (see otbn.hjson). Anything that talks to the model in terms
+  // of ERR_BITS expects this layout.
+  typedef struct packed {
+    logic [7:0] reserved2;
+    logic       fatal_software;
+    logic       lifecycle_escalation;
+    logic       illegal_bus_access;
+    logic       bad_internal_state;
+    logic       bus_intg_violation;
+    logic       reg_intg_violation;
+    logic       dmem_intg_violation;
+    logic       imem_intg_violation;
+    logic [6:0] reserved1;
+    logic       mai_software_error;
+    logic       rnd_fips_chk_fail;
+    logic       rnd_rep_chk_fail;
+    logic       key_invalid;
+    logic       loop;
+    logic       illegal_insn;
+    logic       call_stack;
+    logic       bad_insn_addr;
+    logic       bad_data_addr;
+  } err_bits_reg_t;
+
   // Expected data for a pending read (see exp_read_values in otbn_scoreboard.sv)
   typedef struct packed {
     bit                upd;

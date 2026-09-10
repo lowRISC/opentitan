@@ -82,7 +82,7 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
+      tests: ["chip_sw_kmac_app_rom"]
       bazel: ["//sw/device/tests:kmac_app_rom_test"]
     }
   ]

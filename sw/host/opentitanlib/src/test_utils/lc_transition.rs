@@ -218,6 +218,7 @@ pub fn trigger_lc_transition(
         match tap {
             JtagTap::LcTap => transport.pin_strapping("PINMUX_TAP_LC")?.apply()?,
             JtagTap::RiscvTap => transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?,
+            _ => bail!("Unsupported tap {tap:?}"),
         }
     }
     transport.reset(UartRx::Clear)?;
@@ -316,6 +317,7 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
                 )?;
                 status[0]
             }
+            _ => bail!("Unsupported tap {jtag_tap:?}"),
         };
 
         let polled_status =

@@ -26,6 +26,7 @@ def _openocd_repos():
             Label("@lowrisc_opentitan//third_party/openocd/patches:calloc_transpose.patch"),
             Label("@lowrisc_opentitan//third_party/openocd/patches:reset_on_dmi_op_error.patch"),
             Label("@lowrisc_opentitan//third_party/openocd/patches:string_truncate_build_error.patch"),
+            Label("@lowrisc_opentitan//third_party/openocd/patches:strchr_constness.patch"),
         ],
         patch_args = ["-p1"],
     )

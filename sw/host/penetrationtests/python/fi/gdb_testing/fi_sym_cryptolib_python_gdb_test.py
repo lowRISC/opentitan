@@ -15,6 +15,7 @@ from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import common_library
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import json
 import argparse
@@ -38,11 +39,21 @@ symfi = None
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
+parser.add_argument(
+    "--force-trace",
+    action="store_true",
+    help="Force re-running PC tracing even if trace log exists",
+)
+utils.add_test_selection_args(parser)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 original_stdout = sys.stdout
@@ -50,7 +61,7 @@ original_stdout = sys.stdout
 
 def trigger_testos_init(print_output=True):
     # Initializing the testOS (setting up the alerts and accelerators)
-    (device_id, _, _, _, _, _, _) = symfi.init(
+    (device_id, _, _, _, _, _, _, _) = symfi.init(
         alert_config=common_library.no_escalation_alert_config
     )
     if print_output:
@@ -64,36 +75,52 @@ def read_testos_output():
 
 
 def reset_gdb(gdb):
-    gdb.close_gdb()
-    gdb = GDBController(
+    if gdb and getattr(gdb, "gdb_process", None) and gdb.gdb_process.poll() is None:
+        try:
+            gdb.cleanup_skip()
+            ping = gdb.send_command("p 1", timeout=1.0)
+            if ping and ("= 1" in ping):
+                return gdb
+        except Exception:
+            pass
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
+    return GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
         elf_file=elf_path,
     )
-    return gdb
 
 
 def reset_target_and_gdb(gdb):
-    gdb.close_gdb()
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
     target.reset_target()
-    target.start_openocd(startup_delay=0.2, print_output=False)
+    time.sleep(0.05)
+    target.start_openocd(startup_delay=0.3, print_output=False)
     target.dump_all()
     trigger_testos_init(print_output=False)
-    gdb = GDBController(
+    return GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
         elf_file=elf_path,
     )
-    return gdb
 
 
 def re_initialize(gdb, print_output=False):
-    gdb.close_gdb()
+    # Tier 3: Full FPGA re-initialization (only on unrecoverable lockup)
+    if gdb:
+        gdb.close_gdb()
     target.initialize_target(print_output=print_output)
     trigger_testos_init(print_output=print_output)
     target.dump_all()
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-    return gdb
+    return GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
 
 class SymCryptolibFiSim(unittest.TestCase):
@@ -122,7 +149,7 @@ class SymCryptolibFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -153,6 +180,8 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
                 gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
 
                 # Trigger the hmac from the testOS (we do not read its output)
                 symfi.handle_hmac(data[0], data_len, key, key_len, hash_mode, mode, cfg, trigger)
@@ -162,15 +191,39 @@ class SymCryptolibFiSim(unittest.TestCase):
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the hmac from the testOS (we do not read its output)
+                    symfi.handle_hmac(
+                        data[0], data_len, key, key_len, hash_mode, mode, cfg, trigger
+                    )
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -244,7 +297,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             data_out[i] = tuple(testos_response_json["data"])
 
-                                            if data_out[i] == data_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=32,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=32
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -255,8 +317,259 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                 else:
-                                    print("No break point found, something went wrong", flush=True)
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
                                     gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
+                # Close the OpenOCD and GDB connection at the end
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
+    def test_aes(self):
+        print("Starting the aes test")
+        data_len = 16
+        # We prepare two data inputs and check for collisions between them
+        data1 = [i for i in range(data_len)]
+        data2 = [data_len - i for i in range(data_len)]
+        data = [data1, data2]
+        key_len = 16
+        key = [i for i in range(key_len)]
+        iv = [i for i in range(16)]
+        op_enc = True
+        cfg = 0
+        trigger = 0
+
+        # We just test the first padding mode (no padding) and the first mode (ECB)
+        padding = 0
+        mode = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "aes_pc_trace.log")
+        # Directory for the the log of the campaign
+        campaign_file = os.path.join(log_dir, "aes_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w", buffering=1) as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_AES"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+
+                # Trigger the hmac from the testOS (we do not read its output)
+                symfi.handle_aes(
+                    data[0], data_len, key, key_len, iv, padding, mode, op_enc, cfg, trigger
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the hmac from the testOS (we do not read its output)
+                    symfi.handle_aes(
+                        data[0], data_len, key, key_len, iv, padding, mode, op_enc, cfg, trigger
+                    )
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                data_out = [None, None]
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the hmac instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ", pc, "occurence", i_count, "data", i
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                symfi.handle_aes(
+                                    data[i],
+                                    data_len,
+                                    key,
+                                    key_len,
+                                    iv,
+                                    padding,
+                                    mode,
+                                    op_enc,
+                                    cfg,
+                                    trigger,
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                data_out[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    i_count += 1
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        if testos_response_json["status"] == 0:
+                                            data_out[i] = tuple(testos_response_json["data"])
+
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=16
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                                else:
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -313,7 +626,7 @@ class SymCryptolibFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -344,6 +657,8 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
                 gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
 
                 # Trigger the drbg from the testOS (we do not read its output)
                 symfi.handle_drbg_reseed(
@@ -357,15 +672,41 @@ class SymCryptolibFiSim(unittest.TestCase):
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the drbg from the testOS (we do not read its output)
+                    symfi.handle_drbg_reseed(
+                        entropy[0], entropy_len, nonce, nonce_len, reseed_interval, mode, 0, 0
+                    )
+                    target.read_response()
+                    symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -446,7 +787,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             drbg_out[i] = tuple(testos_response_json["data"])
 
-                                            if drbg_out[i] == drbg_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    drbg_out[0],
+                                                    drbg_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                drbg_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -457,8 +807,14 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                 else:
-                                    print("No break point found, something went wrong", flush=True)
-                                    gdb = reset_target_and_gdb(gdb)
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -515,7 +871,7 @@ class SymCryptolibFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -546,6 +902,8 @@ class SymCryptolibFiSim(unittest.TestCase):
 
                 gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
                 gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
 
                 # Trigger the drbg from the testOS (we do not read its output)
                 symfi.handle_drbg_reseed(
@@ -559,15 +917,48 @@ class SymCryptolibFiSim(unittest.TestCase):
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the drbg from the testOS (we do not read its output)
+                    symfi.handle_drbg_reseed(
+                        entropy[0],
+                        entropy_len,
+                        nonce,
+                        nonce_len,
+                        reseed_interval,
+                        mode,
+                        cfg,
+                        trigger,
+                    )
+                    target.read_response()
+                    symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -647,7 +1038,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             drbg_out[i] = testos_response_json["data"]
 
-                                            if drbg_out[i] == drbg_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    drbg_out[0],
+                                                    drbg_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                drbg_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -658,8 +1058,14 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                 else:
-                                    print("No break point found, something went wrong", flush=True)
-                                    gdb = reset_target_and_gdb(gdb)
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -720,7 +1126,7 @@ class SymCryptolibFiSim(unittest.TestCase):
 
         gdb = None
         started = False
-        with open(campaign_file, "w") as campaign:
+        with open(campaign_file, "w", buffering=1) as campaign:
             print(f"Switching terminal output to {campaign_file}", flush=True)
             sys.stdout = campaign
             try:
@@ -734,7 +1140,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
                 # We provide the name of the unique marker in the pentest framework
-                function_name = "PENTEST_MARKER_GCM_ENCRYPT"
+                function_name = "PENTEST_MARKER_GCM"
                 # GCM is fully in SW, thus it is a very long trace.
                 # GDB can not fully trace it and it runs to an error in the tracing.
                 # To circumvent this, we exclude the investigation of some functions.
@@ -779,12 +1185,14 @@ class SymCryptolibFiSim(unittest.TestCase):
                         hardened_memcpy_address,
                         hardened_memshred_address,
                         hardened_memeq_address,
-                        ghash_process_block_address,
                         ghash_context_integrity_checksum_address,
                         hmac_key_integrity_checksum_address,
+                        ghash_process_block_address,
                     ],
                 )
                 gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
 
                 # Trigger the gcm from the testOS (we do not read its output)
                 symfi.handle_gcm(
@@ -796,15 +1204,63 @@ class SymCryptolibFiSim(unittest.TestCase):
                 total_timeout_stopped = False
 
                 # Run the tracing to get the trace log
-                # Sometimes the tracing fails due to race conditions,
-                # we have a quick initial timeout to catch this
                 while time.time() - start_time < initial_timeout:
                     output = gdb.read_output()
-                    if "breakpoint 1, " in output:
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
                         initial_timeout_stopped = True
                         break
                 if not initial_timeout_stopped:
-                    print("No initial break point found, can be a misfire, try again")
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(
+                        pc_trace_file,
+                        trace_address[0],
+                        trace_address[1],
+                        skip_addrs=[
+                            ibex_rnd32_read_address,
+                            galois_mul_state_key_address,
+                            hardened_memcpy_address,
+                            hardened_memshred_address,
+                            hardened_memeq_address,
+                            ghash_context_integrity_checksum_address,
+                            hmac_key_integrity_checksum_address,
+                            ghash_process_block_address,
+                        ],
+                    )
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the gcm from the testOS (we do not read its output)
+                    symfi.handle_gcm(
+                        data[0],
+                        data_len,
+                        key,
+                        key_len,
+                        aad,
+                        aad_len,
+                        tag,
+                        tag_len,
+                        iv[0],
+                        cfg,
+                        trigger,
+                    )
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                     sys.exit(1)
                 while time.time() - start_time < total_timeout:
                     output = gdb.read_output()
@@ -883,9 +1339,18 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            gcm_out[i] = testos_response_json["data"]
+                                            gcm_out[i] = testos_response_json["tag"]
 
-                                            if gcm_out[i] == gcm_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    gcm_out[0],
+                                                    gcm_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                gcm_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -896,8 +1361,261 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         # Reset GDB by closing and opening again
                                         gdb = reset_gdb(gdb)
                                 else:
-                                    print("No break point found, something went wrong", flush=True)
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
                                     gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
+                # Close the OpenOCD and GDB connection at the end
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
+    def test_cmac(self):
+        print("Starting the cmac test")
+        data_len = 32
+        # We prepare two data inputs and check for collisions between them
+        data1 = [i for i in range(data_len)]
+        data2 = [data_len - i for i in range(data_len)]
+        data = [data1, data2]
+        key_len = 16
+        key = [i for i in range(key_len)]
+        iv = [i for i in range(16)]
+        cfg = 0
+        trigger = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "cmac_pc_trace.log")
+        # Directory for the log of the campaign
+        campaign_file = os.path.join(log_dir, "cmac_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w", buffering=1) as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_CMAC"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+
+                # Trigger the cmac from the testOS (we do not read its output)
+                symfi.handle_cmac(data[0], data_len, key, key_len, iv, cfg, trigger)
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    # Trigger the cmac from the testOS (we do not read its output)
+                    symfi.handle_cmac(data[0], data_len, key, key_len, iv, cfg, trigger)
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurrence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print(
+                    "Tracing has a total of",
+                    len(pc_count_dict),
+                    "unique PCs",
+                    flush=True,
+                )
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                data_out = [None, None]
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the cmac instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ",
+                                pc,
+                                "occurrence",
+                                i_count,
+                                "data",
+                                i,
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                symfi.handle_cmac(
+                                    data[i],
+                                    data_len,
+                                    key,
+                                    key_len,
+                                    iv,
+                                    cfg,
+                                    trigger,
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                data_out[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        if testos_response_json["status"] == 0:
+                                            data_out[i] = tuple(testos_response_json["data"])
+
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=16
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print(
+                                                    "Location:",
+                                                    pc,
+                                                    "iteration",
+                                                    i_count,
+                                                )
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                                else:
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
 
                             except json.JSONDecodeError:
                                 print(
@@ -930,6 +1648,13 @@ class SymCryptolibFiSim(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    unittest_argv = utils.get_selected_test_argv(
+        SymCryptolibFiSim,
+        requested_name=args.test,
+        config_args=config_args,
+        list_tests=args.list_tests,
+    )
+
     r = Runfiles.Create()
     # Get the openocd path.
     openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
@@ -947,8 +1672,15 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the test result path
-    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
     # Get the disassembly path.
@@ -967,6 +1699,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args,
         openocd=openocd_path,
         openocd_chip_config=CONFIG_FILE_CHIP,
@@ -979,4 +1713,4 @@ if __name__ == "__main__":
 
     print("Disassembly is found in ", dis_path, flush=True)
 
-    unittest.main(argv=[sys.argv[0]])
+    unittest.main(argv=unittest_argv)

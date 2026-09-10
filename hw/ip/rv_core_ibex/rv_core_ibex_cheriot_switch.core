@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rv_core_ibex_cheriot_switch:0.1"
+description: "Write-once ePMP/CHERIoT execution mode switch"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:mubi
+      - lowrisc:prim:sparse_fsm
+
+    files:
+      - rtl/rv_core_ibex_cheriot_switch.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

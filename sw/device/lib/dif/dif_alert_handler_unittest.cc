@@ -30,7 +30,7 @@ using ::testing::Return;
 // so if the number of alerts change, the digest will be changed
 // as well.  This process is not yet automated, so the user
 // must be aware on how to update the value.
-static_assert(ALERT_HANDLER_PARAM_N_ALERTS == 65,
+static_assert(ALERT_HANDLER_PARAM_N_ALERTS == 66,
               "The number of alerts have changed.");
 
 constexpr int kAlerts = ALERT_HANDLER_PARAM_N_ALERTS;

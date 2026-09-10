@@ -43,14 +43,14 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
   virtual task clkmgr_switch_to_ext_clk();
     bit [TL_DW-1:0] status;
     bit ack = 0;
-    int base_addr = top_earlgrey_pkg::TOP_EARLGREY_CLKMGR_AON_BASE_ADDR;
+    int base_addr = top_earlgrey_pkg::TOP_EARLGREY_CLKMGR_BASE_ADDR;
     bit [TL_DW-1:0] extcl_en = (
-      prim_mubi_pkg::MuBi4True << ral.clkmgr_aon.extclk_ctrl.sel.get_lsb_pos() |
-      prim_mubi_pkg::MuBi4False << ral.clkmgr_aon.extclk_ctrl.hi_speed_sel.get_lsb_pos()
+      prim_mubi_pkg::MuBi4True << ral.clkmgr.extclk_ctrl.sel.get_lsb_pos() |
+      prim_mubi_pkg::MuBi4False << ral.clkmgr.extclk_ctrl.hi_speed_sel.get_lsb_pos()
     );
 
     // Switch to external system clk source in low speed mode.
-    jtag_riscv_agent_pkg::jtag_write_csr(base_addr + ral.clkmgr_aon.extclk_ctrl.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(base_addr + ral.clkmgr.extclk_ctrl.get_offset(),
                                          p_sequencer.jtag_sequencer_h, extcl_en);
 
     `uvm_info(`gfn, "Waiting for extclk transition", UVM_LOW)
@@ -67,11 +67,11 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
             `uvm_info(`gfn, $sformatf("busy = %0b", busy), UVM_HIGH)
           end,
           "Timed out waiting for SBA to be non-busy")
-        jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr_aon.extclk_status.get_offset(),
+        jtag_riscv_agent_pkg::jtag_read_csr(base_addr + ral.clkmgr.extclk_status.get_offset(),
                                             p_sequencer.jtag_sequencer_h, status);
 
         ack = dv_base_reg_pkg::get_field_val(
-            ral.clkmgr_aon.extclk_status.ack, status
+            ral.clkmgr.extclk_status.ack, status
         ) == prim_mubi_pkg::MuBi4True;
         `uvm_info(`gfn, $sformatf("ack = %0b", ack), UVM_HIGH)
       end,
@@ -180,7 +180,7 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Done.", UVM_LOW)
 
     `uvm_info(`gfn, "Check sensor_ctrl status bit set to 0", UVM_LOW)
-    csr_rd_check(.ptr(ral.sensor_ctrl_aon.status.ast_init_done), .compare_value(0), .backdoor(1));
+    csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done), .compare_value(0), .backdoor(1));
 
     // There is no need to wait for the ROM to boot the flash image, since we
     // already confirmed we performed a raw --> test_unlocked0 LC transition.

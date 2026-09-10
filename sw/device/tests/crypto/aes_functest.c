@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -58,7 +60,7 @@ static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
   };
 
   return (otcrypto_key_config_t){
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -87,7 +89,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
@@ -159,7 +161,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
@@ -255,13 +257,106 @@ static status_t decrypt_streaming_test(void) {
   return run_decrypt(test, /*streaming=*/true);
 }
 
+/**
+ * Negative tests.
+ */
+static status_t run_negative_tests(void) {
+  LOG_INFO("Running negative tests for AES API...");
+
+  otcrypto_key_config_t config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCbc,
+      .key_length = 16,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob[8] = {0};
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  uint32_t iv_data[kAesBlockWords] = {0};
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
+
+  uint8_t input_data[16] = {0};
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, input_data, sizeof(input_data));
+
+  uint8_t output_data[32] = {0};
+  otcrypto_byte_buf_t output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, 16);
+
+  // Test NULL pointers
+  CHECK(otcrypto_aes(NULL, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_word32_buf_t bad_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kAesBlockWords);
+  CHECK(otcrypto_aes(&key, &bad_iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test decryption with invalid length
+  otcrypto_const_byte_buf_t bad_len_input =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, input_data, 15);
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationDecrypt, &bad_len_input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test null padding with an unaligned input length
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &bad_len_input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test output buffer length mismatch
+  otcrypto_byte_buf_t bad_len_output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, 32);
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &bad_len_output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test invalid IV length
+  otcrypto_word32_buf_t bad_len_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, 3);
+  CHECK(otcrypto_aes(&key, &bad_len_iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test key integrity checksum failure
+  otcrypto_blinded_key_t bad_key = key;
+  bad_key.checksum ^= 0xFFFFFFFF;
+  CHECK(otcrypto_aes(&bad_key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test mode mismatch between the key's internal mode and the requested AES
+  // mode.
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeEcb,
+                     kOtcryptoAesOperationEncrypt, &input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  // Start the entropy complex.
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   for (size_t i = 0; i < ARRAYSIZE(kAesTests); i++) {
     LOG_INFO("Starting AES test %d of %d...", i + 1, ARRAYSIZE(kAesTests));
@@ -272,6 +367,8 @@ bool test_main(void) {
     EXECUTE_TEST(result, decrypt_streaming_test);
     LOG_INFO("Finished AES test %d.", i + 1);
   }
+
+  EXECUTE_TEST(result, run_negative_tests);
 
   return status_ok(result);
 }

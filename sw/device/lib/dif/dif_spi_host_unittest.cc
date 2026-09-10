@@ -50,7 +50,7 @@ using testing::Test;
 #define EXPECT_COMMAND_REG(length, width, direction, last_segment)   \
   EXPECT_WRITE32(SPI_HOST_COMMAND_REG_OFFSET,                        \
                  {                                                   \
-                     {SPI_HOST_COMMAND_LEN_OFFSET, (length)-1},      \
+                     {SPI_HOST_COMMAND_LEN_OFFSET, (length) - 1},    \
                      {SPI_HOST_COMMAND_SPEED_OFFSET, width},         \
                      {SPI_HOST_COMMAND_DIRECTION_OFFSET, direction}, \
                      {SPI_HOST_COMMAND_CSAAT_BIT, !(last_segment)},  \

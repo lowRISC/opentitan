@@ -44,16 +44,19 @@ Once initially configured the PMP configuration is expected to remain static thr
 ## PMP Entry Allocation
 
 Each memory region the ROM is concerned with has its own dedicated PMP entry.
-The allocation here is arbitrary except that overlapping regions are placed next to one another with the smaller more specific region given a higher priority entry.
-For example, the ROM TEXT entry precedes the more general ROM entry of which it is a sub region.
+The allocation here is arbitrary except that overlapping or adjacent regions are placed next to one another, with the smaller more specific region given a higher priority entry.
+For example, the ROM TEXT entry precedes the ROM entry that covers the rest of the ROM.
+
+Entry 2 (ROM) uses the TOR addressing mode chained onto entry 1 (ROM TEXT) since the ROM size is not required to be a power of two and NAPOT can only encode naturally-aligned power-of-two regions.
+It therefore covers `[end of ROM TEXT, end of ROM)` rather than the whole ROM while the first entry already covers `[start of ROM, end of ROM TEXT)` with read permission.
 
 The entry allocation is shown here:
 
 | Entry | Description                   | Permissions | Addressing Mode |
 |-------|-------------------------------|-------------|-----------------|
 | 0     |                               |             | OFF\*           |
-| 1     | ROM TEXT                      | RX          | TOR             |
-| 2     | ROM                           | R           | NAPOT           |
+| 1     | ROM TEXT                      | RX          | TOR\*\*         |
+| 2     | ROM                           | R           | TOR             |
 | 3     |                               |             | OFF\*           |
 | 4     | `ROM_EXT` TEXT                | RX          | TOR             |
 | 5     | eFlash                        | R           | NAPOT           |
@@ -70,13 +73,14 @@ The entry allocation is shown here:
 
 Entries that use the Top-Of-Range (TOR) addressing mode use the address register of the preceding entry, effectively requiring two entries.
 Entries that are OFF but for which the address register is in use are marked with a \*.
+Entries used for two rules simultaneously are marked with a \*\*.
 
 ## Initial Configuration
 
 | Entry | Description                   | Permissions | Addressing Mode |
 |-------|-------------------------------|-------------|-----------------|
 | 1     | ROM TEXT                      | RX          | TOR             |
-| 2     | ROM                           | R           | NAPOT           |
+| 2     | ROM                           | R           | TOR             |
 | 5     | eFlash                        | R           | NAPOT           |
 | 11    | MMIO (includes retention RAM) | RW          | TOR             |
 | 14    | Stack Guard (4 bytes)         | \<none\>    | NA4             |
@@ -93,7 +97,7 @@ for the `ROM_EXT` virtual address.
 | Entry | Description                   | Permissions | Addressing Mode |
 |-------|-------------------------------|-------------|-----------------|
 | 1     | ROM TEXT                      | RX          | TOR             |
-| 2     | ROM                           | R           | NAPOT           |
+| 2     | ROM                           | R           | TOR             |
 | **4** | **`ROM_EXT` TEXT**            | **RX**      | **TOR**         |
 | 5     | eFlash                        | R           | NAPOT           |
 | **6** | **`ROM_EXT` section**         | **R**       | **NAPOT**       |

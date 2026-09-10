@@ -229,7 +229,8 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   const dif_edn_t edn0 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
 
-  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
+  CHECK_STATUS_OK(
+      aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0, true));
 #endif
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
@@ -818,7 +819,8 @@ bool test_main(void) {
     const dif_edn_t edn0 = {
         .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
 
-    CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
+    CHECK_STATUS_OK(
+        aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0, true));
     aes_sca_load_fixed_seed();
   }
 #endif

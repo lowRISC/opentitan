@@ -35,16 +35,20 @@ package rom_ctrl_prim_ral_pkg;
   endfunction : new
 
 
-  class rom_ctrl_prim_reg_block #(parameter int AddrWidth = 10) extends dv_base_reg_block;
+  class rom_ctrl_prim_reg_block #(parameter int MemDepth = 32) extends dv_base_reg_block;
     // memories
-    rand rom_ctrl_prim_mem_rom_mem #(2 ** AddrWidth) rom_mem;
+    rand rom_ctrl_prim_mem_rom_mem #(MemDepth) rom_mem;
 
-    `uvm_object_param_utils(rom_ctrl_prim_reg_block#(AddrWidth))
+    `uvm_object_param_utils(rom_ctrl_prim_reg_block#(MemDepth))
 
     extern function new(string name = "",
                         int has_coverage = UVM_NO_COVERAGE);
 
-    extern virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl = null);
+    extern virtual function void build(uvm_reg_addr_t base_addr,
+                                       csr_excl_item  csr_excl,
+                                       int unsigned   addr_width,
+                                       int unsigned   data_width,
+                                       int unsigned   be_width);
 
   endclass : rom_ctrl_prim_reg_block
 
@@ -54,7 +58,12 @@ package rom_ctrl_prim_ral_pkg;
   endfunction : new
 
   function void rom_ctrl_prim_reg_block::build(uvm_reg_addr_t base_addr,
-                                               csr_excl_item csr_excl = null);
+                                               csr_excl_item  csr_excl,
+                                               int unsigned   addr_width,
+                                               int unsigned   data_width,
+                                               int unsigned   be_width);
+    super.build(base_addr, csr_excl, addr_width, data_width, be_width);
+
     // create default map
     this.default_map = create_map(.name("default_map"),
                                   .base_addr(base_addr),
@@ -66,7 +75,7 @@ package rom_ctrl_prim_ral_pkg;
     end
 
     // create memories
-    rom_mem = rom_ctrl_prim_mem_rom_mem#(2 ** AddrWidth)::type_id::create("rom_mem");
+    rom_mem = rom_ctrl_prim_mem_rom_mem#(MemDepth)::type_id::create("rom_mem");
     rom_mem.configure(.parent(this));
     default_map.add_mem(.mem(rom_mem),
                         .offset(32'h0),

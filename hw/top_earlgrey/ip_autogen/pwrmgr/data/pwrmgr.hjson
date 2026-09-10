@@ -86,41 +86,41 @@
             in low power.
             '''
     }
-    { name: "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_req from sysrst_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SYSRST_CTRL_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request wkup_req from sysrst_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_req from sysrst_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SYSRST_CTRL_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request wkup_req from sysrst_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_req from adc_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.ADC_CTRL_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request wkup_req from adc_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_req from adc_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.ADC_CTRL_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request wkup_req from adc_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request pin_wkup_req from pinmux_aon."
+    { name: "PWRMGR.LOW_POWER.PINMUX_PIN_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request pin_wkup_req from pinmux."
     }
-    { name: "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request pin_wkup_req from pinmux_aon."
+    { name: "PWRMGR.LOW_POWER.PINMUX_PIN_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request pin_wkup_req from pinmux."
     }
-    { name: "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request usb_wkup_req from pinmux_aon."
+    { name: "PWRMGR.LOW_POWER.PINMUX_USB_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request usb_wkup_req from pinmux."
     }
-    { name: "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request usb_wkup_req from pinmux_aon."
+    { name: "PWRMGR.LOW_POWER.PINMUX_USB_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request usb_wkup_req from pinmux."
     }
-    { name: "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_req from aon_timer_aon."
+    { name: "PWRMGR.LOW_POWER.AON_TIMER_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request wkup_req from aon_timer."
     }
-    { name: "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_req from aon_timer_aon."
+    { name: "PWRMGR.LOW_POWER.AON_TIMER_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request wkup_req from aon_timer."
     }
-    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_req from sensor_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request wkup_req from sensor_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_req from sensor_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request wkup_req from sensor_ctrl."
     }
     { name: "PWRMGR.LOW_POWER.WAKE_INFO"
       desc: "Record what caused the chip to wakeup from low power."
@@ -128,17 +128,17 @@
     { name: "PWRMGR.RESET.CHECK_ROM_INTEGRITY",
       desc: "Wait for successful completion of ROM integrity checks."
     }
-    { name: "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
-      desc: "Enable reset request from sysrst_ctrl_aon."
+    { name: "PWRMGR.RESET.SYSRST_CTRL_RST_REQ_ENABLE",
+      desc: "Enable reset request from sysrst_ctrl."
     }
-    { name: "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-      desc: "Reset request from sysrst_ctrl_aon."
+    { name: "PWRMGR.RESET.SYSRST_CTRL_RST_REQ_REQUEST",
+      desc: "Reset request from sysrst_ctrl."
     }
-    { name: "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-      desc: "Enable reset request from aon_timer_aon."
+    { name: "PWRMGR.RESET.AON_TIMER_AON_TIMER_RST_REQ_ENABLE",
+      desc: "Enable reset request from aon_timer."
     }
-    { name: "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
-      desc: "Reset request from aon_timer_aon."
+    { name: "PWRMGR.RESET.AON_TIMER_AON_TIMER_RST_REQ_REQUEST",
+      desc: "Reset request from aon_timer."
     }
     { name: "PWRMGR.RESET.ESCALATION_REQUEST",
       desc: "Trigger reset in response to incoming escalation requests."
@@ -306,43 +306,43 @@
       local: "true"
     },
 
-    { name: "SYSRST_CTRL_AON_WKUP_REQ_IDX",
-      desc: "Vector index for sysrst_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "SYSRST_CTRL_WKUP_REQ_IDX",
+      desc: "Vector index for sysrst_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "0",
       local: "true"
     },
 
-    { name: "ADC_CTRL_AON_WKUP_REQ_IDX",
-      desc: "Vector index for adc_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "ADC_CTRL_WKUP_REQ_IDX",
+      desc: "Vector index for adc_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "1",
       local: "true"
     },
 
-    { name: "PINMUX_AON_PIN_WKUP_REQ_IDX",
-      desc: "Vector index for pinmux_aon pin_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "PINMUX_PIN_WKUP_REQ_IDX",
+      desc: "Vector index for pinmux pin_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "2",
       local: "true"
     },
 
-    { name: "PINMUX_AON_USB_WKUP_REQ_IDX",
-      desc: "Vector index for pinmux_aon usb_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "PINMUX_USB_WKUP_REQ_IDX",
+      desc: "Vector index for pinmux usb_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "3",
       local: "true"
     },
 
-    { name: "AON_TIMER_AON_WKUP_REQ_IDX",
-      desc: "Vector index for aon_timer_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "AON_TIMER_WKUP_REQ_IDX",
+      desc: "Vector index for aon_timer wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "4",
       local: "true"
     },
 
-    { name: "SENSOR_CTRL_AON_WKUP_REQ_IDX",
-      desc: "Vector index for sensor_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "SENSOR_CTRL_WKUP_REQ_IDX",
+      desc: "Vector index for sensor_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "5",
       local: "true"
@@ -754,12 +754,12 @@
         { bits: "0",
           name: "EN_0",
           resval: "0"
-          desc: "Reset enable for sysrst_ctrl_aon: rst_req.",
+          desc: "Reset enable for sysrst_ctrl: rst_req.",
         },
         { bits: "1",
           name: "EN_1",
           resval: "0"
-          desc: "Reset enable for aon_timer_aon: aon_timer_rst_req.",
+          desc: "Reset enable for aon_timer: aon_timer_rst_req.",
         },
       ]
       tags: [// Self resets should never be triggered by automated tests

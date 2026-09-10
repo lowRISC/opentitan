@@ -191,7 +191,6 @@ otbn_consttime_test(
 ## Future Ideas
 
 For future versions of OTBN, we are considering:
-- A direct interface from OTBN to the [KMAC][kmac] hardware block, which would allow OTBN to directly run SHA-3 and SHAKE functions
 - Expose the [`INSN_CNT`](registers.md#insn_cnt) register to OTBN applications to make cycle count checks at runtime.
   Useful for algorithm which do not execute always in constant time.
 - More isolation from Ibex, including potentially giving OTBN its own ROM so that Ibex doesn't need to load secrets into it

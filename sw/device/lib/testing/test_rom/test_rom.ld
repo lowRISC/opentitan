@@ -45,7 +45,7 @@ _manifest_address = ORIGIN(ottf_storage);
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(ottf_storage) / 2)),
-  "Error: rom ext flash is bigger than slot.");
+  "Error: rom ext NVM is bigger than slot.");
 
 _chip_info_start = ORIGIN(test_rom) + LENGTH(test_rom) - _chip_info_size;
 

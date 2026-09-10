@@ -119,7 +119,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           11'd64,
-      size:             376,
+      size:             400,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -135,8 +135,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd440,
-      size:             704,
+      offset:           11'd464,
+      size:             680,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,

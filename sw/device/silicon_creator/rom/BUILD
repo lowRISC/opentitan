@@ -7,6 +7,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -25,7 +26,6 @@ filegroup(
     srcs = glob([
         "**/*.md",
         "**/*.svg",
-        "**/*.png",
     ]) + [
         "//sw/device/silicon_creator/rom/data:rom_e2e_testplan.hjson",
         "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
@@ -50,7 +50,8 @@ dual_cc_library(
         ],
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
+            "//hw/top:top_lib",
         ],
     ),
 )
@@ -84,7 +85,7 @@ ld_library(
     name = "linker_script",
     script = "rom.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
     ],
 )
@@ -93,21 +94,29 @@ cc_library(
     name = "rom_isrs",
     srcs = [
         "rom_isrs.c",
-        "//sw/device/silicon_creator/lib:flash_exc_handler",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": ["//sw/device/silicon_creator/lib:rram_exc_handler"],
+        },
+        ["//sw/device/silicon_creator/lib:flash_exc_handler"],
+    ),
     hdrs = ["rom_isrs.h"],
     defines = [
         "INTERRUPT_HANDLER=rom_interrupt_handler",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:shutdown",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": ["//hw/top:rram_ctrl_c_regs"],
+        },
+        ["//hw/top:flash_ctrl_c_regs"],
+    ),
 )
 
 cc_library(
@@ -132,7 +141,7 @@ cc_library(
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
@@ -172,6 +181,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib:stack_utilization",
@@ -181,10 +191,10 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
@@ -217,7 +227,6 @@ opentitan_binary(
     name = "mask_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -254,7 +263,6 @@ check_elf_symbols_test(
 # the rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
         "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
     },
     target = "mask_rom",
@@ -268,7 +276,6 @@ legacy_rom_targets(
         output_group = "{}_hashfile".format(dev),
     )
     for dev in [
-        "fpga_cw310",
         "fpga_cw340",
         "silicon_creator",
     ]
@@ -283,11 +290,12 @@ cc_library(
     hdrs = ["rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
@@ -318,7 +326,7 @@ opentitan_test(
     # Setting `kind = "rom"` makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
+    # Verilator or FPGA params).
     exec_env = {
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -329,7 +337,6 @@ opentitan_test(
     ],
     deps = [
         ":mask_rom_lib",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -348,10 +355,10 @@ opentitan_test(
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:epmp_test_unlock",
         "//sw/device/silicon_creator/lib:irq_asm",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
@@ -370,18 +377,17 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
@@ -389,12 +395,13 @@ cc_library(
 cc_test(
     name = "bootstrap_unittest",
     srcs = ["bootstrap_unittest.cc"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":bootstrap",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "@googletest//:gtest_main",
     ],
@@ -408,6 +415,7 @@ cc_fuzz_test(
         "fuzzer",
         "manual",
     ],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
@@ -419,6 +427,7 @@ cc_library(
     name = "sigverify_otp_keys",
     srcs = ["sigverify_otp_keys.c"],
     hdrs = ["sigverify_otp_keys.h"],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
         ":sigverify_key_types",
         "//hw/top:otp_ctrl_c_regs",
@@ -486,10 +495,6 @@ output_groups(
     testonly = True,
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_binary",
-        "fpga_cw310_elf",
-        "fpga_cw310_rom",
-        "fpga_cw310_mapfile",
         "fpga_cw340_binary",
         "fpga_cw340_elf",
         "fpga_cw340_rom",
@@ -528,7 +533,6 @@ output_groups(
     name = "mask_rom_binaries",
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_binary",
         "fpga_cw340_binary",
         "sim_dv_binary",
         "sim_verilator_binary",
@@ -540,7 +544,6 @@ output_groups(
     name = "mask_rom_disassembly",
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_disassembly",
         "fpga_cw340_disassembly",
         "sim_dv_disassembly",
         "sim_verilator_disassembly",
@@ -585,13 +588,12 @@ genrule(
     """,
 )
 
-opentitan_test(
-    name = "stack_utilization_test",
-    cw310 = fpga_params(
+STACK_UTILIZATION_FPGA_PARAMS = {
+    fpga: fpga_params(
         binaries = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0": "good_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0": "good_b",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_{}_rom_with_fake_keys_signed_bin".format(fpga): "bad_a",
             ":empty_flash": "empty",
         },
         stack_usage = "STK:[0-9A-Fa-f/]+\r\n",
@@ -602,8 +604,6 @@ opentitan_test(
             # This is a manual test.  Run it with:
             #     --test_output=streamed --copt=-DSTACK_UTILIZATION_CHECK
             ###########################################################################'"
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
 
             --exec="no-op --info '### Measuring stack utilization for bootstrap slot A'"
             --exec="bootstrap --clear-uart=true --leave-in-bootstrap {good_a}"
@@ -646,8 +646,15 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
             no-op
         """,
-    ),
+        testopt_bootstrap = "False",
+    )
+    for fpga in ["cw340"]
+}
+
+opentitan_test(
+    name = "stack_utilization_test",
+    cw340 = STACK_UTILIZATION_FPGA_PARAMS["cw340"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
     },
 )

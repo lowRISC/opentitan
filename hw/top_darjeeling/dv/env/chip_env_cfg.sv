@@ -76,6 +76,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand spi_agent_cfg        m_spi_device_agent_cfgs[NUM_SPI_HOSTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand jtag_agent_cfg       m_jtag_agent_cfg;
+  rand jtag_dtm_reg_block   m_jtag_dtm_ral;
   rand spi_agent_cfg        m_spi_host_agent_cfg;
   rand i2c_agent_cfg        m_i2c_agent_cfgs[NUM_I2CS];
 
@@ -130,7 +131,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     dv_base_reg_block soc_dbg_base_reg_block;
     dv_base_reg_block soc_mbx_base_reg_block;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
@@ -143,9 +144,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // User can read `loc_alert_cause` to check ping timeout.
     en_scb_ping_chk = 0;
 
-    ral_model_names.push_back("chip_soc_dbg_reg_block");
-    ral_model_names.push_back("chip_soc_mbx_reg_block");
-    super.initialize();
+    // Add the debug and mailbox register blocks to ral_model_names (we just need the keys in the
+    // array; the values have no meaning)
+    ral_model_names["chip_soc_dbg_reg_block"] = 1'b0;
+    ral_model_names["chip_soc_mbx_reg_block"] = 1'b0;
+    super.initialize(inherit_ral_models);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
     soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];
     `downcast(chip_soc_dbg_ral, soc_dbg_base_reg_block);
@@ -239,15 +242,20 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     m_jtag_agent_cfg.is_active = 1'b1;
     m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
 
-    // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
-    m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+    // Create a JTAG DTM RAL and give it the right IDCODE register value.
+    m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
+    m_jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+
     m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
 
     // Create the DMI register block. Because use_jtag_dmi was false at the start of the function,
     // we know it is currently null.
     if (jtag_dmi_ral != null) `uvm_fatal(`gfn, "jtag_dmi_ral unexpectedly set")
 
-    jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
+    jtag_dmi_ral = create_jtag_dmi_reg_block("jtag_dmi_ral",
+                                             m_jtag_agent_cfg,
+                                             m_jtag_dtm_ral.dmi,
+                                             m_jtag_dtm_ral.dtmcs);
 
     // Fix the reset values of these fields based on our design.
     `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
@@ -288,6 +296,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (regs[i]) begin
       regs[i].clear_hdl_path("ALL");
     end
+
+    // Accesses to rv_dm's debug memory window land on a single TL device port, which passes both
+    // the CSRs and the debug ROM straight to dm_top without distinguishing a read from a fetch.
+    // There is thus nothing that stops a fetch from the CSRs in that window. This matches what
+    // rv_dm_env_cfg does for the block-level environment.
+    chip_ral.rv_dm_mem.set_allows_csr_fetch(1'b1);
   endfunction
 
   // Apply RAL exclusions externally since the RAL itself is considered generic. The IP it is used
@@ -453,7 +467,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           // A flash image could be signed, and if it is, Bazel will attach a
           // suffix to the image name.
           if ("signed" inside {sw_image_flags[i]}) begin
-            // Options match DEFAULT_SIGNING_KEYS in `rules/opentitan.bzl`.
+            // Options match SILICON_CREATOR_KEYS / ECDSA_ONLY_KEY_STRUCTS in
+            // `rules/opentitan/keyutils.bzl`.
             if ("fake_rsa_dev_key_0" inside {sw_image_flags[i]}) begin
               sw_images[i] = $sformatf("%0s.fake_rsa_dev_key_0.signed", sw_images[i]);
             end else if ("fake_rsa_prod_key_0" inside {sw_image_flags[i]}) begin

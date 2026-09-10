@@ -260,7 +260,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
     s->tx.lfsr = lfsr;
   } else {
     // Undefined buffer contents; useful for profiling IN throughput on
-    // CW310, because the CPU load at 10MHz can be an appreciable slowdown
+    // FPGA, because the CPU load at 10MHz can be an appreciable slowdown
   }
 
   if (s->verbose && log_traffic) {

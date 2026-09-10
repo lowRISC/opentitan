@@ -17,16 +17,16 @@
     {
       name: smoke
       desc: '''
-            Smoke test, running a single fixed binary
+            Smoke tests that each run a fixed binary
 
-            This runs the binary from otbn/dv/smoke/smoke_test.s, which is
-            designed to check most of the implemented instructions. The
-            unchanging binary should mean this basic test is particularly
-            appropriate for CI.
+            These each run a binary compiled from a fixed assembly file in
+            otbn/dv/smoke. Between them, these files are designed to check most
+            of the implemented instructions. The unchanging binaries should
+            mean this basic test is particularly appropriate for CI.
 
             '''
       stage: V1
-      tests: ["otbn_smoke"]
+      tests: ["otbn_smoke", "otbn_smoke_vectorized"]
     }
     {
       name: single_binary
@@ -80,6 +80,19 @@
     }
 
     {
+      name: wfi
+      desc: '''
+            Test the WFI instruction and its behavior
+
+            Check the regular use case as well as the following edge cases:
+            - Escalation whilst OTBN is paused or gets paused
+            - Multiple WFI instructions executed back-to-back
+            '''
+      stage: V2
+      tests: ["otbn_wfi_smoke", "otbn_wfi_sec_wipe", "otbn_wfi_back_to_back"]
+    }
+
+    {
       name: mem_integrity
       desc: '''
             Inject ECC errors into DMEM and IMEM and expect an alert
@@ -118,6 +131,31 @@
             '''
       stage: V2
       tests: ["otbn_stress_all"]
+    }
+    {
+      name: mai
+      desc: '''
+            Exercise the masking accelerator interface (MAI)
+
+            Drive and read the `MAI_CTRL`/`MAI_STATUS` CSRs and the `MAI_IN0`/`MAI_IN1`/`MAI_RES`
+            WSRs to run secAdd, secAddMod, A2B, and B2A operations through the masking
+            accelerator, comparing results against the reference model across a range of operand
+            values, including edge cases such as zero, all-ones, and operands that exercise the
+            secAddMod modulus reduction.
+
+            Also check `MAI_STATUS` busy/done reporting, and that issuing a new operation or
+            accessing the result WSRs while the accelerator is still busy is correctly flagged as
+            an illegal SW interaction (`MAI_SOFTWARE_ERROR`).
+
+            Additionally, trigger a secure wipe while an operation of each type is in flight,
+            including B2A, whose rejection sampling normally makes its latency nondeterministic
+            but is disabled during a secure wipe to bound its duration. Check that the MAI is
+            allowed to finish dispatching its inputs into the accelerator, that the resulting
+            output is discarded rather than used, and that the wipe still completes within the
+            expected bound (23 cycles, the longest possible operation latency).
+            '''
+      stage: V2
+      tests: ["otbn_mai"]
     }
     {
       name: lc_escalation

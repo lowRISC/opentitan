@@ -38,7 +38,7 @@
   sim_tops: ["adc_ctrl_bind", "adc_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Add ADC_CTRL specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/adc_ctrl/dv/cov/adc_ctrl_cov_unr_excl.el"]

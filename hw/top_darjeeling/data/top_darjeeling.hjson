@@ -35,17 +35,9 @@
   ]
 
   // This is the clock data structure of the design.
-  // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
-
-    hier_paths: {
-      top: "clkmgr_aon_clocks.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "clkmgr_aon_cg_en.",  // top level struct for alert lpg reset enables
-    },
 
     // Clock Source attributes
     // name: Name of group.
@@ -104,18 +96,8 @@
   },
 
   // This is the reset data structure of the design.
-  // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
-    // Discrete OpenTitan does not need to wait for external resets
-    wait_for_external_reset: false,
-
-    hier_paths: {
-      top: "rstmgr_aon_resets.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "rstmgr_aon_rst_en.", // top level struct for alert lpg reset enables
-    },
 
     // Reset node attributes
     // name: name of reset.
@@ -164,7 +146,7 @@
       {
         "name": "MainPwr",
         "desc": "main power glitch reset request",
-        "module": "pwrmgr_aon"
+        "module": "pwrmgr"
       },
       {
         "name": "Esc",
@@ -215,15 +197,15 @@
             "lc_ctrl.regs",
             "alert_handler",
             "spi_host0",
-            "pwrmgr_aon",
-            "rstmgr_aon",
-            "clkmgr_aon",
-            "pinmux_aon",
-            "aon_timer_aon",
+            "pwrmgr",
+            "rstmgr",
+            "clkmgr",
+            "pinmux",
+            "aon_timer",
             "ast"
             "soc_proxy.core",
             "soc_dbg_ctrl.core",
-            "sram_ctrl_ret_aon",
+            "sram_ctrl_ret",
             "rv_plic",
             "aes",
             "hmac",
@@ -413,7 +395,7 @@
         hart: "0x30300000",
       },
     },
-    { name: "pwrmgr_aon",
+    { name: "pwrmgr",
       type: "pwrmgr",
       template_type: "pwrmgr",
       clock_group: "powerup",
@@ -459,7 +441,7 @@
       attr: "ipgen",
 
     },
-    { name: "rstmgr_aon",
+    { name: "rstmgr",
       type: "rstmgr",
       template_type: "rstmgr",
       clock_srcs: {
@@ -486,7 +468,7 @@
       },
       attr: "ipgen",
     },
-    { name: "clkmgr_aon",
+    { name: "clkmgr",
       type: "clkmgr",
       template_type: "clkmgr",
       clock_srcs: {
@@ -522,21 +504,28 @@
       },
       attr: "ipgen",
     },
-    { name: "pinmux_aon",
+    { name: "pinmux",
       type: "pinmux",
       template_type: "pinmux",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io",
-                          rst_aon_ni: "lc_aon",
-                         },
-      domain: "Aon",
+      reset_connections: {
+          rst_ni: {
+            name: "lc_io",
+            domain: "Aon"
+          },
+          rst_aon_ni: {
+            name: "lc_aon",
+            domain: "Aon"
+          },
+        },
+      domain: "Main",
       base_addr: {
         hart: "0x30460000",
       },
       attr: "ipgen",
     },
-    { name: "aon_timer_aon",
+    { name: "aon_timer",
       type: "aon_timer",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "timers",
@@ -577,7 +566,7 @@
           domain: "Main",
         },
       },
-      domain: "Aon",
+      domain: "Main",
       base_addr: {
         hart: "0x30480000",
       },
@@ -614,7 +603,7 @@
         }
       }
     },
-    { name: "sram_ctrl_ret_aon",
+    { name: "sram_ctrl_ret",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io", clk_otp_i: "io"},
       clock_group: "infra",
@@ -740,6 +729,11 @@
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: {
         hart: "0x21140000",
+      },
+      param_decl: {
+        NumInstHwSlot: "8",
+        NumBootStages: "2",
+        NumRomDigestInputs: "2",
       },
     },
     { name: "csrng",
@@ -1178,38 +1172,38 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['otp_macro.obs_ctrl']
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
                                    'lc_ctrl.esc_scrap_state1_rx'
-                                   'pwrmgr_aon.esc_rst_rx'],
+                                   'pwrmgr.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_tx',
                                    'lc_ctrl.esc_scrap_state0_tx',
                                    'lc_ctrl.esc_scrap_state1_tx',
-                                   'pwrmgr_aon.esc_rst_tx'],
-      'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
+                                   'pwrmgr.esc_rst_tx'],
+      'aon_timer.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret_aon.sram_otp_key',
+                                   'sram_ctrl_ret.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'
                                    'rv_core_ibex.icache_otp_key']
-      'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
-      'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
-      'pwrmgr_aon.strap'        : ['gpio.strap_en',
+      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
+      'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
+      'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
+      'pwrmgr.strap'            : ['gpio.strap_en',
                                    'rv_dm.strap_en'],
-      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
-                                   'aon_timer_aon.sleep_mode'],
-      'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
-      'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl0.pwrmgr_data',
+      'pwrmgr.low_power'        : ['pinmux.sleep_en',
+                                   'aon_timer.sleep_mode'],
+      'pwrmgr.fetch_en'         : ['rv_core_ibex.pwrmgr_cpu_en'],
+      'pwrmgr.rom_ctrl'         : ['rom_ctrl0.pwrmgr_data',
                                    'rom_ctrl1.pwrmgr_data',
                                    'soc_dbg_ctrl.continue_cpu_boot'],
-      'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
+      'pwrmgr.boot_status'      : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
 
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
@@ -1233,10 +1227,13 @@
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
       // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key' : ['keymgr_dpe.otp_key'],
-      'keymgr_dpe.aes_key'      : ['aes.keymgr_key'],
-      'keymgr_dpe.kmac_key'     : ['kmac.keymgr_key'],
-      'keymgr_dpe.otbn_key'     : ['otbn.keymgr_key'],
+      'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
+      'otp_ctrl.keymgr_creator_seed'      : ['keymgr_dpe.creator_seed'],
+      'otp_ctrl.keymgr_owner_seed'        : ['keymgr_dpe.owner_seed'],
+      'keymgr_dpe.aes_key'                : ['aes.keymgr_key'],
+      'keymgr_dpe.kmac_key'               : ['kmac.keymgr_key'],
+      'keymgr_dpe.hmac_key'               : ['hmac.keymgr_key'],
+      'keymgr_dpe.otbn_key'               : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
@@ -1249,7 +1246,7 @@
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr_aon.idle'         : [],
+      'clkmgr.idle'             : [],
 
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
@@ -1267,7 +1264,7 @@
       'lc_ctrl.lc_raw_test_rma'    : ['soc_dbg_ctrl.lc_raw_test_rma']
       'lc_ctrl.lc_dft_en'          : ['otp_macro.lc_dft_en',
                                       'ast.lc_dft_en',
-                                      'pwrmgr_aon.lc_dft_en',
+                                      'pwrmgr.lc_dft_en',
                                       'soc_dbg_ctrl.lc_dft_en',
                                       'rv_dm.lc_dft_en'
                                      ],
@@ -1277,7 +1274,7 @@
                                       'ast.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
-                                      'pwrmgr_aon.lc_hw_debug_en',
+                                      'pwrmgr.lc_hw_debug_en',
                                       'soc_dbg_ctrl.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en',
                                       'soc_dbg_ctrl.lc_cpu_en'],
@@ -1287,9 +1284,9 @@
                                       'otbn.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en',
+                                      'sram_ctrl_ret.lc_escalate_en',
                                       'sram_ctrl_mbox.lc_escalate_en',
-                                      'aon_timer_aon.lc_escalate_en',
+                                      'aon_timer.lc_escalate_en',
                                       'rv_dm.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
@@ -1319,17 +1316,17 @@
 
 
       // rv core ibex connections
-      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
-      'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
+      'rv_core_ibex.crash_dump' : ['rstmgr.cpu_dump'],
+      'rv_core_ibex.pwrmgr'     : ['pwrmgr.pwr_cpu'],
 
       // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
 
       // Debug module reset request to power manager
-      'rv_dm.ndmreset_req' : ['pwrmgr_aon.ndmreset_req'],
+      'rv_dm.ndmreset_req' : ['pwrmgr.ndmreset_req'],
 
       // Reset manager software reset request to pwrmgr
-      'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
+      'rstmgr.sw_rst_req' : ['pwrmgr.sw_rst_req'],
 
       // SOC Proxy TLUL Muxing
       'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
@@ -1344,16 +1341,16 @@
     // use of the signal is up to top template
     'top': [
         // top level net for clocks
-        'clkmgr_aon.clocks',
+        'clkmgr.clocks',
 
         // top level clock gating indications for alert subsystem
-        'clkmgr_aon.cg_en',
+        'clkmgr.cg_en',
 
         // top level net for reset
-        'rstmgr_aon.resets',
+        'rstmgr.resets',
 
         // top level reset asserted indications for alert subsystem
-        'rstmgr_aon.rst_en',
+        'rstmgr.rst_en',
 
         // dedicated timer interrupt
         'rv_core_ibex.irq_timer',
@@ -1371,7 +1368,7 @@
         'soc_dbg_ctrl.soc_dbg_state',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
-        'keymgr_dpe.otp_device_id',
+        'keymgr_dpe.device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         # Unconditionally disable the late debug feature and enable early debug
         'rv_dm.otp_dis_rv_dm_late_debug'
@@ -1382,31 +1379,23 @@
         'ast.lc_dft_en'                        : '',
         'ast.lc_hw_debug_en'                   : '',
         'ast.obs_ctrl'                         : 'obs_ctrl',
-        'rom_ctrl0.rom_cfg'                    : 'rom_ctrl0_cfg',
-        'rom_ctrl1.rom_cfg'                    : 'rom_ctrl1_cfg',
-        'i2c0.ram_cfg'                         : 'i2c_ram_1p_cfg',
-        'i2c0.ram_cfg_rsp'                     : 'i2c_ram_1p_cfg_rsp',
-        'sram_ctrl_ret_aon.cfg'                : 'sram_ctrl_ret_aon_ram_1p_cfg',
-        'sram_ctrl_ret_aon.cfg_rsp'            : 'sram_ctrl_ret_aon_ram_1p_cfg_rsp',
-        'sram_ctrl_main.cfg'                   : 'sram_ctrl_main_ram_1p_cfg',
-        'sram_ctrl_main.cfg_rsp'               : 'sram_ctrl_main_ram_1p_cfg_rsp',
-        'sram_ctrl_mbox.cfg'                   : 'sram_ctrl_mbox_ram_1p_cfg',
-        'sram_ctrl_mbox.cfg_rsp'               : 'sram_ctrl_mbox_ram_1p_cfg_rsp',
-        'otbn.ram_cfg_imem'                    : 'otbn_imem_ram_1p_cfg',
-        'otbn.ram_cfg_rsp_imem'                : 'otbn_imem_ram_1p_cfg_rsp',
-        'otbn.ram_cfg_dmem'                    : 'otbn_dmem_ram_1p_cfg',
-        'otbn.ram_cfg_rsp_dmem'                : 'otbn_dmem_ram_1p_cfg_rsp',
-        'rv_core_ibex.ram_cfg_icache_tag'      : 'rv_core_ibex_icache_tag_ram_1p_cfg',
-        'rv_core_ibex.ram_cfg_rsp_icache_tag'  : 'rv_core_ibex_icache_tag_ram_1p_cfg_rsp',
-        'rv_core_ibex.ram_cfg_icache_data'     : 'rv_core_ibex_icache_data_ram_1p_cfg',
-        'rv_core_ibex.ram_cfg_rsp_icache_data' : 'rv_core_ibex_icache_data_ram_1p_cfg_rsp',
-        'spi_device.ram_cfg_sys2spi'           : 'spi_device_ram_2p_cfg_sys2spi',
-        'spi_device.ram_cfg_rsp_sys2spi'       : 'spi_device_ram_2p_cfg_rsp_sys2spi',
-        'spi_device.ram_cfg_rsp_spi2sys'       : 'spi_device_ram_2p_cfg_rsp_spi2sys',
-        'spi_device.ram_cfg_spi2sys'           : 'spi_device_ram_2p_cfg_spi2sys',
-        'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
-        'pwrmgr_aon.ext_rst_ack'               : 'pwrmgr_ext_rst_ack',
-        'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
+        'otbn.ram_cfg_imem'                    : 'otbn_imem_ram_cfg',
+        'otbn.ram_cfg_dmem'                    : 'otbn_dmem_ram_cfg',
+        'i2c0.ram_cfg'                         : 'i2c0_ram_cfg',
+        'rv_core_ibex.ram_cfg_icache_tag'      : 'rv_core_ibex_icache_tag_ram_cfg',
+        'rv_core_ibex.ram_cfg_icache_data'     : 'rv_core_ibex_icache_data_ram_cfg',
+        'spi_device.ram_cfg_sys2spi'           : 'spi_device_sys2spi_ram_cfg',
+        'spi_device.ram_cfg_spi2sys'           : 'spi_device_spi2sys_ram_cfg',
+        'rom_ctrl0.rom_cfg'                    : 'rom_ctrl0_rom_cfg',
+        'rom_ctrl1.rom_cfg'                    : 'rom_ctrl1_rom_cfg',
+        'sram_ctrl_main.ram_cfg'               : 'sram_ctrl_main_ram_cfg',
+        'sram_ctrl_ret.ram_cfg'                : 'sram_ctrl_ret_ram_cfg',
+        'sram_ctrl_mbox.ram_cfg'               : 'sram_ctrl_mbox_ram_cfg',
+        'pwrmgr.boot_status'                   : 'pwrmgr_boot_status_obs',
+        'pwrmgr.ext_rst_ack'                   : 'pwrmgr_ext_rst_ack',
+        'clkmgr.clocks'                        : '',
+        'clkmgr.cg_en'                         : '',
+        'clkmgr.jitter_en'                     : 'clk_main_jitter_en',
         'dma.sys'                              : 'dma_sys',
         'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
         'entropy_src.entropy_src_rng_valid'    : 'es_rng_valid',
@@ -1456,15 +1445,16 @@
         'dbg.tl_dbg'                           : 'dbg_tl',
         'rv_dm.next_dm_addr'                   : 'rv_dm_next_dm_addr',
         'peri.tl_ast'                          : 'ast_tl',
-        'pwrmgr_aon.pwr_ast'                   : 'pwrmgr_ast',
+        'pwrmgr.pwr_ast'                       : 'pwrmgr_ast',
         'otp_macro.pwr_seq'                    : '',
         'otp_macro.pwr_seq_h'                  : '',
         'otp_macro.ext_voltage_h'              : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                    : 'otp_obs',
         'otp_macro.cfg'                        : 'otp_cfg',
-        'otp_macro.cfg_rsp'                    : 'otp_cfg_rsp',
-        'rstmgr_aon.por_n'                     : 'por_n'
-        'rv_core_ibex.fpga_info'               : 'fpga_info'
+        'rstmgr.por_n'                         : 'por_n',
+        'rstmgr.resets'                        : '',
+        'rstmgr.rst_en'                        : '',
+        'rv_core_ibex.fpga_info'               : 'fpga_info',
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
@@ -1813,37 +1803,18 @@
           'ac_range_check.ctn_filtered_tl_d2h'   : { signal:      "ctn_tl_d2h[0]"  },
           'racl_ctrl.racl_policies'              : { unused:      true             },
           'racl_ctrl.racl_error_external'        : { signal:      "ext_racl_error" },
-          'pwrmgr_aon.ext_rst_ack'               : { unused:      true             },
+          'clkmgr.cg_en'                         : { unused:      true             },
+          'rstmgr.rst_en'                        : { unused:      true             },
+          'pwrmgr.ext_rst_ack'                   : { unused:      true             },
+          'pwrmgr.boot_status'                   : { signal:     'pwrmgr_boot_status' },
           'soc_dbg_ctrl.halt_cpu_boot'           : { unused:      true             },
+          'soc_dbg_ctrl.soc_dbg_policy_bus'      : { unused:      true             },
           'ast.lc_hw_debug_en'                   : { unused:      true             },
           'ast.lc_dft_en'                        : { signal:      'lc_dft_en'      },
           'dma.sys'                              : { unused:      true             },
           'mbx.tl_mbx'                           : { unused:      true             },
           'dbg.tl_dbg'                           : { signal:      'dmi'            },
           'otp_macro.ext_voltage_h'              : { signal:      'OTP_EXT_VOLT'   },
-          # Memory configuration
-          'rom_ctrl0.rom_cfg'                    : { signal: 'rom_ctrl0_cfg'  },
-          'rom_ctrl1.rom_cfg'                    : { signal: 'rom_ctrl1_cfg'  },
-          'i2c0.ram_cfg'                         : { signal: 'ram_1p_cfg'     },
-          'i2c0.ram_cfg_rsp'                     : { unused: true             },
-          'sram_ctrl_ret_aon.cfg'                : { signal: 'ram_1p_cfg'     },
-          'sram_ctrl_ret_aon.cfg_rsp'            : { unused: true             },
-          'sram_ctrl_main.cfg'                   : { signal: 'ram_1p_cfg'     },
-          'sram_ctrl_main.cfg_rsp'               : { unused: true             },
-          'sram_ctrl_mbox.cfg'                   : { signal: 'ram_1p_cfg'     },
-          'sram_ctrl_mbox.cfg_rsp'               : { unused: true             },
-          'otbn.ram_cfg_imem'                    : { signal: 'ram_1p_cfg'     },
-          'otbn.ram_cfg_rsp_imem'                : { unused: true             },
-          'otbn.ram_cfg_dmem'                    : { signal: 'ram_1p_cfg'     },
-          'otbn.ram_cfg_rsp_dmem'                : { unused: true             },
-          'rv_core_ibex.ram_cfg_icache_tag'      : { signal: 'ram_1p_cfg'     },
-          'rv_core_ibex.ram_cfg_rsp_icache_tag'  : { unused: true             },
-          'rv_core_ibex.ram_cfg_icache_data'     : { signal: 'ram_1p_cfg'     },
-          'rv_core_ibex.ram_cfg_rsp_icache_data' : { unused: true             },
-          'spi_device.ram_cfg_sys2spi'           : { signal: 'spi_ram_2p_cfg' },
-          'spi_device.ram_cfg_rsp_sys2spi'       : { unused: true             },
-          'spi_device.ram_cfg_spi2sys'           : { signal: 'spi_ram_2p_cfg' },
-          'spi_device.ram_cfg_rsp_spi2sys'       : { unused: true             },
           # Mailboxes
           'mbx0.doe_intr'                   : { unused: true },
           'mbx0.doe_intr_en'                : { unused: true },
@@ -1930,6 +1901,100 @@
         //        parameter will be assigned the corresponding pad index.
         //
         // Each entry may have an optional 'desc' key for further description.
+        special_signals: [],
+      }
+    },
+    { name: 'verilator',
+
+      // The verilator chip-level has no physical pads: the flat per-peripheral
+      // signals are connected to the testbench DPI models through the
+      // padring_verilator module. The overrides mirror the asic target (the
+      // verilator chip-level keeps the same TAP / CTN / soc_proxy / memory
+      // configuration infrastructure), except otp_macro.ext_voltage_h, which
+      // is an inout pad on the asic and therefore left open here.
+      chiplevel: {
+        port_overrides: {
+          'rv_core_ibex.fpga_info'               : { unused:      true             },
+          'rv_dm.next_dm_addr'                   : { unused:      true             },
+          'soc_proxy.integrator_id'              : { unused:      true             },
+          'soc_proxy.soc_lsio_trigger'           : { unused:      true             },
+          'soc_proxy.soc_gpi_async'              : { unused:      true             },
+          'soc_proxy.soc_gpo_async'              : { unused:      true             },
+          'soc_proxy.soc_wkup_async'             : { unused:      true             },
+          'soc_proxy.misc_tl_h2d'                : { feedthrough: true             },
+          'soc_proxy.misc_tl_d2h'                : { feedthrough: true             },
+          'ac_range_check.range_check_overwrite' : { feedthrough: true             },
+          'ac_range_check.ctn_filtered_tl_h2d'   : { signal:      "ctn_tl_h2d[0]"  },
+          'ac_range_check.ctn_filtered_tl_d2h'   : { signal:      "ctn_tl_d2h[0]"  },
+          'racl_ctrl.racl_policies'              : { unused:      true             },
+          'racl_ctrl.racl_error_external'        : { signal:      "ext_racl_error" },
+          'clkmgr.cg_en'                         : { unused:      true             },
+          'rstmgr.rst_en'                        : { unused:      true             },
+          'pwrmgr.ext_rst_ack'                   : { unused:      true             },
+          'pwrmgr.boot_status'                   : { signal:     'pwrmgr_boot_status' },
+          'soc_dbg_ctrl.halt_cpu_boot'           : { unused:      true             },
+          'soc_dbg_ctrl.soc_dbg_policy_bus'      : { unused:      true             },
+          'ast.lc_hw_debug_en'                   : { unused:      true             },
+          'ast.lc_dft_en'                        : { signal:      'lc_dft_en'      },
+          'dma.sys'                              : { unused:      true             },
+          'mbx.tl_mbx'                           : { unused:      true             },
+          'dbg.tl_dbg'                           : { signal:      'dmi'            },
+          'otp_macro.ext_voltage_h'              : { unused: true, tie_value: "" },
+          # Memory configuration ports default to chiplevel nets driven by u_ast
+          # (same as the asic target); no per-port overrides required.
+          # Mailboxes
+          'mbx0.doe_intr'                   : { unused: true },
+          'mbx0.doe_intr_en'                : { unused: true },
+          'mbx0.doe_intr_support'           : { unused: true },
+          'mbx0.doe_async_msg_support'      : { unused: true },
+          'mbx1.doe_intr'                   : { unused: true },
+          'mbx1.doe_intr_en'                : { unused: true },
+          'mbx1.doe_intr_support'           : { unused: true },
+          'mbx1.doe_async_msg_support'      : { unused: true },
+          'mbx2.doe_intr'                   : { unused: true },
+          'mbx2.doe_intr_en'                : { unused: true },
+          'mbx2.doe_intr_support'           : { unused: true },
+          'mbx2.doe_async_msg_support'      : { unused: true },
+          'mbx3.doe_intr'                   : { unused: true },
+          'mbx3.doe_intr_en'                : { unused: true },
+          'mbx3.doe_intr_support'           : { unused: true },
+          'mbx3.doe_async_msg_support'      : { unused: true },
+          'mbx4.doe_intr'                   : { unused: true },
+          'mbx4.doe_intr_en'                : { unused: true },
+          'mbx4.doe_intr_support'           : { unused: true },
+          'mbx4.doe_async_msg_support'      : { unused: true },
+          'mbx5.doe_intr'                   : { unused: true },
+          'mbx5.doe_intr_en'                : { unused: true },
+          'mbx5.doe_intr_support'           : { unused: true },
+          'mbx5.doe_async_msg_support'      : { unused: true },
+          'mbx6.doe_intr'                   : { unused: true },
+          'mbx6.doe_intr_en'                : { unused: true },
+          'mbx6.doe_intr_support'           : { unused: true },
+          'mbx6.doe_async_msg_support'      : { unused: true },
+          'mbx_jtag.doe_intr'               : { unused: true },
+          'mbx_jtag.doe_intr_en'            : { unused: true },
+          'mbx_jtag.doe_intr_support'       : { unused: true },
+          'mbx_jtag.doe_async_msg_support'  : { unused: true },
+          'mbx_pcie0.doe_intr'              : { unused: true },
+          'mbx_pcie0.doe_intr_en'           : { unused: true },
+          'mbx_pcie0.doe_intr_support'      : { unused: true },
+          'mbx_pcie0.doe_async_msg_support' : { unused: true },
+          'mbx_pcie1.doe_intr'              : { unused: true },
+          'mbx_pcie1.doe_intr_en'           : { unused: true },
+          'mbx_pcie1.doe_intr_support'      : { unused: true },
+          'mbx_pcie1.doe_async_msg_support' : { unused: true },
+        }
+      },
+
+      // The verilator target has no physical pads, so there is nothing to
+      // remove or add here.
+      pinout: {
+        remove_ports: [],
+        remove_pads: [],
+        add_pads: [],
+      },
+
+      pinmux: {
         special_signals: [],
       }
     },

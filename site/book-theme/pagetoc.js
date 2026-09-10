@@ -30,6 +30,14 @@ var updateDynamicHighlight = function() {
         }
     });
     if (!id) return;
+    // Special case: when scrolled to the very top of the page, always highlight
+    // the first heading. Otherwise the decision-point offset (which sits a few
+    // hundred px down the viewport) can land past the first heading and pick
+    // the second one, which contradicts the user's expectation that "at the top
+    // of the page" means "the first heading is current".
+    if (window.pageYOffset <= 1 && elements.length > 0) {
+        id = elements[0];
+    }
     // Add the matching <a> pagetoc element to the "active" class (i.e. highlighted).
     // Also scroll the ToC so this element is in-view.
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
@@ -42,15 +50,93 @@ var updateDynamicHighlight = function() {
             // Set the matched <a> element as 'active'
             el.classList.add("active");
 
-            // Scroll "active" element into view (the middle of the scrollable pagetoc hopefully)
-            document.getElementsByClassName("pagetoc")[0]
-                .scrollTo({ top: el.offsetTop - (pagetoc.getBoundingClientRect().height / 2 ) ,
-                            behavior: 'smooth' });
+            // Intentionally do NOT auto-scroll the pagetoc to keep the active entry
+            // in view: on long pages this causes the pagetoc to lurch around as the
+            // user scrolls the main viewport, overriding wherever they had manually
+            // scrolled the pagetoc. Instead, show top/bottom indicators when the
+            // active entry has drifted out of the pagetoc's visible band.
+            updatePagetocIndicators(pagetoc, el);
         }
     });
 };
-window.addEventListener("load", updateDynamicHighlight);
-window.addEventListener("scroll", updateDynamicHighlight);
+
+/* If the active pagetoc entry is scrolled outside the pagetoc's visible band, show
+ * a small chevron indicator at the corresponding edge (top or bottom). Clicking it
+ * recenters the active entry. Indicators are hidden when the active entry is in
+ * view, or when the pagetoc isn't scrollable at all. */
+var updatePagetocIndicators = function(pagetoc, activeEl) {
+    // Indicators are siblings of .pagetoc inside .pagetoc-wrapper (see the
+    // comment above the wrapper creation in create_pagetoc_structure).
+    let wrapper = pagetoc.parentElement;
+    let topInd = wrapper && wrapper.querySelector('.pagetoc-indicator-top');
+    let botInd = wrapper && wrapper.querySelector('.pagetoc-indicator-bottom');
+    if (!topInd || !botInd || !activeEl) return;
+    let scrollable = pagetoc.scrollHeight > pagetoc.clientHeight + 1;
+    if (!scrollable) {
+        topInd.classList.remove('visible');
+        botInd.classList.remove('visible');
+        return;
+    }
+    let activeTop = activeEl.offsetTop;
+    let activeBottom = activeTop + activeEl.offsetHeight;
+    let viewTop = pagetoc.scrollTop;
+    let viewBottom = viewTop + pagetoc.clientHeight;
+    topInd.classList.toggle('visible', activeBottom < viewTop);
+    botInd.classList.toggle('visible', activeTop > viewBottom);
+};
+/* Run the first highlight pass once fonts have settled -- heading offsetTop values
+ * shift when the Recursive @font-face swaps in, and `load` does not await fonts.
+ * Subsequent updates are driven from controlMenuBarAndHighlight() below. */
+document.fonts.ready.then(updateDynamicHighlight);
+
+/* Take over menu-bar visibility on scroll, pre-empting mdbook's controllPosition
+ * handler in book.js. Reason: mdbook's algorithm writes an inline `style.top`
+ * on #menu-bar that is computed from `prevScrollTop + minMenuY` on the scrollUp
+ * branch. With a large single-event scroll delta (e.g. the user scrolls a few
+ * hundred pixels in one wheel tick, or -- more reliably -- scrolls up shortly
+ * after an anchor-link jump), that computation lands the menu bar at an
+ * intermediate document position, so it renders mid-viewport until the next
+ * scroll tick snaps it back. We replace that with a simple direction toggle of
+ * the `.sticky` class: `position: sticky; top: 0` from chrome.css handles all
+ * positioning, so no intermediate state is possible.
+ *
+ * Suppression window: when the scroll is the result of a same-page hash-link
+ * click, leave the `.sticky` state alone so the menu doesn't flicker on jump. */
+(function controlMenuBarAndHighlight() {
+    let menu = document.getElementById('menu-bar');
+    if (menu) {
+        // Drop any inline top mdbook's IIFE set at init -- `.sticky` + CSS is
+        // sufficient and avoids divergence between DOM style and our logic.
+        menu.style.top = '';
+    }
+    let prevScrollTop = Math.max(document.scrollingElement.scrollTop, 0);
+    let suppressUntil = 0;
+
+    window.addEventListener('scroll', function(e) {
+        let scrollTop = Math.max(document.scrollingElement.scrollTop, 0);
+        if (menu && performance.now() >= suppressUntil) {
+            let scrollDown = scrollTop > prevScrollTop;
+            menu.classList.toggle('sticky', !scrollDown);
+        }
+        if (menu) menu.style.top = '';
+        prevScrollTop = scrollTop;
+        // updateDynamicHighlight runs inline because stopImmediatePropagation
+        // below halts every other scroll listener (including mdbook's, which
+        // is the point), so we can't rely on a separately-registered handler.
+        updateDynamicHighlight();
+        e.stopImmediatePropagation();
+    }, true);
+
+    document.addEventListener('click', function(e) {
+        let a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        let url;
+        try { url = new URL(a.href, window.location.href); } catch (_) { return; }
+        // Only same-page hash navigation -- leave cross-page nav alone.
+        if (url.pathname !== window.location.pathname || !url.hash) return;
+        suppressUntil = performance.now() + 500;
+    }, true);
+})();
 
 /* Style the heading that matches the URL fragment (i.e. when you click a hyperlink).
  * - Find the element with the ":target" pseudo-class applied
@@ -80,7 +166,10 @@ var set_target_highlight = function(event) {
     });
 };
 window.addEventListener("hashchange", set_target_highlight);
-window.addEventListener("load", set_target_highlight);
+/* As with the pagetoc height: measure the targeted heading's bounding rect only
+ * after fonts have loaded, so --target-height matches the final rendered height
+ * (and the initial scrollIntoView lands on the right spot). */
+document.fonts.ready.then(set_target_highlight);
 
 /* Set the "height" style of pagetoc conditionally.
  * - auto    -> for short lists that don't overflow, limit the height of the pagetoc, disables scrollbar.
@@ -95,7 +184,20 @@ var set_pagetoc_height = function() {
     if (pagetoc_height < window_height) {
         el.style.height = "auto";
     } else {
-        el.style.height = "calc(90vh - var(--menu-bar-height))"; // limited_height
+        // limited_height. Compute available space precisely so the pagetoc never
+        // crosses the viewport's bottom edge. Subtract:
+        //   - menu bar height
+        //   - .sidetoc sticky top offset (matches pagetoc.css: 3rem above menu bar)
+        //   - #pagetoc-title rendered height (sibling above the pagetoc)
+        //   - desired bottom margin
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const menuBar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--menu-bar-height')) || 50;
+        const topOffset = 3 * rem;
+        const bottomMargin = 8 * rem;
+        const titleEl = document.getElementById('pagetoc-title');
+        const titleH = titleEl ? titleEl.getBoundingClientRect().height : 0;
+        const h = window.innerHeight - menuBar - topOffset - titleH - bottomMargin;
+        el.style.height = Math.max(h, 0) + 'px';
     }
 };
 window.addEventListener("resize", set_pagetoc_height);
@@ -162,11 +264,13 @@ var create_pagetoc_structure = function(el_pagetoc) {
         (id_keywords.filter(i => h.parentElement.id.includes(i))).length === 0
     );
 
-    // Add title div to ToC
+    // Add title div as a sibling of the pagetoc (under .sidetoc) so it stays
+    // visible above the scrollable pagetoc and doesn't interfere with the
+    // sticky top/bottom indicators inside the pagetoc.
     let title = document.createElement("div");
     title.appendChild(document.createTextNode("Table of Contents"));
     title.setAttribute("id", "pagetoc-title");
-    el_pagetoc.appendChild(title);
+    el_pagetoc.parentElement.insertBefore(title, el_pagetoc);
 
     //////////////////////////////////
     // Define some helper functions //
@@ -244,20 +348,57 @@ var create_pagetoc_structure = function(el_pagetoc) {
     // Invoke the above helper-functions to create the tree
     let tree = wrapAllDescendingElems(0, 0, headerElements.length - 1);
     el_pagetoc.appendChild(tree);
+
+    // Add top/bottom indicators. These show when the active entry has scrolled
+    // outside the pagetoc's visible band; clicking either recenters it.
+    // The indicators live in a wrapper that surrounds the scrollable .pagetoc,
+    // and are absolutely positioned at its top/bottom edges
+    // (see .pagetoc-wrapper / .pagetoc-indicator in pagetoc.css).
+    let wrapper = document.createElement('div');
+    wrapper.className = 'pagetoc-wrapper';
+    el_pagetoc.parentElement.insertBefore(wrapper, el_pagetoc);
+    wrapper.appendChild(el_pagetoc);
+
+    function makeIndicator(side, glyph) {
+        let el = document.createElement('div');
+        el.className = 'pagetoc-indicator pagetoc-indicator-' + side;
+        el.textContent = glyph;
+        el.setAttribute('title', 'Scroll to current section');
+        el.addEventListener('click', function() {
+            let active = el_pagetoc.querySelector('a.active');
+            if (!active) return;
+            el_pagetoc.scrollTo({
+                top: active.offsetTop - el_pagetoc.clientHeight / 2,
+                behavior: 'smooth'
+            });
+        });
+        return el;
+    }
+    wrapper.appendChild(makeIndicator('top', '\u25B2'));
+    wrapper.appendChild(makeIndicator('bottom', '\u25BC'));
+
+    // Re-evaluate indicator visibility when the user scrolls the pagetoc itself
+    // (e.g. they drag the scrollbar; the indicator should disappear once the
+    // active entry is back in view).
+    el_pagetoc.addEventListener('scroll', function() {
+        let active = el_pagetoc.querySelector('a.active');
+        updatePagetocIndicators(el_pagetoc, active);
+    });
 };
 
 
 
-/* Populate the pagetoc sidebar on load
- * - Create a tree structure of elements within the pagetoc nav item
- * - Update the overflow height behaviour when the rendered size is known. */
-window.addEventListener('load', function() {
+/* Populate the pagetoc sidebar.
+ * - Build the tree structure as soon as the HTML is parsed (no need to wait for
+ *   sub-resources like images), so the pagetoc appears as early as possible.
+ * - Defer the height measurement until `document.fonts.ready` resolves. The
+ *   pagetoc text uses the Recursive @font-face, which loads asynchronously and
+ *   is NOT awaited by the `load` event -- when it eventually swaps in, every text
+ *   dimension changes. Measuring before that swap (the previous behaviour, even
+ *   inside a 1s setTimeout, was racing the font load) gives the wrong height and
+ *   triggers the "limited / scrollbar" branch incorrectly. */
+window.addEventListener('DOMContentLoaded', function() {
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
     create_pagetoc_structure(pagetoc);
-
-    setTimeout(function(){
-        // Allow the pagetoc to complete drawing, so we can measure it's final height.
-        // TODO find a better way to do this.
-        set_pagetoc_height.call();
-    }, 1000);
+    document.fonts.ready.then(set_pagetoc_height);
 });

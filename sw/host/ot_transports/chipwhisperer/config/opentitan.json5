@@ -129,6 +129,23 @@
       ]
     },
     {
+      "name": "PINMUX_TAP_FPGA_BACKDOOR",
+      // The backdoor loader uses the same strap as the DFT since it only exists on FPGA
+      // which does not have the DFT TAP.
+      "pins": [
+        {
+          "name": "TAP_STRAP0",
+          "mode": "PushPull",
+          "level": true
+        },
+        {
+          "name": "TAP_STRAP1",
+          "mode": "PushPull",
+          "level": true
+        }
+      ]
+    },
+    {
       "name": "RESET",
       "pins": [
         {

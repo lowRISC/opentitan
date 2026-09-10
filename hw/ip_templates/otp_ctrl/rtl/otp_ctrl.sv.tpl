@@ -4,8 +4,8 @@
 //
 // OTP Controller top.
 //
-<% 
-  import math 
+<%
+  import math
   from topgen.lib import Name
 %>
 `include "prim_assert.sv"
@@ -77,8 +77,10 @@ module otp_ctrl
   input                               lc_ctrl_pkg::lc_tx_t lc_rma_state_i,
   // OTP broadcast outputs
   // SEC_CM: TOKEN_VALID.CTRL.MUBI
-  output otp_lc_data_t                               otp_lc_data_o,
-  output otp_keymgr_key_t                            otp_keymgr_key_o,
+  output otp_lc_data_t                                 otp_lc_data_o,
+  output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o,
+  output keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o,
+  output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o,
   // Scrambling key requests
 % if enable_nvm_key:
   input  nvm_otp_key_req_t                           nvm_otp_key_i,
@@ -625,7 +627,7 @@ module otp_ctrl
     // Assign partition status
 % for r in range(int(math.ceil(len(otp_mmap["partitions"]) / 32))):
   % for k, part in enumerate(otp_mmap["partitions"][r*32 : (r+1)*32]):
-<% 
+<%
   assignment_target = f"hw2reg.partition_status_{r}.{part['name'].lower()}_error.d"
   assignment_value = f"part_errors_reduced[{Name.from_snake_case(part['name']).as_camel_case()}Idx];"
   potential_length = 4 + len(assignment_target) + len(" = ") + len(assignment_value)
@@ -1457,19 +1459,26 @@ end
            owner_seed_valid_q})
   );
 
-  always_comb begin : p_otp_keymgr_key_valid
-    // Valid reg inputs
-    creator_root_key_share0_valid_d = otp_keymgr_key.creator_root_key_share0_valid;
-    creator_root_key_share1_valid_d = otp_keymgr_key.creator_root_key_share1_valid;
-    creator_seed_valid_d            = otp_keymgr_key.creator_seed_valid;
-    owner_seed_valid_d              = otp_keymgr_key.owner_seed_valid;
-    // Output to keymgr
-    otp_keymgr_key_o                               = otp_keymgr_key;
-    otp_keymgr_key_o.creator_root_key_share0_valid = creator_root_key_share0_valid_q;
-    otp_keymgr_key_o.creator_root_key_share1_valid = creator_root_key_share1_valid_q;
-    otp_keymgr_key_o.creator_seed_valid            = creator_seed_valid_q;
-    otp_keymgr_key_o.owner_seed_valid              = owner_seed_valid_q;
-  end
+  assign creator_root_key_share0_valid_d = otp_keymgr_key.creator_root_key_share0_valid;
+  assign creator_root_key_share1_valid_d = otp_keymgr_key.creator_root_key_share1_valid;
+  assign keymgr_creator_root_key_o = '{
+    share0:       otp_keymgr_key.creator_root_key_share0,
+    share0_valid: creator_root_key_share0_valid_q,
+    share1:       otp_keymgr_key.creator_root_key_share1,
+    share1_valid: creator_root_key_share1_valid_q
+  };
+
+  assign creator_seed_valid_d = otp_keymgr_key.creator_seed_valid;
+  assign keymgr_creator_seed_o = '{
+    seed:         otp_keymgr_key.creator_seed,
+    seed_valid:   creator_seed_valid_q
+  };
+
+  assign owner_seed_valid_d = otp_keymgr_key.owner_seed_valid;
+  assign keymgr_owner_seed_o = '{
+    seed:         otp_keymgr_key.owner_seed,
+    seed_valid:   owner_seed_valid_q
+  };
 
   // Check that the lc_seed_hw_rd_en remains stable, once the key material is valid.
   `ASSERT(LcSeedHwRdEnStable0_A,
@@ -1566,8 +1575,10 @@ end
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
-  `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
+  `ASSERT_INIT(CreatorRootKeyShare0Size_A,
+               keymgr_dpe_pkg::KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
+  `ASSERT_INIT(CreatorRootKeyShare1Size_A,
+               keymgr_dpe_pkg::KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
 % if enable_nvm_key:
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
@@ -1587,7 +1598,9 @@ end
   `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_o)
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
-  `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
+  `ASSERT_KNOWN(KeymgrCreatorRootKey_A,      keymgr_creator_root_key_o)
+  `ASSERT_KNOWN(KeymgrCreatorSeed_A,         keymgr_creator_seed_o)
+  `ASSERT_KNOWN(KeymgrOwnerSeed_A,           keymgr_owner_seed_o)
 % if enable_nvm_key:
   `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
 % endif

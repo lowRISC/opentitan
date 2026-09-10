@@ -1,10 +1,10 @@
 # Ibex RISC-V Core Wrapper Technical Specification
 
 [`rv_core_ibex`](https://ibex.reports.lowrisc.org/opentitan/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
 
 # Overview
 
@@ -18,11 +18,13 @@ This document specifies Ibex CPU core wrapper functionality.
 * NMI support for security alert events for watchdog bark.
 * General error status collection and alert generation.
 * Crash dump collection for software debug.
+* Write-once switch between the ePMP and CHERIoT execution modes.
 
 ## Description
 
 The Ibex RISC-V Core Wrapper instantiates an [Ibex RV32 CPU Core](https://github.com/lowRISC/ibex), and wraps its data and instruction memory interfaces to TileLink Uncached Light (TL-UL).
-All configuration parameters of Ibex are passed through.
+All configuration parameters of Ibex are passed through, except for the TRVK ports (signals starting with `trvk_`), which are not yet exposed.
+`BaseIsa` is not exposed: it is fixed to the CHERIoT-capable base ISA, and the wrapper holds the [execution mode switch](doc/theory_of_operation.md#execution-mode-switch) that selects between ePMP and CHERIoT mode at runtime.
 The pipelining of the bus adapters is configurable.
 
 ## Compatibility

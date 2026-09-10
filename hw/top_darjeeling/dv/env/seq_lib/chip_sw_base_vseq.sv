@@ -51,8 +51,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
       // Await the report of an internal reset request from the power manager.
       if (cfg.chip_vif.aon_clk_por_rst_if.rst_n === 1'b1) begin
         // For a software reset request we need in practice to check the `light_reset_req` signal
-        // on every AON clock cycle because as soon as pwrmgr_aon detects the internal reset request
-        // it acknowledges to the rstmgr_aon, which deasserts the software reset request.
+        // on every AON clock cycle because as soon as pwrmgr detects the internal reset request
+        // it acknowledges to the rstmgr, which deasserts the software reset request.
         cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
               .kind(dv_utils_pkg::SignalProbeSample))) begin
@@ -262,8 +262,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void ret_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
-      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetSramNonce,
       bit [38:0] flip_bits = '0);
     _sram_bkdr_write32(addr, data, RamRet0, cfg.num_ram_ret_tiles, 1, key, nonce, flip_bits);
   endfunction
@@ -779,12 +779,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        // TODO(#26486): The ROM utils _do_ have their configurations stored internally.
-        if (mem == Rom0) begin
-          rom.update_rom_digest(RndCnstRomCtrl0ScrKey, RndCnstRomCtrl0ScrNonce);
-        end else begin
-          rom.update_rom_digest(RndCnstRomCtrl1ScrKey, RndCnstRomCtrl1ScrNonce);
-        end
+        rom.update_rom_digest();
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
@@ -1286,7 +1281,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_darjeeling.darjeeling_pd_main.u_flash_ctrl.u_flash_hw_if";
     string mypath;
     logic [2:0] rma_wipe_idx;
     logic [3:0] rma_ack;

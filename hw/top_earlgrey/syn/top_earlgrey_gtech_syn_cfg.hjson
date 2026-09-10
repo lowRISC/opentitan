@@ -11,6 +11,13 @@
   import_cfgs: [// Project wide common GTECH synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
 
+  // This synthesises the top rather than the chip.  The top mapping resolves
+  // the AST and flash-controller packages; the JTAG ID it also depends on is a
+  // chip-level choice, so that mapping lives in the chip core.  The two blocks
+  // map disjoint sets, so both can be applied at once.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:top_earlgrey:0.1",
+                       "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1"]
+
   overrides: [
     { // Deletes black-boxed hierarchies before writing out the unmapped netlist
       name: post_elab_script

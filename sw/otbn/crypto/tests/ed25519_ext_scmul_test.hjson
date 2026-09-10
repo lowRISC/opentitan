@@ -1,0 +1,26 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      // A random scalar s in two arithmetic shares s0, s1 with s = s0 - s1
+      "_ed25519_ext_scmul_a_share0": "0x01e2ab005f24f57115cb74282051d3f7ec6fc6cb0f25ffc716fb83de259d25a7",
+      "_ed25519_ext_scmul_a_share1": "0x01f95d705834d4cb720af34eb829d3fb18c99d634ccd95b404244b126fe6cd18",
+      // The Curve25519 base point in extended coordinates.
+      "_ed25519_ext_scmul_x1": "0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a",
+      "_ed25519_ext_scmul_y1": "0x6666666666666666666666666666666666666666666666666666666666666658",
+      "_ed25519_ext_scmul_z1": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "_ed25519_ext_scmul_t1": "0x67875f0fd78b766566ea4e8e64abe37d20f09f80775152f56dde8ab3a5b7dda3",
+    }
+  },
+  "output": {
+    "dmem": {
+      // The resulting point [s]B = [s0-s1]B in affine coordinates.
+      "_ed25519_ext_scmul_x2": "0x55d0e09a2b9d34292297e08d60d0f620c513d47253187c24b12786bd777645ce",
+      "_ed25519_ext_scmul_y2": "0x1a5107f7681a02af2523a6daf372e10e3a0764c9d3fe4bd5b70ab18201985ad7",
+    }
+  }
+}

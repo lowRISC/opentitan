@@ -19,7 +19,7 @@ enum {
   /**
    * Base address of the aon_timer registers.
    */
-  kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
+  kBase = TOP_EARLGREY_AON_TIMER_BASE_ADDR,
 };
 
 #ifdef EXPECT_WATCHDOG_DISABLED

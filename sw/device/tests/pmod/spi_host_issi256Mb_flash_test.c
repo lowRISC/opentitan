@@ -30,7 +30,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static void init_test(dif_spi_host_t *spi_host) {
   dif_pinmux_t pinmux;
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   spi_pinmux_platform_id_t platform_id = kSpiPinmuxPlatformIdCount;

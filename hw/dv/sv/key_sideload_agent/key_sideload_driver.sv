@@ -34,7 +34,13 @@ class key_sideload_driver#(
       cfg.vif.sideload_key.key[1] = req.valid ? req.key1 : 'x;
       `uvm_info(`gfn, "item sent", UVM_HIGH)
 
-      cfg.vif.wait_clks_or_rst(1 + req.rsp_delay);
+      fork : isolation_fork begin
+        fork
+          cfg.vif.wait_clks_or_rst(1 + req.rsp_delay);
+          req.wait_stop_requested();
+        join_any
+        disable fork;
+      end join
 
       seq_item_port.item_done(req);
     end

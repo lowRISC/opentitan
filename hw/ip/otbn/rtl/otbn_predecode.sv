@@ -761,26 +761,36 @@ module otbn_predecode
         CsrMod4, CsrMod5, CsrMod6, CsrMod7: ispr_addr = IsprMod;
         CsrRnd:                             ispr_addr = IsprRnd;
         CsrUrnd:                            ispr_addr = IsprUrnd;
+        CsrUrndCtrl:                        ispr_addr = IsprUrndCtrl;
+        CsrUrndStatus:                      ispr_addr = IsprUrndStatus;
+        CsrKmacStatus:                      ispr_addr = IsprKmacStatus;
+        CsrKmacCtrl:                        ispr_addr = IsprKmacCtrl;
+        CsrKmacCfg:                         ispr_addr = IsprKmacCfg;
+        CsrKmacStrb:                        ispr_addr = IsprKmacStrb;
         CsrMaiCtrl:                         ispr_addr = IsprMaiCtrl;
         CsrMaiStatus:                       ispr_addr = IsprMaiStatus;
+        CsrInsnCnt:                         ispr_addr = IsprInsnCnt;
         default: ;
       endcase
     end else begin
       unique case (wsr_addr)
-        WsrMod:      ispr_addr = IsprMod;
-        WsrRnd:      ispr_addr = IsprRnd;
-        WsrUrnd:     ispr_addr = IsprUrnd;
-        WsrAcc:      ispr_addr = IsprAcc;
-        WsrKeyS0L:   ispr_addr = IsprKeyS0L;
-        WsrKeyS0H:   ispr_addr = IsprKeyS0H;
-        WsrKeyS1L:   ispr_addr = IsprKeyS1L;
-        WsrKeyS1H:   ispr_addr = IsprKeyS1H;
-        WsrMaiResS0: ispr_addr = IsprMaiResS0;
-        WsrMaiResS1: ispr_addr = IsprMaiResS1;
-        WsrMaiIn0S0: ispr_addr = IsprMaiIn0S0;
-        WsrMaiIn0S1: ispr_addr = IsprMaiIn0S1;
-        WsrMaiIn1S0: ispr_addr = IsprMaiIn1S0;
-        WsrMaiIn1S1: ispr_addr = IsprMaiIn1S1;
+        WsrMod:        ispr_addr = IsprMod;
+        WsrRnd:        ispr_addr = IsprRnd;
+        WsrUrnd:       ispr_addr = IsprUrnd;
+        WsrAcc:        ispr_addr = IsprAcc;
+        WsrKeyS0L:     ispr_addr = IsprKeyS0L;
+        WsrKeyS0H:     ispr_addr = IsprKeyS0H;
+        WsrKeyS1L:     ispr_addr = IsprKeyS1L;
+        WsrKeyS1H:     ispr_addr = IsprKeyS1H;
+        WsrKmacDataS0: ispr_addr = IsprKmacDataS0;
+        WsrKmacDataS1: ispr_addr = IsprKmacDataS1;
+        WsrMaiResS0:   ispr_addr = IsprMaiResS0;
+        WsrMaiResS1:   ispr_addr = IsprMaiResS1;
+        WsrMaiIn0S0:   ispr_addr = IsprMaiIn0S0;
+        WsrMaiIn0S1:   ispr_addr = IsprMaiIn0S1;
+        WsrMaiIn1S0:   ispr_addr = IsprMaiIn1S0;
+        WsrMaiIn1S1:   ispr_addr = IsprMaiIn1S1;
+        WsrUrndState:  ispr_addr = IsprUrndState;
         default: ;
       endcase
     end
@@ -846,6 +856,7 @@ module otbn_predecode
   assign mac_bignum_predec_raw_o.mul_merger_en       = '0;
   assign mac_bignum_predec_raw_o.add_res_en          = '0;
   assign mac_bignum_predec_raw_o.operation_valid_raw = '0;
+  assign mac_bignum_predec_raw_o.shuffle_offset      = '0;
 
   assign insn_rs1 = imem_rdata_i[19:15];
   assign insn_rs2 = imem_rdata_i[24:20];

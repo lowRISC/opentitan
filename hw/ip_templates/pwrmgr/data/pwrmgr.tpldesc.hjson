@@ -29,7 +29,7 @@
         {
           name: "wkup_req"
           width: "1"
-          module: "sysrst_ctrl_aon"
+          module: "sysrst_ctrl"
         }
       ]
     }
@@ -44,7 +44,7 @@
           {
             name: "rst_req"
             width: "1"
-            module: "sysrst_ctrl_aon"
+            module: "sysrst_ctrl"
             desc: "reset request running on AON clock"
           }
         ]

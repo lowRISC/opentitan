@@ -312,7 +312,7 @@ class DeviceId():
         print("AST Config Version:   {}".format(self.ast_cfg_version))
         print("OTP ID:               {} ({})".format(
             hex(self.otp_id),
-            self.otp_id.to_bytes(length=4, byteorder="big").decode("utf-8")))
+            self.otp_id.to_bytes(length=2, byteorder="big").decode("utf-8")))
         print("OTP Version:          {}".format(self.otp_version))
         print("Reserved (24 bits):   {}".format(hex(_RESERVED_VALUE)))
         print("SKU ID:               {} ({})".format(

@@ -102,8 +102,8 @@ module pinmux_chip_tb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
+      BidirOd, // DIO sysrst_ctrl_flash_wp_l
+      BidirOd, // DIO sysrst_ctrl_ec_rst_l
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -169,8 +169,8 @@ module pinmux_chip_tb
       scan_role_pkg::DioPadSpiHostClkScanRole, // DIO spi_host0_sck
       scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
       scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_aon_flash_wp_l
-      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_aon_ec_rst_l
+      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_flash_wp_l
+      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_ec_rst_l
       scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
       scan_role_pkg::DioPadSpiDevD2ScanRole, // DIO spi_device_sd
       scan_role_pkg::DioPadSpiDevD1ScanRole, // DIO spi_device_sd

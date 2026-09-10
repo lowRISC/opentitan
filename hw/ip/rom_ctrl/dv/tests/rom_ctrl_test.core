@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:rom_ctrl_env
+      - lowrisc:dv:rom_ctrl_vseqs
     files:
       - rom_ctrl_test_pkg.sv
       - rom_ctrl_base_test.sv: {is_include_file: true}

@@ -21,7 +21,8 @@ module prim_rom_adv import prim_rom_pkg::*; #(
   output logic             rvalid_o,
   output logic [Width-1:0] rdata_o,
 
-  input rom_cfg_t          cfg_i
+  input  rom_cfg_req_t     cfg_i,
+  output rom_cfg_rsp_t     cfg_o
 );
 
   prim_rom #(
@@ -35,7 +36,8 @@ module prim_rom_adv import prim_rom_pkg::*; #(
     .addr_i,
     .rvalid_o,
     .rdata_o,
-    .cfg_i
+    .cfg_i,
+    .cfg_o
   );
 
   ////////////////

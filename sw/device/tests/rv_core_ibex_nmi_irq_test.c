@@ -42,7 +42,7 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_alert_handler_t alert_handler;
-static dt_pwrmgr_t kPwrmgrDt = kDtPwrmgrAon;
+static dt_pwrmgr_t kPwrmgrDt = kDtPwrmgr;
 
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset)
@@ -259,7 +259,7 @@ void init_peripherals(void) {
   CHECK_DIF_OK(
       dif_rv_core_ibex_init_from_dt((dt_rv_core_ibex_t)0, &rv_core_ibex));
 
-  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimerAon, &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimer, &aon_timer));
 
   static_assert(kDtAlertHandlerCount >= 1, "This test needs an Alert Handler");
   CHECK_DIF_OK(

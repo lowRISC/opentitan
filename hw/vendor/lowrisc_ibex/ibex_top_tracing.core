@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ibex:ibex_tracer
+      # Map the prims in ibex_top to prim_generic implementations for simulation and linting
       - "fileset_partner ? (partner:prim_generic:all)"
       - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:
@@ -25,6 +26,12 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+
+  BaseIsa:
+    datatype: str
+    default: ibex_pkg::BaseIsaRV32I
+    paramtype: vlogdefine
+    description: "Base ISA parameter enum. See the ibex_pkg::base_isa_e enum in ibex_pkg.sv for permitted values."
 
   RV32E:
     datatype: int
@@ -146,6 +153,7 @@ targets:
     parameters:
       - RVFI=true
       - SYNTHESIS=true
+      - BaseIsa
       - RV32E
       - RV32M
       - RV32B

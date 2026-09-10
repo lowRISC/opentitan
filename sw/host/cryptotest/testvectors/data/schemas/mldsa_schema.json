@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/mldsa_schema.json",
+  "title": "Cryptotest ML-DSA Test Vector",
+  "description": "A list of testvectors for ML-DSA testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID number (used for debugging)",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be ml-dsa",
+        "type": "string",
+        "enum": ["ml-dsa"]
+      },
+      "operation": {
+        "description": "ML-DSA operation",
+        "type": "string",
+        "enum": ["sign", "verify"]
+      },
+      "parameter_set": {
+        "description": "ML-DSA parameter set",
+        "type": "string",
+        "enum": ["ml-dsa-87"]
+      },
+      "private_seed": {
+        "description": "Private key seed bytes (32 bytes)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "public_key": {
+        "description": "Public key bytes (2592 bytes)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "message": {
+        "description": "Message bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "context": {
+        "description": "Context string bytes",
+        "$ref": "#/$defs/byte_array"
+      },
+      "rnd": {
+        "description": "Random seed bytes for randomized signing (32 bytes)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "signature": {
+        "description": "Signature bytes (4627 bytes)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected result of operation",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "vendor",
+      "test_case_id",
+      "algorithm",
+      "operation",
+      "parameter_set",
+      "result"
+    ]
+  }
+}

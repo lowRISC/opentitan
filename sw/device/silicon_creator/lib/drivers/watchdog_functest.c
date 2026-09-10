@@ -133,8 +133,7 @@ bool test_main(void) {
 
     *phase = kTestPhaseDone;
     LOG_ERROR("Test failure: should have reset before this line.");
-  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
-                                       kDtInstanceIdAonTimerAon,
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgr, reason, kDtInstanceIdAonTimer,
                                        kDtAonTimerResetReqAonTimer)) {
     LOG_INFO("Detected reset after escalation test");
     if (*phase != kTestPhaseBite) {

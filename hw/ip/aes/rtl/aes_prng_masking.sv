@@ -110,6 +110,7 @@ module aes_prng_masking import aes_pkg::*;
    .seed_state_partial_i(entropy_i),
 
    .key_o(prng_key),
+   .state_o(), // Not used.
    .err_o(prng_err)
   );
 

@@ -40,7 +40,7 @@
   vcs_cov_excl_files: ["{proj_root}/hw/ip/i2c/dv/cov/i2c_cov_excl.el"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Default UVM test and seq class name.
   uvm_test: i2c_base_test
@@ -62,11 +62,13 @@
     {
       name: i2c_host_smoke
       uvm_test_seq: i2c_host_smoke_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_override
       uvm_test_seq: i2c_host_override_vseq
+      reseed: 50
     }
 
     // TODO(#21887) Removed pending DV fixes after removal
@@ -80,59 +82,70 @@
     {
       name: i2c_host_fifo_watermark
       uvm_test_seq: i2c_host_fifo_watermark_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_fifo_overflow
       uvm_test_seq: i2c_host_fifo_overflow_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_fifo_reset_fmt
       uvm_test_seq: i2c_host_fifo_reset_fmt_vseq
       run_opts: ["+test_timeout_ns=10_000_000"]
+      reseed: 25
     }
 
     {
       name: i2c_host_fifo_fmt_empty
       uvm_test_seq: i2c_host_fifo_fmt_empty_vseq
       run_opts: ["+test_timeout_ns=10_000_000"]
+      reseed: 5
     }
 
     {
       name: i2c_host_fifo_reset_rx
       uvm_test_seq: i2c_host_fifo_reset_rx_vseq
       run_opts: ["+test_timeout_ns=10_000_000"]
+      reseed: 5
     }
 
     {
       name: i2c_host_fifo_full
       uvm_test_seq: i2c_host_fifo_full_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_perf
       uvm_test_seq: i2c_host_perf_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_perf_precise
       uvm_test_seq: i2c_host_perf_precise_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_stretch_timeout
       uvm_test_seq: i2c_host_stretch_timeout_vseq
+      reseed: 5
     }
 
     {
       name: i2c_host_error_intr
       uvm_test_seq: i2c_host_error_intr_vseq
+      reseed: 50
     }
 
     {
       name: i2c_host_stress_all
       uvm_test_seq: i2c_host_stress_all_vseq
+      reseed: 30
     }
     {
       name: i2c_target_glitch
@@ -144,39 +157,46 @@
       name: i2c_target_smoke
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000"]
+      reseed: 5
     }
     {
       name: i2c_target_stress_wr
       uvm_test_seq: i2c_target_stress_wr_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=600_000_000"]
+      reseed: 5
     }
     {
       name: i2c_target_stress_rd
       uvm_test_seq: i2c_target_stress_rd_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000"]
+      reseed: 5
     }
     {
       name: i2c_target_stretch
       uvm_test_seq: i2c_target_stretch_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=400_000_000"]
+      reseed: 5
     }
     {
       name: i2c_target_intr_smoke
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_intr_stress_wr
       uvm_test_seq: i2c_target_stress_wr_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=600_000_000",
                  "+use_intr_handler=1", "+slow_acq=1"]
+      reseed: 5
     }
     {
       name: i2c_target_timeout
       uvm_test_seq: i2c_target_timeout_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=50_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_unexp_stop
@@ -189,36 +209,42 @@
       uvm_test_seq: i2c_target_fifo_reset_acq_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_fifo_reset_tx
       uvm_test_seq: i2c_target_fifo_reset_tx_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 50
     }
     {
       name: i2c_target_perf
       uvm_test_seq: i2c_target_perf_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_stress_all
       uvm_test_seq: i2c_target_stress_all_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=300_000_000",
                  "+use_intr_handler=1"]
+      reseed: 30
     }
     {
       name: i2c_target_bad_addr
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1", "+i2c_bad_addr_pct=50"]
+      reseed: 5
     }
     {
       name: i2c_target_hrst
       uvm_test_seq: i2c_target_hrst_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 50
     }
     {
       name: "i2c_host_stress_all_with_rand_reset"
@@ -241,10 +267,12 @@
       name: "i2c_host_mode_toggle"
       uvm_test_seq: "i2c_host_mode_toggle_vseq"
       run_timeout_mins: 10
+      reseed: 50
     }
     {
       name: "i2c_host_may_nack"
       uvm_test_seq: "i2c_host_may_nack_vseq"
+      reseed: 50
     }
     {
       name: i2c_target_fifo_watermarks_acq
@@ -252,6 +280,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_fifo_watermarks_tx
@@ -259,6 +288,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_tx_stretch_ctrl
@@ -266,6 +296,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_smbus_maxlen
@@ -273,6 +304,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 5
     }
     {
       name: i2c_target_nack_acqfull
@@ -280,6 +312,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 50
     }
     {
       name: i2c_target_nack_acqfull_addr
@@ -287,6 +320,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 50
     }
     {
       name: i2c_target_nack_txstretch
@@ -294,6 +328,7 @@
       run_opts: ["+i2c_agent_mode=Host",
                  "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
+      reseed: 30
     }
   ]
 

@@ -11,47 +11,69 @@
  * Public key
  */
 
-.globl mldsa87_verify_pk_t1
+.globl mldsa87_verify_pk
 .globl mldsa87_verify_pk_rho
+.globl mldsa87_verify_pk_t1
 
-mldsa87_verify_pk_t1:
-.zero 2560
+mldsa87_verify_pk:
 mldsa87_verify_pk_rho:
 .zero 32
-.zero 32 /* Padding */
+mldsa87_verify_pk_t1:
+.zero 2560
 
 /*
  * Signature
  */
 
+.globl mldsa87_verify_sig
 .globl mldsa87_verify_sig_c_tilde
 .globl mldsa87_verify_sig_z
-.globl mldsa87_verify_sig_mu
 .globl mldsa87_verify_sig_h
 
+mldsa87_verify_sig:
 mldsa87_verify_sig_c_tilde:
 .zero 64
 mldsa87_verify_sig_z:
 .zero 4480
-mldsa87_verify_sig_mu:
-.zero 64
 mldsa87_verify_sig_h:
 .zero 83
 .zero 13 /* Padding */
 
 /*
+ * Message
+ */
+
+.globl mldsa87_verify_mu
+
+mldsa87_verify_mu:
+.zero 64
+
+/*
  * Verification result
  */
 
-.globl mldsa87_verify_result
+.globl mldsa87_verify_res_ok
+.globl mldsa87_verify_res_c_tilde_prime
 
-mldsa87_verify_result:
-.zero 32
+mldsa87_verify_res_ok:
+.zero 4
+.zero 28 /* Padding */
+mldsa87_verify_res_c_tilde_prime:
+.zero 64
 
 /*
  * Intermediate variables
  */
 
+.globl mldsa87_verify_var_rho
+.globl mldsa87_verify_var_c
+.globl mldsa87_verify_var_h
+
+/* RHO with indices */
+mldsa87_verify_var_rho:
+.zero 32
+.zero 2  /* r, s */
+.zero 30 /* Padding */
 /* Challenge polynomial */
 mldsa87_verify_var_c:
 .zero 1024
@@ -64,6 +86,10 @@ mldsa87_verify_var_h:
  * Polynomial slots
  */
 
+.globl mldsa87_verify_poly_slot0
+.globl mldsa87_verify_poly_slot1
+.globl mldsa87_verify_poly_slot2
+
 mldsa87_verify_poly_slot0:
 .zero 1024
 mldsa87_verify_poly_slot1:
@@ -74,6 +100,9 @@ mldsa87_verify_poly_slot2:
 /*
  * Constants
  */
+
+.globl mldsa87_verify_const_params
+.globl mldsa87_verify_const_gamma1_beta_bound
 
 /*
  * q  = 8380417 = 2^23 - 2^13 + 1 (ML-DSA modulus)
@@ -101,6 +130,8 @@ mldsa87_verify_const_gamma1_beta_bound:
 .word 0x0007ff88
 .word 0x0007ff88
 
+.globl stack
+
 stack:
 .zero 256
 
@@ -110,6 +141,9 @@ stack:
 /*
  * Vector slots
  */
+
+.globl mldsa87_verify_vector_slot0
+.globl mldsa87_verify_vector_slot1
 
 mldsa87_verify_vector_slot0:
 .zero 8192

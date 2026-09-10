@@ -27,8 +27,8 @@ ALL_SEED_NAMES = _all_seed_names()
 
 def opentitan_if_ip(ip, obj, default):
     """
-    Return a select expression that evaluate to `obj` if the ip is
-    supported by the active top, and `default` otherwose.
+    Return a select expression that evaluates to `obj` if the ip is
+    supported by the active top, and `default` otherwise.
 
     Example:
     ```python
@@ -53,6 +53,38 @@ def opentitan_if_ip(ip, obj, default):
     } | {
         "//conditions:default": default,
     })
+
+def opentitan_for_ip(objs_by_ip):
+    """
+    Build a list of objects selecting them according to the supported IPs.
+
+    Given a dictionary that specifies a list of objects to include for each
+    supported IP, return a list obtained by concatenating the lists for the
+    IPs supported by the active top.
+
+    Example:
+    ```python
+    cc_library(
+      name = "my_library",
+      defines = opentitan_for_ip({
+        "usbdev": ["HAS_USBDEV"],
+        "rstmgr": ["HAS_RSTMGR"]
+      }),
+      deps = opentitan_for_ip({
+        "usbdev": ["//sw/device/lib/dif:usbdev"],
+        "rstmgr": [//sw/device/lib/dif:rstmgr]
+      }),
+    )
+    ```
+    """
+    objs_for_top = {"//conditions:default": []}
+    for top in ALL_TOPS:
+        top_flag = "@lowrisc_opentitan//hw/top:is_{}".format(top.name)
+        top_ips = {ip.name: True for ip in top.ips}
+        for candidate_ip, objs in objs_by_ip.items():
+            if candidate_ip in top_ips:
+                objs_for_top.setdefault(top_flag, []).extend(objs)
+    return select(objs_for_top)
 
 def opentitan_require_ip(ip):
     """

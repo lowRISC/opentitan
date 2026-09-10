@@ -32,13 +32,13 @@ enum {
  * Retention SRAM start address (inclusive).
  */
 #if defined(OPENTITAN_IS_EARLGREY)
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR,
   kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+      kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES - 1,
 #elif defined(OPENTITAN_IS_DARJEELING)
-  kRetSramBaseAddr = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kRetSramBaseAddr = TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR,
   kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+      kRetSramBaseAddr + TOP_DARJEELING_SRAM_CTRL_RET_RAM_SIZE_BYTES - 1,
 #else
 #error Unsupported top
 #endif
@@ -238,7 +238,7 @@ static noreturn void main_sram_scramble(void) {
         [mainFrame] "r"(&scrambling_frame), [retFrame] "r"(&reference_frame),
         [kCopyLen] "r"(copy_len),
 
-        [kRstMgrRegsBase] "r"(dt_rstmgr_primary_reg_block(kDtRstmgrAon)),
+        [kRstMgrRegsBase] "r"(dt_rstmgr_primary_reg_block(kDtRstmgr)),
         [kRstMgrResetReq] "I"(RSTMGR_RESET_REQ_REG_OFFSET)
       : "t0", "t1", "a2", "a3");
 
@@ -470,9 +470,9 @@ extern uint8_t _stack_start[];
 extern uint8_t _freertos_heap_start[];
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
-  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &ret_sram));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRet, &ret_sram));
 
   main_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
       (uintptr_t)_freertos_heap_start,

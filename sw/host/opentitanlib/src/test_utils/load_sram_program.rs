@@ -4,7 +4,6 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{Context, Result, ensure};
@@ -150,6 +149,8 @@ pub struct SramProgramInfo {
     pub crc32: u32,
 }
 
+const WORD_SIZE_BYTES: usize = std::mem::size_of::<u32>();
+
 /// Load a program into SRAM using JTAG (VMEM files).
 pub fn load_vmem_sram_program(
     jtag: &mut dyn Jtag,
@@ -158,8 +159,9 @@ pub fn load_vmem_sram_program(
 ) -> Result<SramProgramInfo> {
     log::info!("Loading VMEM file {}", vmem_filename.display());
     let vmem_content = fs::read_to_string(vmem_filename)?;
-    let mut vmem = Vmem::from_str(&vmem_content)?;
-    vmem.merge_sections();
+    let mut vmem = Vmem::from_str(&vmem_content, Some(WORD_SIZE_BYTES))?;
+    vmem.merge_sections(Some(WORD_SIZE_BYTES));
+
     log::info!("Uploading program to SRAM at {:x}", load_addr);
     let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
     let mut digest = crc.digest();
@@ -169,10 +171,11 @@ pub fn load_vmem_sram_program(
             section.data.len(),
             load_addr + section.addr
         );
-        jtag.write_memory32(load_addr + section.addr, &section.data)?;
+        let words: Vec<u32> = section.clone().try_into()?;
+        jtag.write_memory32(load_addr + section.addr, &words)?;
         // Update CRC
         let mut data8: Vec<u8> = vec![];
-        for elem in &section.data {
+        for elem in &words {
             data8.write_u32::<LittleEndian>(*elem).unwrap();
         }
         digest.update(&data8);
@@ -243,9 +246,8 @@ pub fn load_elf_sram_program(
 
         // It is much faster to load data word by word instead of bytes by bytes.
         // The linker script always ensures that we the address and size are multiple of 4.
-        const WORD_SIZE: usize = std::mem::size_of::<u32>();
         ensure!(
-            address % WORD_SIZE as u64 == 0 && data.len() % WORD_SIZE == 0,
+            address % WORD_SIZE_BYTES as u64 == 0 && data.len() % WORD_SIZE_BYTES == 0,
             LoadSramProgramError::SegmentNotWordAligned
         );
         ensure!(

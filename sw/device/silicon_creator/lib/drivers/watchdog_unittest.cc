@@ -61,8 +61,8 @@ class WatchdogTest : public rom_test::RomTest {
     ExpectCdcSync();
   }
 
-  uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR;
-  uint32_t wdog_ = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR;
+  uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_BASE_ADDR;
+  uint32_t wdog_ = TOP_EARLGREY_AON_TIMER_BASE_ADDR;
   rom_test::MockAbsMmio abs_;
   rom_test::MockSecMmio sec_;
   rom_test::MockOtp otp_;

@@ -14,22 +14,40 @@
 @media only screen and (min-width:1440px) {
     .sidetoc {
         position: sticky;
-        margin: 0 calc(var(--page-padding) + 15px) 0 0;
+        margin: 0 calc(var(--page-padding) + 15px) 0 30px;
         width: calc(40% - 15vw + 100px);
         max-width: 400px;
-        top: calc(var(--menu-bar-height) + 8rem);
+        top: calc(var(--menu-bar-height) + 1rem);
         scroll-behavior: smooth;
+        background: white;
+        box-shadow: 0px 0px 20px 30px white;
+        border-radius: 15px;
+    }
+    /* When the search bar is open we intentionally DO NOT change the
+       sidetoc's sticky `top`. The search-wrapper is not sticky itself —
+       it takes 55px of flow space above the shared .content-wrapper and
+       then scrolls away with the page. Both sidetoc and .content are
+       flex siblings in .content-wrapper, so both are displaced by that
+       same 55px automatically. Once scrolled past, the search-wrapper
+       disappears and the sidetoc should return to its normal sticky
+       landing, which it does with no override.
+
+       However, the sidetoc's `box-shadow` feathering halo extends ~50px
+       above its top edge and would overlap the search bar. Add flow
+       space below the search-wrapper so the halo has room. Applied to
+       the search-wrapper itself so that content and sidetoc are
+       displaced together (preserving their alignment). */
+    .page > #search-wrapper:not(.hidden) {
+        margin-block-end: 30px;
     }
     .pagetoc {
+        position: relative;
         font-family: 'Recursive', sans-serif;
         font-size: 95%;
         font-weight: 380;
         padding-left: 15px;
         padding-right: 10px;
         overflow-x: hidden;
-        background: white;
-        box-shadow: 0px 0px 20px 15px white;
-        border-radius: 15px;
     }
     .pagetoc::-webkit-scrollbar {
         width: 0.8rem;
@@ -44,8 +62,7 @@
         background-image: linear-gradient(180deg, #4BC0C8A0 0%, #C779D0A0 50%, #FEAC5EA0 100%);
         border-radius: 5px;
     }
-    .pagetoc a,
-    .pagetoc #pagetoc-title {
+    .pagetoc a {
         color: var(--pagetoc-fg) !important;
         display: block;
         padding-bottom: 5px;
@@ -55,13 +72,20 @@
         text-decoration: none;
         pointer-events: auto;
     }
-    .pagetoc #pagetoc-title {
+    .sidetoc #pagetoc-title {
         color: var(--fg) !important;
+        display: block;
+        font-family: 'Recursive', sans-serif;
         font-weight: bold;
         font-size: 200%;
+        /* Match the default h1's `margin-block-start: 0.67em` so the
+           sidetoc heading vertically aligns with the H1 in .content.
+           Both elements have font-size 2em, so 0.67em resolves to the
+           same pixel value in both places. */
+        margin-top: 0.67em;
         border-bottom: 7px solid var(--pagetoc-bg);
         margin-bottom: 10px;
-        padding-left: unset;
+        text-align: left;
     }
     .pagetoc a:hover,
     .pagetoc a.active {
@@ -115,5 +139,34 @@
     .pagetoc .leaf-H5,
     .pagetoc .leaf-H6 {
         font-size: 80%;
+    }
+
+    /* Indicators shown when the active pagetoc entry has scrolled out of the
+       pagetoc's visible band. Hidden by default; JS toggles ".visible".
+       They are absolutely positioned inside a wrapper that surrounds — but is
+       not — the scrollable .pagetoc, so toggling their display does not change
+       the pagetoc's scrollHeight. That matters because Firefox remaps the
+       scrollbar thumb position mid-drag when scrollHeight changes, which used
+       to produce a feedback loop that oscillated the pagetoc near the edges. */
+    .pagetoc-wrapper { position: relative; }
+    .pagetoc-indicator {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        padding: 7px 0;
+        color: #555;
+        background: rgb(230, 230, 230);
+        z-index: 1;
+    }
+    .pagetoc-indicator.visible { display: block; }
+    .pagetoc-indicator-top    { top: 0;    border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .pagetoc-indicator-bottom { bottom: 0; border-top:    1px solid rgba(0,0,0,0.1); }
+    .pagetoc-indicator:hover {
+        color: #222;
+        background: rgb(215, 215, 215);
     }
 }

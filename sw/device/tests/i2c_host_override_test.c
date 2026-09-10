@@ -76,7 +76,7 @@ static status_t test_init(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   return OK_STATUS();

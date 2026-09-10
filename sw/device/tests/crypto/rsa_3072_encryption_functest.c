@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -178,7 +180,7 @@ static status_t run_rsa_3072_decrypt(const uint8_t *label, size_t label_len,
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa3072PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -248,7 +250,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, oaep_decrypt_valid_test);
   EXECUTE_TEST(test_result, oaep_encrypt_decrypt_test);
   return status_ok(test_result);

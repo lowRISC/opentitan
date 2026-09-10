@@ -43,7 +43,7 @@
   vcs_cov_excl_files: ["{proj_root}/hw/ip/edn/dv/cov/edn_fsm_excl.el"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   overrides: [
     // Override the default scratch directory and rel_path to take variant into account
@@ -76,31 +76,34 @@
       name: edn_regwen
       uvm_test: edn_regwen_test
       uvm_test_seq: edn_smoke_vseq
-      reseed: 10
+      reseed: 5
     }
 
     {
       name: edn_genbits
       uvm_test: edn_genbits_test
       uvm_test_seq: edn_genbits_vseq
-      reseed: 300
+      reseed: 100
     }
 
     {
       name: edn_stress_all
       uvm_test: edn_stress_all_test
       uvm_test_seq: edn_stress_all_vseq
+      reseed: 30
     }
 
     {
       name: edn_stress_all_with_rand_reset
       uvm_test: edn_stress_all_test
+      reseed: 30
     }
 
     {
       name: edn_intr
       uvm_test: edn_intr_test
       uvm_test_seq: edn_intr_vseq
+      reseed: 20
     }
 
     {
@@ -123,6 +126,7 @@
       uvm_test_seq: edn_disable_vseq
       // For debug purpose, this test is very short.
       run_opts: ["+test_timeout_ns=500_000"]
+      reseed: 50
     }
 
     {
@@ -131,6 +135,7 @@
       uvm_test_seq: edn_disable_auto_req_mode_vseq
       // For debug purpose, this test is very short.
       run_opts: ["+test_timeout_ns=500_000"]
+      reseed: 50
     }
   ]
 

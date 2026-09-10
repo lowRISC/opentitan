@@ -30,7 +30,10 @@ extern "C" {
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDSA key generation.
+ * @return Result of the ECDSA key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_keygen(
@@ -72,7 +75,10 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign(
@@ -91,7 +97,6 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
  * details.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
- * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
@@ -122,13 +127,16 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of the ECDSA verification operation.
+ * @return Result of the ECDSA verification operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -143,7 +151,10 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDH key generation.
+ * @return Result of the ECDH key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_keygen(
@@ -252,7 +263,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-384.
@@ -266,12 +277,13 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
  * status code, as for other operations, only indicates whether errors were
  * encountered, and may return OK even when the signature is invalid.
  *
+ * @param signature Pointer to the signature being verified.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -428,7 +440,7 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_public_key_import(
-    const otcrypto_const_word32_buf_t *x, const otcrypto_const_word32_buf_t *y,
+    const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -460,9 +472,10 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_export(
  *
  * @param point Point in the affine coordinates representation that should be
  * checked.
+ * @param[out] check_result True if point is valid, false otherwise.
  * @return Result of the point valid check operation.
  */
-otcrypto_status_t otcrypto_p384_point_on_curve(
+otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
 
 /**
@@ -475,16 +488,15 @@ otcrypto_status_t otcrypto_p384_point_on_curve(
  * @param public_key The resulting public key of the base point multiplication.
  * @return Result of the base point multiplication.
  */
-status_t otcrypto_p384_base_point_mult(
+status_t otcrypto_ecc_p384_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
- * Arithmetically share a private key provided as Boolean shares.
+ * Arithmetically share a private key/seed provided as Boolean shares.
  *
- * Given a Boolean-shared private key d in the range [1, n-1] and shared, this
- * routine arithmetically shares the key such that d = d0 + d1 mod n, where n
- * is the curve order.
+ * Given a Boolean-shared 320-bit key d this function arithmetically shares the
+ * key such that d = d0 + d1 mod n where n is the curve order.
  *
  * It is allowed to pass the key in plain with the second share being set to 0.
  *
@@ -498,12 +510,12 @@ status_t otcrypto_p384_base_point_mult(
  *
  * @param bool_private_key_share0 First Boolean share of the private key.
  * @param bool_private_key_share1 Second Boolean share of the private key.
- * @param arith_shared_private_key The resulting arithmetically shared key.
+ * @param[out] arith_private_key The resulting arithmetically shared key.
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
-    otcrypto_const_word32_buf_t *bool_private_key_share0,
-    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    const otcrypto_const_word32_buf_t *bool_private_key_share0,
+    const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key);
 
 #ifdef __cplusplus

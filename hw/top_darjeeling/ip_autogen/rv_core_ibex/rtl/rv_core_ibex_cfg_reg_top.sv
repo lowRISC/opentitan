@@ -57,9 +57,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [264:0] reg_we_check;
+  logic [266:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(265)
+    .OneHotWidth(267)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -975,6 +975,12 @@ module rv_core_ibex_cfg_reg_top (
   logic rnd_status_rnd_data_fips_qs;
   logic fpga_info_re;
   logic [31:0] fpga_info_qs;
+  logic mcounteren_writable_regwen_we;
+  logic mcounteren_writable_regwen_qs;
+  logic mcounteren_writable_regwen_wd;
+  logic mcounteren_writable_we;
+  logic [3:0] mcounteren_writable_qs;
+  logic [3:0] mcounteren_writable_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -11692,8 +11698,67 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[mcounteren_writable_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_mcounteren_writable_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [264:0] addr_hit;
+    // from register interface
+    .we     (mcounteren_writable_regwen_we),
+    .wd     (mcounteren_writable_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mcounteren_writable_regwen_qs)
+  );
+
+
+  // R[mcounteren_writable]: V(False)
+  // Create REGWEN-gated WE signal
+  logic mcounteren_writable_gated_we;
+  assign mcounteren_writable_gated_we = mcounteren_writable_we & mcounteren_writable_regwen_qs;
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h6),
+    .Mubi    (1'b1)
+  ) u_mcounteren_writable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (mcounteren_writable_gated_we),
+    .wd     (mcounteren_writable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mcounteren_writable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (mcounteren_writable_qs)
+  );
+
+
+
+  logic [266:0] addr_hit;
   always_comb begin
     addr_hit[  0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
     addr_hit[  1] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
@@ -11960,6 +12025,8 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[262] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
     addr_hit[263] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
     addr_hit[264] = (reg_addr == RV_CORE_IBEX_FPGA_INFO_OFFSET);
+    addr_hit[265] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
+    addr_hit[266] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -12231,7 +12298,9 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[261] & (|(RV_CORE_IBEX_CFG_PERMIT[261] & ~reg_be))) |
                (addr_hit[262] & (|(RV_CORE_IBEX_CFG_PERMIT[262] & ~reg_be))) |
                (addr_hit[263] & (|(RV_CORE_IBEX_CFG_PERMIT[263] & ~reg_be))) |
-               (addr_hit[264] & (|(RV_CORE_IBEX_CFG_PERMIT[264] & ~reg_be)))));
+               (addr_hit[264] & (|(RV_CORE_IBEX_CFG_PERMIT[264] & ~reg_be))) |
+               (addr_hit[265] & (|(RV_CORE_IBEX_CFG_PERMIT[265] & ~reg_be))) |
+               (addr_hit[266] & (|(RV_CORE_IBEX_CFG_PERMIT[266] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -13040,6 +13109,12 @@ module rv_core_ibex_cfg_reg_top (
   assign rnd_data_re = addr_hit[262] & reg_re & !reg_error;
   assign rnd_status_re = addr_hit[263] & reg_re & !reg_error;
   assign fpga_info_re = addr_hit[264] & reg_re & !reg_error;
+  assign mcounteren_writable_regwen_we = addr_hit[265] & reg_we & !reg_error;
+
+  assign mcounteren_writable_regwen_wd = reg_wdata[0];
+  assign mcounteren_writable_we = addr_hit[266] & reg_we & !reg_error;
+
+  assign mcounteren_writable_wd = reg_wdata[3:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -13308,6 +13383,8 @@ module rv_core_ibex_cfg_reg_top (
     reg_we_check[262] = 1'b0;
     reg_we_check[263] = 1'b0;
     reg_we_check[264] = 1'b0;
+    reg_we_check[265] = mcounteren_writable_regwen_we;
+    reg_we_check[266] = mcounteren_writable_gated_we;
   end
 
   // Read data return
@@ -14381,6 +14458,14 @@ module rv_core_ibex_cfg_reg_top (
 
       addr_hit[264]: begin
         reg_rdata_next[31:0] = fpga_info_qs;
+      end
+
+      addr_hit[265]: begin
+        reg_rdata_next[0] = mcounteren_writable_regwen_qs;
+      end
+
+      addr_hit[266]: begin
+        reg_rdata_next[3:0] = mcounteren_writable_qs;
       end
 
       default: begin

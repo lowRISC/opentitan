@@ -1,0 +1,23 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rram_ctrl
+
+# OTP read/write loops in rram_ctrl_otp.sv use otp_size_q as the loop bound
+# and (otp_off_q + k) * OtpWidth as the index.  These constructs are conservative
+# Ascent Lint rules; modern synthesisers handle variable bounds and variable
+# part-selects correctly.  The OTP controller guarantees otp_size_q <= 3 and
+# (otp_off_q + otp_size_q) <= DataWidth/OtpWidth - 1, so no out-of-range access
+# can occur in practice.
+waive -rules {FOR_LOOP_BOUNDS} -location {rram_ctrl_otp.sv} \
+      -regexp {Loop termination value 'otp_size_q' is not a constant} \
+      -comment "otp_size_q is a 2-bit signal bounded by the OTP ctrl protocol; variable loop bound is intentional."
+
+waive -rules {LOOP_VAR_OP} -location {rram_ctrl_otp.sv} \
+      -regexp {otp_off_q.*OtpWidth} \
+      -comment "Part-select index (otp_off_q + k) * OtpWidth is bounded by the OTP ctrl protocol; variable indexing is intentional."
+
+waive -rules {VAR_INDEX_RANGE} -location {rram_ctrl_otp.sv} \
+      -regexp {otp_off_q.*OtpWidth.*maximum value.*rram_word} \
+      -comment "Static range analysis is pessimistic; OTP ctrl guarantees (otp_off_q + otp_size_q) * OtpWidth < DataWidth."

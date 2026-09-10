@@ -114,7 +114,11 @@
             var sidebar = null;
             var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
-            sidebar = sidebar || 'visible';
+            // No stored preference: open the sidebar by default on wide viewports,
+            // keep it hidden on narrow/mobile where it would otherwise cover most
+            // of the screen on first visit and give a bad initial impression.
+            // Matches upstream mdbook's behaviour.
+            sidebar = sidebar || (document.body.clientWidth >= 1080 ? 'visible' : 'hidden');
             sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -152,7 +156,17 @@
                             <i class="fa fa-search"></i>
                         </button>
                         {{/if}}
-                    </div>
+						<div class="releases-dropdown">
+							<input type="checkbox" id="release-menu-toggle" style="display:none;">
+							<label for="release-menu-toggle" class="dropbtn">
+								Release/Branch <i class="fa fa-angle-down"></i>
+							</label>
+							<div class="dropdown-content">
+								<a href="/book/">master</a>
+								<a href="/earlgrey_1.0.0/book/">earlgrey_1.0.0</a>
+							</div>
+						</div>
+					</div>
 
                     <div class="menu-title">
                         <a class="logo" href="/">

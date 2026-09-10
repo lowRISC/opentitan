@@ -33,8 +33,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_aon_ec_rst_l
-    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_aon_flash_wp_l
+    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_ec_rst_l
+    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_flash_wp_l
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sck
@@ -210,9 +210,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // all tests asserting a reset.
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
-        cfg.chip_vif.otp_ext_volt_if.disconnect();
-        cfg.chip_vif.flash_test_mode_if.disconnect();
-        cfg.chip_vif.flash_test_volt_if.disconnect();
         cfg.chip_vif.cc_if.disconnect();
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
         check_manual_dios_pull();
@@ -272,37 +269,37 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(mio_pad_attr)
     for (int i = 0; i < MioPadCount; i++) begin
       uvm_reg_data_t value = '0;
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].invert, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].invert, value,
                                              mio_pad_attr[i].invert);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].virtual_od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].virtual_od_en, value,
                                              mio_pad_attr[i].virt_od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].pull_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].pull_en, value,
                                              mio_pad_attr[i].pull_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].pull_select, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].pull_select, value,
                                              mio_pad_attr[i].pull_select);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].keeper_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].keeper_en, value,
                                              mio_pad_attr[i].keep_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].schmitt_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].schmitt_en, value,
                                              mio_pad_attr[i].schmitt_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].od_en, value,
                                              mio_pad_attr[i].od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].input_disable, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].input_disable, value,
                                              mio_pad_attr[i].input_disable);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].slew_rate, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].slew_rate, value,
                                              mio_pad_attr[i].slew_rate);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].drive_strength, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].drive_strength, value,
                                              mio_pad_attr[i].drive_strength);
       `uvm_info(`gfn, $sformatf("%0d: mio_pad_attr = %0p / 0x%0h", i, mio_pad_attr[i], value),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO pad attr registers.
   task pinmux_mio_pad_attr_reset();
     for (int i = 0; i < MioPadCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_pad_attr[i].get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_pad_attr[i].get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -318,15 +315,15 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `uvm_info(`gfn, $sformatf("%0d: outsel_value_kind = %0s, periph_to_mio_map = %0s",
                                 i, outsel_value_kind[i].name(), periph_to_mio_map[i].name()),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO outsel registers.
   task pinmux_mio_outsel_reset();
     for (int i = 0; i < MioPadCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_outsel[i].out.get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_outsel[i].out.get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -431,15 +428,15 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `uvm_info(`gfn, $sformatf("%0d: insel_value_kind = %0s, mio_to_periph_map = %0s",
                                 i, insel_value_kind[i].name(), mio_to_periph_map[i].name()),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO insel registers.
   task pinmux_mio_insel_reset();
     for (int i = 0; i < MioInCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_periph_insel[i].in.get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_periph_insel[i].in.get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -507,29 +504,29 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dio_pad_attr)
     for (int i = 0; i < DioCount; i++) begin
       uvm_reg_data_t value = '0;
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].invert, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].invert, value,
                                              dio_pad_attr[i].invert);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].virtual_od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].virtual_od_en, value,
                                              dio_pad_attr[i].virt_od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].pull_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].pull_en, value,
                                              dio_pad_attr[i].pull_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].pull_select, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].pull_select, value,
                                              dio_pad_attr[i].pull_select);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].keeper_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].keeper_en, value,
                                              dio_pad_attr[i].keep_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].schmitt_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].schmitt_en, value,
                                              dio_pad_attr[i].schmitt_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].od_en, value,
                                              dio_pad_attr[i].od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].input_disable, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].input_disable, value,
                                              dio_pad_attr[i].input_disable);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].slew_rate, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].slew_rate, value,
                                              dio_pad_attr[i].slew_rate);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].drive_strength, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].drive_strength, value,
                                              dio_pad_attr[i].drive_strength);
       `uvm_info(`gfn, $sformatf("%0d: dio_pad_attr = %0p / 0x%0h", i, dio_pad_attr[i], value),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -549,8 +546,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   // Reset the DIO pad attr registers.
   task pinmux_dio_pad_attr_reset();
     for (int i = 0; i < DioCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.dio_pad_attr[i].get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.dio_pad_attr[i].get_reset();
+      csr_wr(.ptr(ral.pinmux.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -612,12 +609,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   task check_manual_dios_pull();
     string obs_strength;
 
-    // Pads `OTP_EXT_VOLT` and `FLASH_TEST_VOLT` are always high impedance.
-    obs_strength = $sformatf("%v", cfg.chip_vif.otp_ext_volt_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_volt_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_VOLT")
-
     // The other four manual pads are high impedance unless their pull-up/down is activated.
 
     // CC1 -----------------------------------------------------------------------------------------
@@ -625,9 +616,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC1")
     // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].pull_select), .value(1'b0), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[0].pull_select), .value(1'b0), .blocking(1),
            .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].pull_en), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[0].pull_en), .value(1'b1), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
@@ -638,7 +629,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC1")
 `endif
     // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].pull_select), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[0].pull_select), .value(1'b1), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
@@ -649,7 +640,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC1")
 `endif
     // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].pull_en), .value(1'b0), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[0].pull_en), .value(1'b0), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
@@ -661,9 +652,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
     // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].pull_select), .value(1'b0), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[1].pull_select), .value(1'b0), .blocking(1),
            .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].pull_en), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[1].pull_en), .value(1'b1), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
@@ -674,7 +665,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC2")
 `endif
     // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].pull_select), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[1].pull_select), .value(1'b1), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
@@ -685,84 +676,13 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC2")
 `endif
     // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].pull_en), .value(1'b0), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[1].pull_en), .value(1'b0), .blocking(1),
            .predict(1));
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
     // ---------------------------------------------------------------------------------------------
 
-    // FLASH_TEST_MODE0 ----------------------------------------------------------------------------
-    // - pull disabled (post-reset configuration)
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
-    // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].pull_select), .value(1'b0), .blocking(1),
-           .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].pull_en), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE0")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE0")
-`endif
-    // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].pull_select), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE0")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE0")
-`endif
-    // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].pull_en), .value(1'b0), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
-    // ---------------------------------------------------------------------------------------------
-
-    // FLASH_TEST_MODE1 ----------------------------------------------------------------------------
-    // - pull disabled (post-reset configuration)
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
-    // - pull-down
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].pull_select), .value(1'b0), .blocking(1),
-           .predict(1));
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].pull_en), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE1")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE1")
-`endif
-    // - pull-up
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].pull_select), .value(1'b1), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-`ifdef VCS
-    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
-    `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE1")
-`else
-    `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE1")
-`endif
-    // - pull disabled
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].pull_en), .value(1'b0), .blocking(1),
-           .predict(1));
-    #(cfg.pad_pull_delay * 1ns);
-    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
-    // ---------------------------------------------------------------------------------------------
   endtask
 
   function logic hdl_read_lsb(string path);
@@ -782,31 +702,17 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
     act = hdl_read_lsb("tb.dut.manual_in_cc1");
     `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[0].input_disable), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[0].input_disable), .value(1'b1), .blocking(1),
            .predict(1));
     act = hdl_read_lsb("tb.dut.manual_in_cc1");
     `DV_CHECK_CASE_EQ(lsb_exp_val, act)
     act = hdl_read_lsb("tb.dut.manual_in_cc2");
     `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[1].input_disable), .value(1'b1), .blocking(1),
+    csr_wr(.ptr(ral.sensor_ctrl.manual_pad_attr[1].input_disable), .value(1'b1), .blocking(1),
            .predict(1));
     act = hdl_read_lsb("tb.dut.manual_in_cc2");
     `DV_CHECK_CASE_EQ(lsb_exp_val, act)
 
-    cfg.chip_vif.flash_test_mode_if.drive('1);
-    cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
-    `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[2].input_disable), .value(1'b1), .blocking(1),
-           .predict(1));
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode0");
-    `DV_CHECK_CASE_EQ(lsb_exp_val, act)
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
-    `DV_CHECK_CASE_EQ(1'b1, act)
-    csr_wr(.ptr(ral.sensor_ctrl_aon.manual_pad_attr[3].input_disable), .value(1'b1), .blocking(1),
-           .predict(1));
-    act = hdl_read_lsb("tb.dut.manual_in_flash_test_mode1");
-    `DV_CHECK_CASE_EQ(lsb_exp_val, act)
   endtask
 
 endclass

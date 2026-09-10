@@ -100,12 +100,9 @@ task pattgen_scoreboard::process_tl_access(tl_seq_item   item,
   bit data_phase_read  = (!write && channel == DataChannel);
 
   uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-  // if access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-  end else begin
-    `uvm_fatal(`gfn, $sformatf("\naccess unexpected addr 0x%0h", csr_addr))
+  csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr == null) begin
+    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
   // address write phase

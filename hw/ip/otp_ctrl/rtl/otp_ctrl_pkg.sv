@@ -5,6 +5,8 @@
 // This package can be imported by generic IPs:
 // - It does not import otp_ctrl_reg_pkg, which is generated and top-specific.
 
+`include "prim_assert.sv"
+
 package otp_ctrl_pkg;
 
   ////////////////////////
@@ -13,6 +15,9 @@ package otp_ctrl_pkg;
 
   parameter int DeviceIdWidth = 256;
   typedef logic [DeviceIdWidth-1:0] otp_device_id_t;
+  // Device ID defined in the keymgr_dpe package must match
+  `ASSERT_STATIC_IN_PACKAGE(DeviceIdWidth_A,
+                            DeviceIdWidth == keymgr_dpe_pkg::DeviceIdWidth)
 
   parameter int ManufStateWidth = 256;
   typedef logic [ManufStateWidth-1:0] otp_manuf_state_t;
@@ -87,7 +92,6 @@ package otp_ctrl_pkg;
 
   parameter int NvmKeySeedWidth   = 256;
   parameter int SramKeySeedWidth  = 128;
-  parameter int KeyMgrKeyWidth    = 256;
   parameter int NvmKeyWidth       = 128;
   parameter int SramKeyWidth      = 128;
   parameter int SramNonceWidth    = 128;
@@ -104,14 +108,14 @@ package otp_ctrl_pkg;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
   typedef struct packed {
-    logic [KeyMgrKeyWidth-1:0] creator_root_key_share0;
-    logic creator_root_key_share0_valid;
-    logic [KeyMgrKeyWidth-1:0] creator_root_key_share1;
-    logic creator_root_key_share1_valid;
-    logic [KeyMgrKeyWidth-1:0] creator_seed;
-    logic creator_seed_valid;
-    logic [KeyMgrKeyWidth-1:0] owner_seed;
-    logic owner_seed_valid;
+    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_root_key_share0;
+    logic                                      creator_root_key_share0_valid;
+    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_root_key_share1;
+    logic                                      creator_root_key_share1_valid;
+    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] creator_seed;
+    logic                                      creator_seed_valid;
+    logic [keymgr_dpe_pkg::KeyMgrKeyWidth-1:0] owner_seed;
+    logic                                      owner_seed_valid;
   } otp_keymgr_key_t;
 
   parameter otp_keymgr_key_t OTP_KEYMGR_KEY_DEFAULT = '{

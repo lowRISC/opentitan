@@ -189,7 +189,7 @@ otp_json(
                 "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE << 4 | CONST.MUBI4_FALSE),
                 "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE": otp_hex(CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE),
-                "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
+                "OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
                 # By default, the sensor_ctrl should disable all sensors and mark
                 # alerts as recoverable.
                 "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG": [
@@ -304,6 +304,26 @@ otp_json(
     target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
+# Provisions the SECRET2 items and lets the life cycle state decide whether the
+# partition ends up locked.
+#
+# Prefer this over `otp_json_secret2` in any overlay list that is shared across
+# life cycle states, such as EARLGREY_STD_OTP_OVERLAYS.
+otp_json(
+    name = "otp_json_secret2_lock_by_lc_state",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "<random>",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
 otp_json(
     name = "otp_json_secret2_unlocked",
     partitions = [
@@ -381,6 +401,13 @@ otp_json(
     for i in range(0, 7)
 ]
 
+# DEV, PROD, PROD_END and RMA are the life cycle states in which a device is
+# allowed to be personalized, so these images lock the SECRET2 partition.
+#
+# Note that the lock is declared here rather than in the SECRET2 overlays: a
+# partition's lock state is sticky, so overlays such as
+# `otp_json_secret2_lock_by_lc_state` fill in the item values without
+# overriding this decision.
 otp_json(
     name = "otp_json_dev",
     partitions = [
@@ -388,6 +415,10 @@ otp_json(
             name = "LIFE_CYCLE",
             count = "5",
             state = "DEV",
+        ),
+        otp_partition(
+            name = "SECRET2",
+            lock = True,
         ),
     ],
     target_compatible_with = TARGET_COMPATIBLE_WITH,
@@ -401,6 +432,10 @@ otp_json(
             count = 5,
             state = "PROD",
         ),
+        otp_partition(
+            name = "SECRET2",
+            lock = True,
+        ),
     ],
     target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
@@ -413,6 +448,10 @@ otp_json(
             count = 5,
             state = "PROD_END",
         ),
+        otp_partition(
+            name = "SECRET2",
+            lock = True,
+        ),
     ],
     target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
@@ -424,6 +463,10 @@ otp_json(
             name = "LIFE_CYCLE",
             count = 8,
             state = "RMA",
+        ),
+        otp_partition(
+            name = "SECRET2",
+            lock = True,
         ),
     ],
     target_compatible_with = TARGET_COMPATIBLE_WITH,

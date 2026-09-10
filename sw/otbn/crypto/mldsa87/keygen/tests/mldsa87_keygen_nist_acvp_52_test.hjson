@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// NIST ACVP ML-DSA-87 keygen vector #51 (first ML-DSA-87 vector):
+// NIST ACVP ML-DSA-87 keygen vector #52 (first ML-DSA-87 vector):
 // https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ML-DSA-keyGen-FIPS204
 
 {
   "entrypoint": "main",
   "input": {
     "dmem": {
+      // Mode (deterministic)
+      "mldsa87_keygen_mode": "0x00000000000000000000000000000000000000000000000000000000faacd725",
       // Xi
-      "mldsa87_keygen_xi_share0": "0x00f027660de42c39fbead82d8e6cd0c49869a8eb85598c0c750213fbf8110026",
-      "mldsa87_keygen_xi_share1": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "mldsa87_keygen_xi_share0": "0x7af26562fa2591beb64f3f245a1deda450ceaed26e48ebbf12abd0838474c1c3",
+      "mldsa87_keygen_xi_share1": "0x7a024204f7c1bd874da5e709d4713d60c8a70639eb1167b367a9c3787c65c1e5",
     }
   },
   "output": {
@@ -31,7 +33,7 @@
       //
 
       // RHO_PRIME
-      "mldsa87_keygen_sk_rho_prime_share0": "0x72ae7d73ab7a966000c042d98864c5475fb737a04edba1f4537b69d3329c9ccd32628a1a51153331fb49a97f20b3cd84d0154651d04e60c6f89fb5a9661ae1a0",
+      "mldsa87_keygen_sk_rho": "0x3be2bf0525ab66440f1dee71ba64ba907f482dc9ad212ff59afea8c21c4b2d8c",
 
       // K
       "mldsa87_keygen_sk_k_share0": "0x090361e7a6856acad3369b45717db5202c1a31b47a144f25f82b733724dcf3b6",

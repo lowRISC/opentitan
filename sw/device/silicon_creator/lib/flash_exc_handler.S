@@ -33,10 +33,10 @@
    * Exception handler.
    */
   .balign 4
-  .global flash_exception_handler
-  .type flash_exception_handler, @function
-  .extern flash_ecc_exc_handler_en
-flash_exception_handler:
+  .global nvm_exception_handler
+  .type nvm_exception_handler, @function
+  .extern nvm_ecc_exc_handler_en
+nvm_exception_handler:
   // Save all registers to the exception frame.  The ROM locates its initial
   // stack_end at `ram_end - 128` and the stack grows downwards from there.
   // Save `sp` into `mscratch` and use the 128 bytes reserved at the top of
@@ -46,7 +46,7 @@ flash_exception_handler:
   // Before saving the stack frame, check if handling of flash exceptions is
   // enabled.  Determine this with just the stack pointer so that if not enabled,
   // we don't have to do any other register save/restore.
-  la   sp, flash_ecc_exc_handler_en
+  la   sp, nvm_ecc_exc_handler_en
   lw   sp, 0(sp)
   xori sp, sp, HARDENED_BOOL_TRUE
   bnez sp, .L_no_flash_exceptions
@@ -233,4 +233,4 @@ flash_exception_handler:
   // to the next stage if the next stage has trashed its SP register.
   j INTERRUPT_HANDLER
   unimp
-  .size flash_exception_handler, .-flash_exception_handler
+  .size nvm_exception_handler, .-nvm_exception_handler

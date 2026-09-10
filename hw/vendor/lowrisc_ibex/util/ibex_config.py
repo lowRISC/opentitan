@@ -21,6 +21,7 @@ class ConfigException(Exception):
 class Config:
     '''An object representing an Ibex configuration'''
     known_fields = [
+        ('BaseIsa', str),
         ('RV32E', bool),
         ('RV32M', str),
         ('RV32B', str),
@@ -60,6 +61,7 @@ class Config:
 
         self.params = yml
 
+        self.base_isa = Config.read_str('BaseIsa', yml)
         self.rv32e = Config.read_bool('RV32E', yml)
         self.rv32m = Config.read_str('RV32M', yml)
         self.rv32b = Config.read_str('RV32B', yml)

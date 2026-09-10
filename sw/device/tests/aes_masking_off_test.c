@@ -63,7 +63,8 @@ status_t execute_test(const dif_csrng_t *csrng, const dif_edn_t *edn0) {
   LOG_INFO("Testing AES with masking switched off");
 
   // Initialize EDN and CSRNG to generate the required seed.
-  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(csrng, edn0));
+  CHECK_STATUS_OK(
+      aes_testutils_masking_prng_zero_output_seed(csrng, edn0, true));
 
   // Initialise AES.
   dif_aes_t aes;
@@ -110,6 +111,13 @@ status_t execute_test(const dif_csrng_t *csrng, const dif_edn_t *edn0) {
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
 
+  // Now reconfigure the CSRNG and EDN0 to avoid triggering further recoverable
+  // alerts in EDN0. Depending on the execution environment, other entropy
+  // consumers than AES can request entropy which would trigger the alert, too.
+  CHECK_STATUS_OK(
+      aes_testutils_masking_prng_zero_output_seed(csrng, edn0, false));
+
+  // Check that the only recoverable alert that fired was for repeated genbits.
   uint32_t alerts;
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn, &alerts));
   CHECK(alerts == (1 << kDifEdnRecoverableAlertRepeatedGenBits));

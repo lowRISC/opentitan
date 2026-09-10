@@ -15,10 +15,10 @@ import unittest
 import argparse
 import sys
 import random
-from Crypto.Hash import SHA256, HMAC
+from Crypto.Hash import SHA256, HMAC, CMAC
 from Crypto.Cipher import AES
 
-ignored_keys_set = set([])
+ignored_keys_set = set(["magic"])
 opentitantool_path = ""
 iterations = 3
 repetitions = 3
@@ -28,11 +28,15 @@ target = None
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 
@@ -369,6 +373,55 @@ class SymCryptolibFiTest(unittest.TestCase):
 
         utils.compare_json_data(actual_result_json, expected_result_json, trng_ignored_key_sets)
 
+    def test_char_cmac(self):
+        for _ in range(repetitions):
+            # For testing, we just take a multiple of the block size
+            data_len = random.randint(1, 3)
+            data_len *= 16
+            data = [random.randint(0, 255) for _ in range(data_len)]
+            key_len_idx = random.randint(0, 2)
+            if key_len_idx == 0:
+                key_len = 16
+            elif key_len_idx == 1:
+                key_len = 24
+            else:
+                key_len = 32
+            key = [random.randint(0, 255) for _ in range(key_len)]
+            iv = [random.randint(0, 255) for _ in range(16)]
+            cfg = 0
+            trigger = 0
+
+            actual_result = fi_sym_cryptolib_functions.char_cmac(
+                target,
+                iterations,
+                data,
+                data_len,
+                key,
+                key_len,
+                iv,
+                cfg,
+                trigger,
+            )
+            actual_result_json = json.loads(actual_result)
+            cmac = CMAC.new(bytes(key), ciphermod=AES)
+
+            cmac.update(bytes(data))
+            expected_result = utils.pad_with_zeros([x for x in cmac.digest()], 64)
+            expected_result_json = {
+                "status": 0,
+                "err_status": 0,
+                "alerts": [0, 0, 0],
+                "loc_alerts": 0,
+                "ast_alerts": [0, 0],
+                "data": expected_result,
+                "data_len": 16,
+                "cfg": 0,
+            }
+
+            utils.compare_json_data(
+                actual_result_json, expected_result_json, ignored_keys_set
+            )
+
 
 if __name__ == "__main__":
     r = Runfiles.Create()
@@ -378,6 +431,13 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
@@ -392,6 +452,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args,
     )
 

@@ -22,6 +22,14 @@ MEMORY {
 }
 
 /**
+ * Alias for the NVM technology this top actually boots from, so downstream
+ * linker scripts can place sections with `> nvm` instead of hardcoding one
+ * technology.
+ */
+REGION_ALIAS("nvm", eflash);
+_nvm_slot_reserved_bytes = 0;
+
+/**
  * Exception frame at the top of main SRAM
  */
 _exception_frame_size = 128;

@@ -189,6 +189,14 @@ sram_start:
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_CMD_FIFO_RST_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
 
+  // This SRAM program runs with ROM execution disabled (JTAG-injected
+  // directly), so nothing else has brought up the NVM controller yet.
+  // Without this, any NVM access below (including ast_program_config's own
+  // read of AST calibration data) hangs forever waiting on a transaction
+  // that a not-yet-initialized controller never completes.
+  li a0, 0  // No OTP-derived default region config available yet.
+  call nvm_testutils_rom_init
+
   // Configure the AST
   li a0, 0  // Do not run in verbose mode.
   call ast_program_config

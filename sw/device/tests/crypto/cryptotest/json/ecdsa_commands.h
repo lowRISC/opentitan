@@ -11,15 +11,22 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'e', 'a')
 
-#define ECDSA_CMD_MAX_MESSAGE_BYTES 64
+#define ECDSA_CMD_MAX_MESSAGE_BYTES 128
 #define ECDSA_CMD_MAX_MESSAGE_WORDS \
   (ECDSA_CMD_MAX_MESSAGE_BYTES / sizeof(uint32_t))
 #define ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES 64
 #define ECDSA_CMD_MAX_COORDINATE_BYTES 64
 #define ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES 64
+#define ECDSA_CMD_MAX_HASH_DIGEST_BYTES 64
 
 // clang-format off
 
+// Following a `Hash` Operation, the host is expected to send:
+// - hash_alg (ECDSA_HASH_ALG)
+// - message (ECDSA_MESSAGE)
+// The device will then respond with:
+// - digest (ECDSA_HASH_DIGEST)
+//
 // Following a `Verify` Operation, the host is expected to send the following parameters, in order:
 // - hash_alg (ECDSA_HASH_ALG)
 // - curve (ECDSA_CURVE)
@@ -31,7 +38,9 @@ extern "C" {
 // - result (ECDSA_VERIFY_OUTPUT)
 #define ECDSA_OPERATION(_, value) \
     value(_, Sign) \
-    value(_, Verify)
+    value(_, Verify) \
+    value(_, Hash) \
+    value(_, KeyGen)
 UJSON_SERDE_ENUM(CryptotestEcdsaOperation, cryptotest_ecdsa_operation_t, ECDSA_OPERATION);
 
 #define ECDSA_HASH_ALG(_, value) \
@@ -77,6 +86,25 @@ UJSON_SERDE_STRUCT(CryptotestEcdsaPrivateKey, cryptotest_ecdsa_private_key_t, EC
     value(_, Success) \
     value(_, Failure)
 UJSON_SERDE_ENUM(CryptotestEcdsaVerifyOutput, cryptotest_ecdsa_verify_output_t, ECDSA_VERIFY_OUTPUT);
+
+#define ECDSA_HASH_DIGEST(field, string) \
+    field(digest, uint8_t, ECDSA_CMD_MAX_HASH_DIGEST_BYTES) \
+    field(digest_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEcdsaHashDigest, cryptotest_ecdsa_hash_digest_t, ECDSA_HASH_DIGEST);
+
+#define ECDSA_KEYGEN_RESP(field, string) \
+    field(qx, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(qx_len, size_t) \
+    field(qy, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(qy_len, size_t) \
+    field(d0, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d0_len, size_t) \
+    field(d1, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d1_len, size_t) \
+    field(d, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(d_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEcdsaKeygenResp, cryptotest_ecdsa_keygen_resp_t,
+                   ECDSA_KEYGEN_RESP);
 
 #undef MODULE_ID
 

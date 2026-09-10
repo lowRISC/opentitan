@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "autogen_cryptolib_build_info")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -16,7 +17,6 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "qemu_params",
@@ -38,11 +38,64 @@ CRYPTO_EXEC_ENVS = dicts.add(
 autogen_cryptolib_build_info(name = "cryptolib_build_info")
 
 cc_library(
+    name = "cryptolib_build_info_hdrs",
+    hdrs = ["cryptolib_build_info.h"],
+    deps = ["//sw/device/lib/crypto/include:datatypes"],
+)
+
+dual_cc_library(
+    name = "alert",
+    srcs = dual_inputs(
+        device = ["alert.c"],
+        host = ["mock_alert.cc"],
+    ),
+    hdrs = [
+        "alert.h",
+    ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = dual_inputs(
+        device = [
+            "//hw/top:alert_handler_c_regs",
+            "//hw/top:sensor_ctrl_c_regs",
+            "//hw/top:top_lib",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened_memory",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:mmio",
+        ],
+        shared = [
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
+)
+
+opentitan_test(
+    name = "alert_test",
+    srcs = ["alert_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":alert",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "aes",
     srcs = ["aes.c"],
     hdrs = ["aes.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
-        ":entropy",
         ":rv_core_ibex",
         "//hw/top:aes_c_regs",
         "//hw/top/dt:aes",
@@ -65,25 +118,31 @@ opentitan_test(
     ),
     deps = [
         ":aes",
+        ":rv_core_ibex",
+        "//hw/top:aes_c_regs",
+        "//hw/top/dt:aes",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 cc_library(
-    name = "keymgr",
-    srcs = ["keymgr.c"],
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
     hdrs = [
-        "keymgr.h",
+        "keymgr_dpe.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
-        ":entropy",
         ":rv_core_ibex",
-        "//hw/top:keymgr_c_regs",
-        "//hw/top/dt:keymgr",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt:keymgr_dpe",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened_memory",
@@ -93,33 +152,23 @@ cc_library(
 )
 
 opentitan_test(
-    name = "keymgr_test",
-    srcs = ["keymgr_test.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        CRYPTO_EXEC_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
+    name = "keymgr_dpe_test",
+    srcs = ["keymgr_dpe_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
-        ":keymgr",
+        ":keymgr_dpe",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt:keymgr_dpe",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -131,18 +180,42 @@ cc_library(
         "kmac.h",
         "//sw/device/lib/crypto/include:datatypes.h",
     ],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
-        ":entropy",
         ":rv_core_ibex",
         "//hw/top:kmac_c_regs",
         "//hw/top/dt:kmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+opentitan_test(
+    name = "kmac_test",
+    srcs = ["kmac_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac",
+        ":rv_core_ibex",
+        "//hw/top:kmac_c_regs",
+        "//hw/top/dt:kmac",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -153,6 +226,8 @@ dual_cc_library(
         host = ["mock_entropy.cc"],
     ),
     hdrs = ["entropy.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top:csrng_c_regs",
@@ -186,8 +261,7 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -202,11 +276,19 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
+        "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
+        "//hw/top:entropy_src_c_regs",
+        "//hw/top/dt:csrng",
+        "//hw/top/dt:edn",
+        "//hw/top/dt:entropy_src",
         "//hw/top/dt:otbn",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests:otbn_randomness_impl",
     ],
@@ -216,6 +298,8 @@ cc_library(
     name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         "//hw/top:hmac_c_regs",
         "//hw/top/dt:hmac",
@@ -233,6 +317,28 @@ cc_library(
     ],
 )
 
+opentitan_test(
+    name = "hmac_test",
+    srcs = ["hmac_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":hmac",
+        ":rv_core_ibex",
+        "//hw/top:hmac_c_regs",
+        "//hw/top/dt:hmac",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 dual_cc_library(
     name = "rv_core_ibex",
     srcs = dual_inputs(
@@ -242,6 +348,8 @@ dual_cc_library(
     hdrs = dual_inputs(
         shared = ["rv_core_ibex.h"],
     ),
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top/dt:rv_core_ibex",
@@ -280,6 +388,8 @@ cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    features = ["no_jump_tables"],
     deps = [
         ":entropy",
         "//hw/top:otbn_c_regs",
@@ -288,7 +398,44 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:lz4",
         "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+opentitan_test(
+    name = "otbn_test",
+    srcs = ["otbn_test.c"],
+    exec_env = CRYPTO_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":otbn",
+        ":rv_core_ibex",
+        "//hw/top:otbn_c_regs",
+        "//hw/top/dt:otbn",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+test_suite(
+    name = "drivers_test_suite",
+    tests = [
+        ":aes_test",
+        ":alert_test",
+        ":entropy_test",
+        ":hmac_test",
+        ":keymgr_dpe_test",
+        ":kmac_test",
+        ":otbn_test",
+        ":rv_core_ibex_test",
     ],
 )

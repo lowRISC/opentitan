@@ -118,7 +118,11 @@ val_types = {
         'one or more groups that have just name and dscr keys.'
         ' e.g. `{ name: "name", desc: "description"}`'
     ],
-    'lnw': ["name list+", 'name list that optionally contains a width'],
+    'lnw': [
+        "name list+", 'name list that optionally contains a width, and for '
+        'split IPs an optional partition key naming the partition that owns '
+        'the entry.'
+    ],
     'lp': ["parameter list", 'parameter list having default value optionally'],
     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
     'lg': [

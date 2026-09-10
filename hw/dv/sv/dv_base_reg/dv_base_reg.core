@@ -9,7 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
-      - lowrisc:prim:mubi
+      - lowrisc:prim:mubi_pkg
     files:
       - dv_base_reg_pkg.sv
       - csr_excl_item.sv: {is_include_file: true}

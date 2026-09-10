@@ -9,6 +9,12 @@
 
   fusesoc_core: lowrisc:systems:chip_darjeeling_asic:0.1
 
+  // The chip depends on virtual cores for the AST, pad orientation, scan roles
+  // and the JTAG ID, all of which the top mapping resolves.
+  // Note that the imported cfg already supplies the prim mapping, and dvsim
+  // appends these lists rather than replacing them.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_darjeeling_asic:0.1"]
+
   bbox_cmd: "[list aon_osc io_osc sys_osc]"
   conn_csvs_dir: "{proj_root}/hw/top_darjeeling/formal/conn_csvs"
   conn_csvs: ["{conn_csvs_dir}/analog_sigs.csv",

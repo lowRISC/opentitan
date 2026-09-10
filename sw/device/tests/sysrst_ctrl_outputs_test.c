@@ -19,8 +19,8 @@
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static dif_pinmux_t pinmux;
-static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
-static const dt_sysrst_ctrl_t kSysrstCtrlDt = kDtSysrstCtrlAon;
+static const dt_pinmux_t kPinmuxDt = kDtPinmux;
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = kDtSysrstCtrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 
 enum {

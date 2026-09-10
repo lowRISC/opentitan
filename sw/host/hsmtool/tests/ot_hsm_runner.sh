@@ -7,7 +7,6 @@ set -euo pipefail
 source sw/host/hsmtool/tests/test_lib.sh
 
 OPENTITANTOOL=sw/host/opentitantool/opentitantool
-HSMTOOL=sw/host/hsmtool/hsmtool
 
 # shellcheck disable=SC2206
 OTTOOL_ARGS=(${OTTOOL_ARGS})

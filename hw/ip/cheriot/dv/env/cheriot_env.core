@@ -1,0 +1,38 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:cheriot_env:0.1"
+description: "CHERIOT DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+    files:
+      - cheriot_env_pkg.sv
+      - cheriot_env_cfg.sv: {is_include_file: true}
+      - cheriot_env_cov.sv: {is_include_file: true}
+      - cheriot_virtual_sequencer.sv: {is_include_file: true}
+      - cheriot_scoreboard.sv: {is_include_file: true}
+      - cheriot_env.sv: {is_include_file: true}
+      - seq_lib/cheriot_vseq_list.sv: {is_include_file: true}
+      - seq_lib/cheriot_base_vseq.sv: {is_include_file: true}
+      - seq_lib/cheriot_common_vseq.sv: {is_include_file: true}
+      - seq_lib/cheriot_smoke_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: cheriot
+      ip_hjson: ../../data/cheriot.hjson
+    position: prepend
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - "!chip_level ? (ral)"

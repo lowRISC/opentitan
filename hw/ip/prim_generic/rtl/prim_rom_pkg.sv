@@ -5,12 +5,18 @@
 
 package prim_rom_pkg;
 
-  typedef struct packed {
-    logic       test;
-    logic       cfg_en;
-    logic [3:0] cfg;
-  } rom_cfg_t;
+  parameter int unsigned RomReqWidth = 32'd4;
+  parameter int unsigned RomRspWidth = 32'd1;
 
-  parameter rom_cfg_t ROM_CFG_DEFAULT = '0;
+  typedef struct packed {
+    logic [RomReqWidth-1:0] req;
+  } rom_cfg_req_t;
+
+  typedef struct packed {
+    logic [RomRspWidth-1:0] rsp;
+  } rom_cfg_rsp_t;
+
+  parameter rom_cfg_req_t ROM_CFG_REQ_DEFAULT = '0;
+  parameter rom_cfg_rsp_t ROM_CFG_RSP_DEFAULT = '0;
 
 endpackage // prim_rom_pkg

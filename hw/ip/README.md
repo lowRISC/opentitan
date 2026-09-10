@@ -8,12 +8,15 @@
 | [`aes`]          | AES encryption and decryption engine with SCA and FI countermeasures                                                              |
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
 | [`ascon`]        | Ascon authenticated encryption and decryption engine                                                                              |
+| [`bkdr_loader`]  | Provides FPGA-only indirect programming to RAMs                                                                                   |
+| [`cheriot`]      | CHERIoT-aware memory subsystem                                                                                                    |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
 | [`dma`]          | DMA Controller for the integrated OpenTitan.                                                                                      |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
 | [`hmac`]         | Accelerator for SHA-2 256/384/512-based keyed HMAC and the hash function                                                          |
 | [`i2c`]          | I2C interface for host and device mode, supporting up to 1 Mbaud data rates                                                       |
+| [`i3c`]          | I3C Controller/Target                                                                                                             |
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
 | [`keymgr_dpe`]   | Manage multiple DICE sessions in a DPE-compatible way                                                                             |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
@@ -23,6 +26,8 @@
 | [`otp_macro`]    | OTP macro simulation model and CSR block                                                                                          |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
+| [`rram_ctrl`]    | Interfaces and manages integrated non-volatile RRAM memory; supports scrambling, integrity, secure wipe and emulated OTP access.  |
+| [`rram_macro`]   | Open-source emulation model of the RRAM macro                                                                                     |
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_timer`]     | Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers                                                         |
 | [`soc_dbg_ctrl`] | Control module to enable or disable debug access                                                                                  |
@@ -40,12 +45,15 @@
 [`aes`]: ./aes/README.md
 [`aon_timer`]: ./aon_timer/README.md
 [`ascon`]: ./ascon/README.md
+[`bkdr_loader`]: ./bkdr_loader/README.md
+[`cheriot`]: ./cheriot/README.md
 [`csrng`]: ./csrng/README.md
 [`dma`]: ./dma/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
 [`hmac`]: ./hmac/README.md
 [`i2c`]: ./i2c/README.md
+[`i3c`]: ./i3c/README.md
 [`keymgr`]: ./keymgr/README.md
 [`keymgr_dpe`]: ./keymgr_dpe/README.md
 [`kmac`]: ./kmac/README.md
@@ -55,6 +63,8 @@
 [`otp_macro`]: ./otp_macro/README.md
 [`pattgen`]: ./pattgen/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
+[`rram_ctrl`]: ./rram_ctrl/README.md
+[`rram_macro`]: ./rram_macro/README.md
 [`rv_dm`]: ./rv_dm/README.md
 [`rv_timer`]: ./rv_timer/README.md
 [`soc_dbg_ctrl`]: ./soc_dbg_ctrl/README.md

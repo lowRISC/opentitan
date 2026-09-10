@@ -158,7 +158,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(otp_reg, &otp));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   LOG_INFO("Read and check LC state and count.");
   dif_lc_ctrl_state_t curr_state;

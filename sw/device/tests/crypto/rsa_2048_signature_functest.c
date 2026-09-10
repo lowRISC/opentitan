@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -88,6 +93,40 @@ static const uint32_t kValidSignaturePss[kRsa2048NumWords] = {
 };
 
 /**
+ * Helper function to compute a message digest for various hash modes.
+ */
+static status_t compute_digest(const otcrypto_const_byte_buf_t *msg,
+                               otcrypto_hash_mode_t hash_mode,
+                               otcrypto_hash_digest_t *digest) {
+  digest->mode = hash_mode;
+  switch (hash_mode) {
+    case kOtcryptoHashModeSha256:
+      digest->len = 256 / 32;
+      return otcrypto_sha2_256(msg, digest);
+    case kOtcryptoHashModeSha384:
+      digest->len = 384 / 32;
+      return otcrypto_sha2_384(msg, digest);
+    case kOtcryptoHashModeSha512:
+      digest->len = 512 / 32;
+      return otcrypto_sha2_512(msg, digest);
+    case kOtcryptoHashModeSha3_224:
+      digest->len = 224 / 32;
+      return otcrypto_sha3_224(msg, digest);
+    case kOtcryptoHashModeSha3_256:
+      digest->len = 256 / 32;
+      return otcrypto_sha3_256(msg, digest);
+    case kOtcryptoHashModeSha3_384:
+      digest->len = 384 / 32;
+      return otcrypto_sha3_384(msg, digest);
+    case kOtcryptoHashModeSha3_512:
+      digest->len = 512 / 32;
+      return otcrypto_sha3_512(msg, digest);
+    default:
+      return INVALID_ARGUMENT();
+  }
+}
+
+/**
  * Helper function to run the RSA-2048 signing routine.
  *
  * Packages input into cryptolib-style structs and calls `otcrypto_rsa_sign`
@@ -102,6 +141,7 @@ static const uint32_t kValidSignaturePss[kRsa2048NumWords] = {
  */
 static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
                                   otcrypto_rsa_padding_t padding_mode,
+                                  otcrypto_hash_mode_t hash_mode,
                                   uint32_t *sig) {
   otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
@@ -115,7 +155,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       return INVALID_ARGUMENT();
   };
 
-  // Create two shares for the private exponent (second share is all-zero).
+  // Create two shares for the private exponent.
   otcrypto_const_word32_buf_t d_share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
                         ARRAYSIZE(kTestPrivateExponent));
@@ -125,7 +165,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -144,42 +184,32 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize2048, &modulus, &d_share0, &d_share1, &private_key));
 
-  // Hash the message.
+  // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
-  uint32_t msg_digest_data[256 / 32];
+  uint32_t msg_digest_data[512 / 32];  // Accommodates up to SHA-512
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
+  TRY(compute_digest(&msg_buf, hash_mode, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
 
   return OK_STATUS();
 }
 
 /**
  * Helper function to run the RSA-2048 verification routine.
- *
- * Packages input into cryptolib-style structs and calls `otcrypto_rsa_verify`
- * using the constant test public key. Always uses SHA-256 as the hash
- * function.
- *
- * @param msg Message to verify.
- * @param msg_len Message length in bytes.
- * @param sig Signature to verify
- * @param padding_mode RSA padding mode.
- * @param[out] verification_result Whether the signature passed verification.
- * @return OK or error.
  */
 static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
                                     const uint32_t *sig,
                                     const otcrypto_rsa_padding_t padding_mode,
+                                    otcrypto_hash_mode_t hash_mode,
                                     hardened_bool_t *verification_result) {
   otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
@@ -206,15 +236,14 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus,
                                         &public_key));
 
-  // Hash the message.
+  // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
-  uint32_t msg_digest_data[256 / 32];
+  uint32_t msg_digest_data[512 / 32];  // Accommodates up to SHA-512
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
+  TRY(compute_digest(&msg_buf, hash_mode, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
@@ -222,6 +251,8 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig_buf,
                           verification_result));
   profile_end_and_print(t_start, "RSA verify");
+  LOG_INFO("OTBN verify instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   return OK_STATUS();
 }
@@ -230,8 +261,9 @@ status_t pkcs1v15_sign_test(void) {
   // Generate a signature using PKCS#1 v1.5 padding and SHA-256 as the hash
   // function.
   uint32_t sig[kRsa2048NumWords];
+  // Note the added kOtcryptoHashModeSha256 parameter here
   TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPkcs,
-                        sig));
+                        kOtcryptoHashModeSha256, sig));
 
   // Compare to the expected signature.
   TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
@@ -244,7 +276,7 @@ status_t pkcs1v15_verify_valid_test(void) {
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen,
                           kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPkcs,
-                          &verification_result));
+                          kOtcryptoHashModeSha256, &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -255,26 +287,11 @@ status_t pkcs1v15_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kOtcryptoRsaPaddingPkcs, &verification_result));
+                          kOtcryptoRsaPaddingPkcs, kOtcryptoHashModeSha256,
+                          &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
-  return OK_STATUS();
-}
-
-status_t pss_sign_test(void) {
-  // PSS signatures are not deterministic, so we need to sign-then-verify.
-  uint32_t sig[kRsa2048NumWords];
-  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
-                        sig));
-
-  // Try to verify the signature.
-  hardened_bool_t verification_result;
-  TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
-                          kOtcryptoRsaPaddingPss, &verification_result));
-
-  // Expect the signature to pass verification.
-  TRY_CHECK(verification_result == kHardenedBoolTrue);
   return OK_STATUS();
 }
 
@@ -282,7 +299,8 @@ status_t pss_verify_valid_test(void) {
   // Try to verify a valid signature.
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kOtcryptoRsaPaddingPss, &verification_result));
+                          kOtcryptoRsaPaddingPss, kOtcryptoHashModeSha256,
+                          &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -294,10 +312,216 @@ status_t pss_verify_invalid_test(void) {
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen,
                           kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPss,
-                          &verification_result));
+                          kOtcryptoHashModeSha256, &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
+  return OK_STATUS();
+}
+
+static status_t run_signature_negative_tests(void) {
+  LOG_INFO("Running RSA signature negative tests");
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
+
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config =
+          {
+              .version = otcrypto_lib_version(),
+              .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+              .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
+
+  uint32_t digest_data[256 / 32] = {0};
+  otcrypto_hash_digest_t valid_digest = {.data = digest_data,
+                                         .len = ARRAYSIZE(digest_data)};
+
+  uint32_t sig_data[kRsa2048NumWords] = {0};
+  otcrypto_word32_buf_t valid_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t valid_const_sig = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, sig_data, kRsa2048NumWords);
+
+  hardened_bool_t verify_res;
+
+  // Sign negative tests
+
+  // Null pointers
+  CHECK(
+      otcrypto_rsa_sign(NULL, valid_digest, kOtcryptoRsaPaddingPkcs, &valid_sig)
+          .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_rsa_sign_async_start(NULL, valid_digest, kOtcryptoRsaPaddingPkcs)
+          .value != OTCRYPTO_OK.value);
+
+  otcrypto_word32_buf_t bad_sig_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, kRsa2048NumWords);
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPkcs,
+                          &bad_sig_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_null).value !=
+        OTCRYPTO_OK.value);
+
+  // Corrupt checksum
+  otcrypto_blinded_key_t bad_priv_chk = {
+      .config = valid_priv.config,
+      .keyblob_length = valid_priv.keyblob_length,
+      .keyblob = priv_blob,
+  };
+  bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_sign(&bad_priv_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_start(&bad_priv_chk, valid_digest,
+                                      kOtcryptoRsaPaddingPkcs)
+            .value != OTCRYPTO_OK.value);
+
+  // Mismatched padding mode
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest, kOtcryptoRsaPaddingPss,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_sign_async_start(&valid_priv, valid_digest,
+                                      kOtcryptoRsaPaddingPss)
+            .value != OTCRYPTO_OK.value);
+
+  // Verify negative tests
+
+  // Null pointers
+  CHECK(otcrypto_rsa_verify(NULL, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(NULL, &valid_const_sig).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_finalize(valid_digest,
+                                           kOtcryptoRsaPaddingPkcs, NULL)
+            .value != OTCRYPTO_OK.value);
+
+  // Corrupt checksum
+  otcrypto_unblinded_key_t bad_pub_chk = {
+      .key_mode = valid_pub.key_mode,
+      .key_length = valid_pub.key_length,
+      .key = pub_data,
+  };
+  bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_rsa_verify(&bad_pub_chk, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(&bad_pub_chk, &valid_const_sig).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad signature length
+  otcrypto_const_word32_buf_t bad_const_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 99);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPkcs,
+                            &bad_const_sig_len, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_async_start(&valid_pub, &bad_const_sig_len).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad signature length in sign_async_finalize
+  otcrypto_word32_buf_t bad_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kRsa2048NumWords - 1);
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_len).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad digest length for the specified hash mode
+  // SHA-256 expects 8 words. Passing 7 triggers the digest_check length
+  // failure.
+  otcrypto_hash_digest_t bad_digest_len = {
+      .data = digest_data, .len = 7, .mode = kOtcryptoHashModeSha256};
+  CHECK(otcrypto_rsa_sign(&valid_priv, bad_digest_len, kOtcryptoRsaPaddingPkcs,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, bad_digest_len, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Unrecognized padding mode
+  CHECK(otcrypto_rsa_sign(&valid_priv, valid_digest,
+                          (otcrypto_rsa_padding_t)999, &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest,
+                            (otcrypto_rsa_padding_t)999, &valid_const_sig,
+                            &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Unrecognized hash mode
+  otcrypto_hash_digest_t bad_hash_mode = {
+      .data = digest_data,
+      .len = ARRAYSIZE(digest_data),
+      .mode = (otcrypto_hash_mode_t)999  // Invalid mode
+  };
+  CHECK(otcrypto_rsa_sign(&valid_priv, bad_hash_mode, kOtcryptoRsaPaddingPkcs,
+                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, bad_hash_mode, kOtcryptoRsaPaddingPkcs,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
+status_t all_hashes_sign_verify_test(void) {
+  static const otcrypto_hash_mode_t kHashModes[] = {
+      kOtcryptoHashModeSha256,   kOtcryptoHashModeSha384,
+      kOtcryptoHashModeSha512,   kOtcryptoHashModeSha3_224,
+      kOtcryptoHashModeSha3_256, kOtcryptoHashModeSha3_384,
+      kOtcryptoHashModeSha3_512,
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE(kHashModes); i++) {
+    otcrypto_hash_mode_t hash_mode = kHashModes[i];
+    uint32_t sig[kRsa2048NumWords];
+    hardened_bool_t verification_result;
+
+    // Test PKCS#1 v1.5 dynamically
+    TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
+                          kOtcryptoRsaPaddingPkcs, hash_mode, sig));
+    TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                            kOtcryptoRsaPaddingPkcs, hash_mode,
+                            &verification_result));
+    TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+    // Test PSS dynamically
+    TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
+                          hash_mode, sig));
+    TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                            kOtcryptoRsaPaddingPss, hash_mode,
+                            &verification_result));
+    TRY_CHECK(verification_result == kHardenedBoolTrue);
+  }
+
+  // Encrypt Finalize: Bad Ciphertext Length
+  uint32_t fake_ct_data[kRsa2048NumWords];
+  otcrypto_word32_buf_t bad_ct_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, fake_ct_data, 999);  // Unrecognized length
+  CHECK(otcrypto_rsa_encrypt_async_finalize(&bad_ct_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Sign Finalize: Bad Signature Length
+  uint32_t fake_sig_data[kRsa2048NumWords];
+  otcrypto_word32_buf_t bad_sig_len = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, fake_sig_data, 999);  // Unrecognized length
+  CHECK(otcrypto_rsa_sign_async_finalize(&bad_sig_len).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   return OK_STATUS();
 }
 
@@ -305,12 +529,13 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);
-  EXECUTE_TEST(test_result, pss_sign_test);
   EXECUTE_TEST(test_result, pss_verify_valid_test);
   EXECUTE_TEST(test_result, pss_verify_invalid_test);
+  EXECUTE_TEST(test_result, all_hashes_sign_verify_test);
+  EXECUTE_TEST(test_result, run_signature_negative_tests);
   return status_ok(test_result);
 }

@@ -56,7 +56,6 @@ CPU_INFO_TESTCASES = [
         name = "cpu_info_{}_test".format(testcase["name"]),
         srcs = ["cpu_info_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],
@@ -122,15 +121,14 @@ ALERT_INFO_TESTCASES = [
         name = "alert_info_{}_test".format(testcase["name"]),
         srcs = ["alert_info_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],
         local_defines = testcase["defines"],
         deps = [
+            "//hw/top:top_lib",
             "//hw/top:uart_c_regs",
             "//hw/top/dt",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/runtime:log",

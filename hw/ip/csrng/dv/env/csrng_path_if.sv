@@ -14,11 +14,11 @@ interface csrng_path_if
   string core_path = "tb.dut.u_csrng_core";
 
   function automatic string fifo_err_path(int app, string fifo_name, string which_path);
-    case (fifo_name) inside
-      "sfifo_cmd", "sfifo_genbits": return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
-                                            ".u_csrng_cmd_stage.", fifo_name, "_", which_path};
-      default: `uvm_fatal("csrng_path_if", $sformatf("%s: Invalid fifo name!", fifo_name))
-    endcase // case (fifo_name.substr(6, fifo_name.len()-1))
+    if (fifo_name inside {"sfifo_cmd", "sfifo_genbits"}) begin
+      return $sformatf("%0s.gen_cmd_stage[%0d].u_csrng_cmd_stage.%0s_%0s",
+                       core_path, app, fifo_name, which_path);
+    end
+    `uvm_fatal("csrng_path_if", $sformatf("%s: Invalid fifo name!", fifo_name))
   endfunction // fifo_err_path
 
   function automatic string sm_err_path(string which_sm, int app);

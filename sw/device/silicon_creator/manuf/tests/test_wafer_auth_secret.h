@@ -5,11 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_TESTS_TEST_WAFER_AUTH_SECRET_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_TESTS_TEST_WAFER_AUTH_SECRET_H_
 
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
-// Expected wafer authentication secret to write to the flash
+// Expected wafer authentication secret to write to the NVM
 const uint32_t
-    kExpectedWaferAuthSecret[kFlashInfoFieldWaferAuthSecretSizeIn32BitWords] = {
+    kExpectedWaferAuthSecret[kNvmInfoFieldWaferAuthSecretSizeIn32BitWords] = {
         0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
         0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
 };

@@ -21,7 +21,6 @@ package(default_visibility = ["//visibility:public"])
 
 PENTEST_EXEC_ENVS = dicts.add(
     {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
@@ -41,11 +40,11 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
-    "//sw/device/lib/testing:entropy_src_testutils",
+    "//sw/device/lib/crypto/impl:entropy_src",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -57,10 +56,11 @@ FIRMWARE_DEPS_FI_IBEX = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/impl:entropy_src",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -72,10 +72,11 @@ FIRMWARE_DEPS_FI_OTBN = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/impl:entropy_src",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
@@ -94,9 +95,10 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -113,7 +115,8 @@ FIRMWARE_DEPS_CRYPTOLIB_FI_SYM = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/include:crypto_hdrs",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -129,7 +132,7 @@ FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -146,7 +149,8 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/include:crypto_hdrs",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -164,7 +168,7 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -178,7 +182,7 @@ FIRMWARE_DEPS_GDB = [
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/impl:entropy_src",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -186,7 +190,7 @@ FIRMWARE_DEPS_GDB = [
     "//sw/device/tests/penetrationtests/json:gdb_commands",
     "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
     "//sw/device/lib/dif:rv_core_ibex",
-    "//sw/device/lib/crypto/impl:status",
+    "//sw/device/lib/crypto",
 ]
 
 # Note that the targets below are only to build the software, to run tests, see the BUILD from penetrationtests

@@ -6,7 +6,7 @@
 
 .globl mldsa87_verify
 
-.text
+.section .text.start
 
 /*
  * Direct implementation of the `ML-DSA.Verify_internal` function (Algorithm 8)
@@ -21,6 +21,12 @@ mldsa87_verify:
   la x2, mldsa87_verify_const_params
   bn.lid x0, 0(x2)
   bn.wsrw MOD, w0
+
+  /* Copy rho. */
+  la x2, mldsa87_verify_pk_rho
+  la x3, mldsa87_verify_var_rho
+  bn.lid x0, 0(x2)
+  bn.sid x0, 0(x3)
 
   /* Decode the signature blob. */
   la x2, mldsa87_verify_sig_h
@@ -40,13 +46,31 @@ mldsa87_verify:
   andi x2, x2, 0x8
   bne x2, x0, _mldsa87_verify_failure
 
+  /* Check the validity of the hint. */
+  la x2, mldsa87_verify_var_h
+  jal x1, check_hint
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
   /* Sample the challenge polynomial C. */
   la x2, mldsa87_verify_var_c
   la x3, mldsa87_verify_sig_c_tilde
   jal x1, sample_in_ball
 
+  /* Check the Hamming weight of c (tau = 60). */
+  la x2, mldsa87_verify_var_c
+  jal x1, check_hw_c
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
   /* Compute W_approx. */
-  la x2, mldsa87_verify_pk_rho
+  la x2, mldsa87_verify_var_rho
   la x3, mldsa87_verify_vector_slot0
   la x4, mldsa87_verify_var_c
   la x5, mldsa87_verify_pk_t1
@@ -62,41 +86,29 @@ mldsa87_verify:
   jal x1, use_hint
 
   /* Recompute the challenge hash. */
-  la x2, mldsa87_verify_sig_mu
+  la x2, mldsa87_verify_mu
   la x3, mldsa87_verify_vector_slot1
-  la x4, mldsa87_verify_var_c
+  la x4, mldsa87_verify_res_c_tilde_prime
   jal x1, challenge_hash
 
-  /* Compare the calculate challenge hash to c_tilde of the signature. */
-  la x2, mldsa87_verify_sig_c_tilde
-  la x3, mldsa87_verify_var_c
-  addi x4, x0, 1
-  addi x5, x0, 2
-  bn.subi w0, w31, 1
-
-  bn.lid x4, 0(x2++)
-  bn.lid x5, 0(x3++)
-  bn.cmp w1, w2, FG0
-  bn.sel w0, w0, w31, FG0.Z
-
-  bn.lid x4, 0(x2++)
-  bn.lid x5, 0(x3++)
-  bn.cmp w1, w2, FG0
-  bn.sel w0, w0, w31, FG0.Z
-
-  bn.cmp w0, w31, FG0
-  csrrs x2, FG0, x0
-  andi x2, x2, 0x8
-  bne x2, x0, _mldsa87_verify_failure
-
-/* End of the application, write the verify result to memory and exit. */
+/*
+ * Hardened values to encode successful/unsuccessful run of the verification
+ * routine. A positive run means that no error condition lead to an early exit.
+ * The ultimate comparison of the provided and generated C_TILDE values is
+ * performed outside of the OTBN.
+ *
+ * Encoding generated with
+ *
+ *  ./util/design/sparse-fsm-encode.py -d 21 -m 2 -n 32 -s 3404539173 \
+ *    --language=c --avoid-zero
+ */
 _mldsa87_verify_success:
-  la x2, mldsa87_verify_result
-  bn.subi w0, w31, 1
-  bn.sid x0, 0(x2)
+  li x2, 0x7baf73d2
+  la x3, mldsa87_verify_res_ok
+  sw x2, 0(x3)
   ecall
 _mldsa87_verify_failure:
-  la x2, mldsa87_verify_result
-  bn.xor w0, w0, w0
-  bn.sid x0, 0(x2)
+  li x2, 0xadf1aebd
+  la x3, mldsa87_verify_res_ok
+  sw x2, 0(x3)
   ecall

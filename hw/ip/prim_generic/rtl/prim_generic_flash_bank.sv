@@ -417,8 +417,8 @@ module prim_generic_flash_bank #(
     .wdata_i  (mem_wdata),
     .wmask_i  ({DataWidth{1'b1}}),
     .rdata_o  (rd_data_main),
-    .cfg_i    ('0),
-    .cfg_rsp_o()
+    .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+    .cfg_o    ()
   );
 
   for (genvar info_type = 0; info_type < InfoTypes; info_type++) begin : gen_info_types
@@ -443,8 +443,8 @@ module prim_generic_flash_bank #(
       .wdata_i  (mem_wdata),
       .wmask_i  ({DataWidth{1'b1}}),
       .rdata_o  (rd_nom_data_info[info_type]),
-      .cfg_i    ('0),
-      .cfg_rsp_o()
+      .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+      .cfg_o    ()
     );
   end
 

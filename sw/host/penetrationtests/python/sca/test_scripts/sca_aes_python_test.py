@@ -27,11 +27,15 @@ target = None
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 
@@ -117,8 +121,9 @@ class AesScaTest(unittest.TestCase):
         self.assertIn("PENTEST", version)
 
     def test_char_aes_single_encrypt(self):
-        # Note that setting this to false gives errors for production chips
-        masking = True
+        # Note that setting this to false does not actually
+        # turn off masking in silicon, only on FPGA
+        masking = False
         key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         actual_result = sca_aes_functions.char_aes_single_encrypt(
@@ -136,7 +141,6 @@ class AesScaTest(unittest.TestCase):
 
     def test_char_aes_batch_daisy_chain(self):
         for num_segments in num_segments_list:
-            # Note that setting this to false gives errors for production chips
             masking = True
             key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -161,7 +165,6 @@ class AesScaTest(unittest.TestCase):
 
     def test_char_aes_batch_fvsr_data(self):
         for num_segments in num_segments_list:
-            # Note that setting this to false gives errors for production chips
             masking = True
             key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -272,6 +275,13 @@ if __name__ == "__main__":
         bitstream_path = r.Rlocation(
             "lowrisc_opentitan/" + BITSTREAM
         )
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the firmware path.
     firmware_path = r.Rlocation(
         "lowrisc_opentitan/" + BOOTSTRAP
@@ -288,6 +298,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args
     )
 

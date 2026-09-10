@@ -137,6 +137,42 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
 )
 
+run_binary(
+    name = "wycheproof_ed25519_sign_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+        "@wycheproof//testvectors_v1:ed25519_test.json",
+    ],
+    outs = [":wycheproof_ed25519_sign.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:ed25519_test.json)",
+        "--dst",
+        "$(location :wycheproof_ed25519_sign.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
+)
+
+run_binary(
+    name = "wycheproof_x25519_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:x25519_schema.json",
+        "@wycheproof//testvectors_v1:x25519_test.json",
+    ],
+    outs = [":wycheproof_x25519.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:x25519_test.json)",
+        "--dst",
+        "$(location :wycheproof_x25519.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:x25519_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_x25519_parser",
+)
+
 # Number of tests per configuration (e.g. Verify P-256 SHA-256)
 ECDSA_RANDOM_COUNT = 128
 
@@ -927,3 +963,75 @@ NIST_CAVP_AES_KAT_TESTVECTORS = [
     )
     for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
 ]
+
+run_binary(
+    name = "wycheproof_mldsa_87_sign_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+        "@wycheproof//testvectors_v1:mldsa_87_sign_seed_test.json",
+    ],
+    outs = [":wycheproof_mldsa_87_sign.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mldsa_87_sign_seed_test.json)",
+        "--dst",
+        "$(location :wycheproof_mldsa_87_sign.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mldsa_parser",
+)
+
+run_binary(
+    name = "wycheproof_mldsa_87_verify_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
+        "@wycheproof//testvectors_v1:mldsa_87_verify_test.json",
+    ],
+    outs = [":wycheproof_mldsa_87_verify.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mldsa_87_verify_test.json)",
+        "--dst",
+        "$(location :wycheproof_mldsa_87_verify.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mldsa_parser",
+)
+
+run_binary(
+    name = "wycheproof_mlkem_1024_encaps_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+        "@wycheproof//testvectors_v1:mlkem_1024_encaps_test.json",
+    ],
+    outs = [":wycheproof_mlkem_1024_encaps.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mlkem_1024_encaps_test.json)",
+        "--dst",
+        "$(location :wycheproof_mlkem_1024_encaps.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mlkem_parser",
+)
+
+run_binary(
+    name = "wycheproof_mlkem_1024_decaps_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
+        "@wycheproof//testvectors_v1:mlkem_1024_semi_expanded_decaps_test.json",
+    ],
+    outs = [":wycheproof_mlkem_1024_decaps.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:mlkem_1024_semi_expanded_decaps_test.json)",
+        "--dst",
+        "$(location :wycheproof_mlkem_1024_decaps.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_mlkem_parser",
+)

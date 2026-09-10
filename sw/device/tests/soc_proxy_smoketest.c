@@ -47,8 +47,8 @@ bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
   // Behave based on reset reason.
   if (UNWRAP(

@@ -323,7 +323,7 @@ class MemFile:
             chunk.add_ecc32(self.config)
         self.width = 39
 
-    def collisions(self) -> List[Tuple[int, int]]:
+    def collisions(self) -> list[tuple[int, int]]:
         '''Find "collisions" in the scrambled memory
 
         This looks at all pairs of words in the memory, looking for addresses
@@ -331,16 +331,17 @@ class MemFile:
         such addresses where addr0 < addr1 and in ascending order of addr0.
 
         '''
-        ret = []
-        for idx0, chunk0 in enumerate(self.chunks):
-            for off0, word0 in enumerate(chunk0.words):
-                for diff_idx, chunk1 in enumerate(self.chunks[idx0:]):
-                    first_off1 = 0 if diff_idx else off0 + 1
-                    for diff_off, word1 in enumerate(chunk1.words[first_off1:]):
-                        off1 = first_off1 + diff_off
+        # A map from word to a set of addresss that hold that word.
+        word_to_addr: dict[int, list[int]] = {}
 
-                        if word0 == word1:
-                            addr0 = chunk0.base_addr + off0
-                            addr1 = chunk1.base_addr + off1
-                            ret.append((addr0, addr1))
+        # Construct the map by walking through all the locations in memory
+        for idx, chunk in enumerate(self.chunks):
+            for off, word in enumerate(chunk.words):
+                word_to_addr.setdefault(word, []).append(chunk.base_addr + off)
+
+        # Now extract any pairs of addresses that share a word.
+        ret = []
+        for word, addrs in word_to_addr.items():
+            for addr1 in addrs[1:]:
+                ret.append((addrs[0], addr1))
         return ret

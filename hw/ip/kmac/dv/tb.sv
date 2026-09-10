@@ -11,8 +11,8 @@ module tb;
   import kmac_reg_pkg::*;
 
   // macro includes
-  `include "uvm_macros.svh"
-  `include "dv_macros.svh"
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
 
   wire clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -22,8 +22,10 @@ module tb;
   kmac_pkg::app_req_t [NUM_APP_INTF-1:0] app_req;
   kmac_pkg::app_rsp_t [NUM_APP_INTF-1:0] app_rsp;
 
-  // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  default clocking @(posedge clk); endclocking
+  default disable iff !rst_n;
+
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   kmac_if kmac_if(.clk_i(clk), .rst_ni(rst_n));
 
@@ -37,7 +39,55 @@ module tb;
     .sideload_key (kmac_sideload_key)
   );
 
-  kmac_app_intf kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
+  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_app_if
+    wire kmac_pkg::app_req_t req;
+    wire kmac_pkg::app_rsp_t rsp;
+
+    // In this testbench, the interface is in Host mode, meaning that it will drive req and consume
+    // rsp.
+    assign app_req[i] = req;
+    assign rsp = app_rsp[i];
+
+    kmac_app_if app_if(.clk_i (clk),
+                       .rst_ni(rst_n),
+                       .req   (req),
+                       .rsp   (rsp));
+
+    initial begin
+      uvm_config_db#(virtual kmac_app_if)::set(null,
+                                               $sformatf("*env.m_kmac_app_agent[%0d]*", i),
+                                               "vif",
+                                               app_if);
+    end
+
+    ErrOutputZeros_A:
+      assert property (rsp.error |-> rsp.digest_s0 == 0 && rsp.digest_s1 == 0)
+      else `ASSERT_ERROR(ErrOutputZeros_A)
+  end
+
+  // If EnMasking is true, bind a reqack_data_if into the instance of prim_sync_reqack data at
+  // dut.gen_entropy.u_prim_sync_reqack_data and register it with uvm_config_db to be found by the
+  // environment.
+  //
+  // To ensure that this registration happens before we call run_test below, this sets
+  // all_reqack_vifs_registered to true once it is done.
+  bit all_reqack_vifs_registered;
+
+  if (`EN_MASKING) begin : gen_bind_reqack_data_if
+    bind dut.gen_entropy.u_prim_sync_reqack_data reqack_data_if u_reqack_data_if ();
+
+    initial begin
+      uvm_config_db#(virtual pins_if #(1))
+      ::set(null, "*.env", "reqack_data_pins_vif",
+            dut.gen_entropy.u_prim_sync_reqack_data.u_reqack_data_if.u_pins_if);
+
+      all_reqack_vifs_registered = 1;
+    end
+  end else begin : gen_bind_no_reqack_data_if
+    initial begin
+      all_reqack_vifs_registered = 1;
+    end
+  end
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -90,18 +140,6 @@ module tb;
     .entropy_i          ({edn_if[0].ack, edn_if[0].d_data} )
   );
 
-  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_kmac_app_intf
-    assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
-    assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
-    assign kmac_if.app_req[i] = app_req[i];
-    assign kmac_if.app_rsp[i] = app_rsp[i];
-
-    initial begin
-      uvm_config_db#(virtual kmac_app_intf)::set(null,
-          $sformatf("*env.m_kmac_app_agent[%0d]*", i), "vif", kmac_app_if[i]);
-    end
-  end
-
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -115,6 +153,11 @@ module tb;
     uvm_config_db#(virtual kmac_if)::set(null, "*.env", "kmac_vif", kmac_if);
 
     $timeformat(-12, 0, " ps", 12);
+
+    // Make sure that the initial block in gen_bind_*reqack_data_if has run and registered
+    // reqack_data_if before we start the build phase (which will it up in uvm_config_db).
+    wait (all_reqack_vifs_registered);
+
     run_test();
   end
 

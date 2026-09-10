@@ -285,7 +285,9 @@ module csrng_ctr_drbg import csrng_pkg::*; (
       concat_key_v_d = '0;
     end else if (concat_ctr_inc) begin
       concat_ctr_d = concat_ctr_q + 1;
-      // Steer the v-response from block encrypt to the correct lane, MSB down
+      // Steer the v-response from block encrypt to the correct lane, MSB down.
+      // concat_ctr_q must be lower than NumBlkPerUpd, otherwise concat_ctr_done is set and we end
+      // up in the if branch above, i.e., the index into concat_key_v_d is always valid.
       concat_key_v_d[(NumBlkPerUpd - 1 - concat_ctr_q) * BlkLen +: BlkLen]
         = block_encrypt_rsp_data_i;
     end

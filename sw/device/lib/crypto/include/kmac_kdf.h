@@ -35,11 +35,13 @@ extern "C" {
  * populated by the key derivation function.
  *
  * @param key_derivation_key Blinded key derivation key.
- * @param kmac_mode Either KMAC128 or KMAC256 as PRF.
  * @param label Label string (optional, may be empty).
  * @param context Context string (optional, may be empty).
  * @param[out] output_key_material Blinded output key material.
- * @return Result of the key derivation operation.
+ * @return Result of the key derivation operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_kmac_kdf(
     otcrypto_blinded_key_t *key_derivation_key,

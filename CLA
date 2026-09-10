@@ -1,5 +1,5 @@
 lowRISC CIC
-Contributor License Agreement ("Agreement") v1.0
+Contributor License Agreement ("Agreement") v1.1
 
 You accept and agree to the following terms and conditions for Your present and
 future Contributions submitted to the Project. Except for the license granted
@@ -29,6 +29,10 @@ systems, and issue tracking systems that are managed by, or on behalf of, the
 Project for the purpose of discussing and improving the Work, but excluding
 communication that is conspicuously marked or otherwise designated in writing
 by You as "Not a Contribution."
+
+"Project" means the open source project identified by name in the associated
+README.md file and comprising the collection of hardware, software, utility
+and documentation files saved in this repository.
 
 2. Grant of Copyright License. Subject to the terms and conditions of this
 Agreement, You hereby grant to the Project and to recipients of software
@@ -83,5 +87,17 @@ work as "Submitted on behalf of a third-party: [named here]".
 
 8. You agree to notify the Project of any facts or circumstances of which you
 become aware that would make these representations inaccurate in any respect.
+
+9. Tool and AI-Generated Contributions. If any portion of Your Contribution is
+generated, assisted, or created by an automated tool, including but not limited
+to artificial intelligence (AI) systems, such Contribution must be intentionally
+submitted by You. By submitting such a Contribution, You represent that You have
+reasonably reviewed and understand the generated material, and You take full
+responsibility for the submission. If you have not reasonably reviewed and
+understood the generated material, you must not submit the Contribution.
+Furthermore, You agree to disclose the use of such tools in Your submission
+(such as within a commit message or pull request) as directed by the Project.
+You explicitly agree that the tool-generated material constitutes Your Contribution
+ and is bound by all terms, licenses, and representations of this Agreement.
 
 Please sign: __________________________________ Date: ________________

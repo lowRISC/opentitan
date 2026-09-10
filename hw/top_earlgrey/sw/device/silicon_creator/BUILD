@@ -14,10 +14,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],
 )

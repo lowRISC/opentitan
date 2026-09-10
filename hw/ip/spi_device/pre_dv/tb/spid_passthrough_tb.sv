@@ -77,8 +77,6 @@ module tb;
   assign spiflash_if.sd[2] = passthrough_h2d.s_en[2] ? passthrough_h2d.s[2] : 1'b z;
   assign spiflash_if.sd[3] = passthrough_h2d.s_en[3] ? passthrough_h2d.s[3] : 1'b z;
 
-  prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg; // tied
-
   interrupt_t intr;
 
   // TB
@@ -176,7 +174,10 @@ module tb;
     .intr_tpm_header_not_empty_o(intr.tpm_header_not_empty),
 
     // Memory configuration
-    .ram_cfg_i (ram_cfg),
+    .ram_cfg_sys2spi_i(prim_ram_1r1w_pkg::RAM_1R1W_CFG_REQ_DEFAULT),
+    .ram_cfg_sys2spi_o(),
+    .ram_cfg_spi2sys_i(prim_ram_1r1w_pkg::RAM_1R1W_CFG_REQ_DEFAULT),
+    .ram_cfg_spi2sys_o(),
 
     // External clock sensor
     .sck_monitor_o(),

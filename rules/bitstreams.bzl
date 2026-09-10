@@ -61,6 +61,10 @@ def _bitstreams_repo_impl(rctx):
     rctx.watch(rctx.attr.python_interpreter)
     rctx.watch(rctx.attr._cache_manager)
 
+    # The python binary at @python3_host//:python lives at the repo root with
+    # RPATH $ORIGIN/../lib/, which only works when invoked from a bin/ subdir.
+    # Set PYTHONHOME explicitly so Python finds its stdlib regardless.
+    python_home = rctx.path(rctx.attr.python_interpreter).dirname
     result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
@@ -71,6 +75,7 @@ def _bitstreams_repo_impl(rctx):
             "--cache={}".format(cache_path),
             "--refresh-time={}".format(rctx.attr.refresh_time),
         ],
+        environment = {"PYTHONHOME": str(python_home)},
         quiet = False,
     )
     if result.return_code != 0:

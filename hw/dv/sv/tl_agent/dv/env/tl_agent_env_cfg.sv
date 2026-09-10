@@ -17,12 +17,12 @@ class tl_agent_env_cfg extends dv_base_env_cfg;
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     // no need to call super.initialize, set is_initialized to bypass the check of calling
     // super.initialize
     is_initialized = 1'b1;
 
-    ral_model_names = {}; // no csr in tl_agent
+    ral_model_names.delete(); // no csr in tl_agent
     host_agent_cfg = tl_agent_cfg::type_id::create("host_agent_cfg");
     host_agent_cfg.max_outstanding_req = 1 << SourceWidth;
     host_agent_cfg.if_mode = dv_utils_pkg::Host;

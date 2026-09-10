@@ -49,7 +49,7 @@ jobs:
             cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
               $(./bazelisk.sh outquery-all ${bitstream_target}) || true
 
-            # TODO: Splice ROM into the bitstream?
+            # TODO: upload the ROM to be spliced as a separate artefact?
             cp -Lv ${bitstream_archive} build-bin.tar
           }
 

@@ -21,15 +21,17 @@
   // We rely on Fusesoc to generate the file list for us
   sv_flist_gen_cmd:   "fusesoc"
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
-  sv_flist_gen_opts:  ["--cores-root {proj_root}/hw",
+  fusesoc_cores_root_dirs: ["--cores-root {proj_root}/hw"]
+  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
+  sv_flist_gen_opts:  ["{fusesoc_cores_root_dirs}",
                        "run"
                        "{sv_flist_gen_flags}",
                        "--target=syn",
                        "--tool icarus",
-                       "--build-root={build_dir}",
+                       "--work-root={build_dir}/fusesoc-work",
                        "--setup",
                        "{fusesoc_core}"]
-  sv_flist_gen_dir:   "{build_dir}/syn-icarus"
+  sv_flist_gen_dir:   "{build_dir}/fusesoc-work"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
 
   // Determines which message severities to print into report summaries.

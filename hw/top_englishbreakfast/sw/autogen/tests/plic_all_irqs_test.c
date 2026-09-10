@@ -48,7 +48,7 @@
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-static dif_aon_timer_t aon_timer_aon;
+static dif_aon_timer_t aon_timer;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -60,7 +60,7 @@ static dif_gpio_t gpio;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-static dif_pwrmgr_t pwrmgr_aon;
+static dif_pwrmgr_t pwrmgr;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -167,24 +167,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   switch (peripheral) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEnglishbreakfastPlicPeripheralAonTimerAon: {
+    case kTopEnglishbreakfastPlicPeripheralAonTimer: {
       dif_aon_timer_irq_t irq =
           (dif_aon_timer_irq_t)(plic_irq_id -
                                 (dif_rv_plic_irq_id_t)
-                                    kTopEnglishbreakfastPlicIrqIdAonTimerAonWkupTimerExpired);
+                                    kTopEnglishbreakfastPlicIrqIdAonTimerWkupTimerExpired);
       CHECK(irq == aon_timer_irq_expected,
-            "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect aon_timer IRQ triggered: exp = %d, obs = %d",
             aon_timer_irq_expected, irq);
       aon_timer_irq_serviced = irq;
 
       dif_aon_timer_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
+      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer, &snapshot));
       CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
-            "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
+            "Only aon_timer IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
+      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
       break;
     }
 #endif
@@ -249,24 +249,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEnglishbreakfastPlicPeripheralPwrmgrAon: {
+    case kTopEnglishbreakfastPlicPeripheralPwrmgr: {
       dif_pwrmgr_irq_t irq =
           (dif_pwrmgr_irq_t)(plic_irq_id -
                              (dif_rv_plic_irq_id_t)
-                                 kTopEnglishbreakfastPlicIrqIdPwrmgrAonWakeup);
+                                 kTopEnglishbreakfastPlicIrqIdPwrmgrWakeup);
       CHECK(irq == pwrmgr_irq_expected,
-            "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect pwrmgr IRQ triggered: exp = %d, obs = %d",
             pwrmgr_irq_expected, irq);
       pwrmgr_irq_serviced = irq;
 
       dif_pwrmgr_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
+      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr, &snapshot));
       CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
-            "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
+            "Only pwrmgr IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
+      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, irq));
       break;
     }
 #endif
@@ -466,8 +466,8 @@ static void peripherals_init(void) {
   mmio_region_t base_addr;
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
+  base_addr = mmio_region_from_addr(TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR);
+  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -481,8 +481,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -519,7 +519,7 @@ static void peripherals_init(void) {
  */
 static void peripheral_irqs_clear(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -531,7 +531,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
+  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -611,7 +611,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irqs));
+  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr, &pwrmgr_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -661,17 +661,17 @@ static void peripheral_irqs_trigger(void) {
   // Since there are other tests covering this already, we just skip this for
   // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
-    peripheral_expected = kTopEnglishbreakfastPlicPeripheralAonTimerAon;
+    peripheral_expected = kTopEnglishbreakfastPlicPeripheralAonTimer;
     for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired; irq <= kDifAonTimerIrqWdogTimerBark;
          ++irq) {
       aon_timer_irq_expected = irq;
-      LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
-      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
+      LOG_INFO("Triggering aon_timer IRQ %d.", irq);
+      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer, irq, true));
 
       // This avoids a race where *irq_serviced is read before
       // entering the ISR.
       IBEX_SPIN_FOR(aon_timer_irq_serviced == irq, 1);
-      LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
+      LOG_INFO("IRQ %d from aon_timer is serviced.", irq);
     }
   }
 #endif
@@ -716,17 +716,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEnglishbreakfastPlicPeripheralPwrmgrAon;
+  peripheral_expected = kTopEnglishbreakfastPlicPeripheralPwrmgr;
   for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup; irq <= kDifPwrmgrIrqWakeup;
        ++irq) {
     pwrmgr_irq_expected = irq;
-    LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, true));
+    LOG_INFO("Triggering pwrmgr IRQ %d.", irq);
+    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(pwrmgr_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from pwrmgr_aon is serviced.", irq);
+    LOG_INFO("IRQ %d from pwrmgr is serviced.", irq);
   }
 #endif
 

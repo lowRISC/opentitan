@@ -134,7 +134,7 @@ bool test_main(void) {
   dif_sram_ctrl_t sram_ctrl_main;
   dif_sram_ctrl_t sram_ctrl_ret;
   CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl_main));
-  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRet, &sram_ctrl_ret));
 
   dif_sram_ctrl_status_bitfield_t status_main;
   dif_sram_ctrl_status_bitfield_t status_ret;
@@ -154,7 +154,7 @@ bool test_main(void) {
   // Ret SRAM will start at the beginning of the owner section, allowing this
   // test to run on silicon where creator SRAM is in use.
   uintptr_t sram_ret_buffer_addr =
-      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
+      dt_sram_ctrl_memory_base(kDtSramCtrlRet, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_main_addr =

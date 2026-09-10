@@ -482,8 +482,8 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
 
   if (kUartIdxDv != 0xff) {
     kUartIdx = kUartIdxDv;

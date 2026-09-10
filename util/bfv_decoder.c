@@ -13,8 +13,7 @@ typedef struct {
   int value;
 } error_descriptor_t;
 
-#define ERROR_TABLE_ENTRY(name, value) \
-  { #name, value }
+#define ERROR_TABLE_ENTRY(name, value) {#name, value}
 
 // Add an empty element in the end to make it easier to stop iterating over the
 // table.

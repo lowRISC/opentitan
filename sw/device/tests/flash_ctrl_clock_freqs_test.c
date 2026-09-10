@@ -17,17 +17,17 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
- * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
- * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ * Bitfields for `CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG` OTP items.
  *
  * Defined here to be able to use in tests.
  */
 #define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 0}
 #define FLASH_CTRL_OTP_FIELD_ECC \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
 #define FLASH_CTRL_OTP_FIELD_HE \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 2}
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -110,7 +110,7 @@ static void do_data_partition_test(uint32_t bank_number) {
     uint32_t otp_val = abs_mmio_read32(
         TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
 
     dif_flash_ctrl_region_properties_t region_properties = {
         .ecc_en = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
@@ -183,7 +183,7 @@ bool test_main(void) {
 
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
 

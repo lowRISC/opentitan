@@ -18,6 +18,7 @@ class otbn_urnd_err_vseq extends otbn_base_vseq;
     string err_path = "tb.dut.u_otbn_core.u_otbn_rnd.urnd_reseed_ack_q";
     bit skip_err_injection = 1'b0;
     bit while_executing;
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
 
     // Wait for deassertion of reset.
     cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1'b0), .wait_posedge(1'b1));
@@ -61,7 +62,7 @@ class otbn_urnd_err_vseq extends otbn_base_vseq;
         `uvm_info(`gfn, "Injecting error by force.", UVM_LOW)
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, 1'b1) == 1)
         `uvm_info(`gfn, "Locking model immediately.", UVM_LOW)
-        cfg.model_agent_cfg.vif.lock_immediately(32'd1 << 20);
+        cfg.model_agent_cfg.vif.lock_immediately(err_bits);
 
         // Wait one clock cycle to have force applied during one cycle.
         @(cfg.clk_rst_vif.cbn);
@@ -80,7 +81,7 @@ class otbn_urnd_err_vseq extends otbn_base_vseq;
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, 1'b1) == 1)
 
         // Let model escalate in same clock cycle.
-        cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
+        cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
 
         // Wait one clock cycle to have force applied during one cycle.
         @(cfg.clk_rst_vif.cbn);

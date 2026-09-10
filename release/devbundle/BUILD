@@ -4,29 +4,30 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//rules/opentitan:splice.bzl", "bitstream_splice")
+load("//rules/opentitan:exec_env.bzl", "bitstream_from_env", "memory_from_env")
 
 package(default_visibility = ["//visibility:public"])
 
-bitstream_splice(
-    name = "bitstream_fpga_hyper310",
+bitstream_from_env(
+    name = "bitstream_fpga_hyper340",
     testonly = True,
-    # When the src bitstream and mmi fields are empty, the rule will use values
-    # from the exec_env.
-    exec_env = "//hw/top_earlgrey:fpga_cw310_rom_ext",
-    otp = "//hw/bitstream/universal:none",
-    rom = "//hw/bitstream/universal:none",
+    exec_env = "//hw/top_earlgrey:fpga_cw340_rom_ext",
     tags = ["manual"],
 )
 
-bitstream_splice(
-    name = "bitstream_fpga_hyper340",
+memory_from_env(
+    name = "rom_fpga_hyper340",
     testonly = True,
-    # When the src bitstream and mmi fields are empty, the rule will use values
-    # from the exec_env.
     exec_env = "//hw/top_earlgrey:fpga_cw340_rom_ext",
-    otp = "//hw/bitstream/universal:none",
-    rom = "//hw/bitstream/universal:none",
+    memory = "rom",
+    tags = ["manual"],
+)
+
+memory_from_env(
+    name = "otp_fpga_hyper340",
+    testonly = True,
+    exec_env = "//hw/top_earlgrey:fpga_cw340_rom_ext",
+    memory = "otp",
     tags = ["manual"],
 )
 
@@ -34,7 +35,6 @@ pkg_files(
     name = "bitstreams",
     testonly = True,
     srcs = [
-        ":bitstream_fpga_hyper310",
         ":bitstream_fpga_hyper340",
     ],
     tags = ["manual"],
@@ -48,6 +48,61 @@ pkg_filegroup(
     ],
     prefix = "earlgrey/bitstreams",
     tags = ["manual"],
+)
+
+pkg_files(
+    name = "fpga_hyper340_memories",
+    testonly = True,
+    srcs = [
+        ":otp_fpga_hyper340",
+        ":rom_fpga_hyper340",
+    ],
+    tags = ["manual"],
+)
+
+pkg_filegroup(
+    name = "memories_pkg",
+    testonly = True,
+    srcs = [
+        ":fpga_hyper340_memories",
+    ],
+    prefix = "earlgrey/memories",
+    tags = ["manual"],
+)
+
+# Build up a cryptolib package with a conventional 'include/lib/*.h` and `lib/*.a` structure
+pkg_files(
+    name = "cryptolib_headers_pkg",
+    srcs = [
+        "//sw/device/lib/crypto/include:package",
+    ],
+    prefix = "include/libotcrypto",
+)
+
+pkg_files(
+    name = "cryptolib_freestanding_headers_pkg",
+    srcs = [
+        "//sw/device/lib/crypto/include/freestanding:package",
+    ],
+    prefix = "include/libotcrypto/freestanding",
+)
+
+pkg_files(
+    name = "cryptolib_archive_pkg",
+    srcs = [
+        "//sw/device/lib/crypto:package",
+    ],
+    prefix = "lib",
+)
+
+pkg_filegroup(
+    name = "cryptolib_pkg",
+    srcs = [
+        ":cryptolib_archive_pkg",
+        ":cryptolib_freestanding_headers_pkg",
+        ":cryptolib_headers_pkg",
+    ],
+    prefix = "libotcrypto",
 )
 
 pkg_files(
@@ -68,12 +123,16 @@ pkg_tar(
     srcs = [
         ":bazel",
         ":bitstreams_pkg",
+        ":cryptolib_pkg",
+        ":memories_pkg",
         "//hw:package",
         "//hw/top_earlgrey/data/otp:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:fpga_dev_pkg",
         "//sw/device/silicon_creator/rom_ext:fpga_dev_pkg",
         "//sw/host/opentitantool:package",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
     ],
     extension = "tar.xz",
     tags = ["manual"],

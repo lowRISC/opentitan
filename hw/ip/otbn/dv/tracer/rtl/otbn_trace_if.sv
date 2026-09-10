@@ -81,7 +81,16 @@ interface otbn_trace_if
   input logic                      rnd_req,
   input logic                      rnd_valid,
 
-  input logic [otbn_pkg::UrndLen-1:0] urnd_data,
+  input logic [otbn_pkg::UrndLen-1:0]                 urnd_data,
+  input logic                                         ispr_urnd_state_wr,
+  input logic [otbn_pkg::WLEN-1:0]                    ispr_urnd_state_rdata,
+  input logic [otbn_pkg::UrndPartialSeedWidth-1:0]    ispr_urnd_state_wdata,
+  input logic [31:0]                                  ispr_urnd_status_rdata,
+  input logic                                         ispr_urnd_ctrl_wr,
+  input logic [31:0]                                  ispr_urnd_ctrl_wdata,
+
+
+  input logic [31:0] insn_cnt,
 
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
@@ -293,6 +302,24 @@ interface otbn_trace_if
   logic unused_urnd;
   assign unused_urnd = ^urnd_data[UrndLen-1:WLEN];
 
+  assign ispr_read[IsprUrndState] = any_ispr_read & (ispr_addr == IsprUrndState);
+  assign ispr_read_data[IsprUrndState] = ispr_urnd_state_rdata;
+  assign ispr_read[IsprUrndCtrl] = any_ispr_read & (ispr_addr == IsprUrndCtrl);
+  assign ispr_read_data[IsprUrndCtrl] = '0;
+  assign ispr_read[IsprUrndStatus] = any_ispr_read & (ispr_addr == IsprUrndStatus);
+  assign ispr_read_data[IsprUrndStatus] = {{(WLEN - 32){1'b0}}, ispr_urnd_status_rdata};
+
+  assign ispr_write[IsprUrndState] = ispr_urnd_state_wr;
+  // SW can write a full WDR to the state. But only the lower UrndPartialSeedWidth bits are
+  // considered. So we also only trace the actual register value.
+  assign ispr_write_data[IsprUrndState] = {{{WLEN - UrndPartialSeedWidth}{1'b0}},
+                                           ispr_urnd_state_wdata};
+
+  assign ispr_write[IsprUrndCtrl] = ispr_urnd_ctrl_wr;
+  assign ispr_write_data[IsprUrndCtrl] = {{(WLEN - 32){1'b0}}, ispr_urnd_ctrl_wdata};
+  assign ispr_write[IsprUrndStatus] = '0;
+  assign ispr_write_data[IsprUrndStatus] = '0;
+
   assign ispr_write[IsprKeyS0L] = 1'b0;
   assign ispr_write_data[IsprKeyS0L] = '0;
   assign ispr_write[IsprKeyS0H] = 1'b0;
@@ -381,6 +408,67 @@ interface otbn_trace_if
                                           gen_mai.u_otbn_mai.ispr_mai_ctrl_wdata_i};
   assign ispr_write_data[IsprMaiStatus] = '0;
 
+  assign ispr_read[IsprKmacDataS0] = any_ispr_read & (ispr_addr == IsprKmacDataS0);
+  assign ispr_read[IsprKmacDataS1] = any_ispr_read & (ispr_addr == IsprKmacDataS1);
+  assign ispr_read[IsprKmacStatus] = any_ispr_read & (ispr_addr == IsprKmacStatus);
+  assign ispr_read[IsprKmacCtrl]   = any_ispr_read & (ispr_addr == IsprKmacCtrl);
+  assign ispr_read[IsprKmacCfg]    = any_ispr_read & (ispr_addr == IsprKmacCfg);
+  assign ispr_read[IsprKmacStrb]   = any_ispr_read & (ispr_addr == IsprKmacStrb);
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_kmac_ispr_read_words
+    assign ispr_read_data[IsprKmacDataS0][i_word*32+:32] =
+          u_otbn_kmac_if.ispr_kmac_data_s0_rdata_o[i_word*39+:32];
+    assign ispr_read_data[IsprKmacDataS1][i_word*32+:32] =
+          u_otbn_kmac_if.ispr_kmac_data_s1_rdata_o[i_word*39+:32];
+  end
+
+  assign ispr_read_data[IsprKmacStatus] = {{(WLEN - 32'd32){1'b0}},
+                                           u_otbn_kmac_if.ispr_kmac_status_rdata_o};
+  assign ispr_read_data[IsprKmacCtrl]   = '0;
+  assign ispr_read_data[IsprKmacCfg]    = {{(WLEN - 32'd32){1'b0}},
+                                           u_otbn_kmac_if.ispr_kmac_cfg_rdata_o};
+  assign ispr_read_data[IsprKmacStrb]   = {{(WLEN - 32'd32){1'b0}},
+                                           u_otbn_kmac_if.ispr_kmac_strb_rdata_o};
+
+  // TODO: The response update is not considered. Do we need to model this?
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_kmac_ispr_write_words
+    assign ispr_write_data[IsprKmacDataS0][i_word*32+:32] =
+        u_otbn_kmac_if.ispr_kmac_data_s0_d[i_word].word;
+    assign ispr_write_data[IsprKmacDataS1][i_word*32+:32] =
+        u_otbn_kmac_if.ispr_kmac_data_s1_d[i_word].word;
+
+  end
+
+  assign ispr_write[IsprKmacDataS0] = u_otbn_kmac_if.ispr_kmac_data_s0_wr_i ||
+                                      u_otbn_kmac_if.sec_wipe_ispr_kmac_data_s0_i;
+  assign ispr_write[IsprKmacDataS1] = u_otbn_kmac_if.ispr_kmac_data_s1_wr_i ||
+                                      u_otbn_kmac_if.sec_wipe_ispr_kmac_data_s1_i;
+
+  // A write can clear certain bits.
+  assign ispr_write[IsprKmacStatus]      = u_otbn_kmac_if.ispr_kmac_status_wr_i;
+  assign ispr_write_data[IsprKmacStatus] = {{(WLEN - 32'd32){1'b0}},
+                                            u_otbn_kmac_if.ispr_kmac_status_wdata_i};
+
+  // There is no direct secure wipe.
+  assign ispr_write[IsprKmacCtrl]      = u_otbn_kmac_if.ispr_kmac_ctrl_wr_i;
+  assign ispr_write_data[IsprKmacCtrl] = {{(WLEN - 32'd32){1'b0}},
+                                          u_otbn_kmac_if.ispr_kmac_ctrl_wdata_i};
+
+  // There is no direct secure wipe.
+  assign ispr_write[IsprKmacCfg]       = u_otbn_kmac_if.ispr_kmac_cfg_wr_i;
+  assign ispr_write_data[IsprKmacCfg]  = {{(WLEN - 32'd32){1'b0}},
+                                          u_otbn_kmac_if.ispr_kmac_cfg_wdata_i};
+
+  // There is no direct secure wipe.
+  assign ispr_write[IsprKmacStrb]      = u_otbn_kmac_if.ispr_kmac_strb_wr_i;
+  assign ispr_write_data[IsprKmacStrb] = {{(WLEN - 32'd32){1'b0}},
+                                          u_otbn_kmac_if.ispr_kmac_strb_wdata_i};
+
+  assign ispr_write[IsprInsnCnt] = 1'b0;
+  assign ispr_write_data[IsprInsnCnt] = '0;
+
+  assign ispr_read[IsprInsnCnt] = any_ispr_read & (ispr_addr == IsprInsnCnt);
+  assign ispr_read_data[IsprInsnCnt] = {{(WLEN - 32){1'b0}}, insn_cnt};
 
   // Separate per flag group tracking using the flags_t struct so tracer can cleanly present flag
   // accesses.

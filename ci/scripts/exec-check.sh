@@ -35,6 +35,15 @@ done
 # Find the names of bad files.
 bad_files=$(find . "${args[@]}" -print)
 
+# Drop any paths that git ignores (e.g. a local .venv or build output) so a
+# local run behaves like CI, which never has these untracked files present.
+if [ -n "$bad_files" ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    ignored=$(printf '%s\n' "$bad_files" | git check-ignore --stdin 2>/dev/null || true)
+    if [ -n "$ignored" ]; then
+        bad_files=$(printf '%s\n' "$bad_files" | grep -vxF "$ignored" || true)
+    fi
+fi
+
 # Fail if any exist.
 if [ -n "$bad_files" ]; then
     echo -n "::error::"

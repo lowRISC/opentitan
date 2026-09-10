@@ -24,7 +24,7 @@ using ::testing::Return;
 
 class PinmuxTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_PINMUX_AON_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_PINMUX_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;

@@ -228,19 +228,6 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
   return kErrorOk;
 }
 
-/**
- * Disables all access to a page until next reset.
- *
- * It's the responsibility of the caller to call `SEC_MMIO_WRITE_INCREMENT()`
- * with the correct value.
- *
- * @param info_page An info page.
- */
-static void page_lockdown(const flash_ctrl_info_page_t *info_page) {
-  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_offset, 0);
-  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
-}
-
 void flash_ctrl_init(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(
       kFlashCtrlSecMmioInit,
@@ -249,8 +236,8 @@ void flash_ctrl_init(void) {
   // Set `HW_INFO_CFG_OVERRIDE` register if needed. This must be done before
   // initializing the flash_ctrl.
   uint32_t reg_val = FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_RESVAL;
-  uint32_t otp_val = otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET);
+  uint32_t otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE_OFFSET);
   multi_bit_bool_t scramble_dis = bitfield_field32_read(
       otp_val, FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS);
   if (scramble_dis == kMultiBitBool4True) {
@@ -275,7 +262,7 @@ void flash_ctrl_init(void) {
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Configure default scrambling, ECC, and HE settings for the data partition.
   otp_val =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET);
   flash_ctrl_cfg_t data_default_cfg = {
       .scrambling =
           bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
@@ -541,7 +528,7 @@ flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void) {
 
 flash_ctrl_cfg_t flash_ctrl_boot_data_cfg_get(void) {
   uint32_t otp_val =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET);
   return (flash_ctrl_cfg_t){
       .scrambling =
           bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
@@ -596,7 +583,7 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
   mp_region_cfg = bitfield_field32_write(
       mp_region_cfg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD, kMultiBitBool4True);
 
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 1);
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 2);
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtectLock, 1);
   sec_mmio_write32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region,
                    mp_region_cfg);
@@ -629,6 +616,11 @@ void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page) {
   sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
 }
 
+void flash_ctrl_info_page_lockdown(const flash_ctrl_info_page_t *info_page) {
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_offset, 0);
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
+}
+
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
   uint32_t reg = 0;
   switch (launder32(enable)) {
@@ -650,100 +642,4 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
   }
   sec_mmio_write32_shadowed(
       flash_ctrl_core_base() + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET, reg);
-}
-
-/**
- * Information pages that should be locked by ROM_EXT before handing over
- * execution to the first owner boot stage. See
- * `flash_ctrl_creator_info_pages_lockdown()`.
- */
-static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
-    // Bank 0
-    &kFlashCtrlInfoPageFactoryId,
-    &kFlashCtrlInfoPageCreatorSecret,
-    &kFlashCtrlInfoPageOwnerSecret,
-    &kFlashCtrlInfoPageWaferAuthSecret,
-    // Bank 1
-    &kFlashCtrlInfoPageBootData0,
-    &kFlashCtrlInfoPageBootData1,
-    &kFlashCtrlInfoPageCreatorReserved0,
-};
-
-enum {
-  kInfoPagesNoOwnerAccessCount = ARRAYSIZE(kInfoPagesNoOwnerAccess),
-};
-
-void flash_ctrl_creator_info_pages_lockdown(void) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown,
-                                  2 * kInfoPagesNoOwnerAccessCount);
-  size_t i = 0, r = kInfoPagesNoOwnerAccessCount - 1;
-  for (; launder32(i) < kInfoPagesNoOwnerAccessCount &&
-         launder32(r) < kInfoPagesNoOwnerAccessCount;
-       ++i, --r) {
-    page_lockdown(kInfoPagesNoOwnerAccess[i]);
-  }
-  HARDENED_CHECK_EQ(i, kInfoPagesNoOwnerAccessCount);
-  HARDENED_CHECK_EQ(r, SIZE_MAX);
-}
-
-const flash_ctrl_cfg_t kCertificateInfoPageCfg = {
-    .scrambling = kMultiBitBool4True,
-    .ecc = kMultiBitBool4True,
-    .he = kMultiBitBool4False,
-};
-const flash_ctrl_perms_t kCertificateInfoPageCreatorAccess = {
-    .read = kMultiBitBool4True,
-    .write = kMultiBitBool4True,
-    .erase = kMultiBitBool4True,
-};
-const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess = {
-    .read = kMultiBitBool4True,
-    .write = kMultiBitBool4False,
-    .erase = kMultiBitBool4False,
-};
-
-void flash_ctrl_cert_info_page_creator_cfg(
-    const flash_ctrl_info_page_t *info_page) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg, 2);
-  flash_ctrl_info_cfg_set(info_page, kCertificateInfoPageCfg);
-  flash_ctrl_info_perms_set(info_page, kCertificateInfoPageCreatorAccess);
-}
-
-void flash_ctrl_cert_info_page_owner_restrict(
-    const flash_ctrl_info_page_t *info_page) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageOwnerRestrict,
-                                  2);
-  flash_ctrl_info_perms_set(info_page, kCertificateInfoPageOwnerAccess);
-  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
-}
-
-rom_error_t flash_ctrl_info_type0_params_build(
-    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page) {
-  HARDENED_CHECK_LT(bank, FLASH_CTRL_PARAM_REG_NUM_BANKS);
-  HARDENED_CHECK_LT(page, FLASH_CTRL_PARAM_NUM_INFOS0);
-
-  uint32_t cfg_offset = 0;
-  uint32_t cfg_wen_offset = 0;
-
-  switch (bank) {
-    case 0:
-      cfg_offset = FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET;
-      cfg_wen_offset += FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET;
-      break;
-    case 1:
-      cfg_offset = FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_OFFSET;
-      cfg_wen_offset += FLASH_CTRL_BANK1_INFO0_REGWEN_0_REG_OFFSET;
-      break;
-    default:
-      HARDENED_TRAP();
-  }
-
-  *info_page = (flash_ctrl_info_page_t){
-      .base_addr = bank * FLASH_CTRL_PARAM_BYTES_PER_BANK +
-                   page * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-      .cfg_offset = cfg_offset + page * sizeof(uint32_t),
-      .cfg_wen_offset = cfg_wen_offset + page * sizeof(uint32_t),
-  };
-
-  return kErrorOk;
 }

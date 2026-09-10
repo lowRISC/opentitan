@@ -19,9 +19,8 @@ main:
   la x4, _compute_w_rho
   la x5, _compute_w_rho_prime_share0
   la x6, _compute_w_rho_prime_share1
-  la x7, _compute_w_slot0
-  la x8, _compute_w_slot1
-  la x9, _compute_w_slot2
+  la x7, _compute_w_kappa
+  la x8, _compute_w_slot0
   jal x1, compute_w
 
   la x20, _compute_w_w0_share0
@@ -38,9 +37,12 @@ _compute_w_rho:
 .zero 64
 
 _compute_w_rho_prime_share0:
-.zero 96
+.zero 64
 _compute_w_rho_prime_share1:
-.zero 96
+.zero 64
+_compute_w_kappa:
+.zero 2
+.zero 30 /* Padding */
 
 _compute_w_slot0:
 .zero 1024

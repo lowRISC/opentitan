@@ -6,9 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
-#include "sw/device/lib/crypto/include/security_config.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -47,7 +46,14 @@ status_t handle_cryptolib_fi_sym_aes(ujson_t *uj) {
 
   cryptolib_fi_sym_aes_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status = (size_t)cryptolib_fi_aes_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -94,6 +100,16 @@ status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj) {
   cryptolib_fi_sym_cmac_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
 
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status = (size_t)cryptolib_fi_cmac_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get registered local alerts from alert handler.
@@ -137,7 +153,14 @@ status_t handle_cryptolib_fi_sym_gcm(ujson_t *uj) {
 
   cryptolib_fi_sym_gcm_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status = (size_t)cryptolib_fi_gcm_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -225,7 +248,14 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj) {
 
   cryptolib_fi_sym_hmac_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status = (size_t)cryptolib_fi_hmac_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -269,8 +299,15 @@ status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj) {
 
   cryptolib_fi_sym_drbg_generate_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_drbg_generate_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -314,8 +351,15 @@ status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj) {
 
   cryptolib_fi_sym_drbg_reseed_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_drbg_reseed_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -401,7 +445,16 @@ status_t handle_cryptolib_fi_sym_trng_init(ujson_t *uj) {
       &rv_core_ibex));
 
   cryptolib_fi_sym_trng_init_out_t uj_output;
-  memset(&uj_output, 0, sizeof(uj_output));
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_trng_init_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -444,15 +497,16 @@ status_t handle_cryptolib_fi_sym_init(ujson_t *uj) {
   uint32_t build_hash_high;
   TRY(otcrypto_build_info(&version, &released, &build_hash_low,
                           &build_hash_high));
+  uint32_t major, minor, patch;
+  otcrypto_version_decode(version, &major, &minor, &patch);
   char cryptolib_version[150];
   memset(cryptolib_version, '\0', sizeof(cryptolib_version));
   base_snprintf(cryptolib_version, sizeof(cryptolib_version),
-                "CRYPTO version %08x, released %s, hash %08x%08x", version,
-                released ? "true" : "false", build_hash_high, build_hash_low);
+                "CRYPTO version %u.%u.%u, released %s, hash %08x%08x", major,
+                minor, patch, released ? "true" : "false", build_hash_high,
+                build_hash_low);
   RESP_OK(ujson_serialize_string, uj, cryptolib_version);
 
-  // Check the security config of the device.
-  TRY(otcrypto_security_config_check(kOtcryptoKeySecurityLevelHigh));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();

@@ -73,8 +73,6 @@ OpenTitan used as a security key has the following provisioning requirements:
 *   Physical Presence GPIO: U2F requires physical user presence checks for
     registration and authentication flows. This is implemented either via a push
     button or capacitive touch sensor connected to an input GPIO pin.
-    *   At least 2 PWM peripherals can facilitate implementation of capacitive
-        touch sensor IO operations.
 *   Status LEDs GPIO: The security key may use LEDs to provide feedback to the
     user. This requires up to 4 additional output GPIO pins.
 *   USB HID U2F Stack: The security key communicates with host devices via a USB

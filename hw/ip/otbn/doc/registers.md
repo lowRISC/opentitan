@@ -31,10 +31,10 @@ Interrupt State Register
 {"reg": [{"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-|  31:1  |        |         |        | Reserved                          |
-|   0    |  rw1c  |   0x0   | done   | OTBN has completed the operation. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                              |
+|   0    |  rw1c  |   0x0   | done   | OTBN has completed the operation, encountered a WFI instruction or has locked itself. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -91,13 +91,14 @@ Alert Test Register
 ## CMD
 Command Register
 
-A command initiates an OTBN operation. While performing the operation,
+Any command except `RESUME` initiates an OTBN operation. While performing the operation,
 OTBN is busy; the [`STATUS`](#status) register reflects that.
 
 All operations signal their completion by raising the done
 interrupt; alternatively, software may poll the [`STATUS`](#status) register.
 
-Writes are ignored if OTBN is not idle.
+The EXECUTE, SEC_WIPE_DMEM, and SEC_WIPE_IMEM commands take only effect if OTBN is idle.
+The RESUME command only takes effect if OTBN is paused.
 Unrecognized commands are ignored.
 - Offset: `0x10`
 - Reset default: `0x0`
@@ -122,23 +123,26 @@ The operation to perform.
 | 0xd8  | EXECUTE       | Starts the execution of the program stored in the instruction memory, starting at address zero. |
 | 0xc3  | SEC_WIPE_DMEM | Securely removes all contents from the data memory. |
 | 0x1e  | SEC_WIPE_IMEM | Securely removes all contents from the instruction  memory. |
+| 0xa6  | RESUME        | Resumes execution of a program that was previously paused by a WFI instruction. |
 
 ## CTRL
 Control Register
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wfi_enabled", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "urnd_ctrl_enabled", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                      |
-|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                     | Reserved                                                                                                                                                         |
-|   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors. When set software errors produce fatal errors, rather than recoverable errors. Writes are ignored if OTBN is not idle. |
+|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:--------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:3  |        |         |                     | Reserved                                                                                                                                                                                                                       |
+|   2    |   rw   |   0x0   | urnd_ctrl_enabled   | Controls whether the URND_CTRL CSR is enabled. When set, OTBN SW can use the functionality provided by the URND_CTRL CSR. When cleared, writes to URND_CTRL have no effect. Writes are ignored if OTBN is not idle.            |
+|   1    |   rw   |   0x0   | wfi_enabled         | Controls whether the WFI instruction is enabled. When set, the WFI instruction can be used to pause execution. When cleared, the WFI instruction is treated as an invalid instruction. Writes are ignored if OTBN is not idle. |
+|   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors. When set software errors produce fatal errors, rather than recoverable errors. Writes are ignored if OTBN is not idle.                                                               |
 
 ## STATUS
 Status Register
@@ -170,6 +174,7 @@ All BUSY values represent an operation started by a write to the
 | 0x02  | BUSY_SEC_WIPE_DMEM | OTBN is busy securely wiping the data memory.         |
 | 0x03  | BUSY_SEC_WIPE_IMEM | OTBN is busy securely wiping the instruction memory.  |
 | 0x04  | BUSY_SEC_WIPE_INT  | OTBN is busy securely wiping the internal state.      |
+| 0x05  | PAUSED             | OTBN is paused due to a WFI instruction.              |
 | 0xFF  | LOCKED             | OTBN is locked as reaction to a fatal error, and must be reset to unlock it again. See also the section "Reaction to Fatal Errors". |
 
 

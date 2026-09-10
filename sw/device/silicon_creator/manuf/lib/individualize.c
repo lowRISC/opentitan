@@ -9,15 +9,14 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
@@ -72,33 +71,23 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_hw_cfg(
-    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    const uint32_t *ft_device_id) {
+status_t manuf_individualize_device_hw_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                           const uint32_t *ft_device_id) {
   bool is_locked;
 
   // Provision HW_CFG0 if it is not locked.
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                       &is_locked));
   if (!is_locked) {
-    // Configure flash info page permissions in case we started from a cold
-    // boot. Note: cp_device_id and manuf_state are on the same flash info page.
-    TRY(flash_ctrl_testutils_info_region_setup_properties(
-        flash_state, kFlashInfoFieldCpDeviceId.page,
-        kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-        flash_info_page_0_permissions,
-        /*offset=*/NULL));
-
     // Read CpDeviceId & AST configuration version from flash info page 0.
-    uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
-    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
-                                    cp_device_id,
-                                    kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+    TRY(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                      kPageReadOnly, kPageRawCfg));
+    uint32_t cp_device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords];
+    TRY(manuf_nvm_info_field_read(kNvmInfoFieldCpDeviceId, cp_device_id,
+                                  kNvmInfoFieldCpDeviceIdSizeIn32BitWords));
     uint32_t ast_cfg_version;
-    TRY(manuf_flash_info_field_read(
-        flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
-        kFlashInfoFieldAstCfgVersionSizeIn32BitWords));
+    TRY(manuf_nvm_info_field_read(kNvmInfoFieldAstCfgVersion, &ast_cfg_version,
+                                  kNvmInfoFieldAstCfgVersionSizeIn32BitWords));
 
     // Check if AST configuration version is an 8-bit value.
     if (ast_cfg_version > UINT8_MAX) {
@@ -107,7 +96,7 @@ status_t manuf_individualize_device_hw_cfg(
 
     // Check if CP device ID from flash is empty.
     bool flash_cp_device_id_empty = true;
-    for (size_t i = 0; i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords; ++i) {
+    for (size_t i = 0; i < kNvmInfoFieldCpDeviceIdSizeIn32BitWords; ++i) {
       if (cp_device_id[i] != 0) {
         flash_cp_device_id_empty = false;
         break;
@@ -131,16 +120,16 @@ status_t manuf_individualize_device_hw_cfg(
 
     // Construct the complete device ID.
     uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
-    memcpy(device_id, cp_device_id, kFlashInfoFieldCpDeviceIdSizeInBytes);
+    memcpy(device_id, cp_device_id, kNvmInfoFieldCpDeviceIdSizeInBytes);
     // CP and FT device IDs are the same length (128 bit words).
-    memcpy(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords], ft_device_id,
-           kFlashInfoFieldCpDeviceIdSizeInBytes);
+    memcpy(&device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords], ft_device_id,
+           kNvmInfoFieldCpDeviceIdSizeInBytes);
 
     // Overwrite AST configuration version field in FT device ID with the
     // version field from flash.
     uint32_t ft_device_id_mask = 0xFFFF00FF;
-    device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] =
-        (device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] &
+    device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] =
+        (device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] &
          ft_device_id_mask) |
         (ast_cfg_version << 8);
 

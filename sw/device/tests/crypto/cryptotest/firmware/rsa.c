@@ -6,8 +6,9 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -74,6 +75,108 @@ static const uint32_t key_mask[kCryptotestRsa4096NumWords] = {
     0xe6cae515, 0x063cb76b, 0xff9428aa, 0x5c69fc6a, 0xbb15f685, 0xeb951a27,
     0xcadc73ec, 0xd3770767};
 
+static status_t rsa_size_params(size_t security_level,
+                                otcrypto_rsa_size_t *rsa_size,
+                                size_t *rsa_num_words, size_t *public_key_bytes,
+                                size_t *private_key_bytes,
+                                size_t *private_key_blob_bytes) {
+  size_t n_bytes = security_level / 8;
+  switch (n_bytes) {
+    case kOtcryptoRsa2048PublicKeyBytes:
+      *rsa_size = kOtcryptoRsaSize2048;
+      *rsa_num_words = kCryptotestRsa2048NumWords;
+      if (public_key_bytes)
+        *public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
+      if (private_key_bytes)
+        *private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
+      if (private_key_blob_bytes)
+        *private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
+      break;
+    case kOtcryptoRsa3072PublicKeyBytes:
+      *rsa_size = kOtcryptoRsaSize3072;
+      *rsa_num_words = kCryptotestRsa3072NumWords;
+      if (public_key_bytes)
+        *public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
+      if (private_key_bytes)
+        *private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
+      if (private_key_blob_bytes)
+        *private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
+      break;
+    case kOtcryptoRsa4096PublicKeyBytes:
+      *rsa_size = kOtcryptoRsaSize4096;
+      *rsa_num_words = kCryptotestRsa4096NumWords;
+      if (public_key_bytes)
+        *public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
+      if (private_key_bytes)
+        *private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
+      if (private_key_blob_bytes)
+        *private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA security_level: %d", (uint32_t)security_level);
+      return INVALID_ARGUMENT();
+  }
+  return OK_STATUS();
+}
+
+static status_t rsa_hash_mode(size_t hashing, otcrypto_hash_mode_t *hash_mode,
+                              size_t *hash_digest_words) {
+  switch (hashing) {
+    case kCryptotestRsaSha256:
+      *hash_mode = kOtcryptoHashModeSha256;
+      if (hash_digest_words)
+        *hash_digest_words = 256 / 32;
+      break;
+    case kCryptotestRsaSha384:
+      *hash_mode = kOtcryptoHashModeSha384;
+      if (hash_digest_words)
+        *hash_digest_words = 384 / 32;
+      break;
+    case kCryptotestRsaSha512:
+      *hash_mode = kOtcryptoHashModeSha512;
+      if (hash_digest_words)
+        *hash_digest_words = 512 / 32;
+      break;
+    case kCryptotestRsaSha3_256:
+      *hash_mode = kOtcryptoHashModeSha3_256;
+      if (hash_digest_words)
+        *hash_digest_words = 256 / 32;
+      break;
+    case kCryptotestRsaSha3_384:
+      *hash_mode = kOtcryptoHashModeSha3_384;
+      if (hash_digest_words)
+        *hash_digest_words = 384 / 32;
+      break;
+    case kCryptotestRsaSha3_512:
+      *hash_mode = kOtcryptoHashModeSha3_512;
+      if (hash_digest_words)
+        *hash_digest_words = 512 / 32;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA hash mode: %d", (uint32_t)hashing);
+      return INVALID_ARGUMENT();
+  }
+  return OK_STATUS();
+}
+
+static status_t rsa_sign_padding(size_t padding, otcrypto_key_mode_t *key_mode,
+                                 otcrypto_rsa_padding_t *padding_mode) {
+  switch (padding) {
+    case kCryptotestRsaPaddingPkcs:
+      *key_mode = kOtcryptoKeyModeRsaSignPkcs;
+      *padding_mode = kOtcryptoRsaPaddingPkcs;
+      break;
+    case kCryptotestRsaPaddingPss:
+      *key_mode = kOtcryptoKeyModeRsaSignPss;
+      *padding_mode = kOtcryptoRsaPaddingPss;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA padding mode: %d", (uint32_t)padding);
+      return INVALID_ARGUMENT();
+  }
+  return OK_STATUS();
+}
+
 static status_t hash_message(otcrypto_const_byte_buf_t *msg_buf,
                              otcrypto_hash_mode_t hash_mode,
                              otcrypto_hash_digest_t *msg_digest) {
@@ -110,55 +213,14 @@ status_t handle_rsa_encrypt(ujson_t *uj) {
     return INVALID_ARGUMENT();
   }
 
-  size_t rsa_num_words;
-  size_t public_key_bytes;
   otcrypto_rsa_size_t rsa_size;
+  size_t rsa_num_words, public_key_bytes;
   size_t n_bytes = uj_input.security_level / 8;
-  switch (n_bytes) {
-    case kOtcryptoRsa2048PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize2048;
-      rsa_num_words = kCryptotestRsa2048NumWords;
-      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
-      break;
-    case kOtcryptoRsa3072PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize3072;
-      rsa_num_words = kCryptotestRsa3072NumWords;
-      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
-      break;
-    case kOtcryptoRsa4096PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize4096;
-      rsa_num_words = kCryptotestRsa4096NumWords;
-      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words,
+                      &public_key_bytes, NULL, NULL));
 
   otcrypto_hash_mode_t hash_mode;
-  switch (uj_input.hashing) {
-    case kCryptotestRsaSha256:
-      hash_mode = kOtcryptoHashModeSha256;
-      break;
-    case kCryptotestRsaSha384:
-      hash_mode = kOtcryptoHashModeSha384;
-      break;
-    case kCryptotestRsaSha512:
-      hash_mode = kOtcryptoHashModeSha512;
-      break;
-    case kCryptotestRsaSha3_256:
-      hash_mode = kOtcryptoHashModeSha3_256;
-      break;
-    case kCryptotestRsaSha3_384:
-      hash_mode = kOtcryptoHashModeSha3_384;
-      break;
-    case kCryptotestRsaSha3_512:
-      hash_mode = kOtcryptoHashModeSha3_512;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_hash_mode(uj_input.hashing, &hash_mode, NULL));
 
   // Create the modulus N buffer.
   uint32_t n_buf[rsa_num_words];
@@ -230,66 +292,16 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
     return INVALID_ARGUMENT();
   }
 
-  size_t rsa_num_words;
-  size_t private_key_bytes;
-  size_t private_key_blob_bytes;
   otcrypto_rsa_size_t rsa_size;
+  size_t rsa_num_words, private_key_bytes, private_key_blob_bytes;
   size_t n_bytes = uj_input.security_level / 8;
-  switch (n_bytes) {
-    case kOtcryptoRsa2048PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize2048;
-      rsa_num_words = kCryptotestRsa2048NumWords;
-      private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa3072PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize3072;
-      rsa_num_words = kCryptotestRsa3072NumWords;
-      private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa4096PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize4096;
-      rsa_num_words = kCryptotestRsa4096NumWords;
-      private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words, NULL,
+                      &private_key_bytes, &private_key_blob_bytes));
 
   otcrypto_hash_mode_t hash_mode;
-  size_t hash_digest_bytes;
-  switch (uj_input.hashing) {
-    case kCryptotestRsaSha256:
-      hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_bytes = 256 / 8;
-      break;
-    case kCryptotestRsaSha384:
-      hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_bytes = 384 / 8;
-      break;
-    case kCryptotestRsaSha512:
-      hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_bytes = 512 / 8;
-      break;
-    case kCryptotestRsaSha3_256:
-      hash_mode = kOtcryptoHashModeSha3_256;
-      hash_digest_bytes = 256 / 8;
-      break;
-    case kCryptotestRsaSha3_384:
-      hash_mode = kOtcryptoHashModeSha3_384;
-      hash_digest_bytes = 384 / 8;
-      break;
-    case kCryptotestRsaSha3_512:
-      hash_mode = kOtcryptoHashModeSha3_512;
-      hash_digest_bytes = 512 / 8;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
-      return INVALID_ARGUMENT();
-  }
+  size_t hash_digest_words;
+  TRY(rsa_hash_mode(uj_input.hashing, &hash_mode, &hash_digest_words));
+  size_t hash_digest_bytes = hash_digest_words * sizeof(uint32_t);
 
   // Create the modulus N buffer.
   uint32_t n_buf[rsa_num_words];
@@ -318,7 +330,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -387,82 +399,19 @@ status_t handle_rsa_sign(ujson_t *uj) {
     return INVALID_ARGUMENT();
   }
 
-  size_t rsa_num_words;
-  size_t private_key_bytes;
-  size_t private_key_blob_bytes;
   otcrypto_rsa_size_t rsa_size;
+  size_t rsa_num_words, private_key_bytes, private_key_blob_bytes;
   size_t n_bytes = uj_input.security_level / 8;
-  switch (n_bytes) {
-    case kOtcryptoRsa2048PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize2048;
-      rsa_num_words = kCryptotestRsa2048NumWords;
-      private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa3072PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize3072;
-      rsa_num_words = kCryptotestRsa3072NumWords;
-      private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa4096PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize4096;
-      rsa_num_words = kCryptotestRsa4096NumWords;
-      private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words, NULL,
+                      &private_key_bytes, &private_key_blob_bytes));
 
   otcrypto_hash_mode_t hash_mode;
   size_t hash_digest_words;
-  switch (uj_input.hashing) {
-    case kCryptotestRsaSha256:
-      hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha384:
-      hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha512:
-      hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_words = 512 / 32;
-      break;
-    case kCryptotestRsaSha3_256:
-      hash_mode = kOtcryptoHashModeSha3_256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha3_384:
-      hash_mode = kOtcryptoHashModeSha3_384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha3_512:
-      hash_mode = kOtcryptoHashModeSha3_512;
-      hash_digest_words = 512 / 32;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_hash_mode(uj_input.hashing, &hash_mode, &hash_digest_words));
 
   otcrypto_key_mode_t key_mode;
   otcrypto_rsa_padding_t padding_mode;
-  switch (uj_input.padding) {
-    case kCryptotestRsaPaddingPkcs:
-      padding_mode = kOtcryptoRsaPaddingPkcs;
-      key_mode = kOtcryptoKeyModeRsaSignPkcs;
-      break;
-    case kCryptotestRsaPaddingPss:
-      padding_mode = kOtcryptoRsaPaddingPss;
-      key_mode = kOtcryptoKeyModeRsaSignPss;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA padding mode: %d", uj_input.padding);
-      return INVALID_ARGUMENT();
-  };
+  TRY(rsa_sign_padding(uj_input.padding, &key_mode, &padding_mode));
 
   // Create the modulus N buffer.
   uint32_t n_buf[rsa_num_words];
@@ -491,7 +440,7 @@ status_t handle_rsa_sign(ujson_t *uj) {
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -550,74 +499,19 @@ status_t handle_rsa_verify(ujson_t *uj) {
     return INVALID_ARGUMENT();
   }
 
+  otcrypto_rsa_size_t rsa_size;
   size_t rsa_num_words;
   size_t n_bytes = uj_input.security_level / 8;
-  otcrypto_rsa_size_t rsa_size;
-  switch (n_bytes) {
-    case kOtcryptoRsa2048PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize2048;
-      rsa_num_words = kCryptotestRsa2048NumWords;
-      break;
-    case kOtcryptoRsa3072PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize3072;
-      rsa_num_words = kCryptotestRsa3072NumWords;
-      break;
-    case kOtcryptoRsa4096PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize4096;
-      rsa_num_words = kCryptotestRsa4096NumWords;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words, NULL,
+                      NULL, NULL));
 
   otcrypto_hash_mode_t hash_mode;
   size_t hash_digest_words;
-  switch (uj_input.hashing) {
-    case kCryptotestRsaSha256:
-      hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha384:
-      hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha512:
-      hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_words = 512 / 32;
-      break;
-    case kCryptotestRsaSha3_256:
-      hash_mode = kOtcryptoHashModeSha3_256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha3_384:
-      hash_mode = kOtcryptoHashModeSha3_384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha3_512:
-      hash_mode = kOtcryptoHashModeSha3_512;
-      hash_digest_words = 512 / 32;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_hash_mode(uj_input.hashing, &hash_mode, &hash_digest_words));
 
   otcrypto_key_mode_t key_mode;
   otcrypto_rsa_padding_t padding_mode;
-  switch (uj_input.padding) {
-    case kCryptotestRsaPaddingPkcs:
-      padding_mode = kOtcryptoRsaPaddingPkcs;
-      key_mode = kOtcryptoKeyModeRsaSignPkcs;
-      break;
-    case kCryptotestRsaPaddingPss:
-      padding_mode = kOtcryptoRsaPaddingPss;
-      key_mode = kOtcryptoKeyModeRsaSignPss;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA padding mode: %d", uj_input.padding);
-      return INVALID_ARGUMENT();
-  };
+  TRY(rsa_sign_padding(uj_input.padding, &key_mode, &padding_mode));
 
   // Create the modulus N buffer.
   uint32_t n_buf[rsa_num_words];
@@ -678,92 +572,30 @@ status_t handle_rsa_verify(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_rsa_keygen(ujson_t *uj) {
-  cryptotest_rsa_keygen_t uj_input;
-  TRY(ujson_deserialize_cryptotest_rsa_keygen_t(uj, &uj_input));
+status_t handle_rsa_keygen_check(ujson_t *uj) {
+  cryptotest_rsa_keygen_check_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_keygen_check_t(uj, &uj_input));
 
-  size_t rsa_num_words;
-  size_t public_key_bytes;
-  size_t private_key_bytes;
-  size_t private_key_blob_bytes;
   otcrypto_rsa_size_t rsa_size;
+  size_t rsa_num_words, public_key_bytes, private_key_bytes,
+      private_key_blob_bytes;
   size_t n_bytes = uj_input.security_level / 8;
-  switch (n_bytes) {
-    case kOtcryptoRsa2048PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize2048;
-      rsa_num_words = kCryptotestRsa2048NumWords;
-      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
-      private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa3072PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize3072;
-      rsa_num_words = kCryptotestRsa3072NumWords;
-      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
-      private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
-      break;
-    case kOtcryptoRsa4096PublicKeyBytes:
-      rsa_size = kOtcryptoRsaSize4096;
-      rsa_num_words = kCryptotestRsa4096NumWords;
-      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
-      private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
-      private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA security_level: %d", uj_input.security_level);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words,
+                      &public_key_bytes, &private_key_bytes,
+                      &private_key_blob_bytes));
 
   otcrypto_hash_mode_t hash_mode;
   size_t hash_digest_words;
-  switch (uj_input.hashing) {
-    case kCryptotestRsaSha256:
-      hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha384:
-      hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha512:
-      hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_words = 512 / 32;
-      break;
-    case kCryptotestRsaSha3_256:
-      hash_mode = kOtcryptoHashModeSha3_256;
-      hash_digest_words = 256 / 32;
-      break;
-    case kCryptotestRsaSha3_384:
-      hash_mode = kOtcryptoHashModeSha3_384;
-      hash_digest_words = 384 / 32;
-      break;
-    case kCryptotestRsaSha3_512:
-      hash_mode = kOtcryptoHashModeSha3_512;
-      hash_digest_words = 512 / 32;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
-      return INVALID_ARGUMENT();
-  }
+  TRY(rsa_hash_mode(uj_input.hashing, &hash_mode, &hash_digest_words));
 
+  // OAEP uses a distinct key mode and code path; sign/verify use
+  // rsa_sign_padding.
   otcrypto_key_mode_t key_mode;
   otcrypto_rsa_padding_t padding_mode;
-  switch (uj_input.padding) {
-    case kCryptotestRsaPaddingPkcs:
-      padding_mode = kOtcryptoRsaPaddingPkcs;
-      key_mode = kOtcryptoKeyModeRsaSignPkcs;
-      break;
-    case kCryptotestRsaPaddingPss:
-      padding_mode = kOtcryptoRsaPaddingPss;
-      key_mode = kOtcryptoKeyModeRsaSignPss;
-      break;
-    case kCryptotestRsaPaddingOaep:
-      key_mode = kOtcryptoKeyModeRsaEncryptOaep;
-      break;
-    default:
-      LOG_ERROR("Unsupported RSA padding mode: %d", uj_input.padding);
-      return INVALID_ARGUMENT();
+  if (uj_input.padding == kCryptotestRsaPaddingOaep) {
+    key_mode = kOtcryptoKeyModeRsaEncryptOaep;
+  } else {
+    TRY(rsa_sign_padding(uj_input.padding, &key_mode, &padding_mode));
   }
 
   // Allocate and configure the public key.
@@ -780,7 +612,7 @@ status_t handle_rsa_keygen(ujson_t *uj) {
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = key_mode,
               .key_length = private_key_bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -859,9 +691,130 @@ status_t handle_rsa_keygen(ujson_t *uj) {
     }
   }
 
-  cryptotest_rsa_keygen_resp_t uj_output;
+  cryptotest_rsa_keygen_check_resp_t uj_output;
   uj_output.result = result;
+  RESP_OK(ujson_serialize_cryptotest_rsa_keygen_check_resp_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_rsa_keygen(ujson_t *uj) {
+  cryptotest_rsa_keygen_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_keygen_t(uj, &uj_input));
+
+  otcrypto_rsa_size_t rsa_size;
+  size_t rsa_num_words, public_key_bytes, private_key_bytes,
+      private_key_blob_bytes;
+  size_t n_bytes = uj_input.security_level / 8;
+  TRY(rsa_size_params(uj_input.security_level, &rsa_size, &rsa_num_words,
+                      &public_key_bytes, &private_key_bytes,
+                      &private_key_blob_bytes));
+
+  otcrypto_key_mode_t key_mode;
+  otcrypto_rsa_padding_t padding_mode;
+  TRY(rsa_sign_padding(uj_input.padding, &key_mode, &padding_mode));
+
+  // Allocate and configure the public key.
+  uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_bytes,
+      .key = public_key_data,
+  };
+
+  // Allocate and configure the private key.
+  size_t keyblob_words = ceil_div(private_key_blob_bytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = otcrypto_lib_version(),
+              .key_mode = key_mode,
+              .key_length = private_key_bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob = keyblob,
+      .keyblob_length = private_key_blob_bytes,
+  };
+
+  TRY(otcrypto_rsa_keygen(rsa_size, &public_key, &private_key));
+
+  // Extract the raw private exponent d from the two-share keyblob:
+  // keyblob = [share0 | share1], where share0 = d ^ share1.
+  uint32_t d_buf[rsa_num_words];
+  for (size_t i = 0; i < rsa_num_words; i++) {
+    d_buf[i] = keyblob[i] ^ keyblob[rsa_num_words + i];
+  }
+
+  // Return n, d, and e to the host.
+  cryptotest_rsa_keygen_resp_t uj_output;
+  memset(uj_output.n, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(uj_output.n, public_key_data, n_bytes);
+  uj_output.n_len = n_bytes;
+  memset(uj_output.d, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(uj_output.d, d_buf, n_bytes);
+  uj_output.d_len = n_bytes;
+  uj_output.e = kCryptotestRsaSupportedE;
+
   RESP_OK(ujson_serialize_cryptotest_rsa_keygen_resp_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_rsa_keygen_acvp(ujson_t *uj) {
+  cryptotest_rsa_keygen_acvp_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_keygen_acvp_t(uj, &uj_input));
+
+  otcrypto_rsa_size_t otcrypto_size;
+  size_t rsa_num_words;
+  size_t n_bytes = uj_input.security_level / 8;
+  TRY(rsa_size_params(uj_input.security_level, &otcrypto_size, &rsa_num_words,
+                      NULL, NULL, NULL));
+
+  rsa_size_t rsa_size;
+  switch (otcrypto_size) {
+    case kOtcryptoRsaSize2048:
+      rsa_size = kRsaSize2048;
+      break;
+    case kOtcryptoRsaSize3072:
+      rsa_size = kRsaSize3072;
+      break;
+    case kOtcryptoRsaSize4096:
+      rsa_size = kRsaSize4096;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA size: %d", (uint32_t)uj_input.security_level);
+      return INVALID_ARGUMENT();
+  }
+
+  uint32_t n_buf[rsa_num_words];
+  uint32_t d0_buf[rsa_num_words];
+  uint32_t d1_buf[rsa_num_words];
+  size_t prime_words = rsa_num_words / 2;
+  size_t prime_bytes = n_bytes / 2;
+  uint32_t p_buf[prime_words];
+  uint32_t q_buf[prime_words];
+
+  TRY(rsa_keygen_start(rsa_size));
+  TRY(rsa_keygen_finalize_size(rsa_size, n_buf, d0_buf, d1_buf, p_buf, q_buf));
+
+  uint32_t d_buf[rsa_num_words];
+  for (size_t i = 0; i < rsa_num_words; i++) {
+    d_buf[i] = d0_buf[i] ^ d1_buf[i];
+  }
+
+  cryptotest_rsa_keygen_acvp_resp_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  memcpy(uj_output.n, n_buf, n_bytes);
+  uj_output.n_len = n_bytes;
+  memcpy(uj_output.d, d_buf, n_bytes);
+  uj_output.d_len = n_bytes;
+  memcpy(uj_output.p, p_buf, prime_bytes);
+  uj_output.p_len = prime_bytes;
+  memcpy(uj_output.q, q_buf, prime_bytes);
+  uj_output.q_len = prime_bytes;
+  uj_output.e = kCryptotestRsaSupportedE;
+
+  RESP_OK(ujson_serialize_cryptotest_rsa_keygen_acvp_resp_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -877,8 +830,12 @@ status_t handle_rsa(ujson_t *uj) {
       return handle_rsa_sign(uj);
     case kRsaSubcommandRsaVerify:
       return handle_rsa_verify(uj);
+    case kRsaSubcommandRsaKeygenCheck:
+      return handle_rsa_keygen_check(uj);
     case kRsaSubcommandRsaKeygen:
       return handle_rsa_keygen(uj);
+    case kRsaSubcommandRsaKeygenAcvp:
+      return handle_rsa_keygen_acvp(uj);
     default:
       LOG_ERROR("Unrecognized RSA subcommand: %d", cmd);
       return INVALID_ARGUMENT();

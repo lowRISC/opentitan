@@ -19,8 +19,8 @@ module i2c
 ) (
   input                                    clk_i,
   input                                    rst_ni,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t ram_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_o,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -115,7 +115,7 @@ module i2c
     .clk_i,
     .rst_ni,
     .ram_cfg_i,
-    .ram_cfg_rsp_o,
+    .ram_cfg_o,
 
     .reg2hw,
     .hw2reg,

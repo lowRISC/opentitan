@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -125,7 +126,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
 
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
@@ -145,7 +146,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   };
 
   // Set the checksum.
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   size_t iv_num_words =
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
@@ -215,7 +216,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
 
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
@@ -235,7 +236,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   };
 
   // Set the checksum.
-  key.checksum = integrity_blinded_checksum(&key);
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   size_t iv_num_words =
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
@@ -278,13 +279,11 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     *cycles = profile_end(t_start);
   } else {
     // Call decrypt() with a cycle count timing profile.
-    icache_invalidate();
     uint64_t t_start = profile_start();
     otcrypto_status_t err =
         otcrypto_aes_gcm_decrypt(&key, &ciphertext, &iv, &aad, tag_len, &tag,
                                  &actual_plaintext, tag_valid);
     *cycles = profile_end(t_start);
-    icache_invalidate();
 
     // Check for errors.
     TRY(err);

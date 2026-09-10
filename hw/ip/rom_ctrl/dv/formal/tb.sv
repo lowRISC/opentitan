@@ -7,11 +7,11 @@
 
 module tb
   import rom_ctrl_reg_pkg::NumAlerts;
-  import prim_rom_pkg::rom_cfg_t;
+  import prim_rom_pkg::rom_cfg_req_t;
 (
   input  clk_i,
   input  rst_ni,
-  input  rom_cfg_t rom_cfg_i,
+  input  rom_cfg_req_t rom_cfg_req_i,
 
   input  tlul_pkg::tl_h2d_t rom_tl_i,
   output tlul_pkg::tl_d2h_t rom_tl_o,
@@ -33,7 +33,8 @@ module tb
   rom_ctrl dut (
     .clk_i,
     .rst_ni,
-    .rom_cfg_i,
+    .rom_cfg_i (rom_cfg_req_i),
+    .rom_cfg_o (),
     .rom_tl_i,
     .rom_tl_o,
     .regs_tl_i,

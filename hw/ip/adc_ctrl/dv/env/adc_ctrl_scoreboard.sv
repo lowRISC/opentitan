@@ -208,11 +208,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit            data_phase_write = (write && channel == DataChannel);
     uvm_reg_data_t write_data;
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end else begin
+    csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+    if (csr == null) begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -413,7 +410,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     string reg_name;
     uvm_reg csr;
     uvm_reg_field fld;
-    bit en, cond, min_v, max_v;
+    bit en, cond;
+    bit [ADC_CTRL_DATA_WIDTH-1:0] min_v, max_v;
 
     reg_name = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
     csr = ral.get_reg_by_name(reg_name);

@@ -10,7 +10,6 @@ load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
@@ -25,7 +24,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -49,7 +48,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -70,7 +69,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -127,7 +126,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     verilator = verilator_params(
@@ -229,7 +228,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -252,7 +251,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -275,7 +274,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -298,7 +297,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -321,7 +320,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -344,7 +343,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -367,7 +366,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -390,7 +389,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -413,7 +412,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [
@@ -436,7 +435,7 @@ opentitan_test(
             ["//hw/top_earlgrey:sim_verilator"],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     deps = [

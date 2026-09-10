@@ -126,7 +126,7 @@ prim_clock_buf #(
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ aon_osc_cal_i };
+assign unused_sigs = ^{ aon_osc_cal_i, en_osc, en_osc_fe };
 `endif
 
 endmodule : aon_osc

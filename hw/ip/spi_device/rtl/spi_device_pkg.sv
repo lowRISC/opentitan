@@ -102,7 +102,7 @@ package spi_device_pkg;
   } payload_dir_e;
 
   // addr_mode_e: CMD_INFO.addr_mode informs HW if a command has address field,
-  // CFG.addr_4b_en affected, or address is 3B/4B.
+  // ADDR_MODE.addr_4b_en affected, or address is 3B/4B.
   typedef enum logic [1:0] {
     AddrDisabled = 2'b 00,
     AddrCfg      = 2'b 01,
@@ -408,7 +408,7 @@ package spi_device_pkg;
   } sram_type_e;
 
   // Sram parameters
-  parameter sram_type_e DefaultSramType = SramType2p;
+  parameter sram_type_e DefaultSramType = SramType1r1w;
   parameter int unsigned SramDw      = 32;
   parameter int unsigned SramStrbW   = SramDw/8;
   parameter int unsigned SramOffsetW = $clog2(SramStrbW);

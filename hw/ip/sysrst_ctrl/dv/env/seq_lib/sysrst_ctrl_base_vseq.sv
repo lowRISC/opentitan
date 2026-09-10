@@ -102,7 +102,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(2);
   endtask
 
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     add_delay_after_reset_before_csrs_access();
     super.read_and_check_all_csrs_after_reset();
   endtask

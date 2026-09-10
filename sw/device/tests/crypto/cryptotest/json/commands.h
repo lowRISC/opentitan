@@ -17,11 +17,17 @@ extern "C" {
     value(_, Drbg) \
     value(_, Ecdsa) \
     value(_, Ecdh) \
+    value(_, Ed25519) \
     value(_, Hash) \
     value(_, Hmac) \
     value(_, Kmac) \
+    value(_, Mldsa) \
+    value(_, Mlkem) \
+    value(_, Quit) \
     value(_, Rsa) \
-    value(_, SphincsPlus)
+    value(_, Sha) \
+    value(_, SphincsPlus) \
+    value(_, X25519)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on

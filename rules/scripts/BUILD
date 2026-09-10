@@ -14,6 +14,7 @@ py_library(
     srcs = [
         "bitstreams_workspace.py",
     ],
+    data = [":bitstreams_manifest_schema"],
     deps = [
         requirement("jsonschema"),
     ],
@@ -44,4 +45,9 @@ py_binary(
     srcs = ["qemu_pass.py"],
     data = ["//third_party/qemu:qemu-system-riscv32"],
     deps = ["@rules_python//python/runfiles"],
+)
+
+py_binary(
+    name = "hash_files",
+    srcs = ["hash_files.py"],
 )

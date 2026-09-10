@@ -583,8 +583,8 @@ module spid_upload_tb;
     .b_rdata_o  (spi_mem_rdata),
     .b_rerror_o (spi_mem_rerror),
 
-    .cfg_i      ('0),
-    .cfg_rsp_o  ()
+    .cfg_i      (prim_ram_2p_pkg::RAM_2P_CFG_REQ_DEFAULT),
+    .cfg_o      ()
   );
 
   // Arbiter for bus clock

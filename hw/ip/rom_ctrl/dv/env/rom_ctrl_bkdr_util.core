@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_present:0.1
       - lowrisc:prim:secded:0.1
       - lowrisc:dv:sram_ctrl_bkdr_util
+      - lowrisc:virtual_dv:rom_ctrl_bkdr_util_hier
     files:
       - rom_ctrl_bkdr_util_pkg.sv
       - rom_ctrl_bkdr_util.sv: {is_include_file: true}

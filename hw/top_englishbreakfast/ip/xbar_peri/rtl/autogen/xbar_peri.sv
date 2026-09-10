@@ -17,10 +17,10 @@
 //     -> rv_timer
 //     -> asf_15
 //       -> usbdev
-//     -> pwrmgr_aon
-//     -> rstmgr_aon
-//     -> clkmgr_aon
-//     -> pinmux_aon
+//     -> pwrmgr
+//     -> rstmgr
+//     -> clkmgr
+//     -> pinmux
 //     -> ast
 
 module xbar_peri (
@@ -50,14 +50,14 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
   output tlul_pkg::tl_h2d_t tl_usbdev_o,
   input  tlul_pkg::tl_d2h_t tl_usbdev_i,
-  output tlul_pkg::tl_h2d_t tl_pwrmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_pwrmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_rstmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_rstmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_clkmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_pinmux_aon_i,
+  output tlul_pkg::tl_h2d_t tl_pwrmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
+  output tlul_pkg::tl_h2d_t tl_rstmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
+  output tlul_pkg::tl_h2d_t tl_clkmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
+  output tlul_pkg::tl_h2d_t tl_pinmux_o,
+  input  tlul_pkg::tl_d2h_t tl_pinmux_i,
   output tlul_pkg::tl_h2d_t tl_ast_o,
   input  tlul_pkg::tl_d2h_t tl_ast_i,
 
@@ -115,17 +115,17 @@ module xbar_peri (
   assign tl_asf_15_us_h2d = tl_s1n_13_ds_h2d[6];
   assign tl_s1n_13_ds_d2h[6] = tl_asf_15_us_d2h;
 
-  assign tl_pwrmgr_aon_o = tl_s1n_13_ds_h2d[7];
-  assign tl_s1n_13_ds_d2h[7] = tl_pwrmgr_aon_i;
+  assign tl_pwrmgr_o = tl_s1n_13_ds_h2d[7];
+  assign tl_s1n_13_ds_d2h[7] = tl_pwrmgr_i;
 
-  assign tl_rstmgr_aon_o = tl_s1n_13_ds_h2d[8];
-  assign tl_s1n_13_ds_d2h[8] = tl_rstmgr_aon_i;
+  assign tl_rstmgr_o = tl_s1n_13_ds_h2d[8];
+  assign tl_s1n_13_ds_d2h[8] = tl_rstmgr_i;
 
-  assign tl_clkmgr_aon_o = tl_s1n_13_ds_h2d[9];
-  assign tl_s1n_13_ds_d2h[9] = tl_clkmgr_aon_i;
+  assign tl_clkmgr_o = tl_s1n_13_ds_h2d[9];
+  assign tl_s1n_13_ds_d2h[9] = tl_clkmgr_i;
 
-  assign tl_pinmux_aon_o = tl_s1n_13_ds_h2d[10];
-  assign tl_s1n_13_ds_d2h[10] = tl_pinmux_aon_i;
+  assign tl_pinmux_o = tl_s1n_13_ds_h2d[10];
+  assign tl_s1n_13_ds_d2h[10] = tl_pinmux_i;
 
   assign tl_ast_o = tl_s1n_13_ds_h2d[11];
   assign tl_s1n_13_ds_d2h[11] = tl_ast_i;
@@ -171,19 +171,19 @@ module xbar_peri (
       dev_sel_s1n_13 = 4'd6;
 
     end else if ((tl_s1n_13_us_h2d.a_address &
-                  ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
+                  ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
       dev_sel_s1n_13 = 4'd7;
 
     end else if ((tl_s1n_13_us_h2d.a_address &
-                  ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
+                  ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
       dev_sel_s1n_13 = 4'd8;
 
     end else if ((tl_s1n_13_us_h2d.a_address &
-                  ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
+                  ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
       dev_sel_s1n_13 = 4'd9;
 
     end else if ((tl_s1n_13_us_h2d.a_address &
-                  ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
+                  ~(ADDR_MASK_PINMUX)) == ADDR_SPACE_PINMUX) begin
       dev_sel_s1n_13 = 4'd10;
 
     end else if ((tl_s1n_13_us_h2d.a_address &

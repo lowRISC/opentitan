@@ -4,7 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@opentitan_signing_infra//signing:defs.bzl", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
@@ -39,7 +40,7 @@ opentitan_binary(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -99,7 +100,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -137,7 +138,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -175,7 +176,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -213,7 +214,7 @@ otp_json_immutable_rom_ext(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",

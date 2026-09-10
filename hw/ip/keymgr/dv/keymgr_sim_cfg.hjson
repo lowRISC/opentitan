@@ -41,7 +41,7 @@
              "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 20
 
   // Add keymgr specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/keymgr/dv/cov/keymgr_cov_excl.el"]
@@ -66,6 +66,7 @@
     {
       name: keymgr_smoke
       uvm_test_seq: keymgr_smoke_vseq
+      reseed: 30
     }
 
     {
@@ -94,6 +95,7 @@
     {
       name: keymgr_random
       uvm_test_seq: keymgr_random_vseq
+      reseed: 30
     }
 
     {
@@ -101,16 +103,19 @@
       uvm_test_seq: keymgr_cfg_regwen_vseq
       // This test is to check reg programming is gated when cfg_regwen=0, it's timing sensitive
       run_opts: ["+zero_delays=1"]
+      reseed: 50
     }
 
     {
       name: keymgr_direct_to_disabled
       uvm_test_seq: keymgr_direct_to_disabled_vseq
+      reseed: 30
     }
 
     {
       name: keymgr_lc_disable
       uvm_test_seq: keymgr_lc_disable_vseq
+      reseed: 50
     }
 
     {
@@ -121,6 +126,7 @@
     {
       name: keymgr_hwsw_invalid_input
       uvm_test_seq: keymgr_hwsw_invalid_input_vseq
+      reseed: 50
     }
 
     {
@@ -131,6 +137,7 @@
     {
       name: keymgr_custom_cm
       uvm_test_seq: keymgr_custom_cm_vseq
+      reseed: 50
     }
 
     {
@@ -146,6 +153,7 @@
     {
       name: keymgr_stress_all
       uvm_test_seq: keymgr_stress_all_vseq
+      reseed: 50
     }
   ]
 

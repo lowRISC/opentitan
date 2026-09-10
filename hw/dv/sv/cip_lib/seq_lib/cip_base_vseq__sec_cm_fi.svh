@@ -34,7 +34,7 @@ virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
   // This is a fatal alert and design keeps sending it until reset is issued.
   // Check alerts are triggered for a few times
   repeat (5) begin
-    wait_alert_trigger(cfg.sec_cm_alert_name, .wait_complete(1));
+    wait_alert_trigger(cfg.sec_cm_alert_name, .wait_complete(1), .max_wait_cycle(8));
   end
 endtask : check_sec_cm_fi_resp
 

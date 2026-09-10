@@ -89,13 +89,13 @@ bool test_main(void) {
   LOG_INFO("Running USBDEV PINCFG test");
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
       kTopEarlgreyPinmuxInselIoc7));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   // Construct the test list appropriate to this target
   struct {

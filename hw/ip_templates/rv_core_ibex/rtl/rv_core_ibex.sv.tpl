@@ -11,60 +11,64 @@
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
 module ${module_instance_name}
+  import ibex_pkg::*;
   import rv_core_ibex_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn                = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
-  parameter int unsigned            AlertSkewCycles     = 1,
-  parameter bit                     PMPEnable           = 1'b1,
-  parameter int unsigned            PMPGranularity      = 0,
-  parameter int unsigned            PMPNumRegions       = 16,
-  parameter int unsigned            MHPMCounterNum      = 10,
-  parameter int unsigned            MHPMCounterWidth    = 32,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]       = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]      = ibex_pkg::PmpAddrRst,
-  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg       = ibex_pkg::PmpMseccfgRst,
-  parameter bit                     RV32E               = 0,
-  parameter ibex_pkg::rv32m_e       RV32M               = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e       RV32B               = ibex_pkg::RV32BOTEarlGrey,
-  parameter ibex_pkg::rv32zc_e      RV32ZC              = ibex_pkg::RV32ZcaZcbZcmp,
-  parameter ibex_pkg::regfile_e     RegFile             = ibex_pkg::RegFileFF,
-  parameter bit                     BranchTargetALU     = 1'b1,
-  parameter bit                     WritebackStage      = 1'b1,
-  parameter bit                     ICache              = 1'b1,
-  parameter bit                     ICacheECC           = 1'b1,
-  parameter bit                     ICacheScramble      = 1'b1,
-  parameter int unsigned            ICacheNWays         = 2,
-  parameter bit                     BranchPredictor     = 1'b0,
-  parameter bit                     DbgTriggerEn        = 1'b1,
-  parameter int unsigned            DbgHwBreakNum       = 4,
-  parameter bit                     SecureIbex          = 1'b1,
-  parameter int unsigned            LockstepOffset      = 1,
-  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed     = ibex_pkg::RndCnstLfsrSeedDefault,
-  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm     = ibex_pkg::RndCnstLfsrPermDefault,
-  parameter int unsigned            DmBaseAddr          = 32'h1A110000,
-  parameter int unsigned            DmAddrMask          = 32'h00000FFF,
-  parameter int unsigned            DmHaltAddr          = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr     = 32'h1A110808,
-  parameter bit                     PipeLine            = 1'b0,
-  parameter bit                     InstructionPipeline = 1'b0,
-  parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
-      ibex_pkg::RndCnstIbexKeyDefault,
-  parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
-      ibex_pkg::RndCnstIbexNonceDefault,
-  parameter int unsigned                    NEscalationSeverities = 4,
-  parameter int unsigned                    WidthPingCounter      = 16,
+  parameter int unsigned                    AlertSkewCycles             = 1,
+  parameter bit                             PMPEnable                   = 1'b1,
+  parameter int unsigned                    PMPGranularity              = 0,
+  parameter int unsigned                    PMPNumRegions               = 16,
+  parameter int unsigned                    MHPMCounterNum              = 10,
+  parameter int unsigned                    MHPMCounterWidth            = 32,
+  parameter pmp_cfg_t                       PMPRstCfg[PMP_MAX_REGIONS]  = PmpCfgRst,
+  parameter logic [PMP_ADDR_MSB:0]          PMPRstAddr[PMP_MAX_REGIONS] = PmpAddrRst,
+  parameter pmp_mseccfg_t                   PMPRstMsecCfg               = PmpMseccfgRst,
+  parameter bit                             RV32E                       = 0,
+  parameter rv32m_e                         RV32M                       = RV32MSingleCycle,
+  parameter rv32b_e                         RV32B                       = RV32BOTEarlGrey,
+  parameter rv32zc_e                        RV32ZC                      = RV32ZcaZcbZcmp,
+  parameter regfile_e                       RegFile                     = RegFileFF,
+  parameter bit                             BranchTargetALU             = 1'b1,
+  parameter bit                             WritebackStage              = 1'b1,
+  parameter bit                             ICache                      = 1'b1,
+  parameter bit                             ICacheECC                   = 1'b1,
+  parameter bit                             ICacheScramble              = 1'b1,
+  parameter int unsigned                    ICacheNWays                 = 2,
+  parameter bit                             BranchPredictor             = 1'b0,
+  parameter bit                             DbgTriggerEn                = 1'b1,
+  parameter int unsigned                    DbgHwBreakNum               = 4,
+  parameter bit                             SecureIbex                  = 1'b1,
+  parameter int unsigned                    LockstepOffset              = 1,
+  parameter lfsr_seed_t                     RndCnstLfsrSeed             = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t                     RndCnstLfsrPerm             = RndCnstLfsrPermDefault,
+  parameter int unsigned                    DmBaseAddr                  = 32'h1A110000,
+  parameter int unsigned                    DmAddrMask                  = 32'h00000FFF,
+  parameter int unsigned                    DmHaltAddr                  = 32'h1A110800,
+  parameter int unsigned                    DmExceptionAddr             = 32'h1A110808,
+  parameter bit                             PipeLine                    = 1'b0,
+  parameter bit                             InstructionPipeline         = 1'b0,
+  parameter logic [SCRAMBLE_KEY_W-1:0]      RndCnstIbexKey              = RndCnstIbexKeyDefault,
+  parameter logic [SCRAMBLE_NONCE_W-1:0]    RndCnstIbexNonce            = RndCnstIbexNonceDefault,
+  parameter int unsigned                    NEscalationSeverities       = 4,
+  parameter int unsigned                    WidthPingCounter            = 16,
 % if racl_support:
-  parameter bit                             EnableRacl             = 1'b0,
-  parameter bit                             RaclErrorRsp           = EnableRacl,
+  parameter bit                             EnableRacl                  = 1'b0,
+  parameter bit                             RaclErrorRsp                = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t
-    RaclPolicySelVecCfg[${module_instance_name}_reg_pkg::NumRegsCfg] =
+    RaclPolicySelVecCfg[${module_instance_name}_reg_pkg::NumRegsCfg]    =
       '{${module_instance_name}_reg_pkg::NumRegsCfg{0}},
 % endif
-  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0,
-  parameter logic [31:0]            CsrMvendorId                   = 32'b0,
-  parameter logic [31:0]            CsrMimpId                      = 32'b0
+  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits        = 0,
+  parameter logic [31:0]                    CsrMvendorId                = 32'b0,
+  parameter logic [31:0]                    CsrMimpId                   = 32'b0${"," if cheriot_available else ""}
+% if cheriot_available:
+  parameter int unsigned                    CheriotRevBitmapAddrWidth   = 32'd11,
+  parameter int unsigned                    CheriotRevBitmapBaseAddr    = 32'h0,
+  parameter int unsigned                    CheriotTrvkHeapBaseAddr     = 32'h0
+% endif
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -78,14 +82,18 @@ module ${module_instance_name}
   // Reset feedback to rstmgr
   output logic        rst_cpu_n_o,
 
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_tag_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_tag_o,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_data_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_data_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ICacheNWays-1:0] ram_cfg_icache_tag_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_icache_tag_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ICacheNWays-1:0] ram_cfg_icache_data_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_icache_data_o,
 
   input  logic [31:0] hart_id_i,
   input  logic [31:0] boot_addr_i,
 
+% if cheriot_available:
+  output prim_mubi_pkg::mubi4_t cheriot_ena_o,
+
+% endif
   // Instruction memory interface
   output tlul_pkg::tl_h2d_t     corei_tl_h_o,
   input  tlul_pkg::tl_d2h_t     corei_tl_h_i,
@@ -94,6 +102,16 @@ module ${module_instance_name}
   output tlul_pkg::tl_h2d_t     cored_tl_h_o,
   input  tlul_pkg::tl_d2h_t     cored_tl_h_i,
 
+% if cheriot_available:
+  // CHERIoT capability tags
+  output logic cored_tag_h2d_o,
+  input  logic cored_tag_d2h_i,
+
+  // CHERIoT TRVK revocation bitmap (revbm) memory interface
+  output tlul_pkg::tl_h2d_t     corerevbm_tl_o,
+  input  tlul_pkg::tl_d2h_t     corerevbm_tl_i,
+
+% endif
   // Interrupt inputs
   input  logic        irq_software_i,
   input  logic        irq_timer_i,
@@ -198,14 +216,29 @@ module ${module_instance_name}
   logic [31:0] shadow_core_data_wdata;
   logic [6:0]  shadow_core_data_wdata_intg;
 
+% if cheriot_available:
+  // Main core CHERIoT TRVK revocation bitmap (revbm) interface (internal)
+  logic        main_core_revbm_req;
+  logic        main_core_revbm_gnt;
+  logic [31:0] main_core_revbm_addr;
+  logic        main_core_revbm_rvalid;
+  logic [31:0] main_core_revbm_rdata;
+  logic [6:0]  main_core_revbm_rdata_intg;
+  logic        main_core_revbm_err;
+
+% endif
   // Lockstep interface
-  logic [3:0]  core_lockstep_cmp_en;
+  ibex_pkg::ibex_mubi_t core_lockstep_cmp_en;
 
   // Pipeline interfaces
   tl_h2d_t tl_i_ibex2fifo;
   tl_d2h_t tl_i_fifo2ibex;
   tl_h2d_t tl_d_ibex2fifo_main_core;
   tl_d2h_t tl_d_fifo2ibex;
+% if cheriot_available:
+  tl_h2d_t tl_revbm_ibex2fifo;
+  tl_d2h_t tl_revbm_fifo2ibex;
+% endif
 
   // TLUL LC Gate interfaces
   tl_h2d_t tl_d_fifo2gate;
@@ -214,29 +247,37 @@ module ${module_instance_name}
   logic tlul_lc_gate_core_d_error;
 
 `ifdef RVFI
-  logic        rvfi_valid;
-  logic [63:0] rvfi_order;
-  logic [31:0] rvfi_insn;
-  logic        rvfi_trap;
-  logic        rvfi_halt;
-  logic        rvfi_intr;
-  logic [ 1:0] rvfi_mode;
-  logic [ 1:0] rvfi_ixl;
-  logic [ 4:0] rvfi_rs1_addr;
-  logic [ 4:0] rvfi_rs2_addr;
-  logic [ 4:0] rvfi_rs3_addr;
-  logic [31:0] rvfi_rs1_rdata;
-  logic [31:0] rvfi_rs2_rdata;
-  logic [31:0] rvfi_rs3_rdata;
-  logic [ 4:0] rvfi_rd_addr;
-  logic [31:0] rvfi_rd_wdata;
-  logic [31:0] rvfi_pc_rdata;
-  logic [31:0] rvfi_pc_wdata;
-  logic [31:0] rvfi_mem_addr;
-  logic [ 3:0] rvfi_mem_rmask;
-  logic [ 3:0] rvfi_mem_wmask;
-  logic [31:0] rvfi_mem_rdata;
-  logic [31:0] rvfi_mem_wdata;
+  logic                   rvfi_valid;
+  logic [63:0]            rvfi_order;
+  logic [31:0]            rvfi_insn;
+  logic                   rvfi_trap;
+  logic                   rvfi_halt;
+  logic                   rvfi_intr;
+  logic [ 1:0]            rvfi_mode;
+  logic [ 1:0]            rvfi_ixl;
+  logic [ 4:0]            rvfi_rs1_addr;
+  logic [ 4:0]            rvfi_rs2_addr;
+  logic [ 4:0]            rvfi_rs3_addr;
+  logic [31:0]            rvfi_rs1_rdata;
+  logic [31:0]            rvfi_rs2_rdata;
+  logic [31:0]            rvfi_rs3_rdata;
+  logic [ 4:0]            rvfi_rd_addr;
+  logic [31:0]            rvfi_rd_wdata;
+  logic [31:0]            rvfi_pc_rdata;
+  logic [31:0]            rvfi_pc_wdata;
+  logic [31:0]            rvfi_mem_addr;
+  logic [ 3:0]            rvfi_mem_rmask;
+  logic [ 3:0]            rvfi_mem_wmask;
+  logic [31:0]            rvfi_mem_rdata;
+  logic [31:0]            rvfi_mem_wdata;
+  logic                   rvfi_ext_expanded_insn_valid;
+  logic [15:0]            rvfi_ext_expanded_insn;
+  ibex_cheriot_pkg::cap_t rvfi_rs1_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rs2_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_rd_wcap;
+  logic                   rvfi_mem_is_cap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_rcap;
+  ibex_cheriot_pkg::cap_t rvfi_mem_wcap;
 `endif
 
   import tlul_pkg::tl_h2d_t;
@@ -247,6 +288,12 @@ module ${module_instance_name}
   // core sleeping
   logic core_sleep;
 
+% if cheriot_available:
+  // CHERIoT signals
+  logic                  cheriot_switch_error;
+  ibex_pkg::ibex_mubi_t  cheriot_enable_ibex;
+
+% endif
   // The following intermediate signals are created to aid in simulations.
   //
   // If a parent port is connected directly to a port of sub-modules, the implicit wire connection
@@ -264,6 +311,9 @@ module ${module_instance_name}
 
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
+% if cheriot_available:
+  logic revbmbus_intg_err;
+% endif
   logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
   logic fatal_intg_err, fatal_core_err, recov_core_err;
@@ -275,7 +325,11 @@ module ${module_instance_name}
   logic fatal_core_event;
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
+% if cheriot_available:
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | revbmbus_intg_err | alert_major_bus;
+% else:
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
+% endif
   assign fatal_core_event = alert_major_internal        |
                             double_fault                |
                             tlul_lc_gate_core_d_error   |
@@ -433,8 +487,32 @@ module ${module_instance_name}
                                                   lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0],
                                                                             pwrmgr_cpu_en[0]));
 
+  prim_mubi_pkg::mubi4_t mcounteren_writable_mubi4;
+  ibex_pkg::ibex_mubi_t mcounteren_writable_ibex;
+  assign mcounteren_writable_mubi4 = prim_mubi_pkg::mubi4_t'(reg2hw.mcounteren_writable.q);
+  // Convert the mubi4 to ibex_mubi. They are both four bit, but with different encodings.
+  assign mcounteren_writable_ibex = mcounteren_writable_mubi4 == prim_mubi_pkg::MuBi4True ?
+                                    ibex_pkg::IbexMuBiOn : ibex_pkg::IbexMuBiOff;
+% if cheriot_available:
+  // Convert the mubi4 to ibex_mubi for the cheriot_enable signal. Invalid mubi inputs must not
+  // accidentally map to a valid ibex_mubi value and switch modes, so the default arm produces an
+  // invalid ibex_mubi value that the core can detect and escalate.
+  always_comb begin
+    unique case (cheriot_ena_o)
+      prim_mubi_pkg::MuBi4True:  cheriot_enable_ibex = ibex_pkg::IbexMuBiOn;
+      prim_mubi_pkg::MuBi4False: cheriot_enable_ibex = ibex_pkg::IbexMuBiOff;
+      default:                   cheriot_enable_ibex = ibex_pkg::ibex_mubi_t'('0);
+    endcase
+  end
+% endif
+
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
+% if cheriot_available:
+    .BaseIsa                     ( ibex_pkg::BaseIsaRV32IorCHERIoT ),
+% else:
+    .BaseIsa                     ( ibex_pkg::BaseIsaRV32I   ),
+% endif
     .PMPEnable                   ( PMPEnable                ),
     .PMPGranularity              ( PMPGranularity           ),
     .PMPNumRegions               ( PMPNumRegions            ),
@@ -443,6 +521,10 @@ module ${module_instance_name}
     .PMPRstCfg                   ( PMPRstCfg                ),
     .PMPRstAddr                  ( PMPRstAddr               ),
     .PMPRstMsecCfg               ( PMPRstMsecCfg            ),
+% if cheriot_available:
+    .CheriotRevBitmapAddrWidth   ( CheriotRevBitmapAddrWidth),
+    .CheriotRevBitmapBaseAddr    ( CheriotRevBitmapBaseAddr ),
+% endif
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
@@ -473,8 +555,8 @@ module ${module_instance_name}
     .LockstepOffset              ( LockstepOffset           ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
-    .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
-    .RndCnstIbexNonce            ( RndCnstIbexNonceDefault  ),
+    .RndCnstIbexKey              ( RndCnstIbexKey           ),
+    .RndCnstIbexNonce            ( RndCnstIbexNonce         ),
     .DmBaseAddr                  ( DmBaseAddr               ),
     .DmAddrMask                  ( DmAddrMask               ),
     .DmHaltAddr                  ( DmHaltAddr               ),
@@ -490,12 +572,20 @@ module ${module_instance_name}
     .scan_rst_ni,
 
     .ram_cfg_icache_tag_i,
-    .ram_cfg_rsp_icache_tag_o,
+    .ram_cfg_icache_tag_o,
     .ram_cfg_icache_data_i,
-    .ram_cfg_rsp_icache_data_o,
+    .ram_cfg_icache_data_o,
 
     .hart_id_i,
     .boot_addr_i,
+
+% if cheriot_available:
+    .cheriot_enable_i     (cheriot_enable_ibex),
+    .trvk_heap_base_addr_i(CheriotTrvkHeapBaseAddr), // SRAM base address
+% else:
+    .cheriot_enable_i     (ibex_pkg::IbexMuBiOff),
+    .trvk_heap_base_addr_i('0), // Unused, CHERIoT not available
+% endif
 
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
@@ -513,10 +603,39 @@ module ${module_instance_name}
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
+% if cheriot_available:
+    .data_tag_o         (cored_tag_h2d_o),
+% else:
+    .data_tag_o         (),
+% endif
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
+% if cheriot_available:
+    .data_tag_i         (cored_tag_d2h_i),
+% else:
+    .data_tag_i         ('0),
+% endif
     .data_err_i         (main_core_data_err),
 
+% if cheriot_available:
+    .trvk_revbm_req_o       (main_core_revbm_req),
+    .trvk_revbm_gnt_i       (main_core_revbm_gnt),
+    .trvk_revbm_rvalid_i    (main_core_revbm_rvalid),
+    .trvk_revbm_addr_o      (main_core_revbm_addr),
+    .trvk_revbm_rdata_i     (main_core_revbm_rdata),
+    .trvk_revbm_rdata_intg_i(main_core_revbm_rdata_intg),
+    .trvk_revbm_err_i       (main_core_revbm_err),
+
+% else:
+    .trvk_revbm_req_o       (),
+    .trvk_revbm_gnt_i       ('0),
+    .trvk_revbm_rvalid_i    ('0),
+    .trvk_revbm_addr_o      (),
+    .trvk_revbm_rdata_i     ('0),
+    .trvk_revbm_rdata_intg_i('0),
+    .trvk_revbm_err_i       ('0),
+
+% endif
     .irq_software_i     ( irq_software     ),
     .irq_timer_i        ( irq_timer        ),
     .irq_external_i     ( irq_external     ),
@@ -559,22 +678,33 @@ module ${module_instance_name}
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    // CHERIoT capability RVFI signals
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
     // Unused ports from the RVFI interface
-    .rvfi_ext_pre_mip         (),
-    .rvfi_ext_post_mip        (),
-    .rvfi_ext_nmi             (),
-    .rvfi_ext_nmi_int         (),
-    .rvfi_ext_debug_req       (),
-    .rvfi_ext_debug_mode      (),
-    .rvfi_ext_rf_wr_suppress  (),
-    .rvfi_ext_mcycle          (),
-    .rvfi_ext_mhpmcounters    (),
-    .rvfi_ext_mhpmcountersh   (),
-    .rvfi_ext_ic_scr_key_valid(),
-    .rvfi_ext_irq_valid       (),
+    .rvfi_ext_pre_mip            (),
+    .rvfi_ext_post_mip           (),
+    .rvfi_ext_nmi                (),
+    .rvfi_ext_nmi_int            (),
+    .rvfi_ext_debug_req          (),
+    .rvfi_ext_debug_mode         (),
+    .rvfi_ext_rf_wr_suppress     (),
+    .rvfi_ext_mcycle             (),
+    .rvfi_ext_mhpmcounters       (),
+    .rvfi_ext_mhpmcountersh      (),
+    .rvfi_ext_ic_scr_key_valid   (),
+    .rvfi_ext_irq_valid          (),
+    .rvfi_ext_expanded_insn_valid(),
+    .rvfi_ext_expanded_insn      (),
+    .rvfi_ext_expanded_insn_last (),
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
     .fetch_enable_i         (fetch_enable),
+    .mcounteren_writable_i  (mcounteren_writable_ibex),
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
@@ -798,10 +928,67 @@ module ${module_instance_name}
     .err_o          (tlul_lc_gate_core_d_error)
   );
 
+% if cheriot_available:
+  logic [6:0]  revbm_wdata_intg;
+  logic [top_pkg::TL_DW-1:0] unused_revbm_data;
+  // tl_adapter_host_revbm_ibex only reads the revocation bitmap. a_data is always 0
+  assign {revbm_wdata_intg, unused_revbm_data} = prim_secded_pkg::prim_secded_inv_39_32_enc('0);
+  // SEC_CM: BUS.INTEGRITY
+  tlul_adapter_host #(
+    .MAX_REQS(NumOutstandingReqs),
+    // if secure ibex is not set, data integrity is not generated
+    // from ibex, therefore generate it in the gasket instead.
+    .EnableDataIntgGen(~SecureIbex)
+  ) tl_adapter_host_revbm_ibex (
+    .clk_i,
+    .rst_ni,
+    .req_i        (main_core_revbm_req),
+    .instr_type_i (prim_mubi_pkg::MuBi4False),
+    .gnt_o        (main_core_revbm_gnt),
+    .addr_i       (main_core_revbm_addr),
+    .we_i         (1'b0),
+    .wdata_i      (32'b0),
+    .wdata_intg_i (revbm_wdata_intg),
+    .be_i         (4'hF),
+    .user_rsvd_i  (TlulHostUserRsvdBits),
+    .valid_o      (main_core_revbm_rvalid),
+    .rdata_o      (main_core_revbm_rdata),
+    .rdata_intg_o (main_core_revbm_rdata_intg),
+    .err_o        (main_core_revbm_err),
+    .intg_err_o   (revbmbus_intg_err),
+    .tl_o         (tl_revbm_ibex2fifo),
+    .tl_i         (tl_revbm_fifo2ibex)
+  );
+
+  tlul_fifo_sync #(
+    .ReqPass(FifoPass),
+    .RspPass(FifoPass),
+    .ReqDepth(FifoDepth),
+    .RspDepth(FifoDepth)
+  ) fifo_revbm (
+    .clk_i,
+    .rst_ni,
+    .tl_h_i      (tl_revbm_ibex2fifo),
+    .tl_h_o      (tl_revbm_fifo2ibex),
+    .tl_d_o      (corerevbm_tl_o),
+    .tl_d_i      (corerevbm_tl_i),
+    .spare_req_i (1'b0),
+    .spare_req_o (),
+    .spare_rsp_i (1'b0),
+    .spare_rsp_o ()
+  );
+
+% endif
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
     .clk_i,
     .rst_ni,
+
+% if cheriot_available:
+    .cheriot_enable_i (cheriot_enable_ibex),
+% else:
+    .cheriot_enable_i (ibex_pkg::IbexMuBiOff),
+% endif
 
     .hart_id_i,
 
@@ -827,7 +1014,15 @@ module ${module_instance_name}
     .rvfi_mem_rmask,
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
-    .rvfi_mem_wdata
+    .rvfi_mem_wdata,
+    .rvfi_rs1_rcap,
+    .rvfi_rs2_rcap,
+    .rvfi_rd_wcap,
+    .rvfi_mem_is_cap,
+    .rvfi_mem_rcap,
+    .rvfi_mem_wcap,
+    .rvfi_ext_expanded_insn_valid,
+    .rvfi_ext_expanded_insn
   );
 `endif
 
@@ -932,7 +1127,11 @@ module ${module_instance_name}
   assign alert_events[0] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
   assign alert_events[1] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
   assign alert_events[2] = cfg_reg_intg_err | cfg_reg_intg_err_shadow |
+% if cheriot_available:
+                           fatal_intg_err | fatal_core_err | cheriot_switch_error;
+% else:
                            fatal_intg_err | fatal_core_err;
+% endif
   assign alert_events[3] = recov_core_err;
 
   logic unused_alert_acks;
@@ -1022,6 +1221,23 @@ module ${module_instance_name}
   assign hw2reg.rnd_status.rnd_data_valid.d = rnd_valid_q;
   assign hw2reg.rnd_status.rnd_data_fips.d  = rnd_fips_q;
 
+% if cheriot_available:
+  ////////////////////
+  // CHERIoT switch
+  ////////////////////
+
+  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
+  rv_core_ibex_cheriot_switch u_cheriot_switch (
+    .clk_i,
+    .rst_ni,
+    .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
+    .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
+    .lock_access_i(reg2hw.cheriot_lock.qe),
+    .ena_o        (cheriot_ena_o),
+    .error_o      (cheriot_switch_error)
+  );
+
+% endif
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
@@ -1111,7 +1327,13 @@ module ${module_instance_name}
 
     assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
-                                    reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err};
+                                    reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
+% if cheriot_available:
+                                    reg2hw_shadow.mcounteren_writable,
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
+% else:
+                                    reg2hw_shadow.mcounteren_writable};
+% endif
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //
@@ -1537,5 +1759,10 @@ module ${module_instance_name}
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
+% if cheriot_available:
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheriotSwitchFsm_A,
+      u_cheriot_switch.u_state_regs, alert_tx_o[2])
+
+% endif
 `endif // ifdef INC_ASSERT
 endmodule

@@ -92,26 +92,76 @@ def get_random_data_hex_literal(width):
     return blockify(literal_str, width, 64)
 
 
-def blockify(s, size, limit):
-    '''Make sure the output does not exceed a certain size per line.'''
+def _group_digits(digits: str, n: int) -> str:
+    '''Right-align digits into groups of at most n characters, joined by "_".
 
-    str_idx = 2
-    remain = size % (limit * 4)
-    numbits = remain if remain else limit * 4
-    s_list = []
+    The leftmost group may be shorter than n if len(digits) isn't a multiple of n.
+    '''
+    first = len(digits) % n or n
+    groups = [digits[:first]] + [digits[i:i + n] for i in range(first, len(digits), n)]
+    return '_'.join(groups)
 
-    remain = size
-    while remain > 0:
-        s_incr = int(numbits / 4)
-        string = s[str_idx:str_idx + s_incr]
-        # Separate 32-bit words for readability.
-        for i in range(s_incr - 1, 0, -1):
-            if (s_incr - i) % 8 == 0:
-                string = string[:i] + "_" + string[i:]
-        s_list.append("{}'h{}".format(numbits, string))
-        str_idx += s_incr
-        remain -= numbits
-        numbits = limit * 4
+
+def blockify(s: str, size: int, limit: int) -> str:
+    '''Split a hex constant in a string into multiple 32-bit hex literals.
+
+     The input is expected to be in "C-style format", matching the regex
+     0x[0-9a-f]+. The output isn't exactly a SystemVerilog expression: it is a
+     string that can be placed inside "{}" to give the format of a packed
+     vector.
+
+     This expression is zero-extended, split into 32-bit chunks (for
+     readability) and then separated by newlines (to avoid long lines in the
+     generated source code).
+
+     For example, an input constant (72 bits) of
+
+       0x123456789abcdef01
+
+     with limit = 16 would be returned as the following string:
+
+       "8'h01,\n  64'h23456789_abcdef01"
+
+    Arguments:
+
+      s:      A string that contains a hexadecimal number (starting '0x')
+      size:   The number of bits used to represent the constant
+      limit:  The maximum number of nibbles to represent per line
+    '''
+
+    # Check that s really is in the expected format
+    if not re.match(r'0x[0-9a-fA-F]+$', s):
+        raise ValueError('s is not a hex string starting with 0x')
+
+    # Check that size is a positive number.
+    if size <= 0:
+        msg = f'Unsupported size in bits: {size}. Should be positive.'
+        raise ValueError(msg)
+
+    # Check that the per-line nibble limit is positive.
+    if limit <= 0:
+        msg = f'Invalid limit: {limit}. Should be positive.'
+        raise ValueError(msg)
+
+    # How many digits should be used in the resulting literal after padding?
+    num_digits = (size + 3) // 4
+
+    # Strip the 0x prefix and left-pad to the right length with zeros
+    digits = s[2:].zfill(num_digits)
+
+    # The first line may be shorter than 'limit' digits, if 'size' isn't a whole multiple
+    # of the per-line width.
+    first_bits = size % (limit * 4) or limit * 4
+    first_len = (first_bits + 3) // 4  # ceil(first_bits / 4)
+    num_full_lines = (num_digits - first_len) // limit
+
+    first_chunk, rest = digits[:first_len], digits[first_len:]
+    s_list = ["{}'h{}".format(first_bits, _group_digits(first_chunk, 8))]
+
+    # Every line after that is exactly 'limit' digits.
+    for _ in range(num_full_lines):
+        chunk, rest = rest[:limit], rest[limit:]
+        s_list.append("{}'h{}".format(limit * 4, _group_digits(chunk, 8)))
 
     return (",\n  ".join(s_list))
 
@@ -120,6 +170,10 @@ def get_random_perm_hex_literal(numel):
     '''Compute a random permutation of 'numel' elements and
     return as packed hex literal.'''
     num_elements = int(numel)
+    if num_elements < 2:
+        msg = (f"Can't form a meaningful permutation with only "
+               f"{num_elements} elements.")
+        raise ValueError(msg)
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
     random.shuffle(idx)

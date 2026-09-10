@@ -15,7 +15,6 @@ PER_DEVICE_DEPS = {
     "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["//sw/device/lib/arch:sim_dv"],
     "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 
 def _opentitan_transition_impl(settings, attr):
@@ -26,9 +25,6 @@ def _opentitan_transition_impl(settings, attr):
         "//command_line_option:platforms": attr.platform,
         "//command_line_option:copt": settings["//command_line_option:copt"],
         "//command_line_option:collect_code_coverage": coverage,
-        "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
     }
 
 opentitan_transition = transition(
@@ -46,9 +42,6 @@ opentitan_transition = transition(
         "//command_line_option:platforms",
         "//command_line_option:copt",
         "//command_line_option:collect_code_coverage",
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
     ],
 )
 

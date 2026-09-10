@@ -194,7 +194,7 @@ module ibex_icache import ibex_pkg::*; #(
     OUT_OF_RESET,
     AWAIT_SCRAMBLE_KEY,
     INVAL_CACHE,
-    IDLE
+    INVAL_IDLE
   } inval_state_e;
 
   inval_state_e          inval_state_q, inval_state_d;
@@ -1213,7 +1213,7 @@ module ibex_icache import ibex_pkg::*; #(
 
     // Prevent other cache activity (cache lookups and cache allocations) whilst an invalidation is
     // in progress. Set to 1 by default as the only time we don't block is when the state machine is
-    // IDLE.
+    // INVAL_IDLE.
     inval_block_cache = 1'b1;
 
     unique case (inval_state_q)
@@ -1251,16 +1251,16 @@ module ibex_icache import ibex_pkg::*; #(
           inval_state_d = AWAIT_SCRAMBLE_KEY;
         end else if (&inval_index_q) begin
           // When the final index is written we're done
-            inval_state_d = IDLE;
+            inval_state_d = INVAL_IDLE;
         end
       end
-      IDLE: begin
+      INVAL_IDLE: begin
         // Usual running state
         if (icache_inval_i) begin
           ic_scr_key_req_o = 1'b1;
           inval_state_d = AWAIT_SCRAMBLE_KEY;
         end else begin
-          // Allow other cache activities whilst in IDLE and no invalidation has been requested
+          // Allow other cache activities whilst in INVAL_IDLE; no invalidation requested
           inval_block_cache = 1'b0;
         end
       end
@@ -1268,7 +1268,7 @@ module ibex_icache import ibex_pkg::*; #(
     endcase
   end
 
-  assign inval_active = inval_state_q != IDLE;
+  assign inval_active = inval_state_q != INVAL_IDLE;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

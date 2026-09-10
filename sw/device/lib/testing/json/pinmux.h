@@ -67,15 +67,15 @@ extern "C" {
     value(_, Uart2Rx, kTopEarlgreyPinmuxPeripheralInUart2Rx) \
     value(_, Uart3Rx, kTopEarlgreyPinmuxPeripheralInUart3Rx) \
     value(_, SpiDeviceTpmCsb, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb) \
-    value(_, FlashCtrlTck, kTopEarlgreyPinmuxPeripheralInFlashCtrlTck) \
-    value(_, FlashCtrlTms, kTopEarlgreyPinmuxPeripheralInFlashCtrlTms) \
-    value(_, FlashCtrlTdi, kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi) \
-    value(_, SysrstCtrlAonAcPresent, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent) \
-    value(_, SysrstCtrlAonKey0In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In) \
-    value(_, SysrstCtrlAonKey1In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In) \
-    value(_, SysrstCtrlAonKey2In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In) \
-    value(_, SysrstCtrlAonPwrbIn, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn) \
-    value(_, SysrstCtrlAonLidOpen, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen) \
+    value(_, RramMacroTck, kTopEarlgreyPinmuxPeripheralInRramMacroTck) \
+    value(_, RramMacroTms, kTopEarlgreyPinmuxPeripheralInRramMacroTms) \
+    value(_, RramMacroTdi, kTopEarlgreyPinmuxPeripheralInRramMacroTdi) \
+    value(_, SysrstCtrlAcPresent, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent) \
+    value(_, SysrstCtrlKey0In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In) \
+    value(_, SysrstCtrlKey1In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In) \
+    value(_, SysrstCtrlKey2In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In) \
+    value(_, SysrstCtrlPwrbIn, kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn) \
+    value(_, SysrstCtrlLidOpen, kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen) \
     value(_, UsbdevSense, kTopEarlgreyPinmuxPeripheralInUsbdevSense) \
     value(_, End, kTopEarlgreyPinmuxPeripheralInLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_EARLGREY_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
@@ -234,35 +234,24 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, Uart1Tx, kTopEarlgreyPinmuxOutselUart1Tx) \
     value(_, Uart2Tx, kTopEarlgreyPinmuxOutselUart2Tx) \
     value(_, Uart3Tx, kTopEarlgreyPinmuxOutselUart3Tx) \
-    value(_, PattgenPda0Tx, kTopEarlgreyPinmuxOutselPattgenPda0Tx) \
-    value(_, PattgenPcl0Tx, kTopEarlgreyPinmuxOutselPattgenPcl0Tx) \
-    value(_, PattgenPda1Tx, kTopEarlgreyPinmuxOutselPattgenPda1Tx) \
-    value(_, PattgenPcl1Tx, kTopEarlgreyPinmuxOutselPattgenPcl1Tx) \
     value(_, SpiHost1Sck, kTopEarlgreyPinmuxOutselSpiHost1Sck) \
     value(_, SpiHost1Csb, kTopEarlgreyPinmuxOutselSpiHost1Csb) \
-    value(_, FlashCtrlTdo, kTopEarlgreyPinmuxOutselFlashCtrlTdo) \
-    value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut0) \
-    value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut1) \
-    value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut2) \
-    value(_, SensorCtrlAstDebugOut3, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut3) \
-    value(_, SensorCtrlAstDebugOut4, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut4) \
-    value(_, SensorCtrlAstDebugOut5, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut5) \
-    value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6) \
-    value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7) \
-    value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8) \
-    value(_, PwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm0) \
-    value(_, PwmAonPwm1, kTopEarlgreyPinmuxOutselPwmAonPwm1) \
-    value(_, PwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm2) \
-    value(_, PwmAonPwm3, kTopEarlgreyPinmuxOutselPwmAonPwm3) \
-    value(_, PwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm4) \
-    value(_, PwmAonPwm5, kTopEarlgreyPinmuxOutselPwmAonPwm5) \
-    value(_, OtpMacroTest0, kTopEarlgreyPinmuxOutselOtpMacroTest0) \
-    value(_, SysrstCtrlAonBatDisable, kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable) \
-    value(_, SysrstCtrlAonKey0Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out) \
-    value(_, SysrstCtrlAonKey1Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out) \
-    value(_, SysrstCtrlAonKey2Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out) \
-    value(_, SysrstCtrlAonPwrbOut, kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut) \
-    value(_, SysrstCtrlAonZ3Wakeup, kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup) \
+    value(_, RramMacroTdo, kTopEarlgreyPinmuxOutselRramMacroTdo) \
+    value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0) \
+    value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1) \
+    value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2) \
+    value(_, SensorCtrlAstDebugOut3, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3) \
+    value(_, SensorCtrlAstDebugOut4, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4) \
+    value(_, SensorCtrlAstDebugOut5, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5) \
+    value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6) \
+    value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7) \
+    value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8) \
+    value(_, SysrstCtrlBatDisable, kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable) \
+    value(_, SysrstCtrlKey0Out, kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out) \
+    value(_, SysrstCtrlKey1Out, kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out) \
+    value(_, SysrstCtrlKey2Out, kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out) \
+    value(_, SysrstCtrlPwrbOut, kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut) \
+    value(_, SysrstCtrlZ3Wakeup, kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup) \
     value(_, End, kTopEarlgreyPinmuxOutselLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_EARLGREY_PINMUX_OUTSEL, WITH_UNKNOWN));
 
@@ -277,8 +266,8 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_EARLGREY_PINMUX_OUTSE
     value(_, SpiDeviceSd1, kTopEarlgreyDirectPadsSpiDeviceSd1) \
     value(_, SpiDeviceSd2, kTopEarlgreyDirectPadsSpiDeviceSd2) \
     value(_, SpiDeviceSd3, kTopEarlgreyDirectPadsSpiDeviceSd3) \
-    value(_, SysrstCtrlAonEcRstL, kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL) \
-    value(_, SysrstCtrlAonFlashWpL, kTopEarlgreyDirectPadsSysrstCtrlAonFlashWpL) \
+    value(_, SysrstCtrlEcRstL, kTopEarlgreyDirectPadsSysrstCtrlEcRstL) \
+    value(_, SysrstCtrlFlashWpL, kTopEarlgreyDirectPadsSysrstCtrlFlashWpL) \
     value(_, SpiDeviceSck, kTopEarlgreyDirectPadsSpiDeviceSck) \
     value(_, SpiDeviceCsb, kTopEarlgreyDirectPadsSpiDeviceCsb) \
     value(_, SpiHost0Sck, kTopEarlgreyDirectPadsSpiHost0Sck) \

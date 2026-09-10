@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -173,11 +174,17 @@ dif_result_t dif_clkmgr_gateable_clock_get_enabled(
     return kDifBadArg;
   }
 
+#if CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS == 0
+  OT_UNREACHABLE();
+#else
+  // NOTE: the code below fails to compile on tops with no gateable clocks,
+  //  where CLKMGR_CLK_ENABLES_REG_OFFSET is not defined.
   uint32_t clk_enables_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET);
   *state = dif_bool_to_toggle(bitfield_bit32_read(clk_enables_val, clock));
 
   return kDifOk;
+#endif
 }
 
 dif_result_t dif_clkmgr_gateable_clock_set_enabled(
@@ -188,6 +195,11 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
     return kDifBadArg;
   }
 
+#if CLKMGR_PARAM_NUM_SW_GATEABLE_CLOCKS == 0
+  OT_UNREACHABLE();
+#else
+  // NOTE: the code below fails to compile on tops with no gateable clocks,
+  //  where CLKMGR_CLK_ENABLES_REG_OFFSET is not defined.
   bool new_clk_enables_bit = dif_toggle_to_bool(new_state);
   uint32_t clk_enables_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_ENABLES_REG_OFFSET);
@@ -197,6 +209,7 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
                       clk_enables_val);
 
   return kDifOk;
+#endif
 }
 
 OT_WARN_UNUSED_RESULT
@@ -225,11 +238,17 @@ dif_result_t dif_clkmgr_hintable_clock_get_enabled(
     return kDifBadArg;
   }
 
+#if CLKMGR_PARAM_NUM_HINTABLE_CLOCKS == 0
+  OT_UNREACHABLE();
+#else
+  // NOTE: the code below fails to compile on tops with no hintable clocks,
+  //  where CLKMGR_CLK_HINTS_STATUS_REG_OFFSET is not defined.
   uint32_t clk_hints_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_STATUS_REG_OFFSET);
   *state = dif_bool_to_toggle(bitfield_bit32_read(clk_hints_val, clock));
 
   return kDifOk;
+#endif
 }
 
 dif_result_t dif_clkmgr_hintable_clock_set_hint(
@@ -240,6 +259,11 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
     return kDifBadArg;
   }
 
+#if CLKMGR_PARAM_NUM_HINTABLE_CLOCKS == 0
+  OT_UNREACHABLE();
+#else
+  // NOTE: the code below fails to compile on tops with no hintable clocks,
+  //  where CLKMGR_CLK_HINTS_REG_OFFSET is not defined.
   bool new_clk_hints_bit = dif_toggle_to_bool(new_state);
   uint32_t clk_hints_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
@@ -248,6 +272,7 @@ dif_result_t dif_clkmgr_hintable_clock_set_hint(
                       clk_hints_val);
 
   return kDifOk;
+#endif
 }
 
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
@@ -257,11 +282,17 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
     return kDifBadArg;
   }
 
+#if CLKMGR_PARAM_NUM_HINTABLE_CLOCKS == 0
+  OT_UNREACHABLE();
+#else
+  // NOTE: the code below fails to compile on tops with no hintable clocks,
+  //  where CLKMGR_CLK_HINTS_REG_OFFSET is not defined.
   uint32_t clk_hints_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_CLK_HINTS_REG_OFFSET);
   *state = dif_bool_to_toggle(bitfield_bit32_read(clk_hints_val, clock));
 
   return kDifOk;
+#endif
 }
 
 #if OPENTITAN_CLKMGR_HAS_SW_EXTCLK_REGWEN

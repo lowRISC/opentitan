@@ -1,10 +1,10 @@
 # Ibex RISC-V Core Wrapper Technical Specification
 
 [`rv_core_ibex`](https://ibex.reports.lowrisc.org/opentitan/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
+![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
 
 # Overview
 
@@ -22,7 +22,7 @@ This document specifies Ibex CPU core wrapper functionality.
 ## Description
 
 The Ibex RISC-V Core Wrapper instantiates an [Ibex RV32 CPU Core](https://github.com/lowRISC/ibex), and wraps its data and instruction memory interfaces to TileLink Uncached Light (TL-UL).
-All configuration parameters of Ibex are passed through.
+All configuration parameters of Ibex are passed through, except for the CHERIoT ports and parameters (signals and parameters starting with `trvk_`, plus `BaseIsa`), which are not yet exposed.
 The pipelining of the bus adapters is configurable.
 
 ## Compatibility

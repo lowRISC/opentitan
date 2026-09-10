@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/kmac.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -19,6 +21,10 @@ enum {
   // Size of the KMAC hardware's sideload slot.
   kKmacSideloadKeyLengthBytes = 256 / 8,
 };
+
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 // Most fields of the following structs are not used during sideload testing
 // but they are copied over from KMAC testing for consistency. Later, we can
@@ -53,10 +59,10 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelLow,
                     },
@@ -109,10 +115,10 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac256,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelLow,
                     },
@@ -189,10 +195,10 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelLow,
                     },
@@ -279,8 +285,10 @@ static status_t run_test_vector(void) {
   uint32_t digest1[digest_num_words];
   uint32_t digest2[digest_num_words];
 
+  *(otcrypto_lib_version_t *)&current_test_vector->key.config.version =
+      otcrypto_lib_version();
   current_test_vector->key.checksum =
-      integrity_blinded_checksum(&current_test_vector->key);
+      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
 
   otcrypto_word32_buf_t tag_buf1 =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest1, ARRAYSIZE(digest1));
@@ -345,19 +353,20 @@ static status_t run_test_vector(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
+  // Initialize keymgr dpe and advance to CreatorRootKey state.
+  dif_keymgr_dpe_t keymgr_dpe;
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
 
   const char *state_name;
-  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_state_string_get(&keymgr_dpe, &state_name));
 
-  LOG_INFO("Keymgr entered %s State", state_name);
+  LOG_INFO("Keymgr DPE entered %s State", state_name);
   LOG_INFO("Testing cryptolib KMAC driver with sideloaded key.");
 
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   // Initialize the core with default parameters
-  CHECK_STATUS_OK(entropy_complex_init());
   CHECK_STATUS_OK(kmac_hwip_default_configure());
 
   status_t test_result = OK_STATUS();

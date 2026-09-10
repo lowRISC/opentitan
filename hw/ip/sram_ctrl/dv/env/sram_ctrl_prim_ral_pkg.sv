@@ -29,11 +29,11 @@ package sram_ctrl_prim_ral_pkg;
   endclass : sram_ctrl_prim_mem_sram_mem
 
 
-  class sram_ctrl_prim_reg_block #(parameter int AddrWidth = 10) extends dv_base_reg_block;
+  class sram_ctrl_prim_reg_block #(parameter int MemDepth = 1024) extends dv_base_reg_block;
     // memories
-    rand sram_ctrl_prim_mem_sram_mem #(2 ** AddrWidth) sram_mem;
+    rand sram_ctrl_prim_mem_sram_mem #(MemDepth) sram_mem;
 
-    `uvm_object_param_utils(sram_ctrl_prim_reg_block#(AddrWidth))
+    `uvm_object_param_utils(sram_ctrl_prim_reg_block#(MemDepth))
 
     function new(string name = "sram_ctrl_prim_reg_block",
                  int    has_coverage = UVM_NO_COVERAGE);
@@ -41,7 +41,12 @@ package sram_ctrl_prim_ral_pkg;
     endfunction : new
 
     virtual function void build(uvm_reg_addr_t base_addr,
-                                csr_excl_item csr_excl = null);
+                                csr_excl_item  csr_excl,
+                                int unsigned   addr_width,
+                                int unsigned   data_width,
+                                int unsigned   be_width);
+      super.build(base_addr, csr_excl, addr_width, data_width, be_width);
+
       // create default map
       this.default_map = create_map(.name("default_map"),
                                     .base_addr(base_addr),
@@ -53,7 +58,7 @@ package sram_ctrl_prim_ral_pkg;
       end
 
       // create memories
-      sram_mem = sram_ctrl_prim_mem_sram_mem#(2 ** AddrWidth)::type_id::create("sram_mem");
+      sram_mem = sram_ctrl_prim_mem_sram_mem#(MemDepth)::type_id::create("sram_mem");
       sram_mem.configure(.parent(this));
       default_map.add_mem(.mem(sram_mem),
                           .offset(32'h0),

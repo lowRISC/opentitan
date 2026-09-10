@@ -14,7 +14,7 @@
 #include "hw/top/pwrmgr_regs.h"
 
 static inline uint32_t pwrmgr_base(void) {
-  return dt_pwrmgr_primary_reg_block(kDtPwrmgrAon);
+  return dt_pwrmgr_primary_reg_block(kDtPwrmgr);
 }
 
 enum {
@@ -25,7 +25,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t pwrmgr_find_request_source(pwr_mgr_req_type_t req_type,
                                        dt_instance_id_t inst_id,
                                        size_t signal_idx, size_t *source_idx) {
-  dt_pwrmgr_t dt = kDtPwrmgrAon;
+  dt_pwrmgr_t dt = kDtPwrmgr;
 
   if (req_type == kPwrmgrReqTypeWakeup) {
     for (size_t idx = 0; idx < dt_pwrmgr_wakeup_src_count(dt); idx++) {
@@ -78,7 +78,7 @@ void pwrmgr_cdc_sync(uint32_t n) {
 }
 
 void pwrmgr_all_resets_enable(void) {
-  uint32_t reset_src_count = dt_pwrmgr_reset_request_src_count(kDtPwrmgrAon);
+  uint32_t reset_src_count = dt_pwrmgr_reset_request_src_count(kDtPwrmgr);
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kPwrmgrSecMmioAllResetsEnable, 1);
   // Enable all resets.
   sec_mmio_write32(pwrmgr_base() + PWRMGR_RESET_EN_REG_OFFSET, reset_src_count);

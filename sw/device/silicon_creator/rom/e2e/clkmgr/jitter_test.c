@@ -14,7 +14,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR), &clkmgr));
 
   // Get the initial jitter state: this is right after reset so it should be
   // disabled.

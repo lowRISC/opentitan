@@ -12,7 +12,7 @@ srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
-    "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
+    "//sw/otbn/crypto:xof.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
     "//sw/otbn/crypto/mldsa87/verify:mldsa87_verify_encoding.s",
     "//sw/otbn/crypto/mldsa87/verify:mldsa87_verify_norm.s",
@@ -31,6 +31,7 @@ unit_tests = [
     "mldsa87_verify_check_infinity_norm_z_test",
     "mldsa87_verify_compute_w_approx_test",
     "mldsa87_verify_use_hint_test",
+    "mldsa87_verify_check_hint_test",
 ]
 
 [
@@ -46,6 +47,7 @@ unit_tests = [
 
 mldsa87_nist_tests = [
     "mldsa87_verify_nist_acvp_63_test",
+    "mldsa87_verify_nist_acvp_64_test",
     "mldsa87_verify_nist_acvp_65_test",
     "mldsa87_verify_nist_acvp_66_test",
     "mldsa87_verify_nist_acvp_68_test",

@@ -86,7 +86,7 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
 
     // bootstrap the same image
-    spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+    spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".128.vmem"});
 
     // Disable bootstrap for subsequent boots.
     cfg.use_spi_load_bootstrap = 1'b0;

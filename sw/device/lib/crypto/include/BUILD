@@ -5,6 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("//sw/device/lib/crypto/include:api_config.bzl", "cryptolib_api_config_header")
 
 config_setting(
     name = "disable_buf_integrity_checks",
@@ -16,15 +17,27 @@ config_setting(
 # Export all headers.
 exports_files(glob(["*.h"]))
 
+# Header defining build options for the public ABI
+cryptolib_api_config_header(
+    name = "api_config.h",
+    buffer_integrity_checks = select({
+        ":disable_buf_integrity_checks": False,
+        "//conditions:default": True,
+    }),
+)
+
+cc_library(
+    name = "api_config",
+    hdrs = [":api_config.h"],
+)
+
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
-    defines = ["OTCRYPTO_IN_REPO=1"] + select({
-        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
-        "//conditions:default": [],
-    }),
+    defines = ["OTCRYPTO_IN_REPO=1"],
     includes = ["."],
     deps = [
+        ":api_config",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
     ],
@@ -35,12 +48,15 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cmac.h",
+        "config.h",
         "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
         "ecc_curve25519.h",
         "ecc_p256.h",
         "ecc_p384.h",
+        "entropy_src.h",
         "hkdf.h",
         "hmac.h",
         "integrity.h",
@@ -49,19 +65,17 @@ cc_library(
         "kmac.h",
         "kmac_kdf.h",
         "mldsa.h",
+        "mlkem.h",
         "otcrypto.h",
         "rsa.h",
-        "security_config.h",
+        "self_integrity.h",
         "sha2.h",
         "sha3.h",
-        "x25519.h",
     ],
-    defines = ["OTCRYPTO_IN_REPO=1"] + select({
-        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
-        "//conditions:default": [],
-    }),
+    defines = ["OTCRYPTO_IN_REPO=1"],
     includes = ["."],
     deps = [
+        ":api_config",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
     ],
@@ -74,12 +88,15 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cmac.h",
+        "config.h",
         "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
         "ecc_curve25519.h",
         "ecc_p256.h",
         "ecc_p384.h",
+        "entropy_src.h",
         "hkdf.h",
         "hmac.h",
         "integrity.h",
@@ -90,9 +107,10 @@ cc_library(
         "mldsa.h",
         "otcrypto.h",
         "rsa.h",
+        "self_integrity.h",
         "sha2.h",
         "sha3.h",
-        "x25519.h",
+        ":api_config.h",
         "//sw/device/lib/crypto/include/freestanding:absl_status.h",
         "//sw/device/lib/crypto/include/freestanding:defs.h",
         "//sw/device/lib/crypto/include/freestanding:hardened.h",
@@ -102,6 +120,8 @@ cc_library(
 
 pkg_files(
     name = "package",
-    srcs = glob(["*.h"]),
+    srcs = glob(["*.h"]) + [
+        ":api_config.h",
+    ],
     prefix = "crypto/include",
 )

@@ -36,6 +36,7 @@ load(
     "FLASH_ECC_ERROR_CAUSES",
     "SEC_VERS",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -46,7 +47,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 # Enable flash data page scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],
@@ -58,7 +59,7 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_FALSE),
+                "OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_FALSE),
             },
         ),
     ],
@@ -89,12 +90,11 @@ opentitan_binary(
     srcs = ["secret_page_setup.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -105,7 +105,6 @@ opentitan_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:uncorrupted_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
             "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
@@ -128,7 +127,6 @@ opentitan_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:flash_ecc_error_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
             "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
@@ -136,10 +134,10 @@ opentitan_binary(
             "CAUSE_ID={}".format(c["id"]),
         ],
         spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
+        target_compatible_with = opentitan_require_top("earlgrey"),
         deps = [
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
@@ -169,7 +167,6 @@ opentitan_binary(
     opentitan_test(
         name = t["name"].format(c["cause"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -185,9 +182,11 @@ opentitan_binary(
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             slot_a = "0x10000",
             slot_b = "0x90000",
+            # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+            # https://github.com/lowRISC/opentitan/issues/30897
+            tags = ["skip_in_ci"],
+            # TODO(#30957): Adapt tests for keymgr_dpe bootflow
             test_cmd = """
-                --exec="transport init"
-                --exec="fpga load-bitstream {bitstream}"
                 # First run the setup program to make sure the keymgr secrets are configured.
                 # This is required to allow the ROM_EXT to run.
                 --exec="bootstrap --clear-uart=true {setup}"
@@ -202,6 +201,7 @@ opentitan_binary(
                 --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
                 no-op
             """,
+            testopt_bootstrap = "False",
         ),
     )
     for t in BOOT_POLICY_FLASH_ECC_ERROR_TESTS
@@ -211,7 +211,6 @@ opentitan_binary(
 opentitan_test(
     name = "flash_exc_handler_disabled_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -231,9 +230,10 @@ opentitan_test(
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         slot_a = "0x10000",
         slot_b = "0x90000",
+        # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+        # https://github.com/lowRISC/opentitan/issues/30897
+        tags = ["skip_in_ci"],
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
             # First run the setup program to make sure the keymgr secrets are configured.
             # This is required to allow the ROM_EXT to run.
             --exec="bootstrap --clear-uart=true {setup}"
@@ -248,6 +248,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             no-op
         """,
+        testopt_bootstrap = "False",
     ),
 )
 

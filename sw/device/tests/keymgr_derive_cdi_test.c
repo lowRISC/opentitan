@@ -33,7 +33,7 @@ enum {
   // The retention SRAM testutils allocate some internal data as well as a
   // number of counters; both of which should not be overwritten by this
   // test. Hence, the actual base address is offset to account for this.
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR +
                      offsetof(retention_sram_t, owner) +
                      4 * kRetSramTestutilsNumberOfCounters,
 
@@ -64,14 +64,16 @@ typedef struct cdi_outputs {
 
 // Symbols of the OTBN X22519 public key generation program.
 // See sw/otbn/crypto/x25519_sideload.s for the source code.
-OTBN_DECLARE_APP_SYMBOLS(x25519_sideload);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_u);
-OTBN_DECLARE_SYMBOL_ADDR(x25519_sideload, enc_result);
-static const otbn_app_t kOtbnAppX25519 = OTBN_APP_T_INIT(x25519_sideload);
-static const otbn_addr_t kOtbnVarEncU =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_u);
-static const otbn_addr_t kOtbnVarEncResult =
-    OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
+OTBN_DECLARE_APP_SYMBOLS(run_curve25519);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, x25519_public_key);
+static const otbn_app_t kOtbnAppX25519 = OTBN_APP_T_INIT(run_curve25519);
+static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
+static const uint32_t kOtbnCurve25519ModeX25519KeygenSideload =
+    OTBN_ADDR_T_INIT(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+static const otbn_addr_t kOtbnVarX25519PublicKey =
+    OTBN_ADDR_T_INIT(run_curve25519, x25519_public_key);
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -92,9 +94,9 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR),
       &sram_ctrl));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
@@ -233,18 +235,15 @@ static void derive_sideload_otbn_key(const char *state_name,
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppX25519));
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
 
-  const uint32_t kEncodedU[8] = {
-      // Montgomery u-Coordinate.
-      0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-  };
-  CHECK_STATUS_OK(otbn_testutils_write_data(&otbn, sizeof(kEncodedU),
-                                            &kEncodedU, kOtbnVarEncU));
+  uint32_t mode = kOtbnCurve25519ModeX25519KeygenSideload;
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(&otbn, sizeof(mode), &mode, kOtbnVarMode));
   LOG_INFO("Starting OTBN program...");
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(&otbn));
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, 0));
   CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, kX2551PublicKeySizeBytes,
-                                           kOtbnVarEncResult, key));
+                                           kOtbnVarX25519PublicKey, key));
 
 #ifndef DERIVE_ATTESTATION
   // If the key version is larger than the permitted maximum version, then
@@ -337,12 +336,12 @@ static void derive_keys(const char *state_name,
  *
  * This check is implemented in the keymgr DIF (see `dif_keymgr_advance_state`).
  *
- * - OTP SECRET2 partition (which contains the CREATOR_ROOT_KEY) and flash info
+ * - OTP SECRET2 partition (which contains the CREATOR_ROOT_KEY) and NVM info
  *   pages 1 and 2 in partition 0 must be configured, otherwise the keymgr will
  * fail to advance into operational states.
  *
  * The provisioning of the device secrets in the OTP SECRET2 partition is
- * handled by the Bazel execution environment, and the flash info secrets are
+ * handled by the Bazel execution environment, and the NVM info secrets are
  * handled by the keymgr testutils (see `keymgr_testutils_init_nvm_then_reset`).
  *
  * - Ensure the entropy complex is running in continuous mode, and that KMAC is

@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -181,7 +184,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -216,6 +219,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
 
   return OK_STATUS();
 }
@@ -280,6 +284,8 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig_buf,
                           verification_result));
   profile_end_and_print(t_start, "RSA verify");
+  LOG_INFO("OTBN verify instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   return OK_STATUS();
 }
@@ -363,7 +369,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);

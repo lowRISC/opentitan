@@ -447,6 +447,14 @@ TEST_P(OwnershipUnlockUpdateModesTest, UnlockUpdate) {
   EXPECT_EQ(error, expect);
 }
 
+TEST_F(OwnershipUnlockTest, UnlockUpdateInvalidMode) {
+  owner_page[0].update_mode = 0x99999999;  // Invalid mode
+  message_.ownership_unlock_req.unlock_mode = kBootSvcUnlockUpdate;
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+  rom_error_t error = ownership_unlock_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorOwnershipInvalidMode);
+}
+
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipUnlockUpdateModesTest,
                          testing::Values(kOwnershipUpdateModeOpen,
                                          kOwnershipUpdateModeSelf,

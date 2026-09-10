@@ -10,7 +10,7 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
@@ -58,15 +58,14 @@ rom_error_t otbn_boot_app_load(void);
  * @param additional_seed_idx The attestation key generation seed index to load.
  *                            The index corresponds to the seed offset in flash
  *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
- * @param key_type Keymgr key type to generate, attestation or sealing.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
+    uint32_t additional_seed_idx,
+    sc_keymgr_dpe_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
 
 /**
@@ -83,7 +82,7 @@ rom_error_t otbn_boot_attestation_keygen(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_dpe_ecc_key_t key,
                                            hmac_digest_t *pubkey_id,
                                            ecdsa_p256_public_key_t *pubkey);
 
@@ -98,16 +97,13 @@ rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
  * `otbn_boot_app_load`.
  *
  * @param additional_seed The attestation key generation seed to load.
- * @param key_type OTBN attestation key type to generate. "DICE" attestation
- *                 keys are based on "attestation" keys from the keymgr; "TPM"
- *                 attestation keys are based on "sealing keys from the keymgr.
- * @param diversification Salt and version information for key manager.
+ * @param diversification Salt, Slot and version information for key manager
+ * dpe.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    uint32_t additional_seed, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification);
+    uint32_t additional_seed, sc_keymgr_dpe_diversification_t diversification);
 
 /**
  * Clears any saved attestation key from OTBN's scratchpad.
@@ -121,7 +117,8 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_clear(void);
 
 /**
- * Signs the message with the saved attestation key, and clears the key.
+ * Signs the message with the saved attestation key, clears the key, and
+ * verifies the signature.
  *
  * Must be called when there is a saved attestation key in OTBN's scratchpad;
  * use `otbn_boot_attestation_key_save` to store one.
@@ -129,7 +126,8 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  * The intended purpose of this function is to sign the current stage's
  * attestation certificate with the private key of the previous stage. The
  * caller should hash the certificate with SHA-256 before calling this
- * function.
+ * function. To protect against fault injections, the generated signature is
+ * verified using the provided public key.
  *
  * Note that the digest gets interpreted by OTBN in little-endian order. If the
  * HMAC block has not been set to produce little-endian digests, then the
@@ -140,11 +138,14 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  *
  * @param digest Digest to sign.
  * @param[out] sig Resulting signature.
+ * @param key The public key corresponding to the saved private key, used for
+ * verification.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          ecdsa_p256_signature_t *sig);
+                                          ecdsa_p256_signature_t *sig,
+                                          const ecdsa_p256_public_key_t *key);
 
 /**
  * Computes an ECDSA-P256 signature verification on OTBN.

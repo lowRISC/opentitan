@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  // Name of the sim cfg variant
+  variant: earlgrey
+
+  // Import the keymgr_dpe sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson"]
+
+  build_opts:  ["+define+DEF_DV_BOOT_STAGES=3",
+                "+define+DEF_DV_DPE_NUM_SLOT=4",
+                "+define+DEF_DV_NUM_ROM_DIGEST=1"]
+}

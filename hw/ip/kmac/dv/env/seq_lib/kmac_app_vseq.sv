@@ -7,6 +7,13 @@ class kmac_app_vseq extends kmac_sideload_vseq;
   `uvm_object_utils(kmac_app_vseq)
   `uvm_object_new
 
+  // Restrict all tests based on this sequence to static interfaces until the complete DV can
+  // handle dynamic interfaces.
+  // TODO: Remove constraint once DV fully supports dynamic interfaces.
+  constraint app_mode_c {
+    app_mode inside {AppKeymgr, AppLc, AppRom};
+  }
+
   constraint en_app_c {
     en_app dist {
       0 :/ 3,

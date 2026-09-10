@@ -56,6 +56,9 @@ module otbn_mai
   // Connection to MOD register with integrity data
   input  logic [ExtWLEN-1:0] ispr_mod_intg_i,
 
+  // Signal to URND control that the MAI will use bits from URND so the PRNG should advance.
+  output logic will_use_urnd_o,
+
   // Error
   output logic mai_software_error_o,
   output logic mai_reg_intg_violation_err_o,
@@ -78,18 +81,9 @@ module otbn_mai
 
   typedef struct packed {
     logic [31-2:0] rsvd;
-    logic          ready;
+    logic          input_ready;
     logic          busy;
   } ispr_mai_status_t;
-
-  localparam int unsigned MaiEccWidth = BaseIntgWidth - 32'd32;
-
-  typedef struct packed {
-    logic [MaiEccWidth-1:0] intg;
-    logic [31:0]            word;
-  } otbn_base_intg_word_t;
-
-  typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] ispr_mai_t;
 
   typedef struct packed {
     logic out_cnt;
@@ -117,13 +111,6 @@ module otbn_mai
 
   typedef logic [MaiCntWidth-1:0] mai_cnt_t;
 
-  localparam int unsigned MaiIsprRndRsvdWidth = UrndLen - ExtWLEN;
-
-  typedef struct packed {
-    logic [MaiIsprRndRsvdWidth-1:0] rsvd;
-    logic [ExtWLEN-1:0]             urnd;
-  } mai_ispr_urnd_t;
-
   typedef struct packed {
     logic [MaiCntWidth-1:0] cnt;
     logic [31:0]            mask_1;
@@ -137,9 +124,9 @@ module otbn_mai
   /////////////
 
   // PRNG input
-  mai_ispr_urnd_t mai_ispr_urnd;
-  mai_ma_urnd_t   mai_ma_urnd;
-  logic           unused_urnd;
+  otbn_ispr_urnd_t mai_ispr_urnd;
+  mai_ma_urnd_t    mai_ma_urnd;
+  logic            unused_urnd;
 
   // Error signals
   mai_reg_intg_violation_err_t mai_reg_intg_violation_err;
@@ -147,17 +134,17 @@ module otbn_mai
   mai_state_err_t              mai_state_err;
 
   // Masking accelerator signals
-  logic        ma_in_valid_q;
-  logic        ma_in_ready;
-  logic        ma_in_consume;
-  logic        ma_out_ready;
-  logic        ma_busy_q;
-  logic [31:0] ma_in0[32'd2];
-  logic [31:0] ma_in1[32'd2];
-  logic [31:0] ma_remask_rand[32'd2];
-  logic [31:0] ma_result[32'd2];
-  ispr_mai_t   ma_mod;
-  logic [31:0] ma_mod_lsw;
+  logic                 ma_in_valid_q;
+  logic                 ma_in_ready;
+  logic                 ma_in_consume;
+  logic                 ma_out_ready;
+  logic                 ma_busy_q, ma_busy_d;
+  ma_sharing_t          ma_in0;
+  ma_sharing_t          ma_in1;
+  ma_sharing_t          ma_remask_rand;
+  ma_sharing_t          ma_result;
+  otbn_wide_intg_word_t ma_mod;
+  ma_ele_t              ma_mod_lsw;
 
   // Counter load values
   mai_cnt_t cnt_load_val;
@@ -195,23 +182,28 @@ module otbn_mai
   ispr_mai_ctrl_t   ispr_mai_ctrl_w;
   ispr_mai_status_t ispr_mai_status;
   logic             ma_start;
-  mask_op_e         ma_mask_op_q;
+  mask_op_e         ma_mask_op_q, ma_mask_op_d;
   ispr_mai_sw_err_t ispr_mai_sw_err;
 
   // WSRs
-  ispr_mai_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
-  ispr_mai_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
-  ispr_mai_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
-  ispr_mai_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
-  ispr_mai_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
-  ispr_mai_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
+  otbn_wide_intg_word_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
+  otbn_wide_intg_word_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
+  otbn_wide_intg_word_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
+  otbn_wide_intg_word_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
+  otbn_wide_intg_word_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
+  otbn_wide_intg_word_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
 
 
   ////////////
   // Random //
   ////////////
-  assign mai_ispr_urnd = urnd_data_i;
+  // The fields of mai_ma_urnd feed the mask accelerator:
+  // urnd    (322b): rand_i, drives the HPC3 gadgets inside otbn_sec_add_mod
+  // mask_0  ( 32b): remask_rand_i[0], per-handshake re-masking word for adder input share 0
+  // mask_1  ( 32b): remask_rand_i[1], per-handshake re-masking word for adder input share 1
+  // cnt     (  3b): seeds the batch-counter start offset
   assign mai_ma_urnd   = urnd_data_i;
+  assign mai_ispr_urnd = urnd_data_i;
   assign unused_urnd   = ^mai_ispr_urnd.rsvd;
 
 
@@ -302,7 +294,7 @@ module otbn_mai
   );
 
   assign in_cnt_tgt      = (in_cnt_load_val_q - mai_cnt_t'('d1));
-  assign in_cnt_done     = ispr_mai_in_mux_sel == in_cnt_tgt;
+  assign in_cnt_done     = (ispr_mai_in_mux_sel == in_cnt_tgt) && ma_in_consume;
   assign in_cnt_overflow = ispr_mai_in_mux_sel == '1;
   assign in_cnt_set      = in_cnt_done || sec_wipe_mai_i;
 
@@ -383,7 +375,7 @@ module otbn_mai
 
   assign out_cnt_load_val_d = sec_wipe_mai_i ? cnt_load_val : in_cnt_load_val_q;
   assign out_cnt_tgt        = (out_cnt_load_val_q - mai_cnt_t'('d1));
-  assign out_cnt_done       = ispr_mai_out_demux_sel == out_cnt_tgt;
+  assign out_cnt_done       = (ispr_mai_out_demux_sel == out_cnt_tgt) && ma_out_ready;
   assign out_cnt_overflow   = ispr_mai_out_demux_sel == '1;
   assign out_cnt_set        = out_cnt_done || sec_wipe_mai_i;
 
@@ -428,10 +420,14 @@ module otbn_mai
   assign ma_start        = ispr_mai_ctrl_wr_i & ispr_mai_ctrl_w.start;
 
   // Status read
-  assign ispr_mai_status.rsvd    = '0;
-  assign ispr_mai_status.ready   = !ma_in_valid_q;
-  assign ispr_mai_status.busy    = ma_busy_q;
-  assign ispr_mai_status_rdata_o = ispr_mai_status;
+  assign ispr_mai_status.rsvd        = '0;
+  assign ispr_mai_status.input_ready = !ma_in_valid_q;
+  assign ispr_mai_status.busy        = ma_busy_q;
+  assign ispr_mai_status_rdata_o     = ispr_mai_status;
+
+  // Tell the URND advance control that the MAI is or will be using URND. This then ensures that
+  // the PRNG is advanced and provides fresh randomness in each cycle.
+  assign will_use_urnd_o = ispr_mai_status.busy || ma_busy_d;
 
   // Control read
   assign ispr_mai_ctrl_r.rsvd  = '0;
@@ -440,12 +436,16 @@ module otbn_mai
   assign ispr_mai_ctrl_rdata_o = ispr_mai_ctrl_r;
 
   // Erroneous control accesses
-  assign ispr_mai_sw_err.busy_start     = ma_start & ma_busy_q;
+  // The start bit and configuration may only be written when not busy.
+  assign ispr_mai_sw_err.busy_start     = ma_busy_q & ispr_mai_ctrl_wr_i;
+  // There may not be a write to the input WSRs whilst an execution is ongoing. This is required to
+  // keep data stable and valid as long as elements are dispatched.
   assign ispr_mai_sw_err.busy_write     = ma_in_valid_q &
-                                          |{ ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
-                                             ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i };
+                                          |{ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
+                                            ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i};
   assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.rsvd);
-  assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_q inside
+  // The configuration latched when an execution starts must be valid.
+  assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_d inside
                                           {SecAdd, SecAddMod, ArithToBool, BoolToArith}) & ma_start;
 
   // Valid control
@@ -462,27 +462,28 @@ module otbn_mai
   end
 
   // Busy control
+  assign ma_busy_d = out_cnt_set ? 1'b0 :
+                     ma_start    ? 1'b1 : ma_busy_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_busy_control_state
     if (!rst_ni) begin
       ma_busy_q <= 1'b0;
     end else begin
-      if (out_cnt_set) begin
-        ma_busy_q <= 1'b0;
-      end else if (ma_start) begin
-        ma_busy_q <= 1'b1;
-      end
+      ma_busy_q <= ma_busy_d;
     end
   end
 
-  // Store the operation of the mask accelerator
+  // Store the operation of the mask accelerator.
+  assign ma_mask_op_d = ispr_mai_ctrl_wr_i ? ispr_mai_ctrl_w.op : ma_mask_op_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_ma_op_store
     if (!rst_ni) begin
       ma_mask_op_q <= SecAdd;
     end else begin
       if (sec_wipe_mai_i) begin
         ma_mask_op_q <= SecAdd;
-      end else if (ispr_mai_ctrl_wr_i) begin
-        ma_mask_op_q <= ispr_mai_ctrl_w.op;
+      end else begin
+        ma_mask_op_q <= ma_mask_op_d;
       end
     end
   end
@@ -592,5 +593,11 @@ module otbn_mai
   assign mai_state_err_o              = |mai_state_err;
   // Sw error
   assign mai_software_error_o         = |ispr_mai_sw_err;
+
+  // The masking accelerator requires mod and operation to be stable during an execution. This
+  // check is much simpler when we base it on the busy flag instead of recreating the information
+  // inside the MA. These must remain stable also during a secure wipe.
+  `ASSERT(ModStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mod_lsw))
+  `ASSERT(MaskOpStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mask_op_q))
 
 endmodule

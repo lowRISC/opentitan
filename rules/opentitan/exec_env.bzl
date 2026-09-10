@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "rram_otp_image")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
@@ -21,7 +22,7 @@ _FIELDS = {
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
     "mmi": ("file.mmi", False),
-    "base_bitstream": ("file.base_bitstream", False),
+    "bitstream": ("file.base_bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
     "param": ("attr.param", False),
@@ -32,9 +33,14 @@ _FIELDS = {
     "top_secret_cfg": ("file.top_secret_cfg", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
+    "rram_scramble_tool": ("attr.rram_scramble_tool", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
     "slot_spec": ("attr.slot_spec", False),
+}
+
+_NESTED_FIELDS = {
+    "param": True,
 }
 
 ExecEnvInfo = provider(
@@ -85,14 +91,20 @@ def exec_env_as_dict(ctx):
     }
     for field, (path, required) in _FIELDS.items():
         val = getattr_path(ctx, path)
-        if not val and base:
+        if _NESTED_FIELDS.get(field, False) and base:
+            merged_val = dict(getattr(base, field) or {})
+            merged_val.update(val or {})
+            val = merged_val
+        elif not val and base:
             # If the value doesn't exist in the context object, get the value
             # from the base provider (if present).
             val = getattr(base, field)
 
         if required and not val:
             fail("No value for required field {} in {}".format(field, ctx.attr.name))
+
         result[field] = val
+
     return result
 
 def exec_env_common_attrs(**kwargs):
@@ -109,7 +121,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "exec_env": attr.string(
             default = kwargs.get("exec_env", "{name}"),
-            doc = "Name of the execution environment (e.g. `fpga_cw310`)",
+            doc = "Name of the execution environment (e.g. `fpga_cw340`)",
         ),
         "libs": attr.label_list(
             default = kwargs.get("libs", []),
@@ -217,6 +229,11 @@ def exec_env_common_attrs(**kwargs):
             executable = True,
             cfg = "exec",
         ),
+        "rram_scramble_tool": attr.label(
+            default = kwargs.get("rram_scramble_tool"),
+            executable = True,
+            cfg = "exec",
+        ),
         "rom_scramble_tool": attr.label(
             doc = "ROM scrambling tool.",
             default = "//hw/ip/rom_ctrl/util:scramble_image",
@@ -314,7 +331,13 @@ def update_file_attr(ctx, name, attr, exec_env, data_files, param, action_param 
             fail("attr must be a single item")
     if type(attr) == "File":
         _update(name, attr, data_files, param, action_param)
-    elif OpenTitanBinaryInfo in attr:
+        return
+
+    # Propagate runfiles
+    if DefaultInfo in attr:
+        data_files.extend(attr[DefaultInfo].default_runfiles.files.to_list() or [])
+
+    if OpenTitanBinaryInfo in attr:
         # This target was built by opentitan_binary, so make a few sanity check to make
         # sure that it contains a binary for the right target.
         if exec_env == None:
@@ -375,7 +398,8 @@ def common_test_setup(ctx, exec_env, firmware):
     action_param = dict(param)
 
     # Collect all file resource specified in the exec_env or as overrides.
-    update_file_attr(ctx, "bitstream", ctx.attr.bitstream, None, data_files, param, action_param)
+    bitstream = get_fallback(ctx, "attr.bitstream", exec_env)
+    update_file_attr(ctx, "bitstream", bitstream, None, data_files, param, action_param)
 
     otp = get_fallback(ctx, "attr.otp", exec_env)
     update_file_attr(ctx, "otp", otp, None, data_files, param, action_param)
@@ -399,16 +423,12 @@ def common_test_setup(ctx, exec_env, firmware):
     if ctx.attr.needs_jtag:
         openocd = exec_env.openocd
         jtag_data = [openocd]
-        jtag_test_cmd = '''
-            --openocd="$(rootpath {})"
-        '''.format(openocd.label)
+        jtag_test_cmd = '''--openocd="$(rootpath {})"'''.format(openocd.label)
 
         openocd_adapter_config = get_fallback(ctx, "attr.openocd_adapter_config", exec_env)
         if openocd_adapter_config != None:
             jtag_data.append(openocd_adapter_config)
-            jtag_test_cmd += '''
-                --openocd-adapter-config="$(rootpath {})"
-            '''.format(openocd_adapter_config.label)
+            jtag_test_cmd += '''--openocd-adapter-config="$(rootpath {})"'''.format(openocd_adapter_config.label)
 
         data_labels += jtag_data
         data_files += get_files(jtag_data)
@@ -421,3 +441,82 @@ def common_test_setup(ctx, exec_env, firmware):
     param.update(slot_spec)
 
     return test_harness, data_labels, data_files, param, action_param
+
+def _bitstream_from_env_impl(ctx):
+    """Retrieve the bitstream used by an execution environment, re-exporting it
+    as "<name>.bit". Can be overriden by `src` to allow build options to modify
+    the bitstream that is used. """
+
+    if ctx.attr.exec_env.label.name == "none":
+        # This is required so that this rule won't fail in Bazel queries.
+        print("{}: No exec_env. Nothing to do.".format(ctx.label))
+        return DefaultInfo()
+    if ExecEnvInfo not in ctx.attr.exec_env:
+        fail("Not an exec_env:", ctx.attr.exec_env.label)
+
+    exec_env = ctx.attr.exec_env[ExecEnvInfo]
+    src = ctx.file.src if ctx.file.src else exec_env.bitstream
+
+    # Re-export the input as an output of this rule; ensures the bitstream appears
+    # in runfiles under this target's path.
+    out = ctx.actions.declare_file("{}.bit".format(ctx.label.name))
+    ctx.actions.symlink(
+        output = out,
+        target_file = src,
+    )
+
+    return DefaultInfo(files = depset([out]))
+
+bitstream_from_env = rule(
+    implementation = _bitstream_from_env_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True, doc = "The bitstream to retrieve (i.e. an override)"),
+        "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to get the bitstream from"),
+    },
+)
+
+def _memory_from_env_impl(ctx):
+    """Retrieve some memory (e.g. OTP, ROM) used by an execution environment.
+    The memory will be in the form of some VMEM that has already had scrambling, etc.
+    applied, so that it can be directly used. Can be overriden by `src` to allow
+    build options to modify the bitstream that is used. """
+
+    if ctx.attr.exec_env.label.name == "none":
+        # This is required so that this rule won't fail in Bazel queries.
+        print("{}: No exec_env. Nothing to do.".format(ctx.label))
+        return DefaultInfo()
+    if ExecEnvInfo not in ctx.attr.exec_env:
+        fail("Not an exec_env:", ctx.attr.exec_env.label)
+
+    # If a src is given (and not named `none`), override and use that instead.
+    exec_env = ctx.attr.exec_env[ExecEnvInfo]
+    if ctx.file.src and ctx.attr.src.label.name != "none":
+        src = ctx.file.src
+    else:
+        src = getattr(exec_env, ctx.attr.memory)
+    if ctx.attr.memory == "rom":
+        src = get_one_binary_file(src, field = ctx.attr.memory, providers = [exec_env.provider])
+    elif ctx.attr.memory == "otp":
+        # exec_env.otp is otp_image()'s native-format output (also used for firmware
+        # scrambling-key derivation, which needs that format) - OTP lives inside the RRAM data
+        # array now, so backdoor-loading it needs the RRAM-native layout instead.
+        rram_otp = rram_otp_image(ctx, exec_env, src)
+        if rram_otp:
+            src = rram_otp
+
+    out = ctx.actions.declare_file("{}.vmem".format(ctx.label.name))
+    ctx.actions.symlink(
+        output = out,
+        target_file = src,
+    )
+
+    return DefaultInfo(files = depset([out]))
+
+memory_from_env = rule(
+    implementation = _memory_from_env_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True, doc = "The VMEM to retrieve (i.e. an override)"),
+        "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to get the memory from"),
+        "memory": attr.string(mandatory = True, doc = "The type of memory to retrieve (e.g. 'rom', 'otp')"),
+    },
+)

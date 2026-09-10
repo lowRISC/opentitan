@@ -1,0 +1,172 @@
+// Copyright lowRISC contributors (OpenTitan project).
+//
+// Source: NIST ACVP-Server (https://github.com/usnistgov/ACVP-Server)
+// NIST License:
+// NIST-developed software is provided by NIST as a public service. You may
+// use, copy, and distribute copies of the software in any medium, provided
+// that you keep intact this entire notice. You may improve, modify, and create
+// derivative works of the software or any portion of the software, and you may
+// copy and distribute such modifications or works. Modified works should carry
+// a notice stating that you changed the software and should note the date and
+// nature of any such change. Please explicitly acknowledge the National
+// Institute of Standards and Technology as the source of the software.
+//
+// NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+// WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT, OR ARISING BY OPERATION OF
+// LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND DATA ACCURACY. NIST
+// NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
+// UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
+// DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE
+// SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE
+// CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+//
+// You are solely responsible for determining the appropriateness of using and
+// distributing the software and you assume all risks associated with its use,
+// including but not limited to the risks and costs of program errors,
+// compliance with applicable laws, damage to or loss of data, programs or
+// equipment, and the unavailability or interruption of operation. This
+// software is not intended to be used in any situation where a failure could
+// cause risk of injury or damage to property. The software developed by NIST
+// employees is not subject to copyright protection within the United States.
+//
+// Based on:
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/KMAC-128-1.0/prompt.json
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/KMAC-256-1.0/prompt.json
+// Modifications:
+// This file was modified on 26.05.2026 as following:
+// - Removed all test vectors and replaced them with test vectors from
+//   Wycheproof (https://github.com/google/wycheproof), files
+//   kmac128_no_customization_test.json and kmac256_no_customization_test.json.
+//   This is required as the existing ACVP test vectors operate on
+//   bit-granularity which is not supported by the OpenTitan KMAC HWIP.
+[
+  {
+    "vsId": 0,
+    "algorithm": "KMAC-128",
+    "revision": "1.0",
+    "isSample": false,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "xof": false,
+        "hexCustomization": false,
+        "tests": [
+          {
+            "tcId": 1,
+            "key": "7BF9E536B66A215C22233FE2DAAA743A898B9ACB9F7802DE70B40E3D6E43EF97",
+            "keyLen": 256,
+            "msg": "",
+            "msgLen": 0,
+            "macLen": 128,
+            "customization": ""
+          },
+          {
+            "tcId": 2,
+            "key": "15D553C8DA433D53CDC7F15087A70349CAAB57B379A4078928CE9B99302E31A6",
+            "keyLen": 256,
+            "msg": "D6C0C53B73F74FB426ADFDC143D70DB7F7A8F8ED32A2FAEF263CF9AB117537B6B9D1728BD1000C1F28906C6CE6AD21862BFA4D689C1A8EBE3868B992098B7F981B2AF5189A6ADEDFF53A6C70C83693F5C8D6385A9A8A4DCA017C5716AC4D5B9765C5CA2AB5F9867E02795198C0B9527E07D08AF52DBCB91CEB3D8B412A2B2402",
+            "msgLen": 1024,
+            "macLen": 128,
+            "customization": ""
+          },
+        ]
+      },
+      {
+        "tgId": 2,
+        "testType": "AFT",
+        "xof": false,
+        "hexCustomization": false,
+        "tests": [
+          {
+            "tcId": 3,
+            "key": "186E248AD824E1EB93329A7FDCD565B6CB4EAF3F85B90B910777128D8C538D27",
+            "keyLen": 256,
+            "msg": "92EF9FF52F46ECCC7E38B9EE19FD2DE3B37726C8E6CE9E1B96DB5DDA4C317902",
+            "msgLen": 256,
+            "macLen": 256,
+            "customization": ""
+          },
+          {
+            "tcId": 4,
+            "key": "D115ACC9A636915241795F48852052E07B51273AE2448251EC1D0D0F9807F3DB",
+            "keyLen": 256,
+            "msg": "696D2456DE853FA028F486FEF437B6B6D1B530A8475E299DB3A9005AE9CEF8401985B7D31E172E8F439CCD1AD1EC44C9B86B78F3F243C1305B53BC21ABAD7A8FC5256311BFD34C98E37DFDC649E7AE4BDA08CF2994B063C0C7106ED0B02A1F48AF9191CBFB0D6A953B7E04327DFE8C93779CB574BA9CBA575D01674E83621AA0C5F400D6E6CD24B301E33C9F3303E73BF357408C1BE86C2489C09DE998FF2EF32DF554F1247D9313CE1A7160115D06F4C18D6556FF7986EF8A55E2ADCFA27E4C69C71CC2FF01639E9D49BD9ED0687F530FFEB0890132457DF2088081BC4A2F7F0A9F4DCEA2C80D991DB7F3747A1803D7619AAF3DD382C69536A0BCDB931CBE",
+            "msgLen": 2040,
+            "macLen": 256,
+            "customization": ""
+          },
+        ]
+      },
+    ]
+  },
+  {
+    "vsId": 1,
+    "algorithm": "KMAC-256",
+    "revision": "1.0",
+    "isSample": false,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "xof": false,
+        "hexCustomization": false,
+        "tests": [
+          {
+            "tcId": 1,
+            "key": "7BF9E536B66A215C22233FE2DAAA743A898B9ACB9F7802DE70B40E3D6E43EF97",
+            "keyLen": 256,
+            "msg": "",
+            "msgLen": 0,
+            "macLen": 128,
+            "customization": ""
+          },
+          {
+            "tcId": 2,
+            "key": "15D553C8DA433D53CDC7F15087A70349CAAB57B379A4078928CE9B99302E31A6",
+            "keyLen": 256,
+            "msg": "D6C0C53B73F74FB426ADFDC143D70DB7F7A8F8ED32A2FAEF263CF9AB117537B6B9D1728BD1000C1F28906C6CE6AD21862BFA4D689C1A8EBE3868B992098B7F981B2AF5189A6ADEDFF53A6C70C83693F5C8D6385A9A8A4DCA017C5716AC4D5B9765C5CA2AB5F9867E02795198C0B9527E07D08AF52DBCB91CEB3D8B412A2B2402",
+            "msgLen": 1024,
+            "macLen": 128,
+            "customization": ""
+          },
+        ]
+      },
+      {
+        "tgId": 2,
+        "testType": "AFT",
+        "xof": false,
+        "hexCustomization": false,
+        "tests": [
+          {
+            "tcId": 3,
+            "key": "186E248AD824E1EB93329A7FDCD565B6CB4EAF3F85B90B910777128D8C538D27",
+            "keyLen": 256,
+            "msg": "92EF9FF52F46ECCC7E38B9EE19FD2DE3B37726C8E6CE9E1B96DB5DDA4C317902",
+            "msgLen": 256,
+            "macLen": 256,
+            "customization": ""
+          },
+        ]
+      },
+      {
+        "tgId": 3,
+        "testType": "AFT",
+        "xof": false,
+        "hexCustomization": false,
+        "tests": [
+          {
+            "tcId": 4,
+            "key": "A2D93B6636BF4108623750D19D1F106645DE093BFE93B96753CAC0C883C1A958",
+            "keyLen": 256,
+            "msg": "F0CA9EE0C89B4223352730996E5F8D9C86FFF57D207EF88628F3FDD20CAEB5C8075ED7A24F6464D9EC7E1D0AFB86FE9B3B4625E39D2EC397BBBF34A868D438539FFA5B337381E7FD90E85D1BD7D3C7D0E0C9C47E85E8954757636E274B27F955294A25045EB17347FE83CA74795DCA4A3617C9F794B9D1F569EF2AB84E7AA083",
+            "msgLen": 1024,
+            "macLen": 512,
+            "customization": ""
+          },
+        ]
+      },
+    ]
+  },
+]

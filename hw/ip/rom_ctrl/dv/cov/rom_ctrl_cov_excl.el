@@ -220,12 +220,8 @@ Condition 2 "803322985" "(wvalid_i & wready_o) 1 -1" (2 "10")
 
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
-Toggle 0to1 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
-Toggle 1to0 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
-Toggle 0to1 rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
-Toggle 1to0 rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
-Toggle 0to1 rom_cfg_i.test "logic rom_cfg_i.test"
-Toggle 1to0 rom_cfg_i.test "logic rom_cfg_i.test"
+Toggle 0to1 rom_cfg_i.req [2:0] "logic rom_cfg_i.req[2:0]"
+Toggle 1to0 rom_cfg_i.req [2:0] "logic rom_cfg_i.req[2:0]"
 
 // The bits [63:39] of kmac_data_o.data are zero-expanded in rom_ctrl.sv
 Toggle 0to1 kmac_data_o.data [63:39] "logic kmac_data_o.data[63:0]"

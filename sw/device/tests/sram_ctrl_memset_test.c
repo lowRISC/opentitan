@@ -85,12 +85,12 @@ static void init_sram(dif_sram_ctrl_t sram_ctrl) {
 bool test_main(void) {
   // Initialize SRAM_CTRL hardware.
   dif_sram_ctrl_t sram_ctrl_ret;
-  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRet, &sram_ctrl_ret));
 
   init_sram(sram_ctrl_ret);
 
   uintptr_t sram_ret_buffer_addr =
-      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
+      dt_sram_ctrl_memory_base(kDtSramCtrlRet, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_ret_addr =

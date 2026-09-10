@@ -314,6 +314,10 @@ class OTBNExtRegs:
         fld = reg.fields[0]
         reg.write(min(fld.value + 1, (1 << 32) - 1), True)
 
+    def read_insn_cnt(self) -> int:
+        reg = self._get_reg('INSN_CNT')
+        return reg.read(True)
+
     def read(self, reg_name: str, from_hw: bool) -> int:
         reg = self.regs.get(reg_name)
         if reg is None:

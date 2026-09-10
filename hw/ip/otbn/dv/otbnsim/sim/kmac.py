@@ -2,519 +2,541 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from dataclasses import dataclass
+'''Model of the OTBN-KMAC interface for the standalone ISS.
+
+This models what OTBN software can observe through the CSR/WSR interface. The timing is modelled
+coarsely. The message is shifted out one 64-bit beat per cycle (up to 4 per 256-bit WSR), and the
+external KMAC's processing latency is fixed to PERM_CYCLES.
+
+The model requires two calls per cycle. The step() method is called at the start of every cycle
+(before the instruction executes) and detect_errors() is called at the end of every cycle (after
+the instruction commits or aborts).
+'''
+
+from enum import IntEnum, unique
 from typing import Any, Optional
-from enum import Enum, auto, unique
-from Crypto.Hash import SHAKE128, SHAKE256, SHA3_224, SHA3_256, SHA3_384, SHA3_512
-import secrets
+from Crypto.Hash import (SHA3_224, SHA3_256, SHA3_384, SHA3_512,
+                         SHAKE128, SHAKE256, cSHAKE128, cSHAKE256,
+                         KMAC128, KMAC256)
 from .csr import CSRFile
 from .wsr import WSRFile
 
-# Timing constants
+# Coarse masked Keccak-f[1600] permutation latency: one masked round takes KECCAK_ROUND_CYCLES.
 KECCAK_ROUNDS = 24
 KECCAK_ROUND_CYCLES = 4
-KECCAK_PROCESS_CYCLES = KECCAK_ROUNDS * KECCAK_ROUND_CYCLES
+PERM_CYCLES = KECCAK_ROUNDS * KECCAK_ROUND_CYCLES
 
-# Data sizes
-KMAC_WORD_BITS = 64
-KMAC_WORD_BYTES = 8
-KMAC_WSR_BITS = 256
-KMAC_WSR_WORDS = KMAC_WSR_BITS // KMAC_WORD_BITS
+# Number of 64-bit message beats in a 256-bit KMAC_DATA WSR.
+MSG_PARTS = 4
 
-# Error codes
-KMAC_ERR_UNEXPECTED_MODE_STRENGTH = 0x6
-KMAC_ERR_SW_CMD_SEQUENCE = 0x8
+# Coarse latency from a PROCESS request to the error response of a rejected
+# configuration: no permutation runs, but the request still has to be accepted
+# and the error returned, so the response cannot appear in the same cycle.
+REJECT_CYCLES = 2
 
+# The KMAC output length is fixed for any app interface of the KMAC HWIP (in bits).
+KMAC_OUTPUT_LENGTH = 384
 
-@unique
-class KmacMode(Enum):
-    """KMAC modes."""
-    SHA3 = 0x0
-    SHAKE = 0x2
-    CSHAKE = 0x3
-    INVALID = -1  # Internal use only for unknown values
+# The KMAC HWIP outputs the digest in masked form. The standalone sim uses a fixed mask to make the
+# output sharing deterministic.
 
-    @classmethod
-    def _missing_(cls, value: object) -> "KmacMode":
-        """Map any unknown integer value to INVALID."""
-        return cls.INVALID
+KMAC_DIGEST_MASK = 0xdeadbeefdeadbeef
+
+# One KMAC_STRB bit per message byte, so 8 strobe bits cover a 64-bit beat.
+STRB_BITS_PER_BEAT = 8
+# Strobe value of a fully populated beat (all 8 bytes valid).
+STRB_BEAT_FULL = (1 << STRB_BITS_PER_BEAT) - 1
 
 
 @unique
-class KmacStrength(Enum):
-    """Kmac strengths."""
-    L128 = 0x0
-    L224 = 0x1
-    L256 = 0x2
-    L384 = 0x3
-    L512 = 0x4
-    INVALID = -1  # Internal use only for unknown values
-
-    @classmethod
-    def _missing_(cls, value: object) -> "KmacStrength":
-        """Map any unknown integer value to INVALID."""
-        return cls.INVALID
+class _State(IntEnum):
+    IDLE = 0
+    STARTING = 1
+    WAIT_FOR_MSG = 2
+    SENDING = 3
+    PROCESSING = 4
+    RECEIVING = 5
+    TERMINATING = 6
+    WAIT_FOR_CLOSE = 7
 
 
-# Create a tuple key using the Enums
-MODE_STRENGTH_TABLE = {
-    # (Mode, Strength): (Implementation Class, Bit Width)
-    (KmacMode.SHA3, KmacStrength.L224): (SHA3_224, 224),
-    (KmacMode.SHA3, KmacStrength.L256): (SHA3_256, 256),
-    (KmacMode.SHA3, KmacStrength.L384): (SHA3_384, 384),
-    (KmacMode.SHA3, KmacStrength.L512): (SHA3_512, 512),
-    (KmacMode.SHAKE, KmacStrength.L128): (SHAKE128, 128),
-    (KmacMode.SHAKE, KmacStrength.L256): (SHAKE256, 256),
-    # cSHAKE usually shares the SHAKE implementations but with customization strings
-    (KmacMode.CSHAKE, KmacStrength.L128): (SHAKE128, 128),
-    (KmacMode.CSHAKE, KmacStrength.L256): (SHAKE256, 256),
+# Note using IntFlag is slow, so we use a raw int value for commands.
+CMD_START = 0x1
+CMD_SEND = 0x2
+CMD_PROCESS = 0x4
+CMD_DONE = 0x8
+CMD_CLOSE = 0x10
+
+
+@unique
+class _Mode(IntEnum):
+    SHA3 = 0
+    SHAKE = 1
+    CSHAKE = 2
+    KMAC = 3
+
+
+@unique
+class _Strength(IntEnum):
+    L128 = 0
+    L224 = 1
+    L256 = 2
+    L384 = 3
+    L512 = 4
+
+
+# Keccak capacity in bits indexed by strength (capacity = 2 * security level).
+_CAP_BITS = {
+    _Strength.L128: 256,
+    _Strength.L224: 448,
+    _Strength.L256: 512,
+    _Strength.L384: 768,
+    _Strength.L512: 1024,
 }
 
 
-@unique
-class KmacCmd(Enum):
-    """Kmac commands."""
-    NONE = 0x00
-    START = 0x1d
-    PROCESS = 0x2e
-    RUN = 0x31
-    DONE = 0x16
-    INVALID = -1  # Internal use only for unknown values
+MODE_STRENGTH_TABLE = {
+    (_Mode.SHA3, _Strength.L224): SHA3_224,
+    (_Mode.SHA3, _Strength.L256): SHA3_256,
+    (_Mode.SHA3, _Strength.L384): SHA3_384,
+    (_Mode.SHA3, _Strength.L512): SHA3_512,
+    (_Mode.SHAKE, _Strength.L128): SHAKE128,
+    (_Mode.SHAKE, _Strength.L256): SHAKE256,
+    (_Mode.CSHAKE, _Strength.L128): cSHAKE128,
+    (_Mode.CSHAKE, _Strength.L256): cSHAKE256,
+    (_Mode.KMAC, _Strength.L128): KMAC128,
+    (_Mode.KMAC, _Strength.L256): KMAC256,
+}
 
-    @classmethod
-    def _missing_(cls, value: object) -> "KmacCmd":
-        """Map any unknown integer value to INVALID."""
-        return cls.INVALID
-
-
-class KmacState(Enum):
-    IDLE = auto()
-    MSG_FEED = auto()
-    PROCESSING = auto()
-    ABSORBED = auto()
-    SQUEEZING = auto()
-
-
-class Counter():
-    """A hardware-like counter model with separate Next (D) and Current (Q) states.
-
-    This prevents updates within a cycle from taking effect until end_cycle() is called.
-    This class also asserts that the counter value always stays between 0 and the max value.
-    """
-
-    def __init__(self, max_val: Optional[int] = None) -> None:
-        # Assign the counter boundaries
-        self._max_val = max_val
-        # Initialize counter values
-        self.reset()
-
-    def _check_bounds(self, val: int) -> None:
-        # Only check max if it is not None
-        if self._max_val is not None:
-            assert val <= self._max_val
-        assert val >= 0
-
-    def reset(self) -> None:
-        # Initialize state to the minimum value
-        self._next_val = 0
-        self._curr_val = 0
-
-    @property
-    def value(self) -> int:
-        """Returns the current counter value."""
-        return self._curr_val
-
-    def set_next(self, val: int) -> None:
-        """Sets the next value directly."""
-        self._check_bounds(val)
-        self._next_val = val
-
-    def increment(self, step: int = 1) -> int:
-        """Calculates D = Q + step."""
-        self._next_val = self._curr_val + step
-        return self._next_val
-
-    def decrement(self, step: int = 1) -> int:
-        """Calculates D = Q - step."""
-        self._next_val = self._curr_val - step
-        return self._next_val
-
-    def end_cycle(self) -> None:
-        """Commits the next value to the current state."""
-        # Verify the transition is legal before updating state
-        self._check_bounds(self._next_val)
-        self._curr_val = self._next_val
+_CMD_ALL = CMD_START | CMD_SEND | CMD_PROCESS | CMD_DONE | CMD_CLOSE
+_DISALLOWED_CMD = (
+    _CMD_ALL & ~CMD_START,                 # IDLE
+    _CMD_ALL,                              # STARTING
+    _CMD_ALL & ~(CMD_PROCESS | CMD_SEND),  # WAIT_FOR_MSG (default)
+    _CMD_ALL, _CMD_ALL,                    # SENDING, PROCESSING
+    _CMD_ALL & ~CMD_DONE,                  # RECEIVING
+    _CMD_ALL,                              # TERMINATING
+    _CMD_ALL & ~CMD_CLOSE,                 # WAIT_FOR_CLOSE
+)
+_DISALLOWED_CMD_WAIT_NO_SEND = _CMD_ALL & ~CMD_PROCESS
 
 
-@dataclass
-class Kmac():
-    '''A model of the KMAC HW IP.
-    '''
-    # Declare the variable types.
-    _csrs: CSRFile
-    _wsrs: WSRFile
-    _state: KmacState
-    _state_next: KmacState
-    _kmac_msg_send_words_left: Counter
-    _keccak_round_ctr: Counter
-    _keccak_absorbed_cnt: Counter
-    _keccak_squeezed_cnt: Counter
-    _sha3_digest: bytes
-    _keccak_state: Any
-    _keccak_rate_words: int
-    _keccak_cap_bits: int
-    _flush_cycle: bool
-    _err_sw_cmd_seq: bool
-    _err_sw_mode_strength: bool
+class Kmac:
+    '''Model of the OTBN-KMAC interface.'''
+
+    _state: _State
+    _no_more_msg_allowed: bool
+    _msg_beat_idx: int
+    _ready: bool
+    _rsp_valid: bool
+    _s0_pending: bool
+    _s1_pending: bool
+    _app_mode: _Mode
+    _app_strength: _Strength
+    _app_en_xof: bool
+    _service_rejected: bool
+    _app_msg: bytearray
+    # A cycle timer to model either the Keccak permutation delay or any request/response latency.
+    _latency_timer: int
+    # Number of full 64-bit message words absorbed into the current rate block. Every time it
+    # reaches the rate the KMAC runs a permutation and back-pressures any message requests.
+    _msg_block_words: int
+    _beats_pushed: int
+    _beat_in_rate: int
+    # Either a pycryptodome XOF hash object (SHAKE/cSHAKE) or None for fixed-length digests.
+    _xof: Optional[Any]
+    _fixed_digest: bytes
 
     def __init__(self, csrs: CSRFile, wsrs: WSRFile) -> None:
         self.on_start(csrs, wsrs)
-        self._reset_state()
 
     def on_start(self, csrs: CSRFile, wsrs: WSRFile) -> None:
         self._csrs = csrs
         self._wsrs = wsrs
+        # Cache the ISPR objects to avoid the repeated container lookups.
+        self._ctrl = csrs.KMAC_CTRL
+        self._cfg = csrs.KMAC_CFG
+        self._status = csrs.KMAC_STATUS
+        self._strb = csrs.KMAC_STRB
+        self._data_s0 = wsrs.KMAC_DATA_S0
+        self._data_s1 = wsrs.KMAC_DATA_S1
+        self._reset()
 
     def step(self) -> None:
-        """Advance the KMAC state by one cycle."""
+        '''Advance the model by one cycle. Called before the instruction executes.'''
 
-        # Check if KMAC_DATA_S0/1 were accessed in the last cycle.
-        self._step_kmac_data()
+        # Extract the possible commands issued by the previous instruction.
+        cmd = self._ctrl.take_cmd()
 
-        # Advance the KMAC FSM.
-        self._step_fsm()
-
-        # Update KMAC error status based on FSM-detected conditions
-        # (e.g., err_sw_cmd_seq, err_sw_mode_strength).
-        self._update_kmac_error()
-
-        # Decrement Keccak counter if Keccak is running.
-        if self._keccak_round_ctr.value:
-            self._keccak_round_ctr.decrement()
-
-        # Handle KMAC_MSG_SEND command.
-        kmac_msg_send = self._csrs.KMAC_MSG_SEND.read_unsigned()
-        if kmac_msg_send:
-            if self._state == KmacState.MSG_FEED and self._csrs.KMAC_IF_STATUS.get_msg_write_rdy():
-                # Valid MSG_SEND: start absorbing the next KMAC_WSR_WORDS words.
-                self._kmac_msg_send_words_left.set_next(KMAC_WSR_WORDS)
-            else:
-                # MSG_SEND issued in an invalid state or while busy.
-                # Trigger sticky send error and ignore the command.
-                self._csrs.KMAC_IF_STATUS.set_msg_send_error()
-
-        # Absorb any available message words if the Keccak core is not busy.
-        if self._kmac_msg_send_words_left.value and not self._keccak_round_ctr.value:
-            word_index = KMAC_WSR_WORDS - self._kmac_msg_send_words_left.value
-            self._absorb(word_index)
-            self._kmac_msg_send_words_left.decrement()
-
-        # MSG write interface is ready only when the FSM is in MSG_FEED
-        # and KMAC is not currently absorbing another message.
-        self._csrs.KMAC_IF_STATUS.update_msg_write_rdy(self._state == KmacState.MSG_FEED
-                                                       and not self._kmac_msg_send_words_left.value
-                                                       and not kmac_msg_send)
-
-        # If KMAC is in the squeeze state, check if KMAC_DATA can be populated.
-        if self._csrs.KMAC_STATUS.is_squeezing():
-            self._squeeze()
-
-        return
-
-    def end_cycle(self) -> None:
-        # Commit state transition
-        self._state = self._state_next
-        self._keccak_round_ctr.end_cycle()
-        self._keccak_absorbed_cnt.end_cycle()
-        self._keccak_squeezed_cnt.end_cycle()
-        self._kmac_msg_send_words_left.end_cycle()
-
-    def _step_kmac_data(self) -> None:
-        # Set the message write error if an illegal write to KMAC_DATA_S0/1 happened.
-        if (self._wsrs.KMAC_DATA.shares_dirty() and
-                not self._csrs.KMAC_IF_STATUS.get_msg_write_rdy()):
-            self._csrs.KMAC_IF_STATUS.set_msg_write_error()
-
-        # Reset the dirty bits.
-        self._wsrs.KMAC_DATA.clean_shares()
-
-        # Invalidate the digest data if both shares were read.
-        if self._wsrs.KMAC_DATA.all_shares_read():
-            self._csrs.KMAC_IF_STATUS.clr_digest_valid()
-            self._wsrs.KMAC_DATA.mark_all_unread()
-
-    def _check_cmd(self, command: Optional[KmacCmd], allowed: set[KmacCmd]) -> None:
-        if command not in allowed:
-            self._csrs.KMAC_INTR.set_error()
-            self._err_sw_cmd_seq = True
-
-    def _step_fsm(self) -> None:
-        self._state_next = self._state
-        # Flush cycle is only True one cycle after the done command.
-        self._flush_cycle_next = False
-        # Set command/config error checker signals to false by default.
-        # err_sw_cmd_seq might be set to True in _check_cmd().
-        self._err_sw_cmd_seq = False
-        # err_sw_mode_strength might be set to True in _start().
-        self._err_sw_mode_strength = False
-        # Get the next command.
-        command = KmacCmd(self._csrs.KMAC_CMD.read_unsigned())
-        # Get cfg mode.
-        mode = KmacMode(self._csrs.KMAC_CFG.get_mode())
-
-        # This state machine simulates the FSM inside kmac_errchk.sv.
-        match self._state:
-            case KmacState.IDLE:
-                self._check_cmd(command, {KmacCmd.NONE, KmacCmd.START})
-
-                if not self._flush_cycle:
-                    self._csrs.KMAC_STATUS.set_idle()
-                    if command == KmacCmd.START:
-                        self._state_next = self._start()
-
-            case KmacState.MSG_FEED:
-                self._check_cmd(command, {KmacCmd.NONE, KmacCmd.PROCESS})
-                self._csrs.KMAC_STATUS.set_absorb()
-                if command == KmacCmd.PROCESS:
-                    # TODO set the number of process cycles properly
-                    self._keccak_round_ctr.set_next(KECCAK_PROCESS_CYCLES)
-                    self._state_next = KmacState.PROCESSING
-
-            case KmacState.PROCESSING:
-                self._check_cmd(command, {KmacCmd.NONE})
-                if not self._keccak_round_ctr.value and not self._kmac_msg_send_words_left.value:
-                    self._state_next = KmacState.ABSORBED
-                    self._csrs.KMAC_STATUS.set_squeeze()
-
-            case KmacState.ABSORBED:
-                self._check_cmd(command, {KmacCmd.NONE, KmacCmd.RUN, KmacCmd.DONE})
-                self._csrs.KMAC_STATUS.set_squeeze()
-
-                if command == KmacCmd.RUN and mode != KmacMode.SHA3:
-                    self._state_next = KmacState.SQUEEZING
-                    # TODO set the number of process cycles properly
-                    self._keccak_round_ctr.set_next(KECCAK_PROCESS_CYCLES)
-                elif command == KmacCmd.DONE:
-                    self._state_next = KmacState.IDLE
-                    self._flush_cycle_next = True
-                    self._done()
-
-            case KmacState.SQUEEZING:
-                self._check_cmd(command, {KmacCmd.NONE})
-
-                if self._keccak_round_ctr.value:
-                    self._state_next = KmacState.ABSORBED
-                    self._keccak_squeezed_cnt.set_next(0)
-        return
-
-    def _start(self) -> KmacState:
-        # Get cfg mode and kStrength.
-        mode = KmacMode(self._csrs.KMAC_CFG.get_mode())
-        strength = KmacStrength(self._csrs.KMAC_CFG.get_kstrength())
-
-        # Validate supported mode/strength combos
-        entry = MODE_STRENGTH_TABLE.get((mode, strength))
-
-        if entry is None:
-            self._csrs.KMAC_INTR.set_error()
-            self._err_sw_mode_strength = True
-            return KmacState.IDLE
-
-        # Instantiate state object
-        constructor, cap_bits = entry
-        self._keccak_state = constructor.new()
-        self._keccak_rate_words = (1600 - 2 * cap_bits) // KMAC_WORD_BITS
-        self._keccak_cap_bits = cap_bits
-
-        return KmacState.MSG_FEED
-
-    def _absorb(self, index: int) -> None:
-        """Absorb one 64-bit word into the Keccak state.
-        """
-        if not (0 <= index < 4):
-            raise ValueError(f"Word index {index} out of range [0..3].")
-
-        # Select word: index 0 = least-significant 64 bits.
-        shift = index * KMAC_WORD_BITS
-        word_mask = (1 << KMAC_WORD_BITS) - 1
-
-        # Determine how many bytes are valid for this word from BYTE_STROBE.
-        num_bytes = self._get_num_bytes_from_byte_strobe(index)
-
-        # Unmask the data shares and extract this word.
-        share0 = self._wsrs.KMAC_DATA.get_unsigned(0)
-        share1 = self._wsrs.KMAC_DATA.get_unsigned(1)
-        data_unmasked = share0 ^ share1
-        data_word = (data_unmasked >> shift) & word_mask
-
-        # Convert to bytes (little-endian) and absorb.
-        data_bytes = data_word.to_bytes(num_bytes, byteorder="little")
-        self._keccak_state.update(data_bytes)
-
-        # Track absorbed words and trigger Keccak round when rate is full.
-        if self._keccak_absorbed_cnt.increment() >= self._keccak_rate_words:
-            self._keccak_round_ctr.set_next(KECCAK_ROUND_CYCLES)
-            self._keccak_absorbed_cnt.set_next(0)
-
-    def _squeeze(self) -> None:
-        """Squeeze one 64-bit word of output into KMAC_DATA."""
-
-        # Stop if KMAC_DATA is already valid.
-        if self._csrs.KMAC_IF_STATUS.get_digest_valid():
+        # Early exit if nothing must be updated.
+        if (cmd == 0 and self._state == _State.IDLE and self._latency_timer == 0
+                and self._ready and not self._rsp_valid
+                and not self._data_s0.was_read()
+                and not self._data_s1.was_read()):
             return
 
-        mode = KmacMode(self._csrs.KMAC_CFG.get_mode())
-        if mode == KmacMode.SHA3:
-            # Stop if we've already squeezed the maximum number of bits.
-            if self._keccak_squeezed_cnt.value >= self._keccak_cap_bits:
-                return
+        cmd_start_issued = cmd & CMD_START
+        cmd_send_issued = cmd & CMD_SEND
+        cmd_process_issued = cmd & CMD_PROCESS
+        cmd_done_issued = cmd & CMD_DONE
+        cmd_close_issued = cmd & CMD_CLOSE
 
-            # Initialize digest on first squeeze.
-            if not self._keccak_squeezed_cnt.value:
-                digest = self._keccak_state.digest()
-                # Pad to a multiple of 8 bytes for 64-bit words.
-                rem = len(digest) % KMAC_WORD_BYTES
-                if rem:
-                    digest += b'\x00' * (KMAC_WORD_BYTES - rem)
-                self._sha3_digest = digest
+        # Check if a KMAC_DATA WSRs is read in the last cycle. Update pending flags accordingly.
+        if self._data_s0.was_read():
+            self._s0_pending = False
+        if self._data_s1.was_read():
+            self._s1_pending = False
 
-            # Pop the next 64-bit word from the digest.
-            chunk = self._sha3_digest[:KMAC_WORD_BYTES]
-            self._sha3_digest = self._sha3_digest[KMAC_WORD_BYTES:]
+        # Reset the read flags such that the current instruction is tracked.
+        self._data_s0.clr_read()
+        self._data_s1.clr_read()
 
+        # Extract state information from the current latency timer so that we can directly
+        # manipulate the timer instead of having a "next" value.
+        kmac_busy = self._latency_timer != 0
+        kmac_idle = not kmac_busy
+
+        # Advance the timer if absorbing/squeezing or modelling a request/response timing.
+        if kmac_busy:
+            self._latency_timer -= 1
+
+        match self._state:
+            case _State.IDLE:
+                if cmd_start_issued:
+                    self._state = _State.STARTING
+
+            case _State.STARTING:
+                # Decode configuration and emulate sending the request. The standalone sim does
+                # not model backpressure on the request channel, so immediately wait for messages.
+                self._service_rejected = not self._decode_config()
+                self._latency_timer = 0
+                self._state = _State.WAIT_FOR_MSG
+
+                # Prepare the message buffer and the send control logic.
+                self._app_msg = bytearray()
+                self._msg_block_words = 0
+                self._no_more_msg_allowed = False
+
+            case _State.WAIT_FOR_MSG:
+                if cmd_send_issued and not self._no_more_msg_allowed:
+                    # Start sending a message only if the last message has not yet been sent.
+                    self._state = _State.SENDING
+                    self._msg_beat_idx = 0
+                elif cmd_process_issued:
+                    if not self._service_rejected:
+                        # Start the processing. There is no backpressure modelled for the request
+                        # channel.
+                        self._start_digest()
+                        # The process round runs after any absorb permutation is still in flight.
+                        self._latency_timer += PERM_CYCLES
+                    else:
+                        # A rejected config results in no hashing operation and returns an error
+                        # response. The delay models the latency of the response channel.
+                        self._latency_timer = REJECT_CYCLES
+                    self._state = _State.PROCESSING
+
+            case _State.SENDING:
+                # The message is sent in 64-bit beats, i.e., a full WSR takes 4 cycles. Any message
+                # always starts at a rate block boundary because the cSHAKE/KMAC prefix and key are
+                # bytepad-ed to the rate. So a single per-session word counter is sufficient. While
+                # the permutation runs the interface is back-pressured, so we stall.
+                if kmac_idle:
+                    (end_phase, no_more_msg_allowed,
+                     absorbed_full_word) = self._send_beat(self._msg_beat_idx)
+
+                    if no_more_msg_allowed:
+                        self._no_more_msg_allowed = True
+
+                    if absorbed_full_word:
+                        # A full word was absorbed into the current rate block. Once the block is
+                        # full the KMAC runs a permutation before it can accept the next beat.
+                        self._msg_block_words += 1
+                        if self._msg_block_words >= self._rate_beats():
+                            self._msg_block_words = 0
+                            self._latency_timer = PERM_CYCLES
+
+                    if end_phase:
+                        # The full message is sent, wait for next message or a process command.
+                        self._state = _State.WAIT_FOR_MSG
+                    else:
+                        # Another part of the message is sent, keep sending the next parts.
+                        self._msg_beat_idx += 1
+
+            case _State.PROCESSING:
+                # The process request is being sent and the interface is not ready, so a write to
+                # KMAC_DATA / KMAC_STRB / KMAC_CFG here raises MSG_WRITE_ERROR. The in-flight Keccak
+                # round keeps running via the background timer.
+                self._state = _State.RECEIVING
+
+            case _State.RECEIVING:
+                if cmd_done_issued:
+                    # Terminate and clear RSP_VALID independently of whether the current digest is
+                    # read. Discard pending response tracking as well so a leftover beat cannot keep
+                    # RSP_VALID asserted into the next session.
+                    self._state = _State.TERMINATING
+                    self._rsp_valid = False
+                    self._s0_pending = False
+                    self._s1_pending = False
+
+                    # The interface captures the error flags also in the cycle where the DONE
+                    # command is issued. The error flags are still relevant and will be checked
+                    # when checking the finish response. The valid flag is however cleared until
+                    # the finish response arrives.
+                    if self._service_rejected:
+                        self._status.hw_set_rsp_error()
+                elif kmac_busy:
+                    # Wait until the KMAC computed the digest.
+                    pass
+                elif self._service_rejected:
+                    # Expose the error response.
+                    self._status.hw_set_rsp_error()
+                    self._rsp_valid = True
+                elif not self._s0_pending and not self._s1_pending:
+                    # The previous response was consumed, so the interface immediately accepts the
+                    # next one. While a response is still pending we just keep RSP_VALID high.
+                    if self._rsp_valid and self._digest_exhausted() and self._app_en_xof:
+                        # The previous digest part is consumed but the current squeeze is exhausted.
+                        # With EN_XOF=1 the KMAC HWIP permutes the state once more and exposes
+                        # another squeeze. EN_XOF is only ever set for SHAKE and cSHAKE.
+                        assert self._app_mode in (_Mode.SHAKE, _Mode.CSHAKE)
+                        self._beat_in_rate = 0
+                        self._latency_timer = PERM_CYCLES
+                        self._rsp_valid = False
+                    elif not self._digest_exhausted():
+                        # Stage the next beat in the same cycle the previous one is consumed.
+                        self._emit_beat()
+                        self._rsp_valid = True
+                        self._s0_pending = True
+                        self._s1_pending = True
+                    else:
+                        # Digest exhausted (non-XOF): drop RSP_VALID and wait for DONE.
+                        self._rsp_valid = False
+
+            case _State.TERMINATING:
+                # The KMAC acknowledges the termination with a finish response. This response is
+                # sent as soon as any ongoing permutation completes.
+                if kmac_idle:
+                    self._rsp_valid = True
+                    self._state = _State.WAIT_FOR_CLOSE
+
+            case _State.WAIT_FOR_CLOSE:
+                # The finish response is exposed until SW has handled it and ends the session with
+                # the CLOSE command. Error bits are cleared on CLOSE command.
+                if cmd_close_issued:
+                    self._rsp_valid = False
+                    self._s0_pending = False
+                    self._s1_pending = False
+                    self._status.hw_clr_error_bits()
+                    self._state = _State.IDLE
+
+        # Drive the HW status bits based on the updated state because a CSR read after a command
+        # sees the new value.
+        self._ready = self._state in (_State.IDLE, _State.WAIT_FOR_MSG, _State.RECEIVING)
+        self._status.hw_set_ready(self._ready)
+        self._status.hw_set_rsp_valid(self._rsp_valid)
+
+    def detect_errors(self) -> None:
+        '''Detect errors caused by the current instruction.
+
+        This does not commit any internal KMAC state but updates the error flags. It detects the
+        two SW-visible KMAC_STATUS errors that depend on the current instruction.
+        It consumes the staged command and the DATA/STRB/CFG write flags and stages the KMAC_STATUS
+        error bits. It must run before the register commit/abort that clears those flags and
+        commits KMAC_STATUS. It must be called on commit and abort because the error bits are
+        sticky and commit even if the instruction aborts.'''
+
+        # CTRL_ERROR:
+        # - A command issued out of order for the current state
+        # - A written command value has more than one bit set.
+        cmd = self._ctrl.peek_pending_cmd()
+
+        # Performance optimization. Check cmd only if one is issued.
+        if cmd != 0:
+            multiple_cmds = (cmd & (cmd - 1)) != 0
+            unexpected_cmd = self._unexpected_cmd(self._state, cmd)
+
+            if multiple_cmds or unexpected_cmd:
+                # Here we can use _set which immediately sets the bit because this is after the
+                # current instruction read the status flags.
+                self._status.hw_set_ctrl_error()
+
+        # MSG_WRITE_ERROR has two sources:
+        # - SW writes to KMAC_DATA, KMAC_STRB or KMAC_CFG while not ready.
+        # - SW writes to KMAC_DATA when the HW is receiving a response.
+        data_written = (self._data_s0.is_written() or
+                        self._data_s1.is_written())
+        strb_written = self._strb.is_written()
+        cfg_written = self._cfg.is_written()
+        hw_written = (self._data_s0.is_hw_written() or
+                      self._data_s1.is_hw_written())
+
+        not_ready_write = (data_written or strb_written or cfg_written) and not self._ready
+        collision = data_written and hw_written
+        if not_ready_write or collision:
+            # Here we can use _set which immediately sets the bit because this is after the current
+            # instruction read the status flags.
+            self._status.hw_set_msg_write_error()
+
+    def _reset(self) -> None:
+        self._state = _State.IDLE
+        self._no_more_msg_allowed = False
+        self._msg_beat_idx = 0
+        self._ready = False
+        self._rsp_valid = False
+        self._s0_pending = False
+        self._s1_pending = False
+
+        self._app_mode = _Mode.SHA3
+        self._app_strength = _Strength.L256
+        self._app_en_xof = False
+        self._service_rejected = False
+        self._app_msg = bytearray()
+        self._latency_timer = 0
+        self._msg_block_words = 0
+        self._beats_pushed = 0
+        self._beat_in_rate = 0
+        self._xof = None
+        self._fixed_digest = b''
+
+    def _unexpected_cmd(self, st: _State, cmd: int) -> bool:
+        if st == _State.WAIT_FOR_MSG and self._no_more_msg_allowed:
+            return bool(cmd & _DISALLOWED_CMD_WAIT_NO_SEND)
+        return bool(cmd & _DISALLOWED_CMD[st])
+
+    def _send_beat(self, idx: int) -> tuple[bool, bool, bool]:
+        '''Send one 64-bit message beat (index idx) from the WSRs.
+
+        Returns (end_phase, no_more_send_allowed, absorbed_full_word) where:
+          end_phase:
+            The message phase ends after this beat because either an empty beat, a partial beat, or
+            the 4th and last beat of the WSR was sent.
+          no_more_send_allowed:
+            True if no further SEND commands are allowed afterwards because an empty beat or a
+            partial beat is detected.
+          absorbed_full_word:
+            True if a full 64-bit message word (strb == 0xff) was absorbed. Only full words fill the
+            sponge rate. An empty beat absorbs nothing and a partial beat is the final beat (the pad
+            and final permutation happen at PROCESS), so neither triggers a mid-absorption
+            permutation.
+        '''
+        # Select this beat's slice of the WSR shares and its byte strobe.
+        share0 = (self._data_s0.get_unsigned() >> (idx * 64)) & ((1 << 64) - 1)
+        share1 = (self._data_s1.get_unsigned() >> (idx * 64)) & ((1 << 64) - 1)
+        strb_word = self._strb.read_unsigned()
+        strb = (strb_word >> (idx * STRB_BITS_PER_BEAT)) & STRB_BEAT_FULL
+
+        if strb == 0:
+            # An empty beat does not send anything and ends the message phase.
+            return True, True, False
+
+        # Unmask the beat and append only the valid (strobed) bytes for the hashing model.
+        beat = share0 ^ share1
+        valid_bytes = strb.bit_count()
+        self._app_msg += beat.to_bytes(8, 'little')[:valid_bytes]
+
+        if strb != STRB_BEAT_FULL:
+            # Partial beat detected, this is the last beat of the message phase.
+            return True, True, False
+        # If the strobe is full, keep going unless this was the 4th (last) beat of the message.
+        return idx == MSG_PARTS - 1, False, True
+
+    # Parse the received session configuration and check it.
+    def _decode_config(self) -> bool:
+        # The upper fields must hold the bitwise inverted values of the lower fields.
+        if not self._cfg.redundancy_valid():
+            return False
+
+        mode_raw = self._cfg.get_mode()
+        try:
+            mode = _Mode(mode_raw)
+        except ValueError:
+            return False
+
+        strength_raw = self._cfg.get_strength()
+        try:
+            strength = _Strength(strength_raw)
+        except ValueError:
+            return False
+
+        self._app_en_xof = self._cfg.get_en_xof()
+        self._app_mode = mode
+        self._app_strength = strength
+
+        return self._config_valid()
+
+    def _config_valid(self) -> bool:
+        # XOF operation is not supported for SHA3 or KMAC.
+        if self._app_en_xof and self._app_mode in (_Mode.SHA3, _Mode.KMAC):
+            return False
+        if self._app_mode == _Mode.SHA3:
+            return self._app_strength in (_Strength.L224, _Strength.L256,
+                                          _Strength.L384, _Strength.L512)
+        # SHAKE / cSHAKE / KMAC support only L128 and L256.
+        return self._app_strength in (_Strength.L128, _Strength.L256)
+
+    def _rate_beats(self) -> int:
+        '''Number of 64-bit beats squeezed per permutation (the rate).'''
+        return (1600 - _CAP_BITS[self._app_strength]) // 64
+
+    def _digest_exhausted(self) -> bool:
+        '''True when no further beats are available without re-squeezing.'''
+        if self._xof is None:
+            # Fixed-length digest (SHA3, KMAC): exhausted once every beat has been pushed.
+            return self._beats_pushed * 8 >= len(self._fixed_digest)
+        # XOF (SHAKE, cSHAKE): rate depends on strength.
+        return self._beat_in_rate >= self._rate_beats()
+
+    def _start_digest(self) -> None:
+        msg = bytes(self._app_msg)
+        self._fixed_digest = b''
+        self._xof = None
+        self._beats_pushed = 0
+        self._beat_in_rate = 0
+
+        hash_type = MODE_STRENGTH_TABLE[self._app_mode, self._app_strength]
+
+        if self._app_mode == _Mode.SHA3:
+            hash_engine = hash_type.new()
+            hash_engine.update(msg)
+            self._fixed_digest = hash_engine.digest()
+        elif self._app_mode == _Mode.SHAKE:
+            self._xof = hash_type.new()
+            self._xof.update(msg)
+        elif self._app_mode == _Mode.CSHAKE:
+            # cSHAKE uses empty strings because the prefixes are configured via KMAC CSRs. This is
+            # ignored for the standalone sim.
+            self._xof = hash_type.new(custom=b'')
+            self._xof.update(msg)
+        elif self._app_mode == _Mode.KMAC:
+            # The KMAC HWIP produces a fixed-length digest. It uses an empty customization string.
+            # The actual key is provided via the keymgr but for the standalone sim we use a fixed
+            # key. We take it from test case 192 of:
+            # https://raw.githubusercontent.com/usnistgov/ACVP-Server/refs/heads/master/gen-val/
+            # json-files/KMAC-256-1.0/internalProjection.json
+            key = bytes.fromhex('B2A3DA3797DA3C7353F4F612F5A244E66F4DCDD9B31BFE3A5EA88C93DEA1ACF13DEB1E635951365A8BC5A7141066AAF9')  # noqa: E501
+            kmac_engine = hash_type.new(key=key, mac_len=KMAC_OUTPUT_LENGTH // 8, custom=b'')
+            kmac_engine.update(msg)
+            self._fixed_digest = kmac_engine.digest()
+
+    def _digest_value(self, idx: int) -> int:
+        '''Return the 64-bit digest beat at index idx (Keccak lane order).
+        For SHA3-224, the last response contains only 32 bits of output. The upper 32 bits are
+        zeros. '''
+        lo = idx * 8
+        if self._xof is not None:
+            chunk = self._xof.read(8)
         else:
-            # Stop if a run command is needed for more digest data.
-            if self._keccak_squeezed_cnt.value >= self._keccak_rate_words * KMAC_WORD_BITS:
-                return
+            chunk = self._fixed_digest[lo:lo + 8]
+            if len(chunk) < 8:
+                # Pad the chunk to 64 bits. Required for the last beat of SHA3-224.
+                chunk = chunk + b'\x00' * (8 - len(chunk))
+        return int.from_bytes(chunk, 'little')
 
-            # Generic squeeze path: read directly from _state.
-            chunk = self._keccak_state.read(KMAC_WORD_BYTES)
-
-        # Write the word into the masked data registers.
-        value = int.from_bytes(chunk, byteorder="little")
-        self._write_digest(value)
-
-        # Advance squeezed bit counter.
-        self._keccak_squeezed_cnt.increment(step=KMAC_WORD_BITS)
-
-    def _done(self) -> None:
-        """Handle DONE command by resetting internal state."""
-        self._reset_state()
-
-    def _get_num_bytes_from_byte_strobe(self, index: int) -> int:
-        """Extracts the strobe bits corresponding to a specific word index
-        and calculates the number of bytes that need to be absorbed.
-
-        The BYTE_STROBE CSR must contain a value with contiguous ones starting
-        from the LSB (e.g., 00111 is valid, 00101 is invalid).
-        If the strobe is non-contiguous, the HW treats it as 0 (no bytes valid).
-        """
-        # Read the strobe configuration
-        byte_strobe = self._csrs.KMAC_BYTE_STROBE.read_unsigned()
-
-        # Check validity: Must be contiguous ones starting at LSB (2^k - 1).
-        # Trick: x & (x + 1) is always 0 for values like 0, 1, 3, 7, 15...
-        if (byte_strobe & (byte_strobe + 1)) != 0:
-            return 0
-
-        # Calculate shift/mask to extract bits for this specific word.
-        shift = index * KMAC_WORD_BYTES
-        strobe_mask = (1 << KMAC_WORD_BYTES) - 1
-
-        # Extract the slice and return the number of bytes.
-        word_strobe_slice = (byte_strobe >> shift) & strobe_mask
-        num_bytes = word_strobe_slice.bit_count()
-        return num_bytes
-
-    def _update_kmac_error(self) -> None:
-        """Update KMAC error code based on detected software error conditions."""
-        code = None
-        if self._err_sw_cmd_seq:
-            code = KMAC_ERR_SW_CMD_SEQUENCE
-        elif self._err_sw_mode_strength:
-            code = KMAC_ERR_UNEXPECTED_MODE_STRENGTH
-
-        if code is not None:
-            self._csrs.KMAC_ERROR.write_error(code)
-
-    def _write_digest(self, data: int) -> None:
-        """Write one 64-bit digest word into the KMAC_DATA shares.
-        """
-        if not (0 <= data < (1 << KMAC_WORD_BITS)):
-            raise RuntimeError(f"Data value {hex(data)} doesn't fit in "
-                               f"{KMAC_WORD_BITS} unsigned bits.")
-
-        # Generate random mask and split into two shares.
-        rand64 = secrets.randbits(KMAC_WORD_BITS)
-        share0 = data ^ rand64
-        share1 = rand64
-
-        # Set the two shares to the new values.
-        self._wsrs.KMAC_DATA.set_unsigned(share_idx=0, value=share0)
-        self._wsrs.KMAC_DATA.set_unsigned(share_idx=1, value=share1)
-
-        # Mark the data as valid.
-        self._csrs.KMAC_IF_STATUS.set_digest_valid()
-
-        # Reset read flags since new data has been written.
-        self._data_share_read = [False, False]
-
-    def _reset_state(self) -> None:
-        """Initialize or reset internal state to defaults."""
-        #############################
-        # KMAC/OTBN REGISTER VALUES #
-        #############################
-
-        # KMAC_STATUS CSR
-        self._csrs.KMAC_STATUS.on_start()
-
-        # KMAC_IF_STATUS CSR
-        self._csrs.KMAC_IF_STATUS.on_start()
-
-        # KMAC_INTR CSR
-        self._csrs.KMAC_INTR.on_start()
-
-        # KMAC_ERROR CSR
-        self._csrs.KMAC_ERROR.on_start()
-
-        # Writable KMAC CFG CSR
-        self._csrs.KMAC_CFG.on_start()
-
-        # BYTE_STROBE CSR
-        self._csrs.KMAC_BYTE_STROBE.on_start()
-
-        # KMAC_DATA WSRs
-        self._wsrs.KMAC_DATA.set_unsigned(share_idx=0, value=0)
-        self._wsrs.KMAC_DATA.set_unsigned(share_idx=1, value=0)
-
-        #############################
-        # KMAC MODEL CONTROL VALUES #
-        #############################
-        # Kmac FSM state variables
-        self._state = KmacState.IDLE
-        self._state_next = KmacState.IDLE
-        # Number of words Keccak has left to absorb per kmac_msg_send command.
-        self._kmac_msg_send_words_left = Counter(max_val=KMAC_WSR_WORDS)
-        # Keccak round counter to keep track how long until the Keccak round is over.
-        # A Keccak round takes KECCAK_ROUND_CYCLES cycles.
-        self._keccak_round_ctr = Counter(max_val=KECCAK_PROCESS_CYCLES)
-        # Count of absorbed words, used to determine when Keccak should start processing.
-        self._keccak_absorbed_cnt = Counter()
-        # Count of squeezed words, used to determine how much data is left to squeeze.
-        self._keccak_squeezed_cnt = Counter()
-        # In SHA3 mode, Crypto.Hash returns the whole digest at once.
-        # This variable stores the whole digest.
-        self._sha3_digest = bytes()
-        # Instance of a Keccak-based hash (SHA3, SHAKE, or cSHAKE) from the crypto.hash library.
-        self._keccak_state = None
-        # Rate of the Keccak sponge in 64 bit words.
-        self._keccak_rate_words = 0
-        # Capacity of the Keccak sponge in bits.
-        self._keccak_cap_bits = 0
-        # When the FSM returns to IDLE the SHA3 is still in the FLUSH state for 1 cycle.
-        self._flush_cycle = False
-        # Error signals
-        self._err_sw_cmd_seq = False
-        self._err_sw_mode_strength = False
-        # Track whether each data share has been read since the last write.
-        self._data_share_read = [False, False]
+    def _emit_beat(self) -> None:
+        '''Mask the next digest beat and write it to the KMAC_DATA WSRs.'''
+        val = self._digest_value(self._beats_pushed)
+        # Mask the digest with a fixed value to make the simulator deterministic.
+        self._data_s0.hw_write(val ^ KMAC_DIGEST_MASK)
+        self._data_s1.hw_write(KMAC_DIGEST_MASK)
+        self._beats_pushed += 1
+        self._beat_in_rate += 1

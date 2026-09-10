@@ -22,7 +22,7 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 
@@ -93,6 +93,7 @@ rom_error_t dice_uds_tbs_cert_build(
 rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
                                   cert_key_id_pair_t *key_ids,
+                                  ecdsa_p256_public_key_t *uds_pubkey,
                                   ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   uint32_t rom_ext_security_version_be =
@@ -123,8 +124,14 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   // Sign the TBS and generate the certificate.
   hmac_digest_t tbs_digest;
   hmac_sha256(cdi_0_tbs_buffer, tbs_size, &tbs_digest);
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+
+  ecdsa_p256_public_key_t uds_pubkey_le = *uds_pubkey;
+  util_reverse_bytes(uds_pubkey_le.x, sizeof(uds_pubkey_le.x));
+  util_reverse_bytes(uds_pubkey_le.y, sizeof(uds_pubkey_le.y));
+
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_endorse(
+      &tbs_digest, &curr_tbs_signature, &uds_pubkey_le));
+
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 
@@ -139,8 +146,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-      *kDiceKeyCdi0.keymgr_diversifier));
+      kDiceKeyCdi0.keygen_seed_idx, *kDiceKeyCdi0.keymgr_dpe_diversifier));
 
   return kErrorOk;
 }
@@ -149,6 +155,7 @@ rom_error_t dice_cdi_1_cert_build(
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
     hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
     owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
+    ecdsa_p256_public_key_t *cdi_0_pubkey,
     ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size) {
   hmac_digest_t owner_hash = *owner_measurement;
   hmac_digest_t owner_manifest_hash = *owner_manifest_measurement;
@@ -185,8 +192,14 @@ rom_error_t dice_cdi_1_cert_build(
   // Sign the TBS and generate the certificate.
   hmac_digest_t tbs_digest;
   hmac_sha256(cdi_1_tbs_buffer, tbs_size, &tbs_digest);
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+
+  ecdsa_p256_public_key_t cdi_0_pubkey_le = *cdi_0_pubkey;
+  util_reverse_bytes(cdi_0_pubkey_le.x, sizeof(cdi_0_pubkey_le.x));
+  util_reverse_bytes(cdi_0_pubkey_le.y, sizeof(cdi_0_pubkey_le.y));
+
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_endorse(
+      &tbs_digest, &curr_tbs_signature, &cdi_0_pubkey_le));
+
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 
@@ -201,8 +214,7 @@ rom_error_t dice_cdi_1_cert_build(
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-      *kDiceKeyCdi1.keymgr_diversifier));
+      kDiceKeyCdi1.keygen_seed_idx, *kDiceKeyCdi1.keymgr_dpe_diversifier));
 
   return kErrorOk;
 }

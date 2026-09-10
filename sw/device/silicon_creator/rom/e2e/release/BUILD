@@ -34,7 +34,7 @@ otp_image(
 #    ),
 #    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
 #    exec_env = {
-#        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
 #        "//hw/top_earlgrey:sim_dv": None,
 #        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
 #    },
@@ -44,8 +44,8 @@ otp_image(
 #    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
 #    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 #    deps = [
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-#        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+#        "//hw/top:top_lib",
+#        "//hw/top:top_ld",
 #        "//sw/device/lib/base:status",
 #        "//sw/device/lib/runtime:print",
 #        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

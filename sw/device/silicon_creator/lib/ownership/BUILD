@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_ip")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_library",
@@ -39,9 +40,10 @@ cc_library(
         ":owner_block",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],
 )
 
@@ -50,6 +52,7 @@ cc_test(
     srcs = [
         "isfb_unittest.cc",
     ],
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":isfb",
@@ -78,10 +81,10 @@ dual_cc_library(
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:hardened_memory",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:rnd",
-            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
             "//sw/device/silicon_creator/lib/drivers:kmac",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -110,8 +113,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:rnd",
     ],
@@ -122,6 +125,8 @@ cc_test(
     srcs = [
         "ownership_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":ownership",
@@ -143,9 +148,10 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -158,6 +164,8 @@ cc_test(
         "owner_block_unittest.cc",
         "testdata/basic_owner_testdata.h",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":owner_block",
@@ -181,7 +189,6 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:flash_exec",
@@ -219,8 +226,8 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:flash_exec",
     ],
@@ -231,6 +238,8 @@ cc_test(
     srcs = [
         "ownership_activate_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":datatypes",
         ":ownership_activate",
@@ -253,8 +262,8 @@ cc_library(
         ":owner_block",
         ":ownership",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
         "//sw/device/silicon_creator/lib/rescue",
     ],
@@ -272,8 +281,8 @@ cc_library(
             ":owner_block",
             ":ownership",
             "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
             "//sw/device/silicon_creator/lib/rescue",
         ],

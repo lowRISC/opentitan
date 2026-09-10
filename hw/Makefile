@@ -22,6 +22,8 @@ endif
 IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
+       bkdr_loader   \
+       cheriot       \
        csrng         \
        dma           \
        edn           \
@@ -35,9 +37,10 @@ IPS ?= aes           \
        mbx           \
        otbn          \
        otp_macro     \
-       pattgen       \
        pwm           \
        rom_ctrl      \
+       rram_ctrl     \
+       rram_macro    \
        rv_dm         \
        rv_timer      \
        sensor_ctrl   \

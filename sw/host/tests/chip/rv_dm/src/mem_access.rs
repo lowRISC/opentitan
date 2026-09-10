@@ -70,14 +70,16 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .create(transport)?
         .connect(JtagTap::RiscvTap)?;
 
+    jtag.halt()?;
+
     let rom_data = std::fs::read(&opts.rom)?;
     ensure!(rom_data.len() % 4 == 0);
 
     let rw_regions = [
         (
             "ram_ret",
-            top_earlgrey::SRAM_CTRL_RET_AON_RAM_BASE_ADDR as u32,
-            top_earlgrey::SRAM_CTRL_RET_AON_RAM_SIZE_BYTES as u32,
+            top_earlgrey::SRAM_CTRL_RET_RAM_BASE_ADDR as u32,
+            top_earlgrey::SRAM_CTRL_RET_RAM_SIZE_BYTES as u32,
         ),
         (
             "ram_main",

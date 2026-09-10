@@ -8,7 +8,7 @@ package tl_main_pkg;
 
   localparam logic [31:0] ADDR_SPACE_RV_DM__REGS          = 32'h 41200000;
   localparam logic [31:0] ADDR_SPACE_RV_DM__MEM           = 32'h 00010000;
-  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM        = 32'h 00008000;
+  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM        = 32'h 00040000;
   localparam logic [31:0] ADDR_SPACE_ROM_CTRL__REGS       = 32'h 411e0000;
   localparam logic [1:0][31:0] ADDR_SPACE_PERI                 = {
     32'h 40400000,
@@ -17,9 +17,9 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST0            = 32'h 40300000;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST1            = 32'h 40310000;
   localparam logic [31:0] ADDR_SPACE_USBDEV               = 32'h 40320000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__CORE     = 32'h 41000000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__PRIM     = 32'h 41008000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__MEM      = 32'h 20000000;
+  localparam logic [31:0] ADDR_SPACE_RRAM_CTRL__CORE      = 32'h 41010000;
+  localparam logic [31:0] ADDR_SPACE_RRAM_MACRO__PRIM     = 32'h 41018000;
+  localparam logic [31:0] ADDR_SPACE_RRAM_CTRL__HOST      = 32'h 30000000;
   localparam logic [31:0] ADDR_SPACE_HMAC                 = 32'h 41110000;
   localparam logic [31:0] ADDR_SPACE_KMAC                 = 32'h 41120000;
   localparam logic [31:0] ADDR_SPACE_AES                  = 32'h 41100000;
@@ -29,14 +29,19 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_EDN1                 = 32'h 41180000;
   localparam logic [31:0] ADDR_SPACE_RV_PLIC              = 32'h 48000000;
   localparam logic [31:0] ADDR_SPACE_OTBN                 = 32'h 41130000;
-  localparam logic [31:0] ADDR_SPACE_KEYMGR               = 32'h 41140000;
+  localparam logic [31:0] ADDR_SPACE_KEYMGR_DPE           = 32'h 41140000;
   localparam logic [31:0] ADDR_SPACE_RV_CORE_IBEX__CFG    = 32'h 411f0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__REGS = 32'h 411c0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h 10000000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_SEC__REGS  = 32'h 411d0000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_META__REGS = 32'h 411a0000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_SEC__RAM   = 32'h 10020000;
+  localparam logic [31:0] ADDR_SPACE_CHERIOT__REGS        = 32'h 411b0000;
+  localparam logic [31:0] ADDR_SPACE_CHERIOT__REVBM       = 32'h 11000000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 0000000f;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM        = 32'h 00007fff;
+  localparam logic [31:0] ADDR_SIZE_ROM_CTRL__ROM        = 32'h 00030000;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL__REGS       = 32'h 0000007f;
   localparam logic [1:0][31:0] ADDR_MASK_PERI                 = {
     32'h 003fffff,
@@ -45,9 +50,9 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SPI_HOST0            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SPI_HOST1            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__CORE     = 32'h 000001ff;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__PRIM     = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 000fffff;
+  localparam logic [31:0] ADDR_MASK_RRAM_CTRL__CORE      = 32'h 000001ff;
+  localparam logic [31:0] ADDR_MASK_RRAM_MACRO__PRIM     = 32'h 0000000f;
+  localparam logic [31:0] ADDR_MASK_RRAM_CTRL__HOST      = 32'h 001fffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 000000ff;
@@ -57,13 +62,18 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_EDN1                 = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_RV_PLIC              = 32'h 07ffffff;
   localparam logic [31:0] ADDR_MASK_OTBN                 = 32'h 0000ffff;
-  localparam logic [31:0] ADDR_MASK_KEYMGR               = 32'h 000000ff;
+  localparam logic [31:0] ADDR_MASK_KEYMGR_DPE           = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX__CFG    = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__REGS = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0001ffff;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__REGS  = 32'h 0000003f;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_META__REGS = 32'h 0000003f;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__RAM   = 32'h 0000ffff;
+  localparam logic [31:0] ADDR_MASK_CHERIOT__REGS        = 32'h 00000003;
+  localparam logic [31:0] ADDR_SIZE_CHERIOT__REVBM       = 32'h 00000c00;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 24;
+  localparam int N_DEVICE = 29;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -74,9 +84,9 @@ package tl_main_pkg;
     TlSpiHost0 = 5,
     TlSpiHost1 = 6,
     TlUsbdev = 7,
-    TlFlashCtrlCore = 8,
-    TlFlashCtrlPrim = 9,
-    TlFlashCtrlMem = 10,
+    TlRramCtrlCore = 8,
+    TlRramMacroPrim = 9,
+    TlRramCtrlHost = 10,
     TlHmac = 11,
     TlKmac = 12,
     TlAes = 13,
@@ -86,15 +96,20 @@ package tl_main_pkg;
     TlEdn1 = 17,
     TlRvPlic = 18,
     TlOtbn = 19,
-    TlKeymgr = 20,
+    TlKeymgrDpe = 20,
     TlRvCoreIbexCfg = 21,
     TlSramCtrlMainRegs = 22,
-    TlSramCtrlMainRam = 23
+    TlSramCtrlMainRam = 23,
+    TlSramCtrlSecRegs = 24,
+    TlSramCtrlMetaRegs = 25,
+    TlSramCtrlSecRam = 26,
+    TlCheriotRegs = 27,
+    TlCheriotRevbm = 28
   } tl_device_e;
 
   typedef enum int {
     TlRvCoreIbexCorei = 0,
-    TlRvCoreIbexCored = 1,
+    TlCheriotCored = 1,
     TlRvDmSba = 2
   } tl_host_e;
 

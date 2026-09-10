@@ -57,11 +57,11 @@ static dif_rv_plic_t plic;
  */
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
                      dif_rv_plic_irq_id_t irq_id) {
-  if (devid != dt_pwrmgr_instance_id(kDtPwrmgrAon)) {
+  if (devid != dt_pwrmgr_instance_id(kDtPwrmgr)) {
     return false;
   }
 
-  dt_pwrmgr_irq_t irq = dt_pwrmgr_irq_from_plic_id(kDtPwrmgrAon, irq_id);
+  dt_pwrmgr_irq_t irq = dt_pwrmgr_irq_from_plic_id(kDtPwrmgr, irq_id);
   CHECK(irq == kDtPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq);
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, irq));
   return true;
@@ -172,8 +172,8 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
@@ -187,6 +187,15 @@ bool test_main(void) {
     dif_pinmux_pad_attr_t in_attr = {0};
     CHECK_DIF_OK(
         dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc3, in_attr, &out_attr));
+    // The JTAG TAP strap pads IOC5 (tap1) and IOC8 (tap0) carry an internal
+    // pull (IOC8 is configured with a pull-down during boot). If the test
+    // happens to select the High-Z retention mode for one of these pads, that
+    // pull weakly drives the pad and the UVM check sees 0/1 instead of the
+    // expected high-Z. Clear their attributes so they are truly high-Z here.
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc5, in_attr, &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc8, in_attr, &out_attr));
 #elif defined(OPENTITAN_IS_DARJEELING)
     // Nothing to be done
 #else
@@ -198,8 +207,8 @@ bool test_main(void) {
       static const uint32_t kPlicTarget = 0;
       rv_plic_testutils_irq_range_enable(
           &plic, kPlicTarget,
-          dt_pwrmgr_irq_to_plic_id(kDtPwrmgrAon, kDtPwrmgrIrqWakeup),
-          dt_pwrmgr_irq_to_plic_id(kDtPwrmgrAon, kDtPwrmgrIrqWakeup));
+          dt_pwrmgr_irq_to_plic_id(kDtPwrmgr, kDtPwrmgrIrqWakeup),
+          dt_pwrmgr_irq_to_plic_id(kDtPwrmgr, kDtPwrmgrIrqWakeup));
       // Enable pwrmgr interrupt
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }
@@ -209,7 +218,7 @@ bool test_main(void) {
 
   dif_pwrmgr_request_sources_t wakeup_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kDtPinmuxAon),
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kDtPinmux),
       kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources))) {
     // TODO: change PINMUX wakeup, not pin detector

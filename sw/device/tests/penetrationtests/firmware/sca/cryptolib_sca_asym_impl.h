@@ -102,4 +102,154 @@ status_t cryptolib_sca_p384_sign_impl(
     cryptolib_sca_asym_p384_sign_in_t uj_input,
     cryptolib_sca_asym_p384_sign_out_t *uj_output);
 
+/**
+ * Wrapper to Ed25519 Sign cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_ed25519_sign_impl(
+    cryptolib_sca_asym_ed25519_sign_in_t uj_input,
+    cryptolib_sca_asym_ed25519_sign_out_t *uj_output);
+
+/**
+ * Wrapper to X25519 Base Multiplication SCA implementation.
+ */
+status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
+                                            uint8_t x[X25519_CMD_BYTES],
+                                            uint8_t y[X25519_CMD_BYTES],
+                                            size_t cfg_in, size_t *cfg_out,
+                                            size_t trigger);
+
+/**
+ * Wrapper to ECDH in X25519 SCA implementation.
+ */
+status_t cryptolib_sca_x25519_ecdh_impl(
+    cryptolib_sca_asym_x25519_ecdh_in_t uj_input,
+    cryptolib_sca_asym_x25519_ecdh_out_t *uj_output);
+
+/**
+ * Wrapper to X25519 Point Multiplication SCA implementation.
+ */
+status_t cryptolib_sca_x25519_point_mul_impl(
+    cryptolib_sca_asym_x25519_point_mul_in_t uj_input,
+    cryptolib_sca_asym_x25519_point_mul_out_t *uj_output);
+
+/**
+ * Wrapper to P256 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p256_base_mul_impl(uint8_t scalar[P256_CMD_BYTES],
+                                          uint8_t x[P256_CMD_BYTES],
+                                          uint8_t y[P256_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger);
+
+/**
+ * Wrapper to P384 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p384_base_mul_impl(uint8_t scalar[P384_CMD_BYTES],
+                                          uint8_t x[P384_CMD_BYTES],
+                                          uint8_t y[P384_CMD_BYTES],
+                                          size_t cfg_in, size_t *cfg_out,
+                                          size_t trigger);
+
+/**
+ * Wrapper to ED25519 Base Multiplication SCA cryptolib implementation.
+ *
+ * @param scalar The scalar multiplier.
+ * @param x The resulting X coordinate.
+ * @param y The resulting Y coordinate.
+ * @param cfg_in Configuration parameter.
+ * @param cfg_out Return configuration parameter.
+ * @param trigger Value dictating trigger window handling.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_ed25519_base_mul_impl(
+    uint8_t scalar[ED25519_CMD_SCALAR_BYTES],
+    uint8_t x[ED25519_CMD_SCALAR_BYTES], uint8_t y[ED25519_CMD_SCALAR_BYTES],
+    size_t cfg_in, size_t *cfg_out, size_t trigger);
+
+/**
+ * Wrapper to MLDSA87 Keygen SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mldsa87_keygen_impl(
+    cryptolib_sca_asym_mldsa87_keygen_in_t uj_input,
+    cryptolib_sca_asym_mldsa87_keygen_out_t *uj_output);
+
+/**
+ * Wrapper to MLDSA87 Sign SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mldsa87_sign_impl(
+    cryptolib_sca_asym_mldsa87_sign_in_t uj_input,
+    cryptolib_sca_asym_mldsa87_sign_out_t *uj_output);
+
+/**
+ * Wrapper to MLDSA87 Verify SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mldsa87_verify_impl(
+    cryptolib_sca_asym_mldsa87_verify_in_t uj_input,
+    cryptolib_sca_asym_mldsa87_verify_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Keygen SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mlkem1024_keygen_impl(
+    cryptolib_sca_asym_mlkem1024_keygen_in_t uj_input,
+    cryptolib_sca_asym_mlkem1024_keygen_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Encaps SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mlkem1024_encaps_impl(
+    cryptolib_sca_asym_mlkem1024_encaps_in_t uj_input,
+    cryptolib_sca_asym_mlkem1024_encaps_out_t *uj_output);
+
+/**
+ * Wrapper to MLKEM1024 Decaps SCA cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_mlkem1024_decaps_impl(
+    cryptolib_sca_asym_mlkem1024_decaps_in_t uj_input,
+    cryptolib_sca_asym_mlkem1024_decaps_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_

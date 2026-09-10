@@ -983,7 +983,21 @@ impl TransportWrapper {
         self.transport.gpio_bitbanging()
     }
 
+    /// Returns the [`PinStrapping`] of the given name, or `None` if the transport configuration
+    /// does not declare one, for straps that only some boards provide.
+    pub fn optional_pin_strapping(&self, name: &str) -> Result<Option<PinStrapping>> {
+        self.build_pin_strapping(name, true)
+    }
+
     pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
+        self.build_pin_strapping(name, false)?
+            .ok_or_else(|| TransportError::InvalidStrappingName(name.to_string()).into())
+    }
+
+    /// Builds the [`PinStrapping`] of the given name, returning `None` if no such strapping is
+    /// declared. When `optional` is set, a strapping name that the remote server of a proxy
+    /// transport does not know is tolerated rather than reported as an error.
+    fn build_pin_strapping(&self, name: &str, optional: bool) -> Result<Option<PinStrapping>> {
         let proxy = if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
             Some(self.transport.clone())
         } else {
@@ -999,13 +1013,14 @@ impl TransportWrapper {
                 });
             }
         } else if proxy.is_none() {
-            bail!(TransportError::InvalidStrappingName(name.to_string()));
+            return Ok(None);
         }
-        Ok(PinStrapping {
+        Ok(Some(PinStrapping {
             proxy,
             name: name.to_string(),
             pins,
-        })
+            optional,
+        }))
     }
 
     /// Returns a [`Emulator`] implementation.
@@ -1122,6 +1137,14 @@ impl TransportWrapper {
             self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
         }
 
+        // Hold the JTAG TAP in reset for as long as the main reset is asserted. This works around
+        // suspected corruption of the `dmi_jtag` clock domain crossing in `bkdr_loader`.
+        // See lowrisc/opentitan#30922 and lowrisc/opentitan#29555.
+        let trst = self.optional_pin_strapping("TRST")?;
+        if let Some(trst) = &trst {
+            log::info!("Asserting TRST strapping");
+            trst.apply()?;
+        }
         self.pin_strapping("RESET")?.apply()?;
         std::thread::sleep(delay);
 
@@ -1131,7 +1154,13 @@ impl TransportWrapper {
         }
 
         log::info!("Deasserting the reset signal");
+        // Release in reverse order of assertion, so that the TCK side of the CDC never leaves
+        // reset while the `clk_i` side is still held.
         self.pin_strapping("RESET")?.remove()?;
+        if let Some(trst) = &trst {
+            log::info!("Deasserting TRST strapping");
+            trst.remove()?;
+        }
 
         if self.disable_dft_on_reset.get() {
             std::thread::sleep(Duration::from_millis(10));
@@ -1236,6 +1265,9 @@ pub struct PinStrapping {
     name: String,
     proxy: Option<Rc<dyn Transport>>,
     pins: Vec<StrappedPin>,
+    /// Whether a remote proxy server not knowing this strapping name is tolerated, used for
+    /// straps that only some boards provide.
+    optional: bool,
 }
 
 struct StrappedPin {
@@ -1254,7 +1286,7 @@ impl PinStrapping {
             if let Err(e) = transport.proxy_ops()?.apply_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
-                        if self.pins.is_empty() {
+                        if self.pins.is_empty() && !self.optional {
                             return Err(e);
                         }
                     }
@@ -1283,7 +1315,7 @@ impl PinStrapping {
             if let Err(e) = transport.proxy_ops()?.remove_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
-                        if self.pins.is_empty() {
+                        if self.pins.is_empty() && !self.optional {
                             return Err(e);
                         }
                     }

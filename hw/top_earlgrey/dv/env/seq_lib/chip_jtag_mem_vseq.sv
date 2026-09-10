@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This test write and read back test through jtag interface for
-// following memories : otbn.imem, otbn.dmem, sram_ctrl_main_ram.ram, sram_ctrl_ret_aon_ram.ram
+// following memories : otbn.imem, otbn.dmem, sram_ctrl_main_ram.ram, sram_ctrl_ret_ram.ram
 // Also preload random data to rom_ctrl_rom.rom and check read data integrity
 // through jtag interface
 class chip_jtag_mem_vseq extends chip_common_vseq;
@@ -13,7 +13,7 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    cfg.select_jtag = JtagTapRvDm;
+    select_jtag = JtagTapRvDm;
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     void'($value$plusargs("skip_por_n_during_first_pwrup=%0b", skip_por_n_during_first_pwrup));
     // If we want to skip POR_N,

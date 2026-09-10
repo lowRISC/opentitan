@@ -4,9 +4,10 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -46,7 +47,7 @@ status_t point_valid_test(void) {
 
   // Verify the valid point.
   hardened_bool_t result;
-  TRY(otcrypto_p256_point_on_curve(&point_valid, &result));
+  TRY(otcrypto_ecc_p256_point_on_curve(&point_valid, &result));
 
   if (result != kHardenedBoolTrue) {
     LOG_ERROR("Valid point failed point check.");
@@ -61,12 +62,19 @@ status_t point_valid_test(void) {
   };
 
   // Verify the invalid point.
-  TRY(otcrypto_p256_point_on_curve(&point_invalid, &result));
+  TRY(otcrypto_ecc_p256_point_on_curve(&point_invalid, &result));
 
   if (result != kHardenedBoolFalse) {
     LOG_ERROR("Invalid point passed point check.");
     return OTCRYPTO_RECOV_ERR;
   }
+
+  // Null inputs
+  hardened_bool_t null_res;
+  CHECK(otcrypto_ecc_p256_point_on_curve(NULL, &null_res).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecc_p256_point_on_curve(&point_valid, NULL).value !=
+        OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
@@ -74,7 +82,7 @@ status_t point_valid_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   status_t err = point_valid_test();
   if (!status_ok(err)) {

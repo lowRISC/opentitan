@@ -6,7 +6,8 @@ module otbn_mac_bignum_fsm
   import otbn_pkg::*;
 #(
   // This enforces that there is an assertion which checks that state_err_o generates an alert.
-  parameter bit EnableAlertTriggerSVA = 1
+  parameter bit EnableAlertTriggerSVA = 1,
+  parameter bit SecFixMacOpSeq = 1'b0
 )
 (
   input  logic clk_i,
@@ -24,6 +25,7 @@ module otbn_mac_bignum_fsm
   input  logic [1:0]            op_a_qw_sel_i,
   input  logic [2:0]            op_b_elem0_sel_i,
   input  logic [2:0]            op_b_elem1_sel_i,
+  input  logic [1:0]            shuffle_offset_i,
 
   output mac_bignum_contrl_t contrl_o,
   output mac_bignum_predec_t predec_o,
@@ -48,19 +50,21 @@ module otbn_mac_bignum_fsm
    *
    * The following tables show the progression of the "dynamic" control signals for all
    * multi-cycle operations. There are additional control signals which do not change during the
-   * execution.
+   * execution. Note, for signals marked with a * the start value is randomized based on bits of
+   * URND. This shuffles the execution, giving additional protection against SCA.
    *
    * Dynamic control signals for vectorized multiplication (QW = quad word = 64 bits). In lane mode
    * the op_b_elemX_sel signals are overwritten by the FSM based upon decoded signals.
+   *
    *
    * | Signal              |     Cycles (0-3)      | Predecoded |
    * |---------------------|-----------------------|------------|
    * | Step                | QW0 | QW1 | QW2 | QW3 |            |
    * |---------------------|-----|-----|-----|-----|------------|
-   * | op_a_qw_sel         |   0 |   1 |   2 |   3 |        yes |
-   * | op_b_elem0_sel      |   0 |   2 |   4 |   6 |        yes |
-   * | op_b_elem1_sel      |   1 |   3 |   5 |   7 |        yes |
-   * | acc_qw_sel          |   0 |   1 |   2 |   3 |        yes |
+   * | op_a_qw_sel *       |   0 |   1 |   2 |   3 |        yes |
+   * | op_b_elem0_sel *    |   0 |   2 |   4 |   6 |        yes |
+   * | op_b_elem1_sel *    |   1 |   3 |   5 |   7 |        yes |
+   * | acc_qw_sel *        |   0 |   1 |   2 |   3 |        yes |
    * | acc_wr_en_raw       |   1 |   1 |   1 |   0 |         no |
    * | acc_clear_en        |   0 |   0 |   0 |   1 |         no |
    * | acc_merger_en       |   1 |   1 |   1 |   1 |        yes |
@@ -77,16 +81,16 @@ module otbn_mac_bignum_fsm
    * | Processed quad word |        QW0      ||       QW1       || QW2 ||    QW3    |            |
    * | Montgomery cycle    |  C0 |  C1 |  C2 ||  C0 |  C1 |  C2 || ... || ... |  C2 |            |
    * |---------------------|-----|-----|-----||-----|-----|-----||-----||-----|-----|------------|
-   * | op_a_qw_sel         |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |        yes |
-   * | op_b_elem0_sel      |   0 |   0 |   0 ||   2 |   2 |   2 ||     ||     |   6 |        yes |
-   * | op_b_elem1_sel      |   1 |   1 |   1 ||   3 |   3 |   3 ||     ||     |   7 |        yes |
+   * | op_a_qw_sel *       |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |        yes |
+   * | op_b_elem0_sel *    |   0 |   0 |   0 ||   2 |   2 |   2 ||     ||     |   6 |        yes |
+   * | op_b_elem1_sel *    |   1 |   1 |   1 ||   3 |   3 |   3 ||     ||     |   7 |        yes |
    * | mul_op_a_tmp_sel    |   A | TMP | TMP ||   A | TMP | TMP ||     ||     | TMP |        yes |
    * | mul_op_b_sel        |   B |  Mu |   Q ||   B |  Mu |   Q ||     ||     |   Q |        yes |
    * | tmp_wr_en_raw       |   1 |   1 |   0 ||   1 |   1 |   0 ||     ||     |   0 |         no |
    * | tmp_clear_en        |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |         no |
    * | c_wr_en_raw         |   1 |   0 |   0 ||   1 |   0 |   0 ||     ||     |   0 |         no |
    * | c_clear_en          |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |         no |
-   * | acc_qw_sel          |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |        yes |
+   * | acc_qw_sel *        |   0 |   0 |   0 ||   1 |   1 |   1 ||     ||     |   3 |        yes |
    * | acc_wr_en_raw       |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   0 |         no |
    * | acc_clear_en        |   0 |   0 |   0 ||   0 |   0 |   0 ||     ||     |   1 |         no |
    * | mul_add_en          |   0 |   0 |   1 ||   0 |   0 |   1 ||     ||     |   1 |        yes |
@@ -108,6 +112,27 @@ module otbn_mac_bignum_fsm
    * In the following, the first part generates these signal combinations. The second part then is
    * the actual logic stepping through the cycles.
    */
+
+  /////////////////////
+  // Shuffling logic //
+  /////////////////////
+  // This captures the shuffle offset when an instruction starts and provides the signal generation
+  // with the offset value.
+  logic [1:0] shuffle_offset_d, shuffle_offset_q;
+  logic [1:0] shuffle_offset;
+
+  assign shuffle_offset_d = is_busy_o ? shuffle_offset_q : shuffle_offset_i;
+
+  // Do not shuffle if it is disabled.
+  assign shuffle_offset = SecFixMacOpSeq ? 2'b0 : shuffle_offset_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      shuffle_offset_q <= '0;
+    end else begin
+      shuffle_offset_q <= shuffle_offset_d;
+    end
+  end
 
   ///////////////////////////////////////////
   // Multi-cycle control signal generation //
@@ -171,16 +196,20 @@ module otbn_mac_bignum_fsm
   mac_bignum_contrl_t     contrl_vec[LatencyVec];
   mac_bignum_predec_dyn_t predec_vec[LatencyVec];
 
+  logic [1:0] elem_idx_vec[LatencyVec];
+
   always_comb begin
     contrl_vec = '{default: ControlDefault};
     predec_vec = '{default: PredecDynDefault};
 
     for (int unsigned cycle = 0; cycle < LatencyVec; cycle++) begin
+      elem_idx_vec[cycle] = 2'(cycle) + shuffle_offset;
+
       contrl_vec[cycle].acc_wr_en_raw  = 1'b1;
-      predec_vec[cycle].op_a_qw_sel    = 2'(cycle);
-      predec_vec[cycle].op_b_elem0_sel = 3'(2 * cycle);
-      predec_vec[cycle].op_b_elem1_sel = 3'(2 * cycle + 1);
-      predec_vec[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1) << cycle);
+      predec_vec[cycle].op_a_qw_sel    = elem_idx_vec[cycle];
+      predec_vec[cycle].op_b_elem0_sel = 3'({elem_idx_vec[cycle], 1'b0});
+      predec_vec[cycle].op_b_elem1_sel = 3'({elem_idx_vec[cycle], 1'b1});
+      predec_vec[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1) << elem_idx_vec[cycle]);
       predec_vec[cycle].acc_merger_en  = 1'b1;
     end
 
@@ -197,6 +226,8 @@ module otbn_mac_bignum_fsm
   mac_bignum_predec_dyn_t predec_mod_mul[LatencyMontgMul];
   mac_bignum_contrl_t     contrl_mod[LatencyMod];
   mac_bignum_predec_dyn_t predec_mod[LatencyMod];
+
+  logic [1:0] elem_idx_mod[LatencyMod];
 
   always_comb begin
     contrl_mod_mul = '{default: ControlDefault};
@@ -224,12 +255,14 @@ module otbn_mac_bignum_fsm
 
     // Construct the 4 * 3 = 12 cycles and set the correct qword selection
     for (int unsigned cycle = 0; cycle < LatencyMod; cycle++) begin
+      elem_idx_mod[cycle] = 2'(cycle / LatencyMontgMul) + shuffle_offset;
+
       contrl_mod[cycle]                = contrl_mod_mul[cycle % LatencyMontgMul];
       predec_mod[cycle]                = predec_mod_mul[cycle % LatencyMontgMul];
-      predec_mod[cycle].op_a_qw_sel    = 2'(cycle / LatencyMontgMul);
-      predec_mod[cycle].op_b_elem0_sel = 3'(2 * (cycle / LatencyMontgMul));
-      predec_mod[cycle].op_b_elem1_sel = 3'(2 * (cycle / LatencyMontgMul) + 1);
-      predec_mod[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1)) << (cycle / LatencyMontgMul);
+      predec_mod[cycle].op_a_qw_sel    = elem_idx_mod[cycle];
+      predec_mod[cycle].op_b_elem0_sel = 3'({elem_idx_mod[cycle], 1'b0});
+      predec_mod[cycle].op_b_elem1_sel = 3'({elem_idx_mod[cycle], 1'b1});
+      predec_mod[cycle].acc_qw_sel     = (VLEN/QWLEN)'(unsigned'(1)) << elem_idx_mod[cycle];
     end
 
     // Clear ACC in the last cycle with randomness
@@ -317,6 +350,7 @@ module otbn_mac_bignum_fsm
     is_lane:             is_lane_i,
     lane_index:          lane_index_i,
     elen:                elen_i,
+    shuffle_offset:      shuffle_offset,
     adder_carry_sel:     adder_carry_sel_i,
     acc_add_en:          acc_add_en_i,
     op_a_qw_sel:         predec_dyn.op_a_qw_sel,

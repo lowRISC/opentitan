@@ -16,7 +16,7 @@ pub mod provisioning_data;
 /// sw/device/lib/testing/json/provisioning_data.h
 pub const SERDES_SHA256_HASH_SERIALIZED_MAX_SIZE: usize = 98;
 pub const LC_TOKEN_HASH_SERIALIZED_MAX_SIZE: usize = 52;
-pub const MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE: usize = 210;
+pub const MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE: usize = 215;
 pub const PERSO_BLOB_SERIALIZED_MAX_SIZE: usize = 20535;
 
 pub struct UjsonPayloads {

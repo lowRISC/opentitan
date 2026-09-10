@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
+
 cc_library(
     name = "command",
     srcs = ["command.c"],
@@ -50,8 +52,9 @@ cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/ujson",
     ],
 )

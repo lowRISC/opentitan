@@ -23,6 +23,7 @@ DASHBOARDS: Dict[str, List[Path]] = {
     'comportable': [
         REPO_TOP / "hw/ip/aes/data/aes.hjson",
         REPO_TOP / "hw/ip/aon_timer/data/aon_timer.hjson",
+        REPO_TOP / "hw/ip/cheriot/data/cheriot.hjson",
         REPO_TOP / "hw/ip/entropy_src/data/entropy_src.hjson",
         REPO_TOP / "hw/ip/csrng/data/csrng.hjson",
         REPO_TOP / "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
@@ -35,6 +36,8 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/ip/otbn/data/otbn.hjson",
         REPO_TOP / "hw/ip/pattgen/data/pattgen.hjson",
         REPO_TOP / "hw/ip/rom_ctrl/data/rom_ctrl.hjson",
+        REPO_TOP / "hw/ip/rram_ctrl/data/rram_ctrl.hjson",
+        REPO_TOP / "hw/ip/rram_macro/data/rram_macro.hjson",
         REPO_TOP / "hw/ip/rv_dm/data/rv_dm.hjson",
         REPO_TOP / "hw/ip/rv_timer/data/rv_timer.hjson",
         REPO_TOP / "hw/ip/spi_host/data/spi_host.hjson",
@@ -47,7 +50,6 @@ DASHBOARDS: Dict[str, List[Path]] = {
     'top_earlgrey': [
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
-        REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson",

@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -36,8 +38,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -45,7 +45,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_sym_impl",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -55,8 +64,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -64,7 +71,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_asym_impl",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -75,26 +91,27 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:cryptolib_asym.h",
     ],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:ecc_p256",
-        "//sw/device/lib/crypto/impl:ecc_p384",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:rsa",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_asym_commands",
-    ],
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -106,23 +123,25 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:aes_gcm",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:drbg",
-        "//sw/device/lib/crypto/impl:hmac",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
-    ],
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -132,12 +151,21 @@ cc_library(
         "ibex_fi.c",
     ],
     hdrs = ["ibex_fi.h"],
+    # Selects whether the flash_ctrl-based char_flash_read/_read_static/_write
+    # handlers are live or stubbed out -- RRAM_CTRL has no equivalent DIF-level
+    # page erase/write API yet.
+    defines = opentitan_select_top(
+        {
+            "earlgrey": ["USE_RRAM"],
+        },
+        ["USE_FLASH"],
+    ),
     deps = [
         "//hw/top:aes_c_regs",
         "//hw/top:alert_handler_c_regs",
         "//hw/top:entropy_src_c_regs",
         "//hw/top:hmac_c_regs",
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
         "//sw/device/lib/arch:boot_stage",
@@ -146,12 +174,10 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -160,7 +186,14 @@ cc_library(
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:ibex_fi_commands",
-    ],
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+        ],
+        [],
+    ),
 )
 
 cc_library(
@@ -188,13 +221,13 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_beq",
@@ -286,7 +319,6 @@ cc_library(
     srcs = ["boot_fi.c"],
     hdrs = ["boot_fi.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:rom_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -301,8 +333,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
@@ -315,6 +347,14 @@ cc_library(
     name = "alert_fi",
     srcs = ["alert_fi.c"],
     hdrs = ["alert_fi.h"],
+    # Selects whether the flash_ctrl-alert-forcing cases (13-17) are live or
+    # stubbed out -- RRAM_CTRL has no alert_force DIF support yet.
+    defines = opentitan_select_top(
+        {
+            "earlgrey": ["USE_RRAM"],
+        },
+        ["USE_FLASH"],
+    ),
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -326,16 +366,13 @@ cc_library(
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pattgen",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
@@ -351,5 +388,9 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:alert_fi_commands",
-    ],
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        ["//sw/device/lib/dif:flash_ctrl"],
+        [],
+    ),
 )

@@ -41,7 +41,7 @@ status_t test_sector_erase(dif_spi_host_t *spi);
  * @param manufacture_id The expected manufacture_id.
  * @return status_t containing either OK or an error.
  */
-status_t test_read_jedec(dif_spi_host_t *spi, uint16_t manufacture_id);
+status_t test_read_jedec(dif_spi_host_t *spi, uint8_t manufacture_id);
 
 /**
  * Send the enable quad mode command.
@@ -86,10 +86,16 @@ status_t test_quad_read(dif_spi_host_t *spi);
 /**
  * Check if the flash supports 4-byte addressing.
  *
- * @param spi A spi host handler.
  * @return True if 4-byte addressing mode is supported.
  */
 bool is_4_bytes_address_mode_supported(void);
+
+/**
+ * Check if the flash supports quad mode.
+ *
+ * @return True if quad mode is supported.
+ */
+bool is_quad_mode_supported(void);
 
 /**
  * Enable 4-byte addressing mode, write and read to a page that needs 4 bytes to

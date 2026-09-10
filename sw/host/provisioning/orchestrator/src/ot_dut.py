@@ -17,8 +17,10 @@ from device_id import DeviceId, DeviceIdentificationNumber
 from sku_config import SkuConfig
 from util import confirm, format_hex, resolve_runfile, run
 
-# FPGA bitstream.
-_FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
+# FPGA bitstream and memories
+_FPGA_BITSTREAM = "sw/host/provisioning/orchestrator/src/orchestrator_bitstream.bit"
+_FPGA_ROM = "sw/host/provisioning/orchestrator/src/orchestrator_rom.vmem"
+_FPGA_OTP = "sw/host/provisioning/orchestrator/src/orchestrator_otp.vmem"
 
 # Opentitantool interface
 _OTT_FPGA_INTERFACE = {
@@ -94,7 +96,9 @@ class OtDut():
                 confirm()
         else:
             logging.error(f"{key} not found.")
-            confirm()
+            if self.require_confirmation:
+                confirm()
+            return {}
         return json_data
 
     def _base_dev_dir(self) -> str:
@@ -118,9 +122,14 @@ class OtDut():
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             if not self.fpga_dont_clear_bitstream:
+                bitstream = resolve_runfile(_FPGA_BITSTREAM)
+                rom = resolve_runfile(_FPGA_ROM)
+                otp = resolve_runfile(_FPGA_OTP)
                 host_flags += " --clear-bitstream"
-                bitstream = resolve_runfile(_FPGA_UNIVERSAL_SPLICE_BITSTREAM)
                 host_flags += f" --bitstream={bitstream}"
+                host_flags += f" --load-memory ROM={rom}"
+                # OTP lives inside the RRAM data array.
+                host_flags += f" --load-memory RRDA={otp}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
@@ -160,7 +169,8 @@ class OtDut():
 
             if res.returncode != 0:
                 logging.warning(f"CP failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
 
             # Extract CP device ID.
             chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
@@ -177,9 +187,14 @@ class OtDut():
                         "cp_device_id empty; setting default DIN of all 0xFF.")
                     din_from_device = DeviceIdentificationNumber.blind_asm()
                 else:
-                    din_from_device = DeviceIdentificationNumber.from_int(
-                        (int(chip_probe_data["cp_device_id"], 16) >> 32) &
-                        (2**64 - 1))
+                    try:
+                        din_from_device = DeviceIdentificationNumber.from_int(
+                            (int(chip_probe_data["cp_device_id"], 16) >> 32) &
+                            (2**64 - 1))
+                    except ValueError as e:
+                        logging.error(
+                            f"Device reported an illegal DIN: {e}")
+                        sys.exit(1)
             logging.info(
                 f"Updating device ID to: {chip_probe_data['cp_device_id']}")
             self.device_id.update_din(din_from_device)
@@ -288,6 +303,8 @@ class OtDut():
             # Add owner FW boot success message check.
             if self.sku_config.owner_fw_boot_str:
                 cmd += f" --owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
+            if self.sku_config.blob_version > 0:
+                cmd += f" --blob-version {self.sku_config.blob_version}"
 
             # Enable UJSON message logging.
             if self.log_ujson_payloads:
@@ -304,10 +321,15 @@ class OtDut():
             res = run(cmd, stdout_logfile, stderr_logfile)
             if res.returncode != 0:
                 logging.warning(f"FT failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
 
             self.ft_data = self._extract_json_data("PROVISIONING_DATA",
                                                    stdout_logfile)
+
+            if "device_id" not in self.ft_data:
+                logging.error("device_id not found in PROVISIONING_DATA.")
+                sys.exit(1)
 
             # Check device ID from OTP matches one constructed on host.
             #

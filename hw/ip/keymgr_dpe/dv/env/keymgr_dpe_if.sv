@@ -7,7 +7,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   import uvm_pkg::*;
   import keymgr_dpe_env_pkg::*;
-  import keymgr_dpe_reg_pkg::NumRomDigestInputs;
 
   // Represents the keymgr_dpe sideload state for each sideload interface.
   //
@@ -16,11 +15,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // Status can't be directly changed from SideLoadClear to SideLoadAvail.
   // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
-  lc_ctrl_pkg::lc_tx_t                                keymgr_dpe_en;
-  lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_dpe_div;
-  otp_ctrl_pkg::otp_device_id_t                       otp_device_id;
-  otp_ctrl_pkg::otp_keymgr_key_t                      otp_key;
-  rom_ctrl_pkg::keymgr_data_t[NumRomDigestInputs-1:0] rom_digests;
+  lc_ctrl_pkg::lc_tx_t                                  keymgr_dpe_en;
+  lc_ctrl_pkg::lc_keymgr_div_t                          keymgr_dpe_div;
+  keymgr_dpe_pkg::keymgr_dpe_device_id_t                otp_device_id;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t         creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t             creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t               owner_seed;
+  rom_ctrl_pkg::keymgr_data_t[DvNumRomDigestInputs-1:0] rom_digests;
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
@@ -101,38 +102,40 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   // assigned from the keymgr_dpe.keymgr_dpe_ctrl.key_slots_q signal, which should hold the
   // current value of the keyslots in the dut.
-  keymgr_dpe_pkg::keymgr_dpe_slot_t [keymgr_dpe_pkg::DpeNumSlots-1:0] internal_key_slots;
+  keymgr_dpe_pkg::keymgr_dpe_slot_t [DvNumInstHwSlot-1:0] internal_key_slots;
 
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
-    otp_ctrl_pkg::otp_keymgr_key_t local_otp_key;
+    keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t local_creator_root_key;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_dpe_en = lc_ctrl_pkg::On;
     keymgr_dpe_div = 64'h5CFBD765CE33F34E;
     otp_device_id = 'hF0F0;
-    otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
-    for (int i = 0; i < NumRomDigestInputs; ++i) begin
+    for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
       rom_digests[i].data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
       rom_digests[i].valid = '1;
     end
+    // Load the default value for all seed's
+    local_creator_root_key = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT;
+    creator_seed = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_SEED_DEFAULT;
+    owner_seed = keymgr_dpe_pkg::KEYMGR_DPE_OWNER_SEED_DEFAULT;
+    // If requested randomize the creator_root_key
     if (rand_otp_key) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                         local_otp_key.creator_root_key_share0_valid == 1;
-                                         local_otp_key.creator_root_key_share1_valid == 1;
-                                         !(local_otp_key.creator_root_key_share0 inside {0, '1});
-                                         !(local_otp_key.creator_root_key_share1 inside {0, '1});
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_creator_root_key,
+                                         local_creator_root_key.share0_valid == 1;
+                                         local_creator_root_key.share1_valid == 1;
+                                         !(local_creator_root_key.share0 inside {0, '1});
+                                         !(local_creator_root_key.share1 inside {0, '1});
                                          , , msg_id)
-    end else begin
-      local_otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     end
     if (invalid_otp_key) begin
-      local_otp_key.creator_root_key_share0_valid = 0;
-      local_otp_key.creator_root_key_share1_valid = 0;
+      local_creator_root_key.share0_valid = 0;
+      local_creator_root_key.share1_valid = 0;
     end
-    otp_key = local_otp_key;
+    creator_root_key = local_creator_root_key;
   endtask
 
   // reset local exp variables when reset is issued
@@ -189,14 +192,14 @@ interface keymgr_dpe_if(input clk, input rst_n);
     // as a set of flags / counters.
     bit bad_keymgr_dpe_div = 1'b0;
     bit bad_otp_device_id = 1'b0;
-    bit [NumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
+    bit [DvNumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
 
     repeat (num_invalid_input) begin
       randcase
         1: bad_keymgr_dpe_div = 1'b1;
         1: bad_otp_device_id = 1'b1;
-        1: bad_rom_data[$urandom % NumRomDigestInputs] = 1'b1;
-        1: bad_rom_valid[$urandom % NumRomDigestInputs] = 1'b1;
+        1: bad_rom_data[$urandom % DvNumRomDigestInputs] = 1'b1;
+        1: bad_rom_valid[$urandom % DvNumRomDigestInputs] = 1'b1;
       endcase
     end
 
@@ -217,7 +220,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
       // rom_digests
       begin
-        for (int i = 0; i < NumRomDigestInputs; i++)
+        for (int i = 0; i < DvNumRomDigestInputs; i++)
           fork
             automatic int local_i = i;
             #($urandom_range(1000, 0) * 1ns);
@@ -235,8 +238,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   function automatic void compare_internal_key_slot(
     keymgr_dpe_pkg::keymgr_dpe_slot_t dst_key_slot,
     keymgr_dpe_pkg::keymgr_dpe_slot_t src_key_slot,
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot_index,
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot_index,
+    dv_keymgr_dpe_slot_idx_e dst_slot_index,
+    dv_keymgr_dpe_slot_idx_e src_slot_index,
     bit check_parent_retained
   );
     `DV_CHECK_EQ(dst_key_slot, internal_key_slots[dst_slot_index],
@@ -372,9 +375,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       valid_done_window <= 0;
-    end else if (kmac_data_req.last) begin
+    end else if (kmac_data_req.req_last) begin
       valid_done_window <= 1;
-    end else if (kmac_data_rsp.done) begin
+    end else if (kmac_data_rsp.rsp_valid) begin
       valid_done_window <= 0;
     end
   end
@@ -418,7 +421,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         inject_cmd_err(force_cmds);
       end
       FaultKmacDoneError: begin
-        // wait until it's not a valid window to issue done
+        // wait until it's not a valid window to issue rsp_valid
         `DV_SPINWAIT(
           while (1) begin
             @(negedge clk);
@@ -427,11 +430,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
           msg_id
         )
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
-        // set `done` to 1, force the other fields to a random value to avoid X propagation
-        invalid_kmac_rsp.done = 1;
-        force tb.keymgr_dpe_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        // set rsp_valid to 1, force the other fields to a random value to avoid X propagation
+        invalid_kmac_rsp.rsp_valid = 1;
+        force tb.kmac_if.rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.keymgr_dpe_kmac_intf.kmac_data_rsp;
+        release tb.kmac_if.rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
@@ -442,7 +445,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         force tb.dut.u_sideload_ctrl.valids = force_sideload_valids;
         @(posedge clk);
 
-        `DV_WAIT(kmac_data_rsp.done, , 500_000, // TIMEOUT_NS_
+        `DV_WAIT(kmac_data_rsp.rsp_valid, , 500_000, // TIMEOUT_NS_
                   msg_id)
         @(posedge clk);
         release tb.dut.u_sideload_ctrl.valids;
@@ -486,8 +489,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
       string path = "tb.dut.kmac_data_i";
       `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
       // don't change these control signals, otherwise, handshaking may get stuck
-      invalid_kmac_rsp.ready = kmac_data_rsp.ready;
-      invalid_kmac_rsp.done = kmac_data_rsp.done;
+      invalid_kmac_rsp.req_ready = kmac_data_rsp.req_ready;
+      invalid_kmac_rsp.rsp_valid = kmac_data_rsp.rsp_valid;
       // use deposit rather than force, so that the valid can be preserved until next update
       `DV_CHECK_FATAL(uvm_hdl_deposit(path, invalid_kmac_rsp), , msg_id)
     end
@@ -524,24 +527,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
       force tb.dut.u_ctrl.u_data_en.data_sw_en_o = 1;
     end
     // force until the transaction is done.
-    @(negedge kmac_data_rsp.done);
+    @(negedge kmac_data_rsp.rsp_valid);
     if (force_hw_key_sel_or_data_en) begin
       trigger_force_hw_key_sel = 0;
     end else begin
       release tb.dut.u_ctrl.u_data_en.data_sw_en_o;
     end
   endtask
-
-  // Disable h_data stability assertion when keymgr_dpe is in
-  // disabled/invalid state or LC turns off as
-  // keymgr_dpe will sent constantly changed entropy data to KMAC for KDF operation.
-  always_comb begin
-    if (!is_kmac_data_good || keymgr_dpe_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end else begin
-      $asserton(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end
-  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -555,11 +547,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
   end
 
   // if kmac sideload key is available, switch to it after an operation is completed
-  // if not available, de-assert valid after done is asserted
+  // if not available, de-assert valid after rsp_valid is asserted
   initial begin
     forever begin
       @(posedge clk);
-      if (kmac_data_rsp.done) begin
+      if (kmac_data_rsp.rsp_valid) begin
         if (kmac_sideload_status == SideLoadAvail) begin
           kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
@@ -567,7 +559,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
           kmac_key_exp.valid <= 0;
           is_kmac_key_good   <= 0;
         end
-      end // kmac_data_rsp.done
+      end // kmac_data_rsp.rsp_valid
     end // forever
   end
 

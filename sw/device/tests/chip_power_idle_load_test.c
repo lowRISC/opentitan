@@ -10,7 +10,6 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -26,7 +25,6 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/aon_timer_regs.h"
-#include "hw/top/pwm_regs.h"
 
 typedef void (*isr_handler)(void);
 static volatile isr_handler expected_isr_handler;
@@ -40,7 +38,6 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_timer_t rv_timer;
 static dif_alert_handler_t alert_handler;
-static dif_pwm_t pwm;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
@@ -66,8 +63,6 @@ static_assert(kDtGpioCount == 1, "this library expects exactly one gpio");
 static const dt_otp_ctrl_t kOtpCtrlDt = 0;
 static_assert(kDtOtpCtrlCount == 1,
               "this library expects exactly one otp_ctrl");
-static const dt_pwm_t kPwmDt = 0;
-static_assert(kDtPwmCount >= 1, "this library expects at least one pwm");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -114,7 +109,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rv_timer_init_from_dt(kRvTimerDt, &rv_timer));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
-  CHECK_DIF_OK(dif_pwm_init_from_dt(kPwmDt, &pwm));
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
   CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
@@ -220,66 +214,6 @@ bool test_main(void) {
 
   LOG_INFO("Alert ping is active");
 
-  // PWM
-  static const dif_pwm_config_t config_ = {
-      .clock_divisor = 0,
-      .beats_per_pulse_cycle = 32,
-  };
-
-  // Configuration struct for a specific PWM channel
-  static const dif_pwm_channel_config_t default_ch_cfg_ = {
-      .duty_cycle_a = 0,
-      .duty_cycle_b = 0,
-      .phase_delay = 0,
-      .mode = kDifPwmModeFirmware,
-      .polarity = kDifPwmPolarityActiveHigh,
-      .blink_parameter_x = 0,
-      .blink_parameter_y = 0,
-  };
-  static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
-      0, 1, 2, 3, 4, 5,
-  };
-  // Duty cycle (arbitrary) values (in the beats)
-  static volatile const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
-      6, 11, 27, 8, 17, 7,
-  };
-
-  static const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxMioOutIob10, kTopEarlgreyPinmuxMioOutIob11,
-      kTopEarlgreyPinmuxMioOutIob12, kTopEarlgreyPinmuxMioOutIoc10,
-      kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
-  };
-  static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
-      kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
-      kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
-  };
-
-  CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
-
-  // Confugure each of the PWM channels:
-  dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
-  for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
-                                              kDifToggleDisabled));
-    channel_config_.duty_cycle_a = kPwmDutycycle[i];
-    CHECK_DIF_OK(
-        dif_pwm_configure_channel(&pwm, kPwmChannel[i], channel_config_));
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << kPwmChannel[i],
-                                              kDifToggleEnabled));
-  }
-
-  // Enable all PWM channels
-  CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleEnabled));
-
-  // PINMUX
-  for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, kPinmuxMioOut[i], kPinmuxOutsel[i]));
-  }
-
-  LOG_INFO("PWM active");
-
   // OTP
 
   // Access to the OTP is locked by the ROM_EXT
@@ -322,7 +256,6 @@ bool test_main(void) {
   // finish with "pass". Without this, the CPU will remain idle and the
   // simulator will end the test (due to simulation timeout) with "fail".
 
-  CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleDisabled));
   CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
 
   // Prepare to exit

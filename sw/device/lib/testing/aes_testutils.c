@@ -91,8 +91,9 @@ const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
     0x96994362, 0x7ef8f0b9, 0x5b5332dc, 0xd0df9b12, 0x96dfbaa9, 0xac0b5af7,
     0xec2504be, 0xb00fb68c, 0xf37e0a7f, 0x88172eec, 0x4e4b5f58, 0xfec120c0};
 
-status_t aes_testutils_masking_prng_zero_output_seed(const dif_csrng_t *csrng,
-                                                     const dif_edn_t *edn0) {
+status_t aes_testutils_masking_prng_zero_output_seed(
+    const dif_csrng_t *csrng, const dif_edn_t *edn0,
+    bool gen_zero_output_seed) {
   // Shutdown EDN0 and CSRNG
   TRY(dif_edn_stop(edn0));
   TRY(dif_csrng_stop(csrng));
@@ -136,7 +137,11 @@ status_t aes_testutils_masking_prng_zero_output_seed(const dif_csrng_t *csrng,
                       .len = 0,
                   },
           },
-      .reseed_interval = 1,  // Reseed after every single generate.
+      // When producing the seed causing AES to output an all-zero output, we
+      // need to reseed CSRNG after every single generate. Otherwise, we reseed
+      // less frequently. This produces a different seed and avoids repetition
+      // alerts in EDN.
+      .reseed_interval = gen_zero_output_seed ? 1 : 16,
   };
   memcpy(edn0_params.instantiate_cmd.seed_material.data,
          kEdnSeedMaterialInstantiate, sizeof(kEdnSeedMaterialInstantiate));

@@ -34,6 +34,11 @@ class StandaloneSim(OTBNSim):
         # Skip the initial secure wipe
         self.state.complete_init_sec_wipe()
 
+        # There is no host to enable wfi or to issue RESUME in standalone mode,
+        # so allow wfi and have it resume immediately (a regular 1-cycle insn).
+        self.state.wfi_enabled = True
+        self.state.wfi_auto_resume = True
+
         while True:
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):

@@ -36,7 +36,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
  * Objects to access the peripherals used in this test via dif API.
  */
 static dif_pwrmgr_t pwrmgr;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_rstmgr_t rstmgr;
 
 /**
@@ -47,7 +47,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize sysrst_ctrl.
-  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl_aon));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
 
   // Initialize rstmgr to check the reset reason.
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
@@ -57,7 +57,7 @@ static void init_peripherals(void) {
  * Configure the sysrst.
  */
 static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
-                          const dif_sysrst_ctrl_t *sysrst_ctrl_aon) {
+                          const dif_sysrst_ctrl_t *sysrst_ctrl) {
   LOG_INFO("sysrst enabled");
 
   // Set sysrst as a reset source.
@@ -80,7 +80,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
       .embedded_controller_reset_duration = 10};
 
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
-      sysrst_ctrl_aon, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
+      sysrst_ctrl, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
   // Configure sysrst input change
   // debounce duration : 100 us
   dif_sysrst_ctrl_input_change_config_t sysrst_ctrl_input_change_config = {
@@ -91,7 +91,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
-      sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
+      sysrst_ctrl, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_mio_select_input(
       &pinmux,
@@ -123,7 +123,7 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
   LOG_INFO("Reset info 0x%x", rst_info);
   if (rst_info == kDifRstmgrResetInfoPor) {
-    config_sysrst(&pwrmgr, &sysrst_ctrl_aon);
+    config_sysrst(&pwrmgr, &sysrst_ctrl);
     LOG_INFO("Setting sleep mode");
     normal_sleep_por(&pwrmgr);
     CHECK(false, "This is unreachable");

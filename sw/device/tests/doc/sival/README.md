@@ -28,7 +28,7 @@ environment.
     (DUT) software and trigger unit tests as well as tests requiring an
     OpenTitan target. FPGA, Verilator and Silicon targets are supported. DV test
     targets are integrated using [dvsim](https://github.com/lowRISC/dvsim).
-*   **[hsmtool](https://github.com/lowRISC/opentitan/tree/master/sw/host/hsmtool)**:
+*   **[hsmtool](https://github.com/lowRISC/opentitan-signing-infra/tree/main/hsmtool)**:
     utility used to interface with hardware used to manage signing keys. The
     tool uses PKCS#11 to access HSM and USB tokens. Only NitroKey HSM2 is
     supported at the moment.
@@ -160,15 +160,15 @@ PROD, PROD\_END | N              | Y               | Y
 
 ### FPGA example
 
-The following command runs the `SV1` test suite on `fpga_cw310_sival` and
-`fpga_cw310_sival_rom_ext` execution environments.
+The following command runs the `SV1` test suite on `fpga_cw340_sival` and
+`fpga_cw340_sival_rom_ext` execution environments.
 
 ```console
 bazel test   --define DISABLE_VERILATOR_BUILD=true      \
-    --build_tag_filters=cw310_sival,cw310_sival_rom_ext \
-    --test_tag_filters=cw310_sival,cw310_sival_rom_ext  \
+    --build_tag_filters=cw340_sival,cw340_sival_rom_ext \
+    --test_tag_filters=cw340_sival,cw340_sival_rom_ext  \
     --test_output=streamed          \
-    --define bitstream=gcp_splice   \
+    --define bitstream=gcp          \
     --cache_test_results=no         \
     //sw/device/tests/sival:sv1_tests
 ```
@@ -188,7 +188,7 @@ bazel test \
     --build_tag_filters=silicon_creator,-broken \
     --test_tag_filters=silicon_creator,-broken  \
     --test_output=streamed              \
-    --define bitstream=gcp_splice       \
+    --define bitstream=gcp              \
     --cache_test_results=no             \
     --local_test_jobs 1                 \
     //sw/device/tests/sival:sv2_tests
@@ -206,7 +206,7 @@ bazel test --define DISABLE_VERILATOR_BUILD=true       \
     --build_tag_filters=silicon_owner_sival_rom_ext,-broken \
     --test_tag_filters=silicon_owner_sival_rom_ext,-broken  \
     --test_output=streamed          \
-    --define bitstream=gcp_splice   \
+    --define bitstream=gcp          \
     --cache_test_results=no         \
     --local_test_jobs 1             \
     //sw/device/tests/sival:sv2_tests

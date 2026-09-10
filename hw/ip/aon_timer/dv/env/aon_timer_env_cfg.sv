@@ -16,7 +16,7 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
   `uvm_object_utils_end
 
   extern function new (string name="");
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
   // Set the 'has_prediction' field flag for all the intr_state fields so the comparison
   // on reads can be carried out in cip_base_scoreboard
   extern function void set_intr_state_has_prediction();
@@ -38,9 +38,9 @@ function aon_timer_env_cfg::new (string name="");
   super.new(name);
 endfunction : new
 
-function void aon_timer_env_cfg::initialize();
+function void aon_timer_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
-  super.initialize();
+  super.initialize(inherit_ral_models);
 
   m_tl_agent_cfg.max_outstanding_req = 1;
 
@@ -73,9 +73,9 @@ task aon_timer_env_cfg::wait_for_we_pulse(input string path);
 endtask
 
 function void aon_timer_env_cfg::set_intr_state_has_prediction();
-  foreach (ral_model_names[i]) begin
+  foreach (ral_model_names[ral_name]) begin
     dv_base_reg regs_q[$];
-    ral_models[ral_model_names[i]].get_dv_base_regs(regs_q);
+    ral_models[ral_name].get_dv_base_regs(regs_q);
     foreach (regs_q[j]) begin
       if (!uvm_re_match("intr_state*", regs_q[j].get_name())) begin
         dv_base_reg_field fields_q[$];

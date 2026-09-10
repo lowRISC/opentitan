@@ -30,6 +30,20 @@ class mem_bkdr_util extends uvm_object;
   // The depth of a single SRAM tile.
   protected uint32_t tile_depth;
 
+  // Number of logical (row_data_t-sized) words folded into each physical HDL row of a single
+  // tile's storage array. 1 (the default) means no folding: one physical row per logical word.
+  protected uint32_t words_per_row;
+
+  // Number of macro instances that jointly form one logical word by bit-slicing it (each instance
+  // contributing an equal-sized slice, read/written on every access), rather than each covering
+  // the whole word. 1 (the default) means no bit-slicing.
+  protected uint32_t num_bit_slices;
+
+  // Analogous to `tiling_path`/`tiling_suffix_fmt_str` above, but for selecting a bit slice's
+  // instance (which should be less than num_bit_slices) instead of an address-based tile.
+  protected string bit_slice_tiling_path;
+  protected string bit_slice_tiling_suffix_fmt_str;
+
   // The logical width of the memory in bits, not including extra bits added by the row adapter.
   protected uint32_t width;
 
@@ -118,15 +132,38 @@ class mem_bkdr_util extends uvm_object;
   //
   //  tile_depth               The number of rows of a single tle. By default, this is the entire
   //                           memory.
+  //
+  //  num_bit_slices           Number of macro instances that jointly form one logical word by
+  //                           bit-slicing it, rather than each covering the whole word (as opposed
+  //                           to tiling, above, where different addresses map to different
+  //                           instances, here every instance is read/written on every access, each
+  //                           contributing an equal-sized slice of the word). 1 (the default)
+  //                           means no bit-slicing: the whole word comes from a single access, as
+  //                           `tiling_path`/`tile_depth` alone already describe.
+  //
+  //  bit_slice_tiling_path/
+  //  bit_slice_tiling_suffix_fmt_str  Analogous to `tiling_path`/`tiling_suffix_fmt_str`, but
+  //                           selecting a bit slice's instance (which should be less than
+  //                           num_bit_slices) instead of an address-based tile.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
                mem_bkdr_util_row_adapter row_adapter = null,
                uint32_t num_prince_rounds_half = 3,
                uint32_t extra_bits_per_subword = 0, uint32_t system_base_addr = 0,
                string tiling_path = "", string tiling_suffix_fmt_str = ".gen_ram_inst[%0d].%s",
-               uint32_t tile_depth = depth);
+               uint32_t tile_depth = depth, uint32_t words_per_row = 1,
+               uint32_t num_bit_slices = 1, string bit_slice_tiling_path = "",
+               string bit_slice_tiling_suffix_fmt_str = ".gen_ram_inst[%0d].%s");
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
+    `DV_CHECK_FATAL(!(tile_depth % words_per_row),
+                    "tile_depth must be a whole number of physical rows")
+    `DV_CHECK_FATAL(!((n_bits / depth) % num_bit_slices),
+                    "the logical word width must be a whole number of bit slices")
+    this.words_per_row                   = words_per_row;
+    this.num_bit_slices                  = num_bit_slices;
+    this.bit_slice_tiling_path           = bit_slice_tiling_path;
+    this.bit_slice_tiling_suffix_fmt_str = bit_slice_tiling_suffix_fmt_str;
 
     if (row_adapter != null) begin
       this.row_adapter = row_adapter;
@@ -148,6 +185,13 @@ class mem_bkdr_util extends uvm_object;
       string full_path = get_full_path(i);
       `DV_CHECK_FATAL(uvm_hdl_check_path(get_full_path(i)) == 1,
                       $sformatf("Hierarchical path %0s appears to be invalid.", full_path))
+    end
+
+    // Likewise, for each bit slice's instance.
+    for (int unsigned i = 0; i < num_bit_slices; i++) begin
+      string slice_path = get_bit_slice_path(i);
+      `DV_CHECK_FATAL(uvm_hdl_check_path(slice_path) == 1,
+                      $sformatf("Hierarchical path %0s appears to be invalid.", slice_path))
     end
 
     if (`HAS_ECC) begin
@@ -232,6 +276,24 @@ class mem_bkdr_util extends uvm_object;
     return {base, tile_suffix};
   endfunction
 
+  // Analogous to `get_full_path()` above, but for a bit slice's instance instead of an
+  // address-based tile.
+  function string get_bit_slice_path(int unsigned slice);
+    string base = get_path();
+    string slice_suffix = "";
+
+    if (slice > 0) begin
+      `DV_CHECK_FATAL(bit_slice_tiling_path.len() > 0,
+                      $sformatf("Positive bit slice index (%0d) with empty tiling path.", slice))
+    end
+
+    if (bit_slice_tiling_path != "") begin
+      slice_suffix = $sformatf(bit_slice_tiling_suffix_fmt_str, slice, bit_slice_tiling_path);
+    end
+
+    return {base, slice_suffix};
+  endfunction
+
   function uint32_t get_depth();
     return depth;
   endfunction
@@ -299,6 +361,67 @@ class mem_bkdr_util extends uvm_object;
     return 1'b1;
   endfunction
 
+  // HDL path for the `row_width`-bit physical row at `tile_path[phys_row_index]`, shared by
+  // `read_phys_row()`/`write_phys_row()` below.
+  local function string get_phys_row_access_path(string tile_path, int unsigned phys_row_index,
+                                                 int unsigned row_width);
+    return $sformatf("%0s[%0d][%0d:0]", tile_path, phys_row_index, row_width - 1);
+  endfunction
+
+  // Reads the entire `row_width`-bit physical row at `tile_path[phys_row_index]` in one access,
+  // rather than looping over `bits_per_backdoor_access`-sized chunks (broken for a row wider than
+  // one chunk). `row_data_t`/`uvm_hdl_data_t` are `UVM_HDL_MAX_WIDTH` (1024) bits wide, enough for
+  // one access.
+  local function row_data_t read_phys_row(string tile_path, int unsigned phys_row_index,
+                                          int unsigned row_width);
+    uvm_hdl_data_t data;
+    string         access_path = get_phys_row_access_path(tile_path, phys_row_index, row_width);
+    if (!uvm_hdl_read(access_path, data)) begin
+      `uvm_error(get_name(), $sformatf("Failed to access %0s with uvm_hdl_read.", access_path))
+    end
+    return row_data_t'(data);
+  endfunction
+
+  // Writes `data` (an entire `row_width`-bit physical row) at `tile_path[phys_row_index]`.
+  local function void write_phys_row(string tile_path, int unsigned phys_row_index,
+                                     row_data_t data, int unsigned row_width);
+    string access_path = get_phys_row_access_path(tile_path, phys_row_index, row_width);
+    if (!uvm_hdl_deposit(access_path, uvm_hdl_data_t'(data))) begin
+      `uvm_error(get_name(), $sformatf("Failed to access %0s with uvm_hdl_deposit.", access_path))
+    end
+  endfunction
+
+  // Maps bit `bit_idx` of word `word_idx` (out of `words_per_row` words folded into one row) to
+  // its physical bit position within the row.
+  //
+  // For example, for `words_per_row == 2`, the bit vector `x0 x1 .. xN y0 y1 .. yN` (two logical
+  // words, `x` and `y`) is stored interleaved as `x0 y0 x1 y1 .. xN yN`.
+  local function uint32_t phys_row_bit_position(uint32_t bit_idx, uint32_t word_idx);
+    return bit_idx * words_per_row + word_idx;
+  endfunction
+
+  // Read a `width`-bit logical word from physical row `rel_row_index` in the tile at `tile_path`.
+  //
+  // This row index is already relative to the tile (so any address-based tiling has already been
+  // resolved by the caller). If the row contains multiple words (because `words_per_row` is
+  // greater than 1), this function extracts just the requested word.
+  local function row_data_t read_word(string tile_path, int unsigned rel_row_index,
+                                      int unsigned width);
+    int unsigned word_idx_in_row, phys_row_index, phys_row_width;
+    row_data_t   phys_row, word_data;
+
+    word_idx_in_row = rel_row_index % words_per_row;
+    phys_row_index  = rel_row_index / words_per_row;
+    phys_row_width  = width * words_per_row;
+
+    phys_row  = read_phys_row(tile_path, phys_row_index, phys_row_width);
+    word_data = '0;
+    for (int unsigned k = 0; k < width; k++) begin
+      word_data[k] = phys_row[phys_row_bit_position(k, word_idx_in_row)];
+    end
+    return word_data;
+  endfunction
+
   // Read the memory row that contains the given address.
   //
   // addr is the byte address, starting at offset 0. Mask the upper address bits as needed before
@@ -309,45 +432,35 @@ class mem_bkdr_util extends uvm_object;
   // encryption is enabled.
   virtual function row_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
     int unsigned row_index, rel_row_index, row_width;
-    string       tile_path;
-    row_data_t   encoded_row = 0;
+    row_data_t   word_data;
 
     if (!check_addr_valid(addr)) return 'x;
 
     // Convert addr to the index of the row (there are 2 ** addr_lsb items in each row)
     row_index = addr >> this.addr_lsb;
-
-    // Get an HDL path for tile that contains this row index, then reduce the row index to be
-    // relative to the tile.
-    tile_path     = this.get_full_path(row_index / this.tile_depth);
     rel_row_index = row_index % this.tile_depth;
 
     // The row itself contains this.width data bits plus (possibly) some extra bits, as defined by
     // the row adapter.
     row_width = this.width + this.row_adapter.get_num_extra_bits();
 
-    for (int unsigned lsb = 0; lsb < row_width; lsb += bits_per_backdoor_access) begin
-      int unsigned   msb = lsb + bits_per_backdoor_access - 1;
-      uvm_hdl_data_t data;
-      string         access_path;
-
-      // If bits_per_backdoor_access doesn't divide row_width, the last access will be to a few bits
-      // at the top of the row. The code here trims things so that we don't fall off the end.
-      if (msb >= row_width) begin
-        msb = row_width - 1;
+    if (num_bit_slices == 1) begin
+      // Get an HDL path for tile that contains this row index.
+      string tile_path = this.get_full_path(row_index / this.tile_depth);
+      word_data = read_word(tile_path, rel_row_index, row_width);
+    end else begin
+      // Every bit slice's instance is read on every access. Each instance contributes an
+      // equal-sized slice of the word (as opposed to tiling, where the address selects a single
+      // instance).
+      int unsigned slice_width = row_width / num_bit_slices;
+      word_data = '0;
+      for (int unsigned s = 0; s < num_bit_slices; s++) begin
+        row_data_t slice_data = read_word(get_bit_slice_path(s), rel_row_index, slice_width);
+        word_data |= slice_data << (s * slice_width);
       end
-
-      access_path = $sformatf("%0s[%0d][%0d:%0d]", tile_path, rel_row_index, msb, lsb);
-
-      if (!uvm_hdl_read(access_path, data)) begin
-        `uvm_error(get_name(),
-                   $sformatf("Failed to access %0s with uvm_hdl_read.", access_path))
-      end
-
-      encoded_row |= row_data_t'(data) << lsb;
     end
 
-    return this.row_adapter.decode_row(encoded_row);
+    return this.row_adapter.decode_row(word_data);
   endfunction
 
   // Convenience macro to check the addr for each flavor of read and write functions.
@@ -447,6 +560,29 @@ class mem_bkdr_util extends uvm_object;
     return data;
   endfunction
 
+  // Write a `width`-bit logical word `data` to physical row `rel_row_index` in the tile at
+  // `tile_path`.
+  //
+  // This row index is already relative to the tile (so any address-based tiling has already been
+  // resolved by the caller). If the row holds multiple words (`words_per_row > 1`), this is a
+  // read-modify-write of the whole physical row, so the other logical words already in it are
+  // preserved; if not (`words_per_row == 1`), the row is written directly without reading it first.
+  local function void write_word(string tile_path, int unsigned rel_row_index,
+                                 int unsigned width, row_data_t data);
+    int unsigned word_idx_in_row, phys_row_index, phys_row_width;
+    row_data_t   phys_row;
+
+    word_idx_in_row = rel_row_index % words_per_row;
+    phys_row_index  = rel_row_index / words_per_row;
+    phys_row_width  = width * words_per_row;
+
+    phys_row = (words_per_row == 1) ? '0 : read_phys_row(tile_path, phys_row_index, phys_row_width);
+    for (int unsigned k = 0; k < width; k++) begin
+      phys_row[phys_row_bit_position(k, word_idx_in_row)] = data[k];
+    end
+    write_phys_row(tile_path, phys_row_index, phys_row, phys_row_width);
+  endfunction
+
   // Write the entire word at the given address with the specified data.
   //
   // addr is the byte address starting at offset 0. Mask the upper address bits as needed before
@@ -456,16 +592,11 @@ class mem_bkdr_util extends uvm_object;
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
     row_data_t   encoded_row;
     int unsigned row_index, rel_row_index, row_width;
-    string       tile_path;
 
     if (!check_addr_valid(addr)) return;
 
     // Convert addr to the row_index of the row (there are 2 ** addr_lsb items in each row)
     row_index = addr >> this.addr_lsb;
-
-    // Get an HDL path for tile that contains this row index, then reduce the row index to be
-    // relative to the tile.
-    tile_path     = this.get_full_path(row_index / this.tile_depth);
     rel_row_index = row_index % this.tile_depth;
 
     // The row itself contains this.width data bits plus (possibly) some extra bits, as defined by
@@ -474,27 +605,22 @@ class mem_bkdr_util extends uvm_object;
 
     encoded_row = this.row_adapter.encode_row(data);
 
-    for (int unsigned lsb = 0; lsb < row_width; lsb += bits_per_backdoor_access) begin
-      int unsigned   msb = lsb + bits_per_backdoor_access - 1;
-      string         access_path;
-      int unsigned   access_width;
-      uvm_hdl_data_t wmask, wdata;
-
-      if (msb >= row_width) begin
-        msb = row_width - 1;
-      end
-
-      access_path  = $sformatf("%0s[%0d][%0d:%0d]", tile_path, rel_row_index, msb, lsb);
-      access_width = msb - lsb + 1;
-
-      wmask = (1 << access_width) - 1;
-      wdata = (encoded_row >> lsb) & wmask;
-
-      if (!uvm_hdl_deposit(access_path, wdata)) begin
-        `uvm_error(get_name(),
-                   $sformatf("Failed to access %0s with uvm_hdl_deposit.", access_path))
+    if (num_bit_slices == 1) begin
+      // Get an HDL path for tile that contains this row index.
+      string tile_path = this.get_full_path(row_index / this.tile_depth);
+      write_word(tile_path, rel_row_index, row_width, encoded_row);
+    end else begin
+      // Every bit slice's instance is written on every access. Each instance gets an equal-sized
+      // slice of the word (as opposed to tiling, where the address selects a single instance).
+      int unsigned slice_width = row_width / num_bit_slices;
+      row_data_t   slice_mask  = (row_data_t'(1) << slice_width) - 1;
+      for (int unsigned s = 0; s < num_bit_slices; s++) begin
+        row_data_t slice_data = (encoded_row >> (s * slice_width)) & slice_mask;
+        write_word(get_bit_slice_path(s), rel_row_index, slice_width, slice_data);
       end
     end
+
+    `uvm_info(`gfn, $sformatf("Backdoor write: addr 0x%0h, data 0x%0h", addr, data), UVM_HIGH)
   endfunction
 
   // Write a single byte at specified address.
@@ -660,11 +786,74 @@ class mem_bkdr_util extends uvm_object;
     $fclose(fh);
   endfunction
 
+  // Returns 1 if the memory is composed of more than one tile.
+  //
+  // The `$readmemh` and `$writememh` system tasks invoked by `MEM_BKDR_UTIL_FILE_OP` can only
+  // target a single unpacked array, so tiled memories need the file operations below instead.
+  virtual function bit is_tiled();
+    return tile_depth < depth;
+  endfunction
+
+  // Returns 1 if the memory is bit-sliced across more than one macro instance. Like a tiled
+  // memory, this can't be targeted by a single `$readmemh`/`$writememh` either (each instance only
+  // holds part of every word), so `MEM_BKDR_UTIL_FILE_OP` should not be used for it.
+  virtual function bit is_bit_sliced();
+    return num_bit_slices > 1;
+  endfunction
+
+  // Load the memory from a VMEM file through the tile-aware `write()`.
+  //
+  // `$readmemh` cannot target a tiled memory, because its tiles are separate arrays, but it can
+  // fill a temporary array of the same depth. Parsing the file therefore stays with the system
+  // task, exactly as for an untiled memory, and only the deposit is done word by word.
+  protected virtual task load_mem_from_file_tiled(string file);
+    // Words that the file does not cover keep this value and are not written, so that a partial
+    // image does not clobber the rest of the memory.
+    row_data_t unset = 'x;
+    row_data_t mem_words[] = new[depth];
+
+    foreach (mem_words[i]) mem_words[i] = unset;
+
+    `uvm_info(`gfn, $sformatf("Loading mem from file:\n%0s", file), UVM_LOW)
+    $readmemh(file, mem_words);
+
+    foreach (mem_words[i]) begin
+      if (mem_words[i] !== unset) write(i * bytes_per_word, mem_words[i]);
+    end
+  endtask
+
+  // Write the memory to a VMEM file one word at a time, through the tile-aware `read()`.
+  //
+  // `$writememh` cannot serve here either: besides not being able to target a tiled memory, it
+  // would write the full width of `row_data_t` rather than the width of the memory.
+  protected virtual function void write_mem_to_file_tiled(string file);
+    int    fh;
+    string word;
+    int    num_digits = (width + 3) / 4;
+
+    fh = $fopen(file, "w");
+    `DV_CHECK_FATAL(fh != 0, $sformatf("Could not open %0s for writing.", file))
+
+    for (int i = 0; i < depth; i++) begin
+      // `read()` returns a full `row_data_t`, and a field width in a format specifier pads rather
+      // than truncates, so keep the low-order digits of the formatted value to get one word of the
+      // memory width, like `$writememh` writes.
+      word = $sformatf("%h", read(i * bytes_per_word));
+      $fwrite(fh, "%0s\n", word.substr(word.len() - num_digits, word.len() - 1));
+    end
+
+    $fclose(fh);
+  endfunction
+
   // load mem from file
   virtual task load_mem_from_file(string file, bit recompute_ecc = 0);
     check_file(file, "r");
-    this.file = file;
-    ->readmemh_event;
+    if (is_tiled()) begin
+      load_mem_from_file_tiled(file);
+    end else begin
+      this.file = file;
+      ->readmemh_event;
+    end
     // The delay below avoids a race condition between this mem backdoor load and a subsequent
     // backdoor write to a particular location.
     #0;
@@ -696,8 +885,12 @@ class mem_bkdr_util extends uvm_object;
   // save mem contents to file
   virtual function void write_mem_to_file(string file);
     check_file(file, "w");
-    this.file = file;
-    ->writememh_event;
+    if (is_tiled()) begin
+      write_mem_to_file_tiled(file);
+    end else begin
+      this.file = file;
+      ->writememh_event;
+    end
   endfunction
 
   // Print the contents of the memory.
@@ -788,6 +981,10 @@ endclass
 //
 // inst is the mem_bkdr_util instance created in the testbench module.
 // path is the raw path to the memory element in the design.
+//
+// This serves a memory that is a single unpacked array. A tiled memory, for which
+// mem_bkdr_util::is_tiled() returns 1, is handled inside the class instead and never triggers the
+// events below, so the testbench does not need to invoke this macro for it.
 `define MEM_BKDR_UTIL_FILE_OP(inst, path) \
   fork \
     forever begin \

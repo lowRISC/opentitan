@@ -39,6 +39,11 @@
                        "--build-root={build_dir}",
                        "--setup",
                        "{fusesoc_core}"]
+  // The technology-dependent prims and the top-specific cores are virtual, so
+  // a mapping is needed to resolve them.  Partners select a different prim
+  // library by overriding this, or with dvsim's --fusesoc-mapping.
+  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
+
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
 

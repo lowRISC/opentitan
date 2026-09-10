@@ -39,6 +39,17 @@ main:
   jal     x1, run_ext_scmul_order_test
   jal     x1, run_ext_scmul_base_test
 
+  /* Check if there were any failures.
+     If w0 != 0, fail the test deliberately. */
+  bn.cmp  w0, w31
+  csrrs   x2, FG0, x0
+  andi    x2, x2, 8
+  bne     x2, x0, test_pass
+
+  /* Execute an illegal instruction to fail the simulation */
+  unimp
+
+test_pass:
   ecall
 
 /**

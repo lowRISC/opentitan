@@ -12,11 +12,9 @@ module ast_dft (
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
   output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT observed outputs
   // memories read-write margins
-  output ast_pkg::dpm_rm_t dpram_rmf_o,     // Dual Port RAM Read-write Margin Fast
-  output ast_pkg::dpm_rm_t dpram_rml_o,     // Dual Port RAM Read-write Margin sLow
-  output ast_pkg::spm_rm_t spram_rm_o,      // Single Port RAM Read-write Margin
-  output ast_pkg::spm_rm_t sprgf_rm_o,      // Single Port Reg-File Read-write Margin
-  output ast_pkg::spm_rm_t sprom_rm_o       // Single Port ROM Read-write Margin
+  output ast_pkg::tpm_rm_t tpram_rm_o, // Two Port RAM Read-write Margin
+  output ast_pkg::spm_rm_t spram_rm_o, // Single Port RAM Read-write Margin
+  output ast_pkg::rom_rm_t sprom_rm_o  // Single Port ROM Read-write Margin
 );
 
 // DFT to AST Digital PADs
@@ -32,10 +30,8 @@ assign obs_ctrl_o = '{
 ////////////////////////////////////////
 // Memories Read-write Margins
 ////////////////////////////////////////
-assign dpram_rmf_o = 10'h000;
-assign dpram_rml_o = 10'h000;
-assign spram_rm_o  = 5'h00;
-assign sprgf_rm_o  = 5'h00;
-assign sprom_rm_o  = 5'h00;
+assign tpram_rm_o = 10'h00;
+assign spram_rm_o = 13'h000;
+assign sprom_rm_o =  4'h0;
 
 endmodule : ast_dft

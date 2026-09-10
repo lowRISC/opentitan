@@ -10,7 +10,6 @@ load(
 )
 load(
     "//sw/host/provisioning/orchestrator/tests:transition.bzl",
-    "orchestrator_cw310_test_settings_transition",
     "orchestrator_cw340_test_settings_transition",
 )
 load(
@@ -59,13 +58,8 @@ py_test(
 )
 
 # These transitions have the same effect as supplying the following flags to bazel test:
-#  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_<fpga>_rom_with_fake_keys
-#  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty
-orchestrator_cw310_test_settings_transition(
-    name = "orchestrator_cw310_zip",
-    testonly = True,
-    target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
-)
+#  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_<fpga>_rom_with_fake_keys
+#  --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty
 
 orchestrator_cw340_test_settings_transition(
     name = "orchestrator_cw340_zip",
@@ -93,10 +87,10 @@ orchestrator_cw340_test_settings_transition(
             "exclusive",
             "fpga",
             "manuf",
+            "skip_in_ci",
         ] + [fpga],
     )
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]
@@ -121,10 +115,10 @@ orchestrator_cw340_test_settings_transition(
             "exclusive",
             "fpga",
             "manuf",
+            "skip_in_ci",
         ] + [fpga],
     )
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]
@@ -154,7 +148,6 @@ orchestrator_cw340_test_settings_transition(
     )
     for sku, cfg in EARLGREY_SKUS.items()
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]
@@ -185,7 +178,6 @@ orchestrator_cw340_test_settings_transition(
     )
     for sku, cfg in EARLGREY_SKUS.items()
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]
@@ -201,7 +193,6 @@ orchestrator_cw340_test_settings_transition(
         ],
     )
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]
@@ -216,7 +207,6 @@ orchestrator_cw340_test_settings_transition(
         ],
     )
     for fpga in [
-        "cw310",
         "cw340",
     ]
 ]

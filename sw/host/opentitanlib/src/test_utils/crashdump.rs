@@ -27,7 +27,7 @@ pub fn read_cpu_crashdump_data(
 
     // Make sure that CPU_INFO is writable.
     jtag.read_memory32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::CpuRegwen as u32,
+        top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::CpuRegwen as u32,
         &mut buf,
     )?;
     if buf[0] & RstmgrCpuRegwen::EN == 0 {
@@ -36,18 +36,18 @@ pub fn read_cpu_crashdump_data(
 
     let mut cpu_crashdump_info = [0u32; 16];
     jtag.read_memory32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::CpuInfoAttr as u32,
+        top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::CpuInfoAttr as u32,
         &mut buf,
     )?;
     let len = buf[0];
     log::info!("CPU Crash Dump Info ({:?} words):", len);
     for i in 0..len {
         jtag.write_memory32(
-            top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::CpuInfoCtrl as u32,
+            top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::CpuInfoCtrl as u32,
             &[RstmgrCpuInfoCtrl::INDEX.emplace(i) | RstmgrCpuInfoCtrl::EN],
         )?;
         jtag.read_memory32(
-            top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::CpuInfo as u32,
+            top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::CpuInfo as u32,
             &mut buf,
         )?;
         cpu_crashdump_info[i as usize] = buf[0];
@@ -79,18 +79,18 @@ pub fn read_alert_crashdump_data(
 
     let mut buf = [0u32];
     jtag.read_memory32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::AlertInfoAttr as u32,
+        top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::AlertInfoAttr as u32,
         &mut buf,
     )?;
     let len = buf[0];
     log::info!("Alert Crash Dump Info ({:?} words):", len);
     for i in 0..len {
         jtag.write_memory32(
-            top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::AlertInfoCtrl as u32,
+            top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::AlertInfoCtrl as u32,
             &[RstmgrAlertInfoCtrl::INDEX.emplace(i) | RstmgrAlertInfoCtrl::EN],
         )?;
         jtag.read_memory32(
-            top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::AlertInfo as u32,
+            top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::AlertInfo as u32,
             &mut buf,
         )?;
         log::info!("  Word {:?} = 0x{:x?}", i, buf[0]);
@@ -111,7 +111,7 @@ pub fn read_reset_reason(transport: &TransportWrapper, jtag_params: &JtagParams)
 
     let mut buf = [0u32];
     jtag.read_memory32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32 + RstmgrReg::ResetInfo as u32,
+        top_earlgrey::RSTMGR_BASE_ADDR as u32 + RstmgrReg::ResetInfo as u32,
         &mut buf,
     )?;
     let reset_reason = buf[0];

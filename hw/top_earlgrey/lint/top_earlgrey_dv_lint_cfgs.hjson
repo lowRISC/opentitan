@@ -66,12 +66,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
-             {    name: flash_ctrl
-                  fusesoc_core: lowrisc:earlgrey_dv:flash_ctrl_sim
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/lint/{tool}"
-             },
              {    name: gpio
                   fusesoc_core: lowrisc:earlgrey_dv:gpio_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -90,11 +84,11 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/i2c/dv/lint/{tool}"
              },
-             {    name: keymgr
-                  fusesoc_core: lowrisc:dv:keymgr_sim
+             {    name: keymgr_dpe
+                  fusesoc_core: lowrisc:dv:keymgr_dpe_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/ip/keymgr/dv/lint/{tool}"
+                  rel_path: "hw/ip/keymgr_dpe/dv/lint/{tool}"
              },
              {
                   name: kmac
@@ -115,12 +109,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/otp_ctrl/dv/lint/{tool}"
-             },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:,dv:pattgen_sim,
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
              },
              {    name: prim_alert
                   fusesoc_core: lowrisc:dv:prim_alert_sim
@@ -161,7 +149,7 @@
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:dv:rom_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1 --mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1 --mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
              {    name: rstmgr
@@ -197,7 +185,9 @@
              {    name: sram_ctrl
                   fusesoc_core: lowrisc:dv:sram_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  // mem_bkdr_util_hier is virtual: sram_ctrl_bkdr_util depends
+                  // on it directly.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1 --mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"
                   rel_path: "hw/ip/sram_ctrl/dv/lint/{tool}"
              },
              {    name: sysrst_ctrl
@@ -233,7 +223,17 @@
              {    name: chip
                   fusesoc_core: lowrisc:dv:top_earlgrey_chip_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  // The chip DV environment instantiates `chip_earlgrey_asic`,
+                  // so the chip mapping is the one that resolves the virtual
+                  // cores for the AST, pads, scan roles and JTAG ID.  It also
+                  // applies the mappings of `top_earlgrey`, which the chip
+                  // depends on.
+                  // rram_ctrl_bkdr_util is also virtual: chip_env (which this
+                  // DV environment instantiates) depends on it directly.  So is
+                  // rom_ctrl_bkdr_util_hier, which rom_ctrl_bkdr_util depends
+                  // on, and mem_bkdr_util_hier, which sram_ctrl_bkdr_util
+                  // depends on.
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:chip_earlgrey_asic:0.1 --mapping=lowrisc:systems:top_earlgrey:0.1 --mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1 --mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1 --mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"
                   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
              },
             ]

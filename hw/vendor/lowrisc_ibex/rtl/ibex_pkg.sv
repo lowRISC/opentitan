@@ -1,5 +1,6 @@
 // Copyright lowRISC contributors.
 // Copyright 2017 ETH Zurich and University of Bologna, see also CREDITS.md.
+// Copyright Microsoft Corporation
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,6 +32,11 @@ package ibex_pkg;
   /////////////////////
   // Parameter Enums //
   /////////////////////
+
+  typedef enum integer {
+    BaseIsaRV32I          = 0, // only RV32I
+    BaseIsaRV32IorCHERIoT = 1  // dual base ISA: RV32I/CHERIoT runtime switchable
+  } base_isa_e;
 
   typedef enum integer {
     RegFileFF    = 0,
@@ -74,7 +80,9 @@ package ibex_pkg;
     OPCODE_BRANCH   = 7'h63,
     OPCODE_JALR     = 7'h67,
     OPCODE_JAL      = 7'h6f,
-    OPCODE_SYSTEM   = 7'h73
+    OPCODE_SYSTEM   = 7'h73,
+    OPCODE_CHERI    = 7'h5b,
+    OPCODE_AUICGP   = 7'h7b
   } opcode_e;
 
 
@@ -310,8 +318,9 @@ package ibex_pkg;
   // Compressed instruction expansion
   typedef enum logic [1:0] {
     INSTR_NOT_EXPANDED,
-    INSTR_EXPANDED,
-    INSTR_EXPANDED_LAST
+    INSTR_EXPANDED,        // Executing micro-ops of an expanded instruction
+    INSTR_EXPANDED_COMMIT, // Micro-ops need to be committed atomically with successor micro-ops
+    INSTR_EXPANDED_LAST    // Last micro-op of an expanded instruction
   } instr_exp_e;
 
   // Exception PC mux selection
@@ -354,14 +363,20 @@ package ibex_pkg;
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd02};
   localparam exc_cause_t ExcCauseBreakpoint =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd03};
+  localparam exc_cause_t ExcCauseLoadAddrMisaligned  =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd04};
   localparam exc_cause_t ExcCauseLoadAccessFault  =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd05};
+  localparam exc_cause_t ExcCauseStoreAddrMisaligned  =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd06};
   localparam exc_cause_t ExcCauseStoreAccessFault =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd07};
   localparam exc_cause_t ExcCauseEcallUMode =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd08};
   localparam exc_cause_t ExcCauseEcallMMode =
     '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd11};
+  localparam exc_cause_t ExcCauseCheriFault =
+    '{irq_ext: 1'b0, irq_int: 1'b0, lower_cause: 5'd28};
 
   // Internal NMI cause
   typedef enum logic [4:0] {
@@ -608,6 +623,72 @@ package ibex_pkg;
     CSR_MHPMCOUNTER29H = 12'hB9D,
     CSR_MHPMCOUNTER30H = 12'hB9E,
     CSR_MHPMCOUNTER31H = 12'hB9F,
+    CSR_MSHWM          = 12'hBC1,
+    CSR_MSHWMB         = 12'hBC2,
+    CSR_CDBG_CTRL      = 12'hBC4,
+    // Unprivileged Counter/Timers (readable from U-mode subject to mcounteren)
+    CSR_CYCLE          = 12'hC00,
+    CSR_INSTRET        = 12'hC02,
+    CSR_HPMCOUNTER3    = 12'hC03,
+    CSR_HPMCOUNTER4    = 12'hC04,
+    CSR_HPMCOUNTER5    = 12'hC05,
+    CSR_HPMCOUNTER6    = 12'hC06,
+    CSR_HPMCOUNTER7    = 12'hC07,
+    CSR_HPMCOUNTER8    = 12'hC08,
+    CSR_HPMCOUNTER9    = 12'hC09,
+    CSR_HPMCOUNTER10   = 12'hC0A,
+    CSR_HPMCOUNTER11   = 12'hC0B,
+    CSR_HPMCOUNTER12   = 12'hC0C,
+    CSR_HPMCOUNTER13   = 12'hC0D,
+    CSR_HPMCOUNTER14   = 12'hC0E,
+    CSR_HPMCOUNTER15   = 12'hC0F,
+    CSR_HPMCOUNTER16   = 12'hC10,
+    CSR_HPMCOUNTER17   = 12'hC11,
+    CSR_HPMCOUNTER18   = 12'hC12,
+    CSR_HPMCOUNTER19   = 12'hC13,
+    CSR_HPMCOUNTER20   = 12'hC14,
+    CSR_HPMCOUNTER21   = 12'hC15,
+    CSR_HPMCOUNTER22   = 12'hC16,
+    CSR_HPMCOUNTER23   = 12'hC17,
+    CSR_HPMCOUNTER24   = 12'hC18,
+    CSR_HPMCOUNTER25   = 12'hC19,
+    CSR_HPMCOUNTER26   = 12'hC1A,
+    CSR_HPMCOUNTER27   = 12'hC1B,
+    CSR_HPMCOUNTER28   = 12'hC1C,
+    CSR_HPMCOUNTER29   = 12'hC1D,
+    CSR_HPMCOUNTER30   = 12'hC1E,
+    CSR_HPMCOUNTER31   = 12'hC1F,
+    CSR_CYCLEH         = 12'hC80,
+    CSR_INSTRETH       = 12'hC82,
+    CSR_HPMCOUNTER3H   = 12'hC83,
+    CSR_HPMCOUNTER4H   = 12'hC84,
+    CSR_HPMCOUNTER5H   = 12'hC85,
+    CSR_HPMCOUNTER6H   = 12'hC86,
+    CSR_HPMCOUNTER7H   = 12'hC87,
+    CSR_HPMCOUNTER8H   = 12'hC88,
+    CSR_HPMCOUNTER9H   = 12'hC89,
+    CSR_HPMCOUNTER10H  = 12'hC8A,
+    CSR_HPMCOUNTER11H  = 12'hC8B,
+    CSR_HPMCOUNTER12H  = 12'hC8C,
+    CSR_HPMCOUNTER13H  = 12'hC8D,
+    CSR_HPMCOUNTER14H  = 12'hC8E,
+    CSR_HPMCOUNTER15H  = 12'hC8F,
+    CSR_HPMCOUNTER16H  = 12'hC90,
+    CSR_HPMCOUNTER17H  = 12'hC91,
+    CSR_HPMCOUNTER18H  = 12'hC92,
+    CSR_HPMCOUNTER19H  = 12'hC93,
+    CSR_HPMCOUNTER20H  = 12'hC94,
+    CSR_HPMCOUNTER21H  = 12'hC95,
+    CSR_HPMCOUNTER22H  = 12'hC96,
+    CSR_HPMCOUNTER23H  = 12'hC97,
+    CSR_HPMCOUNTER24H  = 12'hC98,
+    CSR_HPMCOUNTER25H  = 12'hC99,
+    CSR_HPMCOUNTER26H  = 12'hC9A,
+    CSR_HPMCOUNTER27H  = 12'hC9B,
+    CSR_HPMCOUNTER28H  = 12'hC9C,
+    CSR_HPMCOUNTER29H  = 12'hC9D,
+    CSR_HPMCOUNTER30H  = 12'hC9E,
+    CSR_HPMCOUNTER31H  = 12'hC9F,
     CSR_CPUCTRLSTS     = 12'h7C0,
     CSR_SECURESEED     = 12'h7C1
   } csr_num_e;
@@ -644,6 +725,8 @@ package ibex_pkg;
   // RISC-V Foundation. Note this is allocated specifically to Ibex, should significant changes be
   // made a different architecture ID should be supplied.
   localparam logic [31:0] CSR_MARCHID_VALUE = {1'b0, 31'd22};
+  localparam logic [31:0] CSR_MARCHID_CHERIOT_VALUE = 32'hce1;
+
 
   // Machine Configuration Pointer
   // 0 indicates the configuration data structure does not exist. Ibex implementers may wish to
@@ -725,4 +808,17 @@ package ibex_pkg;
   };
 
   parameter pmp_mseccfg_t PmpMseccfgRst = '{rlb : 1'b0, mmwp: 1'b0, mml: 1'b0};
+
+  //////////////
+  // LSU      //
+  //////////////
+
+  typedef enum logic [3:0]  {
+    IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
+    WAIT_RVALID_MIS_GNTS_DONE,
+    CTX_WAIT_GNT1, CTX_WAIT_GNT2, CTX_WAIT_RESP
+  } ls_fsm_e;
+
+  typedef enum logic [2:0] {CRX_IDLE, CRX_WAIT_RESP1, CRX_WAIT_RESP2} cap_rx_fsm_t;
+
 endpackage

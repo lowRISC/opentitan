@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -14,6 +16,7 @@ cc_library(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:aes",
@@ -31,8 +34,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -41,7 +42,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_sym_impl",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_sym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -51,8 +61,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -61,7 +69,16 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_asym_impl",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_asym_commands",
-    ],
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -72,25 +89,26 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/lib:cryptolib_asym.h",
     ],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:ecc_p256",
-        "//sw/device/lib/crypto/impl:ecc_p384",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:rsa",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_asym_commands",
-    ],
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
@@ -102,29 +120,32 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:aes_gcm",
-        "//sw/device/lib/crypto/impl:cryptolib_build_info",
-        "//sw/device/lib/crypto/impl:drbg",
-        "//sw/device/lib/crypto/impl:hmac",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_sym_commands",
-    ],
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
+    ] + select({
+        # This is the target for the cryptolib given as a prebuilt drop
+        "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
+            "//sw/device/tests/penetrationtests/cryptolib_drop:cryptolib_imported",
+        ],
+        # This is the internal cryptolib
+        "//conditions:default": [
+            "//sw/device/lib/crypto",
+        ],
+    }),
 )
 
 cc_library(
     name = "ecc256_keygen_sca",
     srcs = ["ecc256_keygen_sca.c"],
     hdrs = ["ecc256_keygen_sca.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -189,12 +210,12 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
@@ -229,12 +250,12 @@ cc_library(
         ":ecc256_keygen_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",

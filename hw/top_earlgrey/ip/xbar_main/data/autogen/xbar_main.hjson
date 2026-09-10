@@ -20,7 +20,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rv_core_ibex__cored"
+      name:   "tl_cheriot__cored"
       act:    "rsp"
       package: "tlul_pkg"
     }
@@ -81,19 +81,19 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_flash_ctrl__core"
+      name:   "tl_rram_ctrl__core"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_flash_ctrl__prim"
+      name:   "tl_rram_macro__prim"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_flash_ctrl__mem"
+      name:   "tl_rram_ctrl__host"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -153,7 +153,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_keymgr"
+      name:   "tl_keymgr_dpe"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -172,6 +172,36 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_sram_ctrl_main__ram"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_sec__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_meta__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_sec__ram"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_cheriot__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_cheriot__revbm"
       act:    "req"
       package: "tlul_pkg"
     }

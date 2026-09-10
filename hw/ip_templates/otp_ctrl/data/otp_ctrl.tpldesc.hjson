@@ -33,5 +33,11 @@
       type: "bool"
       default: "true"
     }
+    {
+      name: "num_sram_key_req_slots"
+      desc: "Number of key derivation interfaces for SRAM scrambling devices."
+      type: "int"
+      default: "4"
+    }
   ]
 }

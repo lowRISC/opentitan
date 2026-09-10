@@ -73,7 +73,7 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(top_darjeeling.clk_aon_i),
+    .clk(ast_base_clks.clk_aon),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)
@@ -383,7 +383,7 @@ module tb;
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamRet0] = ram_ret0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
@@ -422,7 +422,11 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR),
+          // The ROM is a single memory array, so it has no tiles.
+          .tiling_path         (""),
+          .tiling_suffix_fmt_str(""),
+          .tile_depth          ($size(`ROM0_MEM_HIER)));
       m_mem_bkdr_util[Rom0] = rom0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom0], `ROM0_MEM_HIER)
 
@@ -439,7 +443,11 @@ module tb;
 `endif
           .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey),
           .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR),
+          // The ROM is a single memory array, so it has no tiles.
+          .tiling_path         (""),
+          .tiling_suffix_fmt_str(""),
+          .tile_depth          ($size(`ROM1_MEM_HIER)));
       m_mem_bkdr_util[Rom1] = rom1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom1], `ROM1_MEM_HIER)
 
@@ -519,27 +527,27 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
-          $assertoff(0, dut.top_darjeeling.u_gpio);
-          $assertoff(0, dut.top_darjeeling.u_i2c0);
-          $assertoff(0, dut.top_darjeeling.u_pinmux_aon);
-          $assertoff(0, dut.top_darjeeling.u_spi_device);
-          $assertoff(0, dut.top_darjeeling.u_spi_host0);
-          $assertoff(0, dut.top_darjeeling.u_uart0);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_host0);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_uart0);
         end else begin
-          $asserton(0, dut.top_darjeeling.u_gpio);
-          $asserton(0, dut.top_darjeeling.u_i2c0);
-          $asserton(0, dut.top_darjeeling.u_pinmux_aon);
-          $asserton(0, dut.top_darjeeling.u_spi_device);
-          $asserton(0, dut.top_darjeeling.u_spi_host0);
-          $asserton(0, dut.top_darjeeling.u_uart0);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_host0);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_uart0);
         end
       end
       // See chip_sw_sleep_pin_mio_dio_val_vseq for more details.
       forever @dut.chip_if.chip_sw_sleep_pin_mio_dio_val_sva_disable begin
         if (dut.chip_if.chip_sw_sleep_pin_mio_dio_val_sva_disable) begin
-          $assertoff(0, dut.top_darjeeling.u_spi_device);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
         end else begin
-          $asserton(0, dut.top_darjeeling.u_spi_device);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
         end
       end
     join

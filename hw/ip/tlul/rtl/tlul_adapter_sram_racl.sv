@@ -23,6 +23,7 @@ module tlul_adapter_sram_racl
 #(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32,         // Must be multiple of the TL width
+  parameter int SramDepth         = 2**SramAw,  // Must be <= 2**SramAw
   parameter int Outstanding       = 1,          // Only one request is accepted
   parameter int SramBusBankAW     = 12,         // SRAM bus address width of the SRAM bank. Only
                                                 // used when DataXorAddr=1.
@@ -101,6 +102,7 @@ module tlul_adapter_sram_racl
   tlul_adapter_sram #(
     .SramAw            ( SramAw            ),
     .SramDw            ( SramDw            ),
+    .SramDepth         ( SramDepth         ),
     .Outstanding       ( Outstanding       ),
     .SramBusBankAW     ( SramBusBankAW     ),
     .ByteAccess        ( ByteAccess        ),

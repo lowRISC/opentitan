@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 static const dt_gpio_t kGpioDt = kDtGpio;
-static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
+static const dt_pinmux_t kPinmuxDt = kDtPinmux;
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;

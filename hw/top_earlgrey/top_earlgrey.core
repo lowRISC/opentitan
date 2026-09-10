@@ -17,10 +17,10 @@ filesets:
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
+      - lowrisc:ip:cheriot
       - lowrisc:ip:spi_device
       - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
-      - lowrisc:ip:pattgen
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
@@ -29,11 +29,12 @@ filesets:
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:flash
+      - lowrisc:ip:rram_ctrl
+      - lowrisc:virtual_ip:rram_macro
       - lowrisc:ip:sram_ctrl
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe
       - lowrisc:earlgrey_constants:top_pkg
-      - lowrisc:constants:top_earlgrey_jtag_id_pkg
+      - lowrisc:virtual_constants:top_earlgrey_jtag_id_pkg
       - lowrisc:constants:top_earlgrey_ibex_pmp_reset_pkg
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
@@ -41,11 +42,9 @@ filesets:
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:earlgrey_ip:alert_handler
       - lowrisc:earlgrey_ip:clkmgr
-      - lowrisc:earlgrey_ip:flash_ctrl
       - lowrisc:earlgrey_ip:gpio
       - lowrisc:earlgrey_ip:otp_ctrl
       - lowrisc:earlgrey_ip:pinmux
-      - lowrisc:earlgrey_ip:pwm
       - lowrisc:earlgrey_ip:pwrmgr
       - lowrisc:earlgrey_ip:rstmgr
       - lowrisc:earlgrey_ip:rv_plic
@@ -60,12 +59,11 @@ filesets:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
-      - "fileset_partner  ? (partner:systems:top_earlgrey_ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
-      - "fileset_partner  ? (partner:ip:otp_macro)"
-      - "!fileset_partner ? (lowrisc:ip:otp_macro)"
+      - lowrisc:systems:ast_pkg
     files:
       - rtl/autogen/top_earlgrey.sv
+      - rtl/autogen/earlgrey_pd_main.sv
+      - rtl/autogen/earlgrey_pd_aon.sv
     file_type: systemVerilogSource
 
   files_rtl_testing:
@@ -109,9 +107,9 @@ mapping:
   "lowrisc:virtual_constants:top_pkg": "lowrisc:earlgrey_constants:top_pkg"
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
-  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
   "lowrisc:virtual_constants:lc_ctrl_token_pkg": "lowrisc:earlgrey_constants:testing_lc_ctrl_token_pkg"
   "lowrisc:virtual_constants:rnd_cnst_pkg": "lowrisc:earlgrey_constants:testing_rnd_cnst_pkg"
+  "lowrisc:virtual_ip:rram_macro": "lowrisc:ip:rram_macro"
 
 parameters:
   SYNTHESIS:

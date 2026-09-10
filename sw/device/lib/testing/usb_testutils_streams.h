@@ -31,18 +31,18 @@
 
 // Seed numbers for the LFSR generators in each transfer direction for
 // the given stream number
-#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s)*7U)
-#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s)*7U)
+#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s) * 7U)
+#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s) * 7U)
 
 // Buffer size randomization
-#define BUFSZ_LFSR_SEED(s) (uint8_t)(0x17U + (s)*7U)
+#define BUFSZ_LFSR_SEED(s) (uint8_t)(0x17U + (s) * 7U)
 
 // Simple LFSR for 8-bit sequences
 /// Note: zero is an isolated state that shall be avoided
-#define LFSR_ADVANCE(lfsr)     \
-  (uint8_t)(                   \
-      (uint8_t)((lfsr) << 1) ^ \
-      ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
+#define LFSR_ADVANCE(lfsr)                                                     \
+  (uint8_t)((uint8_t)((lfsr) << 1) ^                                           \
+            ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & \
+             1U))
 
 // Test/stream flags
 typedef enum {

@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
-use anyhow::{Result, bail, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use thiserror::Error;
 
 use super::openocd::OpenOcd;
@@ -19,10 +19,12 @@ pub mod consts {
 
     pub const DTMCS_VERSION_SHIFT: u32 = 0;
     pub const DTMCS_ABITS_SHIFT: u32 = 4;
+    pub const DTMCS_IDLE_SHIFT: u32 = 12;
     pub const DTMCS_DMIRESET_SHIFT: u32 = 16;
 
     pub const DTMCS_VERSION_MASK: u32 = 0xf << DTMCS_VERSION_SHIFT;
     pub const DTMCS_ABITS_MASK: u32 = 0x3f << DTMCS_ABITS_SHIFT;
+    pub const DTMCS_IDLE_MASK: u32 = 0x7 << DTMCS_IDLE_SHIFT;
     pub const DTMCS_DMIRESET_MASK: u32 = 1 << DTMCS_DMIRESET_SHIFT;
 
     pub const DTMCS_VERSION_0_13: u32 = 1;
@@ -76,6 +78,21 @@ pub trait Dmi {
 
     /// Write a DMI register.
     fn dmi_write(&mut self, addr: u32, data: u32) -> Result<()>;
+
+    /// Perform a batch of sequential writes to DMI registers.
+    /// May or may not be more optimized depending on the underlying implementation.
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        writes
+            .iter()
+            .try_for_each(|&(addr, data)| self.dmi_write(addr, data))
+    }
+
+    /// Perform a batch of sequential reads from DMI registers, returning the read values
+    /// in the same order as the given addresses.
+    /// May or may not be more optimized depending on the underlying implementation.
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        addrs.iter().map(|&addr| self.dmi_read(addr)).collect()
+    }
 }
 
 impl<T: Dmi> Dmi for &mut T {
@@ -86,6 +103,14 @@ impl<T: Dmi> Dmi for &mut T {
     fn dmi_write(&mut self, addr: u32, data: u32) -> Result<()> {
         T::dmi_write(self, addr, data)
     }
+
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        T::batched_dmi_writes(self, writes)
+    }
+
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        T::batched_dmi_reads(self, addrs)
+    }
 }
 
 /// DMI interface via OpenOCD.
@@ -93,7 +118,16 @@ pub struct OpenOcdDmi {
     openocd: OpenOcd,
     tap: String,
     abits: u32,
+    /// Idle time to wait for after a DMI scan, encoded the same way as `DTMCS.idle`: 0 means
+    /// no wait is needed, 1 means entering Run-Test/Idle and leaving immediately is enough,
+    /// 2 means staying for 1 cycle before leaving, and so on. Every scan already ends in
+    /// Run-Test/Idle for one cycle via `-endstate`, which on its own already satisfies 0 and
+    /// 1; only values above 1 need an explicit extra `runtest` (see `wait_idle_cmd`).
+    extra_idle: u32,
 }
+
+/// Value used for `extra_idle` unless overridden by `OT_DMI_EXTRA_IDLE`.
+const DEFAULT_EXTRA_IDLE: u32 = 4;
 
 impl OpenOcdDmi {
     /// Create a new DMI interface via OpenOCD.
@@ -112,10 +146,21 @@ impl OpenOcdDmi {
         let res = openocd.drscan(tap, 32, DTMCS_DMIRESET_MASK)?;
         let version = (res & DTMCS_VERSION_MASK) >> DTMCS_VERSION_SHIFT;
         let abits = (res & DTMCS_ABITS_MASK) >> DTMCS_ABITS_SHIFT;
+        let idle = (res & DTMCS_IDLE_MASK) >> DTMCS_IDLE_SHIFT;
 
         ensure!(
             version == DTMCS_VERSION_0_13,
             "DTMCS indicates version other than 0.13"
+        );
+
+        let extra_idle = match std::env::var("OT_DMI_EXTRA_IDLE") {
+            Ok(val) => val.parse().context("invalid OT_DMI_EXTRA_IDLE")?,
+            Err(_) => DEFAULT_EXTRA_IDLE,
+        };
+        log::info!(
+            "DTMCS.idle = {idle} (using {extra_idle} as extra_idle, i.e. {} extra runtest \
+             cycle(s) per scan; set OT_DMI_EXTRA_IDLE to override)",
+            extra_idle.saturating_sub(1)
         );
 
         openocd.irscan(tap, DMI)?;
@@ -123,28 +168,47 @@ impl OpenOcdDmi {
             openocd,
             tap: tap.to_owned(),
             abits,
+            extra_idle,
         })
     }
 
+    fn drscan_bits(&self) -> u32 {
+        self.abits + DMI_ADDRESS_SHIFT
+    }
+
+    /// Command for waiting in Run-Test/Idle after a scan, per `extra_idle`:
+    /// the scan's own `-endstate` already provides one cycle in Run-Test/Idle, which covers
+    /// `extra_idle` 0 and 1 on its own; only `extra_idle - 1` further cycles are needed above
+    /// that.
+    fn wait_idle_cmd(&self) -> String {
+        if self.extra_idle > 1 {
+            format!("runtest {}", self.extra_idle - 1)
+        } else {
+            String::new()
+        }
+    }
+
+    /// Wait for `extra_idle` cycles in Run-Test/Idle, if the DTM needs more than the one cycle
+    /// every scan already ends in.
+    fn wait_idle(&mut self) -> Result<()> {
+        let cmd = self.wait_idle_cmd();
+        if !cmd.is_empty() {
+            self.openocd.execute(&cmd)?;
+        }
+        Ok(())
+    }
+
     fn dmi_op(&mut self, op: u64) -> Result<u64> {
-        let res = self
-            .openocd
-            .drscan(&self.tap, self.abits + DMI_ADDRESS_SHIFT, op)?;
+        let res = self.openocd.drscan(&self.tap, self.drscan_bits(), op)?;
 
         // We just scanned into the DMI register, so the scanned result should be empty.
         ensure!(res == 0, "Unexpected DMI initial response {res:#x}");
 
-        // Run the DMI operation.
-        // TODO: The proper way is to run for a small number of cycles, and then try to read the result.
-        // If an error occurs indicating that the number of cycles are not sufficient, then increase that number
-        // and try again. Here we just use a large enough number to avoid having to implement the retry logic,
-        // which is good enough for now.
-        self.openocd.execute("runtest 10")?;
+        // Give the DTM the idle time it asked for to service the operation.
+        self.wait_idle()?;
 
         // Read the result.
-        let res = self
-            .openocd
-            .drscan(&self.tap, self.abits + DMI_ADDRESS_SHIFT, 0)?;
+        let res = self.openocd.drscan(&self.tap, self.drscan_bits(), 0)?;
         ensure!(res & 3 == 0, "DMI operation failed with {res:#x}");
 
         // Double check the address matches.
@@ -161,7 +225,7 @@ impl Dmi for OpenOcdDmi {
     fn dmi_read(&mut self, addr: u32) -> Result<u32> {
         let output = (self.dmi_op((addr as u64) << DMI_ADDRESS_SHIFT | DMI_OP_READ)?
             >> DMI_DATA_SHIFT) as u32;
-        log::info!("DMI read {:#x} -> {:#x}", addr, output);
+        log::debug!("DMI read {:#x} -> {:#x}", addr, output);
         Ok(output)
     }
 
@@ -169,8 +233,136 @@ impl Dmi for OpenOcdDmi {
         self.dmi_op(
             (addr as u64) << DMI_ADDRESS_SHIFT | (value as u64) << DMI_DATA_SHIFT | DMI_OP_WRITE,
         )?;
-        log::info!("DMI write {:#x} <- {:#x}", addr, value);
+        log::debug!("DMI write {:#x} <- {:#x}", addr, value);
         Ok(())
+    }
+
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        if writes.is_empty() {
+            return Ok(());
+        }
+
+        log::debug!(
+            "DMI {} batched writes: {}",
+            writes.len(),
+            writes
+                .iter()
+                .map(|&(addr, value)| format!("{:#x} <- {:#x}", addr, value))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+
+        // Chunk the batch to stay well under OpenOCD's ~4 MiB TCL RPC command buffer.
+        const CHUNK_SIZE: usize = 16384;
+
+        for chunk in writes.chunks(CHUNK_SIZE) {
+            // For optimized writes via drscan, we perform direct drscan write operations,
+            // waiting in the RunTest state after each one (per `DTMCS.idle`, see `wait_idle`)
+            // so the DTM has time to service it before the next write lands. We only check the
+            // returned scanned values at the end of each chunk, with a final write to check the
+            // scan status (as errors are sticky).
+            let mut cmd = chunk
+                .iter()
+                .map(|&(addr, value)| {
+                    let data = (addr as u64) << DMI_ADDRESS_SHIFT
+                        | (value as u64) << DMI_DATA_SHIFT
+                        | DMI_OP_WRITE;
+                    let scan = self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), data);
+                    let idle = self.wait_idle_cmd();
+                    if idle.is_empty() {
+                        scan
+                    } else {
+                        format!("{scan}\n{idle}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            cmd.push_str(
+                format!(
+                    "\n{}",
+                    self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), 0)
+                )
+                .as_str(),
+            );
+            let result = self.openocd.execute(&cmd)?;
+
+            // The final NOP scan's captured value carries the DMI status of this chunk:
+            // failed or dropped-while-busy operations leave a sticky nonzero op field, so a
+            // clean status here means every write in the chunk was accepted.
+            let res = u64::from_str_radix(result.trim(), 16)
+                .with_context(|| format!("unexpected DMI batched write response '{result}'"))?;
+            ensure!(
+                res & 3 == 0,
+                "DMI batched write failed with sticky status {res:#x}; at least one write was \
+                 dropped (is the JTAG clock too fast for the DMI to keep up?)"
+            );
+        }
+        Ok(())
+    }
+
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        // Pipelined DMI reads: each `drscan` shifts in the next read operation while shifting
+        // out the response of the previous one, so a chunk of N reads costs a single TCL round
+        // trip instead of 3 round trips per read via `dmi_read`. Operations execute strictly in
+        // order at the DTM.
+        const CHUNK_SIZE: usize = 16384;
+
+        let mut values = Vec::with_capacity(addrs.len());
+        for chunk in addrs.chunks(CHUNK_SIZE) {
+            let mut cmd = String::from("set _r {}");
+            for &addr in chunk {
+                let op = (addr as u64) << DMI_ADDRESS_SHIFT | DMI_OP_READ;
+                cmd.push_str(&format!(
+                    "\nlappend _r [{}]",
+                    self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), op)
+                ));
+                let idle = self.wait_idle_cmd();
+                if !idle.is_empty() {
+                    cmd.push_str(&format!("\n{idle}"));
+                }
+            }
+            // A trailing NOP scan collects the final read's response.
+            cmd.push_str(&format!(
+                "\nlappend _r [{}]\nset _r",
+                self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), 0)
+            ));
+
+            let result = self.openocd.execute(&cmd)?;
+            let entries = result
+                .split_whitespace()
+                .map(|s| {
+                    u64::from_str_radix(s, 16)
+                        .with_context(|| format!("unexpected DMI batched read response '{s}'"))
+                })
+                .collect::<Result<Vec<u64>>>()?;
+            ensure!(
+                entries.len() == chunk.len() + 1,
+                "DMI batched read returned {} entries, expected {}",
+                entries.len(),
+                chunk.len() + 1
+            );
+
+            // Entry k is captured while scanning in operation k and holds the response of
+            // operation k-1: entry 0 belongs to whatever preceded this chunk (only its status
+            // matters), entries 1..=N are the responses of this chunk's reads, in order.
+            for (idx, &res) in entries.iter().enumerate() {
+                ensure!(
+                    res & 3 == 0,
+                    "DMI batched read failed with sticky status {res:#x} at entry {idx} \
+                     (is the JTAG clock too fast for the DMI to keep up?)"
+                );
+                if idx > 0 {
+                    let addr = chunk[idx - 1];
+                    ensure!(
+                        res >> DMI_ADDRESS_SHIFT == addr as u64,
+                        "DMI batched read address mismatch: expected {addr:#x}, response {res:#x}"
+                    );
+                    values.push((res >> DMI_DATA_SHIFT) as u32);
+                }
+            }
+        }
+
+        Ok(values)
     }
 }
 

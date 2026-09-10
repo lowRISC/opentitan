@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_kmac_req)
+`uvm_analysis_imp_decl(_kmac_txn)
+
 class keymgr_scoreboard extends cip_base_scoreboard #(
     .CFG_T(keymgr_env_cfg),
     .RAL_T(keymgr_reg_block),
@@ -68,9 +71,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_working_state_e addr_phase_working_state;
   bit [keymgr_pkg::Shares-1:0][keymgr_reg_pkg::NumOutReg-1:0] addr_phase_is_sw_share_corrupted;
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) req_fifo;
-  uvm_tlm_analysis_fifo #(kmac_app_item) rsp_fifo;
+  // An import for request packets sent to KMAC
+  uvm_analysis_imp_kmac_req #(kmac_app_req_packet_item, keymgr_scoreboard) m_kmac_req_imp;
+
+  // An import for complete transactions between rom_ctrl and KMAC
+  uvm_analysis_imp_kmac_txn #(kmac_app_mon_item, keymgr_scoreboard)        m_kmac_txn_imp;
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
@@ -84,8 +89,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    req_fifo = new("req_fifo", this);
-    rsp_fifo = new("rsp_fifo", this);
+    m_kmac_req_imp = new("m_kmac_req_imp", this);
+    m_kmac_txn_imp = new("m_kmac_txn_imp", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -95,18 +100,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      forever begin
-        kmac_app_item item;
-        req_fifo.get(item);
-        if (!cfg.en_scb) continue;
-        process_kmac_data_req(item);
-      end
-      forever begin
-        kmac_app_item item;
-        rsp_fifo.get(item);
-        if (!cfg.en_scb) continue;
-        process_kmac_data_rsp(item);
-      end
       forever begin
         wait(cfg.keymgr_vif.keymgr_en_sync2 != lc_ctrl_pkg::On);
 
@@ -131,12 +124,27 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
-  virtual function void process_kmac_data_req(kmac_app_item item);
-    keymgr_pkg::keymgr_ops_e op = get_operation();
 
+
+  function void write_kmac_req(kmac_app_req_packet_item packet);
+    byte unsigned req_bytes[$];
+    int unsigned  nonzero_share1_indices[$];
+    keymgr_pkg::keymgr_ops_e op;
+
+    // If the scoreboard is disabled, ignore the KMAC request and return immediately.
+    if (!cfg.en_scb) return;
+
+    op = get_operation();
+
+    packet.get_share_byte_queue(0, req_bytes);
+    if (packet.get_reqs_with_nonzero_share(1, nonzero_share1_indices)) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Packet had %0d requests with a nonzero share1 (indices: %0p).",
+                           nonzero_share1_indices.size(), nonzero_share1_indices))
+    end
 
     if (!cfg.keymgr_vif.get_keymgr_en()) begin
-      compare_invalid_data(item.byte_data_q);
+      compare_invalid_data(req_bytes);
       return;
     end else begin
       // there must be a OP which causes the KMAC data req
@@ -152,17 +160,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           keymgr_pkg::StInit: begin
             compare_adv_creator_data(.cdi_type(current_cdi),
                                      .exp_match(!is_err),
-                                     .byte_data_q(item.byte_data_q));
+                                     .byte_data_q(req_bytes));
           end
           keymgr_pkg::StCreatorRootKey: begin
             compare_adv_owner_int_data(.cdi_type(current_cdi),
                                        .exp_match(!is_err),
-                                       .byte_data_q(item.byte_data_q));
+                                       .byte_data_q(req_bytes));
           end
           keymgr_pkg::StOwnerIntKey: begin
             compare_adv_owner_data(.cdi_type(current_cdi),
                                    .exp_match(!is_err),
-                                   .byte_data_q(item.byte_data_q));
+                                   .byte_data_q(req_bytes));
           end
           keymgr_pkg::StOwnerKey, keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
             // set to 1 to check invalid data is used
@@ -170,38 +178,42 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           end
           default: `uvm_error(`gfn, $sformatf("Unexpected current_state: %0d", current_state))
         endcase
-        if (is_err) compare_invalid_data(item.byte_data_q);
+        if (is_err) compare_invalid_data(req_bytes);
       end
       keymgr_pkg::OpGenId: begin
-        if (get_is_kmac_data_correct()) compare_id_data(item.byte_data_q);
-        else                            compare_invalid_data(item.byte_data_q);
+        if (get_is_kmac_data_correct()) compare_id_data(req_bytes);
+        else                            compare_invalid_data(req_bytes);
       end
       keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
-        if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
-        else                            compare_invalid_data(item.byte_data_q);
+        if (get_is_kmac_data_correct()) compare_gen_out_data(req_bytes);
+        else                            compare_invalid_data(req_bytes);
       end
       keymgr_pkg::OpDisable: begin
-        compare_invalid_data(item.byte_data_q);
+        compare_invalid_data(req_bytes);
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
     endcase
   endfunction
 
-  virtual function void process_kmac_data_rsp(kmac_app_item item);
+  function void write_kmac_txn(kmac_app_mon_item txn);
     update_result_e update_result;
     bit process_update;
 
+    // If the scoreboard is disabled, ignore the KMAC transaction (containing the response) and
+    // return immediately.
+    if (!cfg.en_scb) return;
+
     // fault error is preserved until reset
-    if (!is_kmac_rsp_err) is_kmac_rsp_err = item.rsp_error;
-    if (!is_kmac_invalid_data) is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
+    if (!is_kmac_rsp_err) is_kmac_rsp_err = txn.m_rsp.m_error;
+    if (!is_kmac_invalid_data) is_kmac_invalid_data = txn.m_rsp.is_kmac_rsp_data_invalid();
 
     update_result = process_update_after_op_done();
 
     case (update_result)
       UpdateInternalKey: begin
         // digest is 384 bits wide while internal key is only 256, need to truncate it
-        current_internal_key[current_cdi] = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+        current_internal_key[current_cdi] = {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
+                                             txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
         cfg.keymgr_vif.store_internal_key(current_internal_key[current_cdi], current_state,
                                           current_cdi);
 
@@ -212,8 +224,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         if (!get_fault_err) begin
           bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
           // digest is 384 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+          sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
+                             txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
@@ -226,7 +238,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       UpdateHwOut: begin
-        kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
+        kmac_digests_t key_shares = {txn.m_rsp.m_digest_s1, txn.m_rsp.m_digest_s0};
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control_shadowed.dest_sel));
 
@@ -404,14 +416,14 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      `downcast(dv_reg, csr)
-    end
-    else begin
+    // Get a handle to the CSR being accessed.
+    csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+    if (csr == null) begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+    end
+    if (!$cast(dv_reg, csr)) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Cannot cast register %0s to a dv_base_reg.", csr.get_name()))
     end
 
     // if incoming access is a write to a valid csr, then make updates right away
@@ -1039,7 +1051,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_adv_creator_data(keymgr_cdi_type_e cdi_type,
                                                  bit exp_match,
-                                                 const ref byte byte_data_q[$]);
+                                                 const ref byte unsigned byte_data_q[$]);
     adv_creator_data_t exp, act;
     string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
@@ -1071,7 +1083,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_adv_owner_int_data(keymgr_cdi_type_e cdi_type,
                                                    bit exp_match,
-                                                   const ref byte byte_data_q[$]);
+                                                   const ref byte unsigned byte_data_q[$]);
     adv_owner_int_data_t exp, act;
     string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
@@ -1098,7 +1110,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_adv_owner_data(keymgr_cdi_type_e cdi_type,
                                                bit exp_match,
-                                               const ref byte byte_data_q[$]);
+                                               const ref byte unsigned byte_data_q[$]);
     adv_owner_data_t exp, act;
     string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
@@ -1125,7 +1137,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
   // matching to any of existing meaningful data
-  virtual function void compare_invalid_data(const ref byte byte_data_q[$]);
+  virtual function void compare_invalid_data(const ref byte unsigned byte_data_q[$]);
     adv_owner_data_t act;
 
     act = {<<8{byte_data_q}};
@@ -1148,7 +1160,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  virtual function void compare_id_data(const ref byte byte_data_q[$]);
+  virtual function void compare_id_data(const ref byte unsigned byte_data_q[$]);
     bit [keymgr_pkg::IdDataWidth-1:0] act, exp;
 
     case (current_state)
@@ -1164,7 +1176,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     id_data_a_array[current_state] = act;
   endfunction
 
-  virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
+  virtual function void compare_gen_out_data(const ref byte unsigned byte_data_q[$]);
     gen_out_data_t exp, act;
     keymgr_pkg::keymgr_ops_e op = get_operation();
     keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
@@ -1316,21 +1328,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = '0;
     addr_phase_is_sw_share_corrupted = '0;
-    req_fifo.flush();
-    rsp_fifo.flush();
     current_internal_key.delete;
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
     hw_data_a_array.delete();
     cfg.keymgr_vif.reset();
-  endfunction
-
-  function void check_phase(uvm_phase phase);
-    super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, req_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, rsp_fifo)
   endfunction
 
   `undef CREATE_CMP_STR

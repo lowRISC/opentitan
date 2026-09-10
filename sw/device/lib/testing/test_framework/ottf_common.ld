@@ -50,14 +50,14 @@ _manifest_code_end = _text_end - _ottf_start_address;
 _manifest_entry_point = _ottf_start - _ottf_start_address;
 /*
  * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
- * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
+ * the NVM region.  Otherwise, the value kHardenedBoolTrue (0x739) is
  * selected.
  */
 _manifest_address_translation = (_text_start >= ORIGIN(ottf_storage) &&
                                  _text_start < (ORIGIN(ottf_storage)
                                               + LENGTH(ottf_storage))) ? 0x1d4 : 0x739;
 
-REGION_ALIAS("coverage_flash", ottf_flash);
+REGION_ALIAS("coverage_nvm", ottf_nvm);
 
 PHDRS {
   static_critical_segment PT_LOAD;
@@ -81,7 +81,7 @@ SECTIONS {
   .manifest _ottf_start_address : {
     KEEP(*(.manifest))
     . = ALIGN(4);
-  } > ottf_flash : manifest_segment
+  } > ottf_nvm : manifest_segment
 
   /**
    * Immutable ROM_EXT section.
@@ -96,7 +96,7 @@ SECTIONS {
     /* Ensure section end is 256-byte aligned for interrupt vector after. */
     . = ALIGN(256);
     _rom_ext_immutable_end = .;
-  } > ottf_flash
+  } > ottf_nvm
 
 
   /**
@@ -107,14 +107,14 @@ SECTIONS {
    */
   .vectors : ALIGN (256){
     *(.vectors)
-  } > ottf_flash
+  } > ottf_nvm
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > ottf_flash
+  } > ottf_nvm
 
   /**
    * Standard text section, containing program code.
@@ -125,12 +125,12 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > ottf_flash
+  } > ottf_nvm
 
   /**
    * Shutdown text section, containing shutdown function(s).
    *
-   * This must be the last executable section in the OTTF flash image.
+   * This must be the last executable section in the OTTF NVM image.
    */
   .shutdown : ALIGN(4) {
     *(.shutdown)
@@ -139,7 +139,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > ottf_flash
+  } > ottf_nvm
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -155,7 +155,7 @@ SECTIONS {
     *(.rodata)
     *(.rodata.*)
 
-  } > ottf_flash
+  } > ottf_nvm
 
   INCLUDE sw/device/lib/coverage/rodata.ld
 
@@ -201,13 +201,13 @@ SECTIONS {
 
     /**
      * This puts it in ram_main at runtime (for the VMA), but puts the section
-     * into flash for load time (for the LMA). This is why `_data_init_*` uses
+     * into NVM for load time (for the LMA). This is why `_data_init_*` uses
      * `LOADADDR`.
      *
      * Using `AT>` means we don't have to keep track of the next free part of
-     * flash, as we do in our other linker scripts.
+     * NVM, as we do in our other linker scripts.
      */
-  } > ram_main AT> ottf_flash :data_segment
+  } > ram_main AT> ottf_nvm :data_segment
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -253,11 +253,11 @@ SECTIONS {
    * and therefore don't end up being covered by the signature.
    */
    _non_volatile_scratch_size = DEFINED(no_ottf_nv_scratch) ? 0 : 20480;
-   _non_volatile_scratch_end = ORIGIN(ottf_flash) + _ottf_size;
+   _non_volatile_scratch_end = ORIGIN(ottf_nvm) + _ottf_size;
    _non_volatile_scratch_start = _non_volatile_scratch_end - _non_volatile_scratch_size;
 
    _non_volatile_counter_size = DEFINED(no_ottf_nv_counter) ? 0 : 2048;
-   _non_volatile_counter_flash_words = _non_volatile_counter_size / 8;
+   _non_volatile_counter_nvm_words = _non_volatile_counter_size / 8;
 
    _non_volatile_counter_0_end = _non_volatile_scratch_start;
    _non_volatile_counter_0_start = _non_volatile_counter_0_end - _non_volatile_counter_size;
@@ -272,12 +272,12 @@ SECTIONS {
    _non_volatile_counter_3_start = _non_volatile_counter_3_end - _non_volatile_counter_size;
 
   /**
-   * Non-volatile counter area in flash.
+   * Non-volatile counter area in NVM.
    *
    * Similar to the `.non_volatile_scratch` section, this section is meant to
-   * be used by tests. Because we don't want to write to the same flash word
+   * be used by tests. Because we don't want to write to the same NVM word
    * twice, tests that require non-volatile counters can use this section by
-   * striking flash words to count up to `_non_volatile_counter_max_count`.
+   * striking NVM words to count up to `_non_volatile_counter_max_count`.
    *
    * The sections are ordered by ascending memory address, and thus by
    * descending volatile counter number. That prevents linker problems.
@@ -286,28 +286,28 @@ SECTIONS {
     KEEP(*(.non_volatile_counter_3))
     KEEP(*(.non_volatile_counter_3.*))
     . = ABSOLUTE(_non_volatile_counter_3_end);
-  } > ottf_flash :scratch_segment
+  } > ottf_nvm :scratch_segment
 
   .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_2))
     KEEP(*(.non_volatile_counter_2.*))
     . = ABSOLUTE(_non_volatile_counter_2_end);
-  } > ottf_flash
+  } > ottf_nvm
 
   .non_volatile_counter_1 _non_volatile_counter_1_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_1))
     KEEP(*(.non_volatile_counter_1.*))
     . = ABSOLUTE(_non_volatile_counter_1_end);
-  } > ottf_flash
+  } > ottf_nvm
 
   .non_volatile_counter_0 _non_volatile_counter_0_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_0))
     KEEP(*(.non_volatile_counter_0.*))
     . = ABSOLUTE(_non_volatile_counter_0_end);
-  } > ottf_flash
+  } > ottf_nvm
 
   /**
-   * Non-volatile scratch area in flash.
+   * Non-volatile scratch area in NVM.
    */
   .non_volatile_scratch _non_volatile_scratch_start (NOLOAD) : ALIGN(2048) {
     begin_of_non_volatile_scratch = . ;
@@ -315,7 +315,7 @@ SECTIONS {
     KEEP(*(.non_volatile_scratch.*))
     . = ABSOLUTE(_non_volatile_scratch_end);
     end_of_non_volatile_scratch = . ;
-  } > ottf_flash
+  } > ottf_nvm
 
   INCLUDE sw/device/info_sections.ld
 }

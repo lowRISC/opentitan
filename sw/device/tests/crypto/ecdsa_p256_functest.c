@@ -2,14 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -60,13 +63,14 @@ static const uint32_t kKATExpSignature[kP256SignatureWords] = {
     0x89502A81, 0x3E3A993A, 0x2D6392CD, 0xDC42C212,
 };
 
-static const otcrypto_key_config_t kPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = kP256PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kPrivateKeyConfig                             \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP256,          \
+      .key_length = kP256PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 static status_t sign_then_verify_test(void) {
   hardened_bool_t verificationResult;
@@ -123,7 +127,35 @@ static status_t sign_then_verify_test(void) {
   return OK_STATUS();
 }
 
+/**
+ * A test where a known input is signed and is compared to the expected output.
+ * In addition, it draws randomness to share the known input using
+ * hardened_memshred. The input is shared using the hardened_sub_mod function
+ * using the P-256 curve order n.
+ */
 static status_t sign_kat(void) {
+  // P-256 curve order n, padded to 320 bits (10 words) for our math operations.
+  static const uint32_t kP256Order[kP256SecretScalarWords] = {
+      0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD, 0xFFFFFFFF,
+      0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kP256SecretScalarWords];
+  uint32_t share1_rand[kP256SecretScalarWords];
+  uint32_t share0[kP256SecretScalarWords];
+  uint32_t share1[kP256SecretScalarWords];
+
+  memset(unmasked_val, 0, kP256SecretScalarBytes);
+  memcpy(unmasked_val, kKATSecretScalar, kP256TestVectorScalarInpBytes);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kP256SecretScalarWords));
+  TRY(hardened_mod_reduce(share1_rand, kP256Order, kP256SecretScalarWords,
+                          share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP256Order, kP256SecretScalarWords,
+                       share0));
+
   // Allocate space for a masked secret scalar.
   uint32_t keyblob_scalar[keyblob_num_words(kPrivateKeyConfig)];
   otcrypto_blinded_key_t secret_scalar = {
@@ -131,9 +163,23 @@ static status_t sign_kat(void) {
       .keyblob_length = sizeof(keyblob_scalar),
       .keyblob = keyblob_scalar,
   };
-  memset(keyblob_scalar, 0, 2 * kP256SecretScalarBytes);
-  memcpy(keyblob_scalar, kKATSecretScalar, kP256TestVectorScalarInpBytes);
-  secret_scalar.checksum = integrity_blinded_checksum(&secret_scalar);
+  memcpy(keyblob_scalar, share0, kP256SecretScalarBytes);
+  // We copy over the full 320 random bits
+  memcpy(keyblob_scalar + kP256SecretScalarWords, share1_rand,
+         kP256SecretScalarBytes);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
+
+  memset(unmasked_val, 0, kP256SecretScalarBytes);
+  memcpy(unmasked_val, kKATKey, kP256TestVectorScalarInpBytes);
+
+  // Generate a random svalue and reduce it modulo n
+  TRY(hardened_memshred(share1_rand, kP256SecretScalarWords));
+  TRY(hardened_mod_reduce(share1_rand, kP256Order, kP256SecretScalarWords,
+                          share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP256Order, kP256SecretScalarWords,
+                       share0));
 
   // Allocate space for a masked private key.
   uint32_t keyblob_sk[keyblob_num_words(kPrivateKeyConfig)];
@@ -142,9 +188,9 @@ static status_t sign_kat(void) {
       .keyblob_length = sizeof(keyblob_sk),
       .keyblob = keyblob_sk,
   };
-  memset(keyblob_sk, 0, 2 * kP256SecretScalarBytes);
-  memcpy(keyblob_sk, kKATKey, kP256TestVectorScalarInpBytes);
-  private_key.checksum = integrity_blinded_checksum(&private_key);
+  memcpy(keyblob_sk, share0, kP256SecretScalarBytes);
+  memcpy(keyblob_sk + kP256SecretScalarWords, share1, kP256SecretScalarBytes);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg =
@@ -173,15 +219,314 @@ static status_t sign_kat(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_ecdsa_negative_tests(void) {
+  LOG_INFO("Running ECDSA negative tests.");
+
+  uint32_t priv_keyblob[80 / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
+
+  uint32_t pub_key_data[64 / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 64,
+      .key = pub_key_data,
+  };
+  valid_pub.checksum = otcrypto_integrity_unblinded_checksum(&valid_pub);
+
+  uint32_t digest_data[32 / 4] = {0};
+  otcrypto_hash_digest_t valid_digest = {
+      .data = digest_data,
+      .len = 8,
+  };
+
+  uint32_t sig_data[64 / 4] = {0};
+  otcrypto_word32_buf_t valid_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, 16);
+  otcrypto_const_word32_buf_t valid_const_sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 16);
+  hardened_bool_t verify_res;
+
+  // ECDSA keygen negative tests
+
+  // Null pointers
+  CHECK(otcrypto_ecdsa_p256_keygen(NULL, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_start(NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(NULL, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  CHECK(otcrypto_ecdsa_p256_keygen(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&valid_priv, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Null pointer keyblob
+  otcrypto_blinded_key_t bad_priv_null = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = 80,
+      .keyblob = NULL,
+  };
+  CHECK(otcrypto_ecdsa_p256_keygen(&bad_priv_null, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_start(&bad_priv_null).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&bad_priv_null, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad mode
+  otcrypto_key_config_t bad_mode_cfg = kPrivateKeyConfig;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdhP256;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_mode);
+  CHECK(otcrypto_ecdsa_p256_keygen(&bad_priv_mode, &valid_pub).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_start(&bad_priv_mode).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&bad_priv_mode, &valid_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Bad public key length
+  otcrypto_unblinded_key_t bad_pub_len = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 63,
+      .key = pub_key_data,
+  };
+  bad_pub_len.checksum = otcrypto_integrity_unblinded_checksum(&bad_pub_len);
+  CHECK(otcrypto_ecdsa_p256_keygen(&valid_priv, &bad_pub_len).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&valid_priv, &bad_pub_len)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad keyblob length
+  otcrypto_blinded_key_t bad_priv_blob_len = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = 79,  // Should be 80
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_blob_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_priv_blob_len);
+  CHECK(otcrypto_ecdsa_p256_keygen(&bad_priv_blob_len, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_start(&bad_priv_blob_len).value !=
+        OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecdsa_p256_keygen_async_finalize(&bad_priv_blob_len, &valid_pub)
+          .value != OTCRYPTO_OK.value);
+
+  // Bad hardware backed configuration
+  otcrypto_key_config_t bad_hw_cfg = kPrivateKeyConfig;
+  bad_hw_cfg.hw_backed = (hardened_bool_t)0x12345678;  // Invalid boolean
+  otcrypto_blinded_key_t bad_priv_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_priv_hw);
+  CHECK(otcrypto_ecdsa_p256_keygen(&bad_priv_hw, &valid_pub).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_start(&bad_priv_hw).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&bad_priv_hw, &valid_pub)
+            .value != OTCRYPTO_OK.value);
+
+  // ECDSA sign negative tests
+
+  // Null pointers
+  CHECK(otcrypto_ecdsa_p256_sign(NULL, valid_digest, &valid_sig).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_async_start(NULL, valid_digest).value !=
+        OTCRYPTO_OK.value);
+
+  // Null digest data
+  otcrypto_hash_digest_t bad_digest_null = {
+      .data = NULL,
+      .len = 8,
+  };
+  CHECK(otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_null, &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_async_start(&valid_priv, bad_digest_null)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad digest length
+  otcrypto_hash_digest_t bad_digest_len = {
+      .data = digest_data,
+      .len = 7,
+  };
+  CHECK(
+      otcrypto_ecdsa_p256_sign(&valid_priv, bad_digest_len, &valid_sig).value !=
+      OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecdsa_p256_sign_async_start(&valid_priv, bad_digest_len).value !=
+      OTCRYPTO_OK.value);
+
+  // Null signature data
+  otcrypto_word32_buf_t bad_sig_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 16);
+  CHECK(otcrypto_ecdsa_p256_sign(&valid_priv, valid_digest, &bad_sig_null)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_async_finalize(&bad_sig_null).value !=
+        OTCRYPTO_OK.value);
+
+  // Corrupt private key checksum
+  otcrypto_blinded_key_t bad_priv_chk = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
+  CHECK(
+      otcrypto_ecdsa_p256_sign(&bad_priv_chk, valid_digest, &valid_sig).value !=
+      OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecdsa_p256_sign_async_start(&bad_priv_chk, valid_digest).value !=
+      OTCRYPTO_OK.value);
+
+  // Bad signature buffer length
+  otcrypto_word32_buf_t bad_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, 15);  // Should be 16
+  CHECK(
+      otcrypto_ecdsa_p256_sign(&valid_priv, valid_digest, &bad_sig_len).value !=
+      OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_async_finalize(&bad_sig_len).value !=
+        OTCRYPTO_OK.value);
+
+  // ECDSA sign config k negative tests
+
+  CHECK(otcrypto_ecdsa_p256_sign_config_k(NULL, &valid_priv, valid_digest,
+                                          &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_config_k_async_start(NULL, &valid_priv,
+                                                      valid_digest)
+            .value != OTCRYPTO_OK.value);
+
+  // Passing a bad signature buffer length
+  CHECK(otcrypto_ecdsa_p256_sign_config_k(&valid_priv, &valid_priv,
+                                          valid_digest, &bad_sig_len)
+            .value != OTCRYPTO_OK.value);
+
+  // ECDSA verify negative tests
+
+  // Null pointers
+  CHECK(otcrypto_ecdsa_p256_verify(NULL, valid_digest, &valid_const_sig,
+                                   &verify_res)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_verify_async_start(NULL, valid_digest,
+                                               &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, &valid_const_sig,
+                                   NULL)
+            .value != OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecdsa_p256_verify_async_finalize(&valid_const_sig, NULL).value !=
+      OTCRYPTO_OK.value);
+
+  // Corrupt public key checksum
+  otcrypto_unblinded_key_t bad_pub_chk = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 64,
+      .key = pub_key_data,
+  };
+  bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_ecdsa_p256_verify(&bad_pub_chk, valid_digest, &valid_const_sig,
+                                   &verify_res)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_verify_async_start(&bad_pub_chk, valid_digest,
+                                               &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad signature length
+  otcrypto_const_word32_buf_t bad_const_sig_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 15);
+  CHECK(otcrypto_ecdsa_p256_verify(&valid_pub, valid_digest, &bad_const_sig_len,
+                                   &verify_res)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_verify_async_start(&valid_pub, valid_digest,
+                                               &bad_const_sig_len)
+            .value != OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecdsa_p256_verify_async_finalize(&bad_const_sig_len, &verify_res)
+          .value != OTCRYPTO_OK.value);
+
+  // Null inputs in otcrypto_ecdsa_p256_keygen_async_finalize
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(NULL, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&valid_priv, NULL).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad key mode inputs in otcrypto_ecdsa_p256_keygen_async_finalize
+  otcrypto_unblinded_key_t bad_pub_mode = {
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = valid_pub.key_length,
+      .key = valid_pub.key,
+  };
+  bad_pub_mode.checksum = otcrypto_integrity_unblinded_checksum(&bad_pub_mode);
+  CHECK(otcrypto_ecdsa_p256_keygen_async_finalize(&valid_priv, &bad_pub_mode)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad hw_backed inputs in otcrypto_ecdsa_p256_sign_async_start
+  otcrypto_key_config_t bad_sign_hw_cfg = kPrivateKeyConfig;
+  bad_sign_hw_cfg.hw_backed = (hardened_bool_t)0xDEADBEEF;
+  otcrypto_blinded_key_t bad_sign_hw = {
+      .config = bad_sign_hw_cfg,
+      .keyblob_length = 80,
+      .keyblob = priv_keyblob,
+  };
+  bad_sign_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_sign_hw);
+  CHECK(
+      otcrypto_ecdsa_p256_sign_async_start(&bad_sign_hw, valid_digest).value !=
+      OTCRYPTO_OK.value);
+
+  // Bad key mode inputs in otcrypto_ecdsa_p256_verify_async_start
+  CHECK(otcrypto_ecdsa_p256_verify_async_start(&bad_pub_mode, valid_digest,
+                                               &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad length inputs in otcrypto_ecdsa_p256_verify_async_start (digest length)
+  otcrypto_hash_digest_t bad_verify_digest_len = {
+      .data = digest_data,
+      .len = 4,  // kP256ScalarWords is 8
+  };
+  CHECK(otcrypto_ecdsa_p256_verify_async_start(
+            &valid_pub, bad_verify_digest_len, &valid_const_sig)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode for signing
+  CHECK(otcrypto_ecdsa_p256_sign(&bad_priv_mode, valid_digest, &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_async_start(&bad_priv_mode, valid_digest)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode for sign_config_k
+  CHECK(otcrypto_ecdsa_p256_sign_config_k(&bad_priv_mode, &valid_priv,
+                                          valid_digest, &valid_sig)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecdsa_p256_sign_config_k_async_start(&bad_priv_mode,
+                                                      &valid_priv, valid_digest)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  // Initialize the entropy complex.
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(result, sign_then_verify_test);
   EXECUTE_TEST(result, sign_kat);
+  EXECUTE_TEST(result, run_ecdsa_negative_tests);
 
   return status_ok(result);
 }

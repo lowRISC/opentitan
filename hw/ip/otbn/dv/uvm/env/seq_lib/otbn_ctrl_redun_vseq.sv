@@ -69,7 +69,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     bit [3:0] good_addr;
     bit [3:0] bad_addr;
     bit [3:0] mask;
-    bit [31:0] err_val = 32'd1 << 20;
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
 
     // We're doing something evil and forcing a signal inside the design. We expect the design to
     // notice that something went wrong and lock itself and we test for that. However, the design
@@ -322,7 +322,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
 
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
     have_injected_error = 1'b1;
-    cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+    cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
 
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);

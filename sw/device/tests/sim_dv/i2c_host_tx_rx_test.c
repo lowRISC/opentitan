@@ -305,7 +305,7 @@ void issue_test_transactions(bool skip_stop) {
 bool test_main(void) {
   LOG_INFO("Testing I2C index %d", kI2cIdx);
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   config_i2c_with_index();
 

@@ -19,7 +19,6 @@ package chip_env_pkg;
   import dv_base_reg_pkg::*;
   import dv_lib_pkg::*;
   import dv_utils_pkg::*;
-  import flash_ctrl_pkg::*;
   import jtag_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_riscv_agent_pkg::*;
@@ -35,7 +34,6 @@ package chip_env_pkg;
   import lc_ctrl_state_pkg::*;
   import lc_ctrl_token_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
-  import flash_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import rom_ctrl_bkdr_util_pkg::*;
   import sram_ctrl_bkdr_util_pkg::*;
@@ -50,12 +48,9 @@ package chip_env_pkg;
   import xbar_env_pkg::*;
   import top_earlgrey_pkg::*;
   import top_earlgrey_rnd_cnst_pkg::*;
-  import pwm_monitor_pkg::*;
-  import pwm_reg_pkg::NOutputs;
   import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   import i2c_agent_pkg::*;
-  import pattgen_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -83,10 +78,8 @@ package chip_env_pkg;
   // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
   // runtime setting in chip_env_cfg.
   typedef enum {
-    FlashBank0Data,
-    FlashBank1Data,
-    FlashBank0Info,
-    FlashBank1Info,
+    RramData,
+    RramInfo,
     ICacheWay0Tag,
     ICacheWay1Tag,
     ICacheWay0Data,
@@ -106,8 +99,8 @@ package chip_env_pkg;
   // Note: If this enum is updated, then also update the file `build_sw_collateral_for_sim.py`.
   typedef enum {
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
-    SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
-    SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
+    SwTypeTestSlotA = 1, // Ibex SW - test SW in (NVM) slot A.
+    SwTypeTestSlotB = 2, // Ibex SW - test SW in (NVM) slot B.
     SwTypeOtbn      = 3, // Otbn SW
     SwTypeOtp       = 4, // Customized OTP image
     SwTypeDebug     = 5  // Debug SW - injected into SRAM.

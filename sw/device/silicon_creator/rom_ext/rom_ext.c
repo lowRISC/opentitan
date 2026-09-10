@@ -25,10 +25,9 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -40,6 +39,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
@@ -60,21 +60,21 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_verify.h"
 
-#include "hw/top/flash_ctrl_regs.h"                   // Generated.
 #include "hw/top/otp_ctrl_regs.h"                     // Generated.
 #include "hw/top/sram_ctrl_regs.h"                    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-// Useful constants for flash sizes and ROM_EXT locations.
+// Useful constants for NVM sizes and ROM_EXT locations.
 enum {
-  kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
-  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashTotalSize = 2 * kFlashBankSize,
+  // Page count of one firmware slot (A or B); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
+  kNvmPageSize = NVM_BYTES_PER_PAGE,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
-  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
-  kRomExtAStart = 0 / kFlashPageSize,
+  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
+  kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kFlashBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
@@ -90,8 +90,8 @@ extern char _rom_ext_immutable_size[];
 // Life cycle state of the chip.
 lifecycle_state_t lc_state;
 
-// A ram copy of the OTP word controlling how to handle flash ECC errors.
-uint32_t flash_ecc_exc_handler_en;
+// A ram copy of the OTP word controlling how to handle NVM ECC errors.
+uint32_t nvm_ecc_exc_handler_en;
 
 // Owner configuration details parsed from the onwer info pages.
 owner_config_t owner_config;
@@ -118,16 +118,14 @@ static uint32_t rom_ext_current_slot(void) {
     asm("auipc %[pc], 0;" : [pc] "=r"(pc));
   }
 
-  const uint32_t kFlashSlotA = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  const uint32_t kFlashSlotB =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
-  const uint32_t kFlashSlotEnd =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
+  const uint32_t kNvmSlotA = NVM_DATA_BASE_ADDR;
+  const uint32_t kNvmSlotB = kNvmSlotA + NVM_DATA_SIZE_BYTES / 2;
+  const uint32_t kNvmSlotEnd = kNvmSlotA + NVM_DATA_SIZE_BYTES;
   uint32_t side = 0;
-  if (pc >= kFlashSlotA && pc < kFlashSlotB) {
+  if (pc >= kNvmSlotA && pc < kNvmSlotB) {
     // Running in Slot A.
     side = kBootSlotA;
-  } else if (pc >= kFlashSlotB && pc < kFlashSlotEnd) {
+  } else if (pc >= kNvmSlotB && pc < kNvmSlotEnd) {
     // Running in Slot B.
     side = kBootSlotB;
   } else {
@@ -146,12 +144,18 @@ void rom_ext_check_rom_expectations(void) {
   sec_mmio_check_values(rnd_uint32());
 }
 
+static const epmp_region_t kSramSecRegion = {
+    .start = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+    .end = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR +
+           TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES,
+};
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
   lc_state = lifecycle_state_get();
-  flash_ecc_exc_handler_en = otp_read32(
-      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
+  nvm_ecc_exc_handler_en =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN_OFFSET);
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
@@ -160,6 +164,10 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   for (int8_t i = 7; i >= 0; --i) {
     epmp_clear((uint8_t)i);
   }
+
+  // Access to the secondary RAM.
+  epmp_set_napot(5, kSramSecRegion, kEpmpPermLockedReadWrite);
+
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Check that the retention RAM is initialized.
@@ -229,22 +237,22 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest,
-                                uint32_t *flash_exec) {
+                                uint32_t *nvm_exec) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
   const owner_application_key_t *key = keyring.key[verify_key];
   owner_block_measurement(owner_block_key_page(key), &owner_measurement);
 
-  keymgr_binding_value_t sealing_binding;
+  keymgr_dpe_binding_value_t sealing_binding;
   if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
     HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
     // If we're in LockedOwner, initialize the sealing binding with the
     // diversification constant associated with key applicaiton key that
     // validated the owner firmware payload.
     static_assert(
-        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
-        "Expect the keymgr binding value to be the same size as an application "
-        "key diversifier");
+        sizeof(key->raw_diversifier) == sizeof(keymgr_dpe_binding_value_t),
+        "Expect the keymgr dpe binding value to be the same size as an "
+        "application key diversifier");
     memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
   } else {
     // If we're not in LockedOwner state, we don't want to derive any valid
@@ -261,18 +269,22 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
       &sealing_binding, key->key_domain));
 
+  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
+  // keys with boot stage set to BootStageRuntime (3). (Note: Current bootstage
+  // + 1)
+
   // Write the DICE certs to flash if they have been updated.
-  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
+  HARDENED_RETURN_IF_ERROR(dice_chain_flush_nvm());
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageDiceCerts);
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
   epmp_clear_lock_bits();
@@ -373,7 +385,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
 
-  HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
+  HARDENED_CHECK_EQ(*nvm_exec, kSigverifyFlashExec);
 
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
@@ -393,19 +405,19 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    uint32_t flash_exec = 0;
+    uint32_t nvm_exec = 0;
     char slot_id =
         (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
                                                                        : 'B';
     error =
-        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
+        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &nvm_exec,
                        &keyring, &verify_key, &owner_config, &isfb_check_count);
     slot[i] = error;
     if (error != kErrorOk) {
       dbg_printf("verifyfail: Slot%c;%x\r\n", slot_id, error);
       continue;
     }
-    HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
+    HARDENED_CHECK_EQ(nvm_exec, kSigverifyFlashExec);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
@@ -418,7 +430,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 
     // Boot fails if a verified ROM_EXT cannot be booted.
     RETURN_IF_ERROR(
-        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
+        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &nvm_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
@@ -436,38 +448,38 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   return error;
 }
 
-static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
-  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
-  flash_ctrl_perms_t read = {
+static void rom_ext_nvm_protect_self(uint32_t rom_ext_slot) {
+  nvm_page_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
+  nvm_page_perms_t read = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,
   };
-  flash_ctrl_perms_t write = {
+  nvm_page_perms_t write = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4True,
   };
-  flash_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotA ? read : write, cfg,
-                                 kHardenedBoolTrue);
-  flash_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotB ? read : write, cfg,
-                                 kHardenedBoolTrue);
+  nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+                               rom_ext_slot == kBootSlotA ? read : write, cfg,
+                               kHardenedBoolTrue);
+  nvm_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+                               rom_ext_slot == kBootSlotB ? read : write, cfg,
+                               kHardenedBoolTrue);
 }
 
 static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   // Forbid SRAM execution.
   rom_ext_sram_exec(kOwnerSramExecModeDisabledLocked);
-  // Set the keymgr to disabled and clear all sideloaded keys.
-  sc_keymgr_disable();
+  // Set the keymgr dpe to disabled and clear all sideloaded keys.
+  OT_DISCARD(sc_keymgr_dpe_disable());
   // Lock out OTP.
   otp_creator_sw_cfg_lockdown();
   // Lock the ePMP so it cannot be changed.
   epmp_set_lock_bits();
   epmp_clear_rlb();
   // Disable access to creator-level INFO pages.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   // Set the OWNER_CONFIG pages for rescue mode (page0=ro, page1=rw).
   ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
   // Lock access to owner-level INFO pages.  During normal boot, this
@@ -502,6 +514,11 @@ OT_WEAK
 hardened_bool_t rom_ext_allow_boot_svc_after_wakeup(void) {
   return owner_config.boot_svc_after_wakeup;
 }
+
+// This weak function allows downstream ROM_EXT builds to provide
+// sku-specific initialization.
+OT_WEAK
+void rom_ext_sku_init(void) {}
 
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
@@ -542,6 +559,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Maybe advance the security version.
   HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
 
+  rom_ext_sku_init();
+
   // Initialize the boot_log in retention RAM.
   const build_info_t *rom_chip_info =
       (const build_info_t *)_rom_chip_info_start;
@@ -554,8 +573,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // of `boot_data`.
   boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
 
-  // Protect the flash pages where the ROM_EXT is located.
-  rom_ext_flash_protect_self(boot_log->rom_ext_slot);
+  // Protect the NVM pages where the ROM_EXT is located.
+  rom_ext_nvm_protect_self(boot_log->rom_ext_slot);
 
   // Initialize the chip ownership state.
   rom_error_t error;
@@ -579,7 +598,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // meaningful action we could take in the event of an error.  If there
   // was an error, ownership_history_get will default history hash result to
   // all ones.
-  OT_DISCARD(ownership_history_get(&owner_history_hash));
+  OT_DISCARD(ownership_history_get(boot_data->ownership_transfers,
+                                   &owner_history_hash));
 
   // Handle any pending boot_svc commands.
   uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;

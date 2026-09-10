@@ -101,7 +101,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
                                      ral.main_meas_ctrl_shadowed.hi,
                                      ral.main_meas_ctrl_shadowed.lo};
     mubi_mode = ClkmgrMubiNone;
-    `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
+    `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, "clkmgr_mubi_mode")
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b1);

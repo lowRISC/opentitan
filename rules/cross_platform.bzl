@@ -17,7 +17,10 @@ def dual_cc_device_library_of(label):
     return "{}_on_device_do_not_use_directly".format(label)
 
 def _merge_and_split_inputs(inputs):
-    inputs = inputs if type(inputs) != "list" else dual_inputs(shared = inputs)
+    # Only a `dual_inputs()` struct carries a real device/host split; a plain
+    # list or a `select()` (as returned by e.g. `opentitan_if_ip()`) is
+    # treated as shared, applying identically to both variants.
+    inputs = inputs if type(inputs) == "struct" else dual_inputs(shared = inputs)
     return inputs.shared + inputs.device, inputs.shared + inputs.host
 
 def dual_cc_library(
@@ -27,6 +30,7 @@ def dual_cc_library(
         hdrs = [],
         copts = [],
         deps = [],
+        defines = [],
         visibility = ["//visibility:private"],
         target_compatible_with = [],
         **kwargs):
@@ -35,10 +39,10 @@ def dual_cc_library(
     depended on in an on-device or on-host setting.
 
     The macro takes the same arguments as cc_library, but has special
-    behavior for `hdrs`, `srcs`, and `deps`, which may either be a list of
-    labels that would usually be inputs to a cc_library, or a dual_inputs object.
-    The later case allows inputs to be designated as being shared, on-device-only,
-    or off-device-only.
+    behavior for `hdrs`, `srcs`, `deps`, and `defines`, which may either be a
+    list of labels/strings that would usually be inputs to a cc_library, or a
+    dual_inputs object. The later case allows inputs to be designated as
+    being shared, on-device-only, or off-device-only.
 
     This rule only needs to be used when the sources for on-device are different
     from on-host, such as for mockable interfaces. In this case, the on-device
@@ -54,6 +58,11 @@ def dual_cc_library(
       @param hdrs: `cc_library()` headers; may be a list or a `dual_inputs()`.
       @params copts: `cc_library() copts; may be a list or a `dual_inputs()`.
       @param deps: `cc_library()` dependencies; may be a list or a `dual_inputs()`.
+      @param defines: `cc_library()` defines (propagate to dependents, unlike
+             `copts`); may be a list or a `dual_inputs()`. Needed whenever a
+             shared header (not just a device/host-split source file) branches
+             on the macro, since every other target that includes that header
+             must see the same value the device/host source was compiled with.
       @param visibility: The visibility to be used for the targets.
       @param **kwargs: Arguments to forward to each `cc_library()`.
 
@@ -67,6 +76,7 @@ def dual_cc_library(
     srcs_d, srcs_h = _merge_and_split_inputs(srcs)
     copts_d, copts_h = _merge_and_split_inputs(copts)
     deps_d, deps_h = _merge_and_split_inputs(deps)
+    defines_d, defines_h = _merge_and_split_inputs(defines)
     tgts_d, tgts_h = _merge_and_split_inputs(target_compatible_with)
 
     native.cc_library(
@@ -75,6 +85,7 @@ def dual_cc_library(
         srcs = srcs_d,
         copts = copts_d,
         deps = deps_d,
+        defines = defines_d,
         target_compatible_with = tgts_d,
         visibility = visibility,
         **kwargs
@@ -87,6 +98,7 @@ def dual_cc_library(
         srcs = srcs_h,
         copts = copts_h,
         deps = deps_h,
+        defines = defines_h,
         target_compatible_with = tgts_h,
         visibility = visibility,
         **kwargs

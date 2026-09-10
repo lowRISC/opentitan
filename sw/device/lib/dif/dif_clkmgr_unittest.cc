@@ -384,15 +384,17 @@ TEST_F(ExternalClkTest, DisableError) {
 }
 
 TEST_F(ExternalClkTest, Enable) {
-#define EXTCLK_CTRL_REG_VALUE(enable_, low_speed_)                     \
-  {{                                                                   \
-       .offset = CLKMGR_EXTCLK_CTRL_SEL_OFFSET,                        \
-       .value = enable_ ? kMultiBitBool4True : kMultiBitBool4False,    \
-   },                                                                  \
-   {                                                                   \
-       .offset = CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,               \
-       .value = low_speed_ ? kMultiBitBool4False : kMultiBitBool4True, \
-   }}
+#define EXTCLK_CTRL_REG_VALUE(enable_, low_speed_)                    \
+  {                                                                   \
+    {                                                                 \
+        .offset = CLKMGR_EXTCLK_CTRL_SEL_OFFSET,                      \
+        .value = enable_ ? kMultiBitBool4True : kMultiBitBool4False,  \
+    },                                                                \
+    {                                                                 \
+      .offset = CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,               \
+      .value = low_speed_ ? kMultiBitBool4False : kMultiBitBool4True, \
+    }                                                                 \
+  }
   {  // low speed with control unlocked
     EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 1);
     EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,

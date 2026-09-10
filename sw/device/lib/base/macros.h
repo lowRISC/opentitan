@@ -650,7 +650,7 @@ extern "C++" {
 /**
  *  This macro is used to align an offset to point to a 32b value.
  */
-#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3u))
+#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x) - 1) & ~3u))
 
 #if !defined(__ASSEMBLER__) && !defined(NOSTDINC) && \
     !defined(RUST_PREPROCESSOR_EMIT)

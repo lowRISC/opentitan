@@ -22,7 +22,7 @@ class keymgr_kmac_rsp_err_vseq extends keymgr_hwsw_invalid_input_vseq;
   }
 
   task pre_start();
-    cfg.m_keymgr_kmac_agent_cfg.error_rsp_pct = 20;
+    cfg.m_kmac_agent_cfg.error_rsp_pct = 20;
 
     // fatal alert will be triggered, need reset to clear it
     expect_fatal_alerts = 1;

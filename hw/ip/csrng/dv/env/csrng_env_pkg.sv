@@ -27,10 +27,10 @@ package csrng_env_pkg;
   // The maximum number of HW apps supported by the environment
   parameter int unsigned MaxNumHwApps = 4;
 
+  // The maximum number of apps supported by the environment
+  parameter int unsigned MaxNumApps = MaxNumHwApps + 1;
+
   // parameters
-  parameter uint     HW_APP0                    = 0;
-  parameter uint     HW_APP1                    = 1;
-  parameter uint     SW_APP                     = 2;
   parameter uint     NUM_ALERTS                 = 2;
   parameter string   LIST_OF_ALERTS[NUM_ALERTS] = {"recov_alert","fatal_alert"};
   parameter uint     KEY_LEN                    = 256;

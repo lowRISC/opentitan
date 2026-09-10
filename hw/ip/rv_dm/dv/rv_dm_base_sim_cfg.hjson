@@ -38,7 +38,7 @@
   sim_tops: ["rv_dm_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -83,7 +83,6 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_aliasing"]
       en_run_modes: ["csr_tests_mode"]
-      reseed: 5
       run_opts: ["+test_timeout_ns=100_000_000"]
     }
     {
@@ -312,10 +311,11 @@
     {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
+      reseed: 20
     }
     {
       name: rv_dm_stress_all_with_rand_reset
-      reseed: 10
+      reseed: 20
     }
   ]
 

@@ -12,8 +12,6 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
   parameter dv_utils_pkg::uint NUM_I2CS = 3;
-  parameter dv_utils_pkg::uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
-  parameter dv_utils_pkg::uint NUM_PATTGEN_CH = pattgen_agent_pkg::NUM_PATTGEN_CHANNELS;
 
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_START_ADDR = tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG +
@@ -25,7 +23,7 @@ package chip_common_pkg;
   parameter uint ROM_CONSOLE_UART = 0;
 
   // ROM banner values.
-  parameter string ROM_BANNER   = "OpenTitan:4001-0002-01";
+  parameter string ROM_BANNER   = "OpenTitan:4001-0010-01";
 
   // ROM Boot Fault Values, matches definitions in `rules/const.bzl`.
   parameter string ROM_BFV_BAD_IDENTIFIER       = "0142500d";
@@ -109,8 +107,8 @@ package chip_common_pkg;
     top_earlgrey_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
     top_earlgrey_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
     top_earlgrey_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
-    top_earlgrey_pkg::DioPadIor8,       /* DioSysrstCtrlAonEcRstL */
-    top_earlgrey_pkg::DioPadIor9,       /* DioSysrstCtrlAonFlashWpL */
+    top_earlgrey_pkg::DioPadIor8,       /* DioSysrstCtrlEcRstL */
+    top_earlgrey_pkg::DioPadIor9,       /* DioSysrstCtrlFlashWpL */
     top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
     top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
     top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */

@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
@@ -308,7 +308,7 @@ typedef struct manifest {
    * consequently, the versioned keys and identity seeds generated at subsequent
    * boot stages.
    */
-  keymgr_binding_value_t binding_value;
+  keymgr_dpe_binding_value_t binding_value;
   /**
    * Maximum allowed version for keys generated at the next boot stage.
    */

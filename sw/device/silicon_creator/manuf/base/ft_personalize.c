@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -16,7 +15,6 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -38,9 +36,8 @@
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -48,20 +45,19 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
-#include "hw/top/otp_ctrl_regs.h"    // Generated.
+#include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
@@ -94,7 +90,6 @@ static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
 /**
  * Peripheral handles.
  */
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
@@ -118,10 +113,35 @@ OTTF_DEFINE_TEST_CONFIG(
             kGpioPinSpiConsoleTxReady);
 
 /**
- * Keymgr binding values.
+ * Keymgr dpe binding values.
  */
-static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t sealing_binding_value = {.data = {0}};
+
+/**
+ * Keymgr dpe slot assignment and slot policy.
+ *
+ * These must match the values used by the ROM and by `dice_chain.c`, and the
+ * `sel_src_slot` fields in `dice_keys.c`, otherwise the DICE keys are derived
+ * from the wrong DPE context.
+ */
+// TODO(#30777): Replace the hard-coded slot numbers.
+enum {
+  /**
+   * Keymgr DPE default slot for sealing context
+   */
+  kKeymgrDPESealSlot = 0,
+  /**
+   * Keymgr DPE default slot for attestation context
+   */
+  kKeymgrDPEAttestSlot = 1,
+};
+// Default policy for newly derived DPE context
+static const sc_keymgr_dpe_policies_t kKeymgrDPEDefaultPolicy = {
+    .child = kScKeymgrDPESlotPolAllowChild,
+    .expo = kScKeymgrDPESlotPolNoExport,
+    .parent = kScKeymgrDPESlotPolEraseParent,
+};
 
 /**
  * Certificate data.
@@ -150,11 +170,12 @@ static cert_key_id_pair_t cdi_1_key_ids = {
 };
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static ecdsa_p256_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
+static ecdsa_p256_public_key_t cdi_0_pubkey = {.x = {0}, .y = {0}};
 static perso_blob_t perso_blob_to_host;    // Perso data device => host.
 static perso_blob_t perso_blob_from_host;  // Perso data host => device.
 
 /**
- * Certificates flash info page layout.
+ * Certificates NVM info page layout.
  */
 static uint8_t all_certs[8192];
 // 1K should be enough for the largest certificate perso LTV object.
@@ -164,7 +185,7 @@ static alignas(uint32_t) dice_page_t dice_page;
 static size_t uds_offset;
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
-static cert_flash_info_layout_t cert_flash_layout[] = {
+static cert_nvm_info_layout_t cert_nvm_layout[] = {
     {
         // The DICE UDS cert is placed on this page since it must remain stable
         // post manufacturing. This page should never be erased by ROM_EXT, nor
@@ -172,30 +193,30 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .used = true,
         .need_digest = true,
         .group_name = "FACTORY",
-        .info_page = &kFlashCtrlInfoPageFactoryCerts,
+        .info_page = kNvmInfoPageFactoryCerts,
         .num_certs = 1,
     },
     {
         .used = true,
         .need_digest = true,
         .group_name = "DICE",
-        .info_page = &kFlashCtrlInfoPageDiceCerts,
+        .info_page = kNvmInfoPageDiceCerts,
         .num_certs = 2,
     },
-    // These flash info pages can be used by provisioning extensions to store
+    // These NVM info pages can be used by provisioning extensions to store
     // additional certificates SKU owners may desire to provision.
     {
         .used = false,
         .need_digest = false,
         .group_name = "Ext0",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved6,
+        .info_page = kNvmInfoPageOwnerReserved6,
         .num_certs = 0,
     },
     {
         .used = false,
         .need_digest = false,
         .group_name = "Ext1",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
+        .info_page = kNvmInfoPageOwnerReserved7,
         .num_certs = 0,
     },
 };
@@ -215,7 +236,8 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
   TRY(perso_tlv_push_object_to_perso_blob(
       kPersoObjectTypePersoSha256Hash, boot_measurements.rom_ext.data,
-      sizeof(keymgr_binding_value_t), kPersoBlobVersionV0, perso_blob_to_host));
+      sizeof(keymgr_dpe_binding_value_t), kPersoBlobVersionV0,
+      perso_blob_to_host));
   return OK_STATUS();
 }
 
@@ -223,15 +245,14 @@ static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
  * Return a pointer to the ROM_EXT manifest located in the slot a.
  */
 static const manifest_t *rom_ext_manifest_a_get(void) {
-  return (const manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  return (const manifest_t *)NVM_DATA_BASE_ADDR;
 }
 
 /*
  * Return a pointer to the ROM_EXT manifest located in the slot b.
  */
 static const manifest_t *rom_ext_manifest_b_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                              (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+  return (const manifest_t *)(NVM_DATA_BASE_ADDR + (NVM_DATA_SIZE_BYTES / 2));
 }
 
 extern const uint32_t kCreatorSwCfgManufStateValue;
@@ -248,17 +269,14 @@ static status_t check_next_slot_bootable(void) {
  * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
                       &pinmux));
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
                       &rstmgr));
   return OK_STATUS();
 }
@@ -273,18 +291,16 @@ static void sw_reset(void) {
 }
 
 /**
- * Configures flash info pages to store device certificates.
+ * Configures NVM info pages to store device certificates.
  */
-static status_t config_and_erase_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+static status_t config_and_erase_certificate_nvm_pages(void) {
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageFactoryCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageDiceCerts);
   // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
-  // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
-                            kFlashCtrlEraseTypePage));
+  // erased on the first call to `manuf_personalize_nvm_asymm_key_seed()`.
+  TRY(nvm_ctrl_info_erase(kNvmInfoPageFactoryCerts));
+  TRY(nvm_ctrl_info_erase(kNvmInfoPageDiceCerts));
   return OK_STATUS();
 }
 
@@ -292,21 +308,16 @@ static status_t config_and_erase_certificate_flash_pages(void) {
  * Erase all of the owner's INFO pages so that they're in a known state.
  */
 static status_t erase_owner_info_pages(owner_config_t *config) {
-  const flash_ctrl_info_page_t *pages[] = {
-      &kFlashCtrlInfoPageOwnerReserved0, &kFlashCtrlInfoPageOwnerReserved1,
-      &kFlashCtrlInfoPageOwnerReserved2, &kFlashCtrlInfoPageOwnerReserved3,
-      &kFlashCtrlInfoPageOwnerReserved4, &kFlashCtrlInfoPageOwnerReserved5,
-      &kFlashCtrlInfoPageOwnerReserved6, &kFlashCtrlInfoPageOwnerReserved7,
+  nvm_info_page_t pages[] = {
+      kNvmInfoPageOwnerReserved0, kNvmInfoPageOwnerReserved1,
+      kNvmInfoPageOwnerReserved2, kNvmInfoPageOwnerReserved3,
+      kNvmInfoPageOwnerReserved4, kNvmInfoPageOwnerReserved5,
+      kNvmInfoPageOwnerReserved6, kNvmInfoPageOwnerReserved7,
   };
 
   // First, initialize all of the owner INFO pages with ECC & Scrambling.
   for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
-    flash_ctrl_cfg_t cfg = {
-        .scrambling = kMultiBitBool4True,
-        .ecc = kMultiBitBool4True,
-        .he = kMultiBitBool4False,
-    };
-    flash_ctrl_info_cfg_set(pages[i], cfg);
+    nvm_ctrl_info_cfg_set(pages[i], kNvmPageCfgScrambled);
   }
 
   // Next, overwrite the INFO page configuration for those pages defined
@@ -315,13 +326,8 @@ static status_t erase_owner_info_pages(owner_config_t *config) {
 
   // Finally, erase each page.
   for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
-    flash_ctrl_perms_t perms = {
-        .read = kMultiBitBool4True,
-        .write = kMultiBitBool4True,
-        .erase = kMultiBitBool4True,
-    };
-    flash_ctrl_info_perms_set(pages[i], perms);
-    TRY(flash_ctrl_info_erase(pages[i], kFlashCtrlEraseTypePage));
+    nvm_ctrl_info_perms_set(pages[i], kNvmPagePermsReadWrite);
+    TRY(nvm_ctrl_info_erase(pages[i]));
   }
 
   return OK_STATUS();
@@ -366,26 +372,25 @@ static status_t measure_otp_partition(otp_partition_t partition,
 }
 
 /**
- * Provision OTP SECRET{1,2} partitions, keymgr flash info pages, enable flash
+ * Provision OTP SECRET{1,2} partitions, keymgr dpe NVM info pages, enable NVM
  * scrambling, and reboot.
  */
-static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
+static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
   // Provision OTP Secret1 partition, and complete provisioning of OTP
   // CreatorSwCfg partition.
   if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
     TRY(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
   }
   if (!status_ok(
-          manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl))) {
+          manuf_individualize_device_nvm_data_default_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_field_cfg(
-        &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET));
     base_printf("Bootstrap requested.\n");
     wait_for_interrupt();
   }
 
-  // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
-  // and DICE keygen seeds).
+  // Provision OTP Secret2 partition and NVM info pages 1, 2, and 4
+  // (keymgr dpe and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     lc_token_hash_t token_hash;
     // Wait for the host to send the RMA unlock token hash over the console.
@@ -394,24 +399,24 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     TRY(UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-    TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
-                                         &token_hash));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldUdsAttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldCdi0AttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldCdi1AttestationKeySeed,
-        kAttestationSeedWords));
+    TRY(manuf_personalize_device_secrets(&lc_ctrl, &otp_ctrl, &token_hash));
+    TRY(manuf_personalize_nvm_asymm_key_seed(kNvmInfoFieldUdsAttestationKeySeed,
+                                             kAttestationSeedWords));
+    TRY(manuf_personalize_nvm_asymm_key_seed(
+        kNvmInfoFieldCdi0AttestationKeySeed, kAttestationSeedWords));
+    TRY(manuf_personalize_nvm_asymm_key_seed(
+        kNvmInfoFieldCdi1AttestationKeySeed, kAttestationSeedWords));
     // Provision the attestation key generation version field (at the end of the
     // attestation seed info page).
     uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
-    TRY(manuf_flash_info_field_write(
-        &flash_ctrl_state, kFlashInfoFieldAttestationKeyGenVersion,
-        /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
-        /*erase_page_before_write=*/false));
+    nvm_ctrl_info_perms_set(kNvmInfoFieldAttestationKeyGenVersion.page,
+                            kNvmPagePermsReadWrite);
+    nvm_ctrl_info_cfg_set(kNvmInfoFieldAttestationKeyGenVersion.page,
+                          kNvmPageCfgScrambled);
+    TRY(manuf_nvm_info_field_write(kNvmInfoFieldAttestationKeyGenVersion,
+                                   /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
+                                   /*erase_page_before_write=*/false,
+                                   /*readback=*/true));
     sw_reset();
   }
 
@@ -424,7 +429,7 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
  * The attestation binding (and subsequently CDI_0) will be updated later when
  * the ROM_EXT boots for the first time.
  */
-static void compute_keymgr_owner_int_binding(void) {
+static void compute_keymgr_dpe_owner_int_binding(void) {
   memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // In the silicon_creator stage, we set the sealing binding to the
   // manifest->identifier of the ROM_EXT stage.
@@ -438,7 +443,7 @@ static void compute_keymgr_owner_int_binding(void) {
  *
  * The sealing binding value is set to the PROD application key domain.
  */
-static void compute_keymgr_owner_binding(void) {
+static void compute_keymgr_dpe_owner_binding(void) {
   memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // We expect the owner to use a Application Key binding  of
   // {`prod`, 0, ... }.
@@ -447,49 +452,71 @@ static void compute_keymgr_owner_binding(void) {
 }
 
 /**
- * Read a certificate from the passed in location in a flash INFO page and hash
+ * Builds the sealing / attestation advance data from the binding values set by
+ * the `compute_keymgr_dpe_*_binding()` helpers.
+ *
+ * The sealing and attestation key chains each live in their own DPE slot, so
+ * both advances derive in place (src slot == dst slot).
+ */
+static void keymgr_dpe_advance_data_get(
+    sc_keymgr_dpe_advance_data_t *sealing,
+    sc_keymgr_dpe_advance_data_t *attestation) {
+  *sealing = (sc_keymgr_dpe_advance_data_t){
+      .binding_value = &sealing_binding_value,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .sel_src_slot = kKeymgrDPESealSlot,
+      .sel_dst_slot = kKeymgrDPESealSlot,
+      .version = 0,
+  };
+  *attestation = (sc_keymgr_dpe_advance_data_t){
+      .binding_value = &attestation_binding_value,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .sel_src_slot = kKeymgrDPEAttestSlot,
+      .sel_dst_slot = kKeymgrDPEAttestSlot,
+      .version = 0,
+  };
+}
+
+/**
+ * Read a certificate from the passed in location in a NVM INFO page and hash
  * its contents on the existing sha256 hashing stream. Determine the actual
  * certificate size from its ASN1 header.
  *
  * If the caller passed a pointer, save there the certificate size.
  */
-static status_t hash_certificate(const flash_ctrl_info_page_t *page,
-                                 size_t offset, size_t *size) {
+
+static status_t hash_certificate(nvm_info_page_t page, size_t offset,
+                                 perso_blob_version_t version, size_t *size) {
   memset(cert_buffer, 0, sizeof(cert_buffer));
 
   // Read first word of the certificate perso LTV object (contains the size).
-  perso_tlv_object_header_t objh;
-  uint16_t obj_size;
-  TRY(flash_ctrl_info_read(page, offset, 1, cert_buffer));
-  memcpy(&objh, cert_buffer, sizeof(perso_tlv_object_header_t));
-  PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
+  TRY(nvm_ctrl_info_read(page, offset, 1, cert_buffer));
+  uint32_t obj_size = perso_tlv_object_size(cert_buffer, version);
 
   // Validate the perso LTV object size.
   if (obj_size == 0) {
     LOG_ERROR(
         "Inconsistent certificate perso LTV object header %02x %02x at "
-        "page:offset %x:%x",
-        cert_buffer[0], cert_buffer[1], page->base_addr, offset);
+        "page:offset %d:%u",
+        cert_buffer[0], cert_buffer[1], (int)page, (unsigned)offset);
     return DATA_LOSS();
   }
   if (obj_size > sizeof(cert_buffer)) {
-    LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %x:%x",
-              obj_size, page->base_addr, offset);
+    LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %d:%u",
+              obj_size, (int)page, (unsigned)offset);
     return DATA_LOSS();
   }
-  if ((obj_size + offset) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
-    LOG_ERROR("Cert size overflow (%d + %d) page %x:%x", obj_size, offset,
-              page->base_addr, offset);
+  if ((obj_size + offset) > kNvmInfoPageDiceCertsSize) {
+    LOG_ERROR("Cert size overflow (%d + %u) page %d", obj_size,
+              (unsigned)offset, (int)page);
     return DATA_LOSS();
   }
 
-  // Read the entire perso LTV object from flash and parse it.
+  // Read the entire perso LTV object from NVM and parse it.
   perso_tlv_cert_obj_t cert_obj;
-  TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
-                           cert_buffer));
-  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, kPersoBlobVersionV0,
-                             &cert_obj));
-
+  TRY(nvm_ctrl_info_read(page, offset, util_size_to_words(obj_size),
+                         cert_buffer));
+  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, version, &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -504,15 +531,30 @@ static status_t hash_all_certs(void) {
   hmac_sha256_init();
 
   // Push all certificates into the hash.
-  for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
-    uint32_t page_offset = 0;
-    const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
+  for (size_t i = 0; i < ARRAYSIZE(cert_nvm_layout); i++) {
+    const cert_nvm_info_layout_t curr_layout = cert_nvm_layout[i];
     // Skip the page if it is not in use.
     if (!curr_layout.used) {
       continue;
     }
+
+    uint32_t page_offset = 0;
+    perso_blob_version_t page_version = kPersoBlobVersionV0;
+
+    // Read the first 16 bytes of the page to check for version block.
+    alignas(uint32_t) uint8_t head[16];
+    TRY(nvm_ctrl_info_read(curr_layout.info_page, 0,
+                           util_size_to_words(sizeof(head)), head));
+
+    size_t version_offset = 0;
+    TRY(perso_tlv_get_blob_version(head, sizeof(head), &page_version,
+                                   &version_offset));
+
+    page_offset = util_round_up_to(version_offset, 3);
+
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_obj_size));
+      TRY(hash_certificate(curr_layout.info_page, page_offset, page_version,
+                           &cert_obj_size));
       page_offset += util_size_to_words(cert_obj_size) * sizeof(uint32_t);
       page_offset = util_round_up_to(page_offset, 3);
     }
@@ -522,7 +564,7 @@ static status_t hash_all_certs(void) {
 }
 
 /**
- * Crank the keymgr to produce the DICE attestation keys and certificates.
+ * Crank the keymgr dpe to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   /*****************************************************************************
@@ -532,8 +574,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // TODO(#21550): this should already be loaded by the ROM.
   TRY(otbn_boot_app_load());
 
-  // Configure certificate flash info page permissions.
-  TRY(config_and_erase_certificate_flash_pages());
+  // Configure certificate NVM info page permissions.
+  TRY(config_and_erase_certificate_nvm_pages());
 
   // Retrieve certificate provisioning data.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
@@ -542,20 +584,30 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
+
+  perso_blob_version_t blob_version =
+      (perso_blob_version_t)certgen_inputs.blob_version;
+  switch (blob_version) {
+    case kPersoBlobVersionV1:
+      TRY(perso_tlv_init_v1_blob(&perso_blob_to_host));
+      break;
+    case kPersoBlobVersionV0:
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.dice_auth_key_key_id,
          kCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.
-  TRY(entropy_complex_init());
+  TRY(entropy_complex_init(kHardenedBoolFalse));
   TRY(kmac_keymgr_configure());
 
-  // Advance keymgr to CreatorRootKey state.
-  TRY(sc_keymgr_state_check(kScKeymgrStateReset));
-  sc_keymgr_advance_state();
-  TRY(sc_keymgr_state_check(kScKeymgrStateInit));
-  sc_keymgr_advance_state();
+  // The ROM has already loaded the UDS into `kKeymgrDPESealSlot` and advanced
+  // both key chains to the CreatorRootKey stage.
+  TRY(sc_keymgr_dpe_state_check(kScKeymgrDPEStateAvailable));
 
   // Measure OTP partitions.
   //
@@ -589,8 +641,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                      &curr_pubkey));
   memcpy(&uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
-                                     kDiceKeyUds.type,
-                                     *kDiceKeyUds.keymgr_diversifier));
+                                     *kDiceKeyUds.keymgr_dpe_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
   TRY(dice_uds_tbs_cert_build(
@@ -604,7 +655,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      kDiceCertFormat, all_certs, curr_cert_size, kPersoBlobVersionV0,
+      kDiceCertFormat, all_certs, curr_cert_size, blob_version,
       &perso_blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
@@ -613,73 +664,81 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
-  compute_keymgr_owner_int_binding();
-  TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
-                                  &attestation_binding_value,
-                                  /*max_key_version=*/0));
+  compute_keymgr_dpe_owner_int_binding();
+  sc_keymgr_dpe_advance_data_t adv_sealing_data;
+  sc_keymgr_dpe_advance_data_t adv_attestation_data;
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                      &curr_pubkey));
-  TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &curr_pubkey,
-                            all_certs, &curr_cert_size));
+
+  memcpy(&cdi_0_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
+
+  TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &uds_pubkey,
+                            &curr_pubkey, all_certs, &curr_cert_size));
   cdi_0_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "CDI_0", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, &perso_blob_to_host));
+      curr_cert_size, blob_version, &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
-  compute_keymgr_owner_binding();
-  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
-                              &attestation_binding_value,
-                              /*max_key_version=*/0));
+  compute_keymgr_dpe_owner_binding();
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_owner(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, &kZeroDigest, 0,
-                            kOwnerAppDomainProd, &cdi_1_key_ids, &curr_pubkey,
-                            all_certs, &curr_cert_size));
+                            kOwnerAppDomainProd, &cdi_1_key_ids, &cdi_0_pubkey,
+                            &curr_pubkey, all_certs, &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "CDI_1", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, &perso_blob_to_host));
+      curr_cert_size, blob_version, &perso_blob_to_host));
 
   return OK_STATUS();
 }
 
 static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
-  // Read out the WAS from flash.
+  // Read out the WAS from NVM.
   hmac_key_t was;
   static_assert(
-      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
+      kNvmInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
       "WAS size expected to be same size as HMAC-SHA256 key.");
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
-      kFlashInfoFieldWaferAuthSecret.bank,
-      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3ReadPermissions,
-      /*offset=*/NULL));
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret, was.key,
-      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
+  nvm_ctrl_info_perms_set(kNvmInfoFieldWaferAuthSecret.page,
+                          kNvmPagePermsReadOnly);
+  nvm_ctrl_info_cfg_set(kNvmInfoFieldWaferAuthSecret.page, kNvmPageCfgRaw);
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferAuthSecret, was.key,
+                                kNvmInfoFieldWaferAuthSecretSizeIn32BitWords));
+
+  // Detect the version of the blob.
+  perso_blob_version_t version = kPersoBlobVersionV0;
+  size_t offset = 0;
+  TRY(perso_tlv_get_blob_version(perso_blob_to_host->body,
+                                 sizeof(perso_blob_to_host->body), &version,
+                                 &offset));
 
   // Compute HMAC of TBS certs with WAS as the key.
   // HSMs and host tooling will compute an HMAC in big endian format, so we do
   // the same to make the comparison easier.
   sc_hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
-  uint8_t *tlv_buf = perso_blob_to_host->body;
-  uint16_t obj_size;
+  uint8_t *tlv_buf = perso_blob_to_host->body + offset;
+  size_t num_objs = perso_blob_to_host->num_objs;
+  if (offset > 0) {
+    num_objs--;
+  }
+  uint32_t obj_size;
   perso_tlv_object_type_t obj_type;
   perso_tlv_cert_obj_t cert_obj;
-  for (size_t i = 0; i < perso_blob_to_host->num_objs; ++i) {
-    // Parse the TLV object header.
-    perso_tlv_object_header_t obj_header = *(uint16_t *)tlv_buf;
-    PERSO_TLV_GET_FIELD(Objh, Type, obj_header, &obj_type);
-    PERSO_TLV_GET_FIELD(Objh, Size, obj_header, &obj_size);
+  for (size_t i = 0; i < num_objs; ++i) {
+    obj_type = perso_tlv_object_type(tlv_buf, version);
+    obj_size = perso_tlv_object_size(tlv_buf, version);
     if (obj_type == kPersoObjectTypeX509Tbs) {
-      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, kPersoBlobVersionV0,
-                                 &cert_obj));
+      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, version, &cert_obj));
       hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
     }
     tlv_buf += obj_size;
@@ -689,9 +748,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   hmac_sha256_final(&digest);
 
   // Push hash into perso blob.
-  TRY(perso_tlv_push_object_to_perso_blob(
-      kPersoObjectTypeWasTbsHmac, digest.digest, kHmacDigestNumBytes,
-      kPersoBlobVersionV0, perso_blob_to_host));
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeWasTbsHmac,
+                                          digest.digest, kHmacDigestNumBytes,
+                                          version, perso_blob_to_host));
 
   // Read complete device ID and push into perso blob. The host will need the
   // device ID to reconstruct the WAS.
@@ -699,43 +758,37 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                           kHwCfgDeviceIdOffset, device_id,
                                           ARRAYSIZE(device_id)));
-  TRY(perso_tlv_push_object_to_perso_blob(
-      kPersoObjectTypeDeviceId, device_id, kHwCfgDeviceIdSizeInBytes,
-      kPersoBlobVersionV0, perso_blob_to_host));
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeDeviceId, device_id,
+                                          kHwCfgDeviceIdSizeInBytes, version,
+                                          perso_blob_to_host));
 
   return OK_STATUS();
 }
 
 static status_t boot_data_cfg_initialize(void) {
   // Configure the boot data OTP word.
-  if (!status_ok(manuf_individualize_device_flash_info_boot_data_cfg_check(
-          &otp_ctrl))) {
+  if (!status_ok(
+          manuf_individualize_device_nvm_info_boot_data_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_field_cfg(
         &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET));
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET));
   }
 
   // Loads the boot data configuration from OTP.
-  flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_boot_data_cfg_get();
+  nvm_page_cfg_t boot_data_cfg = nvm_ctrl_boot_data_cfg_get();
 
-  flash_ctrl_perms_t perm = {
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4True,
-  };
+  nvm_page_perms_t perm = kNvmPagePermsErase;
 
   // Erase the BootData pages. This is necessary to ensure that the owner
   // block is written to a clean page and to avoid ECC errors in the
   // next boot.
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0, perm);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
+  nvm_ctrl_info_perms_set(kNvmInfoPageBootData0, perm);
+  nvm_ctrl_info_perms_set(kNvmInfoPageBootData1, perm);
+  nvm_ctrl_info_cfg_set(kNvmInfoPageBootData0, boot_data_cfg);
+  nvm_ctrl_info_cfg_set(kNvmInfoPageBootData1, boot_data_cfg);
 
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData0,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData1,
-                            kFlashCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(kNvmInfoPageBootData0));
+  TRY(nvm_ctrl_info_erase(kNvmInfoPageBootData1));
 
   return OK_STATUS();
 }
@@ -747,25 +800,17 @@ static status_t install_owner(owner_config_t *config,
   boot_data_t boot_data;
   TRY(boot_data_read(kLcStateProd, &boot_data));
 
-  // Initialize the ownership-related flash pages.
-  flash_ctrl_perms_t perm = {
-      .read = kMultiBitBool4True,
-      .write = kMultiBitBool4True,
-      .erase = kMultiBitBool4True,
-  };
-  flash_ctrl_cfg_t cfg = {
-      .scrambling = kMultiBitBool4True,
-      .ecc = kMultiBitBool4True,
-      .he = kMultiBitBool4False,
-  };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  // Initialize the ownership-related NVM pages.
+  nvm_page_perms_t perm = kNvmPagePermsReadWrite;
+  nvm_page_cfg_t cfg = kNvmPageCfgScrambled;
+  nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSlot0, perm);
+  nvm_ctrl_info_cfg_set(kNvmInfoPageOwnerSlot0, cfg);
+  nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSlot1, perm);
+  nvm_ctrl_info_cfg_set(kNvmInfoPageOwnerSlot1, cfg);
 
-  // Initializes the boot data flash configuration in OTP, and erases the boot
+  // Initializes the boot data NVM configuration in OTP, and erases the boot
   // data pages to avoid integrity errors in the next boot.
-  // `sku_creator_owner_init` will write the owner block to the flash.
+  // `sku_creator_owner_init` will write the owner block to the NVM.
   TRY(boot_data_cfg_initialize());
 
   // Initialize ownership.  This will write the owner block into OwnerSlot0 and
@@ -797,6 +842,7 @@ static size_t max_available(void) {
  *                  reduces the size of the buffer by the size of the copied
  *                  certificate perso LTV object.
  */
+static perso_blob_version_t perso_blob_from_host_version;
 static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   // A just in case sanity check that the next free location in the perso blob
   // data buffer is at the end of the buffer.
@@ -811,7 +857,7 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
     // Extract the next perso LTV object, aborting if it is not a certificate.
     rom_error_t err = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
-        max_available(), kPersoBlobVersionV0, &block);
+        max_available(), perso_blob_from_host_version, &block);
     switch (err) {
       case kErrorOk:
         break;
@@ -847,7 +893,7 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   return OK_STATUS();
 }
 
-static status_t write_cert_to_dice_page(const cert_flash_info_layout_t *layout,
+static status_t write_cert_to_dice_page(const cert_nvm_info_layout_t *layout,
                                         perso_tlv_cert_obj_t *block,
                                         uint8_t *cert_data,
                                         uint32_t page_offset,
@@ -868,8 +914,8 @@ static status_t write_cert_to_dice_page(const cert_flash_info_layout_t *layout,
   return OK_STATUS();
 }
 
-static status_t write_digest_to_dice_page(
-    const cert_flash_info_layout_t *layout, uint32_t page_offset) {
+static status_t write_digest_to_dice_page(const cert_nvm_info_layout_t *layout,
+                                          uint32_t page_offset) {
   base_printf("Digesting %s page ...\n", layout->group_name);
 
   hmac_sha256(dice_page.data, sizeof(dice_page.data), &dice_page.digest);
@@ -897,20 +943,41 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
+  // Detect the version of the blob received from the host.
+  perso_blob_from_host.next_free = 0;
+  perso_blob_from_host_version = kPersoBlobVersionV0;
+  if (perso_blob_from_host.num_objs > 0) {
+    size_t offset = 0;
+    TRY(perso_tlv_get_blob_version(perso_blob_from_host.body,
+                                   sizeof(perso_blob_from_host.body),
+                                   &perso_blob_from_host_version, &offset));
+
+    if (offset > 0) {
+      perso_blob_from_host.next_free = offset;
+      perso_blob_from_host.num_objs--;
+    }
+  }
+
+  perso_blob_version_t blob_version =
+      (perso_blob_version_t)certgen_inputs.blob_version;
+  if (perso_blob_from_host_version != blob_version) {
+    return INVALID_ARGUMENT();
+  }
+
   /*****************************************************************************
-   * Rearrange certificates to prepare for writing to flash.
+   * Rearrange certificates to prepare for writing to NVM.
    *
    * All certificates are ordered in a buffer (all_certs) according to the order
-   * in which they will be written to flash. That order is:
+   * in which they will be written to NVM. That order is:
    * 1. UDS cert
    * 2. CDI_0 cert
    * 3. CDI_1 cert
    * 4. Provision Extension certs
    ****************************************************************************/
-  // We start scanning the perso LTV buffer we received from the host from the
-  // beginnging. We assume that the endorsed UDS cert is the first certificate
+  // We start scanning the received perso LTV buffer we received from the host.
+  // We assume that the endorsed UDS cert is the first certificate
   // in the buffer (even if preceeded by other types of perso LTV objects).
-  perso_blob_from_host.next_free = 0;
+  //
   // Location where the next cert perso LTV object will be copied to in the
   // `all_certs` buffer.
   uint8_t *next_cert = all_certs;
@@ -940,7 +1007,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     size_t offset = cert_offsets[i];
     TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
                                sizeof(perso_blob_to_host.body) - offset,
-                               kPersoBlobVersionV0, &block));
+                               blob_version, &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
     memcpy(next_cert, block.obj_p, block.obj_size);
@@ -960,8 +1027,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
   next_cert = all_certs;
   free_room = sizeof(all_certs);
-  for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
-    const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
+  for (size_t i = 0; i < ARRAYSIZE(cert_nvm_layout); i++) {
+    const cert_nvm_info_layout_t curr_layout = cert_nvm_layout[i];
     uint32_t page_offset = 0;
 
     // Skip the page if it is not in use.
@@ -971,13 +1038,30 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 
     memset(&dice_page, 0, sizeof(dice_page));
 
+    if (blob_version == kPersoBlobVersionV1) {
+      // Write version block to start of the page.
+      uint16_t header = 0;
+      PERSO_TLV_SET_FIELD(Objh, Type, header, kPersoObjectTypeBlobVersion);
+      PERSO_TLV_SET_FIELD(Objh, Size, header,
+                          sizeof(perso_tlv_object_header_t) +
+                              sizeof(perso_tlv_blob_version_payload_t));
+      memcpy(dice_page.data + page_offset, &header, sizeof(uint16_t));
+      page_offset += sizeof(uint16_t);
+
+      uint16_t version_val = __builtin_bswap16(kPersoBlobVersionV1);
+      memcpy(dice_page.data + page_offset, &version_val, sizeof(uint16_t));
+      page_offset += sizeof(uint16_t);
+
+      // Pad to 8 bytes alignment.
+      page_offset = util_round_up_to(page_offset, 3);
+    }
+
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
-    // in the following flash layout sections to be equal to the number of
+    // in the following NVM layout sections to be equal to the number of
     // endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
       // Extract the cert block from the `all_certs` buffer.
-      TRY(perso_tlv_get_cert_obj(next_cert, free_room, kPersoBlobVersionV0,
-                                 &block));
+      TRY(perso_tlv_get_cert_obj(next_cert, free_room, blob_version, &block));
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
@@ -994,9 +1078,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       TRY(write_digest_to_dice_page(&curr_layout, page_offset));
     }
 
-    TRY(flash_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
-                              util_size_to_words(sizeof(dice_page)),
-                              &dice_page));
+    TRY(nvm_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
+                            util_size_to_words(sizeof(dice_page)), &dice_page));
   }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
@@ -1104,9 +1187,9 @@ static status_t configure_ate_gpio_indicators(void) {
 }
 
 static status_t provision(ujson_t *uj) {
-  // Provision OTP, flash secrets, certs, and install the first owner.
+  // Provision OTP, NVM secrets, certs, and install the first owner.
   TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
-  TRY(personalize_otp_and_flash_secrets(uj));
+  TRY(personalize_otp_and_nvm_secrets(uj));
 
   TRY(personalize_gen_dice_certificates(uj));
   owner_config_t owner_config;
@@ -1121,8 +1204,7 @@ static status_t provision(ujson_t *uj) {
       .uj = uj,
       .certgen_inputs = &certgen_inputs,
       .perso_blob_to_host = &perso_blob_to_host,
-      .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state,
+      .cert_nvm_layout = cert_nvm_layout,
       .uds_pubkey = &uds_pubkey,
       .uds_pubkey_id = &uds_pubkey_id,
       .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
@@ -1135,13 +1217,13 @@ static status_t provision(ujson_t *uj) {
   TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
   TRY(log_self_hash(pre_endorse.perso_blob_to_host));
 
-  // Endorse TBS certs and install in flash.
+  // Endorse TBS certs and install in NVM.
   TRY(personalize_endorse_certificates(uj));
   TRY(hash_all_certs());
   personalize_extension_post_endorse_t post_endorse = {
       .uj = uj,
       .perso_blob_from_host = &perso_blob_from_host,
-      .cert_flash_layout = cert_flash_layout};
+      .cert_nvm_layout = cert_nvm_layout};
   post_endorse.perso_blob_from_host->num_objs = orig_num_objects_from_host;
   TRY(personalize_extension_post_cert_endorse(&post_endorse));
 
@@ -1179,12 +1261,12 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   ujson_t uj = ujson_ottf_console();
 
   // Read the reset reason directly from the RSTMGR.
   // This is needed to clear the reset reason before the first call to
-  // `personalize_otp_and_flash_secrets()`, which will reset the device.
+  // `personalize_otp_and_nvm_secrets()`, which will reset the device.
   uint32_t reason = rstmgr_reason_get();
   if (reason != 0) {
     rstmgr_reason_clear(reason);

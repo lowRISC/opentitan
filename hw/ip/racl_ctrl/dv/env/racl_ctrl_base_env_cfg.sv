@@ -17,7 +17,7 @@ class racl_ctrl_base_env_cfg extends cip_base_env_cfg;
   rand racl_error_log_agent_cfg external_error_agent_cfg;
 
   extern function new (string name="");
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
 endclass
 
 function racl_ctrl_base_env_cfg::new (string name="");
@@ -27,13 +27,13 @@ function racl_ctrl_base_env_cfg::new (string name="");
     `uvm_fatal(`gfn, "Could not create reg window of correct type")
 endfunction
 
-function void racl_ctrl_base_env_cfg::initialize();
+function void racl_ctrl_base_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = racl_ctrl_base_env_pkg::LIST_OF_ALERTS;
 
   // Tell the CIP base code how many interrupts we have (defaults to zero)
   num_interrupts = 1;
 
-  super.initialize();
+  super.initialize(inherit_ral_models);
 
   // Tell regs about ral, which contains the actual register model.
   regs.set_reg_block(ral);

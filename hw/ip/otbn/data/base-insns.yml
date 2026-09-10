@@ -570,6 +570,28 @@
       rd: b00000
       opcode: b11100
 
+- mnemonic: wfi
+  synopsis: Wait For Interrupt
+  operands: []
+  straight-line: false
+  doc: |
+    Stalls an OTBN program until a host issues the RESUME command in the CMD register.
+    Once the RESUME command is issued, OTBN will continue executing the next instruction (PC + 4).
+    Triggers the `done` interrupt to indicate that OTBN is now paused.
+
+    This instruction is only valid when CTRL.wfi_enabled is set to 1.
+    Otherwise an invalid instruction error is raised.
+  errs:
+    - An `ILLEGAL_INSN` error if CTRL.wfi_enabled is 0.
+  encoding:
+    scheme: I
+    mapping:
+      imm: b000100000101
+      rs1: b00000
+      funct3: b000
+      rd: b00000
+      opcode: b11100
+
 - mnemonic: loop
   synopsis: Loop (indirect)
   operands:

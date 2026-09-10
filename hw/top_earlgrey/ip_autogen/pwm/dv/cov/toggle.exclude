@@ -1,9 +1,0 @@
-// Copyright lowRISC contributors (OpenTitan project).
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
-// There is a prim_secded_inv_64_57_dec instance at pwm.u_reg.u_chk.u_chk which has a data_i port
-// whose input gets extended from a smaller width (a 42 bit "cmd" object gets extended to 57 bits).
-// The padding is constant: exclude bits 56:43 accordingly (with truly horrible syntax).
--ere instance_signals tb\.dut\.u_reg\.u_chk\.u_chk data_i\[5[0-6]\]
--ere instance_signals tb\.dut\.u_reg\.u_chk\.u_chk data_i\[4[3-9]\]

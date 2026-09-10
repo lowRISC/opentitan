@@ -34,7 +34,7 @@
           {
             name: "rst_req"
             width: "1"
-            module: "sysrst_ctrl_aon"
+            module: "sysrst_ctrl"
             desc: "reset request running on AON clock"
           }
         ]
@@ -73,11 +73,11 @@
           name: "por_io_div2"
           gen: True
           rst_type: "top"
-          path: "rstmgr_aon_resets.rst_por_io_div2_n"
-          lpg_path: "rstmgr_aon_rst_en.por_io_div2"
+          path: "rstmgr_resets.rst_por_io_div2_n"
+          lpg_path: "rstmgr_rst_en.por_io_div2"
           shadowed: False
-          shadow_path: "rstmgr_aon_resets.rst_por_io_div2_shadowed_n"
-          shadow_lpg_path: "rstmgr_aon_rst_en.por_io_div2_shadowed"
+          shadow_path: "rstmgr_resets.rst_por_io_div2_shadowed_n"
+          shadow_lpg_path: "rstmgr_rst_en.por_io_div2_shadowed"
           domains: ["Aon"]
           parent: "por_aon"
           clock: "io_div2"
@@ -93,11 +93,11 @@
           name: "por_io_div2"
           gen: True
           rst_type: "top"
-          path: "rstmgr_aon_resets.rst_por_io_div2_n"
-          lpg_path: "rstmgr_aon_rst_en.por_io_div2"
+          path: "rstmgr_resets.rst_por_io_div2_n"
+          lpg_path: "rstmgr_rst_en.por_io_div2"
           shadowed: False
-          shadow_path: "rstmgr_aon_resets.rst_por_io_div2_shadowed_n"
-          shadow_lpg_path: "rstmgr_aon_rst_en.por_io_div2_shadowed"
+          shadow_path: "rstmgr_resets.rst_por_io_div2_shadowed_n"
+          shadow_lpg_path: "rstmgr_rst_en.por_io_div2_shadowed"
           domains: ["Aon"]
           parent: "por_aon"
           clock: "io_div2"

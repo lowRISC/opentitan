@@ -87,7 +87,7 @@ class SensorCtrlTest : public rom_test::RomTest,
     EXPECT_CALL(sec_mmio_,
                 Write32(base_ + SENSOR_CTRL_FATAL_ALERT_EN_REG_OFFSET, 0x0F6));
   }
-  uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR;
   rom_test::NiceMockOtp otp_;
   rom_test::MockSecMmio sec_mmio_;
 };

@@ -6,6 +6,9 @@
 
 As shown in the block diagram above, the SRAM controller contains a TL-UL adapter, an initialization LFSR, the CSR node, key request logic and an instance of `prim_ram_1p_scr` that implements the actual scrambling mechanism.
 
+Depending on the configured memory size, `prim_ram_1p_scr` splits the memory into `NumRamInst` RAM tiles of `InstSize` bytes each, out of which exactly one is accessed per request.
+The scrambling datapath is shared between all tiles.
+
 The SRAM controller supports the system-wide end-to-end bus integrity scheme and thus stores the data integrity bits alongside each data word in the memory.
 This means that both the 32 data bits and the 7 integrity bits are passed through the scrambling device.
 
@@ -20,6 +23,7 @@ For SW convenience, the SRAM controller also provides an LFSR-based memory initi
 Similarly to the scrambling key, it is the task of SW to request memory initialization via the CSRs as described in the [Programmer's Guide](programmers_guide.md) below.
 
 Note that TL-UL accesses to the memory that occur while a key request or hardware initialization is pending will be blocked until the request has completed.
+This does not apply to accesses outside of the implemented memory range, see the [Programmer's Guide](programmers_guide.md).
 
 The individual mechanisms are explained in more detail in the subsections below.
 

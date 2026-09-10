@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -52,7 +53,7 @@ bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;
 
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   // The definition of `RULE_NAME` comes from the autogen Bazel rule.
   LOG_INFO("Starting ecdsa_p256_verify_test:%s", RULE_NAME);

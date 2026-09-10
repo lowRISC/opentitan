@@ -60,7 +60,7 @@ extern "C" {
  * #define MODULE_ID MAKE_MODULE_ID('a', 'b', 'c')
  */
 #define MAKE_MODULE_ID(a, b, c) \
-  (uint32_t)(((((a)&0xff) << 16) | (((b)&0xff) << 8) | ((c)&0xff)))
+  (uint32_t)(((((a) & 0xff) << 16) | (((b) & 0xff) << 8) | ((c) & 0xff)))
 
 static inline uint8_t __status_ascii_5bit(uint8_t c) {
   if (c >= '@' && c <= '_') {

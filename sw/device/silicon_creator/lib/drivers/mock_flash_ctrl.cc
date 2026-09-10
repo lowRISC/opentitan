@@ -9,6 +9,8 @@ extern "C" {
 
 void flash_ctrl_init(void) { MockFlashCtrl::Instance().Init(); }
 
+void flash_ctrl_disable(void) { MockFlashCtrl::Instance().Disable(); }
+
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {
   MockFlashCtrl::Instance().StatusGet(status);
 }
@@ -27,6 +29,13 @@ rom_error_t flash_ctrl_info_read(const flash_ctrl_info_page_t *info_page,
                                  void *data) {
   return MockFlashCtrl::Instance().InfoRead(info_page, offset, word_count,
                                             data);
+}
+
+rom_error_t flash_ctrl_info_read_zeros_on_read_error(
+    const flash_ctrl_info_page_t *info_page, uint32_t offset,
+    uint32_t word_count, void *data) {
+  return MockFlashCtrl::Instance().InfoReadZerosOnReadError(info_page, offset,
+                                                            word_count, data);
 }
 
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
@@ -73,6 +82,10 @@ flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get() {
   return MockFlashCtrl::Instance().DataDefaultCfgGet();
 }
 
+flash_ctrl_cfg_t flash_ctrl_boot_data_cfg_get() {
+  return MockFlashCtrl::Instance().BootDataCfgGet();
+}
+
 void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
                              flash_ctrl_cfg_t cfg) {
   MockFlashCtrl::Instance().InfoCfgSet(info_page, cfg);
@@ -99,13 +112,8 @@ void flash_ctrl_exec_set(uint32_t exec_val) {
   MockFlashCtrl::Instance().ExecSet(exec_val);
 }
 
-void flash_ctrl_creator_info_pages_lockdown(void) {
-  MockFlashCtrl::Instance().CreatorInfoPagesLockdown();
-}
-
-rom_error_t flash_ctrl_info_type0_params_build(
-    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page) {
-  return MockFlashCtrl::Instance().InfoType0ParamsBuild(bank, page, info_page);
+void flash_ctrl_info_page_lockdown(const flash_ctrl_info_page_t *info_page) {
+  MockFlashCtrl::Instance().InfoPageLockdown(info_page);
 }
 
 }  // extern "C"

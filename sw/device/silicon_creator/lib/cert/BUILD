@@ -106,7 +106,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
@@ -116,7 +116,6 @@ cc_test(
     srcs = ["cert_unittest.cc"],
     deps = [
         ":cert",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -132,7 +131,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
@@ -160,7 +159,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
@@ -211,12 +210,10 @@ opentitan_test(
     name = "dice_cwt_functest",
     srcs = ["dice_cwt_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     deps = [
         ":dice_cwt",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
@@ -231,8 +228,8 @@ cc_library(
     srcs = ["dice_keys.c"],
     hdrs = ["dice_keys.h"],
     deps = [
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
@@ -246,9 +243,9 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
@@ -257,22 +254,21 @@ cc_library(
     srcs = ["dice_chain.c"],
     hdrs = ["dice_chain.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_dice_cdi_0",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:dice_api",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",

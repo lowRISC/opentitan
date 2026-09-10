@@ -30,6 +30,14 @@
 .equ MODE_COFACTOR_RSA_4096, 0x794
 
 /**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
+/**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_COFACTOR_RSA_2048
@@ -47,6 +55,11 @@ start:
   li x3, 31
   loopi 16, 1
     bn.sid x3, 0(x2++)
+
+  /* Initialize the 'ok' flag to FALSE. */
+  la      x2, ok
+  addi    x3, x0, HARDENED_BOOL_FALSE
+  sw      x3, 0(x2)
 
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode

@@ -20,7 +20,7 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
     // The steps in this test closely follow the gdb steps, which is embedded directly into the
     // bazel BUILD file located at sw/device/silicon_creator/rom/e2e/BUILD as the variable
     // `SRAM_JTAG_INJECTION_GDB_SCRIPT`. It is passed as argument to the
-    // `opentitan_gdb_fpga_cw310_test` target `sram_program_fpga_cw310_test_otp_<lc_state>`.
+    // `opentitan_gdb_fpga_cw340_test` target `sram_program_fpga_cw340_test_otp_<lc_state>`.
 
     // Let the chip power up and allow the ROM to execute upto an arbitrary point.
     `DV_WAIT(cfg.chip_vif.pwrmgr_fast_pwr_state_active)
@@ -45,24 +45,24 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
     cfg.debugger.set_haltreq(0);
 
     `uvm_info(`gfn, "Disable the watchdog timer", UVM_LOW)
-    cfg.debugger.mem_read(.addr(ral.aon_timer_aon.wdog_ctrl.get_address()),
+    cfg.debugger.mem_read(.addr(ral.aon_timer.wdog_ctrl.get_address()),
                           .value_q(value_q),
                           .status(status));
     `DV_CHECK_EQ(status, 0)
-    void'(ral.aon_timer_aon.wdog_ctrl.predict(.value(value_q[0]), .kind(UVM_PREDICT_DIRECT)));
-    if (`gmv(ral.aon_timer_aon.wdog_ctrl.enable)) begin
+    void'(ral.aon_timer.wdog_ctrl.predict(.value(value_q[0]), .kind(UVM_PREDICT_DIRECT)));
+    if (`gmv(ral.aon_timer.wdog_ctrl.enable)) begin
       `uvm_info(`gfn, "WDOG is enabled. Disabling it", UVM_LOW)
-      cfg.debugger.mem_write(.addr(ral.aon_timer_aon.wdog_ctrl.get_address()),
+      cfg.debugger.mem_write(.addr(ral.aon_timer.wdog_ctrl.get_address()),
                              .value_q({0}),
                              .status(status));
       `DV_CHECK_EQ(status, 0)
       `uvm_info(`gfn, "Reset the WDOG count", UVM_LOW)
-      cfg.debugger.mem_write(.addr(ral.aon_timer_aon.wdog_count.get_address()),
+      cfg.debugger.mem_write(.addr(ral.aon_timer.wdog_count.get_address()),
                              .value_q({0}),
                              .status(status));
       `DV_CHECK_EQ(status, 0)
       `uvm_info(`gfn, "Clear the interrupt (if any) by writing to INTR_STATE", UVM_LOW)
-      cfg.debugger.mem_write(.addr(ral.aon_timer_aon.intr_state.get_address()),
+      cfg.debugger.mem_write(.addr(ral.aon_timer.intr_state.get_address()),
                              .value_q({0}),
                              .status(status));
       `DV_CHECK_EQ(status, 0)

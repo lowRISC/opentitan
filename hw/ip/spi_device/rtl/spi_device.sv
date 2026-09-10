@@ -63,11 +63,11 @@ module spi_device
 
   // Memory configuration
   // When using a dual port RAM primitive only this RAM config port is used
-  input  prim_ram_2p_pkg::ram_2p_cfg_t     ram_cfg_sys2spi_i,
-  output prim_ram_2p_pkg::ram_2p_cfg_rsp_t ram_cfg_rsp_sys2spi_o,
+  input  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t ram_cfg_sys2spi_i,
+  output prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t ram_cfg_sys2spi_o,
   // When using a 1R1W RAM primitive, both RAM config ports are used
-  input  prim_ram_2p_pkg::ram_2p_cfg_t     ram_cfg_spi2sys_i,
-  output prim_ram_2p_pkg::ram_2p_cfg_rsp_t ram_cfg_rsp_spi2sys_o,
+  input  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t ram_cfg_spi2sys_i,
+  output prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t ram_cfg_spi2sys_o,
 
   // External clock sensor
   output logic sck_monitor_o,
@@ -1899,9 +1899,9 @@ module spi_device
     .spi_rerror_o      (mem_b_rerror),
 
     .cfg_sys2spi_i     (ram_cfg_sys2spi_i),
-    .cfg_rsp_sys2spi_o (ram_cfg_rsp_sys2spi_o),
+    .cfg_sys2spi_o     (ram_cfg_sys2spi_o),
     .cfg_spi2sys_i     (ram_cfg_spi2sys_i),
-    .cfg_rsp_spi2sys_o (ram_cfg_rsp_spi2sys_o)
+    .cfg_spi2sys_o     (ram_cfg_spi2sys_o)
   );
 
   // Register module

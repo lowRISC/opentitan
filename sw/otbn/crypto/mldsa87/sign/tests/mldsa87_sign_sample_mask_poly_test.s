@@ -18,6 +18,7 @@ main:
   la x3, _sample_mask_poly_y_share1
   la x4, _sample_mask_poly_rho_share0
   la x5, _sample_mask_poly_rho_share1
+  la x6, _sample_mask_poly_kappa
   jal x1, sample_mask_poly
 
   la x20, _sample_mask_poly_y_share0
@@ -31,9 +32,13 @@ main:
 .balign 32
 
 _sample_mask_poly_rho_share0:
-.zero 96
+.zero 64
 _sample_mask_poly_rho_share1:
-.zero 96
+.zero 64
+
+_sample_mask_poly_kappa:
+.zero 2
+.zero 30
 
 _sample_mask_poly_y_share0:
 .zero 1024

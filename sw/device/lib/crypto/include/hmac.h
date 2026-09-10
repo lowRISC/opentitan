@@ -19,6 +19,17 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Size of the HMAC context in words.
+   *
+   * Holds a security-level word, a primary hmac_ctx_t, and a redundant
+   * hmac_ctx_t for medium/high security levels. For the low security
+   * configuration only the primary slot is used.
+   */
+  kOtcryptoHmacCtxStructWords = 1 + 2 * kOtcryptoSha2CtxStructWords,
+};
+
 /**
  * Generic hmac context.
  *
@@ -26,7 +37,8 @@ extern "C" {
  * with #otcrypto_hmac_init.
  */
 typedef struct otcrypto_hmac_context {
-  uint32_t data[kOtcryptoSha2CtxStructWords];
+  /// hmac internal context.
+  uint32_t data[kOtcryptoHmacCtxStructWords];
 } otcrypto_hmac_context_t;
 
 /**
@@ -51,11 +63,14 @@ typedef struct otcrypto_hmac_context {
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
  * @param[out] tag Output authentication tag.
- * @return The result of the HMAC operation.
+ * @return Result of the HMAC operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t *input_message,
+                                const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag);
 
 /**
@@ -68,8 +83,10 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
- * @param hash_mode Hash function to use.
- * @return Result of the HMAC init operation.
+ * @return Result of the HMAC init operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or mode is
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
@@ -105,11 +122,14 @@ otcrypto_status_t otcrypto_hmac_update(
  * The caller should allocate space for the `tag` buffer, (the length should
  * match the hash function digest size), and set the length of expected output
  * in the `len` field of `tag`. If the user-set length and the output length
- * does not match, an error message will be returned.
+ * does not match, `kOtcryptoStatusValueBadArgs` will be returned.
  *
  * @param ctx Pointer to the generic HMAC context struct.
  * @param[out] tag Output authentication tag.
- * @return Result of the HMAC final operation.
+ * @return Result of the HMAC final operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,

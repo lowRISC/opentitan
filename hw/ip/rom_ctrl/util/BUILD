@@ -17,18 +17,6 @@ py_library(
 )
 
 py_binary(
-    name = "gen_vivado_mem_image",
-    srcs = ["gen_vivado_mem_image.py"],
-    deps = [":mem"],
-)
-
-py_test(
-    name = "gen_vivado_mem_image_test",
-    srcs = ["gen_vivado_mem_image_test.py"],
-    deps = [":gen_vivado_mem_image"],
-)
-
-py_binary(
     name = "scramble_image",
     srcs = ["scramble_image.py"],
     deps = [

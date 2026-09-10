@@ -113,11 +113,15 @@ interface adc_ctrl_sva_if
           ~rst_aon_ni)
   `ASSERT(EnterLowPower_A, EnterLowPower_P, clk_aon_i, ~rst_aon_ni | ~testmode_low_power)
 
-  // Assertion controls
-
+  // Local assertion controls
   `DV_ASSERT_CTRL("PwrupTime_A_CTRL", PwrupTime_A)
   `DV_ASSERT_CTRL("WakeupTime_A_CTRL", WakeupTime_A)
   `DV_ASSERT_CTRL("EnterLowPower_A_CTRL", EnterLowPower_A)
-  `DV_ASSERT_CTRL("ADC_CTRL_FSM_A_CTRL", tb.dut.u_adc_ctrl_core.u_adc_ctrl_fsm)
+
+  // Control for an assertion in the dut
+  //
+  // The hierarchical reference is an upwards hierarchical reference and works because this
+  // interface is bound into an instance of adc_ctrl.
+  `DV_ASSERT_CTRL("ADC_CTRL_FSM_A_CTRL", adc_ctrl.u_adc_ctrl_core.u_adc_ctrl_fsm)
 
 endinterface : adc_ctrl_sva_if
