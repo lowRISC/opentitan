@@ -8,12 +8,17 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result, bail, ensure};
 use base64ct::{Base64, Encoding};
 use elliptic_curve::SecretKey;
 use hwtrust::dice::ChainForm;
 use hwtrust::session::Session;
-use ml_dsa::{ExpandedSigningKey as MldsaSigningKey, MlDsa87, Seed as MlDsaSeed};
+use zeroize::Zeroize;
+
+pub struct MlDsaSeed {
+    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+}
+
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
 use p256::NistP256;
@@ -35,21 +40,25 @@ pub enum CaKeyType {
     Token,
 }
 
-#[derive(Debug, Clone)]
 pub enum RawKeyType {
     EcdsaKey(SecretKey<NistP256>),
     MldsaSeed(MlDsaSeed),
 }
 
+#[derive(Debug, Clone)]
+pub enum TokenKeyType {
+    EcdsaKey(String),
+    MldsaKey(String),
+}
+
 /// Certificate Authority key input formats.
 ///
-/// The following ECC P256 private key representations are supported:
+/// The following private key representations are supported:
 ///   1. RawKey: provided as a file path pointing to a DER encoded key file.
-///   2. TokenKey: provided as a PKCS#11 token ID string.
-#[derive(Debug, Clone)]
+///   2. TokenKey: provided as a PKCS#11 token key/object identifier string.
 pub enum CaKey {
     RawKey(RawKeyType),
-    TokenKey(String),
+    TokenKey(TokenKeyType),
 }
 
 /// Certificate Authority (CA) parameters.
@@ -65,32 +74,111 @@ pub struct CaConfig {
     pub key: String,
 }
 
-fn find_openssl_bin() -> Result<std::path::PathBuf> {
-    let r = Runfiles::create()?;
-    if let Some(path) = rlocation!(r, "openssl/openssl") {
-        if path.exists() {
-            return Ok(path);
-        }
-        bail!("openssl binary ({:?}) does not exist!", path);
+fn run(runfile_path: &str, args: &[&str]) -> Result<Vec<u8>> {
+    let r = Runfiles::create().context("failed to initialize runfiles")?;
+    let bin = rlocation!(r, runfile_path)
+        .filter(|p| p.exists())
+        .ok_or_else(|| {
+            anyhow::anyhow!("Could not find hermetic binary {runfile_path:?} in runfiles")
+        })?;
+    let o = Command::new(bin).args(args).output()?;
+    if !o.status.success() {
+        log::error!(
+            "{runfile_path} output:\n{}",
+            std::str::from_utf8(&o.stderr).unwrap_or("<invalid utf8>")
+        );
+        bail!("{runfile_path} command {:?} failed", args);
     }
-    bail!("Could not create @openssl//:openssl binary runfile path");
+    Ok(o.stdout)
 }
 
 /// Execute an openssl invocation, passing the args[] as command line parameters.
-///
-/// The intended use is openssl x509 certificate verification. cert_num is the
-/// number of the certificate in the list of certificates being validated.
-fn openssl_command(args: &[&str]) -> Result<()> {
-    let openssl_bin = find_openssl_bin()?;
-    let o = Command::new(openssl_bin).args(args).output()?;
-    if !o.status.success() {
-        log::error!(
-            "openssl output:\n{}",
-            std::str::from_utf8(&o.stderr).unwrap()
-        );
-        bail!("openssl command {:?} failed", args);
+fn openssl_command(args: &[&str]) -> Result<Vec<u8>> {
+    run("openssl/openssl", args)
+}
+
+/// Execute an hsmtool invocation, passing the args[] as command line parameters.
+fn hsmtool_command(args: &[&str]) -> Result<Vec<u8>> {
+    run("lowrisc_opentitan/sw/host/hsmtool/hsmtool", args)
+}
+
+impl MlDsaSeed {
+    /// Reads an ML-DSA PKCS#8 DER private key from a file.
+    pub fn read_pkcs8_der_file(path: &str) -> Result<Self> {
+        let mut der = fs::read(path).with_context(|| format!("failed to read key file {path}"))?;
+        let res = openssl::pkey::PKey::private_key_from_der(&der)
+            .context("failed to parse ML-DSA-87 PKCS#8 private key in OpenSSL");
+        der.zeroize();
+        Ok(Self { pkey: res? })
     }
-    Ok(())
+
+    /// Reads an ML-DSA PKCS#8 DER private key from an HSM Elementary File (CKO_DATA object) using `hsmtool object show`.
+    pub fn read_from_hsm_ef(label: &str) -> Result<Self> {
+        let output = hsmtool_command(&[
+            "--format",
+            "json",
+            "object",
+            "show",
+            "--label",
+            label,
+            "--redact=false",
+        ])
+        .context("hsmtool object show failed")?;
+
+        #[derive(serde::Deserialize)]
+        struct ShowResult {
+            objects: Vec<std::collections::HashMap<String, serde_json::Value>>,
+        }
+
+        let result: ShowResult =
+            serde_json::from_slice(&output).context("failed to parse hsmtool json output")?;
+        if result.objects.is_empty() {
+            bail!("No object found in HSM with label '{}'", label);
+        }
+        let obj = &result.objects[0];
+        let class = obj
+            .get("CKA_CLASS")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| {
+                anyhow::anyhow!("CKA_CLASS missing or not a string for object '{}'", label)
+            })?;
+        ensure!(
+            class == "CKO_DATA",
+            "Expected CKO_DATA object for ML-DSA key '{}', got '{}'",
+            label,
+            class
+        );
+        let val = obj
+            .get("CKA_VALUE")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| {
+                anyhow::anyhow!("CKA_VALUE missing or not a string for object '{}'", label)
+            })?;
+
+        let hex_clean = val.replace(':', "");
+        let mut bytes = hex::decode(&hex_clean)
+            .with_context(|| format!("failed to decode hex key from HSM object '{}'", label))?;
+
+        let res = openssl::pkey::PKey::private_key_from_der(&bytes)
+            .context("failed to parse ML-DSA-87 PKCS#8 private key in OpenSSL");
+        bytes.zeroize();
+        Ok(Self { pkey: res? })
+    }
+
+    /// Endorses an X.509 certificate given its TBS (To-Be-Signed) bytes.
+    pub fn endorse_x509_cert(&self, tbs: &[u8]) -> Result<Vec<u8>> {
+        let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)
+            .context("failed to initialize ML-DSA-87 signer")?;
+        let sig_bytes = signer
+            .sign_oneshot_to_vec(tbs)
+            .context("failed to sign TBS with ML-DSA-87")?;
+
+        let signature = Signature::Mldsa87 {
+            value: Some(Value::Literal(sig_bytes)),
+        };
+
+        generate_certificate_from_tbs(tbs.to_vec(), &signature)
+    }
 }
 
 /// Given a u8 blob containing an x509 certificate perform some rudimentary
@@ -119,12 +207,23 @@ pub fn get_cert_size(cert: &[u8]) -> Result<usize> {
 /// key, and attaches a signature to it.
 pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CaKey) -> Result<Vec<u8>> {
     match key {
-        CaKey::TokenKey(key_id) => parse_and_endorse_x509_cert_token(tbs, key_id),
-        CaKey::RawKey(RawKeyType::EcdsaKey(sk)) => parse_and_endorse_x509_cert_raw(tbs, sk),
-        CaKey::RawKey(RawKeyType::MldsaSeed(esk)) => {
-            parse_and_endorse_x509_mldsa_cert_raw(tbs, esk)
+        CaKey::TokenKey(TokenKeyType::EcdsaKey(key_id)) => {
+            parse_and_endorse_x509_cert_token(tbs, key_id)
         }
+        CaKey::TokenKey(TokenKeyType::MldsaKey(key_id)) => {
+            parse_and_endorse_x509_mldsa_cert_token(tbs, key_id)
+        }
+        CaKey::RawKey(RawKeyType::EcdsaKey(sk)) => parse_and_endorse_x509_cert_raw(tbs, sk),
+        CaKey::RawKey(RawKeyType::MldsaSeed(esk)) => esk.endorse_x509_cert(&tbs),
     }
+}
+
+fn parse_and_endorse_x509_mldsa_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u8>> {
+    // Currently, the ML-DSA CA key is stored in the HSM as an elementary file (CKO_DATA object
+    // containing the PKCS#8 DER-encoded key), so we load it via hsmtool object show and endorse via RawKey.
+    // When HSM token signing for ML-DSA is directly supported via PKCS#11, sign via token directly.
+    let seed = MlDsaSeed::read_from_hsm_ef(key_id)?;
+    seed.endorse_x509_cert(&tbs)
 }
 
 fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
@@ -144,27 +243,6 @@ fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) ->
 
     // Generate the (endorsed) certificate.
     generate_certificate_from_tbs(tbs, &signature)
-}
-
-fn parse_and_endorse_x509_mldsa_cert_raw(tbs: Vec<u8>, ca_seed: &MlDsaSeed) -> Result<Vec<u8>> {
-    if cfg!(feature = "mldsa_experimental_signing") {
-        // Sign the TBS without pre-hashing
-        let ca_sk = MldsaSigningKey::<MlDsa87>::from_seed(ca_seed);
-        // NOTE that there is no randomization here. FIPS standard suggest adding randomization to
-        // prevent against side-channel attack. But since this is not running in publicly available
-        // devices (like the OT chip itself), that might not be needed here.
-        let signature = ca_sk.sign_deterministic(tbs.as_ref(), &[])?;
-        let signature = Signature::Mldsa87 {
-            value: Some(Value::Literal(signature.encode().to_vec())),
-        };
-
-        // Generate the (endorsed) certificate.
-        generate_certificate_from_tbs(tbs, &signature)
-    } else {
-        bail!(
-            "This function does deterministic signing, and the ml-dsa crate is currently experimental only. So signing is only enabled for testing!"
-        );
-    }
 }
 
 fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u8>> {
@@ -226,9 +304,8 @@ fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u
     generate_certificate_from_tbs(tbs, &signature)
 }
 
-fn write_cert_to_temp_pem_file(der_cert_bytes: &[u8], base_filename: &str) -> Result<String> {
+fn write_cert_to_temp_pem_file(der_cert_bytes: &[u8], base_name: &str) -> Result<String> {
     // Build temp file names for DER and PEM cert files.
-    let base_name = tmpfilename(base_filename);
     let binding_der = base_name.to_owned() + ".der";
     let binding_pem = base_name.to_owned() + ".pem";
     let der_filename = binding_der.as_str();
@@ -339,15 +416,17 @@ pub fn validate_cert_chain(ca_pem: &str, cert_chain: &[EndorsedCert]) -> Result<
     let mut ignore_critical = false;
 
     // Create temp CA PEM file.
-    let tmp_ca_pem_filename_binding = tmpfilename("tmp_ca_chain.pem");
-    let tmp_ca_pem_filename = tmp_ca_pem_filename_binding.as_str();
+    let tmp_dir = tempfile::tempdir().context("failed to create temporary directory")?;
+    let tmp_ca_pem = tmp_dir.path().join("tmp_ca_chain.pem");
+    let tmp_ca_pem_filename = tmp_ca_pem.to_str().unwrap();
+    let tmp_leaf_base = tmp_dir.path().join("leaf");
     fs::copy(ca_pem, tmp_ca_pem_filename)?;
 
     // Iterate over leaf certs.
-    let mut tmp_leaf_cert_pem_filename: String = "".to_string();
     for cert in cert_chain.iter() {
         // Overwrite the current leaf cert PEM file.
-        tmp_leaf_cert_pem_filename = write_cert_to_temp_pem_file(&cert.bytes, "leaf")?;
+        let tmp_leaf_cert_pem_filename =
+            write_cert_to_temp_pem_file(&cert.bytes, tmp_leaf_base.to_str().unwrap())?;
 
         // If a cert in the chain has a critical custom extension, we need to
         // tell OpenSSL to ignore it from here out. The `-ignore_critical` flag
@@ -375,11 +454,6 @@ pub fn validate_cert_chain(ca_pem: &str, cert_chain: &[EndorsedCert]) -> Result<
         tmp_ca_file.write_all(&leaf_cert_pem_contents)?;
         drop(tmp_ca_file);
     }
-
-    // Cleanup the temp PEM cert files.
-    fs::remove_file(tmp_ca_pem_filename).context("failed to remove temp CA PEM file")?;
-    fs::remove_file(tmp_leaf_cert_pem_filename.as_str())
-        .context("failed to remove temp leaf PEM file")?;
 
     Ok(())
 }
@@ -436,5 +510,128 @@ mod tests {
         let bad_value = cert0.bytes.pop().unwrap() + 1;
         cert0.bytes.push(bad_value);
         assert!(validate_cert_chain(ca_pem, &[cert0.clone()]).is_err());
+    }
+
+    fn run_mldsa_ca_test(ca_pem: &str, ca_key: &str, key: &CaKey) {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let csr_path = tmp_dir.path().join("leaf.csr");
+        let leaf_key_path = tmp_dir.path().join("leaf_key.pem");
+        let leaf_cert_path = tmp_dir.path().join("leaf_cert.der");
+
+        let csr_str = csr_path.to_str().unwrap();
+        let leaf_key_str = leaf_key_path.to_str().unwrap();
+        let leaf_cert_str = leaf_cert_path.to_str().unwrap();
+
+        // 1. Generate a test CSR for a leaf certificate
+        openssl_command(&[
+            "req",
+            "-new",
+            "-newkey",
+            "ML-DSA-87",
+            "-subj",
+            "/C=US/ST=CA/O=OpenTitan/CN=PQ_UDS_TEST",
+            "-out",
+            csr_str,
+            "-keyout",
+            leaf_key_str,
+            "-nodes",
+        ])
+        .expect("openssl req should succeed");
+
+        // 2. Issue a leaf certificate with the CA key to get a valid TBS
+        openssl_command(&[
+            "x509",
+            "-req",
+            "-in",
+            csr_str,
+            "-CA",
+            ca_pem,
+            "-CAkey",
+            ca_key,
+            "-CAkeyform",
+            "der",
+            "-out",
+            leaf_cert_str,
+            "-outform",
+            "der",
+            "-days",
+            "365",
+        ])
+        .expect("openssl x509 issue should succeed");
+
+        let leaf_der_bytes = fs::read(&leaf_cert_path).expect("read leaf DER bytes");
+
+        // 3. Extract TBS from the issued leaf certificate
+        let tbs_size = get_cert_size(&leaf_der_bytes[4..]).expect("valid TBS DER");
+        let tbs_bytes = leaf_der_bytes[4..4 + tbs_size].to_vec();
+
+        // 4. Endorse the TBS using parse_and_endorse_x509_cert with the given CaKey
+        let endorsed_cert_bytes = parse_and_endorse_x509_cert(tbs_bytes, key)
+            .expect("parse_and_endorse_x509_cert with ML-DSA seed should succeed");
+
+        let mut mldsa_cert = EndorsedCert {
+            format: CertFormat::X509,
+            name: "mldsa_leaf_cert".to_string(),
+            ignore_critical: true,
+            bytes: endorsed_cert_bytes,
+        };
+
+        // 5. Validate that the newly signed ML-DSA leaf certificate validates against the CA PEM
+        assert!(validate_cert_chain(ca_pem, &[mldsa_cert.clone()]).is_ok());
+
+        // 6. Corrupt signature and verify validation fails
+        let bad_byte = mldsa_cert.bytes.pop().unwrap() ^ 0xff;
+        mldsa_cert.bytes.push(bad_byte);
+        assert!(validate_cert_chain(ca_pem, &[mldsa_cert]).is_err());
+    }
+
+    #[test]
+    fn validate_mldsa_signing() {
+        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/dice_mldsa_ca.pem";
+        let ca_key = "./sw/device/silicon_creator/manuf/keys/fake/sk_mldsa.pkcs8.der";
+
+        let key = CaKey::RawKey(RawKeyType::MldsaSeed(
+            MlDsaSeed::read_pkcs8_der_file(ca_key).unwrap(),
+        ));
+        run_mldsa_ca_test(ca_pem, ca_key, &key);
+    }
+
+    #[test]
+    fn validate_hsm_mldsa_signing() {
+        let r = Runfiles::create().unwrap();
+        let tokens_dir = rlocation!(r, "lowrisc_opentitan/signing/softhsm/tokens")
+            .filter(|p| p.exists())
+            .expect("signing/softhsm/tokens must exist in runfiles");
+
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let tokens_dst = tmp_dir.path().join("tokens");
+        opentitanlib::util::file::copy_dir_all(&tokens_dir, &tokens_dst).unwrap();
+
+        let sandbox_conf = tmp_dir.path().join("softhsm2.conf");
+        fs::write(
+            &sandbox_conf,
+            format!(
+                "directories.tokendir = {}\nobjectstore.backend = file\nlog.level = WARNING\nslots.removable = false\n",
+                tokens_dst.display()
+            ),
+        )
+        .unwrap();
+
+        // Configure environment variables for hsmtool
+        // SAFETY: Single-threaded test setup configuring environment variables for the test process.
+        unsafe {
+            env::set_var("SOFTHSM2_CONF", &sandbox_conf);
+            env::set_var("HSMTOOL_TOKEN", "fake_keys");
+            env::set_var("HSMTOOL_PIN", "123456");
+        }
+
+        // Verify direct read_from_hsm_ef method
+        let _ = MlDsaSeed::read_from_hsm_ef("fake_dice_mldsa_seed")
+            .expect("MlDsaSeed::read_from_hsm_ef should succeed");
+
+        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/dice_mldsa_ca.pem";
+        let ca_key = "./sw/device/silicon_creator/manuf/keys/fake/sk_mldsa.pkcs8.der";
+        let key = CaKey::TokenKey(TokenKeyType::MldsaKey("fake_dice_mldsa_seed".to_string()));
+        run_mldsa_ca_test(ca_pem, ca_key, &key);
     }
 }

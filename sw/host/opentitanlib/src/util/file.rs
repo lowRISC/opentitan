@@ -112,6 +112,25 @@ pub fn wait_read_timeout(fd: &impl AsFd, timeout: Duration) -> Result<()> {
     wait_timeout(fd.as_fd(), rustix::event::PollFlags::IN, timeout)
 }
 
+/// Recursively copy a directory tree from `src` to `dst`.
+pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
+    let src = src.as_ref();
+    let dst = dst.as_ref();
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+        if file_type.is_dir() {
+            copy_dir_all(&src_path, &dst_path)?;
+        } else {
+            std::fs::copy(&src_path, &dst_path)?;
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -159,6 +178,27 @@ mod tests {
             Some(e) => assert_eq!(io::ErrorKind::TimedOut, e.kind()),
             _ => bail!("Unexpected error result {:?}", err),
         }
+        Ok(())
+    }
+
+    #[test]
+    fn test_copy_dir_all() -> Result<()> {
+        let src = std::path::PathBuf::from(crate::util::tmpfilename("test_copy_src"));
+        let dst = std::path::PathBuf::from(crate::util::tmpfilename("test_copy_dst"));
+
+        let sub_dir = src.join("subdir");
+        std::fs::create_dir_all(&sub_dir)?;
+        std::fs::write(src.join("file1.txt"), b"hello")?;
+        std::fs::write(sub_dir.join("file2.txt"), b"world")?;
+
+        let target = dst.join("copied");
+        copy_dir_all(&src, &target)?;
+
+        assert_eq!(std::fs::read(target.join("file1.txt"))?, b"hello");
+        assert_eq!(std::fs::read(target.join("subdir/file2.txt"))?, b"world");
+
+        let _ = std::fs::remove_dir_all(&src);
+        let _ = std::fs::remove_dir_all(&dst);
         Ok(())
     }
 }
