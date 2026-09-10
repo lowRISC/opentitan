@@ -100,7 +100,8 @@ package sha3_pkg;
 
   parameter int unsigned MaxBlockSize = KeccakRate[0];
 
-  parameter int unsigned KeccakEntries = 1600/MsgWidth;
+  parameter int unsigned KeccakEntries = (1600 + MsgWidth - 1) / MsgWidth;
+
   parameter int unsigned KeccakMsgAddrW = $clog2(KeccakEntries);
 
   parameter int unsigned KeccakCountW = $clog2(KeccakEntries+1);
