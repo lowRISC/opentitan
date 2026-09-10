@@ -28,7 +28,7 @@ filesets:
       - lowrisc:ip:entropy_src
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main

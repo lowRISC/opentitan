@@ -29,10 +29,10 @@
         "data_file": "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
         "report": "/hw/ip/sram_ctrl_main/dv"
     },
-    "key-manager": {
-        "name": "Key Manager",
-        "data_file": "hw/ip/keymgr/data/keymgr.hjson",
-        "report": "/hw/ip/keymgr/dv"
+    "key-manager-dpe": {
+        "name": "Key Manager DPE",
+        "data_file": "hw/ip/keymgr_dpe/data/keymgr_dpe.hjson",
+        "report": "/hw/ip/keymgr_dpe/dv"
     },
     "otbn": {
         "name": "OTBN",
