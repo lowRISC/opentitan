@@ -16,20 +16,12 @@ class i2c_target_base_seq extends i2c_base_seq;
     // Wait until we get stimulus from the vseq.
     wait (req_q.size() > 0);
 
-    fork begin : iso_fork
-      fork
-        // Drive all items in the 'req_q'
-        while (req_q.size() > 0) begin
-          req = req_q.pop_front();
-          start_item(req);
-          finish_item(req);
-        end
-        // This process ends the stimulus generation if seq_stop() is called.
-        // (Note. that any remaining driver stimulus in req_q is abandoned)
-        wait(stop);
-      join_any
-      disable fork;
-    end : iso_fork join
+    // Drive all items in the 'req_q'
+    while (req_q.size() > 0) begin
+      req = req_q.pop_front();
+      start_item(req);
+      finish_item(req);
+    end
   endtask : body
 
 endclass : i2c_target_base_seq
