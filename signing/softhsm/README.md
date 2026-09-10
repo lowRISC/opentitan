@@ -14,8 +14,8 @@ Where `softhsm-util` is one of the binaries emitted by the `@softhsm2//:softhsm2
 
 ## Keys
 
-The softhsm instance contains a few keys needed for testing.  These were
-imported with hsmtool.
+The softhsm instance contains a few keys needed for testing.
+These were imported with hsmtool.
 
 ```
 export HSMTOOL_MODULE=bazel-out/k8-fastbuild/bin/external/softhsm2/softhsm2/lib/softhsm/libsofthsm2.so
