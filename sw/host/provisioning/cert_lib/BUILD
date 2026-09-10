@@ -20,12 +20,11 @@ config_setting(
 rust_library(
     name = "cert_lib",
     srcs = ["src/lib.rs"],
-    crate_features = select({
-        ":mldsa_signing_for_test": ["mldsa_experimental_signing"],
-        "//conditions:default": [],
-    }),
     data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:dice_mldsa_ca.pem",
         "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:sk_mldsa.pkcs8.der",
+        "//sw/host/hsmtool",
         "@openssl",
     ],
     edition = "2024",
@@ -38,11 +37,13 @@ rust_library(
         "@crate_index//:elliptic-curve",
         "@crate_index//:hex",
         "@crate_index//:log",
-        "@crate_index//:ml-dsa",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:openssl",
         "@crate_index//:p256",
         "@crate_index//:serde",
+        "@crate_index//:serde_json",
+        "@crate_index//:tempfile",
+        "@crate_index//:zeroize",
         "@hwtrust",
         "@rules_rust//rust/runfiles",
     ],
@@ -52,5 +53,12 @@ rust_test(
     name = "openssl_verify",
     timeout = "short",
     crate = ":cert_lib",
+    data = [
+        "//signing/softhsm",
+        "@softhsm2//:gen_dir",
+    ],
     edition = "2024",
+    env = {
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
 )

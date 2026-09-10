@@ -14,12 +14,9 @@ use clap::{Args, Parser};
 use elliptic_curve::SecretKey;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use indexmap::IndexMap;
-use ml_dsa::pkcs8::{
-    DecodePrivateKey as MldsaDecodePrivateKey, PrivateKeyInfo as MldsaPrivateKeyInfo,
-};
 use p256::NistP256;
 
-use cert_lib::{CaConfig, CaKey, CaKeyType};
+use cert_lib::{CaConfig, CaKey, CaKeyType, TokenKeyType};
 use ft_lib::{
     DICE_MLDSA_CA_NAME, check_slot_b_boot_up, run_ft_personalize, run_sram_ft_individualize,
     test_exit, test_unlock,
@@ -193,10 +190,9 @@ fn main() -> Result<()> {
                 CaKeyType::Raw => {
                     log::info!("Using raw key for {ca} cert endorsement.");
                     if ca == DICE_MLDSA_CA_NAME {
-                        let der_bytes = std::fs::read(cfg.key.as_str())?;
-                        let private_key_info = MldsaPrivateKeyInfo::from_pkcs8_der(der_bytes.as_slice()).context("Failed to parse ML-DSA PKCS#8 DER file for CA private key")?;
-                        let private_seed = private_key_info.private_key.as_bytes().try_into().context("ML-DSA key DER file must contain bare-seed only (matching `-provparam ml-dsa.output_formats=bare-seed` in openssl)")?;
-                        CaKey::RawKey(MldsaSeed(private_seed))
+                        CaKey::RawKey(MldsaSeed(cert_lib::MlDsaSeed::read_pkcs8_der_file(
+                            cfg.key.as_str(),
+                        )?))
                     } else {
                         CaKey::RawKey(EcdsaKey(SecretKey::<NistP256>::read_pkcs8_der_file(
                             cfg.key.as_str(),
@@ -204,8 +200,13 @@ fn main() -> Result<()> {
                     }
                 }
                 CaKeyType::Token => {
-                    log::info!("Using PKCS#11 token key for cert endorsement.");
-                    CaKey::TokenKey(cfg.key.clone())
+                    if ca == DICE_MLDSA_CA_NAME {
+                        log::info!("Using PKCS#11 token key for {ca} cert endorsement.");
+                        CaKey::TokenKey(TokenKeyType::MldsaKey(cfg.key.clone()))
+                    } else {
+                        log::info!("Using PKCS#11 token key for cert endorsement.");
+                        CaKey::TokenKey(TokenKeyType::EcdsaKey(cfg.key.clone()))
+                    }
                 }
             },
         );

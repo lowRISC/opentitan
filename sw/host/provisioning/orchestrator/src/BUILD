@@ -112,6 +112,7 @@ filegroup(
         ":fw_dependencies",
         "//hw/bitstream/universal:splice",
         "//sw/device/silicon_creator/manuf/keys:ca_data_all",
+        "//sw/host/hsmtool",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
         "//sw/host/provisioning/orchestrator/configs/skus:all",
