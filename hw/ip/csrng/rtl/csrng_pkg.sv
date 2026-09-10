@@ -59,6 +59,7 @@ package csrng_pkg;
     CMD_STS_INVALID_GEN_CMD      = 'h2,
     CMD_STS_INVALID_CMD_SEQ      = 'h3,
     CMD_STS_RESEED_CNT_EXCEEDED  = 'h4,
+    CMD_STS_GEN_ABORTED          = 'h5,
     CMD_STS_UNDRIVEN             = 'z
   } csrng_cmd_sts_e;
 
