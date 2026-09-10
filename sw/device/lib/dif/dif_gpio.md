@@ -21,8 +21,8 @@ Tests          | [DIF_TEST_ON_DEVICE][] | Done        |
 
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
-Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard](../../../../hw/README.md)
-Implementation | [DIF_FEATURES][]            | Done        |
+Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Not Started | [HW Dashboard](../../../../hw/README.md)
+Implementation | [DIF_FEATURES][]            | Not Started |
 
 [DIF_HW_FEATURE_COMPLETE]: ../../../../doc/project_governance/checklist/README.md#dif_hw_feature_complete
 [DIF_FEATURES]:            ../../../../doc/project_governance/checklist/README.md#dif_features
@@ -35,7 +35,7 @@ Coordination   | [DIF_HW_DESIGN_COMPLETE][]       | Not Started |
 Coordination   | [DIF_HW_VERIFICATION_COMPLETE][] | Not Started |
 Documentation  | [DIF_DOC_HW][]                   | Not Started |
 Code Quality   | [DIF_CODE_STYLE][]               | Not Started |
-Tests          | [DIF_TEST_UNIT][]                | Done        |
+Tests          | [DIF_TEST_UNIT][]                | Not Started |
 Review         | [DIF_TODO_COMPLETE][]            | Not Started |
 Review         | Reviewer(s)                      | Not Started |
 Review         | Signoff date                     | Not Started |
