@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "fpga_params",
     "opentitan_test",
 )
 
@@ -11,12 +12,12 @@ def ownership_transfer_test(
         name,
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         ecdsa_key = {
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
         },
+        fpga = None,
         manifest = None,
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key",
@@ -45,11 +46,17 @@ def ownership_transfer_test(
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_log",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/lib/ownership:datatypes",
         ],
         **kwargs):
+    # FPGA should always bootstrap first, so enable this on every FPGA test unless overridden
+    fpga = {
+        "testopt_bootstrap": "True",
+    } | (fpga or {})
+    fpga = fpga_params(**fpga)
+
     opentitan_test(
         name = name,
         srcs = srcs,
@@ -59,5 +66,6 @@ def ownership_transfer_test(
         data = data,
         defines = defines,
         deps = deps,
+        fpga = fpga,
         **kwargs
     )

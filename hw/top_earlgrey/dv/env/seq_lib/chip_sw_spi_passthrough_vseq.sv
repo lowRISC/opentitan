@@ -192,8 +192,8 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
     // Turn off the FIFO data output assertion, as spi_device issues a read
     // before it knows whether it needs the data.
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
 
     super.body();
 

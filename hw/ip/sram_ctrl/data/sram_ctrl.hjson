@@ -17,11 +17,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_sram_ctrl",
-  version:            "1.1.0",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+      {
+          version:            "1.1.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+          commit_id:          "11988f61b91d9e89fd34ead3a9da6a340ce0315d",
+      },
+      {
+          version:            "1.2.0",
+          life_stage:         "L1",
+          design_stage:       "D1",
+          verification_stage: "V1",
+          dif_stage:          "S1",
+      }
+  ],
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_otp_i", reset: "rst_otp_ni"}
@@ -75,7 +87,11 @@
     }
     // This parameter is overridden by topgen to set the actual RAM size.
     { name:      "MemSizeRam",
-      desc:      "Memory size of the RAM (in bytes).",
+      desc:      '''
+                 Memory size of the RAM (in bytes).
+                 If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+                 For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
+                 ''',
       type:      "int",
       default:   "0x1000"
     },
@@ -83,8 +99,8 @@
       desc:      "Memory size of a single RAM tile (in bytes).",
       type:      "int",
       default:   "4096"
-      local:   "false"
-      expose:  "true"
+      local:     "false"
+      expose:    "true"
     },
     { name:      "NumRamInst",
       desc:      "Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .",
@@ -106,6 +122,13 @@
       local:     "false",
       expose:    "true",
       default:   "3"
+    },
+    { name:      "NumAddrScrRounds",
+      desc:      "Number of address scrambling rounds. 0 disables address scrambling.",
+      type:      "int",
+      local:     "false",
+      expose:    "true",
+      default:   "2"
     },
     { name:      "Outstanding",
       desc:      "Number of outstanding TLUL transactions",
@@ -178,20 +201,12 @@
       act:     "req"
       package: "otp_ctrl_pkg"
     },
-    // SRAM attribute input
+    // SRAM attributes
     { struct:  "ram_1p_cfg"
-      type:    "uni"
-      name:    "cfg"
-      act:     "rcv"
+      type:    "req_rsp"
+      name:    "ram_cfg"
+      act:     "rsp"
       width:   "NumRamInst",
-      package: "prim_ram_1p_pkg"
-    },
-    { struct:  "ram_1p_cfg_rsp"
-      type:    "uni"
-      name:    "cfg_rsp"
-      act:     "req"
-      width:   "NumRamInst",
-      default: "'0"
       package: "prim_ram_1p_pkg"
     },
     // Broadcast from LC

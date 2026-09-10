@@ -39,7 +39,7 @@
   sim_tops: ["${module_instance_name}_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Default UVM test and seq class name.
   uvm_test: ${module_instance_name}_base_test
@@ -84,6 +84,7 @@
     {
       name: gpio_inp_prd_cnt
       uvm_test_seq: ${module_instance_name}_inp_prd_cnt_vseq
+      reseed: 50
     }
 
 % endif

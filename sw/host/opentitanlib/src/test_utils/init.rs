@@ -14,6 +14,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use super::bootstrap::Bootstrap;
+use super::fpga_backdoor::LoadMemories;
 use super::load_bitstream::LoadBitstream;
 use crate::app::TransportWrapper;
 use crate::backend;
@@ -29,6 +30,10 @@ pub struct InitializeTest {
     #[arg(long, default_value = "off")]
     pub logging: LevelFilter,
 
+    /// De-assert reset signal before executing commands.
+    #[arg(short, long)]
+    drop_reset: bool,
+
     #[command(flatten)]
     pub backend_opts: backend::BackendOpts,
 
@@ -38,6 +43,9 @@ pub struct InitializeTest {
     //pub uart_params: UartParams,
     #[command(flatten)]
     pub load_bitstream: LoadBitstream,
+
+    #[command(flatten)]
+    pub load_memories: LoadMemories,
 
     #[command(flatten)]
     pub bootstrap: Bootstrap,
@@ -140,13 +148,27 @@ impl InitializeTest {
         // Set up the default pin configurations as specified in the transport's config file.
         transport.apply_default_configuration(None)?;
 
+        if self.drop_reset {
+            transport.pin_strapping("RESET")?.remove()?;
+        }
+
         // Create the UART first to initialize the desired parameters.
         let _uart = self.bootstrap.options.uart_params.create(&transport)?;
 
         // Load a bitstream.
         Self::print_result(
             "load_bitstream",
-            self.load_bitstream.init(&transport).map(|_| None),
+            self.load_bitstream
+                .init(&transport, &self.jtag_params)
+                .map(|_| None),
+        )?;
+
+        // Program any memories (e.g. ROM, OTP).
+        Self::print_result(
+            "load_memories",
+            self.load_memories
+                .init(&transport, &self.jtag_params)
+                .map(|_| None),
         )?;
 
         // Bootstrap an rv32 test program.

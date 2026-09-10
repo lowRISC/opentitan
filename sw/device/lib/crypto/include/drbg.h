@@ -27,11 +27,15 @@ extern "C" {
  * is a multiple of the word length (32-bit), it is handled using SCA hardened
  * memory operations. If not, a non SCA hardened fallback is used.
  *
- * @param perso_string Pointer to personalization bitstring.
- * @return Result of the DRBG instantiate operation.
+ * @param perso_string Pointer to personalization bitstring, or NULL for default
+ * mode.
+ * @return Result of the DRBG instantiate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, `kOtcryptoStatusValueInternalError` if entropy fetch
+ * times out, or `kOtcryptoStatusValueFatalError` if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_instantiate(
-    otcrypto_const_byte_buf_t *perso_string);
+    const otcrypto_const_byte_buf_t *perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -40,10 +44,13 @@ otcrypto_status_t otcrypto_drbg_instantiate(
  * entropy source and updates the working state parameters.
  *
  * @param additional_input Pointer to the additional input for DRBG.
- * @return Result of the DRBG reseed operation.
+ * @return Result of the DRBG reseed operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments are invalid,
+ * `kOtcryptoStatusValueInternalError` if entropy fetch times out, or
+ * `kOtcryptoStatusValueFatalError` if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_reseed(
-    otcrypto_const_byte_buf_t *additional_input);
+    const otcrypto_const_byte_buf_t *additional_input);
 
 /**
  * Instantiates the DRBG system.
@@ -59,12 +66,12 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * a non SCA hardened fallback is used.
  *
  * @param entropy Pointer to the user defined entropy value.
- * @param personalization_string Pointer to personalization bitstring.
+ * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
-    otcrypto_const_byte_buf_t *entropy,
-    otcrypto_const_byte_buf_t *perso_string);
+    const otcrypto_const_byte_buf_t *entropy,
+    const otcrypto_const_byte_buf_t *perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -78,8 +85,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  * @return Result of the manual DRBG reseed operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_reseed(
-    otcrypto_const_byte_buf_t *entropy,
-    otcrypto_const_byte_buf_t *additional_input);
+    const otcrypto_const_byte_buf_t *entropy,
+    const otcrypto_const_byte_buf_t *additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -97,10 +104,13 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
- * @return Result of the DRBG generate operation.
+ * @return Result of the DRBG generate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or output length are invalid, or `kOtcryptoStatusValueFatalError`
+ * if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_generate(
-    otcrypto_const_byte_buf_t *additional_input,
+    const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output);
 
 /**
@@ -122,13 +132,15 @@ otcrypto_status_t otcrypto_drbg_generate(
  * @return Result of the DRBG generate operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_generate(
-    otcrypto_const_byte_buf_t *additional_input,
+    const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.
  *
- * @return Result of the DRBG uninstantiate operation.
+ * @return Result of the DRBG uninstantiate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, or `kOtcryptoStatusValueFatalError` if a
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_uninstantiate(void);
 

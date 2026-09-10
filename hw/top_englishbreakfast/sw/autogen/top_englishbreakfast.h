@@ -156,94 +156,94 @@ extern "C" {
 #define TOP_ENGLISHBREAKFAST_USBDEV_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for pwrmgr_aon in top englishbreakfast.
+ * Peripheral base address for pwrmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR 0x40400000u
+#define TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR 0x40400000u
 
 /**
- * Peripheral size for pwrmgr_aon in top englishbreakfast.
+ * Peripheral size for pwrmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_PWRMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_PWRMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_PWRMGR_AON_SIZE_BYTES 0x80u
+#define TOP_ENGLISHBREAKFAST_PWRMGR_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for rstmgr_aon in top englishbreakfast.
+ * Peripheral base address for rstmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR 0x40410000u
+#define TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR 0x40410000u
 
 /**
- * Peripheral size for rstmgr_aon in top englishbreakfast.
+ * Peripheral size for rstmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_RSTMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES 0x80u
+#define TOP_ENGLISHBREAKFAST_RSTMGR_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for clkmgr_aon in top englishbreakfast.
+ * Peripheral base address for clkmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR 0x40420000u
+#define TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR 0x40420000u
 
 /**
- * Peripheral size for clkmgr_aon in top englishbreakfast.
+ * Peripheral size for clkmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_CLKMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_CLKMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_CLKMGR_AON_SIZE_BYTES 0x80u
+#define TOP_ENGLISHBREAKFAST_CLKMGR_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for pinmux_aon in top englishbreakfast.
+ * Peripheral base address for pinmux in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR 0x40460000u
+#define TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR 0x40460000u
 
 /**
- * Peripheral size for pinmux_aon in top englishbreakfast.
+ * Peripheral size for pinmux in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_PINMUX_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR + TOP_ENGLISHBREAKFAST_PINMUX_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_PINMUX_AON_SIZE_BYTES 0x1000u
+#define TOP_ENGLISHBREAKFAST_PINMUX_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for aon_timer_aon in top englishbreakfast.
+ * Peripheral base address for aon_timer in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR 0x40470000u
+#define TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR 0x40470000u
 
 /**
- * Peripheral size for aon_timer_aon in top englishbreakfast.
+ * Peripheral size for aon_timer in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_AON_TIMER_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR + TOP_ENGLISHBREAKFAST_AON_TIMER_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_AON_TIMER_AON_SIZE_BYTES 0x40u
+#define TOP_ENGLISHBREAKFAST_AON_TIMER_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for ast in top englishbreakfast.
@@ -435,8 +435,8 @@ typedef enum top_englishbreakfast_plic_peripheral {
   kTopEnglishbreakfastPlicPeripheralSpiDevice = 4, /**< spi_device */
   kTopEnglishbreakfastPlicPeripheralSpiHost0 = 5, /**< spi_host0 */
   kTopEnglishbreakfastPlicPeripheralUsbdev = 6, /**< usbdev */
-  kTopEnglishbreakfastPlicPeripheralPwrmgrAon = 7, /**< pwrmgr_aon */
-  kTopEnglishbreakfastPlicPeripheralAonTimerAon = 8, /**< aon_timer_aon */
+  kTopEnglishbreakfastPlicPeripheralPwrmgr = 7, /**< pwrmgr */
+  kTopEnglishbreakfastPlicPeripheralAonTimer = 8, /**< aon_timer */
   kTopEnglishbreakfastPlicPeripheralFlashCtrl = 9, /**< flash_ctrl */
   kTopEnglishbreakfastPlicPeripheralLast = 9, /**< \internal Final PLIC peripheral */
 } top_englishbreakfast_plic_peripheral_t;
@@ -527,9 +527,9 @@ typedef enum top_englishbreakfast_plic_irq_id {
   kTopEnglishbreakfastPlicIrqIdUsbdevPowered = 76, /**< usbdev_powered */
   kTopEnglishbreakfastPlicIrqIdUsbdevLinkOutErr = 77, /**< usbdev_link_out_err */
   kTopEnglishbreakfastPlicIrqIdUsbdevAvSetupEmpty = 78, /**< usbdev_av_setup_empty */
-  kTopEnglishbreakfastPlicIrqIdPwrmgrAonWakeup = 79, /**< pwrmgr_aon_wakeup */
-  kTopEnglishbreakfastPlicIrqIdAonTimerAonWkupTimerExpired = 80, /**< aon_timer_aon_wkup_timer_expired */
-  kTopEnglishbreakfastPlicIrqIdAonTimerAonWdogTimerBark = 81, /**< aon_timer_aon_wdog_timer_bark */
+  kTopEnglishbreakfastPlicIrqIdPwrmgrWakeup = 79, /**< pwrmgr_wakeup */
+  kTopEnglishbreakfastPlicIrqIdAonTimerWkupTimerExpired = 80, /**< aon_timer_wkup_timer_expired */
+  kTopEnglishbreakfastPlicIrqIdAonTimerWdogTimerBark = 81, /**< aon_timer_wdog_timer_bark */
   kTopEnglishbreakfastPlicIrqIdFlashCtrlProgEmpty = 82, /**< flash_ctrl_prog_empty */
   kTopEnglishbreakfastPlicIrqIdFlashCtrlProgLvl = 83, /**< flash_ctrl_prog_lvl */
   kTopEnglishbreakfastPlicIrqIdFlashCtrlRdFull = 84, /**< flash_ctrl_rd_full */
@@ -848,9 +848,9 @@ typedef enum top_englishbreakfast_muxed_pads {
  * Power Manager Wakeup Signals
  */
 typedef enum top_englishbreakfast_power_manager_wake_ups {
-  kTopEnglishbreakfastPowerManagerWakeUpsPinmuxAonPinWkupReq = 0, /**<  */
-  kTopEnglishbreakfastPowerManagerWakeUpsPinmuxAonUsbWkupReq = 1, /**<  */
-  kTopEnglishbreakfastPowerManagerWakeUpsAonTimerAonWkupReq = 2, /**<  */
+  kTopEnglishbreakfastPowerManagerWakeUpsPinmuxPinWkupReq = 0, /**<  */
+  kTopEnglishbreakfastPowerManagerWakeUpsPinmuxUsbWkupReq = 1, /**<  */
+  kTopEnglishbreakfastPowerManagerWakeUpsAonTimerWkupReq = 2, /**<  */
   kTopEnglishbreakfastPowerManagerWakeUpsLast = 2, /**< \internal Last valid pwrmgr wakeup signal */
 } top_englishbreakfast_power_manager_wake_ups_t;
 
@@ -868,7 +868,7 @@ typedef enum top_englishbreakfast_reset_manager_sw_resets {
  * Power Manager Reset Request Signals
  */
 typedef enum top_englishbreakfast_power_manager_reset_requests {
-  kTopEnglishbreakfastPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 0, /**<  */
+  kTopEnglishbreakfastPowerManagerResetRequestsAonTimerAonTimerRstReq = 0, /**<  */
   kTopEnglishbreakfastPowerManagerResetRequestsLast = 0, /**< \internal Last valid pwrmgr reset_request signal */
 } top_englishbreakfast_power_manager_reset_requests_t;
 

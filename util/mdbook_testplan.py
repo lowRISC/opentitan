@@ -14,7 +14,7 @@ import io
 from pathlib import Path
 
 from mdbook import utils as md_utils
-import dvsim.Testplan as Testplan
+from dvsim.testplan import Testplan
 
 
 def main() -> None:
@@ -38,12 +38,19 @@ def main() -> None:
         src_path = chapter["source_path"]
         if not src_path or not testplan_pattern.search(src_path):
             continue
-        # Testplan prints to stdout, redirect that to stderr for error messages
+        # Testplan loading may print to stdout; mdbook reads our stdout, so
+        # redirect any such chatter to stderr where it won't corrupt the book.
         from contextlib import redirect_stdout
         with redirect_stdout(sys.stderr):
-            plan = Testplan.Testplan(
-                book_root / chapter["source_path"],
-                repo_top = book_root)
+            # The dvsim Testplan constructor now requires a `name` arg; derive
+            # one from the testplan file stem (e.g. "aes_testplan.hjson" -> "aes").
+            stem = Path(src_path).stem
+            name = stem.removesuffix("_testplan")
+            plan = Testplan(
+                str(book_root / src_path),
+                repo_top=book_root,
+                name=name,
+            )
             buffer = io.StringIO()
             plan.write_testplan_doc(buffer)
             chapter["content"] = buffer.getvalue()

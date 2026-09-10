@@ -162,7 +162,7 @@ extern const uint32_t kUartBaud1M50;
  * FIFO.
  */
 #define CALCULATE_UART_TX_FIFO_CPU_CYCLES(baud_rate_, cpu_freq_, fifo_depth_) \
-  ((cpu_freq_)*10 * (fifo_depth_) / (baud_rate_))
+  ((cpu_freq_) * 10 * (fifo_depth_) / (baud_rate_))
 
 /**
  * Helper macro to calculate the maximum duration of the AST initialization
@@ -171,7 +171,7 @@ extern const uint32_t kUartBaud1M50;
  * This macro assumes that the desired duration is 100us.
  */
 #define CALCULATE_AST_CHECK_POLL_CPU_CYCLES(cpu_freq_) \
-  ((cpu_freq_)*100 / 1000000)
+  ((cpu_freq_) * 100 / 1000000)
 
 /**
  * Maximum duration of the AST initialization check poll in CPU cycles. This

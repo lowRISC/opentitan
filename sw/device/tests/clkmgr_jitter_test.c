@@ -34,7 +34,7 @@ void test_jitter_locked(const dif_clkmgr_t *clkmgr,
 
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
 
   // Get the initial jitter state. It might be enabled or disabled depending
   // on reset behavior - either is fine for the purposes of this test.

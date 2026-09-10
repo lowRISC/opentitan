@@ -77,7 +77,6 @@ _TEST_ROM_EXTS = {
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
@@ -103,7 +102,6 @@ _TEST_ROM_EXTS = {
 opentitan_test(
     name = "secver_write_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -116,7 +114,6 @@ opentitan_test(
             ":rom_ext_2": "rom_ext2",
             ":rom_ext_3": "rom_ext3",
         },
-        changes_otp = True,
         exit_success = "BFV:{}".format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         rom_ext = ":rom_ext_0",
         test_cmd = """
@@ -124,12 +121,8 @@ opentitan_test(
             --exec="image assemble -s 131072 --mirror=false -o fw1.bin {rom_ext1}@0 {boot_test_b}@0x10000"
             --exec="image assemble -s 131072 --mirror=false -o fw2.bin {rom_ext2}@0 {boot_test_a}@0x10000"
             --exec="image assemble -s 131072 --mirror=false -o fw3.bin {rom_ext3}@0 {boot_test_b}@0x10000"
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
 
-            # Bootstrap the initial version 0 into SlotA
-            --exec="bootstrap --clear-uart=true {firmware}"
+            # Check the initial version 0 has been bootstrapped into SlotA
             --exec="console --non-interactive --exit-success='rom_ext_min_sec_ver = 0'"
 
             # Rescue and update to SlotB.  We expect to update the secver.
@@ -158,7 +151,6 @@ opentitan_test(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),

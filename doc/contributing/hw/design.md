@@ -23,7 +23,7 @@ The concept of a design might come from a variety of inspirations: a known requi
 Regardless of the inspiration, the concept should be codified into a brief proposal with basic features.
 This is as opposed to minor modification proposals to an existing design, which can be handled as a GitHub pull request or issue filing associated with the existing design.
 This proposal should be in **Google Doc** medium for agile review capability.
-Ideally this proposal document would be created in the Team Drive, but if the author does not have access to the team drive, they can share a privately-created document.
+The author can share a privately-created document but this should be moved to a shared drive for a Working Group for collaboration.
 
 Design proposals should follow the recommended [RFC (Request for Comment)](../../project_governance/rfc_process.md) process, which handles all such proposals.
 If the RFC potentially contains information that could be certification-sensitive (guidance to be shared), send a note to security@opentitan.org first for feedback.
@@ -31,16 +31,14 @@ The OpenTitan Technical Committee may be able to suggest other collaborators to 
 
 An example of a canonical RFC will be provided *here* (TODO).
 
-
 ## Detailed Specification
 
-Once past initial review of the feature set and high level description, as well as potential security review, the full detailed specification should be completed, still in Google Doc form.
+Once past initial review of the feature set and high level description, as well as potential security review, the full detailed specification should be completed, still in Google Doc form within a Working Group.
 The content, form, and format are discussed in the [design methodology](./methodology.md) and [documentation methodology](../style_guides/markdown_usage_style.md) guides.
 The outcome of this process should be a specification that is ready for further detailed review by other project members.
 The content and the status of the proposal can be shared with the team.
 
 An example of a canonical detailed specification is the pinmux specification which can be found in the TeamDrive under TechnicalSpecifications --> deprecated, for those that have access to that resource.
-(Google Docs that have been converted into Markdown on GitHub are archived here).
 
 Note that when developing OpenTitan security IP, designers should follow the [Secure Hardware Design Guidelines](../../security/implementation_guidelines/hardware/README.md).
 
@@ -67,11 +65,9 @@ friendly, [Comportability](./comportability/README.md) equivalent, etc., as indi
 
 A good example of an initial skeleton design can be seen in [Pull Request #166](https://github.com/lowRISC/opentitan/pull/166) for the AES module.
 
-As part of the GitHub filing process, the Google Doc specification must be converted into a Markdown specification.
-(Tip: there are Google Doc add-ons that can convert the specification into Markdown format).
+Once the specification is ready to be published, it should be converted into a Markdown specification and stored in the OpenTitan repository.
 Once this is completed, any specifications on the Team Drive should be moved to the deprecated section of the drive, with a link at the top indicating that the document is for historical purposes only.
 This applies only for those specifications that originated on the Drive.
-
 
 ## Full Design
 

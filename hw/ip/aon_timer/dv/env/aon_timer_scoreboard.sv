@@ -486,7 +486,6 @@ task aon_timer_scoreboard::predict_intr_state(bit [1:0] pred_intr_state, bit fie
         begin: iso_fork
           fork
             begin : intr_state_timely
-              bit exit_loop;
               // The update can occur at the same time as a read access. This could occur in the A
               // or D channels.
               // If we predicted an update during the A or D-phase, we need to hold the prediction
@@ -496,29 +495,16 @@ task aon_timer_scoreboard::predict_intr_state(bit [1:0] pred_intr_state, bit fie
               // D-phase handshake doesn't give information related to the TL-access and address.
               while (cfg.m_tl_agent_cfg.vif.h2d.a_valid && cfg.m_tl_agent_cfg.vif.d2h.a_ready) begin
                 if (cfg.m_tl_agent_cfg.vif.h2d.a_opcode == tlul_pkg::Get) begin
-                  bit [AddrWidth - 1   : 0] a_addr = cfg.m_tl_agent_cfg.vif.h2d.a_address;
-                  string                    ral_name = "aon_timer_reg_block";
-                  uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(a_addr);
-                  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-                    uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-
-                    if(csr != null) begin
-                      if(csr.get_name() == "intr_state")
-                        cfg.clk_rst_vif.wait_n_clks(1);
-                      else
-                        exit_loop = 1;
-                    end
-                    else
-                      exit_loop = 1;
+                  bit [AddrWidth-1: 0] a_addr = cfg.m_tl_agent_cfg.vif.h2d.a_address;
+                  uvm_reg csr = cfg.ral.get_default_map().get_reg_by_offset(a_addr);
+                  if (csr == cfg.ral.intr_state) begin
+                    cfg.clk_rst_vif.wait_n_clks(1);
+                  end else begin
+                    break;
                   end
-                  else
-                    exit_loop = 1;
-                end
-                else
-                  exit_loop = 1;
-
-                if (exit_loop)
+                end else begin
                   break;
+                end
               end
               // If the update occurs during the D-phase, we wait until the D-phase ends
               if (ongoing_intr_state_read > 0) begin
@@ -677,12 +663,8 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
   bit data_phase_read   = (!write && channel == DataChannel);
   bit data_phase_write  = (write && channel == DataChannel);
 
-  // if access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-  end
-  else begin
+  csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+  if (csr == null) begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 

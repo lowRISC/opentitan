@@ -48,7 +48,7 @@ static status_t configure_pinmux(const dif_pinmux_t *pinmux);
 bool test_main(void) {
   dif_spi_host_t spi_host;
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));

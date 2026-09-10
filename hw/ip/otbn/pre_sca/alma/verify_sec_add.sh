@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Script to formally verify the masking of the SEC_ADD unit using Alma.
+# Script to formally verify the masking of the SEC_ADD unit using CocoAlma.
 
 set -e
 
@@ -19,7 +19,7 @@ esac
 
 TESTBENCH=${TOP_MODULE}
 
-echo "Verifying ${TOP_MODULE} using Alma"
+echo "Verifying ${TOP_MODULE} using CocoAlma"
 
 # Parse
 ./parse.py --top-module ${TOP_MODULE} \

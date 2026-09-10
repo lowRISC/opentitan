@@ -1,0 +1,26 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for the CHERIoT memory subsystem
+
+`verilator_config
+
+// The subsystem chains zero-depth (pass-through) TL-UL sockets, so the request and response
+// channels of a single link are combinationally coupled. Verilator reports this as circular logic
+// even though there is no combinational loop through a single signal.
+lint_off -rule UNOPTFLAT -file "*/rtl/cheriot.sv" -match "*rmw_tl_d2h*"
+lint_off -rule UNOPTFLAT -file "*/rtl/tlul_socket_1n.sv" -match "*u_cheriot_access_check_tags*"
+lint_off -rule UNOPTFLAT -file "*/rtl/prim_arbiter_ppc.sv" -match "*u_tlul_socket_m1*"
+
+// The lower bound of the access check is constant whenever the region base address is zero, which
+// is the module default. The check is written generically because the base address is a parameter.
+lint_off -rule UNSIGNED -file "*/rtl/cheriot_access_check.sv" -match "*Comparison is constant*"
+
+// Pre-existing prim issue, exposed by the arbiter inside tlul_socket_m1. The equivalent waiver in
+// hw/ip/prim/lint/prim_arbiter.vlt only covers prim_arbiter_ppc.sv itself.
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_leading_one_ppc.sv" -match "*ppc_out*"
+
+// With the default AlertSkewCycles of 1, `skew_cnt_q` is a single bit and is compared against
+// the integer parameter SkewCycles.
+lint_off -rule WIDTH -file "*/rtl/prim_diff_decode.sv" -match "*skew_cnt_q*"

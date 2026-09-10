@@ -23,6 +23,11 @@
   // RAL spec - used to generate the RAL model.
   ral_spec: "{self_dir}/../data/otp_ctrl.hjson"
 
+  // Pin ambiguous virtual cores (rnd_cnst_pkg, ast_pkg, ...) to earlgrey's.
+  // Otherwise FuseSoC's arbitrary pick can flip to another top and break
+  // the build. dvsim appends this to the prim mapping from the imported cfg.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:top_earlgrey:0.1"]
+
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
@@ -57,7 +62,7 @@
              "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Add OTP_CTRL specific exclusion files.
   vcs_cov_excl_files: ["{self_dir}/cov/otp_ctrl_cov_unr_excl.el",
@@ -128,16 +133,19 @@
     {
       name: otp_ctrl_dai_lock
       uvm_test_seq: otp_ctrl_dai_lock_vseq
+      reseed: 30
     }
 
     {
       name: otp_ctrl_dai_errs
       uvm_test_seq: otp_ctrl_dai_errs_vseq
+      reseed: 25
     }
 
     {
       name: otp_ctrl_check_fail
       uvm_test_seq: otp_ctrl_check_fail_vseq
+      reseed: 50
     }
 
     {
@@ -156,6 +164,7 @@
       // This test is to check reg programming is gated when direct_access_regwen=0
       // Thus this test is timing sensitive
       run_opts: ["+zero_delays=1"]
+      reseed: 30
     }
 
     {

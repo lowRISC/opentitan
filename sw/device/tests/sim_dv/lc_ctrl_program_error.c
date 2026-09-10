@@ -158,10 +158,10 @@ void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEarlgreyPlicPeripheralAonTimer) {
     uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+        (irq_id -
+         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
@@ -287,7 +287,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_alert_handler_init(
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),

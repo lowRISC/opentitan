@@ -6,6 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//hw/top:defs.bzl", "opentitan_require_ip")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
@@ -21,11 +22,10 @@ package(default_visibility = ["//visibility:public"])
 
 RESCUE_DEPS = [
     "//hw/top/dt",
-    "//hw/top:flash_ctrl_c_regs",
     "//sw/device/lib/base:macros",
     "//sw/device/lib/base:memory",
     "//sw/device/silicon_creator/lib:manifest",
-    "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    "//sw/device/silicon_creator/lib:nvm_ctrl",
     "//sw/device/silicon_creator/lib/drivers:lifecycle",
     "//sw/device/silicon_creator/lib/drivers:pinmux",
     "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -68,14 +68,15 @@ cc_test(
         "rescue_xmodem.c",
         "rescue_xmodem_unittest.cc",
     ],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         ":rescue",
         ":xmodem",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:pinmux",

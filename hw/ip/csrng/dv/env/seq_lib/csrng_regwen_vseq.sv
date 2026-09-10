@@ -14,8 +14,9 @@ class csrng_regwen_vseq extends csrng_base_vseq;
   int ctrl_int        = 0;
   int chk_int         = 0;
 
-  rand bit [MaxNumHwApps:0] int_state_read_enable;
-  bit      [MaxNumHwApps:0] chk_int_state_read_enable;
+  rand bit [MaxNumApps-1:0] int_state_read_enable;
+  bit      [MaxNumApps-1:0] chk_int_state_read_enable;
+
 
   task body();
 
@@ -51,6 +52,9 @@ class csrng_regwen_vseq extends csrng_base_vseq;
     // INT_STATE_READ_ENABLE_REGWEN
     csr_rd(.ptr(ral.int_state_read_enable_regwen), .value(chk_bit), .blocking(1));
     if (chk_bit == 1'b1) begin
+      // Mask that represents current number of apps
+      bit [MaxNumApps-1:0] mask_num_apps_bits = (1 << cfg.m_num_apps) - 1;
+
       // The register is still writeable. So let's do some writes before disabling write access.
       `uvm_info(`gfn,
           $sformatf("Testing INT_STATE_READ_ENABLE[_REGWEN] with value 0x%x",
@@ -58,12 +62,12 @@ class csrng_regwen_vseq extends csrng_base_vseq;
           UVM_MEDIUM);
       csr_wr(.ptr(ral.int_state_read_enable), .value(int_state_read_enable), .blocking(1));
       csr_rd(.ptr(ral.int_state_read_enable), .value(chk_int_state_read_enable), .blocking(1));
-      if (chk_int_state_read_enable != int_state_read_enable) begin
+      if (chk_int_state_read_enable != (int_state_read_enable & mask_num_apps_bits)) begin
         `uvm_fatal(`gfn, "Was unable to write INT_STATE_READ_ENABLE")
       end
       csr_wr(.ptr(ral.int_state_read_enable), .value(~int_state_read_enable), .blocking(1));
       csr_rd(.ptr(ral.int_state_read_enable), .value(chk_int_state_read_enable), .blocking(1));
-      if (chk_int_state_read_enable != ~int_state_read_enable) begin
+      if (chk_int_state_read_enable != (~int_state_read_enable & mask_num_apps_bits)) begin
         `uvm_fatal(`gfn, "Was unable to flip INT_STATE_READ_ENABLE")
       end
 

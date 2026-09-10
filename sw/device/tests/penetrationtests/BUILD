@@ -18,7 +18,8 @@ IBEX_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi_ibex(
     name = "fi_ibex",
-    tags = [],
+    # needs to be ported to RRAM: https://github.com/lowRISC/opentitan/issues/30896
+    tags = ["skip_in_ci"],
     test_args = IBEX_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_ibex:harness",
     test_vectors = IBEX_FI_TESTVECTOR_TARGETS,
@@ -369,7 +370,7 @@ pentest_cryptolib_sca_asym(
 
 pentest_sca(
     name = "sca_ibex_python_test",
-    tags = [],
+    tags = ["flaky"],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/sca:sca_ibex_python_test",
     test_vectors = [],
@@ -535,4 +536,69 @@ pentest_rom_ext_imm_skip_fi_gdb(
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_imm_skip_python_gdb_test",
     test_vectors = [],
+)
+
+# RNG test for certification, this is a manual tests
+pentest_cryptolib_fi_sym(
+    name = "cc_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:cc_rng_output_test",
+    test_vectors = [],
+)
+
+# RNG test for certification, this is a manual tests
+pentest_fi(
+    name = "fips_rng_output_test",
+    tags = ["manual"],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fips_rng_output_test",
+    test_vectors = [],
+)
+
+test_suite(
+    name = "pentest_cryptolib_tests",
+    tests = [
+        "fi_asym_cryptolib",
+        "fi_asym_cryptolib_python_test",
+        "fi_sym_cryptolib",
+        "fi_sym_cryptolib_python_test",
+        "sca_asym_cryptolib",
+        "sca_asym_cryptolib_python_test",
+        "sca_sym_cryptolib",
+        "sca_sym_cryptolib_python_test",
+    ],
+)
+
+test_suite(
+    name = "pentest_hw_tests",
+    tests = [
+        "fi_boot_python_test",
+        "fi_crypto",
+        "fi_crypto_python_test",
+        "fi_ibex",
+        "fi_ibex_python_test",
+        "fi_lc_ctrl",
+        "fi_otbn",
+        "fi_otbn_python_test",
+        "fi_otp",
+        "fi_otp_python_test",
+        "fi_rng",
+        "fi_rng_python_test",
+        "fi_rom",
+        "fi_rom_python_test",
+        "sca_aes",
+        "sca_aes_python_test",
+        "sca_edn",
+        "sca_hmac",
+        "sca_hmac_python_test",
+        "sca_ibex",
+        "sca_ibex_python_test",
+        "sca_kmac",
+        "sca_kmac_python_test",
+        "sca_otbn",
+        "sca_otbn_python_test",
+        "sca_sha3",
+        "sca_sha3_python_test",
+    ],
 )

@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
@@ -98,7 +100,7 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the private key buffer and configuration.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kTestKeyMode,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -154,12 +156,137 @@ status_t keypair_from_q_test(void) {
   return run_key_from_cofactor(kTestPrimeQ);
 }
 
+/**
+ * Negative tests
+ */
+static status_t run_cofactor_negative_tests(void) {
+  LOG_INFO("Running RSA cofactor negative tests");
+
+  uint32_t mod_data[kRsa2048NumWords] = {0};
+  otcrypto_const_word32_buf_t valid_mod = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, mod_data, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t bad_mod_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, kRsa2048NumWords);
+
+  uint32_t cof_data[kRsa2048CofactorNumWords] = {0};
+  otcrypto_const_word32_buf_t valid_cof = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, cof_data, kRsa2048CofactorNumWords);
+  otcrypto_const_word32_buf_t bad_cof_null = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, NULL, kRsa2048CofactorNumWords);
+  otcrypto_const_word32_buf_t bad_cof_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, cof_data,
+                        16);  // Must be modulus.len / 2
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+
+  otcrypto_key_config_t priv_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  // Null tests
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &bad_mod_null,
+                                           &valid_cof, &valid_cof, &valid_pub,
+                                           &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &bad_mod_null, &valid_cof, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &bad_cof_null, &valid_cof,
+                                           &valid_pub, &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &valid_mod, &bad_cof_null, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, NULL,
+                                           &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(NULL, &valid_priv)
+            .value != OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
+                                           NULL)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub, NULL)
+            .value != OTCRYPTO_OK.value);
+
+  // Cofactor length test
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &bad_cof_len, &valid_cof, &valid_pub,
+                                           &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            kOtcryptoRsaSize2048, &valid_mod, &bad_cof_len, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad enum size
+  CHECK(otcrypto_rsa_keypair_from_cofactor((otcrypto_rsa_size_t)999, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
+                                           &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_start(
+            (otcrypto_rsa_size_t)999, &valid_mod, &valid_cof, &valid_cof)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad public key struct
+  otcrypto_unblinded_key_t bad_pub_len = {
+      .key_mode = kTestKeyMode,
+      .key_length = 99,
+      .key = pub_data,
+  };
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &bad_pub_len,
+                                           &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&bad_pub_len,
+                                                          &valid_priv)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad private key struct
+  otcrypto_key_config_t bad_mode_cfg = priv_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &valid_mod,
+                                           &valid_cof, &valid_cof, &valid_pub,
+                                           &bad_priv_mode)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub,
+                                                          &bad_priv_mode)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, keypair_from_p_test);
   EXECUTE_TEST(test_result, keypair_from_q_test);
+  EXECUTE_TEST(test_result, run_cofactor_negative_tests);
   return status_ok(test_result);
 }

@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_test",
@@ -67,28 +66,20 @@ otp_json(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
-            test_cmd = """
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
-                --exec="bootstrap --clear-uart=true {firmware}"
-                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
-                no-op
-            """,
         ),
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         deps = [
-            "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:nv_counter_testutils",
+            "//sw/device/lib/testing:nvm_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
         ],

@@ -27,7 +27,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task body();
   extern task wait_with_bound(int max_clks);
 
-  extern task pick_err_inj_point(bit force_early = 1'b0);
+  // Wait for a random amount of time and then return (at a point when we should inject an error).
+  //
+  // If force_early is true, return at a time before the rom check will be complete.
+  extern local task pick_err_inj_point(bit force_early = 1'b0);
+
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
 
   // Cover all possible FSM transitions to the invalid state by triggering alerts at opportune times
@@ -78,6 +82,12 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // force it back to the checker and check that an alert comes out.
   extern local task corrupt_select_from_bus_to_checker();
 
+  // Read a word at address addr, writing the response to rdata. If check_integrity is true, check
+  // the response integrity.
+  extern local task read_word(input  bit [TL_AW-1:0] addr,
+                              output bit [TL_DW-1:0] rdata,
+                              input  bit             check_integrity);
+
   // Inject errors into bus_rom_rom_index (which is how an attacker would get a different memory
   // word) and then check that the data that gets read doesn't match the data stored at the glitched
   // address.
@@ -124,29 +134,24 @@ endtask: wait_with_bound
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
-  bit inject_after_done;
-
-  // Pick error injection point. 1 - After ROM check completion. 0 - Before ROM check completion.
-  //
-  // If there is a requirement of injecting error before ROM check completes,then
-  // inject_after_done getting randomized and then set to 0 won't help.
-  //
-  // force_early being true, sets inject_after_done to 0 if there is a requirement to always inject
-  // error before ROM check finishes.
-
-  if (force_early) inject_after_done = 1'b0;
-  else `DV_CHECK_STD_RANDOMIZE_FATAL(inject_after_done)
+  // Pick whether we should wait until after the ROM has been checked. If force_early is true, we
+  // should not. Otherwise, wait until afterwards 50% of the time.
+  bit inject_after_done = ($urandom & 1) && !force_early;
 
   if(inject_after_done) begin
-    wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+    wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
     wait_clks = 10;
   end
   else begin
-    wait_clks = 10000;
+    // Pick a time that will finish before the ROM has been checked. As a reference, the shorter
+    // configuration (32kb) generally takes about 8k-12k cycles. Stopping after 1k will be early
+    // enough to finish before that and will also be early enough to finish before the 64kb
+    // configuration, which takes longer.
+    wait_clks = 1000;
   end
   wait_with_bound(wait_clks);
 
-  if (!inject_after_done) `DV_CHECK(cfg.rom_ctrl_vif.pwrmgr_data.done != MuBi4True)
+  if (!inject_after_done) `DV_CHECK(cfg.rom_ctrl_vif.pwrmgr_data_o_i.done != MuBi4True)
 endtask
 
 function prim_mubi_pkg::mubi4_t rom_ctrl_corrupt_sig_fatal_chk_vseq::get_invalid_mubi4();
@@ -218,7 +223,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
   int unsigned addr = $urandom_range(0, RomSizeWords - 1);
 
   // Wait until rom_ctrl says that it has finished computing the ROM checksum.
-  wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
+  wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data_o_i.done));
 
   // Now wait slightly longer (so we're not messing around with stuff at exactly the moment it
   // finishes)
@@ -226,7 +231,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
 
   // Set the silly address value for a cycle. This should be picked up by the counter suddenly
   // deciding it's not done and the code in rom_ctrl_fsm noticing the change.
-  cfg.fsm_vif.force_counter_addr(addr);
+  cfg.fsm_vif.force_addr(addr);
 
   // Wait for a fatal alert to come out, to make sure that the dut notices the corruption
   wait_for_fatal_alert();
@@ -337,67 +342,98 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_mux_select_signals();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_select_from_bus_to_checker();
-  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
   wait_with_bound(10);
   cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
   wait_for_fatal_alert(.check_fsm_state(1'b0));
 endtask
 
-task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
-  addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
-  bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
-  bit [TL_AW-1:0] addr;
-  int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
-  bit [12:0]      bus_rom_rom_index_val;
-  bit [12:0]      corr_bus_rom_rom_index_val;
-  bit [TL_AW-1:0] tgt_addr;
-  cip_tl_seq_item tl_access_rsp;
-  bit             completed, saw_err;
-  string          path;
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::read_word(input bit [TL_AW-1:0]  addr,
+                                                    output bit [TL_DW-1:0] rdata,
+                                                    input bit              check_integrity);
+  cip_tl_host_single_seq seq = cip_tl_host_single_seq::type_id::create("seq");
 
-  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  if (!seq.randomize() with { addr == local::addr;
+                              write == 0;
+                              mask == '1; }) begin
+    `uvm_fatal(get_full_name(), "Failed to randomize TL host sequence")
+  end
+
+  // Send the sequence to the sequencer, but with a timeout that starts once the sequence has been
+  // started.
+  fork begin : isolation_fork
+    fork
+      seq.start(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"], this, 100);
+      begin
+        wait(seq.reqs_started);
+        #(cfg.tl_access_timeout_ns * 1ns);
+        `uvm_error(`gfn, $sformatf("Failed to read from address 0x%0h", addr))
+      end
+    join_any
+    disable fork;
+  end join
+
+  if (cfg.under_reset) return;
+
+  // The sequence has completed and we are not under reset. Check we didn't get an error response.
+  if (seq.rsp.d_error) begin
+    `uvm_error(`gfn, $sformatf("Unexpected error reading from address 0x%0h", addr))
+  end
+
+  // If check_integrity is true, we should also check we didn't get an integrity error.
+  if (check_integrity &&
+      !seq.rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1), .en_data_intg_chk(1), .throw_error(0))) begin
+    `uvm_error(`gfn, $sformatf("Failed integrity check when reading from address 0x%0h", addr))
+  end
+
+  // Finally, pass back the data read
+  rdata = seq.rsp.d_data;
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
+  dv_base_reg_block blk;
+  addr_range_t      mem_ranges[$];
+  addr_range_t      mem_range;
+  bit [TL_AW-1:0]   addr, tgt_addr;
+  bit [TL_DW-1:0]   rdata, rdata_tgt, corr_data;
+  // The index of the word that will be corrupted in ROM
+  bit [12:0]      corr_bus_rom_rom_index_val;
+
+  blk = cfg.ral_models["rom_ctrl_prim_reg_block"];
+  blk.get_mem_ranges(mem_ranges);
+  mem_range = mem_ranges[$urandom_range(0, mem_ranges.size() - 1)];
+
+  wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
   wait_with_bound(10);
-  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                                     addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};)
-  bus_rom_rom_index_val = addr[2 +: RomIndexWidth];
-  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tgt_addr,
-                                     tgt_addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};
-                                     (tgt_addr != addr);)
+
+  if (!std::randomize(addr) with {
+         addr inside {[mem_range.start_addr : mem_range.end_addr]};
+       }) begin
+    `uvm_fatal(get_full_name(), "Failed to randomise addr.")
+  end
+  if (!std::randomize(tgt_addr) with {
+         tgt_addr inside {[mem_range.start_addr : mem_range.end_addr]};
+         tgt_addr != addr;
+       }) begin
+    `uvm_fatal(get_full_name(), "Failed to randomise tgt_addr.")
+  end
+
   corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
-  tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
-                .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
-                .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
-  void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
-                                        .en_data_intg_chk(1),
-                                        .throw_error(1)));
-  tl_access_sub(.addr(tgt_addr), .write(0), .data(rdata_tgt), .completed(completed),
-                .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
-                .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
-  void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
-                                        .en_data_intg_chk(1),
-                                        .throw_error(1)));
+
+  read_word(addr,     rdata,     1'b1);
+  read_word(tgt_addr, rdata_tgt, 1'b1);
 
   $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
+  cfg.en_scb_tl_err_chk = 0;
+  cfg.scoreboard.disable_rom_acc_chk = 1;
+
   fork
-    begin
-      cfg.en_scb_tl_err_chk = 0;
-      cfg.scoreboard.disable_rom_acc_chk = 1;
-      tl_access_sub(.addr(addr), .write(0), .data(corr_data), .completed(completed),
-                    .saw_err(saw_err), .check_err_rsp(1), .rsp(tl_access_rsp),
-                    .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"])
-                   );
-      `DV_CHECK_EQ(completed, 1)
-      `DV_CHECK_EQ(saw_err, 0)
-      if ((corr_data == rdata) || (corr_data == rdata_tgt)) begin
-        `uvm_error(`gfn, "corr_data matching data in rom")
-      end
-      cfg.en_scb_tl_err_chk = 1;
-      cfg.scoreboard.disable_rom_acc_chk = 0;
-    end
-    begin
-      cfg.rom_ctrl_vif.override_bus_rom_index(corr_bus_rom_rom_index_val);
-    end
+    read_word(addr, corr_data, 1'b0);
+    cfg.rom_ctrl_vif.override_bus_rom_index(corr_bus_rom_rom_index_val);
   join
+
+  if (corr_data inside {rdata, rdata_tgt}) `uvm_error(`gfn, "Corrupted data matches data in rom")
+
+  cfg.en_scb_tl_err_chk = 1;
+  cfg.scoreboard.disable_rom_acc_chk = 0;
 endtask

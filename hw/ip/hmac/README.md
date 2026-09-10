@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/hmac/data/hmac.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`hmac`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.1 | D3, V3 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/code.svg) |
+ [`hmac`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.2 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/hmac/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/hmac/index.html).
 

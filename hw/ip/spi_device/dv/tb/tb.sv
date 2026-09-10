@@ -40,8 +40,8 @@ module tb;
 
   // Memory configuration signals. These signals are currently driven in:
   // spi_device_ram_cfg_vseq. They are connected here to avoid a warning
-  prim_ram_2p_pkg::ram_2p_cfg_t  ram_cfg_sys2spi;
-  prim_ram_2p_pkg::ram_2p_cfg_t  ram_cfg_spi2sys;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t  ram_cfg_sys2spi;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t  ram_cfg_spi2sys;
   assign ram_cfg_sys2spi = 0;
   assign ram_cfg_spi2sys = 0;
 
@@ -99,9 +99,9 @@ module tb;
     .sck_monitor_o(),
 
     .ram_cfg_sys2spi_i(ram_cfg_sys2spi),
-    .ram_cfg_rsp_sys2spi_o(),
+    .ram_cfg_sys2spi_o(),
     .ram_cfg_spi2sys_i(ram_cfg_spi2sys),
-    .ram_cfg_rsp_spi2sys_o(),
+    .ram_cfg_spi2sys_o(),
 
     .mbist_en_i     (1'b0),
     .scan_clk_i     (1'b0),

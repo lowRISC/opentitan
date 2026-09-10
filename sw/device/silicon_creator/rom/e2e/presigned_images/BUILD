@@ -10,7 +10,7 @@ package(default_visibility = ["//visibility:public"])
 _EMPTY_TEST_DEVICES = [
     "sim_dv",
     "sim_verilator",
-    "fpga_cw310",
+    # "fpga_cw340",
 ]
 
 # ROM self hash test binaries and aliases.
@@ -31,7 +31,7 @@ scramble_flash_vmem(
         name = "rom_e2e_self_hash_{}".format(dev),
         srcs = [
             "rom_e2e_self_hash_{}.signed.bin".format(dev),
-        ] + [] if dev == "fpga_cw310" else [
+        ] + [] if dev == "fpga_cw340" else [
             ":rom_e2e_self_hash_sim_dv.logs.txt",
             ":rom_e2e_self_hash_sim_dv.rodata.txt",
             ":rom_e2e_self_hash_sim_dv_scr_vmem64",
@@ -40,11 +40,12 @@ scramble_flash_vmem(
     )
     for dev in [
         "sim_dv",
-        "fpga_cw310",
+        # TODO(#30501): waiting on a pre-signed ROM image for the CW340.
+        # "fpga_cw340",
     ]
 ]
 
-alias(
-    name = "rom_e2e_self_hash_fpga_cw310_bin",
-    actual = ":rom_e2e_self_hash_fpga_cw310",
-)
+# alias(
+#     name = "rom_e2e_self_hash_fpga_cw340_bin",
+#     actual = ":rom_e2e_self_hash_fpga_cw340",
+# )

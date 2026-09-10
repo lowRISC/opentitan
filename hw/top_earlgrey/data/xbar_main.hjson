@@ -20,7 +20,7 @@
   // For device interfaces, especially configuration registers, latency is
   // not generally a concern, thus use `req/rsp_fifo_pass` false and pipeline
   // true.
-  // For device accesses to memories (ram / rom / flash), performance is a concern,
+  // For device accesses to memories (ram / rom / rram), performance is a concern,
   // so use pipeline false where permissible by timing. If not, find a combination
   // that works.
   nodes: [
@@ -31,7 +31,7 @@
       reset: "rst_main_ni",
       pipeline: false
     },
-    { name:  "rv_core_ibex.cored",
+    { name:  "cheriot.cored",
       type:  "host",
       addr_space: "hart",
       clock: "clk_main_i",
@@ -102,23 +102,21 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "flash_ctrl.core",
+    { name:      "rram_ctrl.core",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "flash_ctrl.prim",
+    { name:      "rram_macro.prim",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    // Return and examine whether this path
-    // latency can be improved.
-    { name:      "flash_ctrl.mem",
+    { name:      "rram_ctrl.host",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -189,7 +187,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "keymgr",
+    { name:      "keymgr_dpe",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
@@ -216,24 +214,62 @@
       reset:     "rst_main_ni",
       pipeline:  false
     },
+    { name:      "sram_ctrl_sec.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "sram_ctrl_meta.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "sram_ctrl_sec.ram",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipeline:  false
+    },
+    { name:      "cheriot.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "cheriot.revbm",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
   ],
   connections: {
-    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
-    rv_core_ibex.cored:  [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
-      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg"
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "rram_ctrl.host"
     ],
+    cheriot.cored:  [
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
+      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
+      "sram_ctrl_meta.regs", "rv_core_ibex.cfg", "cheriot.regs", "cheriot.revbm"
+    ],
+    // Note: rv_dm.sba reaches sram_ctrl_main.ram and sram_ctrl_sec.ram directly, bypassing
+    // the CHERIoT tag filter, so a system-bus write does not clear the capability tag of
+    // the location it overwrites. SBA accesses in CHERIoT mode are not supported.
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
-      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg",
+      "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
+      "sram_ctrl_meta.regs", "rv_core_ibex.cfg", "cheriot.regs", "cheriot.revbm"
     ],
   },
 }

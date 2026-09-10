@@ -312,7 +312,7 @@ module flash_ctrl
   prim_lfsr #(
     .EntropyDw(EdnWidth),
     .LfsrDw(LfsrWidth),
-    .StateOutDw(LfsrWidth),
+    .StateOutDw(32),
     .DefaultSeed(RndCnstLfsrSeed),
     .StatePermEn(1),
     .StatePerm(RndCnstLfsrPerm)

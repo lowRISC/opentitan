@@ -31,7 +31,6 @@ package(default_visibility = ["//visibility:public"])
         name = "no_refresh_{}_test".format(variation),
         srcs = ["no_refresh_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -62,7 +61,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
@@ -72,7 +70,7 @@ opentitan_binary(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
@@ -86,7 +84,6 @@ opentitan_binary(
             ":print_certs_for_assemble": OWNER_SLOTS["a"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
         ],
     )
@@ -108,7 +105,6 @@ _VARIATION_INTEROP_TEST_CASES = [
     opentitan_test(
         name = "variation_interop_{}_first_test".format(tc["first"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
@@ -118,8 +114,6 @@ _VARIATION_INTEROP_TEST_CASES = [
             },
             otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
             test_cmd = """
-                --clear-bitstream
-                --bootstrap={firmware}
                 --second-bootstrap={second}
             """,
             test_harness = "//sw/host/tests/rom_ext/e2e_variation_interop",
@@ -147,13 +141,12 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
@@ -169,9 +162,6 @@ opentitan_test(
             ":modify_digest": "modify_digest",
         },
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
             --exec="no-op --info='##### Prepare CDI cert page'"
             --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
@@ -185,6 +175,7 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
             no-op
         """,
+        testopt_bootstrap = "False",
     ),
     deps = [
         "//sw/device/lib/base:status",
@@ -217,7 +208,6 @@ DEBUG_MODE_TESTCASES = [
         defines = testcase["defines"],
         ecdsa_key = testcase["key"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -228,7 +218,7 @@ DEBUG_MODE_TESTCASES = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         ],
     )

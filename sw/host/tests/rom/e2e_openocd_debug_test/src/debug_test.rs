@@ -82,7 +82,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Disable watchdog config
     dbg.write_u32(
-        top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
+        top_earlgrey::AON_TIMER_BASE_ADDR as u32
             + ot_hal::dif::aon_timer::AonTimerReg::WdogCtrl as u32,
         0,
     )?;

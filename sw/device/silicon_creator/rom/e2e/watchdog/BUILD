@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_binary",
@@ -85,7 +84,7 @@ WATCHDOG_TEST_CASES = {
             lc_state_val,
         ),
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_verilator",
         ],
         local_defines = [
@@ -95,7 +94,7 @@ WATCHDOG_TEST_CASES = {
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
             "//hw/top:aon_timer_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -120,7 +119,7 @@ WATCHDOG_OTP = {
             lc_state,
         ),
         exec_env = {
-            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "@//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "@//hw/top_earlgrey:sim_verilator": None,
         },
         fpga = fpga_params(

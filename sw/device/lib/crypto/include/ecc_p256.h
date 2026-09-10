@@ -30,11 +30,31 @@ extern "C" {
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDSA key generation.
+ * @return Result of the ECDSA key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Generates a key pair for ECDSA with curve P-256 using the CDI key.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and use the private key handle
+ * returned by `otcrypto_hw_backed_attestation_key`.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @param attestation_seed The additional per-chip fixed entropy.
+ * @return Result of the ECDSA key generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key,
+    const otcrypto_const_word32_buf_t *attestation_seed);
 
 /**
  * Generates an ECDSA signature with curve P-256.
@@ -72,7 +92,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_sign(
@@ -121,13 +144,16 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of the ECDSA verification operation.
+ * @return Result of the ECDSA verification operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -142,7 +168,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDH key generation.
+ * @return Result of the ECDH key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
@@ -154,7 +183,10 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
- * @return Result of ECDH shared secret generation.
+ * @return Result of ECDH shared secret generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
@@ -189,6 +221,42 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Starts asynchronous key generation for P-256 with the CDI key.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and use the private key handle
+ * returned by `otcrypto_hw_backed_attestation_key`.
+ *
+ * @param private_key Destination structure for key handle.
+ * @param attestation_seed The additional per-chip fixed entropy.
+ * @return Result of asynchronous ECDSA keygen start operation.
+ */
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_const_word32_buf_t *attestation_seed);
+
+/**
+ * Finalizes asynchronous key generation for P-256 with the CDI key.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and use the private key handle
+ * returned by `otcrypto_hw_backed_attestation_key`.
+ *
+ * May block until the operation is complete.
+ *
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
+ *
+ * @param[out] private_key Key handle, does not return the generated private key
+ * (d).
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of asynchronous ECDSA keygen finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -238,6 +306,42 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
     otcrypto_word32_buf_t *signature);
 
 /**
+ * Starts asynchronous signature generation for ECDSA/P-256 with the CDI key.
+ *
+ * See `otcrypto_ecdsa_p256_sign` for requirements on input values.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and use the private key handle
+ * returned by `otcrypto_hw_backed_attestation_key`.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param attestation_seed The additional per-chip fixed entropy.
+ * @return Result of async ECDSA start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest,
+    const otcrypto_const_word32_buf_t *attestation_seed);
+
+/**
+ * Finalizes asynchronous signature generation for ECDSA/P-256 with the CDI key.
+ *
+ * See `otcrypto_ecdsa_p256_sign` for requirements on input values.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and use the private key handle
+ * returned by `otcrypto_hw_backed_attestation_key`.
+ *
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of async ECDSA finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_finalize(
+    otcrypto_word32_buf_t *signature);
+
+/**
  * Starts asynchronous signature verification for ECDSA/P-256.
  *
  * See `otcrypto_ecdsa_p256_verify` for requirements on input values.
@@ -251,7 +355,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ECDSA/P-256.
@@ -265,12 +369,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  * status code, as for other operations, only indicates whether errors were
  * encountered, and may return OK even when the signature is invalid.
  *
+ * @param signature Pointer to the signature being verified.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
-    otcrypto_const_word32_buf_t *signature,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -427,7 +532,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p256_public_key_import(
-    const otcrypto_const_word32_buf_t *x, const otcrypto_const_word32_buf_t *y,
+    const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -459,9 +564,10 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
  *
  * @param point Point in the affine coordinates representation that should be
  * checked.
+ * @param[out] check_result True if point is valid, false otherwise.
  * @return Result of the point valid check operation.
  */
-otcrypto_status_t otcrypto_p256_point_on_curve(
+otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
 
 /**
@@ -474,16 +580,15 @@ otcrypto_status_t otcrypto_p256_point_on_curve(
  * @param public_key The resulting public key of the base point multiplication.
  * @return Result of the base point multiplication.
  */
-status_t otcrypto_p256_base_point_mult(
+status_t otcrypto_ecc_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
  * Arithmetically share a private key provided as Boolean shares.
  *
- * Given a Boolean-shared private key d in the range [1, n-1] and shared, this
- * routine arithmetically shares the key such that d = d0 + d1 mod n, where n
- * is the curve order.
+ * Given a Boolean-shared 320-bit key d this function arithmetically shares the
+ * key such that d = d0 + d1 mod n where n is the curve order.
  *
  * It is allowed to pass the key in plain with the second share being set to 0.
  *
@@ -497,12 +602,12 @@ status_t otcrypto_p256_base_point_mult(
  *
  * @param bool_private_key_share0 First Boolean share of the private key.
  * @param bool_private_key_share1 Second Boolean share of the private key.
- * @param arith_shared_private_key The resulting arithmetically shared key.
+ * @param[out] arith_private_key The resulting arithmetically shared key.
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
-    otcrypto_const_word32_buf_t *bool_private_key_share0,
-    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    const otcrypto_const_word32_buf_t *bool_private_key_share0,
+    const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key);
 
 #ifdef __cplusplus

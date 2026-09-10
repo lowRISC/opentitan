@@ -75,7 +75,7 @@ static void sysrst_ctrl_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn,
       kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
                                   : kTopEarlgreyPinmuxInselIoc0));
 }

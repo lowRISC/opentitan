@@ -27,7 +27,7 @@ class otbn_pc_ctrl_flow_redun_vseq extends otbn_single_vseq;
     bit [11:0] good_addr;
     bit [11:0] bad_addr;
     bit [11:0] mask;
-    bit [31:0] err_val = 32'd1 << 20;
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
     string addr_path = "tb.dut.u_otbn_core.u_otbn_instruction_fetch.insn_prefetch_addr";
 
     do begin
@@ -58,7 +58,7 @@ class otbn_pc_ctrl_flow_redun_vseq extends otbn_single_vseq;
     // Send the HW escalation signal in the next cycle
     @(cfg.clk_rst_vif.cb);
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
-    cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+    cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
 
     // OTBN should perform a secure wipe and lock up
     wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);

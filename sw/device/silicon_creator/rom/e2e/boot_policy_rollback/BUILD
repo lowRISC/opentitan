@@ -5,7 +5,6 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -47,19 +46,19 @@ BOOT_POLICY_ROLLBACK_CASES = [
     {
         "a": 0,
         "b": 1,
-        "exit_success": "slot=0x20080000, security_version=1",
+        "exit_success": "slot=0x30100000, security_version=1",
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     {
         "a": 2,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=2",
+        "exit_success": "slot=0x30000000, security_version=2",
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     {
         "a": 1,
         "b": 1,
-        "exit_success": "slot=0x20000000, security_version=1",
+        "exit_success": "slot=0x30000000, security_version=1",
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
 ]
@@ -94,7 +93,7 @@ otp_json(
             t["b"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",

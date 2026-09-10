@@ -2025,3 +2025,44 @@ class core_ibex_assorted_traps_interrupts_debug_test extends core_ibex_directed_
    endtask
 
 endclass
+
+class core_ibex_mcounteren_lock_test extends core_ibex_base_test;
+  `uvm_component_utils(core_ibex_mcounteren_lock_test)
+  `uvm_component_new
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    // Relaxes co-simulation tracking so mismatches during lock don't abort
+    cosim_cfg.relax_cosim_check = 1'b1;
+  endfunction
+
+  virtual task send_stimulus();
+    // Fork the binary execution in the background
+    fork
+      vseq.start(env.vseqr);
+    join_none
+
+    // Wait for a write to MCYCLE to indicate locking the mcounteren CSRs
+    wait_for_live_csr_write(CSR_MCYCLE);
+    dut_vif.dut_cb.mcounteren_writable <= ibex_pkg::IbexMuBiOff;
+    `uvm_info(`gfn, "Write to MCYCLE: locking mcounteren!", UVM_LOW)
+
+    // Wait for a write to MCYCLEH to indicate unlocking the mcounteren CSRs
+    wait_for_live_csr_write(CSR_MCYCLEH);
+    dut_vif.dut_cb.mcounteren_writable <= ibex_pkg::IbexMuBiOn;
+    `uvm_info(`gfn, "Write to MCYCLEH: unlocking mcounteren!", UVM_LOW)
+  endtask
+
+  // Snoop the CSR interface to catch writes to the specified CSR addresses
+  task wait_for_live_csr_write(bit [11:0] addr);
+    forever begin
+      @(csr_vif.csr_cb);
+      if (csr_vif.csr_cb.csr_access === 1'b1 &&
+          csr_vif.csr_cb.csr_addr   === addr &&
+          csr_vif.csr_cb.csr_op     != CSR_OP_READ) begin
+        break;
+      end
+    end
+  endtask
+
+endclass

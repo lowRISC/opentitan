@@ -28,12 +28,8 @@ The following OpenTitan working groups currently exist:
 
 - Software Working Group
   - Chair: Luis Marques
-- Silicon Working Group
-  - Chair: Andreas Kurth
-- Security Working Group
-  - Chairs: Pirmin Vogel, Johann Heyszl
-- Integrated Working Group
-  - Chair: Andreas Kurth
+- Hardware Working Group
+  - Chairs: Johann Heyszl, Pirmin Vogel, Shimeon Greenberg
 
 ## Membership {#membership}
 

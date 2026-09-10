@@ -38,26 +38,45 @@ enum {
  *    report.
  */
 
-const size_t kGoldenRomSizeBytes = 32652 - sizeof(build_info_t);
+// Fetch from the linker script: the start of the `.chip_info` region, which
+// occupies the top `_chip_info_size` bytes of ROM and the `.chip_info` size.
+// Note: `_rom_chip_info_start` + `_chip_info_size` is equal to
+//       TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES
+extern const char _rom_chip_info_start[];
+extern const char _chip_info_size[];
+
+// `rom_hashes.txt` reports the hash of the ROM image with `build_info`
+// stripped off, which is everything below `.chip_info`. Calculate the
+// hashable size by substracting the ROM base address from the start of
+// `.chip_info`.
+const size_t kGoldenRomSizeBytes =
+    (size_t)_rom_chip_info_start - TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR;
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xc16e04d6, 0x2e94b881, 0x0759b405, 0xd0a28cde,
-    0xa8c900f3, 0x57b8c7f6, 0xacc910b0, 0x43000c0a,
+    0xaf951ef4, 0x0335bd5a, 0x980905d7, 0xd2656121,
+    0xe19922cf, 0xdcbbb2bf, 0x58ae053a, 0x0dc03d2d,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xf3508c51, 0xef65a542, 0xc20e55d9, 0xada4c934,
-    0x8015bbca, 0xa863db5a, 0xd1ead827, 0x968d94cb,
+    0x03dff5d4, 0xf782776b, 0x56b8e7ac, 0xbeaa8f1a,
+    0x606aff59, 0x62a47652, 0x1fe8655a, 0x41a966a7,
 };
 const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x43b60e89, 0xbfa80347, 0xeeceb60a, 0x356bc7f1,
-    0xbd023b8a, 0xe5a4ddfc, 0xf66b45b5, 0x5b2ba0ba,
+    0xedef8122, 0x1d3cf7d0, 0x1ffbe06c, 0x6c32788d,
+    0x3a96929d, 0x217ff978, 0xafc69dfb, 0x9b533921,
 };
-
-extern const char _rom_chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
   hmac_digest_t rom_hash;
-  hmac_sha256((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes,
+
+  // The hashed range must be exactly the ROM size minus the `.chip_info`
+  // region.
+  TRY_CHECK(kGoldenRomSizeBytes + (size_t)_chip_info_size ==
+                (size_t)TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES,
+            "Golden ROM size %u + chip_info size %u != ROM size %u",
+            kGoldenRomSizeBytes, (size_t)_chip_info_size,
+            (size_t)TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES);
+
+  hmac_sha256((void *)TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR, kGoldenRomSizeBytes,
               &rom_hash);
   // Use printf directly here instead of the `LOG()` macros which print extra
   // filenames and line numbers which bloat DV and GLS runtimes.

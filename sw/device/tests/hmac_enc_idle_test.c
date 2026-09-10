@@ -38,7 +38,7 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
   CHECK_DIF_OK(dif_clkmgr_find_hintable_clock(
       &clkmgr, dt_hmac_instance_id(kTestHmac), &hmac_clock));
 

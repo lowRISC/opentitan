@@ -8,13 +8,13 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -30,7 +30,7 @@
 #define BYTES_IN_WDR 32
 
 static dif_otbn_t otbn;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 
 enum {
@@ -59,20 +59,6 @@ OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_s1_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_s1_h);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_h);
-const otbn_app_t kOtbnAppKeySideloadSca =
-    OTBN_APP_T_INIT(otbn_key_sideload_sca);
-static const otbn_addr_t kOtbnAppKeySideloadks0l =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s0_l);
-static const otbn_addr_t kOtbnAppKeySideloadks0h =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s0_h);
-static const otbn_addr_t kOtbnAppKeySideloadks1l =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s1_l);
-static const otbn_addr_t kOtbnAppKeySideloadks1h =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s1_h);
-static const otbn_addr_t kOtbnAppKeySideloadkl =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_l);
-static const otbn_addr_t kOtbnAppKeySideloadkh =
-    OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_h);
 
 // RSA-512 OTBN App.
 OTBN_DECLARE_APP_SYMBOLS(run_rsa);
@@ -82,16 +68,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_n);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);
 
-static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
-static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
-static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
-static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
-static const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
-static const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
-
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_512_MODEXP);
-static const uint32_t kMode512Modexp =
-    OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_512_MODEXP);
 
 // p256_ecdsa_sca has randomization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
@@ -107,17 +84,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
-
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
-
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
 
 /**
  * Clears the OTBN DMEM and IMEM.
@@ -196,15 +162,21 @@ static status_t p256_ecdsa_sign(const uint32_t *msg,
                                 const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   // Send operation mode to OTBN
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
   TRY(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
   // Send Msg to OTBN
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
   TRY(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg));
   // Send two shares of private_key_d to OTBN
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
   TRY(otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0));
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
   TRY(otbn_dmem_write(kEcc256NumWords, private_key_d + kEcc256NumWords,
                       kOtbnVarD1));
   // Send two shares of secret_k to OTBN
+  const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
   TRY(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0));
+  const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
   TRY(otbn_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kOtbnVarK1));
 
   // Start OTBN execution
@@ -216,7 +188,9 @@ static status_t p256_ecdsa_sign(const uint32_t *msg,
   pentest_set_trigger_low();
 
   // Read the results back (sig_r, sig_s)
+  const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
   TRY(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r));
+  const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
   TRY(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s));
 
   return OK_STATUS();
@@ -267,6 +241,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign(ujson_t *uj) {
   memcpy(ecc256_secret_k + kEcc256NumWords, ecc256_secret_k1,
          sizeof(ecc256_secret_k1));
 
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   otbn_load_app(kOtbnAppP256Ecdsa);
 
   // Signature output.
@@ -353,6 +328,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign_batch(ujson_t *uj) {
   // Last signature output.
   uint32_t ecc256_signature_r[kEcc256NumWords];
   uint32_t ecc256_signature_s[kEcc256NumWords];
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   // Run num_traces ECDSA operations.
   for (size_t i = 0; i < uj_data_num_traces.num_traces; ++i) {
     otbn_load_app(kOtbnAppP256Ecdsa);
@@ -454,6 +430,7 @@ status_t handle_otbn_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj) {
   // Last signature output.
   uint32_t ecc256_signature_r[kEcc256NumWords];
   uint32_t ecc256_signature_s[kEcc256NumWords];
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   // Run num_traces ECDSA operations.
   for (size_t i = 0; i < uj_data_num_traces.num_traces; ++i) {
     otbn_load_app(kOtbnAppP256Ecdsa);
@@ -485,6 +462,8 @@ status_t handle_otbn_pentest_init(ujson_t *uj) {
   TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
 
   // Load p256 keygen from seed app into OTBN.
+  const otbn_app_t kOtbnAppP256KeyFromSeed =
+      OTBN_APP_T_INIT(p256_key_from_seed_sca);
   if (otbn_load_app(kOtbnAppP256KeyFromSeed).value != OTCRYPTO_OK.value) {
     return ABORTED();
   }
@@ -497,19 +476,8 @@ status_t handle_otbn_pentest_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_pentest_init_keymgr(ujson_t *uj) {
-  if (kBootStage != kBootStageOwner) {
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
-    // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
-    LOG_INFO("Keymgr entered OwnerIntKey State");
-  } else {
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                        &keymgr));
-    TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
-  }
+status_t handle_otbn_pentest_init_keymgr_dpe(ujson_t *uj) {
+  TRY(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
 
   dif_otbn_t otbn;
   TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
@@ -527,11 +495,11 @@ status_t handle_otbn_sca_insn_carry_flag(ujson_t *uj) {
   OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_carry_flag, big_num);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_carry_flag, big_num_out);
 
-  static const otbn_app_t kOtbnAppInsnCarryFlag =
+  const otbn_app_t kOtbnAppInsnCarryFlag =
       OTBN_APP_T_INIT(otbn_insn_carry_flag);
-  static const otbn_addr_t kOtbnVarInsnCarryFlagBigNum =
+  const otbn_addr_t kOtbnVarInsnCarryFlagBigNum =
       OTBN_ADDR_T_INIT(otbn_insn_carry_flag, big_num);
-  static const otbn_addr_t kOtbnVarInsnCarryFlagBigNumOut =
+  const otbn_addr_t kOtbnVarInsnCarryFlagBigNumOut =
       OTBN_ADDR_T_INIT(otbn_insn_carry_flag, big_num_out);
 
   // Load app and write received big_num into DMEM.
@@ -572,27 +540,26 @@ status_t trigger_otbn_sca_combi_operations(
   OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_7);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_8);
 
-  static const otbn_app_t kOtbnAppInsnCombiOps =
-      OTBN_APP_T_INIT(otbn_insn_combi_ops);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsValue1 =
+  const otbn_app_t kOtbnAppInsnCombiOps = OTBN_APP_T_INIT(otbn_insn_combi_ops);
+  const otbn_addr_t kOtbnVarInsnCombiOpsValue1 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, big_input_1);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsValue2 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsValue2 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, big_input_2);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult1 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult1 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_1);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult2 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult2 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_2);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult3 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult3 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_3);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult4 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult4 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_4);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult5 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult5 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_5);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult6 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult6 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_6);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult7 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult7 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_7);
-  static const otbn_addr_t kOtbnVarInsnCombiOpsResult8 =
+  const otbn_addr_t kOtbnVarInsnCombiOpsResult8 =
       OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_8);
 
   // Load app and write received big_num into DMEM.
@@ -679,13 +646,16 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   TRY(ujson_deserialize_penetrationtest_otbn_sca_fixed_seed_t(uj, &uj_data));
 
   // Key generation parameters.
-  dif_keymgr_versioned_key_params_t sideload_params[kKeySideloadNumIt];
+  dif_keymgr_dpe_generate_params_t sideload_params[kKeySideloadNumIt];
 
   // Generate FvsR values.
   bool sample_fixed = true;
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
     sideload_params[it].version = 0x0;
-    sideload_params[it].dest = kDifKeymgrVersionedKeyDestOtbn;
+    sideload_params[it].key_dest = kDifKeymgrDpeKeyDestOtbn;
+    sideload_params[it].sideload_key = true;
+    // TODO(#30777): Replace the hard-coded slot number
+    sideload_params[it].slot_src_sel = 0;
     memset(sideload_params[it].salt, 0, sizeof(sideload_params[it].salt));
     if (sample_fixed) {
       sideload_params[it].salt[0] = uj_data.fixed_seed;
@@ -695,6 +665,8 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
     sample_fixed = prng_rand_uint32() & 0x1;
   }
 
+  const otbn_app_t kOtbnAppKeySideloadSca =
+      OTBN_APP_T_INIT(otbn_key_sideload_sca);
   otbn_load_app(kOtbnAppKeySideloadSca);
 
   uint32_t key_share_0_l[kKeySideloadNumIt], key_share_0_h[kKeySideloadNumIt];
@@ -703,7 +675,7 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
 
   // SCA code target.
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
-    TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params[it]));
+    TRY(keymgr_dpe_testutils_generate_key(&keymgr_dpe, &sideload_params[it]));
 
     TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
 
@@ -715,6 +687,18 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
     pentest_set_trigger_low();
     asm volatile(NOP30);
 
+    const otbn_addr_t kOtbnAppKeySideloadks0l =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s0_l);
+    const otbn_addr_t kOtbnAppKeySideloadks0h =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s0_h);
+    const otbn_addr_t kOtbnAppKeySideloadks1l =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s1_l);
+    const otbn_addr_t kOtbnAppKeySideloadks1h =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_s1_h);
+    const otbn_addr_t kOtbnAppKeySideloadkl =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_l);
+    const otbn_addr_t kOtbnAppKeySideloadkh =
+        OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_h);
     otbn_dmem_read(1, kOtbnAppKeySideloadks0l, &key_share_0_l[it]);
     otbn_dmem_read(1, kOtbnAppKeySideloadks0h, &key_share_0_h[it]);
     otbn_dmem_read(1, kOtbnAppKeySideloadks1l, &key_share_1_l[it]);
@@ -742,18 +726,26 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   // Get RSA256 parameters.
   penetrationtest_otbn_sca_rsa512_dec_t uj_data;
   TRY(ujson_deserialize_penetrationtest_otbn_sca_rsa512_dec_t(uj, &uj_data));
+  const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
   otbn_load_app(kOtbnAppRsa);
 
   const uint8_t zero[64] = {0};
 
   // Write data into OTBN DMEM.
+  const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
+  const uint32_t kMode512Modexp =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_512_MODEXP);
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaMode, &kMode512Modexp,
                           sizeof(uint32_t)));
+  const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaModulus, uj_data.modu,
                           sizeof(uj_data.modu)));
+  const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaD0, uj_data.exp,
                           sizeof(uj_data.exp)));
+  const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaD1, zero, sizeof(uj_data.exp)));
+  const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
   TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaInOut, uj_data.msg,
                           sizeof(uj_data.msg)));
 
@@ -796,7 +788,7 @@ status_t handle_otbn_sca(ujson_t *uj) {
     case kOtbnScaSubcommandInit:
       return handle_otbn_pentest_init(uj);
     case kOtbnScaSubcommandInitKeyMgr:
-      return handle_otbn_pentest_init_keymgr(uj);
+      return handle_otbn_pentest_init_keymgr_dpe(uj);
     case kOtbnScaSubcommandInsnCarryFlag:
       return handle_otbn_sca_insn_carry_flag(uj);
     case kOtbnScaSubcommandCombiOps:

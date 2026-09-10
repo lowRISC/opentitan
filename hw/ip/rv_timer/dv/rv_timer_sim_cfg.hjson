@@ -20,6 +20,11 @@
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/rv_timer/data/rv_timer_testplan.hjson"
 
+  // Verification Plan related data.
+  vplan: "{self_dir}/../data/rv_timer_vplan.hjson"
+  cov_vplan_prepare_opts: ["--bypass-trace"]
+  cov_vplan_process_opts: [""]
+
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/ip/rv_timer/data/rv_timer.hjson"
 

@@ -22,7 +22,7 @@ bool rom_test_main(void) {
   // We need to set the test status as "in test" to indicate to the test code
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // We need to initialize the UART regardless if we LOG any messages, since

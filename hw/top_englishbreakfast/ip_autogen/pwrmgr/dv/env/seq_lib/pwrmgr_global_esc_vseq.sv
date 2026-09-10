@@ -37,7 +37,7 @@ class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
     while (trans_cnt < num_trans) begin
       @(cfg.clk_rst_vif.cb);
       wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive &&
-           cfg.pwrmgr_vif.pwr_rst_req.rstreqs[3] == 1'b1);
+           cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx] == 1'b1);
       trans_cnt++;
 
       // Make sure previous dut_init is done

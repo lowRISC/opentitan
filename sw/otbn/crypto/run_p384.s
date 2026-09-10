@@ -288,7 +288,7 @@ ecdsa_sign_sideloaded:
  */
 ecdsa_verify:
   /* Validate the public key (ends the program on failure). */
-  jal      x1, p384_check_public_key
+  jal      x1, p384_check_isoncurve
 
   /* Verify the signature (compute x1). */
   jal      x1, p384_verify
@@ -318,7 +318,7 @@ ecdsa_verify:
  */
 shared_key:
   /* Validate the public key (ends the program on failure). */
-  jal      x1, p384_check_public_key
+  jal      x1, p384_check_isoncurve
 
   /* If we got here the basic validity checks passed, so set `ok` to true. */
   la       x2, ok

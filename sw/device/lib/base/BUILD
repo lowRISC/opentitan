@@ -5,8 +5,8 @@
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
@@ -15,6 +15,14 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
 
 package(default_visibility = ["//visibility:public"])
+
+BASE_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
+)
 
 filegroup(
     name = "doc_files",
@@ -63,7 +71,7 @@ cc_test(
 opentitan_test(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -77,9 +85,9 @@ opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        BASE_EXEC_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     fpga = fpga_params(
@@ -217,7 +225,10 @@ cc_library(
 opentitan_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
+    fpga = fpga_params(
+        tags = ["coverage_broken"],  # perftest instrumentation overhead
+    ),
     deps = [
         ":macros",
         ":memory",
@@ -263,7 +274,7 @@ cc_test(
 opentitan_test(
     name = "hardened_functest",
     srcs = ["hardened_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = BASE_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -281,6 +292,17 @@ cc_library(
     deps = [
         ":bitfield",
         ":hardened",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+    ],
+)
+
+cc_library(
+    name = "lz4",
+    srcs = ["lz4.c"],
+    hdrs = ["lz4.h"],
+    deps = [
+        ":memory",
+        "//sw/device/lib/base:macros",
     ],
 )
 
@@ -313,6 +335,33 @@ cc_test(
         ":hardened_memory",
         ":random_order",
         "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_test(
+    name = "hardened_memory_functest",
+    srcs = ["hardened_memory_functest.c"],
+    exec_env = dicts.add(
+        BASE_EXEC_ENVS,
+        {
+            # This test expects constant cycle count which cannot be guaranteed on the RRAM.
+            # see https://github.com/lowRISC/opentitan/issues/30895
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_sival_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_sival_skip_ci",
+        },
+    ),
+    fpga_sival_skip_ci = fpga_params(
+        tags = ["skip_in_ci"],
+    ),
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top/dt:rv_core_ibex",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -458,6 +507,31 @@ cc_test(
         ":status",
         ":status_report_unittest_c",
         "@googletest//:gtest_main",
+    ],
+)
+
+test_suite(
+    name = "base_functest_suite",
+    tests = [
+        ":crc32_functest",
+        ":hardened_memory_functest",
+    ],
+)
+
+test_suite(
+    name = "base_unittest_suite",
+    tests = [
+        ":crc32_unittest",
+        ":global_mock_unittest",
+        ":hardened_memory_unittest",
+        ":hardened_unittest",
+        ":math_unittest",
+        ":memory_unittest",
+        ":mmio_unittest",
+        ":mock_csr_unittest",
+        ":random_order_unittest",
+        ":status_report_unittest",
+        ":status_unittest",
     ],
 )
 

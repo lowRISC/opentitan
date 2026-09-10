@@ -2,18 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "signature_test")
 load("//rules/tests:const_unittest.bzl", "const_test_suite")
 load("//rules/tests:otp_unittest.bzl", "otp_test_suite")
-load("//rules:signing.bzl", "signature_test")
 
 const_test_suite()
 
 otp_test_suite()
 
+# Test that external signing rules remain working with the latest OpenTitanTool
+
 signature_test(
     name = "corrupt_signature_test",
     srcs = [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted_fpga_cw310_rom_with_fake_keys.prod_key_0.signed.bin",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted_fpga_cw340_rom_with_fake_keys.prod_key_0.signed.bin",
     ],
     negative_test = True,
 )

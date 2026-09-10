@@ -45,7 +45,7 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(void) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
 
   // Get initial hint and enable for AES clock and check both are enabled.
   dif_toggle_t clock_hint_state;

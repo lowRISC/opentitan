@@ -7,9 +7,10 @@
 #include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -67,9 +68,6 @@ enum {
 static inline uintptr_t kmac_base(void) {
   return dt_kmac_primary_reg_block(kDtKmac);
 }
-
-// "KMAC" string in little endian
-static const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
 
 // We need 5 bytes at most for encoding the length of cust_str and func_name.
 // That leaves 39 bytes for the string. We simply truncate it to 36 bytes.
@@ -251,9 +249,6 @@ status_t kmac_key_length_check(size_t key_len) {
 }
 
 status_t kmac_hwip_default_configure(void) {
-  // Ensure that the entropy complex is initialized.
-  HARDENED_TRY(entropy_complex_check());
-
   uint32_t status_reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
 
   // Check that core is not in fault state
@@ -305,7 +300,7 @@ status_t kmac_hwip_default_configure(void) {
   entropy_hash_threshold = bitfield_field32_write(
       entropy_hash_threshold,
       KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, UINT32_MAX);
-  abs_mmio_write32(
+  abs_mmio_write32_shadowed(
       kmac_base() + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
       entropy_hash_threshold);
 
@@ -327,7 +322,7 @@ status_t kmac_hwip_default_configure(void) {
 
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
-                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 1);
+                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
   // Do not remask message blocks
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
 
@@ -373,6 +368,48 @@ static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
   }
 }
 
+static void kmac_hwip_release(void) {
+  // Do nothing when the block is already in `IDLE` mode.
+  const uint32_t kBase = kmac_base();
+  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_IDLE_BIT)) {
+    return;
+  }
+
+  // If the hardware is still absorbing, terminate the absorption phase.
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+    cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                     KMAC_CMD_CMD_VALUE_PROCESS);
+    abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+  }
+
+  // Wait until the squeeze state is reached.
+  if (!status_ok(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1))) {
+    return;
+  }
+
+  // Issue `CMD.DONE` to wipe the internal state and release the hardware.
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_DONE);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+/**
+ * Hardware wipe guard.
+ *
+ * Streaming operations disable the guard by setting it to `kHardenedBoolFalse`
+ * when there is no error because the hardware must remain claimed between
+ * calls.
+ */
+void kmac_wipe_guard(uint32_t *guard) {
+  if (launder32(*guard) == kHardenedBoolFalse) {
+    return;
+  }
+  kmac_hwip_release();
+}
+
 /**
  * Encode a given integer as byte array and return its size along with it.
  *
@@ -412,7 +449,7 @@ static status_t little_endian_encode(size_t value, uint8_t *encoding_buf,
     encoding_buf[idx] = reverse_buf[len - 1 - idx];
   }
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -497,12 +534,6 @@ static status_t kmac_init(kmac_operation_t operation,
                           hardened_bool_t hw_backed) {
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
-  // If the operation is KMAC, ensure that the entropy complex has been
-  // initialized for masking.
-  if (operation == kKmacOperationKmac) {
-    HARDENED_TRY(entropy_complex_check());
-  }
-
   // We need to preserve some bits of CFG register, such as:
   // entropy_mode, entropy_ready etc. On the other hand, some bits
   // need to be reset for each invocation.
@@ -552,6 +583,7 @@ static status_t kmac_init(kmac_operation_t operation,
 OT_WARN_UNUSED_RESULT
 static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   if (launder32(key->hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key->hw_backed, kHardenedBoolTrue);
     // Nothing to do.
     return OTCRYPTO_OK;
   } else if (launder32(key->hw_backed) != kHardenedBoolFalse) {
@@ -581,51 +613,47 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
 
+  // Verify the checksum of the given key.
+  HARDENED_CHECK_EQ(kmac_key_integrity_checksum_check(key), kHardenedBoolTrue);
+
   return OTCRYPTO_OK;
 }
 
 /**
- * Common routine for feeding message blocks during SHA/SHAKE/cSHAKE/KMAC.
+ * Issue the `START` command and wait until the absorb state is reached.
  *
- * Before running this, the operation type must be configured with kmac_init.
- * Then, we can use this function to feed various bytes of data to the KMAC
- * core. Note that this is a one-shot implementation, and it does not support
- * streaming mode.
+ * Blocks until KMAC is idle before issuing the command. Afterwards this
+ * function returns successfully.
  *
- * This routine does not check input parameters for consistency. For instance,
- * one can invoke SHA-3_224 with digest_len=32, which will produce 256 bits of
- * digest. The caller is responsible for ensuring that the digest length and
- * mode are consistent.
- *
- * The caller must ensure that `message_len` bytes (rounded up to the next 32b
- * word) are allocated at the location pointed to by `message`, and similarly
- * that `digest_len_words` 32-bit words are allocated at the location pointed
- * to by `digest`. If `masked_digest` is set, then `digest` must contain 2x
- * `digest_len_words` to fit both shares.
- *
- * @param operation The operation type.
- * @param message Input message string.
- * @param message_len Message length in bytes.
- * @param digest The struct to which the result will be written.
- * @param digest_len_words Requested digest length in 32-bit words.
- * @param masked_digest Whether to return the digest in two shares.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-static status_t kmac_process_msg_blocks(
-    kmac_operation_t operation, const otcrypto_const_byte_buf_t *message,
-    uint32_t *digest, size_t digest_len_words, hardened_bool_t masked_digest) {
+static status_t kmac_msg_start(void) {
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
   // Issue the start command, so that messages written to MSG_FIFO are forwarded
   // to Keccak
-  const uint32_t kBase = kmac_base();
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_START);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_ABSORB_BIT, 1));
+  abs_mmio_write32(kmac_base() + KMAC_CMD_REG_OFFSET, cmd_reg);
+  return wait_status_bit(KMAC_STATUS_SHA3_ABSORB_BIT, 1);
+}
+
+/**
+ * Write given message bytes to the message FIFO.
+ *
+ * The KMAC HWIP must be in the absorb state, i.e. `kmac_msg_start` must have
+ * been called beforehand. This function may be called multiple times to feed
+ * a message in several steps.
+ *
+ * @param message Input message string.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t kmac_msg_fifo_write(const otcrypto_const_byte_buf_t *message) {
+  const uint32_t kBase = kmac_base();
 
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
@@ -648,15 +676,55 @@ static status_t kmac_process_msg_blocks(
   // For the last few bytes, we need to write one byte at a time again.
   for (; i < message->len; i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
-    abs_mmio_write8(kmac_base() + KMAC_MSG_FIFO_REG_OFFSET, message->data[i]);
+    abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, message->data[i]);
   }
   // Check that the loops ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, message->len);
 
-  // If operation=KMAC, then we need to write `right_encode(digest->len)`
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message));
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Finish the absorb phase and squeeze the digest out of the KMAC HWIP.
+ *
+ * All message bytes must already have been absorbed through the function
+ * `kmac_msg_fifo_write`. For KMAC operations, this function appends
+ * `right_encode(digest_len)` to the message before issuing the `PROCESS`
+ * command.
+ *
+ * This routine does not check input parameters for consistency. For instance,
+ * one can invoke SHA-3_224 with digest_len=32, which will produce 256 bits of
+ * digest. The caller is responsible for ensuring that the digest length and
+ * mode are consistent.
+ *
+ * If `masked_digest` is set, then `digest` must be twice as large in order to
+ * fit both shares.
+ *
+ * The caller is responsible for issuing the DONE command after reading the
+ * digest (e.g. by means of `kmac_wipe_guard`).
+ *
+ * @param operation The operation type.
+ * @param digest The digest location to which the result will be written.
+ * @param digest_len_bytes Requested digest length in bytes.
+ * @param masked_digest Whether to return the digest in two shares.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
+                             size_t digest_len_bytes,
+                             hardened_bool_t masked_digest) {
+  const uint32_t kBase = kmac_base();
+  size_t digest_len_words =
+      (digest_len_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
+  // If the operation is KMAC, then `right_encode(digest->len)` is appended.
   if (operation == kKmacOperationKmac) {
-    uint32_t digest_len_bits = 8 * sizeof(uint32_t) * digest_len_words;
-    if (digest_len_bits / (8 * sizeof(uint32_t)) != digest_len_words) {
+    uint32_t digest_len_bits = 8 * digest_len_bytes;
+    // Check for overflow, i.e., when the input buffer is too large.
+    if (digest_len_bits / 8 != digest_len_bytes) {
       return OTCRYPTO_BAD_ARGS;
     }
 
@@ -674,7 +742,7 @@ static status_t kmac_process_msg_blocks(
   }
 
   // Issue the process command, so that squeezing phase can start
-  cmd_reg = KMAC_CMD_REG_RESVAL;
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_PROCESS);
   abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
@@ -747,16 +815,50 @@ static status_t kmac_process_msg_blocks(
   // Poll the status register until in the 'squeeze' state.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
 
-  // Release the KMAC core, so that it goes back to idle mode
-  cmd_reg = KMAC_CMD_REG_RESVAL;
-  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                   KMAC_CMD_CMD_VALUE_DONE);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message));
+  // Zero out the trailing bytes in the final word.
+  size_t remainder_bytes = digest_len_bytes % sizeof(uint32_t);
+  if (remainder_bytes > 0) {
+    uint32_t mask = (1U << (remainder_bytes * 8)) - 1;
+    digest[digest_len_words - 1] &= mask;
+    if (launder32(masked_digest) == kHardenedBoolTrue) {
+      digest[2 * digest_len_words - 1] &= mask;
+    }
+  }
 
   return OTCRYPTO_OK;
+}
+
+/**
+ * Common function for processing message blocks.
+ *
+ * Before running this, the operation type must be configured with `kmac_init`.
+ * Then, we can use this function to absorb various bytes of data.
+ * This is a one-shot implementation, and it does not support streaming mode.
+ *
+ * This routine does not check input parameters for consistency.
+ *
+ * If `masked_digest` is set, then `digest` must contain twice the amount of
+ * `digest_len_words` to fit both shares.
+ *
+ * @param operation The operation type.
+ * @param message Input message string.
+ * @param digest The digest location to which the result will be written.
+ * @param digest_len_bytes Requested digest length in bytes.
+ * @param masked_digest Whether to return the digest in two shares.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t kmac_process_msg_blocks(
+    kmac_operation_t operation, const otcrypto_const_byte_buf_t *message,
+    uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
+  // This variable guarantees kmac_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  HARDENED_TRY(kmac_msg_start());
+  HARDENED_TRY(kmac_msg_fifo_write(message));
+  return kmac_squeeze(operation, digest, digest_len_bytes, masked_digest);
 }
 
 /**
@@ -785,7 +887,8 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
   HARDENED_TRY(kmac_init(operation, strength,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  return kmac_process_msg_blocks(operation, message, digest, digest_wordlen,
+  return kmac_process_msg_blocks(operation, message, digest,
+                                 digest_wordlen * sizeof(uint32_t),
                                  /*masked_digest=*/kHardenedBoolFalse);
 }
 
@@ -855,6 +958,8 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength128, key->hw_backed));
 
   HARDENED_TRY(kmac_write_key_block(key));
+  // "KMAC" string in little endian
+  const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
   HARDENED_TRY(kmac_set_prefix_regs(
       kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 
@@ -870,9 +975,444 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength256, key->hw_backed));
 
   HARDENED_TRY(kmac_write_key_block(key));
+  // "KMAC" string in little endian
+  const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
   HARDENED_TRY(kmac_set_prefix_regs(
       kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
 
   return kmac_process_msg_blocks(kKmacOperationKmac, message, digest,
                                  digest_len, masked_digest);
+}
+
+/**
+ * Start a streamed operation.
+ *
+ * Configures the KMAC HWIP for the given operation and issues the `START`
+ * command, leaving the hardware in the `ABSORB` state. The hardware remains
+ * claimed by this streaming operation until the corresponding `final()`.
+ *
+ * @param operation The chosen operation, see kmac_operation_t struct.
+ * @param security_str Security strength.
+ * @param hw_backed Whether the key comes from the sideload port.
+ * @param[out] ctx KMAC context.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t stream_init(kmac_operation_t operation,
+                            kmac_security_str_t security_str,
+                            hardened_bool_t hw_backed, kmac_ctx_t *ctx) {
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  ctx->operation = operation;
+  ctx->security_str = security_str;
+  ctx->squeeze_started = kHardenedBoolFalse;
+  ctx->squeeze_offset = 0;
+
+  // This variable guarantees kmac_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  HARDENED_TRY(kmac_init(operation, security_str, hw_backed));
+  HARDENED_TRY(kmac_msg_start());
+
+  // Disable the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Finalize a streamed operation.
+ *
+ * Ends the absorption phase and squeezes the requested number of digest bytes
+ * out of the KMAC HWIP. The hardware must still be in the `ABSORB` state.
+ *
+ * @param ctx KMAC context.
+ * @param operation The expected operation for this context.
+ * @param security_str The expected security strength for this context.
+ * @param masked_digest Whether to return the digest in two shares.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len_bytes Requested digest length in bytes.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t stream_final(kmac_ctx_t *ctx, kmac_operation_t operation,
+                             kmac_security_str_t security_str,
+                             hardened_bool_t masked_digest, uint32_t *digest,
+                             size_t digest_len_bytes) {
+  // This variable guarantees kmac_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL || digest == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check that the hardware is still in the `ABSORB` state.
+  uint32_t status_reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  HARDENED_TRY(
+      kmac_squeeze(operation, digest, digest_len_bytes, masked_digest));
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Start a streamed KMAC operation.
+ *
+ * Common helper function for `kmac_kmac_{128,256}_init`. Configures the key
+ * and the prefix registers before starting the absorption phase.
+ *
+ * @param security_str Security strength (128 or 256).
+ * @param key The KMAC key.
+ * @param cust_str The customization string.
+ * @param cust_str_len The customization string length in bytes.
+ * @param[out] ctx KMAC context.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t stream_kmac_init(kmac_security_str_t security_str,
+                                 kmac_blinded_key_t *key,
+                                 const unsigned char *cust_str,
+                                 size_t cust_str_len, kmac_ctx_t *ctx) {
+  if (ctx == NULL || key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  ctx->operation = kKmacOperationKmac;
+  ctx->security_str = security_str;
+  ctx->squeeze_started = kHardenedBoolFalse;
+  ctx->squeeze_offset = 0;
+
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  HARDENED_TRY(kmac_init(kKmacOperationKmac, security_str, key->hw_backed));
+
+  HARDENED_TRY(kmac_write_key_block(key));
+  // "KMAC" string in little endian
+  const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
+  HARDENED_TRY(kmac_set_prefix_regs(
+      kKmacFuncNameKMAC, sizeof(kKmacFuncNameKMAC), cust_str, cust_str_len));
+
+  HARDENED_TRY(kmac_msg_start());
+
+  // Disarm the guard: the hardware remains claimed by this streaming
+  // operation until the corresponding `final()`.
+  hw_cleanup_guard = kHardenedBoolFalse;
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_sha3_224_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationSha3, kKmacSecurityStrength224,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_sha3_256_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationSha3, kKmacSecurityStrength256,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_sha3_384_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationSha3, kKmacSecurityStrength384,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_sha3_512_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationSha3, kKmacSecurityStrength512,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_shake_128_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationShake, kKmacSecurityStrength128,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_shake_256_init(kmac_ctx_t *ctx) {
+  return stream_init(kKmacOperationShake, kKmacSecurityStrength256,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_cshake_128_init(const unsigned char *func_name,
+                              size_t func_name_len,
+                              const unsigned char *cust_str,
+                              size_t cust_str_len, kmac_ctx_t *ctx) {
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+  HARDENED_TRY(
+      kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
+  return stream_init(kKmacOperationCshake, kKmacSecurityStrength128,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_cshake_256_init(const unsigned char *func_name,
+                              size_t func_name_len,
+                              const unsigned char *cust_str,
+                              size_t cust_str_len, kmac_ctx_t *ctx) {
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+  HARDENED_TRY(
+      kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
+  return stream_init(kKmacOperationCshake, kKmacSecurityStrength256,
+                     /*hw_backed=*/kHardenedBoolFalse, ctx);
+}
+
+status_t kmac_kmac_128_init(kmac_blinded_key_t *key,
+                            const unsigned char *cust_str, size_t cust_str_len,
+                            kmac_ctx_t *ctx) {
+  return stream_kmac_init(kKmacSecurityStrength128, key, cust_str, cust_str_len,
+                          ctx);
+}
+
+status_t kmac_kmac_256_init(kmac_blinded_key_t *key,
+                            const unsigned char *cust_str, size_t cust_str_len,
+                            kmac_ctx_t *ctx) {
+  return stream_kmac_init(kKmacSecurityStrength256, key, cust_str, cust_str_len,
+                          ctx);
+}
+
+status_t kmac_update(kmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL || data == NULL || (data->data == NULL && data->len != 0)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check that the hardware is still in the `ABSORB` state.
+  uint32_t status_reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  HARDENED_TRY(kmac_msg_fifo_write(data));
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * End the absorption phase and transition to processing.
+ *
+ * @param ctx KMAC context.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t xof_process(kmac_ctx_t *ctx) {
+  const uint32_t kBase = kmac_base();
+
+  // Check that the hardware is still in the `ABSORB` state.
+  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Issue `CMD.PROCESS`, so that the squeezing phase can start.
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_PROCESS);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  ctx->squeeze_started = kHardenedBoolTrue;
+  ctx->squeeze_offset = 0;
+
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_xof_squeeze(kmac_ctx_t *ctx, uint32_t *digest,
+                          size_t digest_len) {
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL || digest == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Only SHAKE and cSHAKE support streamed squeezing.
+  if (launder32(ctx->operation) != kKmacOperationShake &&
+      launder32(ctx->operation) != kKmacOperationCshake) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  size_t keccak_rate_words;
+  HARDENED_TRY(
+      kmac_get_keccak_rate_words(ctx->security_str, &keccak_rate_words));
+
+  // The squeeze offset must be at most the size of the rate.
+  if (launder32(ctx->squeeze_offset) > keccak_rate_words) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->squeeze_offset, keccak_rate_words);
+
+  const uint32_t kBase = kmac_base();
+
+  // The first invocation ends the absorb phase.
+  if (launder32(ctx->squeeze_started) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ctx->squeeze_started, kHardenedBoolFalse);
+    HARDENED_TRY(xof_process(ctx));
+  }
+
+  size_t idx = 0;
+  while (launder32(idx) < digest_len) {
+    // Poll the status register until in the 'SQUEEZE' state.
+    HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+
+    // If we read all the remaining words and still need more digest, issue
+    // `CMD.RUN` to generate more state.
+    if (launder32(ctx->squeeze_offset) == keccak_rate_words) {
+      HARDENED_CHECK_EQ(ctx->squeeze_offset, keccak_rate_words);
+      uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+      cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                       KMAC_CMD_CMD_VALUE_RUN);
+      abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+      ctx->squeeze_offset = 0;
+      HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+    }
+
+    // Read words from the state registers.
+    size_t read_len_words = keccak_rate_words - ctx->squeeze_offset;
+    if (read_len_words > digest_len - idx) {
+      read_len_words = digest_len - idx;
+    }
+    uint32_t offset_share0 =
+        kBase + KMAC_STATE_REG_OFFSET + ctx->squeeze_offset * sizeof(uint32_t);
+    uint32_t offset_share1 = offset_share0 + kKmacStateShareSize;
+
+    // Unmask the digest as we read it.
+    HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,
+                              (const uint32_t *)offset_share1, read_len_words,
+                              &digest[idx]));
+    idx += read_len_words;
+    ctx->squeeze_offset += read_len_words;
+  }
+  HARDENED_CHECK_EQ(idx, digest_len);
+
+  // Disarm the guard.
+  hw_cleanup_guard = kHardenedBoolFalse;
+
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_xof_end(kmac_ctx_t *ctx) {
+  // Release the hardware through kmac_wipe_guard() on any error exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) =
+      kHardenedBoolTrue;
+  barrier32(hw_cleanup_guard);
+
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // If squeezing has not started, end the absorb phase first so that the
+  // hardware reaches a state in which it accepts the `CMD.DONE` command.
+  if (launder32(ctx->squeeze_started) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ctx->squeeze_started, kHardenedBoolFalse);
+    HARDENED_TRY(xof_process(ctx));
+  }
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+
+  // Invalidate the context.
+  ctx->squeeze_started = kHardenedBoolFalse;
+  ctx->squeeze_offset = 0;
+
+  return OTCRYPTO_OK;
+}
+
+status_t kmac_sha3_224_final(kmac_ctx_t *ctx, uint32_t *digest) {
+  return stream_final(ctx, kKmacOperationSha3, kKmacSecurityStrength224,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      kKmacSha3224DigestBytes);
+}
+
+status_t kmac_sha3_256_final(kmac_ctx_t *ctx, uint32_t *digest) {
+  return stream_final(ctx, kKmacOperationSha3, kKmacSecurityStrength256,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      kKmacSha3256DigestBytes);
+}
+
+status_t kmac_sha3_384_final(kmac_ctx_t *ctx, uint32_t *digest) {
+  return stream_final(ctx, kKmacOperationSha3, kKmacSecurityStrength384,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      kKmacSha3384DigestBytes);
+}
+
+status_t kmac_sha3_512_final(kmac_ctx_t *ctx, uint32_t *digest) {
+  return stream_final(ctx, kKmacOperationSha3, kKmacSecurityStrength512,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      kKmacSha3512DigestBytes);
+}
+
+status_t kmac_shake_128_final(kmac_ctx_t *ctx, uint32_t *digest,
+                              size_t digest_len) {
+  return stream_final(ctx, kKmacOperationShake, kKmacSecurityStrength128,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      digest_len * sizeof(uint32_t));
+}
+
+status_t kmac_shake_256_final(kmac_ctx_t *ctx, uint32_t *digest,
+                              size_t digest_len) {
+  return stream_final(ctx, kKmacOperationShake, kKmacSecurityStrength256,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      digest_len * sizeof(uint32_t));
+}
+
+status_t kmac_cshake_128_final(kmac_ctx_t *ctx, uint32_t *digest,
+                               size_t digest_len) {
+  return stream_final(ctx, kKmacOperationCshake, kKmacSecurityStrength128,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      digest_len * sizeof(uint32_t));
+}
+
+status_t kmac_cshake_256_final(kmac_ctx_t *ctx, uint32_t *digest,
+                               size_t digest_len) {
+  return stream_final(ctx, kKmacOperationCshake, kKmacSecurityStrength256,
+                      /*masked_digest=*/kHardenedBoolFalse, digest,
+                      digest_len * sizeof(uint32_t));
+}
+
+status_t kmac_kmac_128_final(kmac_ctx_t *ctx, hardened_bool_t masked_digest,
+                             uint32_t *digest, size_t digest_len) {
+  return stream_final(ctx, kKmacOperationKmac, kKmacSecurityStrength128,
+                      masked_digest, digest, digest_len);
+}
+
+status_t kmac_kmac_256_final(kmac_ctx_t *ctx, hardened_bool_t masked_digest,
+                             uint32_t *digest, size_t digest_len) {
+  return stream_final(ctx, kKmacOperationKmac, kKmacSecurityStrength256,
+                      masked_digest, digest, digest_len);
+}
+
+uint32_t kmac_key_integrity_checksum(const kmac_blinded_key_t *key) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  crc32_add32(&ctx, key->len);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)key->share0, key->len);
+  crc32_add32(&ctx, key->hw_backed);
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t kmac_key_integrity_checksum_check(
+    const kmac_blinded_key_t *key) {
+  if (key->checksum == launder32(kmac_key_integrity_checksum(key))) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }

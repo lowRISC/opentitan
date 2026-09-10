@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -22,10 +23,10 @@ static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
 static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
               "MMIO region changed, update ePMP configuration if needed");
 
-static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
+static_assert(TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR >=
                       TOP_EARLGREY_MMIO_BASE_ADDR &&
-                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                          TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES <
+                  TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR +
+                          TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES <
                       TOP_EARLGREY_MMIO_BASE_ADDR +
                           TOP_EARLGREY_MMIO_SIZE_BYTES,
               "Retention SRAM must be in the MMIO address space.");
@@ -37,12 +38,11 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // grows downward from _stack_end.
   const epmp_region_t rom_text = {.start = (uintptr_t)_text_start,
                                   .end = (uintptr_t)_text_end};
-  const epmp_region_t rom = {.start = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+  const epmp_region_t rom = {.start = (uintptr_t)_text_end,
                              .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
                                     TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES};
-  const epmp_region_t eflash = {.start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                                       TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES};
+  const epmp_region_t nvm = {.start = NVM_DATA_BASE_ADDR,
+                             .end = NVM_DATA_BASE_ADDR + NVM_DATA_SIZE_BYTES};
   const epmp_region_t mmio = {
       .start = TOP_EARLGREY_MMIO_BASE_ADDR,
       .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
@@ -54,6 +54,10 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t ram = {.start = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
                              .end = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
                                     TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES};
+  const epmp_region_t ram_sec = {
+      .start = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+      .end = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR +
+             TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES};
 
   epmp_perm_t debug_rom_access = kEpmpPermLockedNoAccess;
   switch (launder32(lc_state)) {
@@ -88,12 +92,13 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // to the hardware configuration.
   memset(&epmp_state, 0, sizeof(epmp_state));
   epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
-  epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
-  epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
+  epmp_state_configure_tor(2, rom, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(5, nvm, kEpmpPermLockedReadOnly);
   epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);
   epmp_state_configure_napot(15, ram, kEpmpPermLockedReadWrite);
+  epmp_state_configure_napot(12, ram_sec, kEpmpPermLockedReadWrite);
   epmp_state.mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
 }
 

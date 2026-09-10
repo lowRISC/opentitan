@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usb20_agent extends dv_base_agent #(
+class usb20_agent extends dv_reactive_agent #(
   .CFG_T          (usb20_agent_cfg),
   .DRIVER_T       (usb20_driver),
   .SEQUENCER_T    (usb20_sequencer),

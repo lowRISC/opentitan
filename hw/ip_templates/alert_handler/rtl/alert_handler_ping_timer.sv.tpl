@@ -50,6 +50,7 @@ module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*;
 );
 
   localparam int unsigned IdDw = $clog2(NAlerts);
+  localparam int unsigned IdMax = NAlerts - 1;
 
   // Entropy reseeding is triggered every time this counter expires.
   // The expected wait time between pings is 2**(PING_CNT_DW-1) on average.
@@ -126,14 +127,18 @@ module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*;
   );
 
   logic [IdDw-1:0] id_to_ping_d, id_to_ping_q;
-  // The subtraction below ensures that the alert ID is always in range. If
-  // all alerts are enabled, an alert ID drawn in this way will always be
-  // valid. This comes at the cost of a bias towards certain alert IDs that
-  // will be pinged twice as often on average - but it ensures that we have
-  // less alert IDs that need to be skipped since they are invalid.
-  assign id_to_ping_d = (lfsr_state[PING_CNT_DW +: IdDw] >= NAlerts) ?
-                        lfsr_state[PING_CNT_DW +: IdDw] - NAlerts    :
-                        lfsr_state[PING_CNT_DW +: IdDw];
+  if (2**IdDw == NAlerts) begin : gen_id_always_in_range
+    // The number of alerts is a power of 2. The drawn alert ID is always in range.
+    assign id_to_ping_d = lfsr_state[PING_CNT_DW +: IdDw];
+  end else begin : gen_force_id_in_range
+    // The number of alerts is not a power of 2. Ensure that the alert ID is in range.
+    // This comes at the cost of a bias towards certain alert IDs that will be pinged twice as
+    // often on average - but it ensures that we have less alert IDs that need to be skipped
+    // since they are invalid.
+    assign id_to_ping_d = (lfsr_state[PING_CNT_DW +: IdDw] > IdMax) ?
+        // Force the top bit to zero if necessary.
+        {1'b0, lfsr_state[PING_CNT_DW +: IdDw - 1]} : lfsr_state[PING_CNT_DW +: IdDw];
+  end
 
   // we need to hold the ID stable while the ping is ongoing since this will result in
   // spurious ping responses otherwise.

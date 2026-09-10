@@ -20,6 +20,21 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:top_darjeeling_chip_sim:0.1
 
+  // The chip depends on virtual cores for the AST, pad orientation, scan roles,
+  // physical pads and the JTAG ID.  Each has exactly one implementation, so a
+  // build resolves them correctly either way, but naming the top mapping makes
+  // the choice explicit and keeps the FuseSoC log free of
+  // non-deterministic-selection warnings.
+  // The DV environment additionally depends on the virtual
+  // rom_ctrl_bkdr_util_hier core, which describes the layout of the ROM memory
+  // array, and the virtual mem_bkdr_util_hier core, which sram_ctrl_bkdr_util
+  // depends on directly.
+  // Note that the imported cfg already supplies the prim mapping, and dvsim
+  // appends these lists rather than replacing them.
+  sv_flist_gen_flags: ["--mapping=lowrisc:systems:chip_darjeeling_asic:0.1",
+                       "--mapping=lowrisc:dv:rom_ctrl_bkdr_util_hier:0.1",
+                       "--mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"]
+
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/{top_chip}/data/chip_testplan.hjson:-conn:-no_dv"
 
@@ -391,7 +406,7 @@
       name: xbar_run_mode
       en_run_modes: ["gen_otp_images_mode"]
       run_opts: ["+xbar_mode=1"]
-      reseed: 100
+      reseed: 50
     }
   ]
 
@@ -1067,8 +1082,7 @@
       run_opts: ["+en_scb=0",
                  "+sw_test_timeout_ns=3000_000_000",
                  "+bypass_alert_ready_to_end_check=1",
-                 "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,lc_ctrl*state_regs",
-                 "+avoid_ferr_ips_append=otp_ctrl*u_otp_ctrl_dai,rv_core_ibex*sw_fatal_err"]
+                 "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,lc_ctrl*state_regs,otp_ctrl*u_otp_ctrl_dai,rv_core_ibex*sw_fatal_err"]
       run_timeout_mins: 240
       reseed: 90
     }
@@ -1180,30 +1194,31 @@
     }
     // TODO(#462): Bring back top-level keymgr tests
     // after adapting them to keymgr_dpe.
-    {
-      name: chip_sw_keymgr_dpe_key_derivation
-      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_sw_keymgr_dpe_key_derivation_prod
-      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_sw_keymgr_dpe_key_derivation_jitter_en
-      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
-      run_timeout_mins: 120
-    }
+    // TODO(#30923): reenable the keymgr_dpe_key_derivation tests for darjeeling
+    // {
+    //   name: chip_sw_keymgr_dpe_key_derivation
+    //   uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    //   run_timeout_mins: 120
+    // }
+    // {
+    //   name: chip_sw_keymgr_dpe_key_derivation_prod
+    //   uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
+    //   run_timeout_mins: 120
+    // }
+    // {
+    //   name: chip_sw_keymgr_dpe_key_derivation_jitter_en
+    //   uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
+    //   run_timeout_mins: 120
+    // }
     // {
     //   name: chip_sw_keymgr_sideload_kmac
     //   uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
@@ -1541,13 +1556,14 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
     }
-    {
-      name: chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq
-      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
-    }
+// TODO(#30923): reenable the keymgr_dpe_key_derivation tests for darjeeling
+//    {
+//      name: chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq
+//      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+//      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:6:new_rules"]
+//      en_run_modes: ["sw_test_mode_test_rom"]
+//      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+//    }
     {
       name: chip_sw_kmac_mode_kmac_jitter_en_reduced_freq
       uvm_test_seq: chip_sw_base_vseq

@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:clock_buf
       - lowrisc:prim:buf
+      - lowrisc:prim:and2
       - lowrisc:prim:lc_dec
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender

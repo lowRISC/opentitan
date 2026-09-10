@@ -36,8 +36,8 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
       error_ram_base = ral.sram_ctrl_main_ram.default_map.get_base_addr();
     end else if (fault_target == FaultTargetRetSramData) begin
       `uvm_info(`gfn, "Injecting data error in retention SRAM.", UVM_MEDIUM)
-      error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;
-      error_ram_base = ral.sram_ctrl_ret_aon_ram.default_map.get_base_addr();
+      error_ram_size = ral.sram_ctrl_ret_ram.get_addr_mask() + 1;
+      error_ram_base = ral.sram_ctrl_ret_ram.default_map.get_base_addr();
     end else begin
       `uvm_info(`gfn, "Injecting instruction error in main SRAM.", UVM_MEDIUM)
       // Get the address of the first instruction of the test program in SRAM.
@@ -77,8 +77,8 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
               TopDarjeelingAlertIdRvCoreIbexFatalHwErr), UVM_MEDIUM)
     if (fault_target == FaultTargetRetSramData) begin
       // Double check again that the address range is correct.
-      error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;
-      error_ram_base = ral.sram_ctrl_ret_aon_ram.default_map.get_base_addr();
+      error_ram_size = ral.sram_ctrl_ret_ram.get_addr_mask() + 1;
+      error_ram_base = ral.sram_ctrl_ret_ram.default_map.get_base_addr();
       `DV_CHECK(error_ram_address >= error_ram_base)
       `DV_CHECK(error_ram_address < error_ram_base + error_ram_size)
       ret_sram_bkdr_write32(.addr(error_ram_address), .data('0), .flip_bits(39'h1001));

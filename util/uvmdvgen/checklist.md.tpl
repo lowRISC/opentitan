@@ -45,7 +45,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Not Started |
 Documentation | [BLOCK_DIAGRAM][]         | Not Started |
 Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
+Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
 Documentation | [MISSING_FUNC][]          | Not Started |
 Documentation | [FEATURE_FROZEN][]        | Not Started |
 RTL           | [FEATURE_COMPLETE][]      | Not Started |
@@ -64,7 +64,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 [NEW_FEATURES]:          /doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         /doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         /doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: /doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    /doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          /doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        /doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      /doc/project_governance/checklist/README.md#feature_complete
@@ -105,6 +105,7 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [DOC_INTEGRATION_D3][]  | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
@@ -117,6 +118,7 @@ Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      /doc/project_governance/checklist/README.md#new_features_d3
+[DOC_INTEGRATION_D3]:   /doc/project_governance/checklist/README.md#doc_integration_d3
 [TODO_COMPLETE]:        /doc/project_governance/checklist/README.md#todo_complete
 [LINT_COMPLETE]:        /doc/project_governance/checklist/README.md#lint_complete
 [CDC_COMPLETE]:         /doc/project_governance/checklist/README.md#cdc_complete
@@ -201,7 +203,8 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Review        | [V2S_CHECKLIST_SCOPED][]                | Not Started |
+Review        | [V3_FUNCTIONAL_CHECKLIST_SCOPED][]      | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          /doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   /doc/project_governance/checklist/README.md#dv_doc_completed
@@ -222,7 +225,8 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    /doc/project_governance/checklist/README.md#no_high_priority_issues_pending
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:/doc/project_governance/checklist/README.md#all_low_priority_issues_root_caused
 [DV_DOC_TESTPLAN_REVIEWED]:           /doc/project_governance/checklist/README.md#dv_doc_testplan_reviewed
-[V3_CHECKLIST_SCOPED]:                /doc/project_governance/checklist/README.md#v3_checklist_scoped
+[V2S_CHECKLIST_SCOPED]:               /doc/project_governance/checklist/README.md#v2s_checklist_scoped
+[V3_FUNCTIONAL_CHECKLIST_SCOPED]:     /doc/project_governance/checklist/README.md#v3_functional_checklist_scoped
 
 <%text>### V2S</%text>
 
@@ -233,12 +237,14 @@ Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
 Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          /doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                /doc/project_governance/checklist/README.md#fpv_sec_cm_verified
 [SIM_SEC_CM_VERIFIED]:                /doc/project_governance/checklist/README.md#sim_sec_cm_verified
 [SIM_COVERAGE_REVIEWED]:              /doc/project_governance/checklist/README.md#sim_coverage_reviewed
 [SEC_CM_DV_REVIEWED]:                 /doc/project_governance/checklist/README.md#sec_cm_dv_reviewed
+[V3_CHECKLIST_SCOPED]:                /doc/project_governance/checklist/README.md#v3_checklist_scoped
 
 <%text>### V3</%text>
 

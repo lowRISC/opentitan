@@ -28,7 +28,7 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 ## Key Manager Slots
 
-Keymgr_dpe consists of `DpeNumSlots` slots, which is a generic parameter.
++Keymgr_dpe consists of `NumInstHwSlot` slots, which is a top-level parameter (instantiated up to `NumMaxHwSlot`).
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
@@ -45,7 +45,7 @@ When a slot is active, `boot_stage` refers to its DPE context boot stage.
 For flexibility, `boot_stage` is a simple unsigned integer that is incremented from the parent's `boot_stage` during advance calls.
 Its actual mapping to boot stages such as ROM, BL0 or Kernel can be determined by SW.
 Hence, keymgr_dpe is oblivious to this mapping between counter values and the boot stages, though with an exception.
-The exception is that the first two stages are treated specially by RTL during KDF advance calls, as they consume other HW-backed inputs that come from keymgr_dpe’s peripheral inputs.
+The exception is that the initial boot stages are treated specially by RTL during KDF advance calls, as they consume other HW-backed inputs that come from keymgr_dpe’s peripheral inputs.
 From SW's point of view, they are still treated as any arbitrary DICE layer in that SW can provide further inputs through `SW_CDI_INPUT` CSR.
 
 A slot's `max_key_version` receives its value from `MAX_KEY_VERSION` register during a previous advance call that ends up populating this slot with DPE context.
@@ -127,16 +127,25 @@ The only relevant registers (or register fields) during the first advance call a
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
-This initial latching can only be done once until the next power cycle.
+This initial latching can be repeated with the _Load Root Key_ operation unless locked with the `LOAD_KEY_LOCK` register.
 If the OTP creator root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid`state.
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
-`child_key = KDF(parent_key, message)`, where the message input might take few forms depending on the parent slot's `boot_stage` value.
-In particular:
-* If `boot_stage = 0` for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`. See [KDF Details](#kdf-details) for more details on HW-backed inputs.
-* If `boot_stage = 1` for the parent, then `message = SW_CDI_INPUT || owner_seed`.
-* If `boot_stage > 1` for the parent, then `message = SW_CDI_INPUT`.
+`child_key = KDF(parent_key, message)`, where the message input takes different forms depending on the parent slot's `boot_stage` value.
+Which HW-backed inputs are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated intermediate owner stage (three-stage configuration).
+See [KDF Details](#kdf-details) for more details on HW-backed inputs.
+
+With `NumBootStages = 3`, the `creator_seed` is consumed by a dedicated `OwnerInt` (owner intermediate) stage:
+* If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || device_identifier || health_st_measurement || rom_descriptors || hw_revision_seed`.
+* If `boot_stage = 1` (OwnerInt) for the parent, then `message = SW_CDI_INPUT || creator_seed`.
+* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+
+With `NumBootStages = 2`, the `OwnerInt` stage is omitted; the `creator_seed` is consumed together with the other creator inputs, and an advance from `Creator` increments `boot_stage` directly to `Owner` (i.e. `boot_stage = 1` is not used):
+* If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`.
+* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by `SLOT_DST_SEL`:
 * `valid` bit is set to 1.
@@ -161,7 +170,7 @@ When there is no fault and the enable signal is active by life cycle controller,
   * If `retain_parent = true`, then the source and the destination slots are different.
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
-  * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < DpeNumBootStages`.
+  * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < NumBootStages`).
 
 
 ### Versioned Key Generation
@@ -212,7 +221,7 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `hw_revision_seed` is a 256-bit netlist constant.
 * `device_identifier` is a 256-bit non-secret device identifier. This value is received from peripheral OTP port.
 * `health_st_measurement` is a 128-bit domain separator (i.e. diversification constant) that depends on the life cycle stage. This value is received from peripheral LC port.
-* `rom_descriptors` are two hash values for ROM0, ROM1. Each digest is 256-bits. These values are received from their respective ROM controllers.
+* `rom_descriptors` are `NumRomDigestInputs` hash values received from the respective ROM controller(s). Each digest is 256-bits.
 * `creator_seed` is 256-bit creator secret received from the `SECRET2` OTP partition..
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 

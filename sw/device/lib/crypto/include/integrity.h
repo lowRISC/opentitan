@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/crypto/include/datatypes.h"
+#include "api_config.h"
+#include "datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,7 +32,8 @@ extern "C" {
  * @param key Unblinded key.
  * @returns Checksum value.
  */
-uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key);
+uint32_t otcrypto_integrity_unblinded_checksum(
+    const otcrypto_unblinded_key_t *key);
 
 /**
  * Compute the checksum of a blinded key.
@@ -42,7 +44,7 @@ uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key);
  * @param key Blinded key.
  * @returns Checksum value.
  */
-uint32_t integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
+uint32_t otcrypto_integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
 
 /**
  * Perform an integrity check on the unblinded key.
@@ -54,7 +56,7 @@ uint32_t integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
  * @returns Whether the integrity check passed.
  */
 OT_WARN_UNUSED_RESULT
-hardened_bool_t integrity_unblinded_key_check(
+hardened_bool_t otcrypto_integrity_unblinded_key_check(
     const otcrypto_unblinded_key_t *key);
 
 /**
@@ -67,26 +69,14 @@ hardened_bool_t integrity_unblinded_key_check(
  * @returns Whether the integrity check passed.
  */
 OT_WARN_UNUSED_RESULT
-hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key);
-
-/**
- * Helper function to calculate the checksum for a buffer.
- *
- * The integrity is calculated only on the buffer address and length, but not
- * the content. This allows the creation of a secure buffer before the content
- * is available, and the content can be filled later.
- */
-OT_WARN_UNUSED_RESULT
-static inline uint32_t calculate_buf_checksum(const void *data, size_t len) {
-  return kOtcryptoInitIntegrityChecksum + (uint32_t)(uintptr_t)data +
-         (uint32_t)len;
-}
+hardened_bool_t otcrypto_integrity_blinded_key_check(
+    const otcrypto_blinded_key_t *key);
 
 #ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
 /**
  * Macro to create a buffer such otcrypto_const_word32_buf, otcrypto_word32_buf,
- * otcrypto_const_byte_buf, otcrypto_byte_buf.
+ * otcrypto_const_byte_buf, otcrypto_byte_buf.verify_buf_integrity
  *
  * A secure manner of creating a buffer is to create a buffer with its length,
  * then set its checksum using the macro. After the checksum is set, the buffer
@@ -96,10 +86,11 @@ static inline uint32_t calculate_buf_checksum(const void *data, size_t len) {
  * called after the buffer is consumed.
  *
  */
-#define OTCRYPTO_MAKE_BUF(type, data_ptr, length)                \
-  (type) {                                                       \
-    .data = (data_ptr), .len = (length),                         \
-    .ptr_checksum = calculate_buf_checksum((data_ptr), (length)) \
+#define OTCRYPTO_MAKE_BUF(type, data_ptr, length)                        \
+  (type) {                                                               \
+    .data = (data_ptr), .len = (length),                                 \
+    .ptr_checksum = kOtcryptoInitIntegrityChecksum +                     \
+                    (uint32_t)(uintptr_t)(data_ptr) + (uint32_t)(length) \
   }
 
 /**
@@ -126,6 +117,90 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
 #define OTCRYPTO_CHECK_BUF(buf_ptr) (kHardenedBoolTrue)
 
 #endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+
+/**
+ * Function to create an integrity protected byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Byte data buffer.
+ * @param len Length of the buffer in bytes.
+ * @returns otcrypto_byte_buf_t with integrity.
+ */
+otcrypto_byte_buf_t otcrypto_make_byte_buf(uint8_t *data, size_t len);
+
+/**
+ * Function to create an integrity protected const byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Byte data buffer.
+ * @param len Length of the buffer in bytes.
+ * @returns otcrypto_const_byte_buf_t with integrity.
+ */
+otcrypto_const_byte_buf_t otcrypto_make_const_byte_buf(const uint8_t *data,
+                                                       size_t len);
+
+/**
+ * Function to create an integrity protected word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Word data buffer.
+ * @param len Length of the buffer in words.
+ * @returns otcrypto_word32_buf_t with integrity.
+ */
+otcrypto_word32_buf_t otcrypto_make_word32_buf(uint32_t *data, size_t len);
+
+/**
+ * Function to create an integrity protected const word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_MAKE_BUF macro.
+ *
+ * @param data Word data buffer.
+ * @param len Length of the buffer in words.
+ * @returns otcrypto_const_word32_buf_t with integrity.
+ */
+otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
+                                                           size_t len);
+
+/**
+ * Function to verify the integrity of a byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_byte_buf(const otcrypto_byte_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a const byte buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_const_byte_buf(
+    const otcrypto_const_byte_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_word32_buf(const otcrypto_word32_buf_t *buf);
+
+/**
+ * Function to verify the integrity of a const word32 buffer.
+ * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
+ *
+ * @param buf The buffer to check.
+ * @returns Whether the integrity check passed.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_check_const_word32_buf(
+    const otcrypto_const_word32_buf_t *buf);
 
 #ifdef __cplusplus
 }  // extern "C"

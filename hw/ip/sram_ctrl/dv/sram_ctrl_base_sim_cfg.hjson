@@ -17,6 +17,10 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:sram_ctrl_sim:0.1
 
+  // mem_bkdr_util_hier is virtual: sram_ctrl_bkdr_util depends on it
+  // directly.
+  sv_flist_gen_flags: ["--mapping=lowrisc:dv:mem_bkdr_util_hier:0.1"]
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/sram_ctrl/data/sram_ctrl_testplan.hjson"
 
@@ -48,7 +52,7 @@
              "sec_cm_prim_onehot_check_bind", "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 5
+  reseed: 8
 
   // Need to override the default output directory
   overrides: [

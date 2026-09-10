@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import os
 import unittest
 import unittest.mock
@@ -11,15 +12,15 @@ from bitstreams_workspace import BitstreamCache
 MOCK_MANIFEST = """{
    "schema_version": 3,
    "designs": {
-       "chip_earlgrey_cw310": {
+       "chip_earlgrey_cw340": {
            "build_id": "abcd",
            "bitstream": {
-               "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit",
-               "build_target": "//hw/bitstream/vivado:fpga_cw310"
+               "file": "lowrisc_systems_chip_earlgrey_cw340_0.1.bit",
+               "build_target": "//hw/bitstream/vivado:fpga_cw340"
            },
            "memory_map_info": {
                "file": "memories.mmi",
-               "build_target": "//hw/bitstream/vivado:fpga_cw310",
+               "build_target": "//hw/bitstream/vivado:fpga_cw340",
                "memories": ["otp", "rom"]
            }
        }
@@ -34,8 +35,40 @@ class TestBitstreamCache(unittest.TestCase):
         # it's important to at least have code coverage.
         BitstreamCache.MakeWithDefaults()
 
+    def test_list_local_available(self):
+        # Test GetBitstreamsAvailable when running offline, essentially listing local
+        # bitstreams.
+        MOCK_BITSTREAM_LIST = ["abcd", "1234"]
+        MOCK_LATEST = "1234"
+
+        MOCKED_OS_SCANDIR_RETURN = []
+        for bitstream in MOCK_BITSTREAM_LIST:
+            m = unittest.mock.NonCallableMagicMock()
+            # The 'name' attribute cannot be set through the constructor because it
+            # means something else.
+            m.name = bitstream
+            MOCKED_OS_SCANDIR_RETURN.append(m)
+
+        os.scandir = unittest.mock.MagicMock(name='os.walk',
+                                             return_value=MOCKED_OS_SCANDIR_RETURN)
+        m_open = unittest.mock.mock_open(read_data=MOCK_LATEST)
+
+        cache = BitstreamCache('/', '<unused>', '/tmp/cache/latest.txt', offline=True)
+        # The branch name is not relevant when offline. Also test loading the latest.
+        with unittest.mock.patch('bitstreams_workspace.open', m_open):
+            cache.GetBitstreamsAvailable(None, False)
+        m_open.assert_called_once_with('/tmp/cache/latest.txt', 'rt')
+        os.scandir.assert_called_once_with('cache')
+
+        self.assertEqual(
+            cache.available, {
+                bitstream: "local" for bitstream in MOCK_BITSTREAM_LIST
+            } | {
+                "latest": MOCK_LATEST
+            })
+
     def test_get_from_cache(self):
-        MOCK_BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit'
+        MOCK_BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit'
 
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
@@ -65,15 +98,15 @@ class TestBitstreamCache(unittest.TestCase):
             manifest, {
                 "schema_version": 3,
                 "designs": {
-                    "chip_earlgrey_cw310": {
+                    "chip_earlgrey_cw340": {
                         "build_id": "abcd",
                         "bitstream": {
                             "file": MOCK_BITSTREAM,
-                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            "build_target": "//hw/bitstream/vivado:fpga_cw340",
                         },
                         "memory_map_info": {
                             "file": "memories.mmi",
-                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            "build_target": "//hw/bitstream/vivado:fpga_cw340",
                             "memories": ["otp", "rom"],
                         },
                     },
@@ -83,17 +116,38 @@ class TestBitstreamCache(unittest.TestCase):
         os.walk.assert_called_once_with('cache/abcd')
 
     def test_write_build_file(self):
-        BITSTREAM_ORIG = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig'
-        BITSTREAM_SPLICE = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice'
+        BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit'
+        # An extra bitstream, not included in the manifest
+        BITSTREAM_EXTRA = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit.extra'
 
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
             ('cache/abcd', [],
-             [BITSTREAM_ORIG, BITSTREAM_SPLICE, 'manifest.json', 'memories.mmi']),
+             [BITSTREAM, BITSTREAM_EXTRA, 'manifest.json', 'memories.mmi']),
+            ('cache/1234', [],
+             [BITSTREAM, 'manifest.json', 'memories.mmi']),
         ]
         os.walk = unittest.mock.MagicMock(name='os.walk',
                                           return_value=MOCKED_OS_WALK_RETURN)
 
+        MANIFEST = {
+            "schema_version": 3,
+            "designs": {
+                "chip_earlgrey_cw340": {
+                    "build_id": "abcd",
+                    "bitstream": {
+                        "file": "lowrisc_systems_chip_earlgrey_cw340_0.1.bit",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw340",
+                    },
+                    "memory_map_info": {
+                        "file": "memories.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw340",
+                        "memories": ["otp", "rom"],
+                    },
+                },
+            },
+        }
+        m_open = unittest.mock.mock_open(read_data = json.dumps(MANIFEST))
         BitstreamCache._GetDateTimeStr = unittest.mock.MagicMock(
             name='BitstreamCache._GetDateTimeStr',
             return_value='2022-07-14T15:02:54.463801')
@@ -102,26 +156,19 @@ class TestBitstreamCache(unittest.TestCase):
                                '/tmp/cache/opentitan-bitstreams',
                                'latest.txt',
                                offline=True)
-        manifest = {
-            "schema_version": 3,
-            "designs": {
-                "chip_earlgrey_cw310": {
-                    "build_id": "abcd",
-                    "bitstream": {
-                        "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                    },
-                    "memory_map_info": {
-                        "file": "memories.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                        "memories": ["otp", "rom"],
-                    },
-                },
-            },
+        cache.ValidateManifest = unittest.mock.MagicMock(name='BitstreamCache.ValidateManifest')
+        cache.available = {
+            "abcd": "local",
+            "1234": "local",
         }
-        manifest_path = "cache/abcd/substitute_manifest.json"
-        bazel_string = cache._ConstructBazelString('BUILD.mock', 'abcd', manifest, manifest_path)
+
+        with unittest.mock.patch('bitstreams_workspace.open', m_open):
+            bazel_string = cache._ConstructBazelString('BUILD.mock', 'abcd')
         self.maxDiff = None
+        self.assertEqual(m_open.call_args_list, [
+            unittest.mock.call('cache/1234/manifest.json', 'r'),
+            unittest.mock.call('cache/abcd/manifest.json', 'r'),
+        ])
         self.assertEqual(
             bazel_string, '''# This file was autogenerated. Do not edit!
 # Built at 2022-07-14T15:02:54.463801.
@@ -132,40 +179,82 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["cache/**"]))
 
 filegroup(
-    name = "chip_earlgrey_cw310_bitstream",
-    srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"],
+    name = "cache_1234_chip_earlgrey_cw340_bitstream",
+    srcs = ["cache/1234/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
 )
 
 filegroup(
-    name = "chip_earlgrey_cw310_mmi",
+    name = "cache_1234_chip_earlgrey_cw340_mmi",
+    srcs = ["cache/1234/memories.mmi"],
+)
+
+filegroup(
+    name = "cache_1234_manifest",
+    srcs = ["cache/1234/manifest.json"],
+)
+
+config_setting(
+    name = "bitstream_1234",
+    define_values = {
+        "bitstream": "1234",
+    },
+)
+
+filegroup(
+    name = "cache_abcd_chip_earlgrey_cw340_bitstream",
+    srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
+)
+
+filegroup(
+    name = "cache_abcd_chip_earlgrey_cw340_mmi",
     srcs = ["cache/abcd/memories.mmi"],
 )
 
 filegroup(
-    name = "manifest",
-    srcs = ["cache/abcd/substitute_manifest.json"],
+    name = "cache_abcd_manifest",
+    srcs = ["cache/abcd/manifest.json"],
 )
 
-alias(
-    name = "chip_earlgrey_cw310_hyperdebug_bitstream",
-    actual = "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
-)
-
-alias(
-    name = "chip_earlgrey_cw310_hyperdebug_mmi",
-    actual = "@//hw/bitstream/vivado:cw310_hyperdebug_mmi",
+config_setting(
+    name = "bitstream_abcd",
+    define_values = {
+        "bitstream": "abcd",
+    },
 )
 
 alias(
     name = "chip_earlgrey_cw340_bitstream",
-    actual = "@//hw/bitstream/vivado:fpga_cw340_test_rom",
+    actual = select({
+            ":bitstream_1234": ":cache_1234_chip_earlgrey_cw340_bitstream",
+            ":bitstream_abcd": ":cache_abcd_chip_earlgrey_cw340_bitstream",
+            "@lowrisc_opentitan//hw/bitstream:bitstream_gcp": ":cache_abcd_chip_earlgrey_cw340_bitstream",
+        },
+        no_match_error = "the requested bitstream was not found in the cache",
+    ),
 )
 
 alias(
     name = "chip_earlgrey_cw340_mmi",
-    actual = "@//hw/bitstream/vivado:cw340_mmi",
+    actual = select({
+            ":bitstream_1234": ":cache_1234_chip_earlgrey_cw340_mmi",
+            ":bitstream_abcd": ":cache_abcd_chip_earlgrey_cw340_mmi",
+            "@lowrisc_opentitan//hw/bitstream:bitstream_gcp": ":cache_abcd_chip_earlgrey_cw340_mmi",
+        },
+        no_match_error = "the requested bitstream was not found in the cache",
+    ),
 )
-''')
+
+alias(
+    name = "manifest",
+    actual = select({
+            ":bitstream_1234": ":cache_1234_manifest",
+            ":bitstream_abcd": ":cache_abcd_manifest",
+            "@lowrisc_opentitan//hw/bitstream:bitstream_gcp": ":cache_abcd_manifest",
+        },
+        no_match_error = "the requested bitstream was not found in the cache",
+    ),
+)
+''')  # noqa:E501
 
 
 class TestFetchAvailableBitstreams(unittest.TestCase):

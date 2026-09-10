@@ -31,7 +31,7 @@ module prim_fifo_async_simple #(
   // write side
   logic wr_en;
   logic src_req, src_ack;
-  logic pending_d, pending_q, not_in_reset_q;
+  logic pending_d, pending_q, wready_q;
   logic [Width-1:0] data_wr_q;
 
   // read side
@@ -49,20 +49,22 @@ module prim_fifo_async_simple #(
   // FIFO logic //
   ////////////////
   // Convert ready/valid to req/ack
-  assign wready_o = !pending_q && not_in_reset_q;
-  assign wr_en = wvalid_i && wready_o;
-  assign src_req = pending_q || wvalid_i;
+  assign wready_o = wready_q;
+  assign wr_en    = wvalid_i && wready_o;
+  assign src_req  = pending_q || wvalid_i;
 
   assign pending_d = (src_ack)  ? 1'b0 :
                      (wr_en)    ? 1'b1 : pending_q;
 
+  // NOTE: the wready_q signal reset to '0, i.e. not ready in reset
+  // this prevents data being accepted when in reset and lost.
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni) begin
     if (!rst_wr_ni) begin
       pending_q <= 1'b0;
-      not_in_reset_q <= 1'b0;
+      wready_q  <= 1'b0;
     end else begin
-      pending_q <= pending_d;
-      not_in_reset_q <= 1'b1;
+      pending_q <=  pending_d;
+      wready_q  <= !pending_d;
     end
   end
 

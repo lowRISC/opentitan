@@ -159,7 +159,7 @@ void _ottf_main(void) {
 
   // Clear reset reason register.
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
   if (kOttfTestConfig.clear_reset_reason) {
     CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
   }

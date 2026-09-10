@@ -18,11 +18,11 @@ package otbn_pkg;
   parameter int ExtHWLEN = HWLEN * 39 / 32;
   parameter int ExtQWLEN = QWLEN * 39 / 32;
 
-  // Output width of OTBN's Bivium URND
-  parameter int UrndLen = 389;
-
   // Width of base (32b) data path with added integrity bits
   parameter int BaseIntgWidth = 39;
+
+  // Width of the base (32b) integrity part.
+  parameter int BaseEccWidth = BaseIntgWidth - 32;
 
   // Number of 32-bit words per WLEN / HWLEN / QWLEN
   parameter int BaseWordsPerWLEN  = WLEN / 32;
@@ -43,9 +43,6 @@ package otbn_pkg;
 
   // Number of Wide Data Registers (WDRs)
   parameter int NWdr = 2 ** WdrAw;
-
-  // Number of shares used inside the mask accelerator
-  parameter int NumShares = 2;
 
   // Width of entropy input
   parameter int EdnDataWidth = 256;
@@ -74,6 +71,18 @@ package otbn_pkg;
   // Number of vector chunk processing elements
   parameter int NVecProc = VLEN / VChunkLEN;
 
+  // A type to split a base word into integrity and data bits.
+  typedef struct packed {
+    logic [BaseEccWidth-1:0] intg;
+    logic [31:0]             word;
+  } otbn_base_intg_word_t;
+
+  // A wide register (WDR or WSR) split into base words with integrity and data each.
+  typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] otbn_wide_intg_word_t;
+
+  // The URND partial seed width depends on the EDN interface.
+  parameter int unsigned UrndPartialSeedWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
+
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;
@@ -89,7 +98,8 @@ package otbn_pkg;
   typedef enum logic [7:0] {
     CmdExecute     = 8'hd8,
     CmdSecWipeDmem = 8'hc3,
-    CmdSecWipeImem = 8'h1e
+    CmdSecWipeImem = 8'h1e,
+    CmdResume      = 8'ha6
   } cmd_e;
 
   // Status register values. See the STATUS register description in otbn.hjson for details.
@@ -99,6 +109,7 @@ package otbn_pkg;
     StatusBusySecWipeDmem = 8'h02,
     StatusBusySecWipeImem = 8'h03,
     StatusBusySecWipeInt  = 8'h04,
+    StatusPaused          = 8'h05,
     StatusLocked          = 8'hFF
   } status_e;
 
@@ -394,36 +405,35 @@ package otbn_pkg;
   typedef enum logic [CsrNumWidth-1:0] {
     // Address ranges follow the RISC-V Privileged Specification v1.11
     // 0x7C0-0x7FF Custom read/write
-    CsrFg0            = 12'h7C0,
-    CsrFg1            = 12'h7C1,
-    CsrFlags          = 12'h7C8,
-    CsrMod0           = 12'h7D0,
-    CsrMod1           = 12'h7D1,
-    CsrMod2           = 12'h7D2,
-    CsrMod3           = 12'h7D3,
-    CsrMod4           = 12'h7D4,
-    CsrMod5           = 12'h7D5,
-    CsrMod6           = 12'h7D6,
-    CsrMod7           = 12'h7D7,
-    CsrRndPrefetch    = 12'h7D8,
-    // CsrKmacIfStatus   = 12'h7d9,
-    // CsrKmacIntr       = 12'h7da,
-    // CsrKmacCfg        = 12'h7db,
-    // CsrKmacMsgSend    = 12'h7dc,
-    // CsrKmacCmd        = 12'h7dd,
-    // CsrKmacByteStrobe = 12'h7de,
-    CsrMaiCtrl        = 12'h7e0,
+    CsrFg0         = 12'h7C0,
+    CsrFg1         = 12'h7C1,
+    CsrFlags       = 12'h7C8,
+    CsrMod0        = 12'h7D0,
+    CsrMod1        = 12'h7D1,
+    CsrMod2        = 12'h7D2,
+    CsrMod3        = 12'h7D3,
+    CsrMod4        = 12'h7D4,
+    CsrMod5        = 12'h7D5,
+    CsrMod6        = 12'h7D6,
+    CsrMod7        = 12'h7D7,
+    CsrRndPrefetch = 12'h7D8,
+    CsrUrndCtrl    = 12'h7D9,
+    CsrKmacStatus  = 12'h7db,
+    CsrKmacCtrl    = 12'h7dc,
+    CsrKmacCfg     = 12'h7dd,
+    CsrKmacStrb    = 12'h7de,
+    CsrMaiCtrl     = 12'h7e0,
 
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
     CsrUrnd        = 12'hFC1,
-    // CsrKmacStatus  = 12'hfc2,
-    // CsrKmacError   = 12'hfc3,
-    CsrMaiStatus   = 12'hfca
+    CsrUrndStatus  = 12'hFC2,
+    CsrInsnCnt     = 12'hFC3,
+    CsrMaiStatus   = 12'hFCA
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 16; // Number of WSRs
+  parameter int NWsr = 17; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod        = 'd0,
@@ -434,39 +444,50 @@ package otbn_pkg;
     WsrKeyS0H     = 'd5,
     WsrKeyS1L     = 'd6,
     WsrKeyS1H     = 'd7,
-    // WsrKmacDataS0 = 'd8,
-    // WsrKmacDataS1 = 'd9,
+    WsrKmacDataS0 = 'd8,
+    WsrKmacDataS1 = 'd9,
     WsrMaiResS0   = 'd10,
     WsrMaiResS1   = 'd11,
     WsrMaiIn0S0   = 'd12,
     WsrMaiIn0S1   = 'd13,
     WsrMaiIn1S0   = 'd14,
-    WsrMaiIn1S1   = 'd15
+    WsrMaiIn1S1   = 'd15,
+    WsrUrndState  = 'd16
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 17;
+  parameter int NIspr = 27;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
-    IsprMod       = 'd0,
-    IsprRnd       = 'd1,
-    IsprAcc       = 'd2,
-    IsprFlags     = 'd3,
-    IsprUrnd      = 'd4,
-    IsprKeyS0L    = 'd5,
-    IsprKeyS0H    = 'd6,
-    IsprKeyS1L    = 'd7,
-    IsprKeyS1H    = 'd8,
-    IsprMaiResS0  = 'd9,
-    IsprMaiResS1  = 'd10,
-    IsprMaiIn0S0  = 'd11,
-    IsprMaiIn0S1  = 'd12,
-    IsprMaiIn1S0  = 'd13,
-    IsprMaiIn1S1  = 'd14,
-    IsprMaiCtrl   = 'd15,
-    IsprMaiStatus = 'd16
+    IsprMod        = 'd0,
+    IsprRnd        = 'd1,
+    IsprAcc        = 'd2,
+    IsprFlags      = 'd3,
+    IsprUrnd       = 'd4,
+    IsprKeyS0L     = 'd5,
+    IsprKeyS0H     = 'd6,
+    IsprKeyS1L     = 'd7,
+    IsprKeyS1H     = 'd8,
+    IsprMaiResS0   = 'd9,
+    IsprMaiResS1   = 'd10,
+    IsprMaiIn0S0   = 'd11,
+    IsprMaiIn0S1   = 'd12,
+    IsprMaiIn1S0   = 'd13,
+    IsprMaiIn1S1   = 'd14,
+    IsprMaiCtrl    = 'd15,
+    IsprMaiStatus  = 'd16,
+    IsprKmacDataS0 = 'd17,
+    IsprKmacDataS1 = 'd18,
+    IsprKmacStatus = 'd19,
+    IsprKmacCtrl   = 'd20,
+    IsprKmacCfg    = 'd21,
+    IsprKmacStrb   = 'd22,
+    IsprInsnCnt    = 'd23,
+    IsprUrndState  = 'd24,
+    IsprUrndCtrl   = 'd25,
+    IsprUrndStatus = 'd26
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -495,6 +516,7 @@ package otbn_pkg;
   typedef struct packed {
     insn_subset_e           subset;
     logic                   ecall_insn;
+    logic                   wfi_insn;
     logic                   ld_insn;
     logic                   st_insn;
     logic                   branch_insn;
@@ -641,6 +663,7 @@ package otbn_pkg;
     logic                  is_lane;
     logic [2:0]            lane_index;
     mac_elen_e             elen;
+    logic [1:0]            shuffle_offset;
     logic [VLEN/QWLEN-1:0] adder_carry_sel;
     logic                  acc_add_en;
     logic [1:0]            op_a_qw_sel;      // Both (a, b) are predecoded to optimize timing
@@ -826,7 +849,8 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
   typedef logic [63:0] otbn_dmem_nonce_t;
   typedef logic [63:0] otbn_imem_nonce_t;
 
-  // Permutation for the URND permutation in BN MAC used for register clearing.
+  // Permutation for the URND permutation in BN MAC used for register clearing and shuffling.
+  // Keep in sync with dv/otbnsim/sim/constants.py::BN_MAC_PERMUTATION.
   // These parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 3357506447 --prefix "BnMac"
   // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
@@ -869,7 +893,46 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     BoolToArith = 5'b10000
   } mask_op_e;
 
+  // Number of shares used inside the mask accelerator
+  parameter int unsigned NumShares = 2;
+
+  // Bit width of the secure adder pipeline (otbn_sec_add / otbn_sec_add_mod)
+  parameter int unsigned SecAddWidth = 32;
+
+  // Convenience types for mask-accelerator element and share-pair values.
+  typedef logic [SecAddWidth-1:0]  ma_ele_t;
+  typedef ma_ele_t [NumShares-1:0] ma_sharing_t;
+
+  // Batch size of the modular secure adder pipeline (otbn_sec_add_mod)
+  parameter int unsigned SecAddVecSize = 8;
+
+  // Randomness input width for an otbn_sec_add instance of a given bit width.
+  // Derived from the HPC3 gadget count across the pre-compute stage and the log2(width)
+  // prefix-tree stages. Only valid for power-of-two widths.
+  function automatic int unsigned SecAddRandWidth(int unsigned width);
+    return 32'd2 * ($clog2(width) * width + 32'd1);
+  endfunction
+
   // Width of randomness required by the mask accelerator
-  localparam int unsigned MaRndLen = 32'd322;
+  localparam int unsigned MaRndLen = SecAddRandWidth(SecAddWidth);
+
+  // Output width of OTBN's Bivium URND.
+  //
+  // The MAI pipeline (mai_ma_urnd_t in otbn_mai.sv) sets the minimum required width. The 322-bit
+  // otbn_sec_add randomness is consumed fresh every cycle while otbn_sec_add is running. The two
+  // remasking words are consumed fresh every input cycle of a batch. The batch-counter start value
+  // is consumed once per batch.
+  localparam int unsigned UrndLen =
+      SecAddRandWidth(SecAddWidth)  // 322: consumed every cycle while otbn_sec_add runs
+      + 2 * int'(SecAddWidth)       //  64: two remasking words, consumed every input cycle
+      + $clog2(BaseWordsPerWLEN);   //   3: randomised batch-counter start value
+
+  // A type to select bits from URND to secure wipe a full WSR.
+  localparam int unsigned IsprRndRsvdWidth = UrndLen - ExtWLEN;
+
+  typedef struct packed {
+    logic [IsprRndRsvdWidth-1:0] rsvd;
+    logic [ExtWLEN-1:0]          urnd;
+  } otbn_ispr_urnd_t;
 
 endpackage

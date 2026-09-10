@@ -48,9 +48,8 @@ bool test_main(void) {
     // Configure shallow sleep.
     dif_pwrmgr_request_sources_t wakeup_sources;
     CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup,
-        dt_aon_timer_instance_id(kDtAonTimerAon), kDtAonTimerWakeupWkupReq,
-        &wakeup_sources));
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kDtAonTimer),
+        kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, wakeup_sources, kDifPwrmgrDomainOptionMainPowerInLowPower));

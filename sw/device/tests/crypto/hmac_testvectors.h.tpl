@@ -9,6 +9,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_HMAC_ALL_TESTVECTORS_H_
 
 #include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 
 
@@ -45,7 +46,6 @@ static hmac_test_vector_t kHmacTestVectors[${len(tests)}] = {
     % if "keyblob" in t:
         .key = {
             .config = {
-                .version = kOtcryptoLibVersion1,
                 .key_mode = ${t["key_mode"]},
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,

@@ -18,8 +18,9 @@ class chip_env extends cip_base_env #(
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   // spi host agent that transmits transactions to dut spi device
   spi_agent              m_spi_host_agent;
-  pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
-  pattgen_agent          m_pattgen_agent;
+
+  // A passive environment that monitors the rom_ctrl block
+  rom_ctrl_env_pkg::rom_ctrl_env m_rom_ctrl_env;
 
   `uvm_component_new
 
@@ -91,6 +92,11 @@ class chip_env extends cip_base_env #(
                                           cfg.m_uart_agent_cfgs[i]);
     end
 
+    // Create the passive rom_ctrl_env. This can be given m_cfg.m_rom_ctrl_env_cfg (which has
+    // already been created and initialised by the test object's build_phase) as a cfg object.
+    m_rom_ctrl_env = rom_ctrl_env_pkg::rom_ctrl_env::type_id::create("m_rom_ctrl_env", this);
+    m_rom_ctrl_env.cfg = cfg.m_rom_ctrl_env_cfg;
+
     // dut spi host, tb spi device
     foreach (m_spi_device_agents[i]) begin
       m_spi_device_agents[i] =
@@ -117,18 +123,6 @@ class chip_env extends cip_base_env #(
     // dut spi device, tb spi host
     m_spi_host_agent = spi_agent::type_id::create("m_spi_host_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_host_agent*", "cfg", cfg.m_spi_host_agent_cfg);
-
-    // instantiate pwm_monitor
-    foreach (m_pwm_monitor[i]) begin
-      m_pwm_monitor[i] = pwm_monitor::type_id::create($sformatf("m_pwm_monitor%0d", i), this);
-      uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d*", i), "cfg",
-                                           cfg.m_pwm_monitor_cfg[i]);
-    end
-
-    // Instantiate pattgen agent
-    m_pattgen_agent = pattgen_agent::type_id::create("m_pattgen_agent", this);
-    uvm_config_db#(pattgen_agent_cfg)::set(this, "m_pattgen_agent*", "cfg",
-                                           cfg.m_pattgen_agent_cfg);
 
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
@@ -166,6 +160,12 @@ class chip_env extends cip_base_env #(
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
 
+    // If we are using JTAG DMI, cfg.m_jtag_dtm_ral will have been constructed (when the build_phase
+    // for the test called cfg.set_use_jtag_dmi). If not, it will be null.
+    if (cfg.m_jtag_dtm_ral != null) begin
+      m_jtag_riscv_agent.set_dtm_reg_map(cfg.m_jtag_dtm_ral.get_default_map());
+    end
+
     if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
       virtual_sequencer.spi_host_sequencer_h = m_spi_host_agent.sequencer;
     end
@@ -178,14 +178,6 @@ class chip_env extends cip_base_env #(
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i].monitor.tx_analysis_port.connect(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
-    end
-
-    foreach (m_pwm_monitor[i]) begin
-      m_pwm_monitor[i].analysis_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
-    end
-    for (int i = 0; i < NUM_PATTGEN_CH; i++) begin
-      m_pattgen_agent.monitor.item_port[i].connect(
-                                          virtual_sequencer.pattgen_rx_fifo[i].analysis_export);
     end
   endfunction
 

@@ -16,7 +16,7 @@ struct Opts {
 }
 
 // Needs to match util/openocd/target
-const RISCV_IDCODE: u32 = 0x10001cdf;
+const RISCV_IDCODE: u32 = 0x10021cdf;
 
 fn test_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Avoid watchdog timeout by entering bootstrap mode.

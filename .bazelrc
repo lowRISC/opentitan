@@ -6,6 +6,9 @@
 common --enable_bzlmod
 common --enable_workspace=no
 
+# Default to using the GCP cache for bitstreams.
+build --define=bitstream=gcp
+
 # https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++17"
 build --cxxopt='-std=gnu++17'
@@ -87,6 +90,12 @@ build:clang_tidy_fix --aspects rules/quality.bzl%clang_tidy_fix_aspect
 build:clang_tidy_fix --output_groups=clang_tidy
 build:clang_tidy_fix --spawn_strategy=local
 
+# The configuration of the crypto library.
+# The development is the default version which allows for static libraries.
+# The fips version is one which is a binary blob, calculating a hash across its boundary.
+common:crypto_dev --//sw/device/lib/crypto/configs:hashed_flag=False --//sw/device/lib/crypto/configs:type_flag="static"  --//sw/device/lib/crypto/configs:cryptolib_config_flag="crypto_dev"
+common:crypto_fips_all --//sw/device/lib/crypto/configs:hashed_flag=True --//sw/device/lib/crypto/configs:type_flag="binary_blob" --//sw/device/lib/crypto/configs:cryptolib_config_flag="crypto_fips_all"
+
 # AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
 # stack, and (less importantly for OpenTitan) the heap. ASan instruments
 # programs at compile time and also requires a runtime library.
@@ -144,3 +153,10 @@ run --sandbox_explicit_pseudoterminal
 # Enable strict action env. This will prevent `PATH` and `LD_LIBRARY_PATH` from being passed into the sandbox
 # which would help the cacheability.
 build --incompatible_strict_action_env
+
+# Due to a Chip Whisperer design problem, the test harnesses may need to power on and off some hub ports on
+# the CW340 internal hub. Doing so properly requires writing to some files under /sys, specifically
+# /sys/bus/usb/devices/.../...-port.../disable
+# Therefore we need to make /sys writable, otherwise the code will fallback to directly manipulating the hub
+# using control operations which may confuse the kernel and lead to hard to debug problems.
+test --sandbox_writable_path=/sys/

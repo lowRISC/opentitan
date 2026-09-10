@@ -43,6 +43,10 @@ In addition, the following instruction set extensions are available.
      - 2.0
      - always enabled
 
+   * - **"Zicntr" and "Zihpm"**: Extensions for Counters and Hardware Performance Counters in User mode
+     - 2.0
+     - always enabled
+
    * - **Zifencei**: Instruction-Fetch Fence
      - 2.0
      - always enabled

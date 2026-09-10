@@ -85,16 +85,10 @@ module tb;
 
 
   // KMAC App agent hookup
-  kmac_pkg::app_rsp_t kmac_data_in;
-  kmac_pkg::app_req_t kmac_data_out;
-  assign kmac_data_in = kmac_app_if.kmac_data_rsp;
-  assign kmac_app_if.kmac_data_req = kmac_data_out;
+  wire kmac_pkg::app_rsp_t kmac_data_in;
+  wire kmac_pkg::app_req_t kmac_data_out;
 
-  // KMAC vip
-  kmac_app_intf kmac_app_if (
-    .clk  (clk),
-    .rst_n(rst_n)
-  );
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_data_out), .rsp(kmac_data_in));
 
   `DV_ALERT_IF_CONNECT()
 
@@ -269,7 +263,7 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
                    set(null, "*env.m_otp_prog_pull_agent*", "vif", otp_prog_if);
-    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_app_agent", "vif", kmac_app_if);
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_app_agent", "vif", kmac_app_if);
 
     // Parameter config object
     parameters_cfg.alert_async_on = AlertAsyncOn;
@@ -310,9 +304,6 @@ module tb;
   `DV_ASSERT_CTRL(
       "KmacIfSyncReqAckAckNeedsReq",
       dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_in.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
-  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq",
-                  kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
-  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
   `DV_ASSERT_CTRL("FsmClkBypAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_clk_byp_ack)
   for (genvar k = 0; k < NUM_RMA_ACK_SIGS; k++) begin : gen_sync_asserts
     `DV_ASSERT_CTRL("FsmClkNvmRmaAckSync",

@@ -292,6 +292,108 @@ void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx);
 void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx);
 
 /**
+ * Redundant implementation for the streaming SHA256 init function.
+ *
+ * To protect against FI, this function performs the computation by manually
+ * assembling the HMAC functionality using SHA256 instead of the dedicated
+ * HMAC hardware mode.
+ *
+ * Computes the partial inner hash state H(K XOR ipad), where ipad is the
+ * byte 0x36 repeated to fill one message block. The message bytes must be
+ * fed separately via `hmac_update`, followed by
+ * `hmac_hmac_sha256_final_redundant` which finalizes the inner hash and
+ * computes H(K XOR opad || H(K XOR ipad || msg)).
+ *
+ * To be used together with `hmac_hmac_sha256_init_cl` and
+ * `hmac_hmac_sha256_final_redundant` in the streaming mode.
+ *
+ * @param key The key used for HMAC (pre-processed to one block per FIPS 198-1).
+ * @param[out] ctx Initialized context object.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha256_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+
+/**
+ * Redundant implementation for the streaming SHA384 init function.
+ *
+ * To protect against FI, this function performs the computation by manually
+ * assembling the HMAC functionality using SHA384 instead of the dedicated
+ * HMAC hardware mode.
+ *
+ * Computes the partial inner hash state H(K XOR ipad), where ipad is the
+ * byte 0x36 repeated to fill one message block. The message bytes must be
+ * fed separately via `hmac_update`, followed by
+ * `hmac_hmac_sha384_final_redundant` which finalizes the inner hash and
+ * computes H(K XOR opad || H(K XOR ipad || msg)).
+ *
+ * To be used together with `hmac_hmac_sha384_init_cl` and
+ * `hmac_hmac_sha384_final_redundant` in the streaming mode.
+ *
+ * @param key The key used for HMAC (pre-processed to one block per FIPS 198-1).
+ * @param[out] ctx Initialized context object.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha384_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+
+/**
+ * Redundant implementation for the streaming SHA512 init function.
+ *
+ * To protect against FI, this function performs the computation by manually
+ * assembling the HMAC functionality using SHA512 instead of the dedicated
+ * HMAC hardware mode.
+ *
+ * Computes the partial inner hash state H(K XOR ipad), where ipad is the
+ * byte 0x36 repeated to fill one message block. The message bytes must be
+ * fed separately via `hmac_update`, followed by
+ * `hmac_hmac_sha512_final_redundant` which finalizes the inner hash and
+ * computes H(K XOR opad || H(K XOR ipad || msg)).
+ *
+ * To be used together with `hmac_hmac_sha512_init_cl` and
+ * `hmac_hmac_sha512_final_redundant` in the streaming mode.
+ *
+ * @param key The key used for HMAC (pre-processed to one block per FIPS 198-1).
+ * @param[out] ctx Initialized context object.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha512_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+
+/**
+ * Redundant implementation for the streaming SHA256 final function.
+ *
+ * @param ctx Streaming context (will be wiped on return).
+ * @param[out] tag Authentication tag (`kHmacSha256DigestWords` words).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha256_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag);
+
+/**
+ * Redundant implementation for the streaming SHA384 final function.
+ *
+ * @param ctx Streaming context (will be wiped on return).
+ * @param[out] tag Authentication tag (`kHmacSha384DigestWords` words).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha384_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag);
+
+/**
+ * Redundant implementation for the streaming SHA512 final function.
+ *
+ * @param ctx Streaming context (will be wiped on return).
+ * @param[out] tag Authentication tag (`kHmacSha512DigestWords` words).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha512_final_redundant(hmac_ctx_t *ctx,
+                                          otcrypto_word32_buf_t *tag);
+
+/**
  * Compute the checksum of an HMAC key.
  *
  * Call this routine after creating or modifying the HMAC key structure.

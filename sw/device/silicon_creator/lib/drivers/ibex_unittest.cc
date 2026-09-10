@@ -7,19 +7,20 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/rv_core_ibex_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace ibex_unittest {
 namespace {
 
 class IbexTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
+  uint32_t base_ = dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex);
   rom_test::MockSecMmio sec_;
   rom_test::MockAbsMmio mmio_;
 };

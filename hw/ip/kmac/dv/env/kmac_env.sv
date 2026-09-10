@@ -12,15 +12,15 @@ class kmac_env extends cip_base_env #(
 
   `uvm_component_new
 
-  kmac_app_agent m_kmac_app_agent[kmac_env_pkg::NUM_APP_INTF];
-  key_sideload_agent keymgr_sideload_agent;
+  kmac_app_host_agent m_kmac_app_agent[kmac_env_pkg::NUM_APP_INTF];
+  key_sideload_agent  keymgr_sideload_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
     for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin
       string name = $sformatf("m_kmac_app_agent[%0d]", i);
-      m_kmac_app_agent[i] = kmac_app_agent::type_id::create(name, this);
+      m_kmac_app_agent[i] = kmac_app_host_agent::type_id::create(name, this);
       uvm_config_db#(kmac_app_agent_cfg)::set(this, name, "cfg", cfg.m_kmac_app_agent_cfg[i]);
     end
 
@@ -34,15 +34,26 @@ class kmac_env extends cip_base_env #(
     if (!uvm_config_db#(kmac_vif)::get(this, "", "kmac_vif", cfg.kmac_vif)) begin
       `uvm_fatal(`gfn, "failed to get kmac_vif from uvm_config_db")
     end
+
+    // If masking is enabled, there should be an instance of reqack_data_if available
+    if (cfg.kmac_vif.en_masking_o) begin
+      if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "reqack_data_pins_vif",
+                                                     cfg.disable_reqack_assertions_vif)) begin
+        `uvm_fatal(get_full_name(), "Failed to get reqack_data_pins_vif from uvm_config_db.")
+      end
+    end
+
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
     for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin
-      m_kmac_app_agent[i].monitor.analysis_port.connect(scoreboard.kmac_app_rsp_fifo[i].analysis_export);
-      m_kmac_app_agent[i].m_data_push_agent.monitor.analysis_port.connect(
-        scoreboard.kmac_app_req_fifo[i].analysis_export);
+      m_kmac_app_agent[i].monitor.analysis_port.connect(
+        scoreboard.kmac_app_fifo[i].analysis_export);
+      m_kmac_app_agent[i].monitor.m_req_analysis_port.connect(
+        scoreboard.m_app_req_fifos[i].analysis_export);
+
       virtual_sequencer.kmac_app_sequencer_h[i]  = m_kmac_app_agent[i].sequencer;
       virtual_sequencer.key_sideload_sequencer_h = keymgr_sideload_agent.sequencer;
     end

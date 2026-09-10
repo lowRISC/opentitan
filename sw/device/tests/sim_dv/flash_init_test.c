@@ -277,7 +277,7 @@ bool rom_test_main(void) {
   test_status_set(kTestStatusInTest);
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // We need to initialize the UART regardless if we LOG any messages, since
@@ -302,7 +302,7 @@ bool rom_test_main(void) {
 
   // Test code.
   mmio_region_t sram_region_ret_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR);
 
   mmio_region_memcpy_from_mmio32(sram_region_ret_base_addr,
                                  kCreatorSecretDataRetSramAddress,

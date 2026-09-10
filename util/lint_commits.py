@@ -18,18 +18,12 @@ warning_msg_prefix = 'WARNING: '
 COMMIT_MSG_MAX_SUMMARY_LEN = 100
 
 
-def error(msg, commit=None):
-    full_msg = msg
-    if commit:
-        full_msg = "Commit %s: %s" % (commit.hexsha, msg)
-    print(error_msg_prefix + full_msg, file=sys.stderr)
+def error(msg):
+    print(f"\t{error_msg_prefix}{msg}")
 
 
-def warning(msg, commit=None):
-    full_msg = msg
-    if commit:
-        full_msg = "Commit %s: %s" % (commit.hexsha, msg)
-    print(warning_msg_prefix + full_msg, file=sys.stderr)
+def warning(msg):
+    print(f"\t{warning_msg_prefix}{msg}")
 
 
 def lint_commit_author(commit):
@@ -48,7 +42,7 @@ def lint_commit_author(commit):
             'private" must be disabled. '
             'This command will also sign off your commit indicating agreement '
             'to the Contributor License Agreement. See CONTRIBUTING.md for '
-            'more details.', commit)
+            'more details.')
         success = False
 
     if ' ' not in commit.author.name:
@@ -59,7 +53,7 @@ def lint_commit_author(commit):
             'and/or "git commit --amend --signoff --reset-author". '
             'This command will also sign off your commit indicating agreement '
             'to the Contributor License Agreement. See CONTRIBUTING.md for '
-            'more details.', commit)
+            'more details.')
         # A warning doesn't fail lint.
 
     return success
@@ -75,7 +69,7 @@ def lint_commit_message(commit):
         error(
             "The summary line in the commit message is %d characters long; "
             "only %d characters are allowed." %
-            (summary_line_len, COMMIT_MSG_MAX_SUMMARY_LEN), commit)
+            (summary_line_len, COMMIT_MSG_MAX_SUMMARY_LEN))
         success = False
 
     # Check for an empty line separating the summary line from the long
@@ -83,7 +77,7 @@ def lint_commit_message(commit):
     if len(lines) > 1 and lines[1] != "":
         error(
             "The second line of a commit message must be empty, as it "
-            "separates the summary from the long description.", commit)
+            "separates the summary from the long description.")
         success = False
 
     # Check that the commit message contains at least one Signed-off-by line
@@ -131,11 +125,8 @@ def lint_commit_message(commit):
 
 
 def lint_commit(commit):
-    success = True
-    if not lint_commit_author(commit):
-        success = False
-    if not lint_commit_message(commit):
-        success = False
+    success = lint_commit_author(commit)
+    success &= lint_commit_message(commit)
     return success
 
 

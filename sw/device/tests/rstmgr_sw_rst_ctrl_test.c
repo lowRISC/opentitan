@@ -374,7 +374,7 @@ static uint32_t read_test_reg(const test_t *test) {
 
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
 #if defined(OT_HAS_USBDEV)
   // For completeness reset USB_AON first, expecting no side-effects. The lame
@@ -382,7 +382,7 @@ bool test_main(void) {
   dt_reset_t reset = dt_usbdev_reset((dt_usbdev_t)0, kDtUsbdevResetRst);
   size_t sw_reset_index;
   CHECK_DIF_OK(
-      dif_rstmgr_get_sw_reset_index(kDtRstmgrAon, reset, &sw_reset_index));
+      dif_rstmgr_get_sw_reset_index(kDtRstmgr, reset, &sw_reset_index));
   CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, sw_reset_index,
                                          kDifRstmgrSoftwareReset));
 #endif  // defined(OT_HAS_USBDEV)
@@ -416,8 +416,8 @@ bool test_main(void) {
     dt_reset_t reset_index = kPeripherals[i].get_rstmgr_rst_index(
         kPeripherals[i].dt, kPeripherals[i].reset_index);
     size_t sw_reset_index;
-    CHECK_DIF_OK(dif_rstmgr_get_sw_reset_index(kDtRstmgrAon, reset_index,
-                                               &sw_reset_index));
+    CHECK_DIF_OK(
+        dif_rstmgr_get_sw_reset_index(kDtRstmgr, reset_index, &sw_reset_index));
     CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, sw_reset_index,
                                            kDifRstmgrSoftwareReset));
 

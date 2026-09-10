@@ -64,8 +64,13 @@ package csr_utils_pkg;
     uvm_mem mem;
     addr[1:0] = 0;
     mem = ral.default_map.get_mem_by_offset(addr);
-    `DV_CHECK_NE_FATAL(mem, null,
-                       $sformatf("Can't find any mem with addr 0x%0h", addr), $sformatf("%m"))
+
+    if (mem == null) begin
+      `uvm_fatal($sformatf("%m"),
+                 $sformatf("Cannot find a memory at offset 0x%0h in reg_block '%0s'.",
+                           addr, ral.get_name()))
+    end
+
     return mem;
   endfunction
 
@@ -317,7 +322,7 @@ package csr_utils_pkg;
       csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                  .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
     end else begin
-      `DV_CHECK_EQ(backdoor, 0, "Don't enable backdoor with blocking = 0", error, $sformatf("%m"))
+      if (backdoor) `uvm_error($sformatf("%m"), "Non-blocking backdoor access doesn't make sense.")
       fork
         csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
                    .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
@@ -857,6 +862,7 @@ package csr_utils_pkg;
   // sources
   `include "csr_base_seq.sv"
   `include "csr_hw_reset_seq.sv"
+  `include "csr_aliasing_seq.sv"
   `include "csr_seq_lib.sv"
 
 endpackage

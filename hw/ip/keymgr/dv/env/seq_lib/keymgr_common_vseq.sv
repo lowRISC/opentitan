@@ -36,7 +36,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     // need to set keymgr_en to be On, before it can be read back with correct init values
     cfg.keymgr_vif.init(do_rand_otp_key, do_invalid_otp_key);
     delay_after_reset_before_access_csr();
@@ -123,7 +123,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (enable) begin
-          $asserton(0, "tb.keymgr_kmac_intf");
+          $asserton(0, "tb.kmac_if");
           $asserton(0, "tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A");
           $asserton(0, "tb.dut.u_ctrl.DataEn_A");
           $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
@@ -131,7 +131,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
           $asserton(0, "tb.dut.u_kmac_if.LastStrb_A");
           $asserton(0, "tb.dut.KmacDataKnownO_A");
         end else begin
-          $assertoff(0, "tb.keymgr_kmac_intf");
+          $assertoff(0, "tb.kmac_if");
           $assertoff(0, "tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");

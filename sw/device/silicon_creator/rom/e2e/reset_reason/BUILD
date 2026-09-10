@@ -47,7 +47,7 @@ opentitan_test(
     name = "reset_reasons_test",
     srcs = ["reset_reasons_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_reset_reason",
@@ -67,14 +67,14 @@ RESET_CORRUPTION_SCENARIOS = [
         "otp": 0,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "test_cmd": "",
+        "testopt_bootstrap": "True",
     },
     {
         "name": "check_disabled_no_fault",
         "otp": CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "test_cmd": "",
+        "testopt_bootstrap": "True",
     },
     {
         "name": "check_disabled_with_fault",
@@ -84,14 +84,14 @@ RESET_CORRUPTION_SCENARIOS = [
         "otp": CONST.HARDENED_FALSE << 16 | 0,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "test_cmd": "",
+        "testopt_bootstrap": "True",
     },
     {
         "name": "check_enabled_no_fault",
         "otp": CONST.HARDENED_TRUE << 16 | CONST.HARDENED_TRUE,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
-        "test_cmd": "",
+        "testopt_bootstrap": "True",
     },
     {
         "name": "check_enabled_with_fault",
@@ -104,12 +104,7 @@ RESET_CORRUPTION_SCENARIOS = [
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
         # This test will fault before bootstrap straps are read, so simply
         # start the console and look for the fault message.
-        "test_cmd": """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
+        "testopt_bootstrap": "False",
     },
 ]
 
@@ -144,13 +139,13 @@ RESET_CORRUPTION_SCENARIOS = [
         name = "reset_reason_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
             otp = ":otp_img_reset_reason_{}".format(t["name"]),
-            test_cmd = t["test_cmd"],
+            testopt_bootstrap = t["testopt_bootstrap"],
         ),
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

@@ -287,7 +287,7 @@ static status_t command_processor(ujson_t *uj) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);

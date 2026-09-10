@@ -8,6 +8,15 @@
 .balign 32
 
 /*
+ * Mode
+ */
+
+.globl mldsa87_keygen_mode
+
+mldsa87_keygen_mode:
+.zero 32
+
+/*
  * Seed
  */
 
@@ -15,19 +24,19 @@
 .globl mldsa87_keygen_xi_share1
 
 mldsa87_keygen_xi_share0:
-.zero 34
-.zero 30 /* Padding */
+.zero 32
 mldsa87_keygen_xi_share1:
-.zero 34
-.zero 30 /* Padding */
+.zero 32
 
 /*
  * Public key
  */
 
+.globl mldsa87_keygen_pk
 .globl mldsa87_keygen_pk_rho
 .globl mldsa87_keygen_pk_t1
 
+mldsa87_keygen_pk:
 mldsa87_keygen_pk_rho:
 .zero 32
 mldsa87_keygen_pk_t1:
@@ -37,8 +46,8 @@ mldsa87_keygen_pk_t1:
  * Secret key
  */
 
-.globl mldsa87_keygen_sk_rho_prime_share0
-.globl mldsa87_keygen_sk_rho_prime_share1
+.globl mldsa87_keygen_sk
+.globl mldsa87_keygen_sk_rho
 .globl mldsa87_keygen_sk_k_share0
 .globl mldsa87_keygen_sk_k_share1
 .globl mldsa87_keygen_sk_tr
@@ -48,12 +57,9 @@ mldsa87_keygen_pk_t1:
 .globl mldsa87_keygen_sk_s2_share1
 .globl mldsa87_keygen_sk_t0
 
-mldsa87_keygen_sk_rho_prime_share0:
-.zero 66
-.zero 30 /* Padding */
-mldsa87_keygen_sk_rho_prime_share1:
-.zero 66
-.zero 30 /* Padding */
+mldsa87_keygen_sk:
+mldsa87_keygen_sk_rho:
+.zero 32
 mldsa87_keygen_sk_k_share0:
 .zero 32
 mldsa87_keygen_sk_k_share1:
@@ -70,6 +76,35 @@ mldsa87_keygen_sk_s2_share1:
 .zero 768
 mldsa87_keygen_sk_t0:
 .zero 3328
+
+/*
+ * Intermediate variables.
+ */
+
+.globl mldsa87_keygen_var_xi_share0
+.globl mldsa87_keygen_var_xi_share1
+.globl mldsa87_keygen_var_rho
+.globl mldsa87_keygen_var_rho_prime_share0
+.globl mldsa87_keygen_var_rho_prime_share1
+
+mldsa87_keygen_var_xi_share0:
+.zero 32
+.word 0x00000708
+.zero 28 /* Padding */
+mldsa87_keygen_var_xi_share1:
+.zero 32
+.zero 4
+.zero 28 /* Padding */
+mldsa87_keygen_var_rho:
+.zero 32
+.zero 2
+.zero 30 /* Padding */
+mldsa87_keygen_var_rho_prime_share0:
+.zero 66
+.zero 30 /* Padding */
+mldsa87_keygen_var_rho_prime_share1:
+.zero 66
+.zero 30 /* Padding */
 
 /*
  * Polynomial Slots

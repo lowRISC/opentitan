@@ -139,14 +139,14 @@
     }
     {
       name: chip_sw_lc_ctrl_key_div
-      desc: '''Verify the keymgr div output to keymgr.
+      desc: '''Verify the keymgr div output to keymgr dpe.
 
-            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
-            - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
+            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr dpe.
+            - Verify that the keymgr dpe uses the given `key_div_o` value to compute the keys.
             '''
       stage: V2
       si_stage: NA
-      tests: ["chip_sw_keymgr_key_derivation_prod"]
+      tests: ["chip_sw_keymgr_dpe_key_derivation_prod"]
     }
     {
       name: chip_sw_lc_ctrl_broadcast
@@ -158,16 +158,16 @@
               respective IPs that consume them:
               - lc_dft_en_o: impacts pinmux, pwrmgr, otp_ctrl, AST
               - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
-              - lc_keymgr_en_o: impacts keymgr
+              - lc_keymgr_en_o: impacts keymgr dpe
               - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
-              - lc_nvm_rma_req_o: impacts flash_ctrl (handshake with lc_nvm_rma_ack_i)
-              - lc_nvm_rma_seed_o: impacts flash_ctrl
+              - lc_nvm_rma_req_o: impacts otbn/rram_ctrl (handshake with lc_nvm_rma_ack_i)
+              - lc_nvm_rma_seed_o: impacts rram_ctrl
               - lc_check_byp_en_o: impacts otp_ctrl
-              - lc_creator_seed_sw_rw_en_o: impacts flash_ctrl & otp_ctrl
-              - lc_owner_seed_sw_rw_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_rd_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
-              - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
+              - lc_creator_seed_sw_rw_en_o: impacts otp_ctrl & rram_ctrl
+              - lc_seed_hw_rd_en_o: impacts otp_ctrl & rram_ctrl
+              - lc_owner_seed_sw_rw_en_o: impacts rram_ctrl
+              - lc_iso_part_sw_rd_en_o: impacts rram_ctrl
+              - lc_iso_part_sw_wr_en_o: impacts rram_ctrl
             - These outputs are enabled per the
               [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
 
@@ -176,13 +176,11 @@
             Note that the following signals are already verified with connectivity tests and SVAs:
               - lc_dft_en_o (AST connection)
               - lc_cpu_en_o (rv_core_ibex)
-              - lc_nvm_debug_en_o (flash_ctrl)
               - lc_escalate_en_o (multiple)
             '''
       stage: V2
       si_stage: NA
       tests: [
-        "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
         "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
@@ -195,15 +193,15 @@
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
+        "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr_dpe
         "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
-        "chip_sw_flash_rma_unlocked",                  // lc_nvm_rma_req_o, lc_nvm_rma_seed_o: flash_ctrl
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
-        "chip_sw_flash_ctrl_lc_rw_en",                 // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
         "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_rma",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_rram_ctrl_lc_rw_en",                  // lc_creator*, lc_seed*, lc_owner*, lc_iso*: rram_ctrl
+        "chip_sw_rram_rma_unlocked",                   // lc_nvm_rma_req_o, lc_nvm_rma_seed_o: rram_ctrl
       ]
     }
     {

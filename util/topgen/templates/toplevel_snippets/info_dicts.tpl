@@ -10,13 +10,18 @@ feature_info['has_alert_handler'] = lib.find_module(top['module'], 'alert_handle
 feature_info['has_ast']           = lib.find_module(top['module'], 'ast') is not None
 feature_info['has_rstmgr']        = lib.find_module(top['module'], 'rstmgr') is not None
 feature_info['has_gpio']          = lib.find_module(top['module'], 'gpio') is not None
-feature_info['has_scan_en'] = False
+feature_info['has_usb']           = lib.find_module(top['module'], 'usbdev') is not None
+
+feature_info['has_scan_en'] = {}
+for domain in top['power']['domains']:
+  feature_info['has_scan_en'][domain] = False
+
 for m in top['module']:
   if not lib.is_inst(m):
     continue
   block = name_to_block[m['type']]
   if block.scan_en:
-    feature_info['has_scan_en'] = True
+    feature_info['has_scan_en'][m['domain']] = True
 
 if feature_info['has_pinmux']:
   cio_info['num_mio_inputs'] = top['pinmux']['io_counts']['muxed']['inouts'] + \

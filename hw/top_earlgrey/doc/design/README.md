@@ -1,11 +1,15 @@
 # OpenTitan Earl Grey Chip Specification
 
+**NOTE**: This doc is work in progress.
+It refers to and is still being updated for Earl Grey 2, i.e., the second generation of the discrete OpenTitan chip design currently being developed on the [`master` branch](https://github.com/lowRISC/opentitan).
+For information on the taped out Earl Grey design, i.e., the first production OpenTitan silicon, refer to the documentation for the [`earlgrey_1.0.0` branch](https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0) [available here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/doc/design/index.html).
+
 This document describes the OpenTitan Earl Grey chip functionality in detail.
 For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.md).
 
 # Theory of Operations
 
-The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
+The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board, analogous for the `cw340` board. Finally, `chip_earlgrey_verilator` is intended for elaboration and simulation with Verilator.
 The code for Ibex is developed in its own [lowRISC repo](https://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
 Each of these IP has its own specification.
@@ -16,6 +20,10 @@ See the table produced in the [hardware documentation page](../../../README.md) 
 This section provides some details for the processor and the peripherals.
 See their representative specifications for more information.
 This section also contains a brief overview of some of the features of the final product.
+
+### Power Domains
+
+The design is distributed across two power domains: `Main` (default, turned off during deep sleep) and `Aon` (remains powered during deep sleep). The attribution of each instantiated IP to a power domain is done through the `domain` attribute of each instance specified in `top_earlgrey.hjson`. The tooling (`topgen`) automatically creates a wrapper for each power domain and the required connections between them (see [Power Domain Wrappers vs Top Level vs Chip Targets](#power-domain-wrappers-vs-top-level-vs-chip-targets) for details).
 
 ### Clocking and Reset
 
@@ -38,11 +46,11 @@ When one of these power-okay signals drop, the corresponding domain in `top_earl
 Please refer to [reset manager](../../ip_autogen/rstmgr/README.md) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
-Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
-Valid code is assumed to have been instantiated into the flash, if not, the ROM shuts down the device unless prompted to bootstrap.
+Once reset, the reset vector begins in ROM, whose job is to validate code in non-volatile memory (RRAM, see the [Memory](#memory) section below) before jumping to it.
+Valid code is assumed to have been instantiated into NVM, if not, the ROM shuts down the device unless prompted to bootstrap.
 
-There are multiple avenues to load valid code into the flash:
-1. JTAG initiated flash programming.
+There are multiple avenues to load valid code into NVM:
+1. JTAG initiated programming.
 2. ROM bootstrap
 
 #### AST Clocking and Reset Relationship
@@ -73,32 +81,21 @@ The reset clock domain is identical to the table above, and the power domain map
 | rst_ast_tlul_i   | main                        |
 | rst_ast_usb_i    | main                        |
 
-### System Reset Handling and Flash
+### System Reset Handling and RRAM
 
-Since `top_earlgrey` contains flash, it is important to examine the memory's relationship with resets.
+Since `top_earlgrey` contains RRAM, it is important to examine the memory's relationship with resets.
 
-For flash, resets that occur during a stateful operation (program or erase) must be carefully handled to ensure the flash memory is not damaged.
-There are three reset scenarios:
-
-* Reset due to external supply lowering.
-* Reset due to internal peripheral request.
-* Reset due to lower power entry and exit.
+Unlike flash, RRAM has no separate program or erase step; what would be a program or erase operation on flash is just a write operation on RRAM.
 
 #### Reset due to External Supply
 
-Device resets due to supply dropping below a specific threshold are commonly known as "brown-out".
-When this occurs, the flash memory must go through specialized sequencing to ensure the cells are not damaged.
-This process is handled exclusively between ast and the flash.
-Please see the [relevant section](../../ip/ast/README.md#main-vcc-power-detection-and-flash-protection) for more details.
+Device resets due to supply dropping below a specific threshold are commonly known as a "brown-out".
+When this occurs, the memory macro must go through appropriate sequencing, handled between ast and the memory, to ensure it is not damaged.
 
-#### Reset due to Internal Request
+#### Reset while Write in Progress
 
-When the device receives an internal request to reset (for example [aon_timer](../../../ip/aon_timer/README.md#aon-watchdog-timer)), device power is kept on and the flash is directly reset.
-It is assumed that the flash device, when powered, will be able to correctly handle such a sequence and properly protect itself.
-
-#### Reset due to Low Power Entry
-
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) is responsible for ensuring the entry request is aborted.
+Resets that happen during a write operation need special care, because an incomplete write could leave the RRAM in an undefined state.
+To that end, the RRAM controller indicates to the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) when a write is in progress, so that a reset or low power entry request can be aborted until the write completes.
 
 
 ### Main processor (`core_ibex`)
@@ -137,37 +134,34 @@ The Ibex documentation has more details on the current pipeline operation, inclu
 
 The device contains three memory address spaces for instruction and data.
 
-Instruction ROM (32kB) is the target for the Ibex processor after release of external reset.
+Instruction ROM (192KiB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
-The next stage - a boot loader stored in embedded flash memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
+The next stage - a boot loader stored in non-volatile memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
 The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
-This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
+Earl Grey contains 2MiB of embedded RRAM (resistive RAM), its non-volatile memory (NVM) technology: it houses the boot loader mentioned above, as well as the operating system and application that layers on top.
+
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
-Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
-It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
-This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
-Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
-We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
+RRAM is the primary technology for code and data storage on Earl Grey.
+Being a non-volatile memory technology, software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
+The FPGA emulation of the memory approximates the read and write speeds and non-volatile nature that the RRAM macro exhibits in silicon.
 
-Details on how e-flash memory is used by software will be detailed in future Secure Boot Process and Software sections over time.
+Details on how RRAM is used by software will be detailed in future Secure Boot Process and Software sections over time.
 
-The intent is for the contents of the embedded flash code to survive FPGA reset as it would as a NVM in silicon.
+The intent is for the contents of the NVM code to survive FPGA reset as it would as a NVM in silicon.
 Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
-The SPI device peripheral is provided as a method to bulk-load e-flash memory.
+The SPI device peripheral is provided as a method to bulk-load the NVM.
 The processor debug port (via JTAG) is also available for code loading.
 See those specifications for more details.
 
 Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
 It is also available for code storage, though that is not its intended purpose.
 
-The base address of the ROM, Flash, and SRAM are given in the address map section later in this document.
+The base address of the ROM, RRAM, and SRAM are given in the address map section later in this document.
 
 ### Secure boot
 
@@ -328,33 +322,23 @@ The goal is for both of these to be satisfied with the same timer module.
 
 The specification for the timer can be found [here](../../../ip/rv_timer/README.md).
 
-##### Flash Controller
+##### RRAM Controller
 
-The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, up to 1024kB of emulated embedded flash is available for code and data storage.
+The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is Earl Grey's primary non-volatile storage peripheral for code and data, having replaced the flash controller in that role. It also houses emulated OTP (one-time programmable) functionality, replacing the use of a dedicated OTP macro.
+
 The primary read path for this data is in the standard memory address space.
-Writes to that address space are ignored, however, since one can not write to flash in a standard way.
-Instead, to write to flash, software must interact with the flash controller.
+Writes on the other hand, need to be initiated by software  which must interact with the RRAM controller.
 
-Flash functionality include three primary commands: read, erase, and program.
+Unlike flash, RRAM does not require a separate erase step before writing: the RRAM controller exposes only read and write commands, and software can write new data to a word directly without first erasing its page.
 Read, as mentioned above, is standard, and uses the chip memory address space.
-Erase is done at a page level, where the page size is parameterizable in the flash controller.
-Upon receiving an erase request, the flash controller wipes all contents of that page, rendering the data in all `1`s state (`0xFFFFFFFF` per word).
-Afterwards, software can program individual words to any value.
-It is notable that software can continue to attempt to program words even before another erase, but it is not physically possible to return a flash bit back to a `'1'` state without another erase.
-So future content is in effect an AND of the current content and the written value.
 
-```
-next_value = AND(current_value, write_word)
-```
+Writes are significantly slower than reads, and must be aligned to an RRAM word (128b) and sized as a multiple of it.
+The RRAM controller peripheral in this release approximates the expected timing of the silicon RRAM macro.
 
-Erase and program are slow.
-A typical erase time is measured in milliseconds, program times in microseconds.
-The flash controller peripheral in this release approximates those expected times.
-
-Security is also a concern, since secret data can be stored in the flash.
-Some memory protection is provided by the flash controller.
-For more details see the [flash controller module specification](../../ip_autogen/flash_ctrl/README.md).
+Security is also a concern, since secret data can be stored in the RRAM.
+The RRAM controller provides per-page memory protection, on-the-fly XEX scrambling (using the PRINCE cipher) with a key sideloaded from OTP, end-to-end bus integrity, and per-word address infection to protect against a range of physical and software attacks.
+A secure wipe of the RRAM contents with random data is also performed on entry to the RMA lifecycle state.
+For more details see the [RRAM controller module specification](../../../ip/rram_ctrl/README.md).
 
 ### Interconnection
 
@@ -390,7 +374,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 ## Entropy Distribution Network
 
 `top_earlgrey` has two [EDN](../../../ip/edn/README.md) instances, which are connected to one [CSRNG](../../../ip/csrng/README.md) instance (which in turn is connected to one [Entropy Source](../../../ip/entropy_src/README.md) instance).
-The first EDN instance, `u_edn0`, has eight endpoints, which are connected to: Key Manager, OTP Controller, Analog Sensor Top, KMAC Accelerator, Alert Handler, AES Accelerator, the `URND` port of OTBN, and the Ibex RISC-V Core.
+The first EDN instance, `u_edn0`, has eight endpoints, which are connected to: Key Manager DPE, OTP Controller, Analog Sensor Top, KMAC Accelerator, Alert Handler, AES Accelerator, the `URND` port of OTBN, and the Ibex RISC-V Core.
 The second EDN instance, `u_edn1`, has one endpoint that is connected to the `RND` port of OTBN and seven endpoints that are tied off.
 The second EDN instance, `u_edn1` is intended to be configured to deliver highest-quality entropy, e.g., for the generation of cryptographic secrets.
 The first EDN instance, `u_edn0` is intended to be configured to deliver entropy at a higher rate and thus slightly lower quality.
@@ -401,78 +385,75 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 ### Pinout
 
 <!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
-| ID   | Name             | Bank   | Type         | Connection Type   | Description                                |
-|:-----|:-----------------|:-------|:-------------|:------------------|:-------------------------------------------|
-| 0    | POR_N            | VCC    | InputStd     | manual            | System reset                               |
-| 1    | USB_P            | VCC    | DualBidirTol | manual            | USB P signal                               |
-| 2    | USB_N            | VCC    | DualBidirTol | manual            | USB N signal                               |
-| 3    | CC1              | AVCC   | BidirTol     | manual            | ADC input 1                                |
-| 4    | CC2              | AVCC   | BidirTol     | manual            | ADC input 2                                |
-| 5    | FLASH_TEST_VOLT  | VCC    | AnalogIn0    | manual            | Flash test voltage input                   |
-| 6    | FLASH_TEST_MODE0 | VCC    | InputStd     | manual            | Flash test mode signal                     |
-| 7    | FLASH_TEST_MODE1 | VCC    | InputStd     | manual            | Flash test mode signal                     |
-| 8    | OTP_EXT_VOLT     | VCC    | AnalogIn1    | manual            | OTP external voltage input                 |
-| 9    | SPI_HOST_D0      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 10   | SPI_HOST_D1      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 11   | SPI_HOST_D2      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 12   | SPI_HOST_D3      | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 13   | SPI_HOST_CLK     | VIOA   | BidirStd     | direct            | SPI host clock                             |
-| 14   | SPI_HOST_CS_L    | VIOA   | BidirStd     | direct            | SPI host chip select                       |
-| 15   | SPI_DEV_D0       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 16   | SPI_DEV_D1       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 17   | SPI_DEV_D2       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 18   | SPI_DEV_D3       | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 19   | SPI_DEV_CLK      | VIOA   | InputStd     | direct            | SPI device clock                           |
-| 20   | SPI_DEV_CS_L     | VIOA   | InputStd     | direct            | SPI device chip select                     |
-| 0    | IOA0             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 1    | IOA1             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 2    | IOA2             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 3    | IOA3             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 4    | IOA4             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 5    | IOA5             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 6    | IOA6             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 7    | IOA7             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 8    | IOA8             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 9    | IOB0             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 10   | IOB1             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 11   | IOB2             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 12   | IOB3             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 13   | IOB4             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 14   | IOB5             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 15   | IOB6             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 16   | IOB7             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 17   | IOB8             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 18   | IOB9             | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 19   | IOB10            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 20   | IOB11            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 21   | IOB12            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 22   | IOC0             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 23   | IOC1             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 24   | IOC2             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 25   | IOC3             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 26   | IOC4             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 27   | IOC5             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 28   | IOC6             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 29   | IOC7             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 30   | IOC8             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 31   | IOC9             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 32   | IOC10            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 33   | IOC11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 34   | IOC12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 35   | IOR0             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 36   | IOR1             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 37   | IOR2             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 38   | IOR3             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 39   | IOR4             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 40   | IOR5             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 41   | IOR6             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 42   | IOR7             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 21   | IOR8             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 22   | IOR9             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
-| 43   | IOR10            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 44   | IOR11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 45   | IOR12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 46   | IOR13            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| ID   | Name          | Bank   | Type         | Connection Type   | Description                                |
+|:-----|:--------------|:-------|:-------------|:------------------|:-------------------------------------------|
+| 0    | POR_N         | VCC    | InputStd     | manual            | System reset                               |
+| 1    | USB_P         | VCC    | DualBidirTol | manual            | USB P signal                               |
+| 2    | USB_N         | VCC    | DualBidirTol | manual            | USB N signal                               |
+| 3    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                                |
+| 4    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                                |
+| 5    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
+| 6    | SPI_HOST_D0   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 7    | SPI_HOST_D1   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 8    | SPI_HOST_D2   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 9    | SPI_HOST_D3   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 10   | SPI_HOST_CLK  | VIOA   | BidirStd     | direct            | SPI host clock                             |
+| 11   | SPI_HOST_CS_L | VIOA   | BidirStd     | direct            | SPI host chip select                       |
+| 12   | SPI_DEV_D0    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 13   | SPI_DEV_D1    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 14   | SPI_DEV_D2    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 15   | SPI_DEV_D3    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 16   | SPI_DEV_CLK   | VIOA   | InputStd     | direct            | SPI device clock                           |
+| 17   | SPI_DEV_CS_L  | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 0    | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 1    | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 2    | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 3    | IOA3          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 4    | IOA4          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 5    | IOA5          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 6    | IOA6          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 7    | IOA7          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 8    | IOA8          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 9    | IOB0          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 10   | IOB1          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 11   | IOB2          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 12   | IOB3          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 13   | IOB4          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 14   | IOB5          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 15   | IOB6          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 16   | IOB7          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 17   | IOB8          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 18   | IOB9          | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 19   | IOB10         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 20   | IOB11         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 21   | IOB12         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 22   | IOC0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 23   | IOC1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 24   | IOC2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 25   | IOC3          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 26   | IOC4          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 27   | IOC5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 28   | IOC6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 29   | IOC7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 30   | IOC8          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 31   | IOC9          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 32   | IOC10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 33   | IOC11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 34   | IOC12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 35   | IOR0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 36   | IOR1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 37   | IOR2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 38   | IOR3          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 39   | IOR4          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 40   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 41   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 42   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 18   | IOR8          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 19   | IOR9          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 43   | IOR10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 44   | IOR11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 45   | IOR12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 46   | IOR13         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 
 <!-- END CMDGEN -->
 
@@ -499,21 +480,23 @@ A full definition of this descriptor file, its features, and related scripting i
 This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
 It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
 
-## Top Level vs Chip Targets
+## Power Domain Wrappers vs Top Level vs Chip Targets
 
 It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
-There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
-**On top** of that module, hierarchically in the repo, are chip level instantiation targets directed towards a particular use case.
-This includes `chip_earlgrey_cw310` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
-These chip level targets will include the actual pads as needed by the target platform.
-At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
+There is automation to create the power domain wrapper modules `earlgrey_pd_main` and `earlgrey_pd_aon` as indicated in sections of this specification that follow. On top of those, there is the `top_earlgrey` wrapper which instantiates both wrappers, establishes the inter-power-domain connections, and exposes all signals that are required further up the hierarchy at its port.
+
+**On top** of `top_earlgrey`, highest up in the design hierarchy, are chip level instantiation targets directed towards a particular use case.
+This includes `chip_earlgrey_cw3x0` for use in FPGA, `chip_earlgrey_asic` for use in silicon implementations, and finally `chip_earlgrey_verilator`.
+
+These chip level targets will include the actual pads as needed by the target platform, and further target-specific circuitry (such as e.g., clock generators for the FPGA targets or a hard macro for the USB differential receiver on the ASIC target).
+Due to these target-specific requirements, the chip levels may substantially differ from each other.
 Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
 
 ## FPGA Platform
 
 **TODO: This section needs to be updated once pin updates are complete.**
 
-In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw310`.
+In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw3x0`.
 This is done for ease of programming by the external host.
 
 ## References

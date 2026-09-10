@@ -46,8 +46,8 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
   bit ping_timer_en;
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[NUM_ESCS];
+  uvm_tlm_analysis_fifo #(alert_seq_item) alert_fifo[NUM_ALERTS];
+  uvm_tlm_analysis_fifo #(esc_seq_item)   esc_fifo[NUM_ESCS];
 
   `uvm_component_new
 
@@ -88,14 +88,14 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
       fork
         forever begin
           bit alert_en, loc_alert_en;
-          alert_esc_seq_item act_item;
+          alert_seq_item act_item;
           alert_fifo[index].get(act_item);
           alert_en = ral.alert_en_shadowed[index].get_mirrored_value() &&
               prim_mubi_pkg::mubi4_test_false_loose(cfg.${module_instance_name}_vif.lpg_cg_en[lpg_index]) &&
               prim_mubi_pkg::mubi4_test_false_loose(cfg.${module_instance_name}_vif.lpg_rst_en[lpg_index]);
 
           // Check that ping mechanism will only ping alerts that have been enabled and locked.
-          if (act_item.alert_esc_type == AlertEscPingTrans) begin
+          if (act_item.m_trans_type == AlertEscPingTrans) begin
             `DV_CHECK(alert_en, $sformatf("alert %0s ping triggered but not enabled", index))
             `DV_CHECK((`gmv(ral.alert_regwen[index]) == 0),
                       $sformatf("alert %0s ping triggered but not locked", index))
@@ -103,14 +103,14 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
 
           if (alert_en) begin
             // alert detected
-            if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
+            if (act_item.m_trans_type == AlertEscSigTrans && !act_item.ping_timeout &&
                 act_item.alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
-            end else if (act_item.alert_esc_type == AlertEscIntFail) begin
+            end else if (act_item.m_trans_type == AlertEscIntFail) begin
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertIntFail].get_mirrored_value();
               if (loc_alert_en) process_alert_sig(index, 1, LocalAlertIntFail);
-            end else if (act_item.alert_esc_type == AlertEscPingTrans &&
+            end else if (act_item.m_trans_type == AlertEscPingTrans &&
                          act_item.ping_timeout) begin
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertPingFail].get_mirrored_value();
               if (loc_alert_en) begin
@@ -130,19 +130,19 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
       automatic int index = i;
       fork
         forever begin
-          alert_esc_seq_item act_item;
+          esc_seq_item act_item;
           esc_fifo[index].get(act_item);
           // escalation triggered, check signal length
-          if (act_item.alert_esc_type == AlertEscSigTrans &&
+          if (act_item.m_trans_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscRespComplete) begin
             check_esc_signal(act_item.sig_cycle_cnt, index);
           // escalation integrity fail
-          end else if (act_item.alert_esc_type == AlertEscIntFail ||
+          end else if (act_item.m_trans_type == AlertEscIntFail ||
                (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
             bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
-          end else if (act_item.alert_esc_type == AlertEscPingTrans) begin
+          end else if (act_item.m_trans_type == AlertEscPingTrans) begin
             if (act_item.ping_timeout) begin
               bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
               if (loc_alert_en) begin
@@ -348,23 +348,19 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg        csr;
     dv_base_reg    dv_base_csr;
     bit            do_read_check   = 1'b1;
     bit            write           = item.is_write();
     uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
+    uvm_reg        csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      `downcast(dv_base_csr, csr)
-    end
     if (csr == null) begin
       // we hit an oob addr - expect error response and return
       `DV_CHECK_EQ(item.d_error, 1'b1)
       return;
     end
+
+    `downcast(dv_base_csr, csr)
 
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away

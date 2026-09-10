@@ -1346,7 +1346,7 @@ module aes_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.status.output_valid.q),
     .ds     (),
 
     // to register interface (read)
@@ -1373,7 +1373,7 @@ module aes_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.status.input_ready.q),
     .ds     (),
 
     // to register interface (read)

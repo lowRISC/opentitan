@@ -9,7 +9,6 @@ LOCALTOOLS_TOOLCHAIN = "@lowrisc_opentitan//rules/opentitan:localtools_type"
 LocalToolInfo = provider(fields = [
     "opentitantool",
     "gen_devid",
-    "gen_mem_image",
     "gen_otp_rot_auth_json",
     "gen_otp_immutable_rom_ext_json",
 ])
@@ -18,7 +17,6 @@ def _localtools_toolchain(ctx):
     tools = LocalToolInfo(
         opentitantool = ctx.attr.opentitantool[0].files_to_run,
         gen_devid = ctx.attr.gen_devid[0].files_to_run,
-        gen_mem_image = ctx.attr.gen_mem_image[0].files_to_run,
         gen_otp_rot_auth_json = ctx.attr.gen_otp_rot_auth_json[0].files_to_run,
         gen_otp_immutable_rom_ext_json = ctx.attr.gen_otp_immutable_rom_ext_json[0].files_to_run,
     )
@@ -37,11 +35,6 @@ localtools_toolchain = rule(
         ),
         "gen_devid": attr.label(
             default = "//sw/host/provisioning/orchestrator/src:devid_header_gen",
-            executable = True,
-            cfg = host_tools_transition,
-        ),
-        "gen_mem_image": attr.label(
-            default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
             executable = True,
             cfg = host_tools_transition,
         ),

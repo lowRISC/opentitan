@@ -72,19 +72,6 @@ cc_library(
 )
 
 cc_library(
-    name = "fpga_cw310",
-    srcs = ["device_fpga_cw310.c"],
-    deps = [
-        ":device",
-        "//sw/device/lib/base:macros",
-    ] + opentitan_if_ip(
-        "uart",
-        [":uart"],
-        [":stub"],
-    ),
-)
-
-cc_library(
     name = "fpga_cw340",
     srcs = ["device_fpga_cw340.c"],
     deps = [

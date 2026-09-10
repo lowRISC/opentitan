@@ -37,7 +37,12 @@ package flash_ctrl_eflash_ral_pkg;
       super.new(name, has_coverage);
     endfunction : new
 
-    virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl = null);
+    virtual function void build(uvm_reg_addr_t base_addr,
+                                csr_excl_item  csr_excl,
+                                int unsigned   addr_width,
+                                int unsigned   data_width,
+                                int unsigned   be_width);
+      super.build(base_addr, csr_excl, addr_width, data_width, be_width);
       // create default map
       this.default_map = create_map(.name("default_map"), .base_addr(base_addr), .n_bytes(
                                     4), .endian(UVM_LITTLE_ENDIAN));

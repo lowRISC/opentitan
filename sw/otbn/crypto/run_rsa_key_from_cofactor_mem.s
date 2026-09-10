@@ -51,6 +51,11 @@ mont_rr:
 mode:
 .zero 4
 
+.globl ok
+.balign 4
+ok:
+.zero 4
+
 .section .scratchpad
 
 /* Extra label marking the start of p || q in memory. The `derive_d` function

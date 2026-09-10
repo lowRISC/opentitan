@@ -16,7 +16,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/boards/teacup_v1_3_0:leds",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
@@ -33,8 +33,8 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples/teacup_demos/data:bitmaps",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/boards/teacup_v1_3_0:leds",

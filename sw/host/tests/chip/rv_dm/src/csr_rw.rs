@@ -81,7 +81,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ("aes", top_earlgrey::AES_BASE_ADDR, dif::AES_IV_0_REG_OFFSET),
         (
             "adc_ctrl",
-            top_earlgrey::ADC_CTRL_AON_BASE_ADDR,
+            top_earlgrey::ADC_CTRL_BASE_ADDR,
             dif::ADC_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
@@ -91,7 +91,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ),
         (
             "aon_timer",
-            top_earlgrey::AON_TIMER_AON_BASE_ADDR,
+            top_earlgrey::AON_TIMER_BASE_ADDR,
             dif::AON_TIMER_WKUP_CTRL_REG_OFFSET,
         ),
         (
@@ -113,11 +113,6 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             "entropy_src",
             top_earlgrey::ENTROPY_SRC_BASE_ADDR,
             dif::ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
-            "flash_ctrl",
-            top_earlgrey::FLASH_CTRL_CORE_BASE_ADDR,
-            dif::FLASH_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "gpio",
@@ -145,9 +140,9 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::I2C_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "keymgr",
-            top_earlgrey::KEYMGR_BASE_ADDR,
-            dif::KEYMGR_INTR_ENABLE_REG_OFFSET,
+            "keymgr_dpe",
+            top_earlgrey::KEYMGR_DPE_BASE_ADDR,
+            dif::KEYMGR_DPE_INTR_ENABLE_REG_OFFSET,
         ),
         (
             "kmac",
@@ -165,29 +160,24 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::OTP_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "pattgen",
-            top_earlgrey::PATTGEN_BASE_ADDR,
-            dif::PATTGEN_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
             "pinmux",
-            top_earlgrey::PINMUX_AON_BASE_ADDR,
+            top_earlgrey::PINMUX_BASE_ADDR,
             dif::PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
         ),
         (
-            "pwm",
-            top_earlgrey::PWM_AON_BASE_ADDR,
-            dif::PWM_INVERT_REG_OFFSET,
-        ),
-        (
             "pwrmgr",
-            top_earlgrey::PWRMGR_AON_BASE_ADDR,
+            top_earlgrey::PWRMGR_BASE_ADDR,
             dif::PWRMGR_INTR_ENABLE_REG_OFFSET,
         ),
         // Skip ROM_CTRL which does not have RW registers
         (
+            "rram_ctrl",
+            top_earlgrey::RRAM_CTRL_CORE_BASE_ADDR,
+            dif::RRAM_CTRL_INTR_ENABLE_REG_OFFSET,
+        ),
+        (
             "rstmgr",
-            top_earlgrey::RSTMGR_AON_BASE_ADDR,
+            top_earlgrey::RSTMGR_BASE_ADDR,
             dif::RSTMGR_CPU_INFO_CTRL_REG_OFFSET,
         ),
         (
@@ -197,7 +187,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ),
         (
             "sensor_ctrl",
-            top_earlgrey::SENSOR_CTRL_AON_BASE_ADDR,
+            top_earlgrey::SENSOR_CTRL_BASE_ADDR,
             dif::SENSOR_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
@@ -217,7 +207,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ),
         (
             "sysrst_ctrl",
-            top_earlgrey::SYSRST_CTRL_AON_BASE_ADDR,
+            top_earlgrey::SYSRST_CTRL_BASE_ADDR,
             dif::SYSRST_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (

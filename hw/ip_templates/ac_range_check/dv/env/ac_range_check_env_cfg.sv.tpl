@@ -25,7 +25,7 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module
   extern function new(string name="");
 
   // Class specific methods
-  extern function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
 endclass : ${module_instance_name}_env_cfg
 
 
@@ -33,9 +33,9 @@ function ${module_instance_name}_env_cfg::new(string name="");
   super.new(name);
 endfunction : new
 
-function void ${module_instance_name}_env_cfg::initialize();
+function void ${module_instance_name}_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = ${module_instance_name}_env_pkg::LIST_OF_ALERTS;
-  super.initialize();
+  super.initialize(inherit_ral_models);
 
   // Set shadow register error status
   tl_intg_alert_fields[ral.alert_status.reg_intg_err] = 1;

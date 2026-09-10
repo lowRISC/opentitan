@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_build_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -49,8 +49,6 @@ dual_cc_library(
         device = [
             "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
         ],
@@ -63,8 +61,8 @@ dual_cc_library(
             ":boot_data_header",
             ":error",
             ":nonce",
+            ":nvm_ctrl",
             "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -75,6 +73,8 @@ dual_cc_library(
 cc_test(
     name = "boot_data_unittest",
     srcs = ["boot_data_unittest.cc"],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl"),
     deps = [
         dual_cc_device_library_of(":boot_data"),
         "@googletest//:gtest_main",
@@ -89,12 +89,11 @@ opentitan_test(
             EARLGREY_TEST_ENVS,
             # Not intended for ROM_EXT environments.
             [
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
                 "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
             ],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     verilator = verilator_params(
@@ -104,9 +103,8 @@ opentitan_test(
     ),
     deps = [
         ":boot_data",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ":nvm_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
 )
 
@@ -149,6 +147,11 @@ cc_library(
 filegroup(
     name = "flash_exc_handler",
     srcs = ["flash_exc_handler.S"],
+)
+
+filegroup(
+    name = "rram_exc_handler",
+    srcs = ["rram_exc_handler.S"],
 )
 
 cc_library(
@@ -222,13 +225,13 @@ cc_test(
 cc_library(
     name = "irq_asm",
     srcs = ["irq_asm.S"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top:rram_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:multibits",
     ],
 )
@@ -243,7 +246,7 @@ opentitan_test(
     deps = [
         ":error",
         ":irq_asm",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -254,8 +257,8 @@ opentitan_test(
 )
 
 cc_library(
-    name = "keymgr_binding",
-    hdrs = ["keymgr_binding_value.h"],
+    name = "keymgr_dpe_binding",
+    hdrs = ["keymgr_dpe_binding_value.h"],
 )
 
 cc_library(
@@ -311,7 +314,13 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:top_lib",
-        ],
+        ] + opentitan_select_top(
+            {
+                "earlgrey": [":nvm_ctrl"],
+                "englishbreakfast": [":nvm_ctrl"],
+            },
+            [],
+        ),
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -320,7 +329,7 @@ dual_cc_library(
         shared = [
             ":epmp_state",
             ":error",
-            ":keymgr_binding",
+            ":keymgr_dpe_binding",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
@@ -386,15 +395,14 @@ dual_cc_library(
         shared = ["shutdown.h"],
     ),
     defines = opentitan_if_ip(
-        "flash_ctrl",
-        ["HAS_FLASH_CTRL"],
-        [],
-    ) + opentitan_if_ip(
-        "keymgr",
-        ["HAS_KEYMGR"],
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
         [],
     ),
     deps = dual_inputs(
+        device = [
+            ":nvm_ctrl",
+        ],
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -432,8 +440,12 @@ dual_cc_library(
             [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
             [],
         ) + opentitan_if_ip(
-            "keymgr",
-            ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ) + opentitan_if_ip(
+            "keymgr_dpe",
+            ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
             [],
         ),
     ),
@@ -442,8 +454,12 @@ dual_cc_library(
 cc_test(
     name = "shutdown_unittest",
     srcs = ["shutdown_unittest.cc"],
+    # Mocks flash_ctrl directly and predates RRAM support (TODO(#30967)).
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
         dual_cc_device_library_of(":shutdown"),
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -455,11 +471,11 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
+        ":nvm_ctrl",
         ":stack_utilization",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
     ],
@@ -477,9 +493,9 @@ cc_library(
     name = "bootstrap_fuzzer_util",
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -494,12 +510,13 @@ cc_library(
     name = "bootstrap_unittest_util",
     srcs = ["bootstrap_unittest_util.cc"],
     hdrs = ["bootstrap_unittest_util.h"],
+    target_compatible_with = opentitan_require_ip("flash_ctrl") + opentitan_require_top("earlgrey"),
     deps = [
         ":bootstrap",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
@@ -523,6 +540,69 @@ cc_library(
     ],
 )
 
+dual_cc_library(
+    name = "nvm_ctrl",
+    srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
+    hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
+    # Selects which NVM backend nvm_ctrl.h/.c compile against.
+    defines = dual_inputs(
+        device = opentitan_select_top(
+            {
+                "earlgrey": ["USE_RRAM"],
+                "englishbreakfast": ["USE_FLASH"],
+            },
+            [],
+        ),
+        # TODO(#30967): port the silicon_creator host test suite to RRAM.
+        host = opentitan_select_top(
+            {
+                "earlgrey": ["USE_RRAM"],
+            },
+            ["USE_FLASH"],
+        ),
+    ),
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = dual_inputs(
+        # Links whichever backend driver(s) the top actually has, matching
+        # USE_FLASH/USE_RRAM above. Gated on IP presence (not hardcoded)
+        # so this keeps working once a top drops one of the two IPs.
+        device = opentitan_if_ip(
+            "flash_ctrl",
+            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
+        # Same as above, but linking each backend's mock for host tests.
+        host = opentitan_if_ip(
+            "flash_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ),
+        shared = [
+            ":error",
+            "//hw/top:top_lib",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:multibits",
+        ] + opentitan_if_ip(
+            "flash_ctrl",
+            ["//hw/top:flash_ctrl_c_regs"],
+            [],
+        ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//hw/top:rram_ctrl_c_regs"],
+            [],
+        ),
+    ),
+)
+
 cc_library(
     name = "otbn_boot_services",
     srcs = ["otbn_boot_services.c"],
@@ -538,9 +618,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/drivers:otbn",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
@@ -555,10 +634,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             # See #21706, expects keymgr state 0 so not working after ROM_EXT.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
@@ -568,13 +645,14 @@ opentitan_test(
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 

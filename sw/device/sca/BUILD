@@ -6,6 +6,8 @@ load("//rules/opentitan:defs.bzl", "opentitan_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
+
 alias(
     name = "aes_serial_aes_testutils",
     actual = select({
@@ -21,10 +23,11 @@ opentitan_binary(
     srcs = ["aes_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
+    target_compatible_with = opentitan_require_top(("earlgrey", "englishbreakfast")),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
@@ -45,10 +48,11 @@ opentitan_binary(
     srcs = ["kmac_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -66,10 +70,11 @@ opentitan_binary(
     srcs = ["sha3_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
@@ -87,10 +92,11 @@ opentitan_binary(
     srcs = ["ecc384_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/runtime:ibex",
@@ -111,10 +117,11 @@ opentitan_binary(
     srcs = ["ecc256_sign_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:otbn",

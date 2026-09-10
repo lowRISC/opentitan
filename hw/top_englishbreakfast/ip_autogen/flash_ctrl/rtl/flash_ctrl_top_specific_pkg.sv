@@ -104,18 +104,17 @@ package flash_ctrl_top_specific_pkg;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
-  // $ util/design/gen-lfsr-seed.py --width 32 --seed 1274809145 --prefix ""
-  parameter int LfsrWidth = 32;
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 1274809145 --prefix ""
+  parameter int LfsrWidth = 64;
   typedef logic [LfsrWidth-1:0] lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
-  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 32'ha8cee782;
-  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
-    160'hd60bc7d86445da9347e0ccdd05b281df95238bb5
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = {
+    64'he00be979_a8cee782
   };
-
-  // These LFSR parameters have been generated with
-  // $ util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
-
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    128'hdc2f131f_0acbb803_349fa9a8_cde88859,
+    256'hc3f1552d_7f7e340a_f466fed8_d69182fb_78609079_c9d85766_ca439445_24385eea
+  };
 
   // lcmgr phase enum
   typedef enum logic [1:0] {

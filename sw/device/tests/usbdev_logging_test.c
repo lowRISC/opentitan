@@ -6,11 +6,12 @@
 //
 // This test exercises the USB logging functionality. It first initializes
 // 4 logging streams via the USB device and cable to the host, and then
-// transmits a number of tests messages to each stream directly.
+// transmits a number of test messages to each stream directly.
 //
 // Subsequently, it reinitializes the software layer with redirection of
-// stdout via a single stream and performs, to check that the LOG_INFO()
-// and base_printf() functionality works over the USB connection.
+// stdout via a single stream and performs a dump of the memory contents,
+// to check that the LOG_INFO() and base_printf() functionality works over the
+// USB connection.
 //
 // Currently this test requires manual support on the host side; on a Linux-
 // based host, running 4 processes as follows will allow the test to complete:
@@ -21,7 +22,12 @@
 //  cat /dev/ttyUSB3
 //
 // Note that the assigned port numbers on the host may differ from the defaults
-// shown above. Since the logging streams have been initialized for reliable
+// shown above. Be aware that these are not the same as the ports used for the
+// connection with hyperdebug; the TTY device nodes to `cat` may only be created
+// by the usb-serial driver *after* the bitstream has been loaded (on FPGA) and
+// the OT USB device has been enumerated.
+//
+// Since the logging streams have been initialized for reliable
 // transfer, the CPU/test will stall until the receiving processes on the host
 // have collected all of the logging output.
 

@@ -232,7 +232,6 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
         "ERROR: c_dpi_aes_crypt_message() currently supports OpenSSL/BoringSSL "
         "only\n");
   } else {  // OpenSSL/BoringSSL
-    int res;
     if (!op) {
       crypto_result[0] =
           crypto_encrypt(ref_out, iv, ref_in, data_len_i, key, key_len, mode,

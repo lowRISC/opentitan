@@ -34,6 +34,21 @@ report -summary \
   -grading covered \
   -out $cov_report_dir/cov_report.txt
 
+# Generate a detailed exclusion report
+#
+# This is the only place the attribution appears. The HTML report below passes -exclComments as
+# well, but the exported report_data carries the rule kind and nothing else, so the report here is
+# what makes the attribution available. The comment is what tells a UNR exclusion apart from a hand
+# written one, since IMC records both as ordinary refinement rules.
+# This information is useful to better understand what the tool or the user has excluded and the
+# reasons.
+report -detail \
+  -inst $dut \
+  -metrics all \
+  -excludes \
+  -exclComments \
+  -out $cov_report_dir/cov_excl_report.txt
+
 # Generate the functional coverage report for tracking.
 report -summary \
   -type \

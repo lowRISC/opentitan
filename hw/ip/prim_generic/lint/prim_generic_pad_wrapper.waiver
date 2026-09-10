@@ -23,6 +23,8 @@ waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'pri
       -comment "This parameter has been provisioned for later and is currently unused."
 waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'prim_pad_wrapper'} -location {prim_pad_wrapper.sv} \
       -comment "This parameter has been provisioned for later and is currently unused."
+waive -rules PARAM_NOT_USED -regexp {Parameter 'PadOrient' not used in module 'prim_pad_wrapper'} -location {prim_pad_wrapper.sv} \
+      -comment "This parameter has been provisioned for later and is currently unused."
 waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_pad_wrapper'} \
       -comment "This clock is not read in RTL since it will be connected after synthesis during DFT insertion"
 waive -rules {CLOCK_DRIVER CLOCK_USE INV_CLOCK} -regexp {'gen_bidir.out' is (driven here|used for some other purpose|inverted), (and used|and|used) as( a)? clock} \

@@ -12,5 +12,5 @@ unused_resets = lib.get_unused_resets(top)
 // This file contains resets that are not used at top level
 //=========================================================
 % for reset in unused_resets :
--node tb.dut*.u_rstmgr_aon.resets_o.${reset}
+-node tb.dut*.u_rstmgr.resets_o.${reset}
 % endfor

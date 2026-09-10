@@ -24,13 +24,13 @@ static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
@@ -40,8 +40,8 @@ bool test_main(void) {
 
   // Enable wakeup interrupt output from Power Manager.
   rv_plic_testutils_irq_range_enable(&plic, kTopDarjeelingPlicTargetIbex0,
-                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
-                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
+                                     kTopDarjeelingPlicIrqIdPwrmgrWakeup,
+                                     kTopDarjeelingPlicIrqIdPwrmgrWakeup);
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   // Get currently enabled sources for wakeup requests in Power Manager.
@@ -86,7 +86,7 @@ void ottf_external_isr(void) {
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that peripheral and IRQ ID are correct.
-  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgr,
         "IRQ peripheral %d is incorrect!", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID %d is incorrect!", irq_id);
 }

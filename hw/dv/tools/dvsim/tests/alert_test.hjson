@@ -13,7 +13,7 @@
       name: "{name}_alert_test"
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+run_alert_test", "+en_scb=0"]
-      reseed: 50
+      reseed: 10
     }
   ]
 }

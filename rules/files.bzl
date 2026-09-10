@@ -116,3 +116,68 @@ copy_files = rule(
     },
     executable = True,
 )
+
+def _hash_file_map_fname(file):
+    # We produce the format expected by the hashing script, using the short path as the
+    # hashed file to avoid depending on the bazel configuration.
+    return file.path + "@" + file.short_path
+
+def _hash_files(ctx):
+    inputs = ctx.files.src
+    if ctx.attr.output_group:
+        inputs = getattr(ctx.attr.src[OutputGroupInfo], ctx.attr.output_group).to_list()
+
+    list_file = ctx.actions.declare_file(ctx.label.name + ".list")
+    hash_file = ctx.actions.declare_file(ctx.label.name + ".hash")
+
+    args = ctx.actions.args()
+
+    # This will automatically recursively expand directories which in particular handles
+    # all the complexity of the various bazel symlinks.
+    args.add_all(
+        inputs,
+        map_each = _hash_file_map_fname,
+        expand_directories = True,
+    )
+
+    # If the command line becomes too big, spill to a file.
+    args.use_param_file("--file-list=%s")
+
+    ctx.actions.run(
+        inputs = inputs,
+        outputs = [hash_file, list_file],
+        executable = ctx.executable._hash_files,
+        arguments = [
+            "--output-list",
+            list_file.path,
+            "--output-hash",
+            hash_file.path,
+            args,
+        ],
+    )
+
+    return [
+        DefaultInfo(files = depset([hash_file])),
+        OutputGroupInfo(list = depset([list_file])),
+    ]
+
+hash_files = rule(
+    implementation = _hash_files,
+    doc = """Hash the content of the file and produce a file containing that hash.
+        If the src is a directory, its content will be hashed recursively.""",
+    attrs = {
+        "src": attr.label(
+            mandatory = True,
+            allow_files = True,
+            doc = "Target producing file outputs",
+        ),
+        "output_group": attr.string(
+            doc = "Output group to use (optional)",
+        ),
+        "_hash_files": attr.label(
+            default = "//rules/scripts:hash_files",
+            cfg = "exec",
+            executable = True,
+        ),
+    },
+)

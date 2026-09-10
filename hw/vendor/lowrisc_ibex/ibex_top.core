@@ -11,21 +11,30 @@ filesets:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_core
       - lowrisc:prim:and2
+      - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:count
       - lowrisc:prim:flop
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:onehot_check
       - lowrisc:prim:onehot
       - lowrisc:prim:util
+      - lowrisc:prim:fifo
+      - lowrisc:prim:secded
+      - pulp-platform:common_cells:common_cells
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA
       - rtl/ibex_register_file_latch.sv # ASIC
+      - rtl/ibex_trvk.sv
       - rtl/ibex_lockstep.sv
       - rtl/ibex_top.sv
     file_type: systemVerilogSource
+
+  # Map the prims listed above to the prim_generic implementations for linting
+  files_map_prim_generic:
+      depend:
+        - lowrisc:prim_generic:all
 
   files_lint_verilator:
     files:
@@ -49,6 +58,12 @@ parameters:
     description: Identifies Xilinx FPGA targets to set DSP pragmas for performance counters.
     default: false
     paramtype: vlogdefine
+
+  BaseIsa:
+    datatype: str
+    default: ibex_pkg::BaseIsaRV32I
+    paramtype: vlogdefine
+    description: "Base ISA parameter enum. See the ibex_pkg::base_isa_e enum in ibex_pkg.sv for permitted values."
 
   RV32E:
     datatype: int
@@ -161,6 +176,7 @@ targets:
   default: &default_target
     filesets:
       - tool_verilator ? (files_lint_verilator)
+      - tool_verilator ? (files_map_prim_generic)
       - files_rtl
       - files_check_tool_requirements
     toplevel: ibex_top
@@ -168,6 +184,8 @@ targets:
       - tool_vivado ? (FPGA_XILINX=true)
   lint:
     <<: *default_target
+    filesets:
+      - files_map_prim_generic
     parameters:
       - SYNTHESIS=true
       - RVFI=true

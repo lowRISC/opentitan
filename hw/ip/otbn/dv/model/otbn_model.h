@@ -101,6 +101,12 @@ class OtbnModel {
   // failure.
   int set_software_errs_fatal(unsigned char new_val);
 
+  // Set wfi_enabled bit in ISS model. Returns 0 on success; -1 on failure.
+  int set_wfi_enabled(unsigned char new_val);
+
+  // Resume a paused wfi instruction. Returns 0 on success; -1 on failure.
+  int wfi_resume();
+
   // Tell the trace checker to not execute checks to see if secure wiping has
   // written random data to all registers before wiping them with zeroes.
   void set_no_sec_wipe_chk();
@@ -155,6 +161,11 @@ class OtbnModel {
 
   // Set the contents of the ISS's memory
   void set_sim_memory(bool is_imem, const Ecc32MemArea::EccWords &words);
+
+  // Update an ISS memory with the current model's memory content. Used at
+  // Execute start and when resuming from a WFI pause, where the host may have
+  // written to DMEM while OTBN was paused.
+  void send_mem_to_iss(ISSWrapper *iss, bool is_imem);
 
   // Grab contents of dmem from the model and compare them with the RTL. Prints
   // messages to stderr on failure or mismatch. Returns true on success; false

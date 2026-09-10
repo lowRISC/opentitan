@@ -14,8 +14,8 @@ import i2c_reg_pkg::AcqFifoDepth;
 ) (
   input  logic                             clk_i,
   input  logic                             rst_ni,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t ram_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_o,
 
   input  logic                             fmt_fifo_clr_i,
   output logic [FifoDepthW-1:0]            fmt_fifo_depth_o,
@@ -300,7 +300,7 @@ import i2c_reg_pkg::AcqFifoDepth;
     .rvalid_o (ram_rvalid),
     .rerror_o (/* unused */),
     .cfg_i    (ram_cfg_i),
-    .cfg_rsp_o(ram_cfg_rsp_o),
+    .cfg_o    (ram_cfg_o),
     .alert_o  (/* unused */)
   );
   assign {ram_write, ram_addr, ram_wdata} = ram_arb_oup_data;

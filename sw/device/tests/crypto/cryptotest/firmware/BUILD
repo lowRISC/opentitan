@@ -7,6 +7,7 @@ load(
     "opentitan_test",
     "silicon_params",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -17,10 +18,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -36,10 +34,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:aes_gcm",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -53,13 +48,10 @@ cc_library(
     srcs = ["ecdsa.c"],
     hdrs = ["ecdsa.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:ecc_p256",
-        "//sw/device/lib/crypto/impl:ecc_p384",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -68,21 +60,50 @@ cc_library(
 )
 
 cc_library(
+    name = "ed25519",
+    srcs = ["ed25519.c"],
+    hdrs = ["ed25519.h"],
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:ed25519_commands",
+    ],
+)
+
+cc_library(
     name = "ecdh",
     srcs = ["ecdh.c"],
     hdrs = ["ecdh.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:ecc_p256",
-        "//sw/device/lib/crypto/impl:ecc_p384",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
+    ],
+)
+
+cc_library(
+    name = "x25519",
+    srcs = ["x25519.c"],
+    hdrs = ["x25519.h"],
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:x25519_commands",
     ],
 )
 
@@ -93,11 +114,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/impl:drbg",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -113,12 +130,7 @@ cc_library(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:kmac",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/impl:sha3",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -133,9 +145,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:hmac",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -151,18 +161,30 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:rsa",
-        "//sw/device/lib/crypto/impl:sha2",
-        "//sw/device/lib/crypto/impl:sha3",
-        "//sw/device/lib/crypto/include:crypto_hdrs",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/crypto/impl/rsa:run_rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:rsa_commands",
+    ],
+)
+
+cc_library(
+    name = "sha",
+    srcs = ["sha.c"],
+    hdrs = ["sha.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:sha_commands",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -173,9 +195,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -191,14 +211,42 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:integrity",
-        "//sw/device/lib/crypto/impl:key_transport",
-        "//sw/device/lib/crypto/impl:kmac",
-        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/crypto",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:kmac_commands",
+    ],
+)
+
+cc_library(
+    name = "mldsa",
+    srcs = ["mldsa.c"],
+    hdrs = ["mldsa.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl/mldsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mldsa_commands",
+    ],
+)
+
+cc_library(
+    name = "mlkem",
+    srcs = ["mlkem.c"],
+    hdrs = ["mlkem.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:mlkem_commands",
     ],
 )
 
@@ -208,19 +256,24 @@ FIRMWARE_DEPS = [
     ":drbg",
     ":ecdh",
     ":ecdsa",
+    ":ed25519",
     ":hash",
     ":hmac",
     ":kmac",
+    ":mldsa",
+    ":mlkem",
     ":rsa",
+    ":sha",
     ":sphincsplus",
+    ":x25519",
     "//sw/device/lib/base:csr",
-    "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
     "//sw/device/lib/ujson",
-    "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    "//hw/top:top_lib",
+    "//sw/device/tests/crypto/lib:crypto_test_lib",
 
     # Include all JSON commands.
     "//sw/device/tests/crypto/cryptotest/json:commands",
@@ -231,9 +284,9 @@ opentitan_binary(
     testonly = True,
     srcs = [":firmware.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = FIRMWARE_DEPS,
 )

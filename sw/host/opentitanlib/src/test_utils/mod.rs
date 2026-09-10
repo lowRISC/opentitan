@@ -11,6 +11,7 @@ pub mod epmp;
 // set of CSRs as the "earlgrey" chip.
 #[cfg(not(feature = "english_breakfast"))]
 pub mod extclk;
+pub mod fpga_backdoor;
 pub mod gpio;
 pub mod gpio_monitor;
 pub mod i2c_target;

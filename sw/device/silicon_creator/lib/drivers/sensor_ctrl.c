@@ -14,7 +14,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
-  kBase = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
+  kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
   kSensorCtrlAlertConfig =
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG_OFFSET,
   kSensorCtrlAlertSize = SENSOR_CTRL_ALERT_EN_MULTIREG_COUNT,

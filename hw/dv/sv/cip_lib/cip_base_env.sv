@@ -159,8 +159,14 @@ function void cip_base_env::connect_phase(uvm_phase phase);
   end
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
-    m_alert_agent[alert_name].monitor.alert_esc_port.connect(
-        scoreboard.alert_fifos[alert_name].analysis_export);
+    alert_esc_agent agent = m_alert_agent[alert_name];
+
+    if (agent.monitor.m_alert_port == null) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Agent for alert %0s has no alert port in its monitor", alert_name))
+    end
+
+    agent.monitor.m_alert_port.connect(scoreboard.alert_fifos[alert_name].analysis_export);
   end
 
   foreach (cfg.m_tl_agent_cfgs[i]) begin

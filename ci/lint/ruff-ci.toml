@@ -1,0 +1,78 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Ruff configuration for the gating Python lint in CI (the `hygiene` category
+# of ci/lint/run.sh).
+#
+# This is deliberately not the configuration in pyproject.toml. That one is for
+# editors: it turns on ruff's preview rule set, so a contributor's IDE shows the
+# whole backlog of suggestions and the tree can be cleaned up over time. CI
+# cannot enforce that set. It is 400+ rules with several thousand outstanding
+# findings, and -- the real problem -- it grows by itself: ruff upgrades add
+# rules to it, so an unrelated dependency bump would turn the lint red. That is
+# exactly what happens today, where the devshell resolves ruff 0.15.20 from
+# uv.lock while python-requirements.txt still pins 0.14.12.
+#
+# So CI enforces an explicit list, ratcheted up as the tree gets cleaned.
+#
+# Note `select`, not `extend-select`: since ruff 0.15 `preview = true` replaces
+# the *default* selection with the much larger preview default (59 -> 407
+# rules), which `extend-select` would then add to. An explicit `select`
+# overrides it, so the enforced set is exactly what is listed below whichever
+# ruff version runs it. Selecting families rather than individual codes does
+# still absorb new rules *within* a selected family on an upgrade -- three
+# between 0.14.12 and 0.15.20 -- but that is a handful of closely related rules
+# rather than four hundred, and the tree is clean against both versions.
+#
+# To ratchet up: take a family from the backlog, fix its findings, move it into
+# `select` and delete its backlog entry. To price a family up first:
+#
+#   git ls-files '*.py' ':!*/vendor/*' | \
+#     xargs ruff check --config ci/lint/ruff-ci.toml --select <FAMILY>
+#
+# Backlog -- findings tree-wide per family, measured when this file was added.
+# Nothing here is enforced yet:
+#
+#   Q    13496   D    7446   ANN  4248   UP   3344   S    1481   RUF  1361
+#   COM  1000    EM    859   PLR   747   TRY   647   PTH   590   LOG   562
+#   PT    467    G     403   SIM   370   I     314   C4    279   RET   225
+#   TD    189    B     184   TID   170   N     169   ARG   168   ERA   133
+#   INP   125    PLW   110   FURB  109   PERF   73   EXE    61   SLF    58
+#   PGH    49    A      37   ISC    34   BLE    28   PIE    27   RSE    22
+#   PLC    20    DTZ     9   FLY     9   TC      5   PLE     4   PYI     3
+#   ICN     1    SLOT    1
+#
+# The tail of that list is the cheap end: SLOT, ICN, PYI, PLE, TC, DTZ and FLY
+# are a handful of findings each, and PLE in particular is pylint's *error*
+# category, so it is worth clearing rather than leaving unenforced.
+
+line-length = 100
+target-version = "py310"
+# Vendored code is fixed upstream, not here. Matches pyproject.toml.
+extend-exclude = ["*vendor*"]
+
+[lint]
+# `explicit-preview-rules` keeps preview mode from pulling in preview rules
+# wholesale: only the ones named individually in `select` below are enabled.
+preview = true
+explicit-preview-rules = true
+
+select = [
+  # Enforced today, and what master's `ruff check` step effectively ran: all
+  # pycodestyle errors plus pyflakes.
+  "E", # pycodestyle errors
+  "F", # pyflakes
+  # Preview rules, so they have to be named individually rather than picked up
+  # via their family: pyproject.toml asks for these two by name as well.
+  "E303", # too-many-blank-lines
+  "W391", # blank-line-at-end-of-file
+  # Families the tree is already clean against. Enforcing them costs nothing
+  # and stops them regressing.
+  "W",     # pycodestyle warnings
+  "YTT",   # flake8-2020: sys.version misuse that breaks on Python 3.10+
+  "ASYNC", # flake8-async
+  "FA",    # flake8-future-annotations
+  "T10",   # flake8-debugger: leftover breakpoint()/pdb.set_trace()
+  "INT",   # flake8-gettext
+]

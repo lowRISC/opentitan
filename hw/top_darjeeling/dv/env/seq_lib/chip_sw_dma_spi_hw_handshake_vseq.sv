@@ -8,7 +8,7 @@ class chip_sw_dma_spi_hw_handshake_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   localparam string DMA_FSM_STATE_PATH =
-    "tb.dut.top_darjeeling.u_dma.ctrl_state_q";
+    "tb.dut.top_darjeeling.darjeeling_pd_main.u_dma.ctrl_state_q";
 
   task pre_start();
     // Setting the byte order to 0 ensures that the 4 byte transaction sent to

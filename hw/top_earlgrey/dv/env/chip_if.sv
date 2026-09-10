@@ -32,52 +32,54 @@ interface chip_if;
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
   `define TOP_HIER          tb.dut.top_earlgrey
+  `define PD_MAIN_HIER      tb.dut.top_earlgrey.earlgrey_pd_main
+  `define PD_AON_HIER       tb.dut.top_earlgrey.earlgrey_pd_aon
+  `define AST_HIER          tb.dut.u_ast
 `else
   `define TOP_HIER          top_earlgrey
+  `define PD_MAIN_HIER      top_earlgrey.earlgrey_pd_main
+  `define PD_AON_HIER       top_earlgrey.earlgrey_pd_aon
+  `define AST_HIER          u_ast
 `endif
-`define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
-`define AES_HIER            `TOP_HIER.u_aes
+`define ADC_CTRL_HIER       `PD_AON_HIER.u_adc_ctrl
+`define AES_HIER            `PD_MAIN_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
-`define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
-`define AON_TIMER_HIER      `TOP_HIER.u_aon_timer_aon
-`define AST_HIER            u_ast
-`define CLKMGR_HIER         `TOP_HIER.u_clkmgr_aon
-`define CPU_HIER            `TOP_HIER.u_rv_core_ibex
+`define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
+`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer
+`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr
+`define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
-`define CSRNG_HIER          `TOP_HIER.u_csrng
-`define ENTROPY_SRC_HIER    `TOP_HIER.u_entropy_src
-`define EDN_HIER(i)         `TOP_HIER.u_edn``i
-`define FLASH_CTRL_HIER     `TOP_HIER.u_flash_ctrl
-`define GPIO_HIER           `TOP_HIER.u_gpio
-`define HMAC_HIER           `TOP_HIER.u_hmac
-`define I2C_HIER(i)         `TOP_HIER.u_i2c``i
+`define CSRNG_HIER          `PD_MAIN_HIER.u_csrng
+`define ENTROPY_SRC_HIER    `PD_MAIN_HIER.u_entropy_src
+`define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
+`define RRAM_CTRL_HIER      `PD_MAIN_HIER.u_rram_ctrl
+`define RRAM_MACRO_HIER     `PD_MAIN_HIER.u_rram_macro
+`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define HMAC_HIER           `PD_MAIN_HIER.u_hmac
+`define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
 `define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
-`define KMAC_HIER           `TOP_HIER.u_kmac
-`define KEYMGR_HIER         `TOP_HIER.u_keymgr
-`define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
-`define OTBN_HIER           `TOP_HIER.u_otbn
-`define PATTGEN_HIER        `TOP_HIER.u_pattgen
-`define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWM_HIER            `TOP_HIER.u_pwm_aon
-`define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
-`define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `TOP_HIER.u_rstmgr_aon
-`define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
-`define RV_DM_HIER          `TOP_HIER.u_rv_dm
-`define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
-`define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl_aon
-`define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
-`define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
-`define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
-`define UART_HIER(i)        `TOP_HIER.u_uart``i
-`define USBDEV_HIER         `TOP_HIER.u_usbdev
+`define KMAC_HIER           `PD_MAIN_HIER.u_kmac
+`define KEYMGR_DPE_HIER     `PD_MAIN_HIER.u_keymgr_dpe
+`define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
+`define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
+`define OTBN_HIER           `PD_MAIN_HIER.u_otbn
+`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
+`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
+`define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
+`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
+`define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
+`define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
+`define RV_TIMER_HIER       `PD_MAIN_HIER.u_rv_timer
+`define SENSOR_CTRL_HIER    `PD_AON_HIER.u_sensor_ctrl
+`define SPI_DEVICE_HIER     `PD_MAIN_HIER.u_spi_device
+`define SPI_HOST_HIER(i)    `PD_MAIN_HIER.u_spi_host``i
+`define SRAM_CTRL_MAIN_HIER `PD_MAIN_HIER.u_sram_ctrl_main
+`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret
+`define SYSRST_CTRL_HIER    `PD_AON_HIER.u_sysrst_ctrl
+`define UART_HIER(i)        `PD_MAIN_HIER.u_uart``i
+`define USBDEV_HIER         `PD_MAIN_HIER.u_usbdev
 
   // Identifier for logs.
   string MsgId = $sformatf("%m");
@@ -190,21 +192,6 @@ interface chip_if;
   // Functional (dedicated) interface (input): CC1, CC2.
   pins_if #(.Width(2), .PullStrength("Weak")) cc_if(
     .pins(dios[top_earlgrey_pkg::DioPadCc2:top_earlgrey_pkg::DioPadCc1])
-  );
-
-  // Functional (dedicated) interface (analog input): flash test volt.
-  pins_if #(.Width(1), .PullStrength("Weak")) flash_test_volt_if(
-    .pins(dios[top_earlgrey_pkg::DioPadFlashTestVolt])
-  );
-
-  // Functional (dedicated) interface (input): flash test mode0.
-  pins_if #(.Width(2), .PullStrength("Weak")) flash_test_mode_if(
-    .pins(dios[top_earlgrey_pkg::DioPadFlashTestMode1:top_earlgrey_pkg::DioPadFlashTestMode0])
-  );
-
-  // Functional (dedicated) interface (analog input): OTP ext volt.
-  pins_if #(.Width(1), .PullStrength("Weak")) otp_ext_volt_if(
-    .pins(dios[top_earlgrey_pkg::DioPadOtpExtVolt])
   );
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
@@ -453,22 +440,6 @@ interface chip_if;
     end
   endfunction
 
-  // Functional (muxed) interface: Flash controller JTAG.
-  bit enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
-  jtag_if flash_ctrl_jtag_if();
-
-  // TODO: Revisit this logic.
-  wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
-  assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
-  assign mios[top_earlgrey_pkg::MioPadIob0] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tms : 1'bz;
-  assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ?
-      mios[top_earlgrey_pkg::MioPadIob1] : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIob2] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tdi : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIob3] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tck : 1'bz;
-
   // Functional (muxed) interface: AST2PAD.
   pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
     .pins({mios[top_earlgrey_pkg::MioPadIoa0], mios[top_earlgrey_pkg::MioPadIoa1],
@@ -571,52 +542,6 @@ interface chip_if;
     __enable_i2c[inst_num] = enable;
   endfunction
 
-  // Functional (muxed) interface: PWM.
-  localparam int AssignedPwmIos[NUM_PWM_CHANNELS] = {
-      top_earlgrey_pkg::MioPadIob10, top_earlgrey_pkg::MioPadIob11, top_earlgrey_pkg::MioPadIob12,
-      top_earlgrey_pkg::MioPadIoc10, top_earlgrey_pkg::MioPadIoc11, top_earlgrey_pkg::MioPadIoc12
-  };
-
-  for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(
-`ifdef GATE_LEVEL
-                  .clk (0),
-                  .rst_n (1),
-`else
-                  .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                  .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
-`endif
-                  .start_cntr (`PWM_HIER.u_pwm_core.clr_phase_cntr),
-                  .pwm        (mios[AssignedPwmIos[i]]));
-
-    initial begin
-      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",
-                                          pwm_if);
-    end
-  end : gen_pwm_if_conn
-
-  // Functional (muxed) interface: PATTGEN
-  // each channel has pda, pcl
-
-  bit __enable_pattgen = 0;
-
-  pattgen_if #(NUM_PATTGEN_CH) pattgen_if();
-  assign pattgen_if.rst_ni = `PATTGEN_HIER.rst_ni;
-  assign pattgen_if.clk_i  = `PATTGEN_HIER.clk_i;
-  assign pattgen_if.pda_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob11],
-                                                  mios[top_earlgrey_pkg::MioPadIob9]};
-  assign pattgen_if.pcl_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob12],
-                                                  mios[top_earlgrey_pkg::MioPadIob10]};
-
-  initial begin
-    uvm_config_db#(virtual pattgen_if)::set(null, "*.env.m_pattgen_agent*", "vif", pattgen_if);
-  end
-  function automatic void enable_pattgen(bit enable);
-    __enable_pattgen = enable;
-  endfunction
-
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.
@@ -686,7 +611,6 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.u_status_init_done.qs[0:0];
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.u_status_init_done.qs[0:0];
 
-  wire flash_core1_host_req = 0;
 `else
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i[0].done == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i[0].good == prim_mubi_pkg::MuBi4True;
@@ -697,16 +621,17 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
-  wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
-  wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
+  wire adc_data_valid = `AST_HIER.u_ast_aon.u_adc.adc_d_val_o;
+  wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
+                           (|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_wip));
 
   task static force_adc_d_o(input bit [9:0] channel_val);
-    force `AST_HIER.adc_d_o = channel_val;
+    force `AST_HIER.u_ast_aon.adc_d_o = channel_val;
   endtask
 
   task static release_adc_d_o();
-    release `AST_HIER.adc_d_o;
+    release `AST_HIER.u_ast_aon.adc_d_o;
   endtask
 
   // This task triggers a wakeup by forcing an incoming alert from AST to sensor_ctrl.
@@ -892,11 +817,26 @@ interface chip_if;
     logic [31:0] mcause;
   } probed_cpu_csrs_t;
   wire probed_cpu_csrs_t probed_cpu_csrs;
-  for (genvar i = 0; i < 32; i++) begin : gen_probed_cpu_csrs_conn
+  // In the shared register file (BaseIsaRV32IorCHERIoT) under RV32I (non-CHERIoT) mode, rf_data
+  // holds the data for registers x0-x15 and rf_shared the data for x16-x31. In CHERIoT mode,
+  // rf_shared holds capability metadata for x0-x15 and CHERIoT implicitly sets RV32E.
+  // Therefore, this probing interface will need to be adapted to run CHERIoT tests. Currently,
+  // these paths are hardcoded to match EarlGrey's configuration and hierarchy. If parameters
+  // affecting the register file change, these paths will need to be adapted accordingly.
+  for (genvar i = 0; i < 16; i++) begin : gen_probed_cpu_csrs_conn_lower
 `ifdef GATE_LEVEL
     assign probed_cpu_csrs.gprs[i] = 0;
 `else
-    assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
+    assign probed_cpu_csrs.gprs[i] =
+        `CPU_CORE_HIER.gen_regfile_ff.register_file_i.g_cheriot_rf.rf_data[i][31:0];
+`endif
+  end
+  for (genvar i = 16; i < 32; i++) begin : gen_probed_cpu_csrs_conn_upper
+`ifdef GATE_LEVEL
+    assign probed_cpu_csrs.gprs[i] = 0;
+`else
+    assign probed_cpu_csrs.gprs[i] =
+        `CPU_CORE_HIER.gen_regfile_ff.register_file_i.g_cheriot_rf.rf_shared[i-16][31:0];
 `endif
   end
   assign probed_cpu_csrs.dcsr = jtag_rv_debugger_pkg::rv_core_csr_dcsr_t'(
@@ -950,6 +890,11 @@ interface chip_if;
         force `CPU_CORE_HIER.clk_i = 1'b0;
         force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
         force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
+        // The CHERIoT sidebands leave the core directly, so with its clock silenced they hold X
+        // for the whole simulation.
+        force `CPU_HIER.cored_tag_h2d_o = 1'b0;
+        force `CPU_HIER.main_core_revbm_req = 1'b0;
+        force `CPU_HIER.main_core_revbm_addr = '0;
         force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
         force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
 
@@ -1007,9 +952,6 @@ interface chip_if;
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
     cc_if.disconnect();
-    flash_test_volt_if.disconnect();
-    flash_test_mode_if.disconnect();
-    otp_ext_volt_if.disconnect();
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
@@ -1018,7 +960,6 @@ interface chip_if;
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
-    enable_flash_ctrl_jtag = 0;
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
@@ -1141,14 +1082,17 @@ interface chip_if;
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
   // Signal probe function for keymgr key state.
-`ifdef GATE_LEVEL
-  bit dummy_signal_probe_keymgr_key_state;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      dummy_signal_probe_keymgr_key_state)
-`else
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      `KEYMGR_HIER.u_ctrl.key_state_q)
-`endif
+  // TODO(#30907): Decide if we need this probing function (only used in alert handler escalation
+  //               sequence)
+  //`ifdef GATE_LEVEL
+  //  bit dummy_signal_probe_keymgr_key_state;
+  //  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+  //      dummy_signal_probe_keymgr_key_state)
+  //`else
+  //  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+  //      `KEYMGR_DPE_HIER.u_ctrl.key_state_q)
+  //`endif
+
   // Signal probe function for RX idle detection in usbdev.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
       `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
@@ -1187,16 +1131,6 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
       `PINMUX_HIER.periph_to_dio_oe_i)
 
-  // Signal probe function for `vendor_test_ctrl` request from LC_CTRL to OTP_CTRL.
-`ifdef GATE_LEVEL
-  import otp_ctrl_pkg::*;
-  bit dummy_signal_probe_otp_vendor_test_ctrl;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      dummy_signal_probe_otp_vendor_test_ctrl)
-`else
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_MACRO_HIER.test_i)
-`endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
    * during the max power epoch of the power_virus test.
@@ -1233,9 +1167,9 @@ interface chip_if;
   // Signal probe function for `fsm.state_q` of SPI_HOST_1
   wire [2:0] spi_host_1_state;
 `ifdef GATE_LEVEL
-assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
-                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
-                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
+assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
+                          ,tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
+                          ,tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
                           };
 `else
   assign spi_host_1_state = `SPI_HOST_HIER(1).u_spi_core.u_fsm.state_q;
@@ -1319,29 +1253,9 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
-  // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
-  wire [1:0] pattgen_chan_1_0_enable;
-`ifdef GATE_LEVEL
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.ctrl_i_enable
-                                   ,`PATTGEN_HIER.u_pattgen_core.chan0.ctrl_i_enable};
-`else
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
-                                    `PATTGEN_HIER.u_pattgen_core.chan0.enable};
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
-      pattgen_chan_1_0_enable, 2)
-
-  // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
-  wire pwm_core_cntr_en;
-`ifdef GATE_LEVEL
-  assign pwm_core_cntr_en = `PWM_HIER.u_reg.u_cfg_cntr_en.q;
-`else
-  assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
-      pwm_core_cntr_en, 1)
-
 `undef TOP_HIER
+`undef PD_MAIN_HIER
+`undef PD_AON_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
 `undef AES_CONTROL_HIER
@@ -1355,24 +1269,19 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef CSRNG_HIER
 `undef ENTROPY_SRC_HIER
 `undef EDN_HIER
-`undef FLASH_CTRL_HIER
 `undef GPIO_HIER
 `undef HMAC_HIER
 `undef I2C_HIER
 `undef KMAC_HIER
-`undef KEYMGR_HIER
+`undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
-`undef OTP_MACRO_HIER
 `undef OTBN_HIER
-`undef PATTGEN_HIER
 `undef PINMUX_HIER
-`undef PWM_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL_HIER
 `undef RSTMGR_HIER
 `undef RV_CORE_IBEX_HIER
-`undef RV_DM_HIER
 `undef RV_PLIC_HIER
 `undef RV_TIMER_HIER
 `undef SENSOR_CTRL_HIER

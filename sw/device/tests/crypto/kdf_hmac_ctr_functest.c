@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/runtime/log.h"
@@ -82,7 +84,7 @@ static status_t run_test(kdf_test_vector_t *test) {
 
   // Construct the input key derivation key.
   otcrypto_key_config_t kdk_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->key_mode,
       .key_length = test->kdk_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -97,12 +99,12 @@ static status_t run_test(kdf_test_vector_t *test) {
       .keyblob = kdk_keyblob,
       .keyblob_length = sizeof(kdk_keyblob),
   };
-  kdk.checksum = integrity_blinded_checksum(&kdk);
+  kdk.checksum = otcrypto_integrity_blinded_checksum(&kdk);
 
   // Construct a blinded key struct for the output keying material. The key mode
   // here doesn't really matter, it just needs to be some symmetric key.
   otcrypto_key_config_t km_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->km_mode,
       .key_length = test->km_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -1077,11 +1079,149 @@ static status_t kdf_hmac_ctr_sha512_kdk256_km16_test(void) {
   return run_test(&test);
 }
 
+/**
+ * Negative tests
+ */
+static status_t run_hmac_kdf_negative_tests(void) {
+  LOG_INFO("Running HMAC KDF negative tests");
+
+  // Base valid configs
+  otcrypto_key_config_t kdk_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_key_config_t km_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Base valid keyblobs
+  uint32_t kdk_blob[keyblob_num_words(kdk_cfg)];
+  memset(kdk_blob, 0, sizeof(kdk_blob));
+  otcrypto_blinded_key_t valid_kdk = {.config = kdk_cfg,
+                                      .keyblob_length = sizeof(kdk_blob),
+                                      .keyblob = kdk_blob};
+  valid_kdk.checksum = otcrypto_integrity_blinded_checksum(&valid_kdk);
+
+  uint32_t km_blob[keyblob_num_words(km_cfg)];
+  memset(km_blob, 0, sizeof(km_blob));
+  otcrypto_blinded_key_t valid_km = {
+      .config = km_cfg, .keyblob_length = sizeof(km_blob), .keyblob = km_blob};
+  valid_km.checksum = otcrypto_integrity_blinded_checksum(&valid_km);
+
+  uint8_t dummy_data[] = "test";
+  otcrypto_const_byte_buf_t valid_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_buf_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
+
+  // Null pointer and length tests
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_km_null = {
+      .config = km_cfg, .keyblob_length = sizeof(km_blob), .keyblob = NULL};
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_kdk_null = {
+      .config = kdk_cfg, .keyblob_length = sizeof(kdk_blob), .keyblob = NULL};
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_null, &valid_buf, &valid_buf, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &bad_buf_null, &valid_buf, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &bad_buf_null, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Checksum and mode tests
+  otcrypto_blinded_key_t bad_kdk_chk = {.config = kdk_cfg,
+                                        .keyblob_length = sizeof(kdk_blob),
+                                        .keyblob = kdk_blob};
+  bad_kdk_chk.checksum = valid_kdk.checksum ^ 0xFFFFFFFF;
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_chk, &valid_buf, &valid_buf, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_kdk_mode_cfg = kdk_cfg;
+  bad_kdk_mode_cfg.key_mode = kOtcryptoKeyModeAesCtr;
+  otcrypto_blinded_key_t bad_kdk_mode = {.config = bad_kdk_mode_cfg,
+                                         .keyblob_length = sizeof(kdk_blob),
+                                         .keyblob = kdk_blob};
+  bad_kdk_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_kdk_mode);
+  CHECK(otcrypto_kdf_ctr_hmac(&bad_kdk_mode, &valid_buf, &valid_buf, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // OKM configuration tests
+  otcrypto_key_config_t bad_km_len0_cfg = km_cfg;
+  bad_km_len0_cfg.key_length = 0;
+  otcrypto_blinded_key_t bad_km_len0 = {.config = bad_km_len0_cfg,
+                                        .keyblob_length = sizeof(km_blob),
+                                        .keyblob = km_blob};
+  bad_km_len0.checksum = otcrypto_integrity_blinded_checksum(&bad_km_len0);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_len0)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_km_hw_cfg = km_cfg;
+  bad_km_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_km_hw = {.config = bad_km_hw_cfg,
+                                      .keyblob_length = sizeof(km_blob),
+                                      .keyblob = km_blob};
+  bad_km_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_km_hw);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_hw)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_km_hw_inv_cfg = km_cfg;
+  bad_km_hw_inv_cfg.hw_backed = 0xFF;
+  otcrypto_blinded_key_t bad_km_hw_invalid = {.config = bad_km_hw_inv_cfg,
+                                              .keyblob_length = sizeof(km_blob),
+                                              .keyblob = km_blob};
+  bad_km_hw_invalid.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_km_hw_invalid);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf,
+                              &bad_km_hw_invalid)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t bad_km_bloblen = {
+      .config = km_cfg, .keyblob_length = 99, .keyblob = km_blob};
+  bad_km_bloblen.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_km_bloblen);
+  CHECK(
+      otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_bloblen)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_key_config_t bad_km_huge_cfg = km_cfg;
+  bad_km_huge_cfg.key_length = (UINT32_MAX / 8) + 1;
+  otcrypto_blinded_key_t bad_km_huge = {.config = bad_km_huge_cfg,
+                                        .keyblob_length = sizeof(km_blob),
+                                        .keyblob = km_blob};
+  bad_km_huge.checksum = otcrypto_integrity_blinded_checksum(&bad_km_huge);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_huge)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Zero byte delimiter tests
+  uint8_t zero_data[] = {0x01, 0x00, 0x02};
+  otcrypto_const_byte_buf_t buf_with_zero =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, zero_data, 3);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &buf_with_zero, &valid_buf, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &buf_with_zero, &valid_km)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  // Start the entropy complex.
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   status_t test_result = OK_STATUS();
 
@@ -1105,6 +1245,9 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, kdf_hmac_ctr_sha512_kdk48_km48_test);
   EXECUTE_TEST(test_result, kdf_hmac_ctr_sha512_kdk256_km256_test);
   EXECUTE_TEST(test_result, kdf_hmac_ctr_sha512_kdk256_km16_test);
+
+  // Negative tests
+  EXECUTE_TEST(test_result, run_hmac_kdf_negative_tests);
 
   return status_ok(test_result);
 }

@@ -54,7 +54,7 @@ targets:
   default:
     ...
     generate:
-      - ral
+      - "!chip_level ? (ral)"
 ```
 
 Note that the path to `hjson` specification in the snippet above is relative

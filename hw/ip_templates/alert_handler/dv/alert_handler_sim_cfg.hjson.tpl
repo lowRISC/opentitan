@@ -40,7 +40,7 @@
              "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   overrides: [
     {
@@ -72,45 +72,53 @@
     {
       name: ${module_instance_name}_random_classes
       uvm_test_seq: alert_handler_random_classes_vseq
+      reseed: 50
     }
 
     {
       name: ${module_instance_name}_esc_intr_timeout
       uvm_test_seq: alert_handler_esc_intr_timeout_vseq
+      reseed: 50
     }
 
     {
       name: ${module_instance_name}_esc_alert_accum
       uvm_test_seq: alert_handler_esc_alert_accum_vseq
+      reseed: 25
     }
 
     {
       name: ${module_instance_name}_sig_int_fail
       uvm_test_seq: alert_handler_sig_int_fail_vseq
+      reseed: 50
     }
 
     {
       name: ${module_instance_name}_entropy
       uvm_test_seq: alert_handler_entropy_vseq
       run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 25
     }
 
     {
       name: ${module_instance_name}_ping_timeout
       uvm_test_seq: alert_handler_ping_timeout_vseq
       run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 50
     }
 
     {
       name: ${module_instance_name}_lpg
       uvm_test_seq: alert_handler_lpg_vseq
       run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 50
     }
 
     {
       name: ${module_instance_name}_lpg_stub_clk
       uvm_test_seq: alert_handler_lpg_stub_clk_vseq
       run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 50
     }
 
     {
@@ -125,6 +133,7 @@
     {
       name: ${module_instance_name}_stress_all
       run_opts: ["+test_timeout_ns=15_000_000_000"]
+      reseed: 50
     }
 
     {

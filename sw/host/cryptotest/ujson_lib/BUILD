@@ -43,6 +43,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "ed25519_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:ed25519_commands"],
+)
+
+ujson_rust(
     name = "hmac_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:hmac_commands"],
 )
@@ -53,13 +58,33 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "mldsa_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:mldsa_commands"],
+)
+
+ujson_rust(
     name = "rsa_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:rsa_commands"],
 )
 
 ujson_rust(
+    name = "sha_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:sha_commands"],
+)
+
+ujson_rust(
     name = "sphincsplus_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands"],
+)
+
+ujson_rust(
+    name = "mlkem_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:mlkem_commands"],
+)
+
+ujson_rust(
+    name = "x25519_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:x25519_commands"],
 )
 
 rust_library(
@@ -71,12 +96,17 @@ rust_library(
         "src/drbg_commands.rs",
         "src/ecdh_commands.rs",
         "src/ecdsa_commands.rs",
+        "src/ed25519_commands.rs",
         "src/hash_commands.rs",
         "src/hmac_commands.rs",
         "src/kmac_commands.rs",
         "src/lib.rs",
+        "src/mldsa_commands.rs",
+        "src/mlkem_commands.rs",
         "src/rsa_commands.rs",
+        "src/sha_commands.rs",
         "src/sphincsplus_commands.rs",
+        "src/x25519_commands.rs",
     ],
     compile_data = [
         ":commands_rust",
@@ -85,11 +115,16 @@ rust_library(
         ":ecdh_commands_rust",
         ":drbg_commands_rust",
         ":ecdsa_commands_rust",
+        ":ed25519_commands_rust",
         ":hash_commands_rust",
         ":hmac_commands_rust",
         ":kmac_commands_rust",
+        ":mldsa_commands_rust",
+        ":mlkem_commands_rust",
         ":rsa_commands_rust",
+        ":sha_commands_rust",
         ":sphincsplus_commands_rust",
+        ":x25519_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -98,11 +133,16 @@ rust_library(
         "ecdh_commands_loc": "$(execpath :ecdh_commands_rust)",
         "drbg_commands_loc": "$(execpath :drbg_commands_rust)",
         "ecdsa_commands_loc": "$(execpath :ecdsa_commands_rust)",
+        "ed25519_commands_loc": "$(execpath :ed25519_commands_rust)",
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
         "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
+        "mldsa_commands_loc": "$(execpath :mldsa_commands_rust)",
+        "mlkem_commands_loc": "$(execpath :mlkem_commands_rust)",
         "rsa_commands_loc": "$(execpath :rsa_commands_rust)",
+        "sha_commands_loc": "$(execpath :sha_commands_rust)",
         "sphincsplus_commands_loc": "$(execpath :sphincsplus_commands_rust)",
+        "x25519_commands_loc": "$(execpath :x25519_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",

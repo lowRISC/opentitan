@@ -73,7 +73,6 @@
 
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -82,7 +81,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -171,7 +170,7 @@ enum {
   kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
   kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
              TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR,
 };
 
 /**
@@ -200,7 +199,6 @@ volatile static const uint32_t kSramFunctionTestAddress =
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t plic;
@@ -234,10 +232,10 @@ void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEarlgreyPlicPeripheralAonTimer) {
     uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+        (irq_id -
+         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
@@ -357,14 +355,10 @@ static void init_peripherals(void) {
       &alert_handler));
 
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR), &aon_timer));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
@@ -530,21 +524,18 @@ bool test_main(void) {
 
   // Enable all the interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired,
+      kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-  // Enable access to flash for storing info across resets.
+  // Enable access to NVM for storing info across resets.
   LOG_INFO("Setting default region accesses");
+  nvm_page_cfg_t default_cfg = {.scrambling = kMultiBitBool4False,
+                                .ecc = kMultiBitBool4False,
+                                .he = kMultiBitBool4False};
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+      nvm_testutils_default_region_setup(kPageReadWrite, default_cfg));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -575,7 +566,7 @@ bool test_main(void) {
     // Increment reset counter to know where we are.
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterReset));
 
-    // Get the counts from flash.
+    // Get the counts from retention SRAM.
     uint32_t interrupt_count = 0;
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterInterrupt, &interrupt_count));

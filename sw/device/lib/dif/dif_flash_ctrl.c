@@ -895,18 +895,21 @@ dif_result_t dif_flash_ctrl_set_info_region_properties(
 
   ptrdiff_t mp_reg_offset = get_info_region_mp_reg_offset(region);
   uint32_t reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
-  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD,
-                               properties.rd_en);
-  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD,
-                               properties.prog_en);
-  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD,
-                               properties.erase_en);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_FIELD, properties.rd_en);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD,
+      properties.prog_en);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD,
+      properties.erase_en);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_FIELD,
+      properties.scramble_en);
+  reg = bitfield_field32_write(
+      reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD, properties.ecc_en);
   reg = bitfield_field32_write(reg,
-                               FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD,
-                               properties.scramble_en);
-  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD,
-                               properties.ecc_en);
-  reg = bitfield_field32_write(reg, FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD,
+                               FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD,
                                properties.high_endurance_en);
   mmio_region_write32(handle->dev.base_addr, mp_reg_offset, reg);
   return kDifOk;

@@ -16,7 +16,7 @@ set -e
 
 if [ $# -lt 3 ]; then
     echo >&2 "Usage: ./run-bazel-test-query.sh <out_file> <test_tag_filters> <targets...>"
-    echo >&2 "E.g. ./run-bazel-test-query.sh all_tests.txt cw310_rom_tests,-manuf //..."
+    echo >&2 "E.g. ./run-bazel-test-query.sh all_tests.txt cw340_rom_tests,-manuf //..."
     exit 1
 fi
 out_file="$1"

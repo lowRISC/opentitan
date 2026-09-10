@@ -46,7 +46,9 @@
                // > rmapats.c:466:36: error: passing argument 1 of 'setChildClockWriteFuncAndPcode' makes
                // > integer from pointer without a cast
                // >  [-Wint-conversion]
-               "-Xcflags='-Wno-error=implicit-function-declaration -Wno-error=int-conversion'",
+               // > rmapats.c:2378:20: error: passing argument 1 of 'sched0' from incompatible
+               // pointer type [-Wincompatible-pointer-types]
+               "-Xcflags='-Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types'",
                // Force DPI-C compilation in C99 mode. The -fno-extended-identifiers flag tells g++
                // not to worry about unicode. For some bizarre reason, the VCS DPI code contains
                // preprocessor macros with smart quotes, which causes GCC 10.2 and later to choke

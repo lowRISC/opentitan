@@ -248,7 +248,7 @@ static status_t execute_test(void) {
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
 
   // Wait for host to tell us which parity and UART to test.

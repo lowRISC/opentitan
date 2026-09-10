@@ -11,16 +11,16 @@
 
 // Seed numbers for the LFSR generators in each transfer direction for
 // the given stream number
-#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s)*7U)
-#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s)*7U)
+#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s) * 7U)
+#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s) * 7U)
 // Seed number of packet retrying
-#define RETRY_LFSR_SEED(s) (uint8_t)(0x24U + (s)*7U)
+#define RETRY_LFSR_SEED(s) (uint8_t)(0x24U + (s) * 7U)
 
 // Simple LFSR for 8-bit sequences
-#define LFSR_ADVANCE(lfsr)     \
-  (uint8_t)(                   \
-      (uint8_t)((lfsr) << 1) ^ \
-      ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
+#define LFSR_ADVANCE(lfsr)                                                     \
+  (uint8_t)((uint8_t)((lfsr) << 1) ^                                           \
+            ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & \
+             1U))
 
 // Stream signature words
 #define STREAM_SIGNATURE_HEAD 0x579EA01AU

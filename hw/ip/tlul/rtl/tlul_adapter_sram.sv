@@ -23,6 +23,7 @@ module tlul_adapter_sram
 #(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
+  parameter int SramDepth         = 2**SramAw, // Must be <= 2**SramAw
   parameter int Outstanding       = 1,  // Only one request is accepted
   parameter int SramBusBankAW     = 12, // SRAM bus address width of the SRAM bank. Only used
                                         // when DataXorAddr=1.
@@ -90,6 +91,7 @@ module tlul_adapter_sram
   logic tlul_error;
   logic readback_error;
   logic sram_byte_readback_error;
+  logic addr_miss_error;
 
   // readback check
   logic readback_error_q;
@@ -163,6 +165,16 @@ module tlul_adapter_sram
     assign rd_vld_error = 1'b0;
   end
 
+  if (2**SramAw == SramDepth) begin : gen_no_addr_chk
+    // The depth of the memory is a power of two. Here, we only ever get to see addresses that hit
+    // in the memory.
+    assign addr_miss_error = 1'b0;
+  end else begin : gen_addr_chk
+    // The depth of the memory is not a power of two. We have to signal an error if the address
+    // hits the unmapped range.
+    assign addr_miss_error = tl_i.a_address[DataBitWidth +: SramAw] >= SramDepth;
+  end
+
   // tlul protocol check
   tlul_err u_err (
     .clk_i,
@@ -173,7 +185,7 @@ module tlul_adapter_sram
 
   // error return is transactional and thus does not used the "latched" intg_err signal
   assign error_det = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
-                     tlul_error    | intg_error;
+                     tlul_error    | intg_error   | addr_miss_error;
 
   // from sram_byte to adapter logic
   tl_h2d_t tl_i_int;
@@ -644,6 +656,11 @@ module tlul_adapter_sram
 
   `ASSERT_INIT(SramDwHasByteGranularity_A, SramDw % 8 == 0)
   `ASSERT_INIT(SramDwIsMultipleOfTlulWidth_A, SramDw % top_pkg::TL_DW == 0)
+  // Either the memory has a power-of-two depth and the address width perfectly matches, or the
+  // depth is not a power of two but the address width is still minimal.
+  `ASSERT_INIT(SramAwCorrectlySizedForDepth_A,
+      ((SramDepth & (SramDepth - 1)) == 0) ? (2**SramAw == SramDepth) :
+                                             ($clog2(SramDepth) == SramAw))
 
   // These parameter options cannot both be true at the same time
   `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))

@@ -12,8 +12,6 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 namespace gpio_unittest {
 namespace {
 

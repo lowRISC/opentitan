@@ -23,27 +23,41 @@ We believe in creating a welcoming and respectful community, so we have a few gr
 
 We list these principles as general guidance to make it easier to communicate and participate in the OpenTitan (and lowRISC) community.
 
-## When to file an issue vs. sending an email vs. creating a document?
+## Use of different methods to share information
 
-GitHub issues and shared Google Docs are generally preferable to email, as these can be more easily tracked, cross-referenced, archived and shared, e.g., with people joining later.
+OpenTitan uses a range of methods to share and document information.
+Each has its advantages and disadvantages, and care should be taken to use the appropriate approach for the circumstance.
 
-Emails (e.g. to the [opentitan-dev@opentitan.org](https://groups.google.com/a/opentitan.org/forum/#!forum/opentitan-dev) mailing list) are suitable to raise awareness of discussions and to call for participation.
-Emails between members of a smaller group are also useful for preliminary evaluations before starting a public issue or document.
+### Communicating through email
 
-When it comes to technical discussions, either shared documents on Google Docs or GitHub issues may be used.
-The former are more suitable for initial, broader discussions, for comparing different options and for soliciting comments from a wider audience on a proposal over a longer period of time, whereas the latter are more suitable for cross-referencing in pull requests, and for presenting the final proposal.
-The outcome of such discussions should always be summarized in a GitHub issue for later reference.
+Emails are convenient but they cannot easily be tracked, archived and shared, especially over a period of time.
+OpenTitan has a number of mailing lists and emails to these are encouraged to raise awareness of discussions and to call for participation.
+However, detailed sharing of information should use one of the other options.
 
-## Where do we discuss implementation details/proposals before creating PRs?
+### Using Google Docs
 
-A shared Google Doc is suitable for initial, broader discussions, for comparing different design options and for a wider audience and agile commenting, but not for revisioning, referencing and storage in the repository.
-Therefore, such a shared document should always be linked from a GitHub issue and the outcome of this discussion should be summarized in that issue.
-For short proposals, the entire discussion can be had in a GitHub issue, without a linked document.
+Google Docs are valuable for initial, broader discussions, for comparing different options and for soliciting comments from a wider audience on a proposal over a longer period of time.
 
-## How to/why use Google Docs?
+However, Google Docs in a personal workspace can easily be lost or have limited visibility.
+Google Docs are best used within the context of a committee or Working Group.
+They should then be stored on the associated shared drive, rather than in a user's personal workspace.
 
-Collaborative documents are more useful than GitHub issues for initial, broader discussions, for comparing different design options and for a wider audience commenting on a proposal over a longer period of time, or when interactive editing is required.
-We often make use of a Google Doc to start the discussion of an idea or proposal, before later converting it to Markdown and moving to GitHub (e.g. as a PR adding new documentation).
+A shared Google Doc and any discussion and changes is not visible in the repository.
+Good practice is to create a GitHub issue, link the Google Doc from the issue and summarise the discussion in the issue.
+
+### Using GitHub Issues
+
+GitHub issues give a formal record for smaller items, generally associated with a specific action.
+They are suitable for cross-referencing in pull requests, and for presenting smaller proposals.
+
+They are used in the [RFC process](../../project_governance/rfc_process.md) to track and summarise [individual RFCs](https://github.com/lowRISC/opentitan/issues?q=is%3Aissue%20label%3ARFC%3AApproved%20updated%3A).
+
+They are typically not a good location for extensive specifications or for information which has a longer lifetime.
+
+### Using markdown documents
+
+Markdown documents are the preferred tool for formal documentation which is likely to need to be referred to at a later point.
+These are used for this OpenTitan documentation guide and for documenting processes or specifications.
 
 ## When to assign issues or request specific reviewers?
 
@@ -100,9 +114,11 @@ The lightweight process is:
    If so, follow the [[Security Issues Process](../README.md#security-issues).
 3. [Create a GitHub issue](#working-with-issues) to raise awareness, start the discussion, and build consensus that the issue needs to be addressed.
    For more information, refer to [Communication](#communication).
-4. Start discussing possible solutions in a smaller group, possibly outside of GitHub, but in a shared document (we typically use Google Docs for convenience) that is linked to the original GitHub issue.
+4. Start discussing possible solutions in a smaller group.
+   Typically this would be an OpenTitan Working Group.
    Find consensus inside the interest group and come up with a proposal.
    For short proposals, the entire discussion can be had in a GitHub issue, without a linked document.
+   For longer proposals, use a Google Doc in the Working Group shared workspace and link from the GitHub issue.
    For more information, refer to [Communication](#communication).
 5. Summarize the outcome of the discussion or the proposed solution in the original GitHub issue.
    For bug fixes, proceed to Step 8.
@@ -252,7 +268,7 @@ Some reviewers may be assigned by default depending on the paths of changed file
 To balance the review load, you are welcome to also request a review from other people familiar in the corresponding area.
 However, you should not request a review from more than 2 to 5 team members, as this increases the review load to unsustainable levels.
 
-## Who should review PRs?
+## Who should review PRs?(#code-review)
 
 Contributors should request reviews from:
 * people regularly working on the affected parts of the code, and

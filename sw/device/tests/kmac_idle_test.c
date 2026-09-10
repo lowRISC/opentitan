@@ -111,7 +111,7 @@ static void do_sha3_test(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
   CHECK_DIF_OK(dif_clkmgr_find_hintable_clock(
       &clkmgr, dt_kmac_instance_id(kKmacDt), &kmac_clock));
 

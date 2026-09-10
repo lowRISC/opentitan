@@ -69,6 +69,10 @@ class OTBNInsn:
     # after the instruction executes.
     has_fetch_stall = False
 
+    # A class variable that is true if this instruction reads needs the URND
+    # permutation to be resampled for it ahead of time.
+    samples_urnd = False
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         self.raw = raw
         self.op_vals = op_vals
@@ -168,6 +172,7 @@ class BnVecVecTrn(OTBNInsn):
 class BnVecVecMul(OTBNInsn):
     '''A general class for vector-vector multiplication insns from the vectorized BN ISA'''
     supported_elens = [32]
+    samples_urnd = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)

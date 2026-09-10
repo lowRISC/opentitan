@@ -7,24 +7,44 @@ load(
     "dicts",
 )
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_binary",
+    "opentitan_binary_blob",
     "opentitan_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
 )
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EXEC_ENV_SILICON_ROM_EXT",
+)
 load("@ot_python_deps//:requirements.bzl", "requirement")
+load("//sw/device/lib/crypto/configs:fips_wrapper.bzl", "fips_transition_test", "fips_wrap_opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
 CRYPTOTEST_EXEC_ENVS = dicts.add(
     EARLGREY_TEST_ENVS,
     EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
+)
+
+# Specifying more restricted platforms for the FIPS tests
+# due to the transition environment not allowing to pass other flags
+# such as Verilator flags
+CRYPTOTEST_FIPS_EXEC_ENVS = dicts.add(
+    EXT_EXEC_ENV_SILICON_ROM_EXT,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
 )
 
 cc_library(
@@ -46,7 +66,7 @@ opentitan_binary(
     # Disable link-time optimization to preserve unused cryptolib functions.
     copts = ["-fno-lto"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     linker_script = "//sw/device/silicon_owner/bare_metal:ld_slot_a",
     manifest = "//sw/device/silicon_owner/bare_metal:manifest",
@@ -69,7 +89,8 @@ opentitan_test(
     ),
     deps = [
         ":aes_testvectors",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -83,6 +104,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -97,8 +120,9 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
@@ -120,12 +144,13 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -145,12 +170,13 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:aes",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -176,7 +202,13 @@ opentitan_test(
     deps = [
         ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
+        "//sw/device/lib/crypto/impl:aes_gcm",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -207,27 +239,197 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_timing_functest",
     srcs = ["aes_gcm_timing_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    fpga = fpga_params(
-        timeout = "long",
-        tags = [
-            "broken",  # https://github.com/lowRISC/opentitan/issues/15788
-            "slow_test",
-        ],
-        # [test-triage] test not constant time with icache enabled
+    exec_env = dicts.add(
+        CRYPTOTEST_EXEC_ENVS,
+        {
+            # This test expects constant cycle count which cannot be guaranteed # on the RRAM.
+            # see https://github.com/lowRISC/opentitan/issues/30895
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_sival_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_sival_skip_ci",
+        },
+    ),
+    fpga_sival_skip_ci = fpga_params(
+        tags = ["skip_in_ci"],
     ),
     verilator = verilator_params(
         timeout = "long",
-        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
-        # [test-triage] test not constant time with icache enabled
+        tags = ["broken"],
     ),
     deps = [
-        ":aes_gcm_testutils",
         ":aes_gcm_testvectors",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "ecc_p256_dice_functest",
+    srcs = ["ecc_p256_dice_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/impl/ecc:p256",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:hexstr",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/cert:dice_keys",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
+    ],
+)
+
+# Get a shifted binary blob of the cryptolib API for testing PIC-ness.
+opentitan_binary_blob(
+    name = "otcrypto_binary_blob_api_shifted",
+    collect_code_coverage = 0,
+    config = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": "//sw/device/lib/crypto/configs:crypto_fips_all.txt",
+        "//conditions:default": None,
+    }),
+    deps_blob = [
+        "//sw/device/lib/crypto:otcrypto_api",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:log",
+    ],
+    rom_origin = "0x10000",
+    target_compatible_with = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }) + opentitan_require_top("earlgrey"),
+    transitive_features = [
+        "no_jump_tables",
+        "minsize",
+    ],
+    deps = [
+        "//hw/top:top_lib",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+    ],
+)
+
+filegroup(
+    name = "otcrypto_elf_base",
+    srcs = ["//sw/device/lib/crypto:otcrypto_binary_blob_api"],
+    output_group = "elf_file",
+)
+
+filegroup(
+    name = "otcrypto_dis_base",
+    srcs = ["//sw/device/lib/crypto:otcrypto_binary_blob_api"],
+    output_group = "dis_file",
+)
+
+filegroup(
+    name = "otcrypto_elf_shifted",
+    srcs = [":otcrypto_binary_blob_api_shifted"],
+    output_group = "elf_file",
+)
+
+filegroup(
+    name = "otcrypto_dis_shifted",
+    srcs = [":otcrypto_binary_blob_api_shifted"],
+    output_group = "dis_file",
+)
+
+# Internal target, to be used for otcrypto_pic_test
+py_test(
+    name = "internal_otcrypto_pic_test",
+    srcs = ["otcrypto_pic_test.py"],
+    main = "otcrypto_pic_test.py",
+    tags = ["manual"],
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
+)
+
+# Verify whether the binary blob of the cryptolib API is position-independent
+# by checking that the symbol addresses are appropriately shifted when
+# shifting the library in memory.
+# Run the test with config=crypto_fips_all
+fips_transition_test(
+    name = "otcrypto_pic_test",
+    actual_test = ":internal_otcrypto_pic_test",
+    args = [
+        "--elf-base=$(location :otcrypto_elf_base)",
+        "--elf-offset=$(location :otcrypto_elf_shifted)",
+        "--dis-base=$(location :otcrypto_dis_base)",
+        "--dis-offset=$(location :otcrypto_dis_shifted)",
+        "--objcopy=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy)",
+        "--objdump=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump)",
+        "--nm=$(location @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm)",
+    ],
+    data = [
+        ":otcrypto_dis_base",
+        ":otcrypto_dis_shifted",
+        ":otcrypto_elf_base",
+        ":otcrypto_elf_shifted",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy",
+        "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump",
+    ],
+)
+
+opentitan_test(
+    name = "config_functest",
+    srcs = ["config_functest.c"],
+    # This test does not work on cw310 since it does not connect the jittery clock
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//hw/top:aes_c_regs",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top/dt:aes",
+        "//hw/top/dt:alert_handler",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:randomness_quality",
+        "//sw/device/lib/testing/test_framework:ottf_alerts",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "cmac_functest",
+    srcs = ["cmac_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:cmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -239,9 +441,11 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:randomness_quality",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -257,10 +461,11 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -274,12 +479,13 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -293,12 +499,14 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -311,12 +519,14 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -330,10 +540,11 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -346,12 +557,14 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/ecc:p384",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -365,11 +578,12 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -383,6 +597,8 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
@@ -401,10 +617,13 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -420,10 +639,13 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -445,13 +667,13 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -473,14 +695,14 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -493,12 +715,111 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "mldsa87_keygen_testvectors",
+    srcs = ["mldsa87_keygen_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+    ],
+)
+
+cc_library(
+    name = "mldsa87_sign_testvectors",
+    srcs = ["mldsa87_sign_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+    ],
+)
+
+cc_library(
+    name = "mldsa87_verify_testvectors",
+    srcs = ["mldsa87_verify_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa87_keygen_functest",
+    srcs = ["mldsa87_keygen_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":mldsa87_keygen_testvectors",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/crypto/impl/mldsa",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "mlkem1024_functest",
+    srcs = ["mlkem1024_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mlkem",
+        "//sw/device/lib/crypto/impl/mlkem",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa87_sign_functest",
+    srcs = ["mldsa87_sign_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":mldsa87_sign_testvectors",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa87_verify_functest",
+    srcs = ["mldsa87_verify_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":mldsa87_verify_testvectors",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mldsa",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -515,13 +836,15 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -543,15 +866,16 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -573,15 +897,16 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -604,11 +929,82 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "x25519_functest",
+    srcs = ["x25519_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "x25519_sideload_functest",
+    srcs = ["x25519_sideload_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "entropy_src_functest",
+    srcs = ["entropy_src_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -646,6 +1042,8 @@ opentitan_test(
         ":kmac_testvectors_hardcoded_header",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:sha3",
@@ -665,7 +1063,8 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -686,6 +1085,8 @@ opentitan_test(
         ":kdf_testvectors_random_header",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:kmac_kdf",
@@ -705,8 +1106,10 @@ opentitan_test(
     deps = [
         ":hmac_testvectors_random_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -726,9 +1129,26 @@ opentitan_test(
     deps = [
         ":hmac_testvectors_random_header",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
+    ],
+)
+
+opentitan_test(
+    name = "kats_functest",
+    srcs = ["kats_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:kats",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -750,12 +1170,14 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/crypto/impl:sha3",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -777,12 +1199,14 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:sha3",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -798,6 +1222,8 @@ opentitan_test(
     deps = [
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -817,6 +1243,8 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -836,6 +1264,8 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -855,6 +1285,8 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -874,6 +1306,8 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
@@ -886,11 +1320,11 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
-        tags = ["slow_test"],
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
@@ -899,12 +1333,13 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -921,9 +1356,12 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -933,26 +1371,50 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
-        tags = ["slow_test"],
+        tags = ["manual"],
     ),
     silicon = silicon_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_3072_key_from_cofactor_functest",
+    srcs = ["rsa_3072_key_from_cofactor_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -967,9 +1429,12 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -979,26 +1444,28 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
-    # This test is too slow for Verilator/DV, so target FPGA only.
+    # This test is slow, mark as manual.
     exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
-        tags = ["slow_test"],
+        tags = ["manual"],
     ),
     silicon = silicon_params(
         timeout = "long",
+        tags = ["manual"],
     ),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -1013,9 +1480,33 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_4096_key_from_cofactor_functest",
+    srcs = ["rsa_4096_key_from_cofactor_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1031,6 +1522,8 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -1047,6 +1540,8 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:status",
@@ -1059,13 +1554,19 @@ opentitan_test(
     name = "symmetric_keygen_functest",
     srcs = ["symmetric_keygen_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:randomness_quality",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -1090,7 +1591,8 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/runtime:log",
@@ -1107,9 +1609,12 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -1121,9 +1626,12 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -1135,9 +1643,12 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
     ],
 )
 
@@ -1182,8 +1693,9 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/runtime:log",
@@ -1195,14 +1707,25 @@ opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
-        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+# Call the hash test with --config=crypto_fips_all
+# Call for example otcrypto_hash_test_fips_fpga_cw340_sival_rom_ext, i.e., append fips behind the name and before the exec_env
+fips_wrap_opentitan_test(
+    name = "otcrypto_hash_test",
+    exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
 )
 
 opentitan_test(
@@ -1230,6 +1753,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1246,31 +1770,64 @@ test_suite(
         ":aes_kwp_kat_functest",
         ":aes_kwp_sideload_functest",
         ":aes_sideload_functest",
+        ":cmac_functest",
+        ":config_functest",
         ":drbg_functest",
+        ":ecc_p256_arith_share_private_key_functest",
+        ":ecc_p256_base_point_mult_functest",
+        ":ecc_p256_dice_functest",
+        ":ecc_p256_key_import_export_functest",
+        ":ecc_p256_point_on_curve_check_functest",
+        ":ecc_p384_arith_share_private_key_functest",
+        ":ecc_p384_base_point_mult_functest",
+        ":ecc_p384_key_import_export_functest",
+        ":ecc_p384_point_on_curve_check_functest",
         ":ecdh_p256_functest",
         ":ecdh_p256_sideload_functest",
+        ":ecdh_p384_functest",
+        ":ecdh_p384_sideload_functest",
         ":ecdsa_p256_functest",
         ":ecdsa_p256_sideload_functest",
         ":ecdsa_p256_verify_functest_hardcoded",
+        ":ecdsa_p384_functest",
+        ":ecdsa_p384_sideload_functest",
+        ":ed25519_functest",
+        ":entropy_src_functest",
         ":hkdf_functest",
+        ":hmac_functest",
+        ":hmac_multistream_functest",
         ":hmac_sha256_functest",
         ":hmac_sha384_functest",
         ":hmac_sha512_functest",
+        ":kats_functest",
+        ":kdf_hmac_ctr_functest",
+        ":kdf_kmac_functest",
+        ":kdf_kmac_sideload_functest_hardcoded",
+        ":kmac_functest_hardcoded",
+        ":kmac_sideload_functest_hardcoded",
         ":otcrypto_export_test",
         ":otcrypto_hash_test",
         ":rsa_2048_encryption_functest",
         ":rsa_2048_key_from_cofactor_functest",
-        ":rsa_2048_keygen_functest",
         ":rsa_2048_signature_functest",
         ":rsa_3072_encryption_functest",
-        ":rsa_3072_keygen_functest",
+        ":rsa_3072_signature_functest",
         ":rsa_4096_encryption_functest",
-        ":rsa_4096_keygen_functest",
         ":rsa_4096_signature_functest",
         ":sha256_functest",
         ":sha384_functest",
         ":sha512_functest",
         ":status_functest",
         ":symmetric_keygen_functest",
+        ":x25519_functest",
+    ],
+)
+
+test_suite(
+    name = "cryptolib_keygen_test_suite",
+    tests = [
+        ":rsa_2048_keygen_functest",
+        ":rsa_3072_keygen_functest",
+        ":rsa_4096_keygen_functest",
     ],
 )

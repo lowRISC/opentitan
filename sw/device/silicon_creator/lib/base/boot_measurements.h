@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,12 +27,12 @@ typedef struct boot_measurements {
    * rom will use this value to configure the key manager attestation
    * binding registers.
    */
-  keymgr_binding_value_t rom_ext;
+  keymgr_dpe_binding_value_t rom_ext;
   /**
    * BL0 firmware + owner configuration block digest value calculated in
    * ROM_EXT. Stored in a format that can be consumed by the key manager.
    */
-  keymgr_binding_value_t bl0;
+  keymgr_dpe_binding_value_t bl0;
 } boot_measurements_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_ext, 0);

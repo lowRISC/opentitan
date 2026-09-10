@@ -68,7 +68,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // transition initiated on the host side.
     let _ = UartConsole::wait_for(
         &*uart,
-        r"Done. Perform an LC transition and run flash stage.",
+        r"Done. Perform an LC transition and run NVM stage.",
         opts.timeout,
     )?;
 
@@ -139,7 +139,10 @@ fn main() -> Result<()> {
     transport.apply_default_configuration(None)?;
     InitializeTest::print_result(
         "load_bitstream",
-        opts.init.load_bitstream.init(&transport).map(|_| None),
+        opts.init
+            .load_bitstream
+            .init(&transport, &opts.init.jtag_params)
+            .map(|_| None),
     )?;
 
     execute_test!(manuf_cp_device_info_flash_wr, &opts, &transport);

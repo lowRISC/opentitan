@@ -10,8 +10,7 @@ filesets:
       - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - lowrisc:systems:ast_pkg
 
     files:
       - rtl/adc_ctrl_pkg.sv

@@ -68,11 +68,12 @@ module otbn_top_sim (
   assign keymgr_key.valid  = 1'b1;
 
   logic secure_wipe_running;
+  logic wfi_pending;
+  logic wfi_pending_q;
 
   otbn_core #(
     .ImemSizeByte             ( ImemSizeByte ),
     .DmemSizeByte             ( DmemSizeByte ),
-    .SecMuteUrnd              ( 1'b0         ),
     .SecSkipUrndReseedAtStart ( 1'b0         )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
@@ -110,6 +111,12 @@ module otbn_top_sim (
     .edn_urnd_i                  ( urnd_rsp                   ),
     .edn_urnd_o                  ( urnd_req                   ),
 
+    .wfi_enabled_i               ( 1'b1                       ),
+    .wfi_pending_o               ( wfi_pending                ),
+    .wfi_resume_i                ( wfi_pending_q              ),
+
+    .urnd_ctrl_enabled_i         ( 1'b1                       ),
+
     .insn_cnt_o                  ( insn_cnt                   ),
     .insn_cnt_clear_i            ( 1'b0                       ),
 
@@ -125,8 +132,21 @@ module otbn_top_sim (
     .software_errs_fatal_i       ( 1'b0                       ),
 
     .sideload_key_shares_i       ( sideload_key_shares        ),
-    .sideload_key_shares_valid_i ( 2'b11                      )
+    .sideload_key_shares_valid_i ( 2'b11                      ),
+
+    .kmac_app_req_o(    ),
+    .kmac_app_rsp_i( '0 )
   );
+
+  // Any WFI pause ends after 1 cycle. Pulse wfi_resume_i once because when unpausing the WFI
+  // instruction it still must retire to deassert wfi_pending_o.
+  always_ff @(posedge IO_CLK, negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      wfi_pending_q <= 1'b0;
+    end else begin
+      wfi_pending_q <= wfi_pending & ~wfi_pending_q;
+    end
+  end
 
   // The values returned by the mock EDN must match those set in `standalonesim.py`.
   localparam logic [1:0][WLEN-1:0] FixedEdnVals = {{4{64'hCCCC_CCCC_BBBB_BBBB}},
@@ -263,12 +283,12 @@ module otbn_top_sim (
     .wmask_i          ( dmem_wmask        ),
     .intg_error_i     ( 1'b0              ),
 
-    .rdata_o          ( dmem_rdata        ),
-    .rvalid_o         ( dmem_rvalid       ),
-    .raddr_o          (                   ),
-    .rerror_o         (                   ),
-    .cfg_i            ( '0                ),
-    .cfg_rsp_o        (                   ),
+    .rdata_o          ( dmem_rdata                              ),
+    .rvalid_o         ( dmem_rvalid                             ),
+    .raddr_o          (                                         ),
+    .rerror_o         (                                         ),
+    .cfg_i            ( prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT ),
+    .cfg_o            (                                         ),
 
     .wr_collision_o   (                   ),
     .write_pending_o  (                   ),
@@ -310,12 +330,12 @@ module otbn_top_sim (
     .wmask_i          ( '0                      ),
     .intg_error_i     ( 1'b0                    ),
 
-    .rdata_o          ( imem_rdata              ),
-    .rvalid_o         ( imem_rvalid             ),
-    .raddr_o          (                         ),
-    .rerror_o         (                         ),
-    .cfg_i            ( '0                      ),
-    .cfg_rsp_o        (                         ),
+    .rdata_o          ( imem_rdata                              ),
+    .rvalid_o         ( imem_rvalid                             ),
+    .raddr_o          (                                         ),
+    .rerror_o         (                                         ),
+    .cfg_i            ( prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT ),
+    .cfg_o            (                                         ),
 
     .wr_collision_o   (                         ),
     .write_pending_o  (                         ),
@@ -366,6 +386,8 @@ module otbn_top_sim (
 
     .cmd_i                 ( otbn_pkg::CmdExecute ),
     .cmd_en_i              ( otbn_start ),
+
+    .wfi_enabled_i         ( 1'b1 ),
 
     .lc_escalate_en_i      ( lc_ctrl_pkg::Off ),
     .lc_rma_req_i          ( lc_ctrl_pkg::Off ),

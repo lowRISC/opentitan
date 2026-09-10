@@ -506,6 +506,23 @@ class ECALL(OTBNInsn):
         state.stop_at_end_of_cycle(err_bits=0)
 
 
+class WFI(OTBNInsn):
+    insn = insn_for_mnemonic('wfi', 0)
+
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # wfi is only legal when CTRL.wfi_enabled is set.
+        if not state.wfi_enabled:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Stall until RESUME command is seen.
+        state.enter_wfi_pause()
+        while not state.wfi_should_resume():
+            yield None
+        state.exit_wfi_pause()
+        return None
+
+
 class LOOP(OTBNInsn):
     insn = insn_for_mnemonic('loop', 2)
     affects_control = True
@@ -1425,12 +1442,16 @@ class BNMULV(BnVecVecMul):
         # processed. We first compute the results and then emulate the register updates.
         result = map_elems(op, size, vec_a, vec_b)
 
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
+
         # Emulate the register updates by reading the ACC and write current quarter word result to
         # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
         for cycle in range(3):
+            chunk = (cycle + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (cycle * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
@@ -1473,12 +1494,16 @@ class BNMULVL(BnVecVecMul):
 
         result = map_elems(op, size, vec_a, lane_vec)
 
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
+
         # Emulate the register updates by reading the ACC and write current quarter word result to
         # it. In the last cycle ACC is cleared and the result is written to the destination WDR.
         qword_mask = (1 << 64) - 1
         for cycle in range(3):
+            chunk = (cycle + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (cycle * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             state.wsrs.ACC.write_unsigned(acc)
@@ -1561,6 +1586,9 @@ class BNMULVM(BnVecVecMul):
         #
         # We now repeat these 3 cycles for all four 64b chunks (quarter words).
         # In cycle 12 ACC is cleared and the result is written to the destination WDR.
+        #
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
         qword_mask = (1 << 64) - 1
         for qword in range(4):
             # For the first QWord the first cycle is the one when the loop starts.
@@ -1568,8 +1596,9 @@ class BNMULVM(BnVecVecMul):
                 yield None
             yield None
             yield None
+            chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (qword * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             if qword < 3:
@@ -1618,6 +1647,8 @@ class BNMULVML(BnVecVecMul):
         result = map_elems(lambda a, b: op(a, b, mod_q, mod_mu, size), size, vec_a, lane_vec)
 
         # Emulate the register updates. See BN.MULVM for details.
+        # The chunk processing order is rotated by a random offset sampled from URND.
+        offset = state.mac_rnd_offset
         qword_mask = (1 << 64) - 1
         for qword in range(4):
             # For the first QWord the first cycle is the one when the loop starts.
@@ -1625,8 +1656,9 @@ class BNMULVML(BnVecVecMul):
                 yield None
             yield None
             yield None
+            chunk = (qword + offset) & 0x3
             acc = state.wsrs.ACC.read_unsigned()
-            current_qword_mask = qword_mask << (qword * 64)
+            current_qword_mask = qword_mask << (chunk * 64)
             acc &= ~current_qword_mask
             acc |= result & current_qword_mask
             if qword < 3:
@@ -1780,7 +1812,7 @@ INSN_CLASSES = [
     LW, SW,
     BEQ, BNE, JAL, JALR,
     CSRRS, CSRRW,
-    ECALL,
+    ECALL, WFI,
     LOOP, LOOPI,
 
     BNADD, BNADDC, BNADDI, BNADDM,

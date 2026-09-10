@@ -65,6 +65,7 @@ fn main() -> Result<()> {
 
     let transport = opts.init.init_target()?;
     let uart_console = transport.uart("console")?;
+    uart_console.set_flow_control(true)?;
 
     // Test all four UARTs with both parities.
     for uart_id in 0..4 {

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM")
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules/opentitan:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "doxygen_gather_cc")
 
@@ -182,17 +182,81 @@ cc_library(
 )
 
 cc_library(
+    name = "rram_ctrl_testutils",
+    srcs = ["rram_ctrl_testutils.c"],
+    hdrs = ["rram_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top:rram_ctrl_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rram_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "nvm_testutils",
+    srcs = ["nvm_testutils.c"],
+    hdrs = ["nvm_testutils.h"],
+    # USE_FLASH/USE_RRAM propagate from the `:nvm_ctrl` dep below.
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top(("earlgrey", "englishbreakfast")),
+    deps = [
+        "//hw/top:top_lib",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            ":flash_ctrl_testutils",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        [
+            ":rram_ctrl_testutils",
+            "//sw/device/lib/dif:rram_ctrl",
+        ],
+        [],
+    ),
+)
+
+cc_library(
     name = "nv_counter_testutils",
     srcs = ["nv_counter_testutils.c"],
     hdrs = ["nv_counter_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    # USE_FLASH/USE_RRAM propagate from the `:nvm_ctrl` dep below.
+    target_compatible_with = [OPENTITAN_CPU] +
+                             opentitan_require_top("earlgrey"),
     deps = [
-        ":flash_ctrl_testutils",
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//hw/top:top_lib",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
+    ] + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            ":flash_ctrl_testutils",
+            "//hw/top:flash_ctrl_c_regs",
+            "//sw/device/lib/dif:flash_ctrl",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        [
+            ":rram_ctrl_testutils",
+            "//sw/device/lib/dif:rram_ctrl",
+        ],
+        [],
+    ),
 )
 
 cc_library(
@@ -244,30 +308,35 @@ cc_library(
 )
 
 cc_library(
-    name = "keymgr_testutils",
-    srcs = ["keymgr_testutils.c"],
-    hdrs = ["keymgr_testutils.h"],
+    name = "keymgr_dpe_testutils",
+    srcs = ["keymgr_dpe_testutils.c"],
+    hdrs = ["keymgr_dpe_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":entropy_testutils",
-        ":flash_ctrl_testutils",
         ":kmac_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top:top_lib",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": [
+                ":nvm_testutils",
+                "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            ],
+        },
+        [],
+    ),
 )
 
 cc_library(
@@ -527,10 +596,10 @@ cc_library(
     name = "sysrst_ctrl_testutils",
     srcs = ["sysrst_ctrl_testutils.c"],
     hdrs = ["sysrst_ctrl_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/runtime:log",
@@ -565,9 +634,9 @@ cc_library(
         "usb_testutils_controlep.h",
         "usb_testutils_diags.h",
     ],
-    target_compatible_with = [OPENTITAN_CPU],
+    target_compatible_with = [OPENTITAN_CPU] + opentitan_require_top("earlgrey"),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -619,29 +688,6 @@ cc_library(
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
-    ],
-)
-
-cc_library(
-    name = "keymgr_dpe_testutils",
-    srcs = ["keymgr_dpe_testutils.c"],
-    hdrs = ["keymgr_dpe_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":entropy_testutils",
-        ":kmac_testutils",
-        ":otp_ctrl_testutils",
-        ":rstmgr_testutils",
-        "//hw/top:keymgr_dpe_c_regs",
-        "//hw/top/dt",
-        "//sw/device/lib/arch:boot_stage",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:keymgr_dpe",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
 

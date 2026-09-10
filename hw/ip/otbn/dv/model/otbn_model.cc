@@ -31,6 +31,7 @@ int otbn_stack_element_peek(int index, svBitVecVal *val);
 #define CMD_EXECUTE 0xD8
 #define CMD_SECWIPE_DMEM 0xC3
 #define CMD_SECWIPE_IMEM 0x1E
+#define CMD_RESUME 0xA6
 
 // Values of the `STATUS` register, as defined in `otbn.hjson`.
 #define STATUS_IDLE 0x00
@@ -38,6 +39,7 @@ int otbn_stack_element_peek(int index, svBitVecVal *val);
 #define STATUS_BUSY_SEC_WIPE_DMEM 0x02
 #define STATUS_BUSY_SEC_WIPE_IMEM 0x03
 #define STATUS_BUSY_SEC_WIPE_INT 0x04
+#define STATUS_PAUSED 0x05
 #define STATUS_LOCKED 0xFF
 
 // Read (the start of) the contents of a file at path as a vector of bytes.
@@ -226,6 +228,16 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
   return 0;
 }
 
+void OtbnModel::send_mem_to_iss(ISSWrapper *iss, bool is_imem) {
+  std::string dfname(iss->make_tmp_path(is_imem ? "imem" : "dmem"));
+  write_words_to_file(dfname, get_sim_memory(is_imem));
+  if (is_imem) {
+    iss->load_i(dfname);
+  } else {
+    iss->load_d(dfname);
+  }
+}
+
 int OtbnModel::start_operation(command_t command) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -239,14 +251,8 @@ int OtbnModel::start_operation(command_t command) {
         cmd_desc = "execute";
         iss_command = ISSWrapper::Execute;
 
-        std::string dfname(iss->make_tmp_path("dmem"));
-        std::string ifname(iss->make_tmp_path("imem"));
-
-        write_words_to_file(dfname, get_sim_memory(false));
-        write_words_to_file(ifname, get_sim_memory(true));
-
-        iss->load_d(dfname);
-        iss->load_i(ifname);
+        send_mem_to_iss(iss, true);
+        send_mem_to_iss(iss, false);
       } break;
 
       case DmemWipe:
@@ -555,6 +561,40 @@ int OtbnModel::set_software_errs_fatal(unsigned char new_val) {
   } catch (const std::exception &err) {
     std::cerr << "Error when setting software_errs_fatal bit in ISS: "
               << err.what() << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OtbnModel::set_wfi_enabled(unsigned char new_val) {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    iss->set_wfi_enabled(new_val);
+  } catch (const std::exception &err) {
+    std::cerr << "Error when setting wfi_enabled bit in ISS: " << err.what()
+              << "\n";
+    return -1;
+  }
+
+  return 0;
+}
+
+int OtbnModel::wfi_resume() {
+  ISSWrapper *iss = ensure_wrapper();
+  if (!iss)
+    return -1;
+
+  try {
+    // The host may have written DMEM while OTBN was paused, so re-load the
+    // DMEM into the ISS before resuming.
+    send_mem_to_iss(iss, false);
+    iss->wfi_resume();
+  } catch (const std::exception &err) {
+    std::cerr << "Error when resuming ISS: " << err.what() << "\n";
     return -1;
   }
 
@@ -957,6 +997,8 @@ unsigned otbn_model_step(OtbnModel *model, unsigned model_state,
         new_state_bits = RUNNING_BIT;
         break;
     }
+  } else if (*status == STATUS_PAUSED && *cmd == CMD_RESUME) {
+    result = model->wfi_resume();
   }
 
   switch (result) {
@@ -1043,6 +1085,11 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model,
                                        unsigned char new_val) {
   assert(model);
   return model->set_software_errs_fatal(new_val);
+}
+
+int otbn_model_set_wfi_enabled(OtbnModel *model, unsigned char new_val) {
+  assert(model);
+  return model->set_wfi_enabled(new_val);
 }
 
 void otbn_model_tolerate_result_mismatch(OtbnModel *model,

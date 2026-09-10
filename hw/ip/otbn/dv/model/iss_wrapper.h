@@ -123,6 +123,12 @@ struct ISSWrapper {
   // Set software_errs_fatal bit in ISS model.
   void set_software_errs_fatal(bool new_val);
 
+  // Set wfi_enabled bit in ISS model.
+  void set_wfi_enabled(bool new_val);
+
+  // Resume a paused wfi instruction (host issued the RESUME command).
+  void wfi_resume();
+
   void initial_secure_wipe();
 
   // Step a CRC calculation with 48 bits of data

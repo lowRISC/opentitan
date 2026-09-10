@@ -7,15 +7,14 @@ description: "Earl Grey toplevel for the ChipWhisperer CW340 board"
 filesets:
   files_rtl_cw340:
     depend:
-      - lowrisc:prim_xilinx:earlgrey_xilinx_prim_pkg
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:top_earlgrey_padring
+      - lowrisc:earlgrey_systems:pad_orient_pkg
       - lowrisc:earlgrey_systems:scan_role_pkg
-      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
       - lowrisc:prim_xilinx_ultrascale:all
-      - lowrisc:prim_generic:flash
+      - lowrisc:ip:bkdr_loader
     files:
       - rtl/clkgen_xil_ultrascale.sv
       - rtl/usr_access_xil7series.sv
@@ -48,18 +47,13 @@ filesets:
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
-  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem
+  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw340.scr.39.vmem
   # XXX: The VMEM file should be added to the sources of the Vivado project to
   # make the Vivado dependency tracking work. However this requires changes to
   # fusesoc first.
   BootRomInitFile:
     datatype: str
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
-    default: ""
-    paramtype: vlogparam
-  OtpMacroMemInitFile:
-    datatype: str
-    description: OTP initialization file in vmem hex format
     default: ""
     paramtype: vlogparam
   AST_BYPASS_CLK:
@@ -84,7 +78,6 @@ targets:
     toplevel: chip_earlgrey_cw340
     parameters:
       - BootRomInitFile
-      - OtpMacroMemInitFile
       - AST_BYPASS_CLK=true
     tools:
       vivado:

@@ -29,6 +29,7 @@ cryptotest(
 
 cryptotest(
     name = "hmac_sha256_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
@@ -41,7 +42,22 @@ cryptotest(
 )
 
 cryptotest(
+    name = "kmac_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:kmac_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:kmac_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:kmac_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:kmac_expected.hjson",
+    ],
+)
+
+cryptotest(
     name = "cshake_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_expected.json)\"",
@@ -54,7 +70,88 @@ cryptotest(
 )
 
 cryptotest(
+    name = "ecdsa_sigver_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:ecdsa_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:ecdsa_expected.hjson",
+    ],
+)
+
+cryptotest(
+    name = "ecdsa_siggen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson)\"",
+        "--run-siggen",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson",
+    ],
+)
+
+cryptotest(
+    name = "ecdsa_keygen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson)\"",
+        "--run-keygen",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson",
+    ],
+)
+
+cryptotest(
+    name = "eddsa_siggen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson)\"",
+        "--run-siggen",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson",
+    ],
+)
+
+cryptotest(
+    name = "eddsa_keygen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson)\"",
+        "--run-keygen",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson",
+    ],
+)
+
+cryptotest(
+    name = "eddsa_sigver_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_expected.hjson",
+    ],
+)
+
+cryptotest(
     name = "rsa_acvp",
+    slow_test = True,
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_expected.json)\"",
@@ -63,6 +160,69 @@ cryptotest(
     test_vectors = [
         "//sw/host/cryptotest/testvectors/acvp:rsa_vectors.json",
         "//sw/host/cryptotest/testvectors/acvp:rsa_expected.json",
+    ],
+)
+
+cryptotest(
+    name = "rsa_acvp_siggen",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
+        "--run-siggen",
+        "--timeout=250s",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:rsa_vectors.json",
+    ],
+)
+
+cryptotest(
+    name = "rsa_keygen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_keygen_vectors.json)\"",
+        "--run-keygen",
+        "--timeout=250s",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:rsa_keygen_vectors.json",
+    ],
+)
+
+# Runs AES-ECB and AES-GCM ACVP test vectors and compares against expected
+# results.  To also save the results to a file, append --output=<path> when
+# invoking with `bazelisk.sh run`:
+#
+#   ./bazelisk.sh run \
+#       //sw/device/tests/crypto/cryptotest:aes_acvp_fpga_cw340_sival_rom_ext -- \
+#           --output=/tmp/aes_acvp_results.json
+cryptotest(
+    name = "aes_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:aes_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:aes_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:aes_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:aes_expected.hjson",
+    ],
+)
+
+cryptotest(
+    name = "sha_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:sha_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:sha_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:sha_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:sha_expected.hjson",
     ],
 )
 
@@ -170,6 +330,69 @@ cryptotest(
     test_args = ECDH_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
     test_vectors = ECDH_TESTVECTOR_TARGETS,
+)
+
+ED25519_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_ed25519_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_ed25519_sign_json",
+]
+
+ED25519_TESTVECTOR_ARGS = " ".join([
+    "--ed25519-json=\"$(rootpath {})\"".format(target)
+    for target in ED25519_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "ed25519_kat",
+    slow_test = True,
+    test_args = ED25519_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ed25519_kat:harness",
+    test_vectors = ED25519_TESTVECTOR_TARGETS,
+)
+
+X25519_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_x25519_json",
+]
+
+X25519_TESTVECTOR_ARGS = " ".join([
+    "--x25519-json=\"$(rootpath {})\"".format(target)
+    for target in X25519_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "x25519_kat",
+    slow_test = True,
+    test_args = X25519_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/x25519_kat:harness",
+    test_vectors = X25519_TESTVECTOR_TARGETS,
+)
+
+MLKEM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mlkem_1024_encaps_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mlkem_1024_decaps_json",
+]
+
+MLKEM_TESTVECTOR_ARGS = " ".join([
+    "--mlkem-json=\"$(rootpath {})\"".format(target)
+    for target in MLKEM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "mlkem_kat",
+    slow_test = True,
+    test_args = MLKEM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mlkem_kat:harness",
+    test_vectors = MLKEM_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "x25519_acvp",
+    slow_test = True,
+    test_args = "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:x25519_vectors.hjson)\"",
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:x25519_vectors.hjson",
+    ],
 )
 
 RSA_TESTVECTOR_TARGETS = [
@@ -662,6 +885,24 @@ cryptotest(
     test_vectors = SPHINCSPLUS_TESTVECTOR_TARGETS,
 )
 
+MLDSA_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mldsa_87_sign_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mldsa_87_verify_json",
+]
+
+MLDSA_TESTVECTOR_ARGS = " ".join([
+    "--mldsa-json=\"$(rootpath {})\"".format(target)
+    for target in MLDSA_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "mldsa_kat",
+    slow_test = True,
+    test_args = MLDSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mldsa_kat:harness",
+    test_vectors = MLDSA_TESTVECTOR_TARGETS,
+)
+
 # Use the following command to run the entire test suite in a given target:
 # $ export OT_EXEC_ENV=silicon_owner_sival_rom_ext
 # $ bazel test --//signing:token=//signing/tokens:cloud_kms \
@@ -675,17 +916,17 @@ test_suite(
     tests = [
         ":aes_gcm_kat",
         ":aes_kat",
-        ":cshake_acvp",
         ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
-        ":hmac_sha256_acvp",
+        ":ed25519_kat",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
-        ":rsa_acvp",
+        ":mldsa_kat",
+        ":mlkem_kat",
         ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",
@@ -697,5 +938,25 @@ test_suite(
         ":shake128_kat",
         ":shake256_kat",
         ":sphincsplus_kat",
+        ":x25519_kat",
+    ],
+)
+
+test_suite(
+    name = "crypto_acvp_test_suite",
+    tests = [
+        ":aes_acvp",
+        ":cshake_acvp",
+        ":ecdsa_keygen_acvp",
+        ":ecdsa_siggen_acvp",
+        ":ecdsa_sigver_acvp",
+        ":eddsa_keygen_acvp",
+        ":eddsa_siggen_acvp",
+        ":eddsa_sigver_acvp",
+        ":hmac_sha256_acvp",
+        ":rsa_acvp",
+        ":rsa_acvp_siggen",
+        ":rsa_keygen_acvp",
+        ":x25519_acvp",
     ],
 )

@@ -392,14 +392,14 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj);
  * - AES_IV_0: Unprotected register
  * - HMAC_MSG_LENGTH_LOWER: Unprotected register
  * - HMAC_DIGEST_0: Unprotected register
- * - KEYMGR_SEALING_SW_BINDING_7: Unprotected register
- * - KEYMGR_SALT_0: Unprotected register
+ * - KEYMGR_DPE_SW_BINDING_7: Unprotected register
+ * - KEYMGR_DPE_SALT_0: Unprotected register
  * - CSRNG_RESEED_INTERVAL: Unprotected register
  * - RAM_CTRL_READBACK: Register only accepting kMultiBitBool4True and
  * kMultiBitBool4False
  * - AES_CTRL: Shadowed register only accepting one-hot
  * encodings for each part of the register
- * - KEYMGR_RESEED_INTERVAL: Shadowed
+ * - KEYMGR_DPE_RESEED_INTERVAL: Shadowed
  * register
  * - CSRNG_CTRL_REG_OFFSET: Register only accepting kMultiBitBool4True and
  * kMultiBitBool4False

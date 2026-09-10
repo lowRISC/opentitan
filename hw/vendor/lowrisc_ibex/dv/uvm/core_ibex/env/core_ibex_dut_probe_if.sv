@@ -18,6 +18,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                              dret;
   logic                              mret;
   ibex_pkg::ibex_mubi_t              fetch_enable;
+  ibex_pkg::ibex_mubi_t              mcounteren_writable;
   logic                              core_sleep;
   logic                              alert_minor;
   logic                              alert_major_internal;
@@ -59,6 +60,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   clocking dut_cb @(posedge clk);
     output fetch_enable;
     output debug_req;
+    output mcounteren_writable;
     input reset;
     input illegal_instr;
     input ecall;
@@ -91,7 +93,8 @@ interface core_ibex_dut_probe_if(input logic clk);
   endclocking
 
   initial begin
-    debug_req = 1'b0;
+    debug_req           = 1'b0;
+    mcounteren_writable = ibex_pkg::IbexMuBiOn;
   end
 
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_rf_ren_a, rf_ren_a)

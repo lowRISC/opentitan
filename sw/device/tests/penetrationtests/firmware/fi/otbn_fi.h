@@ -226,12 +226,12 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj);
 status_t handle_otbn_init(ujson_t *uj);
 
 /**
- * Initializes the key manager.
+ * Initializes the key manager dpe.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_otbn_fi_init_keymgr(ujson_t *uj);
+status_t handle_otbn_fi_init_keymgr_dpe(ujson_t *uj);
 
 /**
  * otbn.fi.key_sideload command handler.

@@ -59,6 +59,8 @@ enum module_ {
   kModulePwrmgr =          MODULE_CODE('P', 'M'),
   kModuleGpio =            MODULE_CODE('G', 'I'),
   kModuleUsb =             MODULE_CODE('U', 'S'),
+  kModuleNvmCtrl =         MODULE_CODE('N', 'V'),
+  kModuleRramCtrl =        MODULE_CODE('R', 'M'),
   // clang-format on
 };
 
@@ -146,6 +148,11 @@ enum module_ {
   X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataEraseVerify,   ERROR_(7, kModuleFlashCtrl, kInternal)), \
   \
+  X(kErrorRramCtrlDataRead,           ERROR_(1, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlInfoRead,           ERROR_(2, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlDataWrite,          ERROR_(3, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlInfoWrite,          ERROR_(4, kModuleRramCtrl, kInternal)), \
+  \
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
@@ -222,17 +229,17 @@ enum module_ {
   X(kErrorOwnershipInvalidTag,        ERROR_(5, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidTagLength,  ERROR_(6, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipDuplicateItem,     ERROR_(7, kModuleOwnership, kAlreadyExists)), \
-  X(kErrorOwnershipFlashConfigLength, ERROR_(8, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipNvmConfigLength, ERROR_(8, kModuleOwnership, kOutOfRange)), \
   X(kErrorOwnershipInvalidInfoPage,   ERROR_(9, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipKeyNotFound,       ERROR_(12, kModuleOwnership, kNotFound)), \
   X(kErrorOwnershipInvalidDin,        ERROR_(13, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipUnlockDenied,      ERROR_(14, kModuleOwnership, kPermissionDenied)), \
-  X(kErrorOwnershipFlashConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
-  X(kErrorOwnershipFlashConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
-  X(kErrorOwnershipFlashConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidRescueBounds, ERROR_(19, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipSignatureNotFound, ERROR_(20, kModuleOwnership, kNotFound)), \
   /* Group all of the ISFB error codes together */ \
@@ -268,6 +275,8 @@ enum module_ {
   X(kErrorGpioInvalidPin,             ERROR_(0, kModuleGpio, kInvalidArgument)), \
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
+  \
+  X(kErrorNvmCtrlInvalidInfoPage,     ERROR_(1, kModuleNvmCtrl, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

@@ -31,10 +31,10 @@
 
 // Simple LFSR for 8-bit sequences
 /// Note: zero is an isolated state that shall be avoided
-#define LFSR_ADVANCE(lfsr)     \
-  (uint8_t)(                   \
-      (uint8_t)((lfsr) << 1) ^ \
-      ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
+#define LFSR_ADVANCE(lfsr)                                                     \
+  (uint8_t)((uint8_t)((lfsr) << 1) ^                                           \
+            ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & \
+             1U))
 
 // Total size of packet buffer memory in bytes
 #define USBDEV_PACKET_MEM_SIZE (USBDEV_NUM_BUFFERS * USBDEV_MAX_PACKET_SIZE)

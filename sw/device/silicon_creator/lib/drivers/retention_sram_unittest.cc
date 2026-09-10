@@ -16,7 +16,7 @@ namespace retention_sram_unittest {
 namespace {
 class RetentionSramTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

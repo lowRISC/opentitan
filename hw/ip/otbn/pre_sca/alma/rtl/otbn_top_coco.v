@@ -176,7 +176,7 @@ module otbn_top_coco #(
     end
   end
 
-  // OTBN cycle counter to easily inspect waves and associate those waves with COCO-ALMA tool
+  // OTBN cycle counter to easily inspect waves and associate those waves with CocoAlma tool
   // output. The counter is reset with the start pulse being sent.
   reg [31:0] otbn_cycle_cnt_q;
   always @(posedge clk_sys or negedge rst_sys_n) begin

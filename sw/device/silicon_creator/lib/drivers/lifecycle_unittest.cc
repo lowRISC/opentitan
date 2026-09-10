@@ -7,13 +7,14 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/lc_ctrl.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/lc_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace lifecycle_unittest {
 namespace {
@@ -21,7 +22,7 @@ using ::testing::ElementsAreArray;
 
 class LifecycleTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR;
+  uint32_t base_ = dt_lc_ctrl_primary_reg_block(kDtLcCtrl);
   rom_test::MockSecMmio mmio_;
 };
 

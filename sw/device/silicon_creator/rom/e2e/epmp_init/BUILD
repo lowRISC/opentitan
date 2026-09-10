@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_test",
@@ -29,7 +28,7 @@ package(default_visibility = ["//visibility:public"])
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
         fpga = fpga_params(
@@ -50,7 +49,7 @@ package(default_visibility = ["//visibility:public"])
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/runtime:log",

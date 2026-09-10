@@ -8,9 +8,8 @@
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                     "hw/dv/sv/alert_esc_agent/data/alert_agent_basic_testplan.hjson",
+                     "hw/dv/sv/alert_esc_agent/data/alert_esc_agent_basic_testplan.hjson",
                      "hw/dv/sv/alert_esc_agent/data/alert_agent_additional_testplan.hjson",
-                     "hw/dv/sv/alert_esc_agent/data/esc_agent_basic_testplan.hjson",
                      "hw/dv/sv/alert_esc_agent/data/esc_agent_additional_testplan.hjson",
                      // Generated in IP gen area (hw/{top}/ip_autogen).
                      "${module_instance_name}_sec_cm_testplan.hjson"]

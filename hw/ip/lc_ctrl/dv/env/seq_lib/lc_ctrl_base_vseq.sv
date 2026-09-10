@@ -96,7 +96,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // some registers won't set to default value until otp_init is done
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     lc_ctrl_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
@@ -219,8 +219,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   // Clear kmac agent digest data
   virtual function void clear_kmac_user_digest_share();
-    while (cfg.m_kmac_app_agent_cfg.has_user_digest_share()) begin
-      void'(cfg.m_kmac_app_agent_cfg.get_user_digest_share());
+    while (cfg.m_kmac_app_agent_cfg.has_user_digest()) begin
+      void'(cfg.m_kmac_app_agent_cfg.pop_user_digest());
     end
   endfunction
 

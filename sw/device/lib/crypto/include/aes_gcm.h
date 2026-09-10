@@ -40,7 +40,8 @@ typedef enum otcrypto_aes_gcm_tag_len {
  */
 typedef struct otcrypto_aes_gcm_context {
   // TODO: update the size and the restore and save context functions.
-  uint32_t data[194];
+  /// AES-GCM internal context.
+  uint32_t data[196];
 } otcrypto_aes_gcm_context_t;
 
 /**
@@ -55,7 +56,7 @@ typedef struct otcrypto_aes_gcm_context {
  * (same length as input), `auth_tag` buffer (same as tag_len), and
  * set the length of expected outputs in the `len` field of
  * `ciphertext` and `auth_tag`. If the user-set length and the output
- * length does not match, an error message will be returned.
+ * length do not match, `kOtcryptoStatusValueBadArgs` will be returned.
  *
  * @param key Pointer to the blinded gcm-key struct.
  * @param plaintext Input data to be encrypted and authenticated.
@@ -64,16 +65,17 @@ typedef struct otcrypto_aes_gcm_context {
  * @param tag_len Length of authentication tag to be generated.
  * @param[out] ciphertext Encrypted output data, same length as input data.
  * @param[out] auth_tag Generated authentication tag.
- * @return Result of the authenticated encryption.
- * operation
+ * @return Result of the authenticated encryption operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
-otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
-                                           otcrypto_const_byte_buf_t *plaintext,
-                                           otcrypto_const_word32_buf_t *iv,
-                                           otcrypto_const_byte_buf_t *aad,
-                                           otcrypto_aes_gcm_tag_len_t tag_len,
-                                           otcrypto_byte_buf_t *ciphertext,
-                                           otcrypto_word32_buf_t *auth_tag);
+otcrypto_status_t otcrypto_aes_gcm_encrypt(
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
+    const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
+    otcrypto_word32_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -85,7 +87,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
  * The caller should allocate space for the `plaintext` buffer,
  * (same length as ciphertext), and set the length of expected output
  * in the `len` field of `plaintext`. If the user-set length and the
- * output length does not match, an error message will be returned.
+ * output length does not match, `kOtcryptoStatusValueBadArgs` will be returned.
  *
  * The caller must check the `success` argument before operating on
  * `plaintext`. If the authentication check fails, then `plaintext` should not
@@ -99,14 +101,18 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
  * @param auth_tag Authentication tag to be verified.
  * @param[out] plaintext Decrypted plaintext data, same len as input data.
  * @param[out] success True if the authentication check passed, otherwise false.
- * @return Result of the authenticated decryption.
- * operation
+ * @return Result of the authenticated decryption operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
-    otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t *ciphertext,
-    otcrypto_const_word32_buf_t *iv, otcrypto_const_byte_buf_t *aad,
-    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t *auth_tag,
-    otcrypto_byte_buf_t *plaintext, hardened_bool_t *success);
+    otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *ciphertext,
+    const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
+    otcrypto_aes_gcm_tag_len_t tag_len,
+    const otcrypto_const_word32_buf_t *auth_tag, otcrypto_byte_buf_t *plaintext,
+    hardened_bool_t *success);
 
 /**
  * Initializes the AES-GCM authenticated encryption operation.
@@ -118,8 +124,11 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  *   - `otcrypto_aes_gcm_encrypt_final()` called once
  *
  * Associated data must be added first, before encrypted data; the caller may
- * not call `otcrypto_aes_gcm_udpate_aad()` after the first call to
+ * not call `otcrypto_aes_gcm_update_aad()` after the first call to
  * `otcrypto_aes_gcm_update_encrypted_data()`.
+ *
+ * The caller must perform a new initialization for each new
+ * encryption operation. This is required to ensure IV uniqueness.
  *
  * The resulting AES-GCM context will include pointers into the keyblob of the
  * blinded key. It is important that the blinded key (or at least the keyblob)
@@ -128,10 +137,13 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  * @param key Pointer to the blinded key struct.
  * @param iv Initialization vector for the encryption function.
  * @param[out] ctx Context object for the operation.
- * @return Result of the initialization operation.
+ * @return Result of the initialization operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware error occurs.
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
+    otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx);
 
 /**
@@ -144,8 +156,11 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
  *   - `otcrypto_aes_gcm_decrypt_final()` called once
  *
  * Associated data must be added first, before encrypted data; the caller may
- * not call `otcrypto_aes_gcm_udpate_aad()` after the first call to
+ * not call `otcrypto_aes_gcm_update_aad()` after the first call to
  * `otcrypto_aes_gcm_update_encrypted_data()`.
+ *
+ * The caller must perform a new initialization for each new
+ * decryption operation. This is required to ensure IV uniqueness.
  *
  * The resulting AES-GCM context will include pointers into the keyblob of the
  * blinded key. It is important that the blinded key (or at least the keyblob)
@@ -158,10 +173,13 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
  * @param key Pointer to the blinded key struct.
  * @param iv Initialization vector for the decryption function.
  * @param[out] ctx Context object for the operation.
- * @return Result of the initialization operation.
+ * @return Result of the initialization operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware error occurs.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
+    otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx);
 /**
  * Updates additional authenticated data for an AES-GCM operation.
@@ -173,8 +191,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
  * @param aad Additional authenticated data.
  * @return Result of the update operation.
  */
-otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
-                                              otcrypto_const_byte_buf_t *aad);
+otcrypto_status_t otcrypto_aes_gcm_update_aad(
+    otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *aad);
 
 /**
  * Updates authenticated-and-encrypted data for an AES-GCM operation.
@@ -194,6 +212,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
  * not long enough; if `output` is overly long, only the first
  * `output_bytes_written` bytes will be used.
  *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the ciphertext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
+ *
  * @param ctx Context object for the operation, updated in place.
  * @param input Plaintext for encryption, ciphertext for decryption.
  * @param[out] output Ciphertext for encryption, plaintext for decryption.
@@ -201,7 +223,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
  * @return Result of the update operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
-    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t *input,
+    otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *input,
     otcrypto_byte_buf_t *output, size_t *output_bytes_written);
 
 /**
@@ -216,12 +238,19 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * `ciphertext`, which is always either 16 or 0. This function returns an error
  * if the ciphertext or tag buffer is not long enough.
  *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the ciphertext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
+ *
  * @param ctx Context object for the operation.
  * @param tag_len Length of authentication tag to be generated.
  * @param[out] ciphertext Encrypted output data.
  * @param[out] ciphertext_bytes_written Number of bytes written to `ciphertext`.
  * @param[out] auth_tag Generated authentication tag.
- * @return Result of the final operation.
+ * @return Result of the final operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
@@ -249,10 +278,14 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  * @param[out] plaintext Decrypted output data.
  * @param[out] plaintext_bytes_written Number of bytes written to `plaintext`.
  * @param[out] success Whether the tag passed verification.
- * @return Result of the final operation.
+ * @return Result of the final operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
-    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t *auth_tag,
+    otcrypto_aes_gcm_context_t *ctx,
+    const otcrypto_const_word32_buf_t *auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
 

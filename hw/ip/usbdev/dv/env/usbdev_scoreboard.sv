@@ -634,11 +634,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                                  output uvm_reg csr, output int unsigned index);
     // Attempt to locate a CSR at this address.
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      string csr_name;
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      csr_name = csr.get_name();
+    csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+    if (csr != null) begin
+      string csr_name = csr.get_name();
       index = get_index_from_reg_name(csr_name);
       return csr_name;
     end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin

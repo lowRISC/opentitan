@@ -14,10 +14,14 @@ cc_library(
         ":drbg_commands",
         ":ecdh_commands",
         ":ecdsa_commands",
+        ":ed25519_commands",
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
+        ":mldsa_commands",
+        ":mlkem_commands",
         ":rsa_commands",
+        ":x25519_commands",
         "//sw/device/lib/ujson",
     ],
 )
@@ -51,6 +55,14 @@ cc_library(
 )
 
 cc_library(
+    name = "ed25519_commands",
+    srcs = ["ed25519_commands.c"],
+    hdrs = ["ed25519_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "hmac_commands",
     srcs = ["hmac_commands.c"],
     hdrs = ["hmac_commands.h"],
@@ -79,6 +91,13 @@ cc_library(
 )
 
 cc_library(
+    name = "mldsa_commands",
+    srcs = ["mldsa_commands.c"],
+    hdrs = ["mldsa_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "rsa_commands",
     srcs = ["rsa_commands.c"],
     hdrs = ["rsa_commands.h"],
@@ -86,8 +105,31 @@ cc_library(
 )
 
 cc_library(
+    name = "sha_commands",
+    srcs = ["sha_commands.c"],
+    hdrs = ["sha_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "sphincsplus_commands",
     srcs = ["sphincsplus_commands.c"],
     hdrs = ["sphincsplus_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "mlkem_commands",
+    srcs = ["mlkem_commands.c"],
+    hdrs = ["mlkem_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "x25519_commands",
+    srcs = ["x25519_commands.c"],
+    hdrs = ["x25519_commands.h"],
+    features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )

@@ -81,3 +81,13 @@ py_library(
     name = "present",
     srcs = ["Present.py"],
 )
+
+py_library(
+    name = "otp_scrambling_keys",
+    srcs = ["otp_scrambling_keys.py"],
+    imports = ["../../"],
+    deps = [
+        ":common",
+        ":present",
+    ],
+)

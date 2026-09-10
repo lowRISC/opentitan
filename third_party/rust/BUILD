@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
 load("@rules_cc//cc:defs.bzl", "cc_import")
+load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -25,18 +25,18 @@ string_flag(
 # the bindgen toolchain with the prebuilt binaries.
 cc_import(
     name = "libclang",
-    shared_library = "@llvm_toolchain_llvm//:lib/libclang.so",
+    shared_library = "@bindgen_llvm//:lib/libclang.so",
 )
 
 cc_import(
     name = "libcxx",
-    shared_library = "@llvm_toolchain_llvm//:lib/libc++.so",
+    shared_library = "@bindgen_llvm//:lib/libc++.so",
 )
 
 rust_bindgen_toolchain(
     name = "bindgen_toolchain_impl",
     bindgen = "@rules_rust_bindgen//3rdparty:bindgen",
-    clang = "@llvm_toolchain_llvm//:bin/clang",
+    clang = "@bindgen_llvm//:bin/clang",
     libclang = ":libclang",
     libstdcxx = ":libcxx",
 )

@@ -20,10 +20,6 @@ class keymgr_sync_async_fault_cross_vseq extends keymgr_base_vseq;
     cfg.en_scb = 0;
     cfg.keymgr_vif.en_chk = 0;
 
-    // disable push-pull interface assertion since faults may cause the kmac interface
-    // to be filled with random, constantly changing data
-    $assertoff(0, "tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A");
-
     fork
       trigger_sync_fault();
       trigger_async_fault();
@@ -47,7 +43,7 @@ class keymgr_sync_async_fault_cross_vseq extends keymgr_base_vseq;
     // Issue one operation, either advance or gen-out
     bit is_adv_op = $urandom_range(0, 1);
 
-    cfg.m_keymgr_kmac_agent_cfg.error_rsp_pct = 100;
+    cfg.m_kmac_agent_cfg.error_rsp_pct = 100;
     keymgr_operations(.advance_state(is_adv_op),
                       .num_gen_op(!is_adv_op),
                       .clr_output(0),

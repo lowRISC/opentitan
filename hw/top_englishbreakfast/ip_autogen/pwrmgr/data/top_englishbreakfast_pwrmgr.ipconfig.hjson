@@ -11,17 +11,17 @@
       {
         name: pin_wkup_req
         width: "1"
-        module: pinmux_aon
+        module: pinmux
       }
       {
         name: usb_wkup_req
         width: "1"
-        module: pinmux_aon
+        module: pinmux
       }
       {
         name: wkup_req
         width: "1"
-        module: aon_timer_aon
+        module: aon_timer
       }
     ]
     NumRstReqs: 1
@@ -32,7 +32,7 @@
         {
           name: MainPwr
           desc: main power glitch reset request
-          module: pwrmgr_aon
+          module: pwrmgr
         }
         {
           name: Esc
@@ -53,7 +53,7 @@
         {
           name: aon_timer_rst_req
           width: "1"
-          module: aon_timer_aon
+          module: aon_timer
           desc: Watchdog reset request.
           enabled_after_reset: false
         }

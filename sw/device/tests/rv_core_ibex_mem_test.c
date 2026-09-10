@@ -10,9 +10,10 @@
  * so will fail if SRAM read, write or execution does.
  *
  * A known location in ROM which contains a `c.jr x1` instruction is read from
- * and executed. A location is flash is written with a `jalr x0, 0(x1)`
- * instruction, which is a again read from and executed. In both these cases
- * execution is tested with the instruction cache disabled and enabled.
+ * and executed. A location in the NVM data partition (flash or RRAM,
+ * depending on the top) is written with a `jalr x0, 0(x1)` instruction, which
+ * is again read from and executed. In both these cases execution is tested
+ * with the instruction cache disabled and enabled.
  *
  * Two MMIO registers from two different devices are written to and read from.
  */
@@ -20,12 +21,11 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/pmp.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
@@ -33,8 +33,7 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top/flash_ctrl_regs.h"
-#include "hw/top/pwm_regs.h"
+#include "hw/top/aon_timer_regs.h"
 #include "hw/top/rv_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -47,27 +46,23 @@ enum {
   kRomTestLocEnd = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + 0x500,
   kRomTestLocContent = 0x8082,
 
-  // Number of bytes per page.
-  kFlashBytesPerPage = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-
   // Number of pages allocated to the ROM_EXT. The same number of pages are
   // allocated at the begining of each data bank.
-  kRomExtPageCount = CHIP_ROM_EXT_SIZE_MAX / kFlashBytesPerPage,
+  kRomExtPageCount = CHIP_ROM_EXT_SIZE_MAX / NVM_BYTES_PER_PAGE,
 
   // The start page used by this test. Points to the start of the owner
   // partition in bank 1, otherwise known as owner partition B.
   kBank1StartPageNum = 256 + kRomExtPageCount,
 
-  kFlashTestLoc = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                  kBank1StartPageNum * kFlashBytesPerPage,
+  kNvmTestLoc = NVM_DATA_BASE_ADDR + kBank1StartPageNum * NVM_BYTES_PER_PAGE,
   // The ROM_EXT protects itself using regions 0-1.
-  kFlashRegionNum = 2,
+  kNvmRegionNum = 2,
 };
 
-// The flash test location is set to the encoding of `jalr x0, 0(x1)`
+// The NVM test location is set to the encoding of `jalr x0, 0(x1)`
 // so execution can be tested.
-const uint32_t kFlashTestLocContent = 0x00008067;
-void (*flash_test_gadget)(void) = (void (*)(void))kFlashTestLoc;
+const uint32_t kNvmTestLocContent = 0x00008067;
+void (*nvm_test_gadget)(void) = (void (*)(void))kNvmTestLoc;
 
 volatile uint32_t *kMMIOTestLoc1 =
     (uint32_t *)(TOP_EARLGREY_RV_TIMER_BASE_ADDR +
@@ -75,7 +70,8 @@ volatile uint32_t *kMMIOTestLoc1 =
 const uint32_t kMMIOTestLoc1Content = 0x126d8c15;  // a random value
 
 volatile uint32_t *kMMIOTestLoc2 =
-    (uint32_t *)(TOP_EARLGREY_PWM_AON_BASE_ADDR + PWM_DUTY_CYCLE_0_REG_OFFSET);
+    (uint32_t *)(TOP_EARLGREY_AON_TIMER_BASE_ADDR +
+                 AON_TIMER_WKUP_THOLD_HI_REG_OFFSET);
 const uint32_t kMMIOTestLoc2Content = 0xe4210e64;  // a random value
 
 /**
@@ -87,7 +83,7 @@ static void setup_uart(void) {
 
   // Initialise DIF handles
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   // Initialise UART console.
   pinmux_testutils_init(&pinmux);
@@ -111,62 +107,42 @@ static void use_icache(bool enable) {
 }
 
 /**
- * Sets up the flash test location.
+ * Sets up the NVM test location.
  */
-static void setup_flash(void) {
-  // Create a PMP region for the flash
+static void setup_nvm(void) {
+  // Create a PMP region for the NVM data partition.
   pmp_region_config_t config = {
       .lock = kPmpRegionLockLocked,
       .permissions = kPmpRegionPermissionsReadWriteExecute,
   };
   pmp_region_configure_napot_result_t result = pmp_region_configure_napot(
-      8, config, TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES);
+      8, config, NVM_DATA_BASE_ADDR, NVM_DATA_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
-  // When running as ROM_EXT, ROM configures the flash memory to be readonly.
-  // We need to execute so we need to unconfigure it.
-  // This region is unconfigured by ROM_EXT so is no-op for silicon owner stage.
+  // When running as ROM_EXT, ROM configures the NVM data partition to be
+  // readonly. We need to execute so we need to unconfigure it.
+  // This region is unconfigured by ROM_EXT so is no-op for silicon owner
+  // stage.
   pmp_region_configure_result_t configure_result =
       pmp_region_configure_off(5, 0);
   CHECK(configure_result == kPmpRegionConfigureOk,
         "Load configuration failed, error code = %d", configure_result);
 
-  // Initialise the flash controller.
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  // Initialise the NVM controller.
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init());
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
+  CHECK_STATUS_OK(nvm_testutils_data_region_setup(
+      kNvmRegionNum, kBank1StartPageNum, /*size=*/1, kPageReadWrite,
+      (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                       .ecc = kMultiBitBool4False,
+                       .he = kMultiBitBool4False}));
 
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4False,
-      .ecc_en = kMultiBitBool4False,
-      .high_endurance_en = kMultiBitBool4False};
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = kBank1StartPageNum, .size = 0x1, .properties = region_properties};
+  // Make the NVM data partition executable.
+  CHECK_STATUS_OK(nvm_testutils_set_exec_enablement(true));
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
-      &flash_ctrl, kFlashRegionNum, data_region));
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(
-      &flash_ctrl, kFlashRegionNum, kDifToggleEnabled));
-
-  // Make flash executable
-  CHECK_DIF_OK(
-      dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
-
-  // Write the wanted value to flash
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-      /*flash_state=*/&flash_ctrl,
-      /*byte_address=*/kFlashTestLoc,
-      /*partition_id=*/0,
-      /*data=*/&kFlashTestLocContent,
-      /*partition_type=*/kDifFlashCtrlPartitionTypeData,
-      /*word_count=*/1));
+  // Write the wanted value to NVM.
+  CHECK_STATUS_OK(nvm_testutils_data_write(kNvmTestLoc, &kNvmTestLocContent, 1,
+                                           /*erase_before_write=*/true));
 }
 
 /**
@@ -219,22 +195,21 @@ bool test_main(void) {
       "The content of the MMIO address was 0x%08x and not the expected value.",
       load);
 
-  LOG_INFO("Setting up the flash test location.");
-  setup_flash();
+  LOG_INFO("Setting up the NVM test location.");
+  setup_nvm();
 
-  LOG_INFO("Check flash load");
-  load = *(volatile const uint32_t *)kFlashTestLoc;
-  CHECK(
-      load == kFlashTestLocContent,
-      "The content of the Flash address was 0x%08x and not the expected value.",
-      load);
+  LOG_INFO("Check NVM load");
+  load = *(volatile const uint32_t *)kNvmTestLoc;
+  CHECK(load == kNvmTestLocContent,
+        "The content of the NVM address was 0x%08x and not the expected value.",
+        load);
 
   use_icache(false);
-  LOG_INFO("Running an instruction from Flash with icache disabled.");
-  flash_test_gadget();
+  LOG_INFO("Running an instruction from NVM with icache disabled.");
+  nvm_test_gadget();
   use_icache(true);
-  LOG_INFO("Running an instruction from Flash with icache enabled.");
-  flash_test_gadget();
+  LOG_INFO("Running an instruction from NVM with icache enabled.");
+  nvm_test_gadget();
 
   test_status_set(kTestStatusPassed);
   return true;

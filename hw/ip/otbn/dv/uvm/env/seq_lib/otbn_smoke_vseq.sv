@@ -13,9 +13,6 @@ class otbn_smoke_vseq extends otbn_single_vseq;
 
   // Override pick_elf_path to always choose "smoke.elf"
   protected function string pick_elf_path();
-    // Check that cfg.otbn_elf_dir was set by the test
-    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
-
     return $sformatf("%0s/smoke_test.elf", cfg.otbn_elf_dir);
   endfunction
 

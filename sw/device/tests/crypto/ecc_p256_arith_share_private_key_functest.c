@@ -6,11 +6,14 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -25,66 +28,88 @@ enum {
   kP256SignatureWords = 512 / 32,
 };
 
-static const otcrypto_key_config_t kPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = kP256PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kPrivateKeyConfig                             \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP256,          \
+      .key_length = kP256PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 static const char kMessage[] = "test message";
 
 // Generate a random plain private key in the interval [1, n - 1].
-void generate_random_key(uint32_t *key) {
-  hardened_memshred(key, kP256ScalarWords);
-
-  const uint32_t zero[kP256ScalarWords] = {0};
+status_t generate_random_key(uint32_t *key) {
+  otcrypto_word32_buf_t key_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, key, kP256ScalarWords);
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // n - 1
   const uint32_t n1[kP256ScalarWords] = {0xfc632551, 0xf3b9cac2, 0xa7179e84,
                                          0xbce6faad, 0xffffffff, 0xffffffff,
                                          0x00000000, 0xffffffff};
 
-  while (1) {
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/&kEmptyBuffer));
+  // Attempt to generate a valid key until successful.
+  // Each attempt has around a 1 - 2^-32 probability to succeed
+  // To avoid infinite loops, we set to try  a total of 128 times
+  // for a total failure probability of 2^-4096
+  uint32_t try_count = 128;
+  uint32_t idx = 0;
+  while (idx < try_count) {
+    idx++;
     // Generate a random scalar.
-    size_t i = 0;
-    for (; launder32(i) < kP256ScalarWords; i++) {
-      key[i] = hardened_memshred_random_word();
-    }
-    HARDENED_CHECK_EQ(i, kP256ScalarWords);
+    TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf));
 
-    // If the generated key is 0, restart.
-    if (hardened_memeq(key, zero, kP256ScalarWords) == kHardenedBoolTrue) {
+    // If the generated key is not in the range [1, n-1], restart.
+    if (hardened_range_check(key, n1, kP256ScalarWords).value !=
+        kOtcryptoStatusValueOk) {
       continue;
     }
-    HARDENED_CHECK_EQ(hardened_memeq(key, zero, kP256ScalarWords),
-                      kHardenedBoolFalse);
-
-    // If the generated key is > n - 1, restart.
-    uint32_t borrow = 0;
-    i = 0;
-    for (; launder32(i) < kP256ScalarWords; i++) {
-      borrow = (n1[i] < borrow) + ((n1[i] - borrow) < key[i]);
-    }
-    HARDENED_CHECK_EQ(i, kP256ScalarWords);
-
-    if (borrow) {
-      continue;
-    }
-    HARDENED_CHECK_EQ(borrow, 0);
-
-    return;
+    return OTCRYPTO_OK;
   }
+  return OTCRYPTO_RECOV_ERR;
 }
 
-// Verify that we can correctly arithmetically share a plain private key.
-status_t arith_share_private_key_test(void) {
-  // Part 1: Generate a random private key and arithmetically share it.
+// Generate a random 320-bit Boolean-shared shared seed.
+status_t generate_random_seed(uint32_t *share0, uint32_t *share1) {
+  otcrypto_word32_buf_t key_buf0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share0, kP256MaskedScalarShareWords);
+  otcrypto_word32_buf_t key_buf1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, share1, kP256MaskedScalarShareWords);
+
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/&kEmptyBuffer));
+  TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf0));
+  TRY(otcrypto_drbg_generate(&kEmptyBuffer, &key_buf1));
+  TRY(hardened_xor_in_place(share0, share1, kP256MaskedScalarShareWords));
+  return OTCRYPTO_OK;
+}
+
+// Verify that we can correctly arithmetically share a Boolean-shared key.
+status_t arith_share_private_key_test(bool seed) {
+  // Part 1: Generate a random private key/seed and arithmetically share it.
 
   uint32_t key_share0[kP256MaskedScalarShareWords] = {0};
   uint32_t key_share1[kP256MaskedScalarShareWords] = {0};
-  generate_random_key(key_share0);
+
+  // Either generate a 320-bit Boolean-shared seed that is converted to an
+  // 320-bit arithmetically shared key or generate a 256-bit unshared key in
+  // the interval [1, n-1] according to FIPS 186-5 and expand it to 320-bit
+  // Boolean shares before the conversion to arithmetic shares.
+  if (seed) {
+    TRY(generate_random_seed(key_share0, key_share1));
+  } else {
+    TRY(generate_random_key(key_share0));
+    // Share the key
+    TRY(hardened_memshred(key_share1, kP256MaskedScalarShareWords));
+    TRY(hardened_xor_in_place(key_share0, key_share1,
+                              kP256MaskedScalarShareWords));
+  }
 
   otcrypto_const_word32_buf_t private_key_share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, key_share0, kP256MaskedScalarShareWords);
@@ -113,7 +138,7 @@ status_t arith_share_private_key_test(void) {
 
   LOG_INFO("Calculating the public key...");
   CHECK_STATUS_OK(
-      otcrypto_p256_base_point_mult(&arith_shared_private_key, &ppp));
+      otcrypto_ecc_p256_base_point_mult(&arith_shared_private_key, &ppp));
 
   // Part 3: Sign a message with the arithmetically shared key.
 
@@ -149,20 +174,82 @@ status_t arith_share_private_key_test(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_arith_share_negative_tests(void) {
+  LOG_INFO("Running arithmetic share negative tests.");
+
+  uint32_t share_data[10] = {0};
+  otcrypto_const_word32_buf_t share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share_data, 10);
+  otcrypto_const_word32_buf_t share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share_data, 10);
+
+  uint32_t keyblob[20] = {0};
+  otcrypto_blinded_key_t priv_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  priv_key.checksum = otcrypto_integrity_blinded_checksum(&priv_key);
+
+  // Null inputs
+  CHECK(otcrypto_ecc_p256_arith_share_private_key(NULL, &share1, &priv_key)
+            .value != OTCRYPTO_OK.value);
+  CHECK(
+      otcrypto_ecc_p256_arith_share_private_key(&share0, &share1, NULL).value !=
+      OTCRYPTO_OK.value);
+
+  // Bad length inputs
+  otcrypto_const_word32_buf_t bad_len_share = {.data = share_data, .len = 9};
+  CHECK(otcrypto_ecc_p256_arith_share_private_key(&bad_len_share, &share1,
+                                                  &priv_key)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key mode
+  otcrypto_key_config_t bad_mode_cfg = kPrivateKeyConfig;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeAesCtr;
+  otcrypto_blinded_key_t bad_mode_key = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  bad_mode_key.checksum = otcrypto_integrity_blinded_checksum(&bad_mode_key);
+  CHECK(
+      otcrypto_ecc_p256_arith_share_private_key(&share0, &share1, &bad_mode_key)
+          .value != OTCRYPTO_OK.value);
+
+  // Bad hw backed
+  otcrypto_key_config_t bad_hw_cfg = kPrivateKeyConfig;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_hw_key = {
+      .config = bad_hw_cfg,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  bad_hw_key.checksum = otcrypto_integrity_blinded_checksum(&bad_hw_key);
+  CHECK(otcrypto_ecc_p256_arith_share_private_key(&share0, &share1, &bad_hw_key)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
-  status_t err = arith_share_private_key_test();
-  if (!status_ok(err)) {
+  status_t err0 = arith_share_private_key_test(false);
+  status_t err1 = arith_share_private_key_test(true);
+  if (!status_ok(err0) || !status_ok(err1)) {
     // If there was an error, print the OTBN error bits and instruction count.
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     // Print the error.
-    CHECK_STATUS_OK(err);
+    CHECK_STATUS_OK(err0);
+    CHECK_STATUS_OK(err1);
     return false;
   }
+
+  CHECK_STATUS_OK(run_arith_share_negative_tests());
 
   return true;
 }

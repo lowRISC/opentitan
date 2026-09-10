@@ -176,6 +176,10 @@ def _int_to_hex_array(val: int, size: int, alignment: int) -> List[str]:
 
 class OtpMemImg(OtpMemMap):
 
+    # Life cycle states in which the device is allowed to be personalized, i.e.
+    # in which the SECRET2 partition may be locked.
+    PERSONALIZED_LC_STATES = ['DEV', 'PROD', 'PROD_END', 'RMA', 'SCRAP']
+
     def __init__(self, lc_state_config, otp_mmap_config, img_config,
                  data_perm, top_secret_cfg: dict):
         # Initialize memory map
@@ -197,6 +201,10 @@ class OtpMemImg(OtpMemMap):
         # validation and image generation depends on them
         lc_ctrl_seed = common.check_int(top_secret_cfg["seed"]["lc_ctrl_seed"]["value"])
         self.lc_state = LcStEnc(lc_state_config, lc_ctrl_seed)
+
+        # Life cycle state of the image, as a string.
+        # Default value of `RAW` applied (similar in merge_part_data()).
+        self.lc_state_name = 'RAW'
 
         # Validate memory image configuration
         log.info('')
@@ -241,6 +249,25 @@ class OtpMemImg(OtpMemMap):
 
         self.validate_data_perm(data_perm)
 
+    def validate_secrets_valid(self):
+        '''Check that a locked SECRET2 partition is legal in this life cycle state
+
+        Locking SECRET2 computes its digest, and a non-zero SECRET2 digest
+        marks the device as personalized. This must only be called once all
+        image configurations have been merged.
+        '''
+        part = self.get_part('SECRET2')
+        if part is None or not part.get('lock', False):
+            return
+
+        if self.lc_state_name not in self.PERSONALIZED_LC_STATES:
+            raise RuntimeError(
+                'The SECRET2 partition must not be locked in life cycle state '
+                '{}, because a personalized device is only valid in the {} '
+                'states. Use an unlocked SECRET2 partition for this image.'
+                .format(self.lc_state_name,
+                        ', '.join(self.PERSONALIZED_LC_STATES)))
+
     def merge_part_data(self, part):
         '''This validates and merges the partition data into the memory map dict'''
 
@@ -256,7 +283,12 @@ class OtpMemImg(OtpMemMap):
                 part['name']))
 
         # Only partitions with a hardware digest can be locked.
-        part.setdefault('lock', 'false')
+        #
+        # A configuration that does not mention 'lock' leaves the partition
+        # as it was. This lets the base image configuration own the decision
+        # of whether e.g. SECRET2 is locked.
+        # A configuration config that does specify lock still wins
+        part.setdefault('lock', mmap_part.get('lock', False))
         part['lock'] = common.check_bool(part['lock'])
         if part['lock'] and not \
            mmap_part['hw_digest']:
@@ -283,6 +315,10 @@ class OtpMemImg(OtpMemMap):
                     'Life cycle transition counter can only be zero in the RAW state'
                 )
 
+            # Remember the state so that we can validate the rest of the image
+            # against it once all configurations have been merged.
+            self.lc_state_name = str(part['state'])
+
             # Augment life cycle partition with correct life cycle encoding
             state = self.lc_state.encode('lc_state', str(part['state']))
             count = self.lc_state.encode('lc_cnt', str(part['count']))
@@ -301,7 +337,9 @@ class OtpMemImg(OtpMemMap):
         else:
             # Key accounting
             part_check = part.copy()
-            if len(part['items']) == 0:
+            # A partition that only locks itself and leaves the item values to
+            # a later overlay is a deliberate pattern, so don't warn about it.
+            if len(part['items']) == 0 and not part['lock']:
                 log.warning("Partition does not contain any items.")
 
         # Key accounting

@@ -17,7 +17,7 @@ struct Opts {
 }
 
 // Needs to match util/openocd/target
-const RISCV_IDCODE: u32 = 0x10001cdf;
+const RISCV_IDCODE: u32 = 0x10021cdf;
 
 fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;

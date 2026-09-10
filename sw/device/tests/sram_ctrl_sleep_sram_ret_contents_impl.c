@@ -9,13 +9,11 @@
 #include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -44,7 +42,7 @@ static_assert(kDtAonTimerCount == 1,
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount >= 1, "this test expects at least one rv_plic");
 
-static const dt_sram_ctrl_t kRetSramCtrlDt = kDtSramCtrlRetAon;
+static const dt_sram_ctrl_t kRetSramCtrlDt = kDtSramCtrlRet;
 
 static dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
 

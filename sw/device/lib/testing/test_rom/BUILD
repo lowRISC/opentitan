@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_for_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -31,7 +31,6 @@ opentitan_binary(
     name = "test_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
@@ -64,7 +63,6 @@ opentitan_binary(
 # can find the test_rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
         "fpga_cw305": ["//hw/top_earlgrey:fpga_cw305"],
         "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
     },
@@ -81,7 +79,6 @@ legacy_rom_targets(
         "sim_dv",
         "sim_verilator",
         "fpga_cw305",
-        "fpga_cw310",
         "fpga_cw340",
     ]
 ]
@@ -98,7 +95,6 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:top_lib",
@@ -115,7 +111,6 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
     ],
@@ -155,7 +150,6 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
@@ -163,7 +157,7 @@ cc_library(
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
@@ -188,16 +182,18 @@ cc_library(
         "test_rom.c",
         "test_rom_start.S",
     ],
-    local_defines = opentitan_if_ip(
-        "flash_ctrl",
-        ["HAS_FLASH_CTRL"],
-        [],
-    ) + opentitan_if_ip(
-        "otp_ctrl",
-        ["HAS_OTP_CTRL"],
-        [],
-    ) + opentitan_select_top(
+    local_defines = opentitan_for_ip({
+        "flash_ctrl": ["HAS_NVM"],
+        "rram_ctrl": ["HAS_NVM"],
+        "otp_ctrl": ["HAS_OTP_CTRL"],
+        "pinmux": ["HAS_PINMUX"],
+        "uart": ["HAS_UART"],
+    }) + opentitan_select_top(
         {
+            "darjeeling": [
+                "HAS_RETENTION_RAM",
+                "SKIP_BOOTSTRAP",  # FIXME bootstrap disabled for now
+            ],
             "englishbreakfast": [],
         },
         ["HAS_RETENTION_RAM"],
@@ -206,8 +202,6 @@ cc_library(
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
-        "//hw/top:ast_c_regs",
-        "//hw/top:clkmgr_c_regs",
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
@@ -215,61 +209,48 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print_uart",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-    ] + opentitan_if_ip(
-        "entropy_src",
-        ["//hw/top:entropy_src_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "csrng",
-        ["//hw/top:csrng_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "edn",
-        ["//hw/top:edn_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "flash_ctrl",
-        [
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top/dt:flash_ctrl",
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/testing:flash_ctrl_testutils",
+    ] + opentitan_for_ip({
+        "ast": ["//hw/top:ast_c_regs"],
+        "clkmgr": [
+            "//hw/top:clkmgr_c_regs",
+            "//sw/device/lib/dif:clkmgr",
         ],
-        [],
-    ) + opentitan_if_ip(
-        "sensor_ctrl",
-        ["//hw/top:sensor_ctrl_c_regs"],
-        [],
-    ) + opentitan_if_ip(
-        "otp_ctrl",
-        [
+        "gpio": ["//sw/device/lib/dif:gpio"],
+        "pinmux": [
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/testing:pinmux_testutils",
+        ],
+        "spi_device": ["//sw/device/lib/dif:spi_device"],
+        "uart": [
+            "//sw/device/lib/dif:uart",
+            "//sw/device/lib/runtime:print_uart",
+        ],
+        "entropy_src": ["//hw/top:entropy_src_c_regs"],
+        "csrng": ["//hw/top:csrng_c_regs"],
+        "edn": ["//hw/top:edn_c_regs"],
+        "sensor_ctrl": ["//hw/top:sensor_ctrl_c_regs"],
+        "otp_ctrl": [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt:otp_ctrl",
         ],
-        [],
-    ),
+        "flash_ctrl": ["//sw/device/lib/testing:nvm_testutils"],
+        "rram_ctrl": ["//sw/device/lib/testing:nvm_testutils"],
+    }),
 )
 
 opentitan_test(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
         "//hw/top_darjeeling:sim_verilator": None,
@@ -288,10 +269,6 @@ output_groups(
         "fpga_cw305_elf",
         "fpga_cw305_rom32",
         "fpga_cw305_mapfile",
-        "fpga_cw310_binary",
-        "fpga_cw310_elf",
-        "fpga_cw310_rom",
-        "fpga_cw310_mapfile",
         "fpga_cw340_binary",
         "fpga_cw340_elf",
         "fpga_cw340_rom",

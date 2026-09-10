@@ -12,11 +12,11 @@ module xbar_main_bind;
     .h2d    (tl_rv_core_ibex__corei_i),
     .d2h    (tl_rv_core_ibex__corei_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_core_ibex__cored (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot__cored (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rv_core_ibex__cored_i),
-    .d2h    (tl_rv_core_ibex__cored_o)
+    .h2d    (tl_cheriot__cored_i),
+    .d2h    (tl_cheriot__cored_o)
   );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_dm__sba (
     .clk_i  (clk_main_i),
@@ -74,23 +74,23 @@ module xbar_main_bind;
     .h2d    (tl_usbdev_o),
     .d2h    (tl_usbdev_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__core (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rram_ctrl__core (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_flash_ctrl__core_o),
-    .d2h    (tl_flash_ctrl__core_i)
+    .h2d    (tl_rram_ctrl__core_o),
+    .d2h    (tl_rram_ctrl__core_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__prim (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rram_macro__prim (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_flash_ctrl__prim_o),
-    .d2h    (tl_flash_ctrl__prim_i)
+    .h2d    (tl_rram_macro__prim_o),
+    .d2h    (tl_rram_macro__prim_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__mem (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rram_ctrl__host (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_flash_ctrl__mem_o),
-    .d2h    (tl_flash_ctrl__mem_i)
+    .h2d    (tl_rram_ctrl__host_o),
+    .d2h    (tl_rram_ctrl__host_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_hmac (
     .clk_i  (clk_main_i),
@@ -146,11 +146,11 @@ module xbar_main_bind;
     .h2d    (tl_otbn_o),
     .d2h    (tl_otbn_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_keymgr (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_keymgr_dpe (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_keymgr_o),
-    .d2h    (tl_keymgr_i)
+    .h2d    (tl_keymgr_dpe_o),
+    .d2h    (tl_keymgr_dpe_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_core_ibex__cfg (
     .clk_i  (clk_main_i),
@@ -169,6 +169,36 @@ module xbar_main_bind;
     .rst_ni (rst_main_ni),
     .h2d    (tl_sram_ctrl_main__ram_o),
     .d2h    (tl_sram_ctrl_main__ram_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_sec__regs (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_sram_ctrl_sec__regs_o),
+    .d2h    (tl_sram_ctrl_sec__regs_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_meta__regs (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_sram_ctrl_meta__regs_o),
+    .d2h    (tl_sram_ctrl_meta__regs_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_sec__ram (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_sram_ctrl_sec__ram_o),
+    .d2h    (tl_sram_ctrl_sec__ram_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot__regs (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_cheriot__regs_o),
+    .d2h    (tl_cheriot__regs_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot__revbm (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_cheriot__revbm_o),
+    .d2h    (tl_cheriot__revbm_i)
   );
 `endif
 endmodule

@@ -22,7 +22,7 @@ This includes, but is not limited to:
 - `darjeeling`
 - `englishbreakfast`
 
-The default value of this setting is `earlgrey`, meaning that unless explicitely specified, bazel will compile for Earlgrey.
+The default value of this setting is `earlgrey`, meaning that unless explicitly specified, bazel will compile for Earlgrey.
 
 For example, to build the UART headers for Darjeeling, use:
 ```console

@@ -267,7 +267,7 @@ static void pmp_setup_test_locations(void) {
  */
 static void setup_uart(void) {
   // Initialise DIF handles
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
 
   // Initialise UART console.
   pinmux_testutils_init(&pinmux);

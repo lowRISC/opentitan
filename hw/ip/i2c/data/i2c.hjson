@@ -111,15 +111,9 @@
     // RAM configuration
     { struct:  "ram_1p_cfg"
       package: "prim_ram_1p_pkg"
-      type:    "uni"
+      type:    "req_rsp"
       name:    "ram_cfg"
-      act:     "rcv"
-    }
-    { struct:  "ram_1p_cfg_rsp"
-      package: "prim_ram_1p_pkg"
-      type:    "uni"
-      name:    "ram_cfg_rsp"
-      act:     "req"
+      act:     "rsp"
     }
     { struct: "logic"
       type:   "uni"

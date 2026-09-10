@@ -21,9 +21,9 @@ otbn_library(
 )
 
 otbn_library(
-    name = "mldsa87_xof",
+    name = "xof",
     srcs = [
-        "mldsa87_xof.s",
+        "xof.s",
     ],
 )
 
@@ -66,5 +66,6 @@ otbn_library(
     name = "mldsa87_gadgets",
     srcs = [
         "mldsa87_gadgets.s",
+        "//sw/otbn/crypto:mai_gadgets.s",
     ],
 )

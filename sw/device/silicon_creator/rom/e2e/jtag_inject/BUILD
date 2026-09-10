@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -33,15 +32,15 @@ package(default_visibility = ["//visibility:public"])
 ]
 
 [
-    # We are using a bitstream with disabled execution so the content of the flash
-    # does not matter but opentitan_test() is unhappy if we don't provide one.
+    # We are using an OTP configuration with disabled execution so the content of the
+    # flash does not matter, but opentitan_test() is unhappy if we don't provide one.
     # Since execution in the ROM is disabled, bootstrap is not possible so we need
-    # to make sure that the test does not try to bootstrap
+    # to make sure that the test does not try to bootstrap.
     opentitan_test(
-        name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
+        name = "sram_program_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -50,11 +49,11 @@ package(default_visibility = ["//visibility:public"])
             logging = "debug",
             needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
-            tags = ["cw310_rom_with_fake_keys"],
             test_cmd = """
                 --elf={sram_program}
             """,
             test_harness = "//sw/host/tests/chip/jtag:sram_load",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -74,7 +73,7 @@ test_suite(
     name = "rom_e2e_jtag_inject_tests",
     tags = ["manual"],
     tests = [
-        "sram_program_fpga_cw310_test_otp_" + lc_state
+        "sram_program_test_otp_" + lc_state
         for lc_state, _ in get_lc_items(
             CONST.LCV.TEST_UNLOCKED0,
             CONST.LCV.DEV,
@@ -88,7 +87,7 @@ test_suite(
         name = "openocd_asm_interrupt_handler_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -96,6 +95,7 @@ test_suite(
             otp = ":img_{}_exec_disabled".format(lc_state),
             test_cmd = " --elf={rom:elf}",
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_interrupt_handler",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -129,7 +129,7 @@ test_suite(
         name = "openocd_shutdown_execution_asm_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -137,6 +137,7 @@ test_suite(
             otp = ":img_{}_exec_disabled".format(lc_state),
             test_cmd = " --elf={rom:elf}",
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:shutdown_execution_asm",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -170,7 +171,7 @@ test_suite(
         name = "openocd_asm_watchdog_bark_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -179,6 +180,7 @@ test_suite(
             tags = ["broken"],
             test_cmd = " --elf={rom:elf}",
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_watchdog_bark",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -212,7 +214,7 @@ test_suite(
         name = "openocd_asm_watchdog_bite_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -221,6 +223,7 @@ test_suite(
             tags = ["broken"],
             test_cmd = " --elf={rom:elf}",
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_watchdog_bite",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -259,8 +262,8 @@ LC_STATES_DEBUG_DISALLOWED = [
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             timeout = "moderate",
@@ -269,6 +272,7 @@ LC_STATES_DEBUG_DISALLOWED = [
             otp = ":img_{}_exec_disabled".format(lc_state),
             test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:debug_test",
+            testopt_bootstrap = "False",
         ),
         deps = [
             "//sw/device/lib/runtime:log",

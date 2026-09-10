@@ -360,9 +360,9 @@ class cip_base_vseq #(
   //   reset_delay_bound  Each time the sequence runs, this task will wait a random amount of time
   //                      before it starts waiting for an opportune time to inject the reset. This
   //                      is the upper bound on that wait.
-  extern protected task run_seq_with_rand_reset_vseq(uvm_sequence seq,
-                                                     int          num_times,
-                                                     uint         reset_delay_bound);
+  extern protected virtual task run_seq_with_rand_reset_vseq(uvm_sequence seq,
+                                                             int          num_times,
+                                                             uint         reset_delay_bound);
 
   // If cfg.can_reset_with_csr_accesses is false, wait_to_issue_reset() will try to wait for a time
   // with no CSR accesses before it injects the reset. The value returned by this function is an
@@ -705,6 +705,11 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
   bit [BUS_DW-1:0] exp_pins;
   bit [BUS_DW-1:0] exp_intr_state;
 
+  if (cfg.intr_vif == null) begin
+    `uvm_error(get_full_name(), "Can't check interrupts: there is no intr_vif")
+    return;
+  end
+
   if (cfg.under_reset) return;
 
   act_pins = cfg.intr_vif.sample() & interrupts;
@@ -768,6 +773,11 @@ task cip_base_vseq::run_intr_test_vseq(int num_times = 1);
   import dv_utils_pkg::interrupt_t;
   dv_base_reg intr_csrs[$];
   dv_base_reg intr_test_csrs[$];
+
+  if (cfg.intr_vif == null) begin
+    `uvm_error(get_full_name(), "Can't run intr_test sequence: there is no intr_vif")
+    return;
+  end
 
   foreach (all_csrs[i]) begin
     string csr_name = all_csrs[i].get_name();
@@ -1384,19 +1394,21 @@ endtask
 
 task cip_base_vseq::run_mem_partial_access_vseq(int num_times);
   `loop_ral_models_to_create_threads(
-      if (cfg.ral_models[ral_name].mem_ranges.size() > 0) begin
+      if (cfg.ral_models[ral_name].get_num_memories() > 0) begin
         run_mem_partial_access_vseq_sub(num_times, ral_name);
       end)
 endtask
 
 task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_name);
-  addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
+  addr_range_t loc_mem_range[$];
   uint num_accesses;
   // limit to 100k accesses if mem is very big
   uint max_accesses = 100_000;
   // Set a minimal access to avoid memory is too small and very little chance to read memory
   uint min_accesses = 100;
   uvm_reg_block local_ral = cfg.ral_models[ral_name];
+
+  cfg.ral_models[ral_name].get_mem_ranges(loc_mem_range);
 
   void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 

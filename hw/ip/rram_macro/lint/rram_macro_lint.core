@@ -1,0 +1,39 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rram_macro_lint:0.1"
+description: "Lint target for the RRAM macro"
+
+# Depends on the virtual core rather than being a virtual core itself, so that
+# fusesoc's dependency solver sees an explicit requirement on whichever
+# implementation --mapping resolves to. Linting lowrisc:ip:rram_macro directly
+# would make it both the top-level target and a virtual-core provider, which
+# FuseSoC always flags as a "non-deterministic selection", regardless of
+# --mapping.
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:virtual_ip:rram_macro
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: rram_macro
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

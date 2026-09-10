@@ -14,7 +14,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)   tl_d_chan_fifos[string];
 
   // Alert_fifo to notify scb if DUT sends an alert
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
+  uvm_tlm_analysis_fifo #(alert_seq_item) alert_fifos[string];
 
   // EDN fifo
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifos[];
@@ -83,8 +83,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     foreach (cfg.ral_models[ral_name]) begin
       bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
-      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
-      bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
+      bit has_csr       = cfg.ral_models[ral_name].has_csrs();
+      bit has_mem       = (cfg.ral_models[ral_name].get_num_memories() > 0);
       bit has_mem_byte_access_err;
       bit has_wo_mem;
       bit has_ro_mem;
@@ -212,7 +212,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!cfg.en_scb) return;
 
     if (!item.is_write()) begin
-      uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(item.a_addr);
+      uvm_reg_map map = cfg.ral_models[ral_name].get_default_map().get_root_map();
+      uvm_reg csr = map.get_reg_by_offset(item.a_addr);
       if (csr != null) begin
         dv_base_reg dv_reg;
         `downcast(dv_reg, csr)
@@ -238,18 +239,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       automatic string alert_name = i;
       fork
         forever begin
-          alert_esc_seq_item item;
+          alert_seq_item item;
           alert_fifos[alert_name].get(item);
           `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_esc_item: \n%0s",
                                     cfg.en_scb, item.sprint), UVM_DEBUG)
           if (!cfg.en_scb) continue;
-          if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
+          if (item.m_trans_type == AlertEscSigTrans && !item.ping_timeout &&
               item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response.
           // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
           // disable signal integrity checking via `check_alert_sig_int_err` flag.
-          end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
+          end else if (check_alert_sig_int_err && item.m_trans_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
           end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
@@ -262,7 +263,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Called at the start of each alert handshake. The default implementation depends on the
   // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
   // expected_alert[alert_name].expected).
-  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void on_alert(string alert_name, alert_seq_item item);
     if (do_alert_check) begin
       `DV_CHECK_EQ(expected_alert[alert_name].expected, 1,
                    $sformatf("alert %0s triggered unexpectedly", alert_name))
@@ -271,7 +272,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
-  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void process_alert(string alert_name, alert_seq_item item);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
@@ -328,30 +329,100 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
   endtask
 
+  // Wait for count negative edges of each clock (waiting for the slower of the two). This returns
+  // after that many clocks have been seen or if the reset is asserted on either interface.
+  //
+  // This task is safe to kill at any time.
+  task wait_slower_n_cycles(int unsigned         count,
+                            virtual clk_rst_if   clk_rst_vif,
+                            virtual alert_esc_if alert_esc_vif);
+    fork : isolation_fork begin
+      fork
+        // This is the main process of the task: it waits count clocks on each interface, using
+        // fork/join to wait until the slower one is finished.
+        fork
+          clk_rst_vif.wait_n_clks(count);
+          repeat (count) @(negedge alert_esc_vif.clk);
+        join
+        // These two processes wait for a reset to be asserted on one of the interfaces
+        wait (!clk_rst_vif.rst_n);
+        wait (!alert_esc_vif.rst_n);
+      join_any
+
+      // At this point, there have either been count negative edges of each clock or one of the
+      // resets has been asserted. Kill the other processes that are waiting.
+      disable fork;
+    end join
+  endtask
+
   // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
   // it should not clear the `expected_alert[alert_name].expected` flag
   local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
-    int unsigned ping_count = cfg.m_alert_agent_cfgs[alert_name].ping_count;
-    // If the alert happens when we are in the middle of ping handshake phases then wait until we
-    // are out of ping.
-    wait(!cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake &&
-         !cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake_ph_2);
-    // Add 1 extra negedge edge clock to make sure no race condition.
-    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + expected_alert[alert_name].max_delay) begin
-      cfg.clk_rst_vif.wait_n_clks(1);
-      if (under_alert_handshake[alert_name] || cfg.under_reset) return;
-    end
+    alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+
+    // A snapshot of the number of ping requests that have been seen when this task starts.
+    int unsigned ping_count = agent_cfg.ping_count;
+
+    // The maximum number of cycles that are allowed to elapse before the agent sees the alert.
+    //
+    // - ALERT_B2B_DELAY is the idle time between two back-to-back alert handshakes on the
+    //   interface.
+    //
+    // - max_delay is the maximum time between the event that caused this task to be started and the
+    //   alert being handed to the prim_alert_sender.
+    //
+    // - Finally, the +1 is to give one extra negedge clock to avoid historically seen race
+    //   conditions.
+    int unsigned max_cycles_til_alert = (alert_esc_agent_pkg::ALERT_B2B_DELAY +
+                                         expected_alert[alert_name].max_delay +
+                                         1);
+
+    // If the alert happens when we are in the middle of a ping handshake, wait until we are out of
+    // ping.
+    wait(!agent_cfg.under_ping_handshake && !agent_cfg.under_ping_handshake_ph_2);
+
+    // Wait up to max_cycles_til_alert. On every cycle of the alert interface (which may not be
+    // synchronised to cfg.clk_rst_vif), check whether an alert has been asserted. If so, drop out
+    // and kill the waiting thread.
+    fork : isolation_fork begin
+      fork
+        wait_slower_n_cycles(max_cycles_til_alert,
+                             cfg.clk_rst_vif,
+                             agent_cfg.vif);
+        forever begin
+          @(negedge agent_cfg.vif.clk);
+          if (under_alert_handshake[alert_name]) break;
+        end
+      join_any
+      disable fork;
+    end join
+
+    // Is the agent under an alert handshake? If so, it was asserted in time
+    if (under_alert_handshake[alert_name]) return;
+
+    // If either the agent's interface or clk_rst_vif is under reset, return immediately. (This will
+    // be reflected in cfg.under_reset, but we are accessing signals directly, so there are race
+    // conditions if we assume that has already been updated).
+    if (!cfg.clk_rst_vif.rst_n || !agent_cfg.vif.rst_n) return;
+
     // Ignore the alert if it's due to a ping by checking if there's been a ping since the
     // check started
-    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) begin
+    if (ping_count != agent_cfg.ping_count) begin
       alert_due_to_ping = 1;
       return;
     end
+
     // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
     // alert bit is set.
     if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
-    `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
-                               alert_name, expected_alert[alert_name].max_delay))
+
+    `uvm_error(get_full_name(),
+               $sformatf({"Waited %0d cycles but did not see alert %0s. ",
+                          "(Max wait calculated ALERT_B2B_DELAY + max_delay + 1 = %0d + %0d + 1)"},
+                         max_cycles_til_alert,
+                         alert_name,
+                         alert_esc_agent_pkg::ALERT_B2B_DELAY,
+                         expected_alert[alert_name].max_delay))
   endtask
 
   // This function is used for individual IPs to set when they expect certain alert to trigger
@@ -413,11 +484,51 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!cfg.under_reset)  exp_mem[ral_name].write(addr, item.a_data, item.a_mask);
   endtask
 
-  virtual task process_mem_read(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return a dv_base_mem for a memory at addr in block (with the default map's root map)
+  //
+  // Note that this doesn't normalise addr (on the basis that the caller probably wants the
+  // normalised address too).
+  //
+  // This function will always return a dv_base_mem handle and only returns null if it has just
+  // generated a uvm_error.
+  protected function dv_base_mem get_mem_at_addr(dv_base_reg_block block, uvm_reg_addr_t addr);
+    uvm_mem     raw_mem = block.get_default_map().get_root_map().get_mem_by_offset(addr);
+    dv_base_mem mem;
 
-    if (!cfg.under_reset && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
-      mem_compare(ral_name, addr, item);
+    if (raw_mem == null) begin
+      `uvm_error("no_mem",
+                 $sformatf("Cannot find memory at offset 0x%0h in register block '%0s'.",
+                           addr, block.get_name()))
+      return null;
+    end
+
+    if (!$cast(mem, raw_mem)) begin
+      `uvm_error("base_mem",
+                 $sformatf({"The memory at offset 0x%0h ",
+                            "in register block '%0s' is not a dv_base_mem."},
+                           addr, block.get_name()))
+      return null;
+    end
+
+    return mem;
+  endfunction
+
+  virtual task process_mem_read(tl_seq_item item, string ral_name);
+    dv_base_reg_block block;
+    uvm_reg_addr_t    norm_addr;
+    dv_base_mem       mem;
+
+    if (cfg.under_reset) return;
+
+    block     = cfg.ral_models[ral_name];
+    norm_addr = block.get_normalized_addr(item.a_addr);
+    mem       = get_mem_at_addr(block, norm_addr);
+
+    // Return gracefully if mem is null. get_mem_at_addr() will have just generated a uvm_error.
+    if (mem == null) return;
+
+    if (mem.get_access() == "RW") begin
+      mem_compare(ral_name, norm_addr, item);
     end
   endtask
 
@@ -428,7 +539,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Return true if the normalised version of addr is a memory address in the given reg block.
   protected virtual function bit is_mem_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
-    addr_range_t   loc_mem_ranges[$] = block.mem_ranges;
+    addr_range_t   loc_mem_ranges[$];
+
+    block.get_mem_ranges(loc_mem_ranges);
+
     foreach (loc_mem_ranges[i]) begin
       if (norm_addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
         return 1;
@@ -437,14 +551,36 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // Return true if item is a fetch from a mapped address in the given register block
-  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
-    cip_tl_seq_item cip_item;
+  // Return true if item is a fetch from a register in the given block and the register's parent
+  // (which may be a sub-block of the block argument) doesn't allow CSR fetches.
+  protected function bit bad_csr_fetch(tl_seq_item item, dv_base_reg_block block);
+    cip_tl_seq_item   cip_item;
+    uvm_reg           tgt_reg;
+    uvm_reg_block     base_parent_block;
+    dv_base_reg_block parent_block;
+    uvm_reg_addr_t    aligned_addr;
+
     `downcast(cip_item, item)
-    return (item.a_opcode == tlul_pkg::Get &&
-            cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item.a_addr, block) &&
-            !is_mem_addr(item.a_addr, block));
+
+    // If this isn't a fetch, return false.
+    if (!(item.a_opcode == tlul_pkg::Get && cip_item.get_instr_type() == MuBi4True)) begin
+      return 1'b0;
+    end
+
+    // Does this address a register? If not, return false.
+    //
+    // The look-up should be performed with read=1 (which is also the default), because this is a
+    // Get transaction.
+    aligned_addr = block.get_word_aligned_addr(item.a_addr);
+    tgt_reg = block.get_default_map().get_root_map().get_reg_by_offset(aligned_addr, 1);
+    if (tgt_reg == null) begin
+      return 1'b0;
+    end
+
+    // If this *does* address a register, check with dv_base_reg_block::reg_allows_fetch. This will
+    // walk up the hierarchy from the register, checking whether any of the blocks above allows a
+    // fetch.
+    return !dv_base_reg_block::reg_allows_fetch(tgt_reg);
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -477,12 +613,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 string        ral_name);
     dv_base_reg_block block = cfg.ral_models[ral_name];
 
-    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
-    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
-    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
-    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
-    bit tl_item_err    = item.get_exp_d_error();
-    bit csr_read_err   = is_csr_fetch(item, block);
+    bit unmapped_err  = !is_tl_access_mapped_addr(item.a_addr, block);
+    bit bus_intg_err  = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err   = is_tl_access_unsupported_byte_wr(item, block);
+    bit csr_size_err  = !is_tl_csr_write_size_gte_csr_width(item, block);
+    bit tl_item_err   = item.get_exp_d_error();
+    bit csr_fetch_err = bad_csr_fetch(item, block);
 
     bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
@@ -524,7 +660,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                      write_w_instr_type_err | instr_type_err |
-                     ecc_err | csr_read_err;
+                     ecc_err | csr_fetch_err;
 
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
@@ -569,7 +705,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           if (write_w_instr_type_err) reasons.push_back("Write when instr-type is set");
           if (instr_type_err) reasons.push_back("MuBi error in instr-type");
           if (ecc_err) reasons.push_back("Access to address with known-bad ECC");
-          if (csr_read_err) reasons.push_back("Fetch from CSR");
+          if (csr_fetch_err) reasons.push_back("Fetch from CSR");
         end
 
         `uvm_error(get_full_name(),
@@ -607,7 +743,26 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_fetch_err);
+  endfunction
+
+  // Return true if accessing size_bytes bytes starting at addr will address at least one register
+  // in block when using the default map.
+  local function bit touches_register(uvm_reg_addr_t    addr,
+                                      int unsigned      size_bytes,
+                                      dv_base_reg_block block);
+    uvm_reg_addr_t hi_addr = addr + size_bytes - 1;
+    uvm_reg_addr_t aligned_lo = block.get_word_aligned_addr(addr);
+    uvm_reg_addr_t aligned_hi = block.get_word_aligned_addr(hi_addr);
+
+    for (uvm_reg_addr_t a = aligned_lo; a <= aligned_hi; a++) begin
+      // We pass read=0 here because the implementation of uvm_reg_map means that this will also
+      // find write-only registers.
+      uvm_reg_map map = block.get_default_map().get_root_map();
+      if (map.get_reg_by_offset(a, 1'b0) != null) return 1'b1;
+    end
+
+    return 1'b0;
   endfunction
 
   protected function void check_tl_read_value_after_error(tl_seq_item item,
@@ -620,8 +775,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // When the access target was the memory, tlul_adapter_sram either returns
     // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
     // instruction type access or not.
-    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {block.csr_addrs}) begin
+    if (touches_register(item.a_addr, 1 << item.a_size, block)) begin
       exp_data = '1;
     end else begin
       // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
@@ -632,11 +786,15 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
   endfunction
 
-  // Return true if the given address is mapped in the register block
+  // Return true if addr points at a register or inside a memory with the default reg_map for this
+  // block.
   local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_map map = block.get_default_map().get_root_map();
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
-    // check if it's mem addr or reg addr
-    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
+
+    // Check if it's a memory or register adddress. Passning read=0 to get_reg_by_offset means that
+    // the code in uvm_reg_map will report write-only registers too.
+    return is_mem_addr(norm_addr, block) || (map.get_reg_by_offset(norm_addr, 1'b0) != null);
   endfunction
 
   // check if tl mem access will trigger error or not
@@ -650,11 +808,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                           output bit        custom_err);
     if (is_mem_addr(item.a_addr, block)) begin
       dv_base_mem mem;
-      bit invalid_access;
-      uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
-      string mem_access = get_mem_access_by_addr(block, addr);
+      string      mem_access;
+      bit         invalid_access;
 
-      `downcast(mem, get_mem_by_addr(block, addr))
+      mem = get_mem_at_addr(block, block.get_normalized_addr(item.a_addr));
+
+      // Fail gracefully if get_mem_at_addr returns null: we will have just generated a uvm_error
+      // anyway.
+      if (mem == null) return 1;
+
+      mem_access = mem.get_access();
 
       // Check if write isn't full word for mem that doesn't allow byte access.
       if (!mem.get_mem_partial_write_support() &&
@@ -707,9 +870,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             (item.a_size != 2 || item.a_mask != '1));
   endfunction
 
+  // Return true if item addresses a memory with data_intg_passthru.
+  //
+  // This returns false if the item addresses a memory without data_intg_passthru, but also if it
+  // doesn't address a memory at all.
   local function bit is_data_intg_passthru_mem(tl_seq_item item, dv_base_reg_block block);
     uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
-    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
+    uvm_mem mem = block.default_map.get_root_map().get_mem_by_offset(addr);
 
     if (mem == null) begin
       return 0;
@@ -725,6 +892,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // register.
   local function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, dv_base_reg_block block);
     uvm_reg_addr_t    addr;
+    uvm_reg           base_reg;
     dv_base_reg       csr;
     dv_base_reg_block sub_blk;
     int unsigned      num_byte_lanes, req_byte_lanes, missing_lanes;
@@ -739,8 +907,27 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
     // sub-word write, that's ok).
     addr = block.get_normalized_addr(item.a_addr);
-    `downcast(csr, block.default_map.get_reg_by_offset(addr))
-    `downcast(sub_blk, csr.get_parent())
+
+    base_reg = block.default_map.get_root_map().get_reg_by_offset(addr);
+
+    if (base_reg == null) begin
+      // We can't find a register at addr. In particular, this means we aren't doing a sub-word
+      // write to a register at that address.
+      return 1;
+    end
+
+    if (!$cast(csr, base_reg)) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Cannot cast register (%0s) to a dv_base_reg.", base_reg.get_name()))
+      return 1;
+    end
+
+    if (!$cast(sub_blk, csr.get_parent())) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Cannot cast the block (%0s) with register %0s to a dv_base_reg_block.",
+                           csr.get_parent().get_name(), csr.get_name()))
+      return 1;
+    end
 
     if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
 

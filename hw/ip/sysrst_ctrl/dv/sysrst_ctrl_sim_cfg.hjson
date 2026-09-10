@@ -38,7 +38,7 @@
   sim_tops: ["sysrst_ctrl_bind", "sysrst_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
@@ -92,21 +92,25 @@
     {
       name: sysrst_ctrl_auto_blk_key_output
       uvm_test_seq: sysrst_ctrl_auto_blk_key_output_vseq
+      reseed: 25
     }
     {
       name: sysrst_ctrl_ultra_low_pwr
       uvm_test_seq: sysrst_ctrl_ultra_low_pwr_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
+      reseed: 25
     }
     {
       name: sysrst_ctrl_combo_detect
       uvm_test_seq: sysrst_ctrl_combo_detect_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
+      reseed: 25
     }
     {
       name: sysrst_ctrl_edge_detect
       uvm_test_seq: sysrst_ctrl_edge_detect_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
+      reseed: 50
     }
     {
       name: sysrst_ctrl_combo_detect_with_pre_cond

@@ -58,21 +58,23 @@ class OwnershipActivateTest : public rom_test::RomTest {
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
         // to the value stored in boot_data.
-        EXPECT_CALL(hmac_, sha256_init());
-        EXPECT_CALL(hmac_, sha256_update(_, _));
-        EXPECT_CALL(hmac_, sha256_update(_, _));
-        EXPECT_CALL(hmac_, sha256_process());
-        EXPECT_CALL(hmac_, sha256_final(_))
-            .WillOnce(SetArgPointee<0>((hmac_digest_t){{
-                bootdata_.next_owner[0] + modifier,
-                bootdata_.next_owner[1],
-                bootdata_.next_owner[2],
-                bootdata_.next_owner[3],
-                bootdata_.next_owner[4],
-                bootdata_.next_owner[5],
-                bootdata_.next_owner[6],
-                bootdata_.next_owner[7],
-            }}));
+        for (int i = 0; i < (valid ? 2 : 1); ++i) {
+          EXPECT_CALL(hmac_, sha256_init());
+          EXPECT_CALL(hmac_, sha256_update(_, _));
+          EXPECT_CALL(hmac_, sha256_update(_, _));
+          EXPECT_CALL(hmac_, sha256_process());
+          EXPECT_CALL(hmac_, sha256_final(_))
+              .WillOnce(SetArgPointee<0>((hmac_digest_t){{
+                  bootdata_.next_owner[0] + modifier,
+                  bootdata_.next_owner[1],
+                  bootdata_.next_owner[2],
+                  bootdata_.next_owner[3],
+                  bootdata_.next_owner[4],
+                  bootdata_.next_owner[5],
+                  bootdata_.next_owner[6],
+                  bootdata_.next_owner[7],
+              }}));
+        }
       case kOwnershipStateUnlockedSelf:
         owner_page[1].owner_key = owner_page[0].owner_key;
         owner_page[1].owner_key.raw[0] += modifier;

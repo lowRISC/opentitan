@@ -13,10 +13,10 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST0  = 32'h 40060000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER   = 32'h 40100000;
   localparam logic [31:0] ADDR_SPACE_USBDEV     = 32'h 40320000;
-  localparam logic [31:0] ADDR_SPACE_PWRMGR_AON = 32'h 40400000;
-  localparam logic [31:0] ADDR_SPACE_RSTMGR_AON = 32'h 40410000;
-  localparam logic [31:0] ADDR_SPACE_CLKMGR_AON = 32'h 40420000;
-  localparam logic [31:0] ADDR_SPACE_PINMUX_AON = 32'h 40460000;
+  localparam logic [31:0] ADDR_SPACE_PWRMGR     = 32'h 40400000;
+  localparam logic [31:0] ADDR_SPACE_RSTMGR     = 32'h 40410000;
+  localparam logic [31:0] ADDR_SPACE_CLKMGR     = 32'h 40420000;
+  localparam logic [31:0] ADDR_SPACE_PINMUX     = 32'h 40460000;
   localparam logic [31:0] ADDR_SPACE_AST        = 32'h 40480000;
 
   localparam logic [31:0] ADDR_MASK_UART0      = 32'h 0000003f;
@@ -26,10 +26,10 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SPI_HOST0  = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_RV_TIMER   = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_USBDEV     = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_PWRMGR_AON = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_RSTMGR_AON = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_CLKMGR_AON = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_PINMUX_AON = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_PWRMGR     = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_RSTMGR     = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_CLKMGR     = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_PINMUX     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AST        = 32'h 000003ff;
 
   localparam int N_HOST   = 1;
@@ -43,10 +43,10 @@ package tl_peri_pkg;
     TlSpiHost0 = 4,
     TlRvTimer = 5,
     TlUsbdev = 6,
-    TlPwrmgrAon = 7,
-    TlRstmgrAon = 8,
-    TlClkmgrAon = 9,
-    TlPinmuxAon = 10,
+    TlPwrmgr = 7,
+    TlRstmgr = 8,
+    TlClkmgr = 9,
+    TlPinmux = 10,
     TlAst = 11
   } tl_device_e;
 

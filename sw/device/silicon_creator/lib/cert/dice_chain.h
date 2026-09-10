@@ -8,18 +8,26 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
-
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// `DiceCerts` and `FactoryCerts` share one `dice_page_t` buffer type/format,
+// which only works correctly if they're actually the same size -- see the
+// comment on their table entries in rram_ctrl.h's
+// `RRAM_CTRL_INFO_PAGES_DEFINE`. If a future change gives them different page
+// counts again, this catches it at compile time instead of silently
+// reintroducing an over-read/overflow.
+static_assert(kNvmInfoPageDiceCertsSize == kNvmInfoPageFactoryCertsSize,
+              "DiceCerts and FactoryCerts must be the same size");
+
 enum {
-  kDicePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
+  kDicePageDataSize = kNvmInfoPageDiceCertsSize - sizeof(hmac_digest_t),
 };
 
 /**
@@ -30,8 +38,22 @@ typedef struct dice_page {
   hmac_digest_t digest;
 } dice_page_t;
 
-static_assert(sizeof(dice_page_t) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+static_assert(sizeof(dice_page_t) == kNvmInfoPageDiceCertsSize,
               "Invalid dice page size");
+
+enum {
+  kDicePageWords = sizeof(dice_page_t) / sizeof(uint32_t),
+};
+
+/**
+ * Configure the entropy complex in continuous mode for the attestation keys.
+ *
+ * OTBN reads `RND` from EDN1, which the ROM leaves disabled in boot-time mode.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_entropy_complex_init(void);
 
 /**
  * Initialize the dice chain builder with data from the flash pages.
@@ -50,6 +72,18 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_silicon(void);
 
 /**
+ * Generate the creator keys for the dice chain.
+ *
+ * @param rom_measurement Pointer to the measurements to attest.
+ * @param rom_manifest Pointer to the current rom manifest.
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_attestation_creator(
+    const keymgr_dpe_binding_value_t *rom_measurement,
+    const manifest_t *rom_manifest);
+
+/**
  * Check the CDI_0 certificate and regenerate if invalid.
  *
  * @param rom_ext_measurement Pointer to the measurements to attest.
@@ -57,8 +91,8 @@ rom_error_t dice_chain_attestation_silicon(void);
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_attestation_creator(
-    keymgr_binding_value_t *rom_ext_measurement,
+rom_error_t dice_chain_attestation_owner_int(
+    const keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest);
 
 /**
@@ -74,9 +108,28 @@ rom_error_t dice_chain_attestation_creator(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
-    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    const manifest_t *owner_manifest,
+    keymgr_dpe_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
-    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
+    keymgr_dpe_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
+
+/**
+ * Derive the UDS keypair from the CreatorRootKey and save it for signing.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_attestation_creator_keygen(void);
+
+/**
+ * Check the factory-provisioned certificate page and the UDS certificate.
+ *
+ * This function needs to be called after `dice_chain_init()`.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_immutable_section_check(void);
 
 /**
  * Write back the certificate chain to flash if changed.
@@ -84,7 +137,7 @@ rom_error_t dice_chain_attestation_owner(
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_flush_flash(void);
+rom_error_t dice_chain_flush_nvm(void);
 
 /**
  * Checks that the factory-provisioned certificates in flash are valid and

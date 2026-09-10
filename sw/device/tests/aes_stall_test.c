@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/sca/lib/simple_serial.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -77,9 +76,7 @@ status_t execute_test(void) {
   // Initialize plaintext data dynamically
   // Create plaintext with random data
   dif_rv_core_ibex_t rv_core_ibex;
-  TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  TRY(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
   for (uint32_t i = 0; i < ARRAYSIZE(plain_text); ++i) {
     for (uint32_t j = 0; j < kDifAesBlockNumBytes; ++j) {
       uint32_t rand;

@@ -328,9 +328,9 @@ interface keymgr_if(input clk, input rst_n);
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       valid_done_window <= 0;
-    end else if (kmac_data_req.last) begin
+    end else if (kmac_data_req.req_last) begin
       valid_done_window <= 1;
-    end else if (kmac_data_rsp.done) begin
+    end else if (kmac_data_rsp.rsp_valid) begin
       valid_done_window <= 0;
     end
   end
@@ -386,10 +386,10 @@ interface keymgr_if(input clk, input rst_n);
         )
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
         // set `done` to 1, force the other fields to a random value to avoid X propagation
-        invalid_kmac_rsp.done = 1;
-        force tb.keymgr_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        invalid_kmac_rsp.rsp_valid = 1;
+        force tb.kmac_if.rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.keymgr_kmac_intf.kmac_data_rsp;
+        release tb.kmac_if.rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
@@ -400,7 +400,7 @@ interface keymgr_if(input clk, input rst_n);
         force tb.dut.u_sideload_ctrl.valids = force_sideload_valids;
         @(posedge clk);
 
-        `DV_WAIT(kmac_data_rsp.done, , 500_000, // TIMEOUT_NS_
+        `DV_WAIT(kmac_data_rsp.rsp_valid, , 500_000, // TIMEOUT_NS_
                   msg_id)
         @(posedge clk);
         release tb.dut.u_sideload_ctrl.valids;
@@ -441,8 +441,8 @@ interface keymgr_if(input clk, input rst_n);
       string path = "tb.dut.kmac_data_i";
       `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
       // don't change these control signals, otherwise, handshaking may get stuck
-      invalid_kmac_rsp.ready = kmac_data_rsp.ready;
-      invalid_kmac_rsp.done = kmac_data_rsp.done;
+      invalid_kmac_rsp.req_ready = kmac_data_rsp.req_ready;
+      invalid_kmac_rsp.rsp_valid = kmac_data_rsp.rsp_valid;
       // use deposit rather than force, so that the valid can be preserved until next update
       `DV_CHECK_FATAL(uvm_hdl_deposit(path, invalid_kmac_rsp), , msg_id)
     end
@@ -481,23 +481,13 @@ interface keymgr_if(input clk, input rst_n);
       force tb.dut.u_ctrl.u_data_en.data_sw_en_o = 1;
     end
     // force until the transaction is done.
-    @(negedge kmac_data_rsp.done);
+    @(negedge kmac_data_rsp.rsp_valid);
     if (force_hw_key_sel_or_data_en) begin
       trigger_force_hw_key_sel = 0;
     end else begin
       release tb.dut.u_ctrl.u_data_en.data_sw_en_o;
     end
   endtask
-
-  // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
-  // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
-  always_comb begin
-    if (!is_kmac_data_good || keymgr_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end else begin
-      $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end
-  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -515,7 +505,7 @@ interface keymgr_if(input clk, input rst_n);
   initial begin
     forever begin
       @(posedge clk);
-      if (kmac_data_rsp.done) begin
+      if (kmac_data_rsp.rsp_valid) begin
         if (kmac_sideload_status == SideLoadAvail) begin
           kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
@@ -523,7 +513,7 @@ interface keymgr_if(input clk, input rst_n);
           kmac_key_exp.valid <= 0;
           is_kmac_key_good   <= 0;
         end
-      end // kmac_data_rsp.done
+      end // kmac_data_rsp.rsp_valid
     end // forever
   end
 
@@ -565,25 +555,61 @@ interface keymgr_if(input clk, input rst_n);
     end
   endfunction
 
-  // Create a macro to skip checking key values when LC is off or fault error occurs
-  `define ASSERT_IFF_KEYMGR_LEGAL(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
+  // Assertions that check key values, skipping situations when when LC is off or fault error occurs
+  //
+  // These assertions all share the same disable and clocking settings, so are grouped into a
+  // gen_keymgr_legal_checks block, where they can share a "default disable" and "default clocking".
+  if (1) begin : gen_keymgr_legal_checks
+    default disable iff !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk;
+    default clocking @(posedge clk); endclocking
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
-                           (kmac_key.key[0] ^ kmac_key.key[1]) ==
-                           (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
-                           kmac_key_exp.valid == kmac_key.valid)
+    CheckKmacKeyValid:
+      assert property (is_kmac_key_good -> kmac_key_exp.valid == kmac_key.valid)
+      else `uvm_error("CheckKmacKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                kmac_key.valid, kmac_key_exp.valid))
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
-                           aes_key == aes_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
-                           aes_key_exp.valid == aes_key.valid)
+    CheckKmacKey:
+      assert property (is_kmac_key_good && kmac_key.valid ->
+                       (kmac_key.key[0] ^ kmac_key.key[1]) ==
+                       (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
+      else `uvm_error("CheckKmacKey",
+                      $sformatf({"Key mismatch. Saw 0x%0h ^ 0x%0h = 0x%0h ",
+                                 "but expected 0x%0h ^ 0x%0h = 0x%0h."},
+                                kmac_key.key[0], kmac_key.key[1],
+                                kmac_key.key[0] ^ kmac_key.key[1],
+                                kmac_key_exp.key[0], kmac_key_exp.key[1],
+                                kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
-                           -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
-                           otbn_key_exp.valid == otbn_key.valid)
+
+    CheckAesKeyValid:
+      assert property (aes_sideload_status != SideLoadClear -> aes_key_exp.valid == aes_key.valid)
+      else `uvm_error("CheckAesKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                aes_key.valid, aes_key_exp.valid))
+
+    CheckAesKey:
+      assert property (aes_sideload_status == SideLoadAvail && aes_key.valid ->
+                       aes_key == aes_key_exp)
+      else `uvm_error("CheckAesKey",
+                      $sformatf("Key mismatch. Saw 0x%0h but expected 0x%0h",
+                                aes_key, aes_key_exp))
+
+
+    CheckOtbnKeyValid:
+      assert property (otbn_sideload_status != SideLoadClear ->
+                       otbn_key_exp.valid == otbn_key.valid)
+      else `uvm_error("CheckOtbnKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                otbn_key.valid, otbn_key_exp.valid))
+
+    CheckOtbnKey:
+      assert property (otbn_sideload_status == SideLoadAvail && otbn_key.valid ->
+                       otbn_key == otbn_key_exp)
+      else `uvm_error("CheckOtbnKey",
+                      $sformatf("Key mismatch. Saw 0x%0h but expected 0x%0h",
+                                otbn_key, otbn_key_exp))
+  end
 
   // for EDN assertion
   // sync req/ack to core clk domain
@@ -661,6 +687,4 @@ interface keymgr_if(input clk, input rst_n);
   `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
           edn_wait_cnt < edn_tolerance_upd,
           clk, !rst_n || !en_chk)
-
-  `undef ASSERT_IFF_KEYMGR_LEGAL
 endinterface

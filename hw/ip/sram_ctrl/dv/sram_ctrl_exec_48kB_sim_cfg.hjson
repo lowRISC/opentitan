@@ -1,0 +1,23 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// This is a sim cfg file for an example SRAM variant with a non-power-of-2 size.
+// If we instantiate such a configuration in a top-level, we have to ensure:
+// - That the example parameters below match the actual configuration instantiated.
+// - A suitable UNR file is generated and added below.
+{
+  // Name of the sim cfg variant
+  variant: exec_48kB
+
+  // Import the base sram_ctrl sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
+
+  // vRefine file generated using UNR with dvsim's --cov-unr option
+  xcelium_cov_refine_files: []
+
+  // Example parameters for a non-power-of-2 sized configuration.
+  build_opts: ["+define+SRAM_SIZE_BYTES=49152",
+               "+define+INSTR_EXEC=1",
+               "+define+NUM_PRINCE_ROUNDS_HALF=2"]
+}

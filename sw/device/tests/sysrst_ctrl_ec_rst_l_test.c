@@ -42,8 +42,8 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In,
 };
 
 static const dif_pinmux_index_t kInputPads[] = {

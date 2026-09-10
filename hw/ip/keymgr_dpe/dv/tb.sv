@@ -13,8 +13,10 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n, rst_shadowed_n;
+  wire                          clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire kmac_pkg::app_req_t      kmac_req;
+  wire kmac_pkg::app_rsp_t      kmac_rsp;
 
   assign interrupts[NUM_MAX_INTERRUPTS-1:1] = '0;
 
@@ -24,11 +26,13 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_dpe_if keymgr_dpe_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_intf keymgr_dpe_kmac_intf(.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_req), .rsp(kmac_rsp));
+
+  bind dut.u_ctrl keymgr_dpe_ctrl_if u_if (.clk_i, .rst_ni);
 
   // connect KDF interface for assertion check
-  assign keymgr_dpe_if.kmac_data_req = keymgr_dpe_kmac_intf.kmac_data_req;
-  assign keymgr_dpe_if.kmac_data_rsp = keymgr_dpe_kmac_intf.kmac_data_rsp;
+  assign keymgr_dpe_if.kmac_data_req = kmac_req;
+  assign keymgr_dpe_if.kmac_data_rsp = kmac_rsp;
 
   `DV_ALERT_IF_CONNECT()
 
@@ -44,7 +48,11 @@ module tb;
   // dut
   // TODO(opentitan-integrated/issues/332):
   // need to model the OTP seed input
-  keymgr_dpe dut (
+  keymgr_dpe # (
+    .NumInstHwSlot        (keymgr_dpe_env_pkg::DvNumInstHwSlot),
+    .NumBootStages        (keymgr_dpe_env_pkg::DvBootStages),
+    .NumRomDigestInputs   (keymgr_dpe_env_pkg::DvNumRomDigestInputs)
+  ) dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
     .rst_shadowed_ni      (rst_shadowed_n),
@@ -53,13 +61,15 @@ module tb;
     .aes_key_o            (keymgr_dpe_if.aes_key),
     .otbn_key_o           (keymgr_dpe_if.otbn_key),
     .kmac_key_o           (keymgr_dpe_if.kmac_key),
-    .kmac_data_o          (keymgr_dpe_kmac_intf.kmac_data_req),
-    .kmac_data_i          (keymgr_dpe_kmac_intf.kmac_data_rsp),
+    .kmac_data_o          (kmac_req),
+    .kmac_data_i          (kmac_rsp),
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
-    .otp_key_i            (keymgr_dpe_if.otp_key),
-    .otp_device_id_i      (keymgr_dpe_if.otp_device_id),
+    .creator_root_key_i   (keymgr_dpe_if.creator_root_key),
+    .creator_seed_i       (keymgr_dpe_if.creator_seed),
+    .owner_seed_i         (keymgr_dpe_if.owner_seed),
+    .device_id_i          (keymgr_dpe_if.otp_device_id),
     .rom_digest_i         (keymgr_dpe_if.rom_digests),
     .edn_o                (edn_if[0].req),
     .edn_i                ({edn_if[0].ack, edn_if[0].d_data}),
@@ -81,8 +91,9 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual keymgr_dpe_if)::set(null, "*.env", "keymgr_dpe_vif", keymgr_dpe_if);
-    uvm_config_db#(virtual kmac_app_intf)::set(null,
-                   "*env.m_keymgr_dpe_kmac_agent*", "vif", keymgr_dpe_kmac_intf);
+    uvm_config_db#(virtual keymgr_dpe_ctrl_if)::set(null, "*.env", "keymgr_dpe_ctrl_vif",
+                                                    dut.u_ctrl.u_if);
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*env.m_kmac_agent*", "vif", kmac_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

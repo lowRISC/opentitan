@@ -21,7 +21,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   lc_ctrl_state_pkg::dec_lc_state_e dest_dec_state = lc_ctrl_state_pkg::DecLcStProdEnd;
 
   virtual task pre_start();
-    `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, dest_dec_state, dest_dec_state)
+    `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, dest_dec_state, "dest_dec_state")
     `uvm_info(`gfn, $sformatf("Destination state is %0s", dest_dec_state.name), UVM_MEDIUM)
     cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
@@ -104,8 +104,8 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   virtual task reload_flash_after_rma_transfer();
     bit [7:0] selected_dest_state[];
     selected_dest_state = {dest_dec_state};
-    cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-        {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+    cfg.mem_bkdr_util_h[RramData].load_mem_from_file(
+        {cfg.sw_images[SwTypeTestSlotA], ".128.scr.vmem"});
     sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
   endtask
 endclass

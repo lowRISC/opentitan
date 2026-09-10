@@ -72,7 +72,7 @@ static bool write_read_data(mmio_region_t sram_region, uint32_t data) {
 
 status_t configure_srams(void) {
   TRY(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl_main));
-  TRY(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
+  TRY(dif_sram_ctrl_init_from_dt(kDtSramCtrlRet, &sram_ctrl_ret));
 
   dif_sram_ctrl_status_bitfield_t status_main;
   dif_sram_ctrl_status_bitfield_t status_ret;
@@ -131,7 +131,7 @@ bool test_main(void) {
   // buffer that has been allocated. Ret SRAM can start at the owner section.
   sram_buffer_addr_main = (uintptr_t)&sram_buffer_main;
   sram_buffer_addr_ret =
-      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
+      dt_sram_ctrl_memory_base(kDtSramCtrlRet, kDtSramCtrlMemoryRam) +
       offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_main = mmio_region_from_addr(sram_buffer_addr_main);

@@ -108,7 +108,7 @@ static void otbn_init_irq(void) {
 }
 
 status_t initialize_clkmgr(void) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
 
   // Get initial hint and enable for OTBN clock and check both are enabled.
   dif_toggle_t clock_hint_state;

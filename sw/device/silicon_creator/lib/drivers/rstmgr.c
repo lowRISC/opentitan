@@ -25,7 +25,7 @@
 #include "hw/top/rstmgr_regs.h"
 
 static inline uint32_t rstmgr_base(void) {
-  return dt_rstmgr_primary_reg_block(kDtRstmgrAon);
+  return dt_rstmgr_primary_reg_block(kDtRstmgr);
 }
 
 void rstmgr_alert_info_collect(rstmgr_info_t *info) {

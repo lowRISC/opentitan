@@ -185,7 +185,7 @@ static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
       mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
   TRY(dif_i2c_init(base_addr, i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
 
   TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance, platform));
 
@@ -221,7 +221,7 @@ bool test_main(void) {
   dif_i2c_t i2c;
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   if (kDeviceType == kDeviceSilicon) {
     // On silicon, set tighter thresholds as we expect to be much closer

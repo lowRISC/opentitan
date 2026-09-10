@@ -182,7 +182,7 @@ typedef struct dif_pwrmgr_wakeup_reason {
  * CHECK_DIF_OK(dif_pwrmgr_find_request_source(
  *   pwrmgr,
  *   kDifPwrmgrReqTypeWakeup,
- *   dt_aon_timer_instance_id(kDtAonTimerAon),
+ *   dt_aon_timer_instance_id(kDtAonTimer),
  *   kDtAonTimerWakeupWkupReq,
  *   &wakeup_sources));
  * ```

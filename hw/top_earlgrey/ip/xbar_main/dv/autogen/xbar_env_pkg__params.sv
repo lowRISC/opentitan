@@ -14,7 +14,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h00010000, 32'h00010fff}
     }},
     '{"rom_ctrl__rom", '{
-        '{32'h00008000, 32'h0000ffff}
+        '{32'h00040000, 32'h0006ffff}
     }},
     '{"rom_ctrl__regs", '{
         '{32'h411e0000, 32'h411e007f}
@@ -32,14 +32,14 @@ tl_device_t xbar_devices[$] = '{
     '{"usbdev", '{
         '{32'h40320000, 32'h40320fff}
     }},
-    '{"flash_ctrl__core", '{
-        '{32'h41000000, 32'h410001ff}
+    '{"rram_ctrl__core", '{
+        '{32'h41010000, 32'h410101ff}
     }},
-    '{"flash_ctrl__prim", '{
-        '{32'h41008000, 32'h4100807f}
+    '{"rram_macro__prim", '{
+        '{32'h41018000, 32'h4101800f}
     }},
-    '{"flash_ctrl__mem", '{
-        '{32'h20000000, 32'h200fffff}
+    '{"rram_ctrl__host", '{
+        '{32'h30000000, 32'h301fffff}
     }},
     '{"hmac", '{
         '{32'h41110000, 32'h41111fff}
@@ -68,7 +68,7 @@ tl_device_t xbar_devices[$] = '{
     '{"otbn", '{
         '{32'h41130000, 32'h4113ffff}
     }},
-    '{"keymgr", '{
+    '{"keymgr_dpe", '{
         '{32'h41140000, 32'h411400ff}
     }},
     '{"rv_core_ibex__cfg", '{
@@ -79,6 +79,21 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sram_ctrl_main__ram", '{
         '{32'h10000000, 32'h1001ffff}
+    }},
+    '{"sram_ctrl_sec__regs", '{
+        '{32'h411d0000, 32'h411d003f}
+    }},
+    '{"sram_ctrl_meta__regs", '{
+        '{32'h411a0000, 32'h411a003f}
+    }},
+    '{"sram_ctrl_sec__ram", '{
+        '{32'h10020000, 32'h1002ffff}
+    }},
+    '{"cheriot__regs", '{
+        '{32'h411b0000, 32'h411b0003}
+    }},
+    '{"cheriot__revbm", '{
+        '{32'h11000000, 32'h11000bff}
 }}};
 
   // List of Xbar hosts
@@ -87,21 +102,23 @@ tl_host_t xbar_hosts[$] = '{
         "rom_ctrl__rom",
         "rv_dm__mem",
         "sram_ctrl_main__ram",
-        "flash_ctrl__mem"}}
+        "sram_ctrl_sec__ram",
+        "rram_ctrl__host"}}
     ,
-    '{"rv_core_ibex__cored", 1, '{
+    '{"cheriot__cored", 1, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
         "rv_dm__mem",
         "rv_dm__regs",
         "sram_ctrl_main__ram",
+        "sram_ctrl_sec__ram",
         "peri",
         "spi_host0",
         "spi_host1",
         "usbdev",
-        "flash_ctrl__core",
-        "flash_ctrl__prim",
-        "flash_ctrl__mem",
+        "rram_ctrl__core",
+        "rram_ctrl__host",
+        "rram_macro__prim",
         "aes",
         "entropy_src",
         "csrng",
@@ -110,10 +127,14 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "otbn",
-        "keymgr",
+        "keymgr_dpe",
         "kmac",
         "sram_ctrl_main__regs",
-        "rv_core_ibex__cfg"}}
+        "sram_ctrl_sec__regs",
+        "sram_ctrl_meta__regs",
+        "rv_core_ibex__cfg",
+        "cheriot__regs",
+        "cheriot__revbm"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rom_ctrl__rom",
@@ -121,13 +142,14 @@ tl_host_t xbar_hosts[$] = '{
         "rv_dm__mem",
         "rv_dm__regs",
         "sram_ctrl_main__ram",
+        "sram_ctrl_sec__ram",
         "peri",
         "spi_host0",
         "spi_host1",
         "usbdev",
-        "flash_ctrl__core",
-        "flash_ctrl__prim",
-        "flash_ctrl__mem",
+        "rram_ctrl__core",
+        "rram_ctrl__host",
+        "rram_macro__prim",
         "aes",
         "entropy_src",
         "csrng",
@@ -136,8 +158,12 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "otbn",
-        "keymgr",
+        "keymgr_dpe",
         "kmac",
         "sram_ctrl_main__regs",
-        "rv_core_ibex__cfg"}}
+        "sram_ctrl_sec__regs",
+        "sram_ctrl_meta__regs",
+        "rv_core_ibex__cfg",
+        "cheriot__regs",
+        "cheriot__revbm"}}
 };

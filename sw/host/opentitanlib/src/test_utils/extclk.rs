@@ -29,7 +29,7 @@ pub struct ExternalClock;
 
 impl ExternalClock {
     /// Base address of the clock manager.
-    const CLKMGR_BASE_ADDR: u32 = top_earlgrey::CLKMGR_AON_BASE_ADDR as u32;
+    const CLKMGR_BASE_ADDR: u32 = top_earlgrey::CLKMGR_BASE_ADDR as u32;
 
     /// Addresses of clock manager registers in memory.
     const EXTCLK_CTRL_REGWEN_ADDR: u32 =

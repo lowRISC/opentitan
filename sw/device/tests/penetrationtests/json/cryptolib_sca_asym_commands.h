@@ -23,6 +23,17 @@ extern "C" {
 #define ED25519_CMD_MAX_MSG_BYTES 128
 #define ED25519_CMD_SIG_BYTES 64
 
+#define MLDSA87_CMD_SEED_BYTES 32
+#define MLDSA87_CMD_PUBLIC_KEY_BYTES 2592
+#define MLDSA87_CMD_SIGNATURE_BYTES 4628
+#define MLDSA87_CMD_MAX_MSG_BYTES 128
+#define MLDSA87_CMD_MAX_CTX_BYTES 256
+
+#define MLKEM1024_CMD_SEED_BYTES 32
+#define MLKEM1024_CMD_PUBLIC_KEY_BYTES 1568
+#define MLKEM1024_CMD_CIPHERTEXT_BYTES 1568
+#define MLKEM1024_CMD_SHARED_SECRET_BYTES 32
+
 // clang-format off
 
 #define CRYPTOLIBSCAASYM_SUBCOMMAND(_, value) \
@@ -51,6 +62,12 @@ extern "C" {
     value(_, Ed25519BaseMulFvsr) \
     value(_, Ed25519BaseMulDaisy) \
     value(_, Ed25519Sign) \
+    value(_, Mldsa87Keygen) \
+    value(_, Mldsa87Sign) \
+    value(_, Mldsa87Verify) \
+    value(_, Mlkem1024Keygen) \
+    value(_, Mlkem1024Encaps) \
+    value(_, Mlkem1024Decaps) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaAsymSubcommand, cryptolib_sca_asym_subcommand_t, CRYPTOLIBSCAASYM_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibScaAsymSubcommand, cryptolib_sca_asym_subcommand_t, CRYPTOLIBSCAASYM_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
@@ -366,6 +383,91 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymED25519SignIn, cryptolib_sca_asym_ed25519_sig
     field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymED25519SignOut, cryptolib_sca_asym_ed25519_sign_out_t, CRYPTOLIBSCAASYM_ED25519_SIGN_OUT);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_KEYGEN_IN(field, string) \
+    field(seed, uint8_t, MLDSA87_CMD_SEED_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87KeygenIn, cryptolib_sca_asym_mldsa87_keygen_in_t, CRYPTOLIBSCAASYM_MLDSA87_KEYGEN_IN);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_KEYGEN_OUT(field, string) \
+    field(public_key, uint8_t, MLDSA87_CMD_PUBLIC_KEY_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87KeygenOut, cryptolib_sca_asym_mldsa87_keygen_out_t, CRYPTOLIBSCAASYM_MLDSA87_KEYGEN_OUT);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_SIGN_IN(field, string) \
+    field(seed, uint8_t, MLDSA87_CMD_SEED_BYTES) \
+    field(message, uint8_t, MLDSA87_CMD_MAX_MSG_BYTES) \
+    field(message_len, size_t) \
+    field(context, uint8_t, MLDSA87_CMD_MAX_CTX_BYTES) \
+    field(context_len, size_t) \
+    field(sign_mode, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87SignIn, cryptolib_sca_asym_mldsa87_sign_in_t, CRYPTOLIBSCAASYM_MLDSA87_SIGN_IN);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_SIGN_OUT(field, string) \
+    field(signature, uint8_t, MLDSA87_CMD_SIGNATURE_BYTES) \
+    field(public_key, uint8_t, MLDSA87_CMD_PUBLIC_KEY_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87SignOut, cryptolib_sca_asym_mldsa87_sign_out_t, CRYPTOLIBSCAASYM_MLDSA87_SIGN_OUT);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_VERIFY_IN(field, string) \
+    field(public_key, uint8_t, MLDSA87_CMD_PUBLIC_KEY_BYTES) \
+    field(message, uint8_t, MLDSA87_CMD_MAX_MSG_BYTES) \
+    field(message_len, size_t) \
+    field(context, uint8_t, MLDSA87_CMD_MAX_CTX_BYTES) \
+    field(context_len, size_t) \
+    field(signature, uint8_t, MLDSA87_CMD_SIGNATURE_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87VerifyIn, cryptolib_sca_asym_mldsa87_verify_in_t, CRYPTOLIBSCAASYM_MLDSA87_VERIFY_IN);
+
+#define CRYPTOLIBSCAASYM_MLDSA87_VERIFY_OUT(field, string) \
+    field(result, bool) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMldsa87VerifyOut, cryptolib_sca_asym_mldsa87_verify_out_t, CRYPTOLIBSCAASYM_MLDSA87_VERIFY_OUT);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_KEYGEN_IN(field, string) \
+    field(seed, uint8_t, MLKEM1024_CMD_SEED_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024KeygenIn, cryptolib_sca_asym_mlkem1024_keygen_in_t, CRYPTOLIBSCAASYM_MLKEM1024_KEYGEN_IN);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_KEYGEN_OUT(field, string) \
+    field(public_key, uint8_t, MLKEM1024_CMD_PUBLIC_KEY_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024KeygenOut, cryptolib_sca_asym_mlkem1024_keygen_out_t, CRYPTOLIBSCAASYM_MLKEM1024_KEYGEN_OUT);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_ENCAPS_IN(field, string) \
+    field(public_key, uint8_t, MLKEM1024_CMD_PUBLIC_KEY_BYTES) \
+    field(m, uint8_t, MLKEM1024_CMD_SEED_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024EncapsIn, cryptolib_sca_asym_mlkem1024_encaps_in_t, CRYPTOLIBSCAASYM_MLKEM1024_ENCAPS_IN);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_ENCAPS_OUT(field, string) \
+    field(ciphertext, uint8_t, MLKEM1024_CMD_CIPHERTEXT_BYTES) \
+    field(shared_secret, uint8_t, MLKEM1024_CMD_SHARED_SECRET_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024EncapsOut, cryptolib_sca_asym_mlkem1024_encaps_out_t, CRYPTOLIBSCAASYM_MLKEM1024_ENCAPS_OUT);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_DECAPS_IN(field, string) \
+    field(ciphertext, uint8_t, MLKEM1024_CMD_CIPHERTEXT_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024DecapsIn, cryptolib_sca_asym_mlkem1024_decaps_in_t, CRYPTOLIBSCAASYM_MLKEM1024_DECAPS_IN);
+
+#define CRYPTOLIBSCAASYM_MLKEM1024_DECAPS_OUT(field, string) \
+    field(shared_secret, uint8_t, MLKEM1024_CMD_SHARED_SECRET_BYTES) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymMlkem1024DecapsOut, cryptolib_sca_asym_mlkem1024_decaps_out_t, CRYPTOLIBSCAASYM_MLKEM1024_DECAPS_OUT);
 
 #undef MODULE_ID
 

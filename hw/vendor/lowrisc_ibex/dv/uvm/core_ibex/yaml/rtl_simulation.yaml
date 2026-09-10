@@ -41,6 +41,7 @@
           -CFLAGS '--std=c99 -fno-extended-identifiers'
           -lca -kdb
           -debug_access+f
+          -Xcflags='-Wno-error=implicit-function-declaration -Wno-error=int-conversion'
           <cmp_opts> <wave_opts> <cov_opts> <cosim_opts>
     cov_opts: >-
       -cm line+tgl+assert+fsm+branch

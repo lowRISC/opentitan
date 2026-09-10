@@ -142,9 +142,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
           otp_ctrl_part_pkg::otp_hw_cfg0_data_t  exp_hw_cfg0_data;
           otp_ctrl_part_pkg::otp_hw_cfg1_data_t  exp_hw_cfg1_data;
-          otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
-          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+          keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t exp_creator_root_key;
+          keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     exp_creator_seed;
+          keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       exp_owner_seed;
 
           if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
@@ -220,36 +221,41 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // ---------------------- Check keymgr_key_o output ---------------------------------
             // Otp_keymgr outputs creator and owner keys from secret partitions.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-            exp_keymgr_data = '0;
-            exp_keymgr_data.creator_root_key_share0_valid = get_otp_digest_val(Secret2Idx) != 0;
+            exp_creator_root_key = '0;
+            exp_creator_seed = '0;
+            exp_owner_seed = '0;
+
+            // Fetch and verify the CREATOR_ROOT_KEY_SHARE0 secret
+            exp_creator_root_key.share0_valid = get_otp_digest_val(Secret2Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.creator_root_key_share0 =
+              exp_creator_root_key.share0 =
                   {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
             end else begin
-              exp_keymgr_data.creator_root_key_share0 =
+              exp_creator_root_key.share0 =
                   top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
             end
-            // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share0_valid,
-                         exp_keymgr_data.creator_root_key_share0_valid)
-            exp_keymgr_data.creator_root_key_share1_valid = get_otp_digest_val(Secret2Idx) != 0;
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share0_valid,
+                         exp_creator_root_key.share0_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share0,
+                         exp_creator_root_key.share0)
+
+            // Fetch and verify the CREATOR_ROOT_KEY_SHARE1 secret
+            exp_creator_root_key.share1_valid = get_otp_digest_val(Secret2Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.creator_root_key_share1 =
+              exp_creator_root_key.share1 =
                   {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
             end else begin
-              exp_keymgr_data.creator_root_key_share1 =
+              exp_creator_root_key.share1 =
                   top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
             end
-            // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share1_valid,
-                         exp_keymgr_data.creator_root_key_share1_valid)
-
-            // Check otp_keymgr_key_t struct all together in case there is any missed item.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share1_valid,
+                         exp_creator_root_key.share1_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share1,
+                         exp_creator_root_key.share1)
 
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
-                                     exp_keymgr_data.creator_root_key_share0_valid);
+                                     exp_creator_root_key.share0_valid);
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin
@@ -579,17 +585,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       bit data_phase_read, bit data_phase_write);
 
     bit         do_read_check = 1;
-    uvm_reg     csr;
+    uvm_reg     csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
     dv_base_reg dv_reg;
     string      csr_name;
 
     `uvm_info(`gfn, $sformatf("sw state %d, reg state %d", direct_access_regwen_state,
                              `gmv(ral.direct_access_regwen)), UVM_LOW);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
+    if (csr != null) begin
       `downcast(dv_reg, csr)
     // SW CFG window
     end else if ((csr_addr & addr_mask) inside
@@ -1687,22 +1690,22 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit mem_access_allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err,
                                                             mem_wo_err, mem_ro_err, custom_err);
 
+    addr_range_t mem_ranges[$];
+    block.get_mem_ranges(mem_ranges);
+
     if (block.get_name() == "otp_macro_prim_reg_block") return mem_access_allowed;
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
-    if (addr inside {
-        [block.mem_ranges[0].start_addr :
-         block.mem_ranges[0].end_addr]} &&
-        mem_access_allowed) begin
+    if (mem_access_allowed &&
+        mem_ranges[0].start_addr <= addr && addr <= mem_ranges[0].end_addr) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
       if (`gmv(ral.vendor_test_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + VendorTestOffset :
-             block.mem_ranges[0].start_addr + VendorTestOffset +
-             VendorTestSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + VendorTestOffset;
+        uvm_reg_addr_t partition_end   = partition_start + VendorTestSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionVendorTestIdx,
                       OtpAccessError);
@@ -1716,10 +1719,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.creator_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + CreatorSwCfgOffset :
-             block.mem_ranges[0].start_addr + CreatorSwCfgOffset +
-             CreatorSwCfgSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + CreatorSwCfgOffset;
+        uvm_reg_addr_t partition_end   = partition_start + CreatorSwCfgSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionCreatorSwCfgIdx,
                       OtpAccessError);
@@ -1733,10 +1735,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + OwnerSwCfgOffset :
-             block.mem_ranges[0].start_addr + OwnerSwCfgOffset +
-             OwnerSwCfgSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + OwnerSwCfgOffset;
+        uvm_reg_addr_t partition_end   = partition_start + OwnerSwCfgSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionOwnerSwCfgIdx,
                       OtpAccessError);
@@ -1750,10 +1751,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.rot_creator_auth_codesign_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset +
-             RotCreatorAuthCodesignSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + RotCreatorAuthCodesignOffset;
+        uvm_reg_addr_t partition_end   = partition_start + RotCreatorAuthCodesignSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionRotCreatorAuthCodesignIdx,
                       OtpAccessError);
@@ -1767,10 +1767,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       if (`gmv(ral.rot_creator_auth_state_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset :
-             block.mem_ranges[0].start_addr + RotCreatorAuthStateOffset +
-             RotCreatorAuthStateSize - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + RotCreatorAuthStateOffset;
+        uvm_reg_addr_t partition_end   = partition_start + RotCreatorAuthStateSize;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartitionRotCreatorAuthStateIdx,
                       OtpAccessError);
@@ -1821,7 +1820,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // have been squashed to '0 or '1, depending on whether this was a fetch or not.
         if (item.d_opcode == tlul_pkg::AccessAckData) begin
           logic [DataWidth-1:0] exp_data = 0;
-          if (!is_csr_fetch(item, cfg.ral_models[ral_name])) exp_data = ~exp_data;
+          if (!bad_csr_fetch(item, cfg.ral_models[ral_name])) exp_data = ~exp_data;
           `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
         end
       end

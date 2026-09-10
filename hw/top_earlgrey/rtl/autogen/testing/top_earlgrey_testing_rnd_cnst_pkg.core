@@ -12,7 +12,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:earlgrey_ip:alert_handler_pkg
-      - lowrisc:earlgrey_ip:flash_ctrl
       - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ip:aes
@@ -22,6 +21,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otbn_pkg
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:rram_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:
       - top_earlgrey_rnd_cnst_pkg.sv

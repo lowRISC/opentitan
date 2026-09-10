@@ -586,6 +586,8 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   do {                                        \
     asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
   } while (false)
+// COVERAGE (FI CM) Expected this is unreachable as this is used in code that
+// are only reached due to fault injections.
 
 #else  // OT_DISABLE_HARDENING
 // We allow disabling hardening to measure the impact of the hardened sequences
@@ -620,6 +622,8 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
  * executed.
  */
 #define HARDENED_TRAP() HARDENED_TRAP_()
+// COVERAGE (FI CM) Expected this is unreachable as this is used in code that
+// are only reached due to fault injections.
 
 /**
  * Compare two values in a way that is *manifestly* true: that is, under normal

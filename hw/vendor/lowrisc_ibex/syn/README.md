@@ -2,6 +2,23 @@
 tape-out quality netlists and area/timing numbers it generates are not
 representative of what would be achievable with a tape-out quality flow**
 
+# Quick start with Nix
+
+If you have Nix with flakes enabled, all dependencies and the Nangate45 cell
+library are provided automatically via the `syn_shell` devShell. Enter the
+shell and run the flow:
+
+```sh
+nix develop .#syn_shell
+cd syn
+./syn_yosys.sh
+```
+
+No further setup is needed — `syn_setup.sh` is pre-configured and
+`LR_SYNTH_CELL_LIBRARY_PATH`/`LR_SYNTH_CELL_LIBRARY_NAME` are exported by the
+shell hook. The remaining sections describe manual installation for non-Nix
+environments.
+
 # Yosys/OpenSTA Ibex Synthesis Flow
 
 This is a synthesis-only implementation flow using Yosys for Synthesis and
@@ -39,13 +56,14 @@ format. The following Open Libraries can be used:
 
 # Synthesis flow setup
 
-The synthesis flow is configured via environment variables. The `syn_setup.sh`
-file is used to set the environment variables for the flow and any changes made
-should be placed there.  An example `syn_setup.example.sh` is included. A copy
-of this named `syn_setup.sh` must be made and the values in it set appropriately
-for the flow to work.
+The synthesis flow is configured via environment variables. `syn_setup.sh` sets
+the environment variables for the flow.
 
-The environment variables that must be set in `syn_setup.sh` are
+When using `nix develop .#syn_shell`, the cell library variables below are
+exported automatically by the shell hook and no edits to `syn_setup.sh` are
+needed. For non-Nix environments, set them manually in `syn_setup.sh`.
+
+The environment variables that must be set are:
 
 * `LR_SYNTH_CELL_LIBRARY_PATH` - The path to the standard cell library, this
   should point to the absolute path of the Nangate45 library
@@ -56,7 +74,7 @@ The environment variables that must be set in `syn_setup.sh` are
 
 # Running the synthesis flow
 
-Once `syn_setup.sh` has been created, call `syn_yosys.sh` to run the entire
+Once the environment is configured, call `syn_yosys.sh` to run the entire
 flow. All outputs are placed under the `syn/syn_out` directory with the prefix
 `ibex_` with the current date/time forming the rest of the name, e.g.
 `syn/syn_out/ibex_06_01_2020_11_19_15`

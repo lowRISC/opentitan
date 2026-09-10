@@ -58,7 +58,7 @@ static dif_rv_core_ibex_t ibex;
 // This location will be update from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
 
-static dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
+static dif_pwrmgr_request_sources_t pwrmgr_timer_wakeups;
 
 /**
  * Initialize the peripherals used in this test.
@@ -75,7 +75,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
-      kDtAonTimerWakeupWkupReq, &pwrmgr_aon_timer_wakeups));
+      kDtAonTimerWakeupWkupReq, &pwrmgr_timer_wakeups));
 
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
@@ -235,7 +235,7 @@ static void enter_low_power(bool deep_sleep) {
 
   // Set the wake_up trigger as AON timer module.
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wake_up_request_source*/ pwrmgr_aon_timer_wakeups, cfg));
+      &pwrmgr, /*wake_up_request_source*/ pwrmgr_timer_wakeups, cfg));
   wait_for_interrupt();
 }
 
@@ -256,7 +256,7 @@ static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -280,8 +280,8 @@ void init_test_components(void) {
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+                                     kTopEarlgreyPlicIrqIdPwrmgrWakeup,
+                                     kTopEarlgreyPlicIrqIdPwrmgrWakeup);
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
@@ -341,8 +341,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
 
     // Enter normal sleep mode.
     enter_low_power(/*deep_sleep=*/false);
-  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, pwrmgr_aon_timer_wakeups))) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
+                                                      pwrmgr_timer_wakeups))) {
     // Cleanup after wakeup
     cleanup_wakeup_src();
 
@@ -407,7 +407,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgr,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }

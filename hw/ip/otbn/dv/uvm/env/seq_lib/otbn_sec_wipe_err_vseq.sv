@@ -11,6 +11,9 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
   `uvm_object_new
 
+  // OTBN reports every fault that this sequence injects as a bad internal state.
+  err_bits_reg_t injected_err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
+
   // Send a spurious secure wipe request and check we lock up
   task send_spurious_req();
     string err_path = cfg.ssctrl_vif.resolve_path("secure_wipe_req_i");
@@ -29,7 +32,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
     // Let model escalate in next clock cycle.
     @(cfg.clk_rst_vif.cbn);
-    cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
+    cfg.model_agent_cfg.vif.send_err_escalation(injected_err_bits);
 
     `uvm_info(`gfn, "Releasing force.", UVM_LOW)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1)
@@ -80,7 +83,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
       // Let model escalate in next clock cycle.
       @(cfg.clk_rst_vif.cbn);
-      cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
+      cfg.model_agent_cfg.vif.send_err_escalation(injected_err_bits);
 
       `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
       `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
@@ -127,7 +130,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
       // Let model escalate in next clock cycle.
       @(cfg.clk_rst_vif.cbn);
-      cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
+      cfg.model_agent_cfg.vif.send_err_escalation(injected_err_bits);
 
       // Release force.
       `uvm_info(`gfn, "Releasing force.", UVM_LOW)

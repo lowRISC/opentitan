@@ -25,7 +25,7 @@ static ottf_console_t debug_console;
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, /* uart= */ 1,
                                                kUartPinmuxChannelDut));
   ottf_console_configure_uart(&debug_console, TOP_EARLGREY_UART1_BASE_ADDR);

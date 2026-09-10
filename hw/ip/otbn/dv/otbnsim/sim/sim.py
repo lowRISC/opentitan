@@ -4,7 +4,7 @@
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .constants import ErrBits, LcTx, Status, read_lc_tx_t
+from .constants import BN_MAC_PERMUTATION, ErrBits, LcTx, Status, read_lc_tx_t
 from .decode import EmptyInsn
 from .isa import OTBNInsn
 from .state import OTBNState, FsmState
@@ -136,6 +136,7 @@ class OTBNSim:
         if verbose:
             self._print_trace(pc_before, disasm, changes)
 
+        self._update_mac_rnd_offset_predec()
         return changes
 
     def _delayed_insn_cnt_zero(self, delay_if_locking: int) -> None:
@@ -303,6 +304,11 @@ class OTBNSim:
 
         self.state.wsrs.URND.step()
 
+        # The predecoder samples URND one cycle before a vectorized multiply reaches the execute
+        # stage. Advance the sampled offset by one cycle here. The resample happens at the end of
+        # this function, once we know what will execute next cycle.
+        self.state.mac_rnd_offset = self.state.mac_rnd_offset_predec
+
         insn = self._next_insn
         if insn is None:
             self.state.take_injected_err_bits()
@@ -377,6 +383,16 @@ class OTBNSim:
 
         return (None, self._on_stall(verbose, fetch_next=False))
 
+    def _update_mac_rnd_offset_predec(self) -> None:
+        '''Resample the URND predecode used by vectorized multiplies for next cycle.
+
+        Only instructions with samples_urnd set require a sampling of URND, so skip the
+        permutation entirely when we already know next cycle's instruction won't need it.
+        '''
+        if self._next_insn is not None and self._next_insn.samples_urnd:
+            self.state.mac_rnd_offset_predec = BN_MAC_PERMUTATION.apply(
+                self.state.wsrs.URND.read_unsigned(), 2, 192)
+
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
 
@@ -433,6 +449,10 @@ class OTBNSim:
         was_wiping = self.state.wipe_cycles > 0
         if was_wiping:
             self.state.wipe_cycles -= 1
+            # Step the URND Bivium every wipe cycle, matching the RTL where prim_trivium
+            # runs continuously. This keeps the Bivium in sync with the RTL so that the
+            # MAI's cnt bits captured in on_sec_wipe_zero_step() match in_cnt_load_val_q.
+            self.state.wsrs.URND.step()
 
         is_good = not self.state.lock_after_wipe
         locking = self.state.rma_req == LcTx.ON or not is_good
@@ -468,6 +488,15 @@ class OTBNSim:
             self._delayed_insn_cnt_zero(0)
         else:
             self._delayed_insn_cnt_zero(1)
+
+        if self.state.wipe_cycles == 3:
+            # Corresponds to the RTL cycle where sec_wipe_mai_i (= sec_wipe_zero_o)
+            # fires, which is when the FSM enters OtbnStartStopSecureWipeAllZero after
+            # completing the three register-overwriting phases.
+            final_wipe_round_cnt = (self.state.wipe_rounds_done ==
+                                    (self.state.wipe_rounds_to_do - 1))
+            if final_wipe_round_cnt:
+                self.state.mai.on_sec_wipe_zero_step()
 
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to
@@ -560,8 +589,15 @@ class OTBNSim:
 
     def send_err_escalation(self,
                             err_val: int, lock_immediately: bool) -> None:
-        '''React to an error escalation'''
-        assert err_val & ~ErrBits.MASK == 0
+        '''React to an error escalation
+
+        err_val uses the layout of the ERR_BITS register.
+
+        '''
+        assert err_val & ~ErrBits.MASK == 0, \
+            ('Injected error 0x{:x} sets bits (0x{:x}) that are not defined in '
+             'the ERR_BITS register.'
+             .format(err_val, err_val & ~ErrBits.MASK))
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 

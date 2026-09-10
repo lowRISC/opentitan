@@ -550,7 +550,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       end
     end
     clear_kmac_user_digest_share();
-    cfg.m_kmac_app_agent_cfg.add_user_digest_share(kmac_digest);
+    cfg.m_kmac_app_agent_cfg.add_user_digest(kmac_digest);
     // Set error response
     cfg.m_kmac_app_agent_cfg.error_rsp_pct = (err_inj.token_response_err) ? 100 : 0;
   endfunction

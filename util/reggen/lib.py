@@ -43,6 +43,17 @@ _VERILOG_KEYWORDS = {
     'wire', 'with', 'within', 'wor', 'xnor', 'xor'
 }
 
+# The partitions an IP block can be split across. A non-split IP has only a
+# primary partition. Keep PARTITIONS in this order: it defines the primary-first
+# rank that check_partition_order enforces and that block.partitions relies on.
+PART_PRIMARY = 'primary'
+PART_SECONDARY = 'secondary'
+PARTITIONS = (PART_PRIMARY, PART_SECONDARY)
+
+# Parameters may additionally be assigned to both partitions, which emits them
+# into both partition modules.
+PART_BOTH = 'both'
+
 
 def check_str_dict(obj: object, what: str) -> Dict[str, object]:
     if not isinstance(obj, dict):
@@ -150,6 +161,42 @@ def check_bool(obj: object, what: str) -> bool:
         return obj
 
     raise ValueError(f'{what} is of type {type(obj).__name__}, not a bool.')
+
+
+def check_partition(obj: object, what: str, allow_both: bool = False) -> str:
+    '''Check that obj is a valid IP-split partition specifier.
+
+    If not, raises a ValueError; the what argument names the object.
+    '''
+    as_str = check_str(obj, what)
+    legal = list(PARTITIONS) + ([PART_BOTH] if allow_both else [])
+    if as_str not in legal:
+        raise ValueError(f'{what} is {as_str}, but must be one of '
+                         f'{", ".join(legal)}.')
+    return as_str
+
+
+def check_partition_order(raw_list: List[object], what: str) -> None:
+    '''Check that list entries are declared grouped by partition, primary first.
+
+    For lists like alerts and interrupts, the order in the list defines the bit
+    index of each signal. To have a contiguous bit range for each partition,
+    all primary partition entries must come before any secondary entries.
+    '''
+    seen_rank = 0
+    for idx, entry in enumerate(raw_list):
+        partition = (entry.get('partition', PART_PRIMARY)
+                     if isinstance(entry, dict) else PART_PRIMARY)
+        if partition not in PARTITIONS:
+            continue
+        rank = PARTITIONS.index(partition)
+        if rank < seen_rank:
+            raise ValueError(
+                f'{what}: a {partition!r} entry (index {idx}) is declared after '
+                f'an entry of a later partition. Declare all primary-partition '
+                f'entries before secondary ones so each partition occupies a '
+                f'contiguous bit range.')
+        seen_rank = max(seen_rank, rank)
 
 
 def check_list(obj: object, what: str) -> List[object]:

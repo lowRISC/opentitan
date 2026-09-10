@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-#include "hw/top/flash_ctrl_regs.h"
+#include "hw/top/rram_ctrl_regs.h"
 #include "hw/top/rstmgr_regs.h"
 
   // Place this code into the .crt section to be able to call it early in
@@ -26,16 +26,16 @@
 _asm_exception_handler:
 .L_exception_loop:
   // Request a system reset.
-  li t0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li t0, TOP_EARLGREY_RSTMGR_BASE_ADDR
   li t1, MULTIBIT_ASM_BOOL4_TRUE
   sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
-  // Disable access to flash.
+  // Disable access to RRAM.
   //
   // This is done after requesting a reset so that this function will
-  // work even if it is in flash.
-  li t0, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
-  sw zero, FLASH_CTRL_DIS_REG_OFFSET(t0)
+  // work even if it is executing from RRAM.
+  li t0, TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR
+  sw zero, RRAM_CTRL_DIS_REG_OFFSET(t0)
 
   wfi
   j   .L_exception_loop

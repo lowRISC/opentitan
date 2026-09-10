@@ -44,8 +44,8 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
       // The exact range of memory that can be corrupted with no trouble can be
       // deduced from sw/device/lib/testing/ret_sram_testutils.c, near line 36.
       `uvm_info(`gfn, "Injecting data error in retention SRAM.", UVM_MEDIUM)
-      error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;
-      error_ram_base = ral.sram_ctrl_ret_aon_ram.default_map.get_base_addr();
+      error_ram_size = ral.sram_ctrl_ret_ram.get_addr_mask() + 1;
+      error_ram_base = ral.sram_ctrl_ret_ram.default_map.get_base_addr();
       error_ram_address = error_ram_base + $urandom_range(error_ram_size * 3 / 4,
                                                           error_ram_size - 1);
       error_ram_address &= ~(bus_params_pkg::BUS_DBW - 1);
@@ -80,8 +80,8 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
               TopEarlgreyAlertIdRvCoreIbexFatalHwErr), UVM_MEDIUM)
     if (fault_target == FaultTargetRetSramData) begin
       // Double check again that the address range is correct.
-      error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;
-      error_ram_base = ral.sram_ctrl_ret_aon_ram.default_map.get_base_addr();
+      error_ram_size = ral.sram_ctrl_ret_ram.get_addr_mask() + 1;
+      error_ram_base = ral.sram_ctrl_ret_ram.default_map.get_base_addr();
       `DV_CHECK(error_ram_address >= error_ram_base)
       `DV_CHECK(error_ram_address < error_ram_base + error_ram_size)
       ret_sram_inject_ecc_error(.addr(error_ram_address));

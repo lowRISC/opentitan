@@ -1,36 +1,45 @@
-# Introduction to the OpenTitan Project
+# OpenTitan Governance
 
 OpenTitan is a collaborative hardware and software development program with contributors from many organizations.
-This area gives some more information about how the project itself is organized and how to contribute.
-More information will be added over time.
+This area gives some more information about how the project is organized.
 
-## Quality standards for open hardware IP
+The Governance structure is defined in the [OpenTitan Charter](https://static.opentitan.org/technical-charter.pdf) and outlined on the [OpenTitan website](https://opentitan.org/opensilicon/#governance)
+It is built around the principles below.
 
-In order to gauge the quality of the different IP that is in our repository, we define a series of [Hardware Development Stages](./development_stages.md) to track the designs.
-The current status of different IP is reflected in the [Hardware Dashboard](../../hw/README.md).
-The final state for developed IP is *Signed Off*, indicating that design and verification is complete, and the IP should be bug free.
-To make it to that stage, a [Hardware Signoff Checklist](./checklist/README.md) is used to confirm completion.
-[Here](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl) is a template that can be used as a checklist item.
+### Project Governance
+The [Governing Board](https://opentitan.org/governing-board/) has one representative from each of the higher-tier member organisations.
 
-## Contributing
+The Governing Board defines the strategy and direction for the project, maintains good governance and defines the project organisation.
 
-See our documentation on [Contributing to OpenTitan](../contributing/README.md) (and the more in-depth [Detailed Contribution Guide](../contributing/detailed_contribution_guide/README.md)) for general guidance on how we work, making bug reports, dealing with security issues, and contributing code.
+### Independent Technical Direction
+Technical direction comes from an independent [Technical Committee](https://opentitan.org/technical-committee/), which has one representative from each of the higher-tier member organisations.
 
-## Governance
+The Technical Committee proposes the technical roadmap, manages the collaborative RFC process, approves write access and manages trademark compliance.
 
-OpenTitan is stewarded by lowRISC CIC, a not-for-profit company that uses collaborative engineering to develop and maintain open source silicon designs and tools for the long term.
-As a lowRISC CIC Chartered Project, OpenTitan governance is handled via lowRISC's default Technical Charter.
+### A strong and open community
+Community involvement drives and reviews the project through the [Working Groups](https://opentitan.org/working-group/), which any member is free to join.
 
-As described in full detail in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf), our governance structure consists of:
-* The Governing Board, responsible for project oversight and agreeing the technical roadmap.
-* The [Technical Committee](./technical_committee.md), responsible for technical decision making required to implement the technical roadmap.
+The community is built on respect and openness, embodied in our [Code of Conduct](https://opentitan.org/code-of-conduct/).
 
-## Initiating new development
+### Assets held in common
+Project assets are held in common for the benefit of the project by an [independent steward](https://lowrisc.org/lowrisc/).
 
-The [OpenTitan RFC process](./rfc_process.md) guides developers on how to initiate new development within the program.
+This ensures fair and equal access to all, avoids fragmentation, ensures consistent quality, and maintains long-term technical support.
 
-## Committers
+### Permissive licensing
+Assets are under an open and permissive license.
 
-Committers are individuals with repository write access.
-Everyone is able and encouraged to contribute and to help with code review, but committers are responsible for the final approval and merge of contributions.
-See the [Committers](./committers.md) definition and role description for more information.
+Contributions follow best practice:
+
+Member organisations authorise contributors through a Contributor License Agreement (CLA) or membership agreement.
+
+Contributors unambiguously grant copyright and patent licenses to the Project and recipients of the Project’s code.
+
+### Clear roles
+Open Silicon Development relies on clear roles and understanding of these roles.
+
+All members are encouraged to contribute and review.
+
+- [Contributors](../contributing/README.md) actively build the project.
+- [Reviewers](../contributing/detailed_contribution_guide/README.md) maintain project quality.
+- [Committers](./committers.md) appointed by the Technical Committee ensure oversight.

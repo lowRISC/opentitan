@@ -15,6 +15,7 @@ from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import common_library
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import json
 import argparse
@@ -37,11 +38,21 @@ gdbfi = None
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
+parser.add_argument(
+    "--force-trace",
+    action="store_true",
+    help="Force re-running PC tracing even if trace log exists",
+)
+utils.add_test_selection_args(parser)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 
@@ -61,36 +72,52 @@ def read_testos_output():
 
 
 def reset_gdb(gdb):
-    gdb.close_gdb()
-    gdb = GDBController(
+    if gdb and getattr(gdb, "gdb_process", None) and gdb.gdb_process.poll() is None:
+        try:
+            gdb.cleanup_skip()
+            ping = gdb.send_command("p 1", timeout=1.0)
+            if ping and ("= 1" in ping):
+                return gdb
+        except Exception:
+            pass
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
+    return GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
         elf_file=elf_path,
     )
-    return gdb
 
 
 def reset_target_and_gdb(gdb):
-    gdb.close_gdb()
+    if gdb:
+        try:
+            gdb.close_gdb()
+        except Exception:
+            pass
     target.reset_target()
-    target.start_openocd(startup_delay=0.2, print_output=False)
+    time.sleep(0.05)
+    target.start_openocd(startup_delay=0.3, print_output=False)
     target.dump_all()
     trigger_testos_init(print_output=False)
-    gdb = GDBController(
+    return GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
         elf_file=elf_path,
     )
-    return gdb
 
 
 def re_initialize(gdb, print_output=False):
-    gdb.close_gdb()
+    # Tier 3: Full FPGA re-initialization (only on unrecoverable lockup)
+    if gdb:
+        gdb.close_gdb()
     target.initialize_target(print_output=print_output)
     trigger_testos_init(print_output=print_output)
     target.dump_all()
-    gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
-    return gdb
+    return GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
 
 
 class UnitFiSim(unittest.TestCase):
@@ -128,6 +155,8 @@ class UnitFiSim(unittest.TestCase):
 
             gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
             gdb.send_command("c", check_response=False)
+            time.sleep(0.1)
+            target.dump_all()
 
             gdbfi.handle_gdb_try()
 
@@ -136,15 +165,36 @@ class UnitFiSim(unittest.TestCase):
             total_timeout_stopped = False
 
             # Run the tracing to get the trace log
-            # Sometimes the tracing fails due to race conditions,
-            # we have a quick initial timeout to catch this
             while time.time() - start_time < initial_timeout:
                 output = gdb.read_output()
-                if "breakpoint 1, " in output:
+                if "breakpoint 1, " in output or "Breakpoint 1" in output:
                     initial_timeout_stopped = True
                     break
             if not initial_timeout_stopped:
-                print("No initial break point found, can be a misfire, try again")
+                print(
+                    "Initial break point not hit on first attempt, retrying with reset...",
+                    flush=True,
+                )
+                print("Target UART:", repr(target.read_all()), flush=True)
+                gdb = reset_target_and_gdb(gdb)
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+                gdbfi.handle_gdb_try()
+                start_time = time.time()
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+            if not initial_timeout_stopped:
+                print("No initial break point found, can be a misfire, try again", flush=True)
+                print("Target UART:", repr(target.read_all()), flush=True)
+                if gdb:
+                    gdb.interrupt(timeout=1.0)
+                    print("GDB PC:", gdb.get_program_counter(), flush=True)
+                    print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                 sys.exit(1)
             while time.time() - start_time < total_timeout:
                 output = gdb.read_output()
@@ -208,7 +258,12 @@ class UnitFiSim(unittest.TestCase):
                                 # Reset GDB by closing and opening again
                                 gdb = reset_gdb(gdb)
                         else:
-                            gdb = reset_target_and_gdb(gdb)
+                            # Breakpoint was not hit (e.g. untaken branch): cleanly clean up skip
+                            if not testos_response:
+                                print("Target did not respond, resetting target", flush=True)
+                                gdb = reset_target_and_gdb(gdb)
+                            else:
+                                gdb = reset_gdb(gdb)
 
                     except json.JSONDecodeError:
                         try:
@@ -264,6 +319,8 @@ class UnitFiSim(unittest.TestCase):
 
             gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
             gdb.send_command("c", check_response=False)
+            time.sleep(0.1)
+            target.dump_all()
 
             gdbfi.handle_gdb_switch()
 
@@ -272,15 +329,36 @@ class UnitFiSim(unittest.TestCase):
             total_timeout_stopped = False
 
             # Run the tracing to get the trace log
-            # Sometimes the tracing fails due to race conditions,
-            # we have a quick initial timeout to catch this
             while time.time() - start_time < initial_timeout:
                 output = gdb.read_output()
-                if "breakpoint 1, " in output:
+                if "breakpoint 1, " in output or "Breakpoint 1" in output:
                     initial_timeout_stopped = True
                     break
             if not initial_timeout_stopped:
-                print("No initial break point found, can be a misfire, try again")
+                print(
+                    "Initial break point not hit on first attempt, retrying with reset...",
+                    flush=True,
+                )
+                print("Target UART:", repr(target.read_all()), flush=True)
+                gdb = reset_target_and_gdb(gdb)
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+                gdbfi.handle_gdb_switch()
+                start_time = time.time()
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+            if not initial_timeout_stopped:
+                print("No initial break point found, can be a misfire, try again", flush=True)
+                print("Target UART:", repr(target.read_all()), flush=True)
+                if gdb:
+                    gdb.interrupt(timeout=1.0)
+                    print("GDB PC:", gdb.get_program_counter(), flush=True)
+                    print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                 sys.exit(1)
             while time.time() - start_time < total_timeout:
                 output = gdb.read_output()
@@ -344,7 +422,12 @@ class UnitFiSim(unittest.TestCase):
                                 # Reset GDB by closing and opening again
                                 gdb = reset_gdb(gdb)
                         else:
-                            gdb = reset_target_and_gdb(gdb)
+                            # Breakpoint was not hit (e.g. untaken branch): cleanly clean up skip
+                            if not testos_response:
+                                print("Target did not respond, resetting target", flush=True)
+                                gdb = reset_target_and_gdb(gdb)
+                            else:
+                                gdb = reset_gdb(gdb)
 
                     except json.JSONDecodeError:
                         try:
@@ -400,6 +483,8 @@ class UnitFiSim(unittest.TestCase):
 
             gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
             gdb.send_command("c", check_response=False)
+            time.sleep(0.1)
+            target.dump_all()
 
             gdbfi.handle_gdb_if()
 
@@ -408,15 +493,36 @@ class UnitFiSim(unittest.TestCase):
             total_timeout_stopped = False
 
             # Run the tracing to get the trace log
-            # Sometimes the tracing fails due to race conditions,
-            # we have a quick initial timeout to catch this
             while time.time() - start_time < initial_timeout:
                 output = gdb.read_output()
-                if "breakpoint 1, " in output:
+                if "breakpoint 1, " in output or "Breakpoint 1" in output:
                     initial_timeout_stopped = True
                     break
             if not initial_timeout_stopped:
-                print("No initial break point found, can be a misfire, try again")
+                print(
+                    "Initial break point not hit on first attempt, retrying with reset...",
+                    flush=True,
+                )
+                print("Target UART:", repr(target.read_all()), flush=True)
+                gdb = reset_target_and_gdb(gdb)
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+                gdbfi.handle_gdb_if()
+                start_time = time.time()
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+            if not initial_timeout_stopped:
+                print("No initial break point found, can be a misfire, try again", flush=True)
+                print("Target UART:", repr(target.read_all()), flush=True)
+                if gdb:
+                    gdb.interrupt(timeout=1.0)
+                    print("GDB PC:", gdb.get_program_counter(), flush=True)
+                    print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
                 sys.exit(1)
             while time.time() - start_time < total_timeout:
                 output = gdb.read_output()
@@ -480,7 +586,12 @@ class UnitFiSim(unittest.TestCase):
                                 # Reset GDB by closing and opening again
                                 gdb = reset_gdb(gdb)
                         else:
-                            gdb = reset_target_and_gdb(gdb)
+                            # Breakpoint was not hit (e.g. untaken branch): cleanly clean up skip
+                            if not testos_response:
+                                print("Target did not respond, resetting target", flush=True)
+                                gdb = reset_target_and_gdb(gdb)
+                            else:
+                                gdb = reset_gdb(gdb)
 
                     except json.JSONDecodeError:
                         try:
@@ -504,6 +615,13 @@ class UnitFiSim(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    unittest_argv = utils.get_selected_test_argv(
+        UnitFiSim,
+        requested_name=args.test,
+        config_args=config_args,
+        list_tests=args.list_tests,
+    )
+
     r = Runfiles.Create()
     # Get the openocd path.
     openocd_path = r.Rlocation("lowrisc_opentitan/third_party/openocd/build_openocd/bin/openocd")
@@ -521,8 +639,15 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the test result path
-    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+    log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR") or "/tmp"
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
     # Get the disassembly path.
@@ -541,6 +666,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args,
         openocd=openocd_path,
         openocd_chip_config=CONFIG_FILE_CHIP,
@@ -551,4 +678,4 @@ if __name__ == "__main__":
     gdbfi = OTFIUnitGdb(target)
     parser = DisParser(dis_path)
 
-    unittest.main(argv=[sys.argv[0]])
+    unittest.main(argv=unittest_argv)

@@ -15,9 +15,9 @@ rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb) {
   // Add the Version Object (16-bit Type/Size header + 16-bit Version Payload).
   uint16_t header = 0;
   PERSO_TLV_SET_FIELD(Objh, Type, header, kPersoObjectTypeBlobVersion);
-  PERSO_TLV_SET_FIELD(
-      Objh, Size, header,
-      sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t));
+  PERSO_TLV_SET_FIELD(Objh, Size, header,
+                      sizeof(perso_tlv_object_header_t) +
+                          sizeof(perso_tlv_blob_version_payload_t));
   memcpy(pb->body + pb->next_free, &header, sizeof(uint16_t));
   pb->next_free += sizeof(uint16_t);
 
@@ -282,21 +282,24 @@ rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
   *version = kPersoBlobVersionV0;
   *offset = 0;
 
-  if (size <
-      sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t)) {
+  if (size < sizeof(perso_tlv_object_header_t) +
+                 sizeof(perso_tlv_blob_version_payload_t)) {
     return kErrorOk;  // Too small to contain a version object, default to V0
   }
 
   perso_tlv_object_header_t header;
   memcpy(&header, data, sizeof(perso_tlv_object_header_t));
+  if (header == 0xFFFF) {
+    return kErrorOk;
+  }
   perso_tlv_object_type_t type;
   uint16_t obj_size;
   PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
   PERSO_TLV_GET_FIELD(Objh, Size, header, &obj_size);
 
   if (type == kPersoObjectTypeBlobVersion) {
-    if (obj_size !=
-        sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t)) {
+    if (obj_size != sizeof(perso_tlv_object_header_t) +
+                        sizeof(perso_tlv_blob_version_payload_t)) {
       return kErrorPersoTlvInternal;
     }
     uint16_t version_be;
@@ -305,8 +308,8 @@ rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
     uint16_t parsed_version = __builtin_bswap16(version_be);
     if (parsed_version == kPersoBlobVersionV1) {
       *version = kPersoBlobVersionV1;
-      *offset =
-          sizeof(perso_tlv_object_header_t) + sizeof(perso_tlv_blob_version_t);
+      *offset = sizeof(perso_tlv_object_header_t) +
+                sizeof(perso_tlv_blob_version_payload_t);
     } else {
       return kErrorPersoTlvInternal;  // Unknown version
     }

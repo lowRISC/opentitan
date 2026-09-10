@@ -140,7 +140,7 @@ void configure_pinmux(void) {
 
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   configure_pinmux();
 
   CHECK_DIF_OK(dif_uart_init(

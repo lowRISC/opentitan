@@ -13,6 +13,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | Port Name      | Package::Struct        | Type    | Act   |   Width | Description   |
 |:---------------|:-----------------------|:--------|:------|--------:|:--------------|
 | idle           | prim_mubi_pkg::mubi4   | uni     | req   |       1 |               |
+| output_valid   | logic                  | uni     | req   |       1 |               |
+| input_ready    | logic                  | uni     | req   |       1 |               |
 | lc_escalate_en | lc_ctrl_pkg::lc_tx     | uni     | rcv   |       1 |               |
 | edn            | edn_pkg::edn           | req_rsp | req   |       1 |               |
 | keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   |       1 |               |

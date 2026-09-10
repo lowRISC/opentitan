@@ -21,6 +21,15 @@ class keymgr_base_test extends cip_base_test #(
     // keymgr requests entropy periodically, if seq is done, don't need to add any delay due to
     // activity from EDN interface which may prevent sim from finishing
     drain_time_ns = 0;
+
+    // Run a sequence in m_kmac_agent that will respond with to requests with digests
+    //
+    // This gets run in the background: it will run forever and we want to be able to finish the
+    // test when the rest of run_phase completes.
+    fork
+      env.m_kmac_agent.run_device_seq();
+    join_none
+
     super.run_phase(phase);
   endtask
 endclass : keymgr_base_test

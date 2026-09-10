@@ -46,7 +46,9 @@
             ],
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "corei" }
+  % if not cheriot_available:
     { protocol: "tlul", direction: "host",   name: "cored" }
+  % endif
   % if racl_support:
     { protocol: "tlul", direction: "device", name: "cfg", racl_support: true }
   % else:
@@ -70,6 +72,9 @@
           - Ibex raises `alert_major_bus_o`
           - A double fault is seen (Ibex raises `double_fault_seen_o`)
           - A bus integrity error is seen
+% if cheriot_available:
+          - The ePMP/CHERIoT execution mode switch enters its error state
+% endif
       '''
     },
     { name: "recov_hw_err",
@@ -85,33 +90,66 @@
       package: "",
     },
 
-    { struct:  "ram_1p_cfg",
+% if cheriot_available:
+    { struct:  "mubi4",
       type:    "uni",
+      name:    "cheriot_ena",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable."
+    },
+
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "cored_tl_h",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Core data host port to the CHERIoT subsystem."
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_h2d",
+      act:     "req",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_d2h",
+      act:     "rcv",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+    },
+
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "corerevbm_tl",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Core revocation bitmap host port."
+    },
+
+% endif
+    { struct:  "ram_1p_cfg",
+      type:    "req_rsp",
       name:    "ram_cfg_icache_tag",
-      act:     "rcv",
-      package: "prim_ram_1p_pkg",
-    },
-
-    { struct:  "ram_1p_cfg_rsp",
-      type:    "uni",
-      name:    "ram_cfg_rsp_icache_tag",
       width:   "ICacheNWays",
-      act:     "req",
+      act:     "rsp",
       package: "prim_ram_1p_pkg",
     },
 
     { struct:  "ram_1p_cfg",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "ram_cfg_icache_data",
-      act:     "rcv",
-      package: "prim_ram_1p_pkg",
-    },
-
-    { struct:  "ram_1p_cfg_rsp",
-      type:    "uni",
-      name:    "ram_cfg_rsp_icache_data",
       width:   "ICacheNWays",
-      act:     "req",
+      act:     "rsp",
       package: "prim_ram_1p_pkg",
     },
 
@@ -268,13 +306,13 @@
       randcount: "32",
       randtype:  "perm"
     },
-    { name:    "RndCnstIbexKeyDefault",
+    { name:    "RndCnstIbexKey",
       type:    "logic [ibex_pkg::SCRAMBLE_KEY_W-1:0]",
       desc:    "Default icache scrambling key"
       randcount: "128",
       randtype:  "data"
     },
-    { name:    "RndCnstIbexNonceDefault",
+    { name:    "RndCnstIbexNonce",
       type:    "logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0]",
       desc:    "Default icache scrambling nonce"
       randcount: "64",
@@ -357,6 +395,29 @@
       local:         "false"
       expose:        "true"
     },
+% if cheriot_available:
+    { name:    "CheriotRevBitmapAddrWidth"
+      type:    "int unsigned"
+      default: "11"
+      desc:    "Address width of the TRVK revocation bitmap."
+      local:   "false"
+      expose:  "true"
+    },
+    { name:    "CheriotRevBitmapBaseAddr"
+      type:    "int unsigned"
+      default: "0"
+      desc:    "Base address of the TRVK revocation bitmap."
+      local:   "false"
+      expose:  "true"
+    },
+    { name:    "CheriotTrvkHeapBaseAddr"
+      type:    "int unsigned"
+      default: "0"
+      desc:    "Base address of the heap."
+      local:   "false"
+      expose:  "true"
+    },
+% endif
     { name:    "RV32E"
       type:    "bit"
       default: "0"
@@ -637,6 +698,11 @@
   ],
 
   countermeasures: [
+% if cheriot_available:
+    { name: "CHERIOT_SWITCH.FSM.SPARSE",
+      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
+    }
+% endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -1104,6 +1170,52 @@
           },
         ]
       },
+% if cheriot_available:
+
+      { name: "CHERIOT_ENA",
+        desc: '''
+          Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
+          This field is only sampled when !!CHERIOT_LOCK is written; changing it afterwards has
+          no effect.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            mubi: true,
+            resval: false,
+            desc: '''
+              Mode selector value, MuBi4 encoded.
+            '''
+          },
+        ]
+      },
+
+      { name: "CHERIOT_LOCK",
+        desc: '''
+          Locks the CHERIoT/ePMP mode.
+          If !!CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+        ''',
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            desc: '''
+              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA.
+              Any other value moves the switch into a terminal error state, in which CHERIoT mode
+              stays unavailable until reset and the fatal alert is raised.
+            '''
+          },
+        ]
+        tags: [// Write-only, and any write permanently locks the execution mode. A random write
+               // would also park the switch FSM in its terminal error state and raise fatal_hw_err.
+        "excl:CsrAllTests:CsrExclAll"],
+      },
+% endif
 
       { name: "FPGA_INFO",
         desc: '''
@@ -1122,6 +1234,47 @@
             '''
           },
         ]
+      },
+
+      { name: "MCOUNTEREN_WRITABLE_REGWEN",
+        desc: "Register write-enable for !!MCOUNTEREN_WRITABLE.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Write enable for !!MCOUNTEREN_WRITABLE. Once set to 0, it can no longer be configured to 1.",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: "MCOUNTEREN_WRITABLE can no longer be configured until next reset."
+              },
+              { value: "1",
+                name: "enabled",
+                desc: "MCOUNTEREN_WRITABLE can still be configured."
+              },
+            ]
+          },
+        ],
+      },
+
+      { name: "MCOUNTEREN_WRITABLE",
+        desc: "Controls whether Ibex mcounteren CSR is writable by software.",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "MCOUNTEREN_WRITABLE_REGWEN",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "EN",
+            resval: true,
+            desc: '''
+              When set to kMultiBitBool4True, the mcounteren CSR is writable by software.
+              Drives the mcounteren_writable_i input on ibex_top.
+            '''
+          },
+        ],
       },
 
       // dv simulation window

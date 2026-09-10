@@ -26,17 +26,43 @@ extern "C" {
  * Returns the current version of the cryptolib as well as the
  * latest git commit hash of the `sw/device/lib/crypto` directory.
  *
- * @param ctx Pointer to the generic HMAC context struct.
+ * To get the actual git commit hash and mark the build as released,
+ * the build must be run with the Bazel `--stamp` option. Otherwise,
+ * a default placeholder hash is used and the library is marked as unreleased.
+ *
  * @param[out] version The current version of the cryptolib.
+ * @param[out] released Whether this is a release build (enabled via
+ * `--stamp`).
  * @param[out] build_hash_low The low portion of the git commit hash of
  * `sw/device/lib/crypto`.
  * @param[out] build_hash_high The high portion of the git commit hash of
  * `sw/device/lib/crypto`.
- * @return Result of the HMAC final operation.
+ * @return Status of the operation.
  */
 otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
                                       uint32_t *build_hash_low,
                                       uint32_t *build_hash_high);
+
+/**
+ * Return the current version of the cryptolib.
+ *
+ * @return The current crypto library version.
+ */
+otcrypto_lib_version_t otcrypto_lib_version(void);
+
+/**
+ * Decode an encoded cryptolib version into major, minor, and patch numbers.
+ *
+ * Versions are encoded with high Hamming distance modular arithmetic such that
+ * version * 0x332ce355u places (major, minor, patch) in the upper 3 bytes.
+ *
+ * @param version Encoded version integer.
+ * @param[out] major Decoded major version.
+ * @param[out] minor Decoded minor version.
+ * @param[out] patch Decoded patch version.
+ */
+void otcrypto_version_decode(uint32_t version, uint32_t *major, uint32_t *minor,
+                             uint32_t *patch);
 
 #ifdef __cplusplus
 }  // extern "C"

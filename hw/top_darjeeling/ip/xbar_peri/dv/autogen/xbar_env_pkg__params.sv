@@ -25,16 +25,16 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h30100000, 32'h301001ff}
     }},
-    '{"pwrmgr_aon", '{
+    '{"pwrmgr", '{
         '{32'h30400000, 32'h3040007f}
     }},
-    '{"rstmgr_aon", '{
+    '{"rstmgr", '{
         '{32'h30410000, 32'h3041007f}
     }},
-    '{"clkmgr_aon", '{
+    '{"clkmgr", '{
         '{32'h30420000, 32'h3042003f}
     }},
-    '{"pinmux_aon", '{
+    '{"pinmux", '{
         '{32'h30460000, 32'h304607ff}
     }},
     '{"otp_ctrl__core", '{
@@ -49,13 +49,13 @@ tl_device_t xbar_devices[$] = '{
     '{"alert_handler", '{
         '{32'h30160000, 32'h301607ff}
     }},
-    '{"sram_ctrl_ret_aon__regs", '{
+    '{"sram_ctrl_ret__regs", '{
         '{32'h30500000, 32'h3050003f}
     }},
-    '{"sram_ctrl_ret_aon__ram", '{
+    '{"sram_ctrl_ret__ram", '{
         '{32'h30600000, 32'h30600fff}
     }},
-    '{"aon_timer_aon", '{
+    '{"aon_timer", '{
         '{32'h30470000, 32'h3047003f}
     }},
     '{"ast", '{
@@ -74,17 +74,17 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_device",
         "rv_timer",
-        "pwrmgr_aon",
-        "rstmgr_aon",
-        "clkmgr_aon",
-        "pinmux_aon",
+        "pwrmgr",
+        "rstmgr",
+        "clkmgr",
+        "pinmux",
         "otp_ctrl__core",
         "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",
-        "sram_ctrl_ret_aon__ram",
-        "sram_ctrl_ret_aon__regs",
-        "aon_timer_aon",
+        "sram_ctrl_ret__ram",
+        "sram_ctrl_ret__regs",
+        "aon_timer",
         "soc_dbg_ctrl__core"}}
 };

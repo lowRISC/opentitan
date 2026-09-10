@@ -216,6 +216,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // as well.
           if (item.is_write) begin
             cfg.model_agent_cfg.vif.set_software_errs_fatal(item.a_data[0]);
+            cfg.model_agent_cfg.vif.set_wfi_enabled(item.a_data[1]);
           end
         end
         default: begin
@@ -567,7 +568,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // Overridden from cip_base_scoreboard. Called when an alert happens.
-  function void on_alert(string alert_name, alert_esc_agent_pkg::alert_esc_seq_item item);
+  function void on_alert(string alert_name, alert_esc_agent_pkg::alert_seq_item item);
 
     `uvm_info(`gfn, $sformatf("on_alert(%0s)", alert_name), UVM_HIGH)
 
@@ -645,9 +646,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void mem_compare(string ral_name, uvm_reg_addr_t addr, tl_seq_item item);
-    // We can only compare the contents inside memories when the OTBN is not busy executing
-    // or wiping the memories
-    if (model_status inside {otbn_pkg::StatusIdle, otbn_pkg::StatusBusySecWipeInt}) begin
+    // We can only compare the contents inside memories when the OTBN is not busy executing,
+    // paused or wiping the memories
+    if (model_status inside {otbn_pkg::StatusIdle, otbn_pkg::StatusPaused,
+                             otbn_pkg::StatusBusySecWipeInt}) begin
       super.mem_compare(ral_name, addr, item);
     // Otherwise the contents will read out as zeros so compare expected memory with zero.
     end else begin

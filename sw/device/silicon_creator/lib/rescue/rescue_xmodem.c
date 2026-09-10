@@ -119,7 +119,7 @@ rom_error_t protocol_inner(rescue_state_t *state) {
       xmodem_ack(iohandle, true);
       state->frame = 1;
       state->offset = 0;
-      state->flash_offset = 0;
+      state->nvm_offset = 0;
       return kErrorOk;
     case kErrorXModemCrc:
       xmodem_ack(iohandle, false);

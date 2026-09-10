@@ -169,8 +169,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
     logic [8:0] entropy_src_fsm_state;
-    logic [1:0] pattgen_chan_1_0_enable;
-    logic pwm_core_cntr_en;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
     wait (cfg.chip_vif.mios[top_earlgrey_pkg::MioPadIob8]);
@@ -188,8 +186,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
-    `_DV_PROBE_AND_CHECK_IDLE(pattgen_chan_1_0_enable, 2'b00)
-    `_DV_PROBE_AND_CHECK_IDLE(pwm_core_cntr_en, 1'b0)
 
     csrng_acmd_q = cfg.chip_vif.signal_probe_csrng_acmd_q(SignalProbeSample);
     `uvm_info(`gfn, $sformatf("%s = 0x%0x", "csrng_acmd_q",csrng_acmd_q), UVM_LOW);
@@ -223,8 +219,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   virtual task body();
     // Turn off the FIFO data output assertion, as spi_device issues a read
     // before it knows whether it needs the data.
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
     super.body();
 
     // Wait for configurations to be computed and max power epoch to start.

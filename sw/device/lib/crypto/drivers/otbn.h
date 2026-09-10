@@ -67,36 +67,52 @@ typedef uint32_t otbn_addr_t;
  */
 typedef struct otbn_app {
   /**
-   * Start of OTBN instruction memory in the embedded program.
+   * Start of the compressed OTBN instruction memory in the embedded program.
    *
    * This pointer references Ibex's memory.
    */
-  const uint32_t *imem_start;
+  const uint8_t *imem_compressed_start;
   /**
-   * The first word after OTBN instruction memory in the embedded program.
+   * The first byte after the compressed OTBN instruction memory.
    *
    * This pointer references Ibex's memory.
    *
-   * This address satifies `imem_start < imem_end`.
+   * This address satisfies `imem_compressed_start <= imem_compressed_end`.
    */
-  const uint32_t *imem_end;
+  const uint8_t *imem_compressed_end;
   /**
-   * Start of initialized OTBN data in the embedded program.
+   * The expected size of the uncompressed instruction memory, in 32-bit words.
    *
-   * This pointer references Ibex's memory.
-   *
-   * Data in between `dmem_data_start` and `dmem_data_end` will be copied to
-   * OTBN at app load time.
+   * This defines exactly how many words the host CPU will write to the OTBN
+   * IMEM registers after decompressing the payload.
    */
-  const uint32_t *dmem_data_start;
+  const size_t imem_uncompressed_words;
+
   /**
-   * The first word after initialized OTBN data in the embedded program.
+   * Start of the compressed initialized OTBN data in the embedded program.
    *
    * This pointer references Ibex's memory.
    *
-   * Should satisfy `dmem_data_start <= dmem_data_end`.
+   * Data between `dmem_compressed_start` and `dmem_compressed_end` will be
+   * decompressed and copied to OTBN at app load time.
    */
-  const uint32_t *dmem_data_end;
+  const uint8_t *dmem_compressed_start;
+  /**
+   * The first byte after the compressed initialized OTBN data.
+   *
+   * This pointer references Ibex's memory.
+   *
+   * Should satisfy `dmem_compressed_start <= dmem_compressed_end`.
+   */
+  const uint8_t *dmem_compressed_end;
+  /**
+   * The expected size of the uncompressed initialized data, in 32-bit words.
+   *
+   * This defines exactly how many words the host CPU will write to the OTBN
+   * DMEM registers after decompressing the payload.
+   */
+  const size_t dmem_uncompressed_words;
+
   /**
    * Start of initialized data section in OTBN's DMEM.
    *
@@ -166,8 +182,9 @@ typedef struct otbn_app {
 /**
  * Makes an embedded OTBN application image available for use.
  *
- * Make symbols available that indicate the start and the end of instruction
- * and data memory regions, as they are stored in the device memory.
+ * Makes symbols available that indicate the start and the end of the compressed
+ * instruction and data memory regions, their uncompressed sizes, and the
+ * expected checksum for integrity verification.
  *
  * Use this macro instead of manually declaring the symbols as symbol names
  * might change.
@@ -175,13 +192,15 @@ typedef struct otbn_app {
  * @param app_name Name of the application to load, which is typically the
  *                 name of the main (assembly) source file.
  */
-#define OTBN_DECLARE_APP_SYMBOLS(app_name)              \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_start);       \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_end);         \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_start);  \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_end);    \
-  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start); \
-  OTBN_DECLARE_SYMBOL_ADDR(app_name, _checksum)
+#define OTBN_DECLARE_APP_SYMBOLS(app_name)                                 \
+  extern const uint8_t OTBN_SYMBOL_PTR(app_name, imem_compressed_start)[]; \
+  extern const uint8_t OTBN_SYMBOL_PTR(app_name, imem_compressed_end)[];   \
+  extern const uint8_t OTBN_SYMBOL_PTR(app_name, dmem_compressed_start)[]; \
+  extern const uint8_t OTBN_SYMBOL_PTR(app_name, dmem_compressed_end)[];   \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start);                    \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, _checksum);                           \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, imem_uncompressed_bytes);             \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, dmem_uncompressed_bytes)
 
 /**
  * Initializes the OTBN application information structure.
@@ -190,24 +209,51 @@ typedef struct otbn_app {
  * through `OTBN_DECLARE_APP_SYMBOLS()`, use this macro to initialize an
  * `otbn_app_t` struct with those symbols.
  *
+ * This macro automatically handles the mapping of the compressed payload
+ * pointers and converts the uncompressed byte counts provided by the linker
+ * into the 32-bit word counts expected by the OTBN loader.
+ *
  * @param app_name Name of the application to load.
  * @see OTBN_DECLARE_APP_SYMBOLS()
  */
-#define OTBN_APP_T_INIT(app_name)                                           \
-  ((otbn_app_t){                                                            \
-      .imem_start = OTBN_SYMBOL_PTR(app_name, _imem_start),                 \
-      .imem_end = OTBN_SYMBOL_PTR(app_name, _imem_end),                     \
-      .dmem_data_start = OTBN_SYMBOL_PTR(app_name, _dmem_data_start),       \
-      .dmem_data_end = OTBN_SYMBOL_PTR(app_name, _dmem_data_end),           \
-      .dmem_data_start_addr = OTBN_ADDR_T_INIT(app_name, _dmem_data_start), \
-      .checksum = OTBN_ADDR_T_INIT(app_name, _checksum),                    \
+#define OTBN_APP_T_INIT(app_name)                                            \
+  ((otbn_app_t){                                                             \
+      .imem_compressed_start =                                               \
+          OTBN_SYMBOL_PTR(app_name, imem_compressed_start),                  \
+      .imem_compressed_end = OTBN_SYMBOL_PTR(app_name, imem_compressed_end), \
+      .imem_uncompressed_words =                                             \
+          OTBN_ADDR_T_INIT(app_name, imem_uncompressed_bytes) / 4,           \
+      .dmem_compressed_start =                                               \
+          OTBN_SYMBOL_PTR(app_name, dmem_compressed_start),                  \
+      .dmem_compressed_end = OTBN_SYMBOL_PTR(app_name, dmem_compressed_end), \
+      .dmem_uncompressed_words =                                             \
+          OTBN_ADDR_T_INIT(app_name, dmem_uncompressed_bytes) / 4,           \
+      .dmem_data_start_addr = OTBN_ADDR_T_INIT(app_name, _dmem_data_start),  \
+      .checksum = OTBN_ADDR_T_INIT(app_name, _checksum),                     \
   })
 
 /**
- * Initializes an `otbn_addr_t`.
+ * Stringification macros for inline assembly.
  */
-#define OTBN_ADDR_T_INIT(app_name, symbol_name) \
-  ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
+#define _OTBN_STR(x) #x
+#define _OTBN_XSTR(x) _OTBN_STR(x)
+
+/**
+ * Initializes an `otbn_addr_t`.
+ *
+ * Uses inline assembly to force an absolute load.
+ * This prevents the compiler from emitting PC-relative instructions
+ * which would break position-independent code (PIC) for the binary blob.
+ */
+#define OTBN_ADDR_T_INIT(app_name, symbol_name)                                       \
+  ({                                                                                  \
+    uint32_t _otbn_addr;                                                              \
+    __asm__ (                                                                       \
+      "lui %0, %%hi(" _OTBN_XSTR(OTBN_SYMBOL_ADDR(app_name, symbol_name)) ")\n"   \
+      "addi %0, %0, %%lo(" _OTBN_XSTR(OTBN_SYMBOL_ADDR(app_name, symbol_name)) ")" \
+      : "=r"(_otbn_addr)); \
+    _otbn_addr;                                                                       \
+  })
 
 /**
  * Write to OTBN's data memory (DMEM)
@@ -346,6 +392,20 @@ status_t otbn_dmem_sec_wipe(void);
  * @return Result of the operation.
  */
 status_t otbn_set_ctrl_software_errs_fatal(bool enable);
+
+/**
+ * Sets the WFI (Wait For Interrupt) enable bit in the control register.
+ *
+ * When set, OTBN's WFI instruction is enabled. If cleared, OTBN's WFI
+ * instruction is disabled and will cause a fatal error if executed.
+ * The bit can only be changed when the OTBN status is IDLE.
+ *
+ * This function returns an error if called when OTBN is not idle.
+ *
+ * @param enable Enable or disable the WFI instruction.
+ * @return Result of the operation.
+ */
+status_t otbn_set_ctrl_wfi_enable(bool enable);
 
 /**
  * (Re-)loads the provided application into OTBN.

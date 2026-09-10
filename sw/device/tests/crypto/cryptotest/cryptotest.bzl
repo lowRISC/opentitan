@@ -19,8 +19,6 @@ load(
 # - cw340
 # - silicon
 CRYPTOTEST_EXEC_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
 } | EARLGREY_SILICON_OWNER_ROM_EXT_ENVS
@@ -31,14 +29,18 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:drbg",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdh",
     "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
+    "//sw/device/tests/crypto/cryptotest/firmware:ed25519",
     "//sw/device/tests/crypto/cryptotest/firmware:hash",
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:mldsa",
+    "//sw/device/tests/crypto/cryptotest/firmware:mlkem",
     "//sw/device/tests/crypto/cryptotest/firmware:rsa",
+    "//sw/device/tests/crypto/cryptotest/firmware:sha",
     "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
+    "//sw/device/tests/crypto/cryptotest/firmware:x25519",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
-    "//sw/device/lib/crypto/drivers:entropy",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",

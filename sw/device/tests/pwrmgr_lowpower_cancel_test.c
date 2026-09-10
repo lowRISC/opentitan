@@ -86,10 +86,9 @@ static void test_init(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
 
-  CHECK_DIF_OK(
-      dif_pwrmgr_find_request_source(&pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                     dt_aon_timer_instance_id(kDtAonTimerAon),
-                                     kDtAonTimerWakeupWkupReq, &wakeup_src));
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kDtAonTimer),
+      kDtAonTimerWakeupWkupReq, &wakeup_src));
 
   // Enable AON interrupts.
   dif_rv_plic_irq_id_t plic_id =

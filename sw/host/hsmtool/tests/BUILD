@@ -2,6 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Test integration of HSMtool.
+
+This includes testing use of HSMtool with SoftHSM, and performing tests that sign with
+opentitantool and verify with hsmtool (and vice versa) for different schemes to ensure
+consistent implementations of cryptographic operations.
+"""
+
 package(default_visibility = ["//visibility:public"])
 
 sh_library(
@@ -21,10 +28,11 @@ sh_test(
     data = [
         "//signing/softhsm",
         "//signing/softhsm:conf",
-        "//sw/host/hsmtool",
+        "@opentitan_signing_infra//hsmtool",
         "@softhsm2//:gen_dir",
     ],
     env = {
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
     },
 )
@@ -47,8 +55,8 @@ sh_test(
         "//signing/softhsm",
         "//signing/softhsm:conf",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset",
-        "//sw/host/hsmtool",
         "//sw/host/opentitantool",
+        "@opentitan_signing_infra//hsmtool",
         "@softhsm2//:gen_dir",
     ],
     env = {
@@ -61,6 +69,7 @@ sh_test(
                 --input=$(rootpath :tqbf_digest)
                 --output=tqbf.ecdsa_sig
         """,
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
         "HSMTOOL_ARGS": """
             -t fake_keys -u user -p 123456
@@ -84,8 +93,8 @@ sh_test(
         "//signing/softhsm",
         "//signing/softhsm:conf",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub",
-        "//sw/host/hsmtool",
         "//sw/host/opentitantool",
+        "@opentitan_signing_infra//hsmtool",
         "@softhsm2//:gen_dir",
     ],
     env = {
@@ -98,6 +107,7 @@ sh_test(
                 --signature-file=tqbf.ecdsa_sig
                 sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
         """,
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
         # This hsmtool invocation computes the digest from the plain-text `tqbf.txt` input file.
         "HSMTOOL_ARGS": """
@@ -141,8 +151,8 @@ _SPX_TESTS = {
             "//signing/softhsm",
             "//signing/softhsm:conf",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
-            "//sw/host/hsmtool",
             "//sw/host/opentitantool",
+            "@opentitan_signing_infra//hsmtool",
             "@softhsm2//:gen_dir",
         ],
         env = {
@@ -159,6 +169,7 @@ _SPX_TESTS = {
                 domain = param["domain"],
                 rev_flag = param["rev_flag"],
             ),
+            "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
             "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
             "HSMTOOL_SPX_MODULE": "pkcs11-ef",
             "HSMTOOL_ARGS": """
@@ -189,8 +200,8 @@ _SPX_TESTS = {
             "//signing/softhsm",
             "//signing/softhsm:conf",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
-            "//sw/host/hsmtool",
             "//sw/host/opentitantool",
+            "@opentitan_signing_infra//hsmtool",
             "@softhsm2//:gen_dir",
         ],
         env = {
@@ -207,6 +218,7 @@ _SPX_TESTS = {
                 domain = param["domain"],
                 rev_flag = param["rev_flag"],
             ),
+            "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
             "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
             "HSMTOOL_SPX_MODULE": "pkcs11-ef",
             "HSMTOOL_ARGS": """
@@ -276,8 +288,8 @@ sh_test(
         "//signing/softhsm",
         "//signing/softhsm:conf",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset",
-        "//sw/host/hsmtool",
         "//sw/host/opentitantool",
+        "@opentitan_signing_infra//hsmtool",
         "@softhsm2//:gen_dir",
     ],
     env = {
@@ -290,6 +302,7 @@ sh_test(
                 --output=image.signed_bin
                 $(rootpath :image_bin)
         """,
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
         "HSMTOOL_ARGS": """
             -t fake_keys -u user -p 123456
@@ -313,8 +326,8 @@ sh_test(
         "//signing/softhsm",
         "//signing/softhsm:conf",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub",
-        "//sw/host/hsmtool",
         "//sw/host/opentitantool",
+        "@opentitan_signing_infra//hsmtool",
         "@softhsm2//:gen_dir",
     ],
     env = {
@@ -331,6 +344,7 @@ sh_test(
             image manifest verify
                 image.signed_bin
         """,
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
         "HSMTOOL_ARGS": """
             -t fake_keys -u user -p 123456

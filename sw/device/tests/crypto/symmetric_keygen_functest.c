@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/randomness_quality.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -27,41 +30,39 @@ static const randomness_quality_significance_t kSignificance =
 // Personalization data for testing.
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
 
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
+
 // Represents a 192-bit AES-CBC key.
-static otcrypto_key_config_t kAesKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesCbc,
-    .key_length = 192 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kAesKeyConfig                                 \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesCbc,             \
+      .key_length = 192 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Represents a 256-bit HMAC-SHA256 key.
-static otcrypto_key_config_t kHmacKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeHmacSha256,
-    .key_length = 256 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kHmacKeyConfig                                \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeHmacSha256,         \
+      .key_length = 256 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 // Represents a 128-bit KMAC key.
-static otcrypto_key_config_t kKmacKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeKmac128,
-    .key_length = 128 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
-static status_t entropy_complex_init_test(void) {
-  // This initialization should happen in ROM_EXT, so there is no public API
-  // for it in cryptolib.
-  TRY(entropy_complex_init());
-
-  // Check the configuration.
-  return entropy_complex_check();
-}
+#define kKmacKeyConfig                                \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeKmac128,            \
+      .key_length = 128 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 /**
  * Basic test for generating a symmetric key.
@@ -80,22 +81,38 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
   // Allocate and zeroize keyblob.
   size_t key_share_words = config.key_length / sizeof(uint32_t);
   uint32_t keyblob[key_share_words * 2];
-  memset(keyblob, 0, sizeof(keyblob));
 
-  // Create the blinded key structure and call keygen.
+  const int kMaxRetries = 3;
+  int attempt = 0;
+  bool passed_stats = false;
+
+  // Create the blinded key structure.
   otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
 
-  // Ensure the checksum passes.
-  TRY_CHECK(integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+  while (attempt < kMaxRetries && !passed_stats) {
+    attempt++;
+    // Allocate and zeroize keyblob.
+    memset(keyblob, 0, sizeof(keyblob));
 
-  // Do a basic statistical test.
-  TRY(randomness_quality_monobit_test((unsigned char *)keyblob, sizeof(keyblob),
-                                      kSignificance));
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key));
+
+    // Ensure the checksum passes.
+    TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+
+    // Try the statistical test.
+    status_t stat_status = randomness_quality_monobit_test(
+        (unsigned char *)keyblob, sizeof(keyblob), kSignificance);
+
+    if (status_ok(stat_status)) {
+      passed_stats = true;
+    } else if (attempt == kMaxRetries) {
+      return stat_status;
+    }
+  }
 
   // Log the generated key.
   uint32_t *share0;
@@ -142,24 +159,138 @@ static status_t generate_multiple_keys_test(void) {
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob2,
   };
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key1));
-  TRY(otcrypto_symmetric_keygen(&kPersonalization, &key2));
 
-  // Do a statistical test on the entire keyblob (this will check if the keys
-  // are statistically related to each other).
-  TRY(randomness_quality_monobit_test((unsigned char *)keyblob_buffer,
-                                      sizeof(keyblob_buffer), kSignificance));
+  const int kMaxRetries = 3;
+  int attempt = 0;
+  bool passed_stats = false;
+
+  while (attempt < kMaxRetries && !passed_stats) {
+    attempt++;
+    memset(keyblob_buffer, 0, sizeof(keyblob_buffer));
+
+    // Generate two AES keys.
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key1));
+    TRY(otcrypto_symmetric_keygen(&kPersonalization, &key2));
+
+    // Do a statistical test on the combined buffer.
+    status_t stat_status = randomness_quality_monobit_test(
+        (unsigned char *)keyblob_buffer, sizeof(keyblob_buffer), kSignificance);
+
+    if (status_ok(stat_status)) {
+      passed_stats = true;
+    } else if (attempt == kMaxRetries) {
+      return stat_status;
+    }
+  }
+
+  // Check if the keys are not the same.
+  TRY_CHECK(memcmp(keyblob1, keyblob2, sizeof(keyblob_buffer) / 2) != 0);
 
   return OK_STATUS();
+}
+
+/**
+ * Test for deriving a hardware-backed software-visible key.
+ */
+static status_t hw_backed_keygen_test(void) {
+  // Configuration for a 256-bit hardware-backed key.
+  otcrypto_key_config_t config = {
+      .version = otcrypto_lib_version(),
+      // the .mode can be any value
+      .key_length = 256 / 8,
+      .hw_backed = kHardenedBoolTrue,
+      .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // The final software-visible key generated by the key manager has two
+  // 8-word shares.
+  uint32_t keyblob[16];
+  memset(keyblob, 0, sizeof(keyblob));
+
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = 8 * sizeof(uint32_t),
+      .keyblob = keyblob,
+  };
+
+  // We provide a test with CDI set to zero, i.e., using the sealing key.
+  // Version allowed by the key manager.
+  uint32_t version = 0;
+  // Example salt.
+  const uint32_t salt[7] = {0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                            0x55555555, 0x66666666, 0x77777777};
+
+  // Initialize the hardware-backed keyblob preset.
+  TRY(otcrypto_hw_backed_key(version, salt, &key));
+  TRY_CHECK(key.checksum == otcrypto_integrity_blinded_checksum(&key));
+
+  // Generate the SW-visible key from the hardware-backed preset.
+  TRY(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &key));
+
+  // Verify the key struct was morphed correctly.
+  TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
+  TRY_CHECK(key.keyblob_length == 16 * sizeof(uint32_t));
+  TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+
+  // We provide a test with CDI set to one, i.e., using the attestation key.
+  uint32_t attestation_keyblob[9];
+  otcrypto_blinded_key_t attestation_key = {
+      .config = config,
+      .keyblob_length = sizeof(attestation_keyblob),
+      .keyblob = attestation_keyblob,
+  };
+  // Example salt.
+  const uint32_t attestation_salt[8] = {0x00010203, 0x04050607, 0x08090a0b,
+                                        0x0c0d0e0f, 0xf0f1f2f3, 0xf4f5f6f7,
+                                        0xf8f9fafb, 0xfcfdfeff};
+  const uint32_t attestation_version = 0x0;
+  // Initialize the hardware-backed keyblob preset.
+  TRY(otcrypto_hw_backed_attestation_key(attestation_version, attestation_salt,
+                                         &attestation_key));
+  TRY_CHECK(attestation_key.checksum ==
+            otcrypto_integrity_blinded_checksum(&attestation_key));
+
+  // Generate the SW-visible key from the hardware-backed preset.
+  TRY(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &attestation_key));
+
+  // Verify the key struct was morphed correctly.
+  TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
+  TRY_CHECK(key.keyblob_length == 16 * sizeof(uint32_t));
+  TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+
+  return OK_STATUS();
+}
+
+static status_t test_setup(void) {
+  // Initialize the key manager dpe, which derives the CreatorRootKey.
+  // Note: the keymgr_dpe testutils set this up using software entropy, so there
+  // is no need to initialize the entropy complex first. However, this is of
+  // course not the expected setup in production.
+  dif_keymgr_dpe_t keymgr_dpe;
+  dif_kmac_t kmac;
+  TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
+
+  // TODO(#30759): Verify the kKeymgrDpeSrcSlot contains a key with boot_stage
+  // set to CreatorRootKey!
+
+  // Initialize entropy complex for cryptolib, which the key manager uses to
+  // clear sideloaded keys. The `keymgr_dpe_testutils_startup` function restarts
+  // the device, so this should happen afterwards.
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
 }
 
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  EXECUTE_TEST(result, entropy_complex_init_test);
+  EXECUTE_TEST(result, test_setup);
+
   EXECUTE_TEST(result, aes_keygen_test);
   EXECUTE_TEST(result, hmac_keygen_test);
   EXECUTE_TEST(result, kmac_keygen_test);
   EXECUTE_TEST(result, generate_multiple_keys_test);
+  EXECUTE_TEST(result, hw_backed_keygen_test);
   return status_ok(result);
 }

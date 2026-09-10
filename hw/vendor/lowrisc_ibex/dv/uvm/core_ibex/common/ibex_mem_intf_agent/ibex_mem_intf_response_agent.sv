@@ -18,6 +18,7 @@ class ibex_mem_intf_response_agent extends uvm_agent;
 
   virtual function void build_phase(uvm_phase phase);
     bit secure_ibex;
+    bit cheriot;
 
     super.build_phase(phase);
     monitor = ibex_mem_intf_monitor::type_id::create("monitor", this);
@@ -35,8 +36,13 @@ class ibex_mem_intf_response_agent extends uvm_agent;
     if (!uvm_config_db#(bit)::get(null, "", "SecureIbex", secure_ibex)) begin
       secure_ibex = 1'b0;
     end
+    if (!uvm_config_db#(bit)::get(null, "", "CHERIoT", cheriot)) begin
+      cheriot = 1'b0;
+    end
 
-    cfg.fixed_data_write_response = secure_ibex;
+    // Write response data fields are X when fixed_data_write_response is unset. CHERIoT's TRVK
+    // triggers DataKnown_A assertions without this.
+    cfg.fixed_data_write_response = secure_ibex | cheriot;
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);

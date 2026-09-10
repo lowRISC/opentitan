@@ -283,7 +283,7 @@ TEST_F(PersoTlvDataTest, PersoTlvInitV1Blob) {
   EXPECT_EQ(perso_tlv_init_v1_blob(&pb), kErrorOk);
   EXPECT_EQ(pb.num_objs, (size_t)1);
   EXPECT_EQ(pb.next_free, (size_t)(sizeof(perso_tlv_object_header_t) +
-                                   sizeof(perso_tlv_blob_version_t)));
+                                   sizeof(perso_tlv_blob_version_payload_t)));
 
   perso_blob_version_t version;
   size_t offset;

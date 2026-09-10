@@ -23,8 +23,8 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   input  logic [Width-1:0] wdata_i,
   input  logic [Width-1:0] wmask_i,
   output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
-  input  ram_1p_cfg_t      cfg_i,
-  output ram_1p_cfg_rsp_t  cfg_rsp_o
+  input  ram_1p_cfg_req_t  cfg_i,
+  output ram_1p_cfg_rsp_t  cfg_o
 );
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
@@ -42,35 +42,32 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
 
   logic unused_signals;
   assign unused_signals = ^{cfg_i, rst_ni};
-  assign cfg_rsp_o      = '0;
+  assign cfg_o          = RAM_1P_CFG_RSP_DEFAULT;
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
   localparam int MaskWidth = Width / DataBitsPerMask;
 
-  logic [Width-1:0]     mem [Depth];
-  logic [MaskWidth-1:0] wmask;
-
-  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-
-    // Ensure that all mask bits within a group have the same value for a write
+  // Ensure that all mask bits within a group have the same value for a write.
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask_check
     `ASSERT(MaskCheck_A, req_i && write_i |->
         wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_i, '0)
   end
+
+  // Single, whole-word array. Masked bit-slice writes disqualify an array from lint tools' RAM
+  // recognition, so wdata merges the write data with the currently stored word per the mask,
+  // and mem is always written as a whole word.
+  logic [Width-1:0] mem [Depth];
+  logic [Width-1:0] wdata;
+  assign wdata = (wdata_i & wmask_i) | (mem[addr_i] & ~wmask_i);
 
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
   // thrown when using $readmemh system task to backdoor load an image
   always @(posedge clk_i) begin
     if (req_i) begin
       if (write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (wmask[i]) begin
-            mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
+        mem[addr_i] <= wdata;
       end else begin
         rdata_o <= mem[addr_i];
       end

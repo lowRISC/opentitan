@@ -149,7 +149,6 @@ def gen_pinmux_docs(top, c_helper, out_path):
         └── pinmux
             └── doc
                 ├── pinout_asic.md    # subtable
-                ├── pinout_cw310.md   # subtable
                 ├── pinout_cw340.md   # subtable
                 └── targets.md        # Summary table
     """

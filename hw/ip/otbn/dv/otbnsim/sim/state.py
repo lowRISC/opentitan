@@ -23,7 +23,7 @@ from .wsr import WSRFile
 # The number of cycles spent per round of a secure wipe. This takes constant
 # time in the RTL, mirrored here. The constant here needs to be incremented
 # by one compared to the constant found in RTL (`otbn_core_model.sv`)
-_WIPE_CYCLES = 99 + 1
+WIPE_CYCLES = 99 + 1
 
 
 class FsmState(IntEnum):
@@ -84,7 +84,7 @@ class OTBNState:
 
         self.ext_regs = OTBNExtRegs()
         self.wsrs = WSRFile(self.ext_regs)
-        self.csrs = CSRFile(self.wsrs)
+        self.csrs = CSRFile(self.wsrs, self.ext_regs)
         self.kmac = Kmac(self.csrs, self.wsrs)
 
         self.pc = 0
@@ -203,6 +203,27 @@ class OTBNState:
 
         # The masking accelerator interface (MAI) handles the accelerators
         self.mai = MaskingAcceleratorInterface(self.csrs, self.wsrs)
+
+        # Wait For Interrupt:
+        # - wfi_enabled is the CTRL bit.
+        # - if wfi_auto_resume is set, the wfi insn resumes after 1 cycle. Useful to set in
+        #   standalone mode
+        # - The resume command has one cycle delay in RTL. The simulation however requests the
+        #   resume when the command is issued. Thus _wfi_resume_pending models this delay.
+        # - _wfi_resume is the actual flag which gets set to advance.
+        self.wfi_enabled = False
+        self.wfi_auto_resume = False
+        self._wfi_resume_pending = False
+        self._wfi_resume = False
+
+        # MAC operand-shuffling offset. The predecoder samples the two LSBs of
+        # URND one cycle before a vectorized multiply executes and uses them to
+        # rotate the order in which the 64b chunks are processed. mac_rnd_offset
+        # is the value visible to an instruction starting in the current cycle,
+        # mac_rnd_offset_predec is the value sampled in the current cycle (used
+        # by an instruction starting in the next cycle).
+        self.mac_rnd_offset = 0
+        self.mac_rnd_offset_predec = 0
 
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
@@ -335,13 +356,16 @@ class OTBNState:
         if self.old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
+        # Detect KMAC errors caused by this instruction. This relies on flags inside the ISPRs
+        # which are cleared when committing. Thus it must come before the register commit.
+        self.kmac.detect_errors()
+
         self.gprs.commit()
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
         self.csrs.commit()
         self.wdrs.commit()
-        self.kmac.end_cycle()
 
         if not sim_stalled:
             self.pc = self.get_next_pc()
@@ -349,6 +373,11 @@ class OTBNState:
 
     def _abort(self) -> None:
         '''Abort any pending state changes'''
+        # Detect KMAC errors caused by this instruction. This relies on flags inside the ISPRs
+        # which are cleared when aborting. The error bits however are always updated, thus it must
+        # come before the register abort.
+        self.kmac.detect_errors()
+
         self.gprs.abort()
         self._pc_next_override = None
         self.dmem.abort()
@@ -357,7 +386,6 @@ class OTBNState:
         self.wsrs.abort()
         self.csrs.abort()
         self.wdrs.abort()
-        self.kmac.end_cycle()
 
     def start(self) -> None:
         '''Start running; perform state init'''
@@ -374,9 +402,9 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        # TODO: Figure out when and how kmac should be reset.
         self.wsrs.on_start()
-        self.csrs = CSRFile(self.wsrs)
+        self.csrs = CSRFile(self.wsrs, self.ext_regs)
+        # TODO: Figure out how to model the secure wipe persistent behaviour of the KMAC interface.
         self.kmac.on_start(self.csrs, self.wsrs)
         self.mai.on_start(self.csrs, self.wsrs)
         self.loop_stack = LoopStack()
@@ -419,8 +447,7 @@ class OTBNState:
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
 
-        should_lock = (((self._err_bits >> 16) != 0) or
-                       ((self._err_bits >> 10) & 1 != 0) or
+        should_lock = ((self._err_bits & ErrBits.FATAL_MASK) != 0 or
                        (self._err_bits != 0 and self.software_errs_fatal) or
                        self.rma_req == LcTx.ON)
         # Make any error bits visible
@@ -468,6 +495,35 @@ class OTBNState:
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
 
+    def enter_wfi_pause(self) -> None:
+        '''Pause execution on a wfi instruction.
+
+        Raise the done interrupt and reflect PAUSED in STATUS.
+        '''
+        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        self.ext_regs.write('STATUS', Status.PAUSED, True)
+
+    def wfi_should_resume(self) -> bool:
+        '''Return whether a wfi instruction should resume this cycle.'''
+        # There is one cycle delay in the RTL. The simulation sets the pending flag which then
+        # updates the actual flag. The actual flag is then checked one cycle later. Immediately
+        # resume if wfi_auto_resume is set.
+        do_resume = self._wfi_resume or self.wfi_auto_resume
+        if not do_resume:
+            self._wfi_resume = self._wfi_resume_pending
+            self._wfi_resume_pending = False
+
+        return do_resume
+
+    def exit_wfi_pause(self) -> None:
+        '''Resume execution after a wfi pause.'''
+        self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
+        self._wfi_resume = False
+
+    def request_wfi_resume(self) -> None:
+        '''Request that a paused wfi instruction resumes.'''
+        self._wfi_resume_pending = True
+
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state
 
@@ -477,7 +533,7 @@ class OTBNState:
         # the wiping operation itself will take.
         wiping_next = new_state == FsmState.WIPING
         if wiping_next:
-            self.wipe_cycles = _WIPE_CYCLES
+            self.wipe_cycles = WIPE_CYCLES
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:

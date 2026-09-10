@@ -17,7 +17,7 @@ struct Opts {
 }
 
 // Needs to match util/openocd/target
-const RISCV_IDCODE: u32 = 0x10001cdf;
+const RISCV_IDCODE: u32 = 0x10021cdf;
 
 #[allow(clippy::unusual_byte_groupings)]
 fn test_dtm(opts: &Opts, transport: &TransportWrapper) -> Result<()> {

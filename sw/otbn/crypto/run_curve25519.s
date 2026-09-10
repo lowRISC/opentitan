@@ -3,16 +3,16 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Entrypoint for P-256 ECDH and ECDSA operations.
+ * Entrypoint for 25519 ECDH (x25519) and EdDSA (ed25519) operations.
  *
  * This binary has the following modes of operation:
  * 1. MODE_SIGN_PART1: generate a new keypair
- * 2. MODE_SIGN_PART2: generate an ECDSA signature using caller-provided secret key
+ * 2. MODE_SIGN_PART2: generate an EdDSA signature using caller-provided secret key
  */
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 3 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -23,10 +23,14 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x6CE
-.equ MODE_SIGN_STAGE1, 0x77D
-.equ MODE_SIGN_STAGE2, 0x397
-.equ MODE_VERIFY, 0x5F2
+.equ MODE_KEYGEN, 0x1F8
+.equ MODE_SIGN_STAGE1, 0x669
+.equ MODE_SIGN_STAGE2, 0x23E
+.equ MODE_VERIFY, 0x54E
+.equ MODE_X25519, 0x695
+.equ MODE_X25519_KEYGEN, 0x7A2
+.equ MODE_X25519_SIDELOAD, 0xE7
+.equ MODE_X25519_KEYGEN_SIDELOAD, 0x353
 
 /**
  * Make the mode constants visible to Ibex.
@@ -35,6 +39,10 @@
 .globl MODE_SIGN_STAGE1
 .globl MODE_SIGN_STAGE2
 .globl MODE_VERIFY
+.globl MODE_X25519
+.globl MODE_X25519_KEYGEN
+.globl MODE_X25519_SIDELOAD
+.globl MODE_X25519_KEYGEN_SIDELOAD
 
 .section .text.start
 .globl start
@@ -44,21 +52,83 @@ start:
   lw    x2, 0(x2)
 
   addi  x3, x0, MODE_KEYGEN
-  beq   x2, x3, ecdsa_keygen
+  beq   x2, x3, run_ed25519_keygen
 
   addi  x3, x0, MODE_SIGN_STAGE1
-  beq   x2, x3, ecdsa_sign_compute_r
+  beq   x2, x3, run_ed25519_sign_compute_r
 
   addi  x3, x0, MODE_SIGN_STAGE2
-  beq   x2, x3, ecdsa_sign_compute_s
+  beq   x2, x3, run_ed25519_sign_compute_s
 
   addi  x3, x0, MODE_VERIFY
-  beq   x2, x3, ed25519_verify
+  beq   x2, x3, run_ed25519_verify
+
+  addi  x3, x0, MODE_X25519
+  beq   x2, x3, run_x25519
+
+  addi  x3, x0, MODE_X25519_KEYGEN
+  beq   x2, x3, run_x25519_keygen
+
+  addi  x3, x0, MODE_X25519_SIDELOAD
+  beq   x2, x3, run_x25519_sideload
+
+  addi  x3, x0, MODE_X25519_KEYGEN_SIDELOAD
+  beq   x2, x3, run_x25519_keygen_sideload
 
   /* Invalid mode; fail. */
   unimp
   unimp
-  unimp
+
+/**
+ * X25519 Wrapper for Arithmetic to Boolean Conversion.
+ * Assumes arithmetic shares are in w8 and w7.
+ */
+x25519_apply_a2b:
+  bn.add   w11, w8, w31
+  bn.xor   w31, w31, w31
+  bn.wsrr  w12, URND
+
+  bn.add   w18, w7, w31
+  bn.wsrr  w19, URND
+
+  addi     x5, x1, 0
+  jal      x1, arithmetic_to_boolean
+  addi     x1, x5, 0
+
+  bn.add   w8, w20, w31
+  bn.xor   w31, w31, w31
+  bn.add   w7, w18, w31
+
+  ret
+
+/**
+ * X25519 Wrapper for Boolean to Arithmetic Conversion.
+ * Assumes boolean shares are in w8 and w7.
+ * Returns the blinded recombined scalar in w2.
+ */
+x25519_apply_b2a:
+  bn.add   w20, w8, w31
+  bn.xor   w31, w31, w31
+  bn.wsrr  w21, URND
+
+  bn.add   w10, w7, w31
+  bn.wsrr  w11, URND
+
+  addi     x5, x1, 0
+  jal      x1, boolean_to_arithmetic
+  addi     x1, x5, 0
+
+  bn.wsrr  w4, URND
+  bn.rshi  w4, w31, w4 >> 1
+
+  bn.wsrw  MOD, w31
+  bn.addm  w5, w10, w4
+  bn.xor   w31, w31, w31
+
+  bn.addm  w2, w20, w5
+  bn.sub   w31, w31, w31, FG0
+
+  ret
 
 /**
  * Ed25519 key generation operation.
@@ -72,7 +142,7 @@ start:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_keygen:
+run_ed25519_keygen:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -100,7 +170,7 @@ ecdsa_keygen:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_sign_compute_r:
+run_ed25519_sign_compute_r:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -123,7 +193,7 @@ ecdsa_sign_compute_r:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w31
  * clobbered flag groups: FG0
  */
-ecdsa_sign_compute_s:
+run_ed25519_sign_compute_s:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -146,12 +216,241 @@ ecdsa_sign_compute_s:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w31
  * clobbered flag groups: FG0
  */
-ed25519_verify:
+run_ed25519_verify:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
   /* Generate the signature. */
   jal      x1, ed25519_verify_var
+
+  ecall
+
+/**
+ * X25519 shared secret generation operation.
+ * Generates the shared secret given a memory-provided private key and peer's public key.
+ *
+ * Returns SUCCESS or FAILURE in x20, and the encoded shared key point.
+ *
+ * @param[in]  dmem[ed25519_s0]: private key share 0, 256 bits
+ * @param[in]  dmem[ed25519_s1]: private key share 1, 256 bits
+ * @param[in]  dmem[x25519_public_key]: peer's public key (u-coordinate), 256 bits
+ * @param[out] dmem[x25519_shared_key]: computed shared secret, 256 bits
+ * @param[out] dmem[x25519_ok]: SUCCESS or FAILURE code
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key arithmetic shares into w8 and w7 */
+  li       x2, 8
+  la       x3, ed25519_s0
+  bn.lid   x2, 0(x3)
+
+  li       x2, 7
+  la       x3, ed25519_s1
+  bn.lid   x2, 0(x3)
+
+  /* Execute full masked A2B sequence */
+  jal      x1, x25519_apply_a2b
+
+  /* Clamp the boolean shares */
+  jal      x1, x25519_clamp_shares
+
+  /* Convert boolean shares back to arithmetic ones */
+  jal      x1, x25519_apply_b2a
+
+  /* Load public key into w9 */
+  li       x2, 9
+  la       x3, x25519_public_key
+  bn.lid   x2, 0(x3)
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
+
+  /* Call Edwards-mapped x25519 */
+  jal      x1, x25519
+
+  /* Store result status (SUCCESS or FAILURE) from x20. */
+  la       x3, x25519_ok
+  sw       x20, 0(x3)
+
+  bn.mov   w11, w22
+
+  bn.xor   w31, w31, w31
+
+  /* Arithmetic-to-boolean conversion.
+     Inputs:  w19 = r, w11 = u_masked
+     Outputs: w20 = x0, w19 = x1 */
+  jal      x1, arithmetic_to_boolean_mod
+
+  /* Store the boolean shares */
+  la       x4, x25519_shared_key
+  li       x2, 20
+  bn.sid   x2, 0(x4)
+  li       x2, 19
+  bn.sid   x2, 32(x4)
+
+  ecall
+
+/**
+ * X25519 key generation operation.
+ * Generates the public key given a memory-provided private key.
+ *
+ * Returns the encoded public key point.
+ *
+ * @param[in]  dmem[ed25519_s0]: private key share 0, 256 bits
+ * @param[in]  dmem[ed25519_s1]: private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_keygen:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Load private key arithmetic shares into w8 and w7 */
+  li       x2, 8
+  la       x3, ed25519_s0
+  bn.lid   x2, 0(x3)
+
+  li       x2, 7
+  la       x3, ed25519_s1
+  bn.lid   x2, 0(x3)
+
+  /* Convert arithmetic shares to boolean shares */
+  jal x1, x25519_apply_a2b
+
+  /* Clamp the boolean shares */
+  jal x1, x25519_clamp_shares
+
+  /* Convert boolean shares back to arithmetic ones */
+  jal x1, x25519_apply_b2a
+
+  /* Set Curve25519 basepoint */
+  bn.addi  w9, w31, 9
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
+
+  jal      x1, x25519
+
+  /* Unmask the key */
+  bn.addm  w22, w22, w19
+
+  /* Store public key from w22 */
+  li       x2, 22
+  la       x3, x25519_public_key
+  bn.sid   x2, 0(x3)
+
+  ecall
+
+/**
+ * X25519 shared secret generation operation (sideloaded key).
+ * Generates the shared secret using a sideloaded private key from the hardware key manager.
+ *
+ * Returns SUCCESS or FAILURE in x20, and the encoded shared key point.
+ *
+ * @param[in]  KEY_S0_L: hardware-sideloaded private key share 0, 256 bits
+ * @param[in]  KEY_S1_L: hardware-sideloaded private key share 1, 256 bits
+ * @param[in]  dmem[x25519_public_key]: peer's public key (u-coordinate), 256 bits
+ * @param[out] dmem[x25519_shared_key]: computed shared secret, 256 bits
+ * @param[out] dmem[x25519_ok]: SUCCESS or FAILURE code
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_sideload:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Read private key shares */
+  bn.wsrr w8, KEY_S0_L
+  bn.wsrr w7, KEY_S1_L
+
+  /* Clamp the Boolean shares */
+  jal x1, x25519_clamp_shares
+
+  /* Convert boolean shares back to arithmetic ones */
+  jal x1, x25519_apply_b2a
+
+  /* Load public key into w9 */
+  li x2, 9
+  la x3, x25519_public_key
+  bn.lid x2, 0(x3)
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
+
+  jal x1, x25519
+
+  /* Store result status (SUCCESS or FAILURE) from x20. */
+  la       x3, x25519_ok
+  sw       x20, 0(x3)
+
+  bn.mov   w11, w22
+
+  bn.xor   w31, w31, w31
+
+  /* Arithmetic-to-boolean conversion.
+     Inputs:  w19 = r, w11 = u_masked
+     Outputs: w20 = x0, w19 = x1 */
+  jal      x1, arithmetic_to_boolean_mod
+
+  /* Store the boolean shares */
+  la       x4, x25519_shared_key
+  li       x2, 20
+  bn.sid   x2, 0(x4)
+  li       x2, 19
+  bn.sid   x2, 32(x4)
+
+  ecall
+
+/**
+ * X25519 key generation operation (sideloaded key).
+ * Generates the public key using a sideloaded private key from the hardware key manager.
+ *
+ * Returns the encoded public key point.
+ *
+ * @param[in]  KEY_S0_L: hardware-sideloaded private key share 0, 256 bits
+ * @param[in]  KEY_S1_L: hardware-sideloaded private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_keygen_sideload:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Read private key shares */
+  bn.wsrr w7, KEY_S0_L
+  bn.wsrr w8, KEY_S1_L
+
+  /* Clamp the Boolean shares */
+  jal x1, x25519_clamp_shares
+
+  /* Convert boolean shares back to arithmetic ones */
+  jal x1, x25519_apply_b2a
+
+  /* Set Curve25519 basepoint */
+  bn.addi w9, w31, 9
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
+
+  jal x1, x25519
+
+  /* Unmask the key */
+  bn.addm  w22, w22, w19
+
+  /* Store public key from w22 into DMEM */
+  li x2, 22
+  la x3, x25519_public_key
+  bn.sid x2, 0(x3)
 
   ecall
 
@@ -164,7 +463,7 @@ mode:
   .zero 4
 
 /* Verification result code (32 bits). Output for verify.
-   If verification is successful, this will be SUCCESS = 0xf77fe650.
+   If verification is successful, this will be SUCCESS = 0x739.
    Otherwise, this will be FAILURE = 0xeda2bfaf. */
 .balign 32
 .globl ed25519_verify_result
@@ -195,16 +494,46 @@ ed25519_public_key:
 ed25519_hash_k:
   .zero 64
 
-/* Lower half of precomputed hash h (256 bits). See RFC 8032, section
-   5.1.6, step 1 or the docstring of ed25519_sign. Input for sign. */
+/* Precomputed arithmetic shares of the clamped integer s (256 bits embedded in
+   384 bits). See RFC 8032, section 5.1.6, step 1 or the docstring of
+   ed25519_sign. Input for sign. */
 .balign 32
-.globl ed25519_hash_h_low
-ed25519_hash_h_low:
+.globl ed25519_s0
+ed25519_s0:
+  .zero 64
+
+.balign 32
+.globl ed25519_s1
+ed25519_s1:
+  .zero 64
+
+/* Precomputed arithmetic shares of r (512 bits embedded in 640 bits). See
+   RFC 8032, section 5.1.6, step 2 or the docstring of ed25519_sign.
+   Input for sign. */
+.balign 32
+.globl ed25519_r0
+ed25519_r0:
+  .zero 96
+
+.balign 32
+.globl ed25519_r1
+ed25519_r1:
+  .zero 96
+
+/* x25519 result status (SUCCESS=0x739 or FAILURE=0x1d4). Output for x25519. */
+.balign 4
+.globl x25519_ok
+x25519_ok:
+  .zero 4
+
+/* x25519 public key */
+.balign 32
+.globl x25519_public_key
+x25519_public_key:
   .zero 32
 
-/* Precomputed hash r (512 bits). See RFC 8032, section 5.1.6, step 2 or the
-   docstring of ed25519_sign. Input for sign. */
+/* Shared key (256 bits). Output for ecdh. */
 .balign 32
-.globl ed25519_hash_r
-ed25519_hash_r:
-  .zero 64
+.globl x25519_shared_key
+x25519_shared_key:
+  .zero 32

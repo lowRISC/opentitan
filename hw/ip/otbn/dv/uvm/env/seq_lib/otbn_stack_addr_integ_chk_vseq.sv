@@ -60,8 +60,9 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
   endtask
 
   task send_escalation_to_model();
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
     `uvm_info(`gfn, "Telling model agent to take an error escalation", UVM_MEDIUM)
-    cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
+    cfg.model_agent_cfg.vif.send_err_escalation(err_bits);
   endtask
 
   task wait_for_call_stack_read(string rf_base_path);

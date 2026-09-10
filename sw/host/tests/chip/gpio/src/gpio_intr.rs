@@ -29,89 +29,68 @@ struct Opts {
     timeout: Duration,
 }
 
+#[derive(Clone)]
 struct Config {
     input: HashMap<PinmuxPeripheralIn, PinmuxInsel>,
     output: HashMap<PinmuxMioOut, PinmuxOutsel>,
 }
 
+// Although all supported interfaces use the same config, keep a map because:
+//  (a) Future interfaces may need different mappings
+//  (b) Hyperdebug firmware updates may enable more testing with differences
+//  (c) Testing for the presence of a known interface is useful anyway.
 static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
+    // Common FPGA (CW310/340) pin configuration. Also applies for teacup.
+    // See the `top_earlgrey/data/pins_{cw310_hyperdebug,cw341}.xdc` files.
+    let common_pin_config = Config {
+        // These items represent reserved or multi-function pins. When the
+        // hyperdebug firmware is updated to be able to set these multi-function
+        // pins into GPIO mode, these can be added back. Some other pins could
+        // be tested but require extra test logic reworks (e.g. UART0 TX/RX).
+        // - IOC0-2: SW Strap 0-2
+        // - IOC3-4: UART0 RX/TX (requires rework as test uses a UART console)
+        // - IOC5: TAP Strap 1
+        // - IOC6: PWM / EXT_CLK
+        // - IOC7: USB VBUS DETECT
+        // - IOC8: TAP Strap 0
+        // - IOC9: PMOD2 IO2
+        // - IOR0-4: reserved for JTAG
+        // - IOR8-9: dedicated IOs (for sysrst_ctrl)
+        input: collection! {
+            PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
+            PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
+            PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
+
+            PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
+            PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
+            PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
+
+            PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
+            PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
+            PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
+            PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
+        },
+        output: collection! {
+            PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
+            PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
+            PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
+
+
+            PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
+            PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
+            PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
+
+            PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
+            PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
+            PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
+            PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
+        },
+    };
+
     collection! {
-         // from:https://github.com/lowRISC/opentitan/
-         // blob/master/hw/top_earlgrey/data/pins_cw310_hyperdebug.xdc
-        "hyper310" => Config {
-            input: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-                // ioc0~2: sw strap0~2
-                // ioc5: tap strap1
-                // ioc6: pwm ext)_clk
-                PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
-                PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
-                PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
-
-                PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
-                PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
-                PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
-                // IOR8-9 aren't MIOs.
-                PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
-                PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
-                PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
-                PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
-
-            },
-            output: collection! {
-                // The commented lines represent multi-fuction pins.  These will
-                // be added back in when the hyperdebug firmware can set these
-                // multifunction pins into GPIO mode.
-                // ioc0~2: sw strap0~2
-                // ioc5: tap strap1
-                // ioc6: pwm ext)_clk
-                PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
-                PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
-                PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
-
-                PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
-                PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
-                PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
-                // IOR8-9 aren't MIOs.
-                PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
-                PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
-                PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
-                PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
-            },
-        },
-        // Replication of the hyper310 config.
-        "teacup" => Config {
-            input: collection! {
-                PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
-                PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
-                PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
-
-                PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
-                PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
-                PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
-
-                PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
-                PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
-                PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
-                PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
-            },
-            output: collection! {
-                PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
-                PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
-                PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
-
-                PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
-                PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
-                PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
-
-                PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
-                PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
-                PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
-                PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
-            },
-        },
+        "hyper310" => common_pin_config.clone(),
+        "hyper340" => common_pin_config.clone(),
+        "teacup" => common_pin_config,
     }
 });
 

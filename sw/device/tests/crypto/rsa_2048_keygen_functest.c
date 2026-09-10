@@ -5,12 +5,14 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -43,7 +45,7 @@ status_t keygen_then_sign_test(void) {
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kTestKeyMode,
               .key_length = kOtcryptoRsa2048PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -118,12 +120,158 @@ status_t keygen_then_sign_test(void) {
   return OK_STATUS();
 }
 
+static status_t run_keygen_negative_tests(void) {
+  LOG_INFO("Running RSA keygen negative tests");
+
+  uint32_t pub_data[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data,
+  };
+
+  otcrypto_key_config_t valid_priv_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t priv_blob[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv = {
+      .config = valid_priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+
+  // Null checks
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, NULL, &valid_priv).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(NULL, &valid_priv).value !=
+        OTCRYPTO_OK.value);
+
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, NULL).value !=
+        OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, NULL).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad modes
+  otcrypto_key_config_t bad_mode_cfg = valid_priv_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdsaP256;
+  otcrypto_blinded_key_t bad_priv_mode = {
+      .config = bad_mode_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_mode)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, &bad_priv_mode).value !=
+        OTCRYPTO_OK.value);
+
+  // HW backed restriction
+  otcrypto_key_config_t bad_hw_cfg = valid_priv_cfg;
+  bad_hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t bad_priv_hw = {
+      .config = bad_hw_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob,
+  };
+  CHECK(otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_hw)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub, &bad_priv_hw).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad size enum
+  CHECK(otcrypto_rsa_keygen((otcrypto_rsa_size_t)999, &valid_pub, &valid_priv)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_keygen_async_start((otcrypto_rsa_size_t)999).value !=
+        OTCRYPTO_OK.value);
+
+  // Bad length
+  otcrypto_blinded_key_t bad_priv_blob_len = {
+      .config = valid_priv_cfg,
+      .keyblob_length = 999,  // Should be kOtcryptoRsa2048PrivateKeyblobBytes
+      .keyblob = priv_blob,
+  };
+  CHECK(
+      otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &valid_pub, &bad_priv_blob_len)
+          .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
+static status_t run_async_wrong_finalize_tests(void) {
+  LOG_INFO("Running RSA async wrong-finalize negative tests.");
+
+  uint32_t pub_data_2048[kOtcryptoRsa2048PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub_2048 = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_2048,
+  };
+
+  uint32_t priv_blob_2048[kOtcryptoRsa2048PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv_2048 = {
+      .config =
+          {
+              .version = otcrypto_lib_version(),
+              .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+              .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = priv_blob_2048,
+  };
+
+  uint32_t pub_data_3072[kOtcryptoRsa3072PublicKeyBytes / 4] = {0};
+  otcrypto_unblinded_key_t valid_pub_3072 = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa3072PublicKeyBytes,
+      .key = pub_data_3072,
+  };
+
+  uint32_t priv_blob_3072[kOtcryptoRsa3072PrivateKeyblobBytes / 4] = {0};
+  otcrypto_blinded_key_t valid_priv_3072 = {
+      .config =
+          {
+              .version = otcrypto_lib_version(),
+              .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+              .key_length = kOtcryptoRsa3072PrivateKeyBytes,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes,
+      .keyblob = priv_blob_3072,
+  };
+
+  LOG_INFO("Starting 2048 standard keygen, attempting cofactor finalize...");
+  CHECK_STATUS_OK(otcrypto_rsa_keygen_async_start(kOtcryptoRsaSize2048));
+
+  CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub_2048,
+                                                          &valid_priv_2048)
+            .value == OTCRYPTO_RECOV_ERR.value);
+
+  LOG_INFO(
+      "Starting 2048 standard keygen, attempting 3072 standard finalize...");
+  CHECK_STATUS_OK(otcrypto_rsa_keygen_async_start(kOtcryptoRsaSize2048));
+
+  CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub_3072, &valid_priv_3072)
+            .value == OTCRYPTO_RECOV_ERR.value);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, keygen_then_sign_test);
+  EXECUTE_TEST(test_result, run_async_wrong_finalize_tests);
+  // This test leaves the OTBN running, best call it at the end.
+  EXECUTE_TEST(test_result, run_keygen_negative_tests);
   return status_ok(test_result);
 }

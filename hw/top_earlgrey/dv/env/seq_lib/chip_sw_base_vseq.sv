@@ -90,10 +90,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       main_sram_bkdr_write32(addr, rand_val);
     end
 
-    // Initialize the data partition in all flash banks to all 1s.
-    `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
-    cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
+    // Initialize the info and data partition of the RRAM to all 0s.
+    cfg.mem_bkdr_util_h[RramInfo].clear_mem();
+    cfg.mem_bkdr_util_h[RramData].clear_mem();
 
     // Randomize retention memory.  This is done intentionally with wrong integrity
     // as early portions of ROM will initialize it to the correct value.
@@ -110,6 +109,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `else
       cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
+
+      // Update the digest in m_skip_middle_vseq if necessary.
+      update_skip_middle_vseq_digest();
     end
 
     if (cfg.use_spi_load_bootstrap) begin
@@ -117,19 +119,22 @@ class chip_sw_base_vseq extends chip_base_vseq;
       if (!cfg.sw_images.exists(SwTypeTestSlotA)) begin
         `uvm_error(get_name(), "Cannot load slot A over SPI: no SW image defined.")
       end
-      spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+      spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".128.vmem"});
       cfg.use_spi_load_bootstrap = 1'b0;
 
       // TODO: support bootstrapping entire flash address space, not just slot A.
 
     end else begin
+      // Slot A and slot B images are each pre-scrambled (see gen-rram-img.py's --slot) for their
+      // true absolute address in the RRAM data partition, so their vmem files' own addresses
+      // don't overlap and can be loaded directly.
       if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"};
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(image_path);
+        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".128.scr.vmem"};
+        cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
       if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"};
-        cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(image_path);
+        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".128.scr.vmem"};
+        cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
     end
 
@@ -169,15 +174,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void ret_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
-      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetSramNonce);
     _sram_bkdr_write32(addr, data, 0, key, nonce, '0);
   endfunction
 
   virtual function void ret_sram_inject_ecc_error(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
-      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlRetSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetSramNonce);
     _sram_bkdr_inject_ecc_error(addr, 0, key, nonce);
   endfunction
 
@@ -288,9 +293,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endtask
 
   virtual task post_start();
-    super.post_start();
     // Wait for sw test to finish before exiting.
     wait_for_sw_test_done();
+
+    // Here, we call super.post_start **after** the body of the specialised version of the task.
+    // That ensures that things are nested sensibly (super.pre_start; pre_start; ...; post_start;
+    // super.post_start()). It also ensures that we only stop the rom_skip sequence after the
+    // software test has run to completion.
+    super.post_start();
   endtask
 
   // Monitors the SW test status.
@@ -306,6 +316,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         log_sw_test_status();
       end: isolation_thread
     join
+  endtask
+
+  // Wait for RRAM read-buffer to be ready for a backdoor write operation. This is
+  // required because the RRAM controller reads every word two times. A backdoor
+  // write to a location that has not yet been verified with a second read will
+  // lead to an integrity error.
+  virtual task wait_rram_rd_buf_rdy();
+    `DV_WAIT(cfg.chip_vif.rram_rd_buf_rdy === 1'b1, "RRAM-rd-buf timeout occurred!", 1000);
   endtask
 
   // Print pass / fail message to the log.
@@ -574,7 +592,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     wait_for_flash_command_load();
 
     `uvm_info(`gfn, $sformatf("Reading SW image frames from %0s ...", sw_image), UVM_LOW)
-    read_sw_frames(sw_image, sw_byte_q);
+    read_sw_frames(sw_image, sw_byte_q, 128);
 
     `uvm_info(`gfn, "Sending SPI flash erase command ...", UVM_LOW)
     erase_flash_over_spi();
@@ -612,27 +630,51 @@ class chip_sw_base_vseq extends chip_base_vseq;
     spi_host_flash_issue_write_cmd(page_seq);
   endtask
 
-  // Read the flash image pointed to by the `sw_image` path, and place the
-  // data into the `sw_byte_q`. The flash image is assumed to consist of
-  // contiguous data starting from the base of flash.
-  virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$]);
-    int num_returns;
+  // Parses a VMEM file (the `@<addr> <word0> [<word1> ...]` format srec_cat
+  // produces) into a flat byte queue, in address order. `word_size_bits` must
+  // match the word size the file was generated with: both the hex-digit width
+  // of each token AND the number of tokens packed per line vary with it (e.g.
+  // flash `.64.vmem` packs 4 64-bit words/line, RRAM `.128.vmem` packs 2
+  // 128-bit words/line) -- a fixed 4-token, 64-bit-wide parse silently
+  // misparses any other word size.
+  virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$],
+                                       input int word_size_bits = 64);
     int mem_fd = $fopen(sw_image, "r");
-    bit [63:0] word_data[4];
-    string addr;
+    string line;
+    int word_size_bytes = word_size_bits / 8;
 
     if (!mem_fd) begin
       `uvm_error(get_name(), $sformatf("Failed to open sw_image file at %0s.", sw_image))
     end
 
-    while (!$feof(mem_fd)) begin
-      num_returns = $fscanf(mem_fd, "%s %h %h %h %h", addr, word_data[0], word_data[1],
-                            word_data[2], word_data[3]);
-      if (num_returns <= 1) continue;
-      for (int i = 0; i < num_returns - 1; i++) begin
-        repeat (8) begin
-          sw_byte_q.push_back(word_data[i][7:0]);
-          word_data[i] = word_data[i] >> 8;
+    while ($fgets(line, mem_fd)) begin
+      string tokens[$];
+      int pos = 0;
+      if (line.len() == 0 || line[0] != "@") continue;
+
+      while (pos < line.len()) begin
+        string tok;
+        while (pos < line.len() &&
+               (line[pos] == " " || line[pos] == "\t" ||
+                line[pos] == "\n" || line[pos] == "\r")) pos++;
+        if (pos >= line.len()) break;
+        tok = "";
+        while (pos < line.len() &&
+               !(line[pos] == " " || line[pos] == "\t" ||
+                 line[pos] == "\n" || line[pos] == "\r")) begin
+          tok = {tok, line[pos]};
+          pos++;
+        end
+        tokens.push_back(tok);
+      end
+
+      // tokens[0] is the "@addr" marker; the rest are data words.
+      for (int i = 1; i < tokens.size(); i++) begin
+        bit [255:0] word_data;
+        void'($sscanf(tokens[i], "%h", word_data));
+        repeat (word_size_bytes) begin
+          sw_byte_q.push_back(word_data[7:0]);
+          word_data = word_data >> 8;
         end
       end
     end
@@ -675,7 +717,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Infer mem from address.
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
-    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], RramData},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
@@ -685,21 +727,38 @@ class chip_sw_base_vseq extends chip_base_vseq;
       `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
                                "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                                "addr_mask = 0x%0h"},
-                              symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
-      for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
-
+                              symbol, mem.name, addr, mem_addr, size, addr_mask), UVM_LOW)
+      for (int i = 0; i < size; i++) begin
+        if (mem == RramData) begin
+          logic [7:0] xor_addr_byte;
+          int byte_offset = (mem_addr+i)%4;
+          // add addr infection
+          xor_addr_byte = (mem_addr + i) >> (byte_offset*8 + 2);
+          data[i] = xor_addr_byte ^ data[i];
+        end
+        mem_bkdr_write8(mem, mem_addr + i, data[i]);
+      end
       if (mem == Rom) begin
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        rom.update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+        rom.update_rom_digest();
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
                              "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                              "addr_mask = 0x%0h"},
                             symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
-      for (int i = 0; i < size; i++) mem_bkdr_read8(mem, mem_addr + i, data[i]);
+      for (int i = 0; i < size; i++) begin
+        mem_bkdr_read8(mem, mem_addr + i, data[i]);
+        if (mem == RramData) begin
+          logic [7:0] xor_addr_byte;
+          int byte_offset = (mem_addr+i)%4;
+          // remove addr infection
+          xor_addr_byte = (mem_addr + i) >> (byte_offset*8 + 2);
+          data[i] = xor_addr_byte ^ data[i];
+        end
+      end
     end
   endfunction
 
@@ -803,14 +862,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         forever begin
           bit[1:0] tap_strap_value;
 `ifdef GATE_LEVEL
-          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_1_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[1]))
-          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_0_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[0]))
 `else
-          string tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
 `endif
@@ -1246,21 +1305,23 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endtask : push_button
 
   // This task can be called, when rma is requested by lc_ctrl.
-  // Before rma wipe for data partition started (256 pages),
-  // this task force total page to 9 pages. So rma process is completed faster.
+  // Before rma wipe for the data partition starts (4091 pages -- see the last entry of
+  // rram_ctrl_pkg::RmaWipeEntries), this task forces the wipe's end_page down to 2 pages, so the
+  // rma process completes faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl.u_rram_ctrl_lcmgr";
     string mypath;
-    logic [2:0] rma_wipe_idx;
+    logic [1:0] rma_wipe_idx;
     logic [3:0] rma_ack;
-    // Wait for data partition rma.
+    // Wait for the data-partition entry -- the last of the 4 RmaWipeEntries (info pages are
+    // entries 0-2; the data partition, the big one, is entry 3 == MaxWipeEntry).
     mypath = {path, ".rma_wipe_idx"};
 
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
         `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_wipe_idx), 1, "hdl read failure")
-      end while (rma_wipe_idx != 3'h3);,
+      end while (rma_wipe_idx != 2'h3);,
       "waiting for rma index = 3", 100_000_000
     )
 
@@ -1285,7 +1346,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     uint disable_assertion = 0;
     void'($value$plusargs("disable_assert_edn_output_diff_from_prev=%0d", disable_assertion));
     if (disable_assertion) begin
-      $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A");
+      $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A");
     end
   endfunction
 

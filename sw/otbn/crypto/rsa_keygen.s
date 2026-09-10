@@ -281,6 +281,17 @@ _remove_even_factors_end:
   andi  x2, x2, 8
   bne   x2, x0, rsa_keygen
 
+  # Restore p and q.
+  la x10, rsa_p
+  bn.lid x0, 0(x10)
+  bn.addi w0, w0, 1
+  bn.sid x0, 0(x10)
+
+  la x10, rsa_q
+  bn.lid x0, 0(x10)
+  bn.addi w0, w0, 1
+  bn.sid x0, 0(x10)
+
   # Boolean-mask d0 and d1.
   la x12, rsa_d0
   la x13, rsa_d1
@@ -327,7 +338,7 @@ gen_p:
 _gen_p_loop:
   # Retry the prime generation as long as the attempt counter is non-zero.
   bne x26, x0, _gen_p_body
-  unimp
+  jal x0, _rsa_keygen_fail
 
 _gen_p_body:
   # Decrement attempt counter.
@@ -396,7 +407,7 @@ gen_q:
 _gen_q_loop:
   # Retry the prime generation as long as the attempt counter is non-zero.
   bne x26, x0, _gen_q_body_outer
-  unimp
+  jal x0, _rsa_keygen_fail
 
 _gen_q_body_outer:
   # Decrement attempt counter.
@@ -470,7 +481,7 @@ _gen_prime_loop:
   # Retry the prime generation as long as the attempt counter is non-zero. The
   # probability that the counter reaches is exceedingly low.
   bne x26, x0, _gen_prime_body
-  unimp
+  jal x0, _rsa_keygen_fail
 
 _gen_prime_body:
   # Decrement attempt counter.
@@ -647,3 +658,6 @@ mul256_w24xw25:
   bn.mulqacc.so  w27.L, w24.2, w25.3, 64
   bn.mulqacc.so  w27.U, w24.3, w25.3,  0
   ret
+
+_rsa_keygen_fail:
+  ecall

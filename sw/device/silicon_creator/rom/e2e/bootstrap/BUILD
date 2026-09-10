@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "opentitan_test",
@@ -73,20 +72,15 @@ opentitan_test(
         CONST.LCV.PROD,
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "otp_img_bootstrap_rma",
-        test_cmd = """
-            --bootstrap="{firmware}"
-        """,
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -97,10 +91,10 @@ opentitan_test(
 opentitan_test(
     name = "e2e_bootstrap_disabled",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        # Since the bitstream disables bootstrap, there is no firmware to
+        # Since the OTP configuration disables bootstrap, there is no firmware to
         # load into the chip.  However, opentitan_test wants to build a
         # binary target.  We'll build an unsigned do-nothing binary.
         binaries = {
@@ -108,6 +102,7 @@ opentitan_test(
         },
         otp = "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
+        testopt_bootstrap = "False",
     ),
     manifest = None,
 )

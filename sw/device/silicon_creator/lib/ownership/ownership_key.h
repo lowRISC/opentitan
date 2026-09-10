@@ -51,7 +51,7 @@ typedef struct owner_secret_page {
  * @param signature The signature over the message.
  * @param message Pointer to the message.
  * @param len Size of the message.
- * @param flash_exec The magic value signifying whether the signature was
+ * @param nvm_exec The magic value signifying whether the signature was
  * verified.
  * @return kErrorOk if the message is valid.
  */
@@ -59,7 +59,7 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
                                    uint32_t command, const nonce_t *nonce,
                                    const owner_signature_t *signature,
                                    const void *message, size_t len,
-                                   uint32_t *flash_exec);
+                                   uint32_t *nvm_exec);
 
 /**
  * Initialize sealing.
@@ -107,9 +107,13 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
 /**
  * Retrieve the owner history digest from the OwnerSecret page.
  *
+ * @param ownership_transfers Number of ownership transfers this chip has had
+ * (from `boot_data_t`), used to tell whether the OwnerSecret page has ever
+ * actually been provisioned
  * @param history Digest of all previous owner keys.
  * @return Success or error code.
  */
-rom_error_t ownership_history_get(hmac_digest_t *history);
+rom_error_t ownership_history_get(uint32_t ownership_transfers,
+                                  hmac_digest_t *history);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_

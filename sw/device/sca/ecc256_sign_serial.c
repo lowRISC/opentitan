@@ -110,20 +110,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
 
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
-
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa_sca, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x_r);
-static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
-static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
-
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
  *
@@ -203,16 +189,22 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   // Send operation mode to OTBN
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
   // Send Msg to OTBN
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
   SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg));
   // Send two shares of private_key_d to OTBN
+  const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0));
+  const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
   SS_CHECK_STATUS_OK(otbn_dmem_write(
       kEcc256NumWords, private_key_d + kEcc256NumWords, kOtbnVarD1));
   // Send two shares of secret_k to OTBN
+  const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
   SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0));
+  const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kOtbnVarK1));
 
@@ -221,7 +213,9 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
 
   // Read the results back (sig_r, sig_s)
+  const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r));
+  const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s));
 }
 
@@ -233,6 +227,7 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
  */
 static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   LOG_INFO("SSECDSA starting...");
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256Ecdsa));
   LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
                                                   OTBN_STATUS_REG_OFFSET));
@@ -294,10 +289,6 @@ static void simple_serial_main(void) {
 }
 
 bool test_main(void) {
-  (void)kOtbnVarX;
-  (void)kOtbnVarY;
-  (void)kOtbnVarXR;
-
   simple_serial_main();
   return true;
 }

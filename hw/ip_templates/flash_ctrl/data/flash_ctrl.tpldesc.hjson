@@ -5,7 +5,7 @@
   template_param_list: [
     {
       name: "topname"
-      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'englishbreakfast'"
       type: "string"
       default: ""
     }

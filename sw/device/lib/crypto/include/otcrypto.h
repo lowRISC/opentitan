@@ -7,12 +7,15 @@
 
 #include "aes.h"
 #include "aes_gcm.h"
+#include "cmac.h"
+#include "config.h"
 #include "cryptolib_build_info.h"
 #include "datatypes.h"
 #include "drbg.h"
 #include "ecc_curve25519.h"
 #include "ecc_p256.h"
 #include "ecc_p384.h"
+#include "entropy_src.h"
 #include "hkdf.h"
 #include "hmac.h"
 #include "integrity.h"
@@ -21,9 +24,9 @@
 #include "kmac.h"
 #include "kmac_kdf.h"
 #include "rsa.h"
+#include "self_integrity.h"
 #include "sha2.h"
 #include "sha3.h"
-#include "x25519.h"
 
 /**
  * @file

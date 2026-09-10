@@ -1,0 +1,305 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/hexstr.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/cert/dice_keys.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
+
+OTTF_DEFINE_TEST_CONFIG();
+
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
+
+static status_t get_stored_certificate(const char *cert_name, size_t name_size,
+                                       nvm_info_page_t info_page,
+                                       perso_tlv_cert_obj_t *out_cert_obj) {
+  uint8_t data[2048];
+  TRY(nvm_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t), data));
+
+  uint32_t offset = 0;
+  size_t len = sizeof(data);
+
+  while (len > 0) {
+    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len,
+                                             kPersoBlobVersionV0, out_cert_obj);
+    if (err != kErrorOk) {
+      break;
+    }
+
+    if (memcmp(out_cert_obj->name, cert_name, name_size) == 0) {
+      return OK_STATUS();
+    }
+
+    uint32_t jump_size = (out_cert_obj->obj_size + 7) & ~7u;
+    offset += jump_size;
+
+    if (jump_size >= len)
+      break;
+    len -= jump_size;
+  }
+
+  return NOT_FOUND();
+}
+
+static status_t extract_public_key_from_der(const uint8_t *der_bytes,
+                                            size_t der_size, uint32_t *pk_out) {
+  // The fixed ASN.1 DER sequence for an uncompressed P-256
+  const uint8_t kPubKeyPrefix[] = {0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48,
+                                   0xce, 0x3d, 0x02, 0x01, 0x06, 0x08, 0x2a,
+                                   0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07,
+                                   0x03, 0x42, 0x00, 0x04};
+
+  if (der_size < sizeof(kPubKeyPrefix) + 64) {
+    return INVALID_ARGUMENT();
+  }
+
+  // Scan for the prefix
+  for (size_t i = 0; i <= der_size - sizeof(kPubKeyPrefix) - 64; i++) {
+    if (memcmp(&der_bytes[i], kPubKeyPrefix, sizeof(kPubKeyPrefix)) == 0) {
+      memcpy(pk_out, &der_bytes[i + sizeof(kPubKeyPrefix)], 64);
+      return OK_STATUS();
+    }
+  }
+
+  return NOT_FOUND();
+}
+
+static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
+  uint32_t kAttestationSeedWords = 10;
+  uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
+  uint32_t seed_nvm_offset =
+      kNvmInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
+
+  TRY(nvm_ctrl_info_read_zeros_on_read_error(
+      kNvmInfoPageAttestationKeySeeds, seed_nvm_offset, kAttestationSeedWords,
+      attestation_data));
+
+  return OK_STATUS();
+}
+
+status_t dice_test(void) {
+  perso_tlv_cert_obj_t target_cert = {0};
+
+  TRY(get_stored_certificate("CDI_1", 5, kNvmInfoPageDiceCerts, &target_cert));
+  LOG_INFO("Found CDI_1 cert. Size: %d bytes", target_cert.cert_body_size);
+
+  uint32_t cert_pk[512 / 32] = {0};
+  TRY(extract_public_key_from_der(target_cert.cert_body_p,
+                                  target_cert.cert_body_size, cert_pk));
+
+  char cert_pk_hex[256];
+  hexstr_encode(cert_pk_hex, sizeof(cert_pk_hex), cert_pk, sizeof(cert_pk));
+  LOG_INFO("Cert public key: %s\r", cert_pk_hex);
+
+  char buf[256];
+
+  otcrypto_key_config_t kPrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 256 / 8,
+      .hw_backed = kHardenedBoolTrue,
+      .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob[9];
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+
+  // CDI_1 (Owner) attestation key diversifier salt and version from dice_keys.h
+  TRY(otcrypto_hw_backed_attestation_key(
+      kDiceKeyCdi1.keymgr_dpe_diversifier->version,
+      kDiceKeyCdi1.keymgr_dpe_diversifier->salt, &private_key));
+
+  // Read the attestation seed from NVM.
+  uint32_t kAttestationSeedWords = 10;
+  uint32_t attestation_data[10] = {0};
+  TRY(read_attestation_seed_configured(attestation_data));
+  otcrypto_const_word32_buf_t attestation_seed = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, attestation_data, kAttestationSeedWords);
+
+  uint32_t pk[512 / 32] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // We generate a public key, however, this is currently not checked against
+  // the x509 certificate.
+  TRY(otcrypto_ecdsa_p256_dice_keygen_async_start(&private_key,
+                                                  &attestation_seed));
+  TRY(otcrypto_ecdsa_p256_dice_keygen_async_finalize(&private_key,
+                                                     &public_key));
+  hexstr_encode(buf, sizeof(buf), pk, sizeof(pk));
+  LOG_INFO("Public key: %s\r", buf);
+  LOG_INFO("OTBN keygen instruction count: 0x%08x",
+           otbn_instruction_count_get());
+
+  // Compare the public key from what is given in the cert.
+  // Needs endianness transformations.
+  uint32_t pk_be[512 / 32];
+  memcpy(pk_be, pk, sizeof(pk_be));
+  uint8_t *pk_be_bytes = (uint8_t *)pk_be;
+  util_reverse_bytes(pk_be_bytes, 32);
+  util_reverse_bytes(pk_be_bytes + 32, 32);
+
+  CHECK_ARRAYS_EQ(cert_pk, pk_be, 512 / 32);
+
+  // Checking the synchronous call and whether the same public key is generated
+  // the second time.
+  uint32_t pk_2[512 / 32] = {0};
+  otcrypto_unblinded_key_t public_key_2 = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(pk_2),
+      .key = pk_2,
+  };
+  TRY(otcrypto_ecdsa_p256_dice_keygen(&private_key, &public_key_2,
+                                      &attestation_seed));
+  CHECK_ARRAYS_EQ(pk, pk_2, 512 / 32);
+
+  uint32_t sigdata[16] = {0};
+  otcrypto_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sigdata, 16);
+
+  uint32_t digest_data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+  otcrypto_hash_digest_t digest = {
+      .mode = 0,
+      .data = digest_data,
+      .len = 8,
+  };
+
+  hexstr_encode(buf, sizeof(buf), digest_data, sizeof(digest_data));
+  LOG_INFO("Message: %s\r", buf);
+
+  // Perform a sign and verify where the sign uses the generated key in OTBN.
+  TRY(otcrypto_ecdsa_p256_dice_sign_async_start(&private_key, digest,
+                                                &attestation_seed));
+  TRY(otcrypto_ecdsa_p256_dice_sign_async_finalize(&signature));
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
+
+  hexstr_encode(buf, sizeof(buf), sigdata, sizeof(sigdata));
+  LOG_INFO("Signature: %s\r", buf);
+
+  hardened_bool_t result = 0;
+  TRY(p256_ecdsa_verify_start((const p256_ecdsa_signature_t *)sigdata,
+                              digest_data, (const p256_point_t *)pk));
+  TRY(p256_ecdsa_verify_finalize((const p256_ecdsa_signature_t *)sigdata,
+                                 &result));
+  CHECK(result == kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
+static status_t test_setup(void) {
+  // Initialize the key manager dpe, which derives the CreatorRootKey.
+  // Note: the keymgr_dpe testutils set this up using software entropy, so there
+  // is no need to initialize the entropy complex first. However, this is of
+  // course not the expected setup in production.
+  dif_keymgr_dpe_t keymgr_dpe;
+  dif_kmac_t kmac;
+  TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
+
+  // TODO(#30759): Verify the kKeymgrDpeSrcSlot contains a key with boot_stage
+  // set to CreatorRootKey!
+
+  // Initialize entropy complex for cryptolib, which the key manager uses to
+  // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
+  // the device, so this should happen afterwards.
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
+}
+
+static status_t run_dice_negative_tests(void) {
+  LOG_INFO("Running DICE negative tests.");
+
+  uint32_t priv_keyblob[80] = {0};
+  otcrypto_key_config_t dice_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 256 / 8,
+      .hw_backed = kHardenedBoolTrue,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t valid_priv = {
+      .config = dice_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  valid_priv.checksum = otcrypto_integrity_blinded_checksum(&valid_priv);
+
+  uint32_t digest_data[8] = {0};
+  otcrypto_hash_digest_t valid_digest = {
+      .data = digest_data,
+      .len = 8,
+  };
+
+  uint32_t attestation_data[10] = {0};
+  otcrypto_const_word32_buf_t attestation_seed =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, attestation_data, 10);
+
+  // Null inputs
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(NULL, valid_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  otcrypto_hash_digest_t null_digest = {.data = NULL, .len = 8};
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&valid_priv, null_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad key_mode
+  otcrypto_key_config_t bad_mode_cfg = dice_cfg;
+  bad_mode_cfg.key_mode = kOtcryptoKeyModeEcdhP256;
+  otcrypto_blinded_key_t bad_mode_priv = {
+      .config = bad_mode_cfg,
+      .keyblob_length = sizeof(priv_keyblob),
+      .keyblob = priv_keyblob,
+  };
+  bad_mode_priv.checksum = otcrypto_integrity_blinded_checksum(&bad_mode_priv);
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&bad_mode_priv, valid_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  // Bad length inputs
+  otcrypto_hash_digest_t bad_len_digest = {.data = digest_data, .len = 7};
+  CHECK(otcrypto_ecdsa_p256_dice_sign_async_start(&valid_priv, bad_len_digest,
+                                                  &attestation_seed)
+            .value != OTCRYPTO_OK.value);
+
+  return OTCRYPTO_OK;
+}
+
+bool test_main(void) {
+  status_t result = OTCRYPTO_OK;
+  CHECK_STATUS_OK(test_setup());
+  EXECUTE_TEST(result, dice_test);
+  EXECUTE_TEST(result, run_dice_negative_tests);
+  return status_ok(result);
+}

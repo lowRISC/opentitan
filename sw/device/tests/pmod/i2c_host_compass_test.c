@@ -104,7 +104,7 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 2, I2cPinmuxPlatformIdCw310Pmod));
@@ -116,7 +116,7 @@ static status_t test_init(void) {
 
 static status_t reset_i2c_and_check(void) {
   dif_rstmgr_t rstmgr;
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
                       &rstmgr));
 
   TRY(dif_rstmgr_software_reset(&rstmgr, kTopEarlgreyResetManagerSwResetsI2c2,

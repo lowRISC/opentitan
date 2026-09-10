@@ -148,6 +148,7 @@
                  // `dv_base_vseq`) to prevent timeouts.
                  "+max_num_trans=10",
                 ]
+      reseed: 50
     }
 
     {
@@ -204,6 +205,7 @@
       en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_stress_all_vseq
+      reseed: 50
     }
 
     {
@@ -212,6 +214,7 @@
       en_run_modes: ["xbar_run_mode"]
       uvm_test: xbar_error_test
       uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
+      reseed: 50
     }
   ]
 

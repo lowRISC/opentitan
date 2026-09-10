@@ -14,7 +14,7 @@ package ast_reg_pkg;
   parameter int BlockAw = 10;
 
   // Number of registers for every interface
-  parameter int NumRegs = 44;
+  parameter int NumRegs = 59;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -174,6 +174,66 @@ package ast_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+  } ast_reg2hw_rega38_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega39_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega40_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega41_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega42_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega43_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega44_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega45_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega46_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega47_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega48_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega49_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega50_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega51_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } ast_reg2hw_rega52_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
     logic        qe;
   } ast_reg2hw_regal_reg_t;
 
@@ -187,44 +247,59 @@ package ast_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ast_reg2hw_rega0_reg_t rega0; // [1408:1377]
-    ast_reg2hw_rega1_reg_t rega1; // [1376:1345]
-    ast_reg2hw_rega2_reg_t rega2; // [1344:1313]
-    ast_reg2hw_rega3_reg_t rega3; // [1312:1281]
-    ast_reg2hw_rega4_reg_t rega4; // [1280:1249]
-    ast_reg2hw_rega5_reg_t rega5; // [1248:1217]
-    ast_reg2hw_rega6_reg_t rega6; // [1216:1185]
-    ast_reg2hw_rega7_reg_t rega7; // [1184:1153]
-    ast_reg2hw_rega8_reg_t rega8; // [1152:1121]
-    ast_reg2hw_rega9_reg_t rega9; // [1120:1089]
-    ast_reg2hw_rega10_reg_t rega10; // [1088:1057]
-    ast_reg2hw_rega11_reg_t rega11; // [1056:1025]
-    ast_reg2hw_rega12_reg_t rega12; // [1024:993]
-    ast_reg2hw_rega13_reg_t rega13; // [992:961]
-    ast_reg2hw_rega14_reg_t rega14; // [960:929]
-    ast_reg2hw_rega15_reg_t rega15; // [928:897]
-    ast_reg2hw_rega16_reg_t rega16; // [896:865]
-    ast_reg2hw_rega17_reg_t rega17; // [864:833]
-    ast_reg2hw_rega18_reg_t rega18; // [832:801]
-    ast_reg2hw_rega19_reg_t rega19; // [800:769]
-    ast_reg2hw_rega20_reg_t rega20; // [768:737]
-    ast_reg2hw_rega21_reg_t rega21; // [736:705]
-    ast_reg2hw_rega22_reg_t rega22; // [704:673]
-    ast_reg2hw_rega23_reg_t rega23; // [672:641]
-    ast_reg2hw_rega24_reg_t rega24; // [640:609]
-    ast_reg2hw_rega25_reg_t rega25; // [608:577]
-    ast_reg2hw_rega26_reg_t rega26; // [576:545]
-    ast_reg2hw_rega27_reg_t rega27; // [544:513]
-    ast_reg2hw_rega28_reg_t rega28; // [512:481]
-    ast_reg2hw_rega29_reg_t rega29; // [480:449]
-    ast_reg2hw_rega30_reg_t rega30; // [448:417]
-    ast_reg2hw_rega31_reg_t rega31; // [416:385]
-    ast_reg2hw_rega32_reg_t rega32; // [384:353]
-    ast_reg2hw_rega33_reg_t rega33; // [352:321]
-    ast_reg2hw_rega34_reg_t rega34; // [320:289]
-    ast_reg2hw_rega35_reg_t rega35; // [288:257]
-    ast_reg2hw_rega36_reg_t rega36; // [256:225]
-    ast_reg2hw_rega37_reg_t rega37; // [224:193]
+    ast_reg2hw_rega0_reg_t rega0; // [1888:1857]
+    ast_reg2hw_rega1_reg_t rega1; // [1856:1825]
+    ast_reg2hw_rega2_reg_t rega2; // [1824:1793]
+    ast_reg2hw_rega3_reg_t rega3; // [1792:1761]
+    ast_reg2hw_rega4_reg_t rega4; // [1760:1729]
+    ast_reg2hw_rega5_reg_t rega5; // [1728:1697]
+    ast_reg2hw_rega6_reg_t rega6; // [1696:1665]
+    ast_reg2hw_rega7_reg_t rega7; // [1664:1633]
+    ast_reg2hw_rega8_reg_t rega8; // [1632:1601]
+    ast_reg2hw_rega9_reg_t rega9; // [1600:1569]
+    ast_reg2hw_rega10_reg_t rega10; // [1568:1537]
+    ast_reg2hw_rega11_reg_t rega11; // [1536:1505]
+    ast_reg2hw_rega12_reg_t rega12; // [1504:1473]
+    ast_reg2hw_rega13_reg_t rega13; // [1472:1441]
+    ast_reg2hw_rega14_reg_t rega14; // [1440:1409]
+    ast_reg2hw_rega15_reg_t rega15; // [1408:1377]
+    ast_reg2hw_rega16_reg_t rega16; // [1376:1345]
+    ast_reg2hw_rega17_reg_t rega17; // [1344:1313]
+    ast_reg2hw_rega18_reg_t rega18; // [1312:1281]
+    ast_reg2hw_rega19_reg_t rega19; // [1280:1249]
+    ast_reg2hw_rega20_reg_t rega20; // [1248:1217]
+    ast_reg2hw_rega21_reg_t rega21; // [1216:1185]
+    ast_reg2hw_rega22_reg_t rega22; // [1184:1153]
+    ast_reg2hw_rega23_reg_t rega23; // [1152:1121]
+    ast_reg2hw_rega24_reg_t rega24; // [1120:1089]
+    ast_reg2hw_rega25_reg_t rega25; // [1088:1057]
+    ast_reg2hw_rega26_reg_t rega26; // [1056:1025]
+    ast_reg2hw_rega27_reg_t rega27; // [1024:993]
+    ast_reg2hw_rega28_reg_t rega28; // [992:961]
+    ast_reg2hw_rega29_reg_t rega29; // [960:929]
+    ast_reg2hw_rega30_reg_t rega30; // [928:897]
+    ast_reg2hw_rega31_reg_t rega31; // [896:865]
+    ast_reg2hw_rega32_reg_t rega32; // [864:833]
+    ast_reg2hw_rega33_reg_t rega33; // [832:801]
+    ast_reg2hw_rega34_reg_t rega34; // [800:769]
+    ast_reg2hw_rega35_reg_t rega35; // [768:737]
+    ast_reg2hw_rega36_reg_t rega36; // [736:705]
+    ast_reg2hw_rega37_reg_t rega37; // [704:673]
+    ast_reg2hw_rega38_reg_t rega38; // [672:641]
+    ast_reg2hw_rega39_reg_t rega39; // [640:609]
+    ast_reg2hw_rega40_reg_t rega40; // [608:577]
+    ast_reg2hw_rega41_reg_t rega41; // [576:545]
+    ast_reg2hw_rega42_reg_t rega42; // [544:513]
+    ast_reg2hw_rega43_reg_t rega43; // [512:481]
+    ast_reg2hw_rega44_reg_t rega44; // [480:449]
+    ast_reg2hw_rega45_reg_t rega45; // [448:417]
+    ast_reg2hw_rega46_reg_t rega46; // [416:385]
+    ast_reg2hw_rega47_reg_t rega47; // [384:353]
+    ast_reg2hw_rega48_reg_t rega48; // [352:321]
+    ast_reg2hw_rega49_reg_t rega49; // [320:289]
+    ast_reg2hw_rega50_reg_t rega50; // [288:257]
+    ast_reg2hw_rega51_reg_t rega51; // [256:225]
+    ast_reg2hw_rega52_reg_t rega52; // [224:193]
     ast_reg2hw_regal_reg_t regal; // [192:160]
     ast_reg2hw_regb_mreg_t [4:0] regb; // [159:0]
   } ast_reg2hw_t;
@@ -273,7 +348,22 @@ package ast_reg_pkg;
   parameter logic [BlockAw-1:0] AST_REGA35_OFFSET = 10'h 8c;
   parameter logic [BlockAw-1:0] AST_REGA36_OFFSET = 10'h 90;
   parameter logic [BlockAw-1:0] AST_REGA37_OFFSET = 10'h 94;
-  parameter logic [BlockAw-1:0] AST_REGAL_OFFSET = 10'h 98;
+  parameter logic [BlockAw-1:0] AST_REGA38_OFFSET = 10'h 98;
+  parameter logic [BlockAw-1:0] AST_REGA39_OFFSET = 10'h 9c;
+  parameter logic [BlockAw-1:0] AST_REGA40_OFFSET = 10'h a0;
+  parameter logic [BlockAw-1:0] AST_REGA41_OFFSET = 10'h a4;
+  parameter logic [BlockAw-1:0] AST_REGA42_OFFSET = 10'h a8;
+  parameter logic [BlockAw-1:0] AST_REGA43_OFFSET = 10'h ac;
+  parameter logic [BlockAw-1:0] AST_REGA44_OFFSET = 10'h b0;
+  parameter logic [BlockAw-1:0] AST_REGA45_OFFSET = 10'h b4;
+  parameter logic [BlockAw-1:0] AST_REGA46_OFFSET = 10'h b8;
+  parameter logic [BlockAw-1:0] AST_REGA47_OFFSET = 10'h bc;
+  parameter logic [BlockAw-1:0] AST_REGA48_OFFSET = 10'h c0;
+  parameter logic [BlockAw-1:0] AST_REGA49_OFFSET = 10'h c4;
+  parameter logic [BlockAw-1:0] AST_REGA50_OFFSET = 10'h c8;
+  parameter logic [BlockAw-1:0] AST_REGA51_OFFSET = 10'h cc;
+  parameter logic [BlockAw-1:0] AST_REGA52_OFFSET = 10'h d0;
+  parameter logic [BlockAw-1:0] AST_REGAL_OFFSET = 10'h d4;
   parameter logic [BlockAw-1:0] AST_REGB_0_OFFSET = 10'h 200;
   parameter logic [BlockAw-1:0] AST_REGB_1_OFFSET = 10'h 204;
   parameter logic [BlockAw-1:0] AST_REGB_2_OFFSET = 10'h 208;
@@ -281,8 +371,8 @@ package ast_reg_pkg;
   parameter logic [BlockAw-1:0] AST_REGB_4_OFFSET = 10'h 210;
 
   // Reset values for hwext registers and their fields
-  parameter logic [31:0] AST_REGAL_RESVAL = 32'h 26;
-  parameter logic [31:0] AST_REGAL_REG32_RESVAL = 32'h 26;
+  parameter logic [31:0] AST_REGAL_RESVAL = 32'h 35;
+  parameter logic [31:0] AST_REGAL_REG32_RESVAL = 32'h 35;
 
   // Register index
   typedef enum int {
@@ -324,6 +414,21 @@ package ast_reg_pkg;
     AST_REGA35,
     AST_REGA36,
     AST_REGA37,
+    AST_REGA38,
+    AST_REGA39,
+    AST_REGA40,
+    AST_REGA41,
+    AST_REGA42,
+    AST_REGA43,
+    AST_REGA44,
+    AST_REGA45,
+    AST_REGA46,
+    AST_REGA47,
+    AST_REGA48,
+    AST_REGA49,
+    AST_REGA50,
+    AST_REGA51,
+    AST_REGA52,
     AST_REGAL,
     AST_REGB_0,
     AST_REGB_1,
@@ -333,7 +438,7 @@ package ast_reg_pkg;
   } ast_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AST_PERMIT [44] = '{
+  parameter logic [3:0] AST_PERMIT [59] = '{
     4'b 1111, // index[ 0] AST_REGA0
     4'b 1111, // index[ 1] AST_REGA1
     4'b 1111, // index[ 2] AST_REGA2
@@ -372,12 +477,27 @@ package ast_reg_pkg;
     4'b 1111, // index[35] AST_REGA35
     4'b 1111, // index[36] AST_REGA36
     4'b 1111, // index[37] AST_REGA37
-    4'b 1111, // index[38] AST_REGAL
-    4'b 1111, // index[39] AST_REGB_0
-    4'b 1111, // index[40] AST_REGB_1
-    4'b 1111, // index[41] AST_REGB_2
-    4'b 1111, // index[42] AST_REGB_3
-    4'b 1111  // index[43] AST_REGB_4
+    4'b 1111, // index[38] AST_REGA38
+    4'b 1111, // index[39] AST_REGA39
+    4'b 1111, // index[40] AST_REGA40
+    4'b 1111, // index[41] AST_REGA41
+    4'b 1111, // index[42] AST_REGA42
+    4'b 1111, // index[43] AST_REGA43
+    4'b 1111, // index[44] AST_REGA44
+    4'b 1111, // index[45] AST_REGA45
+    4'b 1111, // index[46] AST_REGA46
+    4'b 1111, // index[47] AST_REGA47
+    4'b 1111, // index[48] AST_REGA48
+    4'b 1111, // index[49] AST_REGA49
+    4'b 1111, // index[50] AST_REGA50
+    4'b 1111, // index[51] AST_REGA51
+    4'b 1111, // index[52] AST_REGA52
+    4'b 1111, // index[53] AST_REGAL
+    4'b 1111, // index[54] AST_REGB_0
+    4'b 1111, // index[55] AST_REGB_1
+    4'b 1111, // index[56] AST_REGB_2
+    4'b 1111, // index[57] AST_REGB_3
+    4'b 1111  // index[58] AST_REGB_4
   };
 
 endpackage

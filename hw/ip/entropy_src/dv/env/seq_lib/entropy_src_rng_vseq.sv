@@ -165,9 +165,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       ral.adaptp_hi_threshold.set(hi_thresh[15:0]);
       ral.adaptp_lo_threshold.set(lo_thresh[15:0]);
       csr_update(.csr(ral.adaptp_hi_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
       csr_update(.csr(ral.adaptp_lo_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
 
       // Bucket thresholds
       // Disable the bucket health test if rng_bit_enable is not set to MuBi4False.
@@ -180,7 +180,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         ral.bucket_threshold.set(hi_thresh[15:0]);
       end
       csr_update(.csr(ral.bucket_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
 
       // Markov Thresholds
       `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
@@ -191,9 +191,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       ral.markov_hi_threshold.set(hi_thresh[15:0]);
       ral.markov_lo_threshold.set(lo_thresh[15:0]);
       csr_update(.csr(ral.markov_hi_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
       csr_update(.csr(ral.markov_lo_threshold));
-      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      if (stop_early || cfg.under_reset) return;
     end
 
     // configure the rest of the variables afterwards so that sw_regupd & module_enable
@@ -443,10 +443,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       uvm_reg csr = ral.get_reg_by_name(lockable_conf_regs[i]);
       csr_rd(.ptr(csr), .value(val));
     end
-  endtask
-
-  task post_start();
-    super.post_start();
   endtask
 
   task start_indefinite_seqs();

@@ -38,7 +38,6 @@ opentitan_test(
     name = "boot_svc_empty_test",
     srcs = ["boot_svc_empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -64,7 +63,6 @@ opentitan_test(
     name = "boot_svc_enter_rescue_test",
     srcs = ["boot_svc_enter_rescue_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -72,9 +70,6 @@ opentitan_test(
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "mode: RESQ\r\n",
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             # Try the `REBO` mode and make sure it works.
             --exec="rescue no-op --reset-target=reboot"
@@ -100,7 +95,6 @@ opentitan_test(
     srcs = ["boot_svc_wakeup_test.c"],
     defines = ["BOOT_SVC_AFTER_WAKEUP_ENABLED=0"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -130,22 +124,12 @@ opentitan_test(
     srcs = ["boot_svc_wakeup_test.c"],
     defines = ["BOOT_SVC_AFTER_WAKEUP_ENABLED=1"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         # Not supported in QEMU whilst low power is not modelled
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
-        changes_otp = True,
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_boot_svc_after_wakeup",
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -176,12 +160,10 @@ NEXT_TEST_SEQUENCES = [
         srcs = ["boot_svc_next_test.c"],
         defines = ["TEST_SEQUENCE_{}=1".format(test_sequence)],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
-            changes_otp = True,  # Clear the primary slot settings
             exit_failure = "BFV:.*|PASS|FAIL",
             exit_success = "FinalBootLog: 3:{}\r\n".format(test_sequence),
         ),
@@ -206,21 +188,12 @@ opentitan_test(
     name = "boot_svc_primary_test",
     srcs = ["boot_svc_primary_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 5:ABBBA\r\n",
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            no-op
-        """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -241,7 +214,6 @@ opentitan_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -268,7 +240,6 @@ opentitan_test(
     name = "boot_svc_bad_primary_test",
     srcs = ["boot_svc_bad_primary_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -309,7 +280,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["boot_svc_min_sec_ver_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
@@ -338,7 +308,6 @@ MIN_SEC_VER_SLOTS = [
         name = "boot_svc_min_sec_ver_{}_test".format(slots[1]),
         srcs = ["boot_svc_min_sec_ver_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -346,15 +315,6 @@ MIN_SEC_VER_SLOTS = [
             binaries = {
                 ":min_sec_ver_5": "min_sec_ver_5",
             },
-            test_cmd = """
-                --exec="transport init"
-                --exec="fpga clear-bitstream"
-                --exec="fpga load-bitstream {bitstream}"
-                --exec="bootstrap --clear-uart=true {firmware}"
-                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
-                no-op
-            """,
             v0_slot = "{{owner_slot_{}}}".format(slots[0]),
             v5_slot = "{{owner_slot_{}}}".format(slots[1]),
         ),

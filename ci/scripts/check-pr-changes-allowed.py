@@ -75,9 +75,11 @@ def fetch_pr_comments(gh_token: str, repo_name: str,
     }
 
     pr_comment_url = f'{GH_API_URL}{repo_name}/issues/{pr_number}/comments'
+    pr_review_comment_url = f'{GH_API_URL}{repo_name}/pulls/{pr_number}/reviews'
     pr_comment_request = requests.get(pr_comment_url, headers=headers)
+    pr_review_comment_request = requests.get(pr_review_comment_url, headers=headers)
 
-    comments_json_list = pr_comment_request.json()
+    comments_json_list = pr_comment_request.json() + pr_review_comment_request.json()
     return [(c['user']['login'], c['body']) for c in comments_json_list]
 
 

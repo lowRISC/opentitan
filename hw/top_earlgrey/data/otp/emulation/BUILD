@@ -46,9 +46,9 @@ otp_json(
                 # details on how to disable this feature.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0),
                 # Enable flash data page scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
-                "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG": otp_hex(0x0),
-                "CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE": otp_hex(0x0),
+                "CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG": otp_hex(0x0),
+                "CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE": otp_hex(0x0),
                 # Disable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_FALSE),
@@ -186,7 +186,7 @@ otp_json(
                 "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE << 4 | CONST.MUBI4_FALSE),
                 "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE": otp_hex(CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE),
-                "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
+                "OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
                 # By default, the sensor_ctrl should disable all sensors and mark
                 # alerts as recoverable.
                 "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG": [
@@ -216,6 +216,21 @@ otp_json(
                 "DIS_RV_DM_LATE_DEBUG": False,
             },
             lock = True,
+        ),
+    ],
+)
+
+# Create an overlay that leaves the SECRET2 partition explicitly unprovisioned
+# and unlocked.
+#
+# `otp_json_{dev,prod,prod_end,rma}` lock SECRET2, since a device in a mission
+# mode life cycle state is expected to be personalized.
+otp_json(
+    name = "otp_json_secret2_unprovisioned",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            lock = False,
         ),
     ],
 )
@@ -324,12 +339,13 @@ otp_image(
 # well as DEV, PROD, PROD_END and RMA. This configuration has flash scrambling
 # disabled. See the personalized OTP configuration for targets requiring flash
 # scrambling enabled.
+# The SECRET2 partition is explicitly left unprovisioned and unlocked.
 # See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
         name = "otp_img_{}_manuf_individualized".format(lc_state),
         src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
-        overlays = MANUF_INDIVIDUALIZED,
+        overlays = MANUF_INDIVIDUALIZED + [":otp_json_secret2_unprovisioned"],
     )
     for lc_state, _ in get_lc_items(
         CONST.LCV.TEST_UNLOCKED1,

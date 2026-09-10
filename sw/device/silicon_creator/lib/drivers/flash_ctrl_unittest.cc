@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/flash_ctrl_regs.h"
@@ -125,7 +126,7 @@ uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
 TEST_P(InitTest, Initialize) {
   EXPECT_CALL(
       otp_,
-      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET))
+      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_HW_INFO_CFG_OVERRIDE_OFFSET))
       .WillOnce(Return(GetParam().override_val));
 
   if (GetParam().override_val != 0) {
@@ -136,8 +137,8 @@ TEST_P(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
-  EXPECT_CALL(
-      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_DATA_DEFAULT_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   EXPECT_SEC_READ32(base_ + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET,
                     FLASH_CTRL_DEFAULT_REGION_REG_RESVAL);
@@ -145,8 +146,7 @@ TEST_P(InitTest, Initialize) {
                      GetParam().data_write_val);
 
   EXPECT_CALL(
-      otp_,
-      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
+      otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_NVM_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
   auto info_page = InfoPages().at(&kFlashCtrlInfoPageBootData0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
@@ -745,7 +745,7 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
 }
 
 TEST_F(FlashCtrlTest, BankErasePermsSet) {
@@ -776,8 +776,8 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9666666);
   }
 
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageDiceCerts);
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
@@ -792,9 +792,8 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
-  flash_ctrl_cert_info_page_owner_restrict(
-      &kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageDiceCerts);
 }
 
 struct EraseVerifyCase {

@@ -4,12 +4,16 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 enum {
   /**
@@ -41,6 +45,9 @@ static const uint32_t kTestMask[ARRAYSIZE(kLongTestKey)] = {
     0xa7ebc3e3, 0x04b2a1b9, 0x764a9630, 0x78b8f9c5, 0x3f2a1d8e,
 };
 
+static otcrypto_key_security_level_t current_sec_level =
+    kOtcryptoKeySecurityLevelLow;
+
 /**
  * Call the `otcrypto_mac` API and check the resulting tag.
  *
@@ -55,12 +62,12 @@ static status_t run_test(const uint32_t *key, size_t key_len,
                          const uint32_t *exp_tag) {
   // Construct blinded key.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = current_sec_level,
   };
 
   uint32_t keyblob[keyblob_num_words(config)];
@@ -71,7 +78,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
   otcrypto_word32_buf_t tag_buf =
@@ -152,12 +159,12 @@ static status_t streaming_test(void) {
 
   // Construct blinded key.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = sizeof(kBasicTestKey),
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = current_sec_level,
   };
 
   uint32_t keyblob[keyblob_num_words(config)];
@@ -168,7 +175,7 @@ static status_t streaming_test(void) {
       .keyblob_length = sizeof(keyblob),
       .checksum = 0,
   };
-  blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
   otcrypto_word32_buf_t tag_buf =
@@ -212,10 +219,24 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
-  CHECK_STATUS_OK(entropy_complex_init());
-  EXECUTE_TEST(test_result, simple_test);
-  EXECUTE_TEST(test_result, empty_test);
-  EXECUTE_TEST(test_result, long_key_test);
-  EXECUTE_TEST(test_result, streaming_test);
+
+  // Testing overall cryptolib low security, i.e., no jittery clock or dummy
+  // instructions
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  for (size_t i = 0; i < ARRAYSIZE(available_security_levels); ++i) {
+    current_sec_level = available_security_levels[i];
+    LOG_INFO("Running HMAC tests with security level: %d", current_sec_level);
+
+    EXECUTE_TEST(test_result, streaming_test);
+    EXECUTE_TEST(test_result, simple_test);
+    EXECUTE_TEST(test_result, empty_test);
+    EXECUTE_TEST(test_result, long_key_test);
+
+    if (status_err(test_result)) {
+      break;
+    }
+  }
+
   return status_ok(test_result);
 }

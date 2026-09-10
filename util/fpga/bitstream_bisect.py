@@ -20,9 +20,9 @@ Run bitstream_bisect.py with Bazel like so:
 ./bazelisk.sh run //util/fpga:bitstream_bisect -- \
     --good HEAD~30 \
     --bad HEAD \
-    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw310_rom" \
+    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_rom" \
     --slow-command "./bazelisk.sh test --define bitstream=vivado \
-        //sw/device/tests:uart_smoketest_fpga_cw310_rom"
+        //sw/device/tests:uart_smoketest_fpga_cw340_rom"
 
 """
 

@@ -12,7 +12,6 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -63,11 +62,11 @@ static status_t spin_until(uint32_t bit) {
  */
 static status_t aes_write_key(aes_key_t key) {
   if (key.sideload != kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
     // Nothing to be done; key must be separately loaded from keymgr.
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
+  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolFalse));
 
   uint32_t share0 = aes_base() + AES_KEY_SHARE0_0_REG_OFFSET;
   uint32_t share1 = aes_base() + AES_KEY_SHARE1_0_REG_OFFSET;
@@ -241,7 +240,7 @@ status_t aes_verify_ctrl_aux_reg(void) {
       abs_mmio_read32(aes_base() + AES_CTRL_AUX_SHADOWED_REG_OFFSET),
       launder32(ctrl_aux_reg));
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -254,10 +253,6 @@ status_t aes_verify_ctrl_aux_reg(void) {
  */
 static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
                           hardened_bool_t encrypt) {
-  // Ensure the entropy complex is in an appropriate state. The AES block seeds
-  // its PRNG from EDN for masking every time a new key is provided.
-  HARDENED_TRY(entropy_complex_check());
-
   // Wait for the AES block to be idle.
   HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
@@ -353,6 +348,10 @@ status_t aes_end(aes_block_t *iv) {
     HARDENED_CHECK_EQ(i, ARRAYSIZE(iv->data));
   }
 
+  return spin_until(AES_STATUS_IDLE_BIT);
+}
+
+status_t aes_clear(void) {
   uint32_t trigger_reg = 0;
   trigger_reg = bitfield_bit32_write(
       trigger_reg, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
@@ -369,6 +368,7 @@ uint32_t aes_key_integrity_checksum(const aes_key_t *key) {
   crc32_add32(&ctx, key->mode);
   crc32_add32(&ctx, key->sideload);
   crc32_add32(&ctx, key->key_len);
+  crc32_add32(&ctx, key->keymgr_dpe_slot_idx);
   // Compute the checksum only over a single share to avoid side-channel
   // leakage. From a FI perspective only covering one key share is fine as
   // (a) manipulating the second share with FI has only limited use to an

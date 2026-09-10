@@ -2,29 +2,25 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-/**
- * Ensure that a good value for p passes RSA keygen checks.
- *
- * Uses the test data from `rsa_keygen_checkp_good_test.hjson`, which is sized
- * for RSA-2048.
- */
+/* Verify that a prime number passes the primality tests. */
 
 .section .text.start
 
 main:
-  /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Load the number of limbs for this test. */
-  li        x30, 4
+  /* The number of limbs in this test. */
+  li x30, 2
 
+  /* Execute the Fermat test and store the result in an unused DMEM location. */
   jal x1, fermat_test
-  beq x2, x0, _end_test
+  la x3, mr_iter_p_tmp
+  sw x2, 0(x3)
 
-  addi x3, x2, 0
-
+  /* Execute the Miller-Rabin test and store the result in an unused DMEM
+     location. */
   jal x1, miller_rabin_test
-  and x2, x2, x3
+  la x3, mr_iter_q_tmp
+  sw x2, 0(x3)
 
-_end_test:
   ecall

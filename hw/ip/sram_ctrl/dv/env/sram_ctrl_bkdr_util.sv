@@ -9,16 +9,24 @@ class sram_ctrl_bkdr_util extends mem_bkdr_util;
   // Initialize the class instance.
   // `extra_bits_per_subword` is the width of any additional metadata that is not captured in the
   // secded package.
+  //
+  // `words_per_row`/`num_bit_slices` are implemented by the base `mem_bkdr_util` class itself, not
+  // here. They give fold-aware and bit-slice-aware physical-row addressing, for a real vendor
+  // SRAM macro that stores several logical words into one physical row, and/or bit-slices a wide
+  // logical word across several macro instances.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
                mem_bkdr_util_row_adapter row_adapter = null,
                int num_prince_rounds_half = 3,
                int extra_bits_per_subword = 0, int unsigned system_base_addr = 0,
                string tiling_path = "", string tiling_suffix_fmt_str = ".gen_ram_inst[%0d].%s",
-               uint32_t tile_depth = depth);
+               uint32_t tile_depth = depth, int unsigned words_per_row = 1,
+               int unsigned num_bit_slices = 1, string bit_slice_tiling_path = "",
+               string bit_slice_tiling_suffix_fmt_str = ".gen_ram_inst[%0d].%s");
     super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter, num_prince_rounds_half,
               extra_bits_per_subword, system_base_addr, tiling_path, tiling_suffix_fmt_str,
-              tile_depth);
+              tile_depth, words_per_row, num_bit_slices, bit_slice_tiling_path,
+              bit_slice_tiling_suffix_fmt_str);
   endfunction
 
   // Returns the address after scrambling it using the given nonce.
@@ -39,7 +47,9 @@ class sram_ctrl_bkdr_util extends mem_bkdr_util;
       addr_arr[i] = addr[addr_lsb + i];
     end
 
-    scr_addr_arr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, full_addr_width, nonce_arr);
+    scr_addr_arr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, full_addr_width,
+                                                         mem_bkdr_util::depth << extra_addr_bits,
+                                                         nonce_arr);
 
     // Convert to bus address output.
     for (int i = 0; i < addr_lsb; i++) begin

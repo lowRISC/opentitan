@@ -28,19 +28,20 @@ class MaiCtrlCSR(DumbISPR):
         super().on_start()
         # On start, the default operation is set.
         self._operation = MaiOperation.A2B
+        self._raw_op: int = int(MaiOperation.A2B)
         self._start_bit = False
         self._value = self._get_value()
 
-    def _construct_value(self, start_bit: bool, operation: MaiOperation) -> int:
-        '''Construct a register value based on a operation and start bit combination.'''
-        raw = (((operation & self.OPERATION_MASK) << self.OPERATION_OFFSET) |
-               (start_bit << self.START_BIT_OFFSET))
+    def _construct_value(self, start_bit: bool, raw_op: int) -> int:
+        '''Construct a register value from raw op bits and a start bit.'''
+        raw = (((raw_op & self.OPERATION_MASK) << self.OPERATION_OFFSET) |
+               (int(start_bit) << self.START_BIT_OFFSET))
         assert 0 <= raw < (1 << self.width)
         return raw
 
     def _get_value(self) -> int:
-        '''Construct the register value based on the current operation and start bit.'''
-        return self._construct_value(self._start_bit, self._operation)
+        '''Construct the register value based on the current raw op bits and start bit.'''
+        return self._construct_value(self._start_bit, self._raw_op)
 
     def _extract_start_bit(self, value: int) -> bool:
         '''Extract the start bit from a register value.'''
@@ -51,6 +52,10 @@ class MaiCtrlCSR(DumbISPR):
         The value to be checked must specify a valid operation option otherwise we crash.'''
         # If the conversion failed, the check when updating the operation did fail already.
         return MaiOperation((value >> self.OPERATION_OFFSET) & self.OPERATION_MASK)
+
+    def _extract_raw_op(self, value: int) -> int:
+        '''Extract the raw (possibly invalid) operation bits from a register value.'''
+        return (value >> self.OPERATION_OFFSET) & self.OPERATION_MASK
 
     def _extract_fields(self, value: int) -> tuple[bool, MaiOperation]:
         '''Extract the fields from a register value.'''
@@ -72,10 +77,28 @@ class MaiCtrlCSR(DumbISPR):
 
     def commit(self) -> None:
         if self._next_value is not None:
-            self._start_bit, self._operation = self._extract_fields(self._next_value)
+            self._start_bit = self._extract_start_bit(self._next_value)
+            self._raw_op = self._extract_raw_op(self._next_value)
+            try:
+                self._operation = MaiOperation(self._raw_op)
+            except ValueError:
+                pass  # keep _operation as the last valid MaiOperation
             self._value = self._next_value
         self._next_value = None
         self._pending_write = False
+
+    def has_reserved_bits(self, value: int) -> bool:
+        '''Return True if value has any bits set outside the defined [5:0] field.
+
+        Mirrors RTL ispr_mai_sw_err.rsvd_csr_write: any write with bits [31:6] non-zero.
+        '''
+        valid_mask = (self.OPERATION_MASK << self.OPERATION_OFFSET) | self.START_BIT_MASK
+        return bool(value & ~valid_mask & 0xFFFFFFFF)
+
+    def is_raw_op_valid(self, value: int) -> bool:
+        '''Return True if the op field of `value` is a valid MAI operation.
+        '''
+        return self.is_valid_operation(value)
 
     def is_start_bit_set(self) -> bool:
         '''Get the start bit from the CSR.'''
@@ -106,18 +129,19 @@ class MaiCtrlCSR(DumbISPR):
         except ValueError:
             return False
 
-    def would_change_op(self, value: int) -> bool:
-        '''Return whether writing value to the CSR would change the operation field.
-        The value to be checked must specify a valid operation option otherwise we crash.
+    def would_change_raw_op(self, value: int) -> bool:
+        '''Return whether writing value would change the op field (compares raw bits).
+
+        Safe to call with any value, including those with invalid op encodings.
         '''
-        return self._extract_operation(value) != self.current_operation()
+        return self._extract_raw_op(value) != self._raw_op
 
 
 class MaiStatusCSR(DumbISPR):
     '''Models the MAI STATUS CSR'''
     def __init__(self) -> None:
         self.BUSY_BIT_OFFSET = 0
-        self.READY_BIT_OFFSET = 1
+        self.INPUT_READY_BIT_OFFSET = 1
         super().__init__("MAI_STATUS", 32)
         self.on_start()
 
@@ -125,7 +149,7 @@ class MaiStatusCSR(DumbISPR):
         super().on_start()
         # On start, the MAI is not busy and is ready for new inputs.
         self._is_busy = False
-        self._is_ready = True
+        self._is_input_ready = True
         self._value = self._get_value()
 
     def write_unsigned(self, value: int) -> None:
@@ -136,27 +160,30 @@ class MaiStatusCSR(DumbISPR):
         return
 
     def _get_value(self) -> int:
-        '''Construct the register value based on the current busy and ready bits.'''
-        return ((self._is_busy << self.BUSY_BIT_OFFSET) | (self._is_ready << self.READY_BIT_OFFSET))
+        '''Construct the register value based on the current busy and input-ready bits.'''
+        return ((self._is_busy << self.BUSY_BIT_OFFSET) |
+                (self._is_input_ready << self.INPUT_READY_BIT_OFFSET))
 
-    def _update_bits(self, busy: Optional[bool] = None, ready: Optional[bool] = None) -> None:
-        '''Set or clear the busy and ready bits in the CSR based on the provided values.
+    def _update_bits(self,
+                     busy: Optional[bool] = None,
+                     input_ready: Optional[bool] = None) -> None:
+        '''Set or clear the busy and input-ready bits in the CSR based on the provided values.
 
         This takes effect immediately. Note that we still report the change to generate a proper
         trace.'''
         if busy is not None:
             self._is_busy = busy
-        if ready is not None:
-            self._is_ready = ready
+        if input_ready is not None:
+            self._is_input_ready = input_ready
         self._value = self._get_value()
         self._next_value = self._get_value()
         self._pending_write = False
 
-    def is_ready(self) -> bool:
-        return self._is_ready
+    def is_input_ready(self) -> bool:
+        return self._is_input_ready
 
-    def update_ready_bit(self, ready: bool) -> None:
-        self._update_bits(ready=ready)
+    def update_input_ready_bit(self, input_ready: bool) -> None:
+        self._update_bits(input_ready=input_ready)
 
     def is_busy(self) -> bool:
         return self._is_busy

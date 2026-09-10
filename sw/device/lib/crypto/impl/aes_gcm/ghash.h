@@ -144,12 +144,11 @@ status_t ghash_init(ghash_context_t *ctx);
  * @param ctx Context object.
  * @param partial_len Length of the partial block.
  * @param partial Partial GHASH block.
- * @param input_len Length of the input data in bytes.
- * @param input Input data.
+ * @param input_buf Input data buffer.
  */
 status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                                   ghash_block_t *partial, size_t input_len,
-                                   const uint8_t *input);
+                                   ghash_block_t *partial,
+                                   const otcrypto_const_byte_buf_t *input_buf);
 /**
  * Update the state of a GHASH operation.
  *
@@ -162,11 +161,10 @@ status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
  * before calling this function.
  *
  * @param ctx Context object.
- * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
  */
-status_t ghash_update(ghash_context_t *ctx, size_t input_len,
-                      const uint8_t *input);
+status_t ghash_update(ghash_context_t *ctx,
+                      const otcrypto_const_byte_buf_t *input);
 
 /**
  * Redundant version of ghash_update().
@@ -177,11 +175,10 @@ status_t ghash_update(ghash_context_t *ctx, size_t input_len,
  * If the comparison fails, trap.
  *
  * @param ctx Context object.
- * @param input_len Number of bytes in the input.
  * @param input Pointer to input buffer.
  */
-status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
-                                const uint8_t *input);
+status_t ghash_update_redundant(ghash_context_t *ctx,
+                                const otcrypto_const_byte_buf_t *input);
 
 /**
  * Computes the correction terms needed for the masking scheme.

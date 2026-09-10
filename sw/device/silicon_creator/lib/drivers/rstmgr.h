@@ -112,8 +112,7 @@ void rstmgr_cpu_info_enable(void);
 // Omit `noreturn` to be able to test this function in off-target tests.
 noreturn
 #endif
-    void
-    rstmgr_reset(void);
+    void rstmgr_reset(void);
 
 /**
  * Reboot the chip.
@@ -124,8 +123,7 @@ noreturn
 // Omit `noreturn` to be able to test this function in off-target tests.
 noreturn
 #endif
-    void
-    rstmgr_reboot(void);
+    void rstmgr_reboot(void);
 
 /**
  * Verifies that info collection is initialized properly.
@@ -161,9 +159,9 @@ bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
  * Defined here to be able to use in tests.
  */
 #define RSTMGR_OTP_FIELD_ALERT_INFO_EN \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 0}
 #define RSTMGR_OTP_FIELD_CPU_INFO_EN \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
 
 #ifdef __cplusplus
 }

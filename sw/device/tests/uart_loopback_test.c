@@ -46,7 +46,7 @@ bool test_main(void) {
   // Wait for the testbench to set the `uart_idx`.
   OTTF_WAIT_FOR(uart_idx != 0xff, kTestTimeoutMicros);
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   // If we're testing UART0 we need to move the console to UART1.

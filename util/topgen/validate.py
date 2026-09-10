@@ -65,6 +65,7 @@ top_optional = {
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupts': ['g', 'interrupt controller configuration'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
+    'plic_info': ['g', 'info about all PLICs present and number of interrupt sources'],
     'num_cores': ['pn', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
     'outgoing_interrupt': ['g', 'the outgoing interrupt groups'],
@@ -74,7 +75,11 @@ top_optional = {
     'seed': ['g', "Seed information for topgen and subsequent flows"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets'],
     'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
-    'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
+    'default_plic': ['s', 'Modules not defining plic have interrupts sent here'],
+    'inter_pd': ['g', 'auto-generated struct containing multi-pd data objects'],
+    'keymgr_dpe_seed_selector':
+    ['s', 'Source for creator / owner seed for the keymgr_dpe, '
+        'legal values are either nvm_ctrl or otp_ctrl']
 }
 
 top_added = {
@@ -109,6 +114,7 @@ pinmux_optional = {
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
+    'inter_pd': ['g', 'Info about inter-PD pinmux related signals.'],
 }
 pinmux_added = {
     'ios': ['l', 'Full list of IO'],
@@ -421,6 +427,7 @@ interrupt_required = {
     'default_val': ['s', 'a string interpreted as boolean'],
     'incoming': ['s', 'a string interpreted as boolean'],
     'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
+    'domain': ['s', 'string that identifies the originating power domain'],
 }
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
@@ -666,6 +673,19 @@ def check_outgoing_alerts(top: ConfigT, prefix: str) -> int:
         return 0
     error = 0
     # TODO
+    return error
+
+
+def check_keymgr_dpe_seed_selector(top: ConfigT, prefix: str) -> int:
+    error = 0
+    if 'keymgr_dpe_seed_selector' not in top:
+        return 0
+    # check if keymgr_dpe_seed_selector contains one of the legal values
+    if top['keymgr_dpe_seed_selector'] not in ['nvm_ctrl', 'otp_ctrl']:
+        error += 1
+        log.error(f"Invalid 'keymgr_dpe_seed_selector' "
+                  f"{top['keymgr_dpe_seed_selector']} defined! Valid option are: "
+                  f"'nvm_ctrl', 'otp_ctrl'")
     return error
 
 
@@ -1331,5 +1351,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_outgoing_interrupts(top, component)
     error += check_interrupts(top, component)
     error += check_incoming_interrupts(top, component)
+
+    error += check_keymgr_dpe_seed_selector(top, component)
 
     return top, error

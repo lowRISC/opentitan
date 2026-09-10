@@ -138,29 +138,6 @@ def char_rsa_verify(
     return response
 
 
-def char_prime_generation(target, iterations, e, cfg, trigger, reset=False):
-    asymfi = OTFIAsymCrypto(target)
-    if reset:
-        target.reset_target()
-        # Clear the output from the reset
-        target.dump_all()
-    # Initialize our chip and catch its output
-    (
-        device_id,
-        sensors,
-        alerts,
-        owner_page,
-        boot_log,
-        boot_measurements,
-        version,
-        cryptolib_version,
-    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
-    for _ in range(iterations):
-        asymfi.handle_prime_generation(e, cfg, trigger)
-        response = target.read_response()
-    return response
-
-
 def char_p256_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
     asymfi = OTFIAsymCrypto(target)
     if reset:
@@ -382,6 +359,68 @@ def char_p384_sign(
     return response
 
 
+def char_ed25519_sign(
+    target, iterations, scalar, message, message_len, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_ed25519_sign(scalar, message, message_len, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_ed25519_verify(
+    target,
+    iterations,
+    pubx,
+    puby,
+    r,
+    s,
+    message,
+    message_len,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    (
+        device_id,
+        sensors,
+        alerts,
+        owner_page,
+        boot_log,
+        boot_measurements,
+        version,
+        cryptolib_version,
+    ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_ed25519_verify(
+            pubx, puby, r, s, message, message_len, cfg, trigger
+        )
+        response = target.read_response()
+    return response
+
+
 def char_p384_verify(
     target, iterations, pubx, puby, r, s, message, cfg, trigger, reset=False
 ):
@@ -403,5 +442,150 @@ def char_p384_verify(
     ) = asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     for _ in range(iterations):
         asymfi.handle_p384_verify(pubx, puby, r, s, message, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_base_mult(target, iterations, scalar, cfg, trigger, reset=False):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_x25519_base_mult(scalar, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_x25519_ecdh(
+    target, iterations, private_key, public_x, public_y, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_x25519_ecdh(private_key, public_x, public_y, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mldsa87_keygen(
+    target, iterations, seed, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mldsa87_keygen(seed, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mldsa87_sign(
+    target,
+    iterations,
+    seed,
+    message,
+    message_len,
+    context,
+    context_len,
+    sign_mode,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mldsa87_sign(
+            seed, message, message_len, context, context_len, sign_mode, cfg, trigger
+        )
+        response = target.read_response()
+    return response
+
+
+def char_mldsa87_verify(
+    target,
+    iterations,
+    public_key,
+    message,
+    message_len,
+    context,
+    context_len,
+    signature,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mldsa87_verify(
+            public_key, message, message_len, context, context_len, signature, cfg, trigger
+        )
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_keygen(
+    target, iterations, seed, cfg, trigger, reset=False
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mlkem1024_keygen(seed, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_encaps(
+    target,
+    iterations,
+    public_key,
+    m,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mlkem1024_encaps(public_key, m, cfg, trigger)
+        response = target.read_response()
+    return response
+
+
+def char_mlkem1024_decaps(
+    target,
+    iterations,
+    ciphertext,
+    cfg,
+    trigger,
+    reset=False,
+):
+    asymfi = OTFIAsymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    asymfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    for _ in range(iterations):
+        asymfi.handle_mlkem1024_decaps(ciphertext, cfg, trigger)
         response = target.read_response()
     return response

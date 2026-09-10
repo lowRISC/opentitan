@@ -13,15 +13,15 @@
  * is using.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 /**
  * Symbols to be used in the setup of the address translation for IMM_SECTION.
  */
 
 MEMORY {
-  imm_section_slot_a(rx) : ORIGIN = ORIGIN(eflash) + 0x400, LENGTH = LENGTH(eflash) / 2 - 0x400
+  imm_section_slot_a(rx) : ORIGIN = ORIGIN(nvm) + 0x400, LENGTH = LENGTH(nvm) / 2 - 0x400 - _nvm_slot_reserved_bytes
 }
-REGION_ALIAS("rom_ext_flash", imm_section_slot_a);
+REGION_ALIAS("rom_ext_nvm", imm_section_slot_a);
 
 INCLUDE sw/device/silicon_creator/rom_ext/imm_section/imm_section_common.ld

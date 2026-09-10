@@ -1,0 +1,21 @@
+diff --git a/stream_fork_dynamic.sv b/stream_fork_dynamic.sv
+index 1aa546b..27eb7a9 100644
+--- a/stream_fork_dynamic.sv
++++ b/stream_fork_dynamic.sv
+@@ -13,11 +13,11 @@
+ 
+ `include "prim_assert.sv"
+ 
+-/// Dynamic stream fork: Connects the input stream (ready-valid) handshake to a combination of output
+-/// stream handshake.  The combination is determined dynamically through another stream, which
+-/// provides a bitmask for the fork.  For each input stream handshake, every output stream handshakes
+-/// exactly once. The input stream only handshakes when all output streams have handshaked, but the
+-/// output streams do not have to handshake simultaneously.
++/// Dynamic stream fork: Connects the input stream (ready-valid) handshake to a combination of
++/// output stream handshake.  The combination is determined dynamically through another stream,
++/// which provides a bitmask for the fork.  For each input stream handshake, every output stream
++/// handshakes exactly once. The input stream only handshakes when all output streams have
++/// handshaked, but the output streams do not have to handshake simultaneously.
+ ///
+ /// This module has no data ports because stream data does not need to be forked: the data of the
+ /// input stream can just be applied at all output streams.

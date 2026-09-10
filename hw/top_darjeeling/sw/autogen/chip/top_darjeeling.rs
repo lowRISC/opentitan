@@ -161,75 +161,75 @@ pub const SPI_HOST0_BASE_ADDR: usize = 0x30300000;
 /// `SPI_HOST0_BASE_ADDR + SPI_HOST0_SIZE_BYTES`.
 pub const SPI_HOST0_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for pwrmgr_aon in top darjeeling.
+/// Peripheral base address for pwrmgr in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PWRMGR_AON_BASE_ADDR: usize = 0x30400000;
+pub const PWRMGR_BASE_ADDR: usize = 0x30400000;
 
-/// Peripheral size for pwrmgr_aon in top darjeeling.
+/// Peripheral size for pwrmgr in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PWRMGR_AON_BASE_ADDR and
-/// `PWRMGR_AON_BASE_ADDR + PWRMGR_AON_SIZE_BYTES`.
-pub const PWRMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #PWRMGR_BASE_ADDR and
+/// `PWRMGR_BASE_ADDR + PWRMGR_SIZE_BYTES`.
+pub const PWRMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for rstmgr_aon in top darjeeling.
+/// Peripheral base address for rstmgr in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RSTMGR_AON_BASE_ADDR: usize = 0x30410000;
+pub const RSTMGR_BASE_ADDR: usize = 0x30410000;
 
-/// Peripheral size for rstmgr_aon in top darjeeling.
+/// Peripheral size for rstmgr in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #RSTMGR_AON_BASE_ADDR and
-/// `RSTMGR_AON_BASE_ADDR + RSTMGR_AON_SIZE_BYTES`.
-pub const RSTMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #RSTMGR_BASE_ADDR and
+/// `RSTMGR_BASE_ADDR + RSTMGR_SIZE_BYTES`.
+pub const RSTMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for clkmgr_aon in top darjeeling.
+/// Peripheral base address for clkmgr in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const CLKMGR_AON_BASE_ADDR: usize = 0x30420000;
+pub const CLKMGR_BASE_ADDR: usize = 0x30420000;
 
-/// Peripheral size for clkmgr_aon in top darjeeling.
+/// Peripheral size for clkmgr in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #CLKMGR_AON_BASE_ADDR and
-/// `CLKMGR_AON_BASE_ADDR + CLKMGR_AON_SIZE_BYTES`.
-pub const CLKMGR_AON_SIZE_BYTES: usize = 0x40;
+/// address between #CLKMGR_BASE_ADDR and
+/// `CLKMGR_BASE_ADDR + CLKMGR_SIZE_BYTES`.
+pub const CLKMGR_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for pinmux_aon in top darjeeling.
+/// Peripheral base address for pinmux in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PINMUX_AON_BASE_ADDR: usize = 0x30460000;
+pub const PINMUX_BASE_ADDR: usize = 0x30460000;
 
-/// Peripheral size for pinmux_aon in top darjeeling.
+/// Peripheral size for pinmux in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PINMUX_AON_BASE_ADDR and
-/// `PINMUX_AON_BASE_ADDR + PINMUX_AON_SIZE_BYTES`.
-pub const PINMUX_AON_SIZE_BYTES: usize = 0x800;
+/// address between #PINMUX_BASE_ADDR and
+/// `PINMUX_BASE_ADDR + PINMUX_SIZE_BYTES`.
+pub const PINMUX_SIZE_BYTES: usize = 0x800;
 
-/// Peripheral base address for aon_timer_aon in top darjeeling.
+/// Peripheral base address for aon_timer in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const AON_TIMER_AON_BASE_ADDR: usize = 0x30470000;
+pub const AON_TIMER_BASE_ADDR: usize = 0x30470000;
 
-/// Peripheral size for aon_timer_aon in top darjeeling.
+/// Peripheral size for aon_timer in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #AON_TIMER_AON_BASE_ADDR and
-/// `AON_TIMER_AON_BASE_ADDR + AON_TIMER_AON_SIZE_BYTES`.
-pub const AON_TIMER_AON_SIZE_BYTES: usize = 0x40;
+/// address between #AON_TIMER_BASE_ADDR and
+/// `AON_TIMER_BASE_ADDR + AON_TIMER_SIZE_BYTES`.
+pub const AON_TIMER_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for ast in top darjeeling.
 ///
@@ -259,19 +259,19 @@ pub const SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
 /// `SOC_PROXY_CORE_BASE_ADDR + SOC_PROXY_CORE_SIZE_BYTES`.
 pub const SOC_PROXY_CORE_SIZE_BYTES: usize = 0x8;
 
-/// Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
+/// Peripheral base address for regs device on sram_ctrl_ret in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x30500000;
+pub const SRAM_CTRL_RET_REGS_BASE_ADDR: usize = 0x30500000;
 
-/// Peripheral size for regs device on sram_ctrl_ret_aon in top darjeeling.
+/// Peripheral size for regs device on sram_ctrl_ret in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
-/// `SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x40;
+/// address between #SRAM_CTRL_RET_REGS_BASE_ADDR and
+/// `SRAM_CTRL_RET_REGS_BASE_ADDR + SRAM_CTRL_RET_REGS_SIZE_BYTES`.
+pub const SRAM_CTRL_RET_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on rv_dm in top darjeeling.
 ///
@@ -685,11 +685,11 @@ pub const SOC_PROXY_CTN_BASE_ADDR: usize = 0x40000000;
 /// Memory size for ctn memory on soc_proxy in top darjeeling.
 pub const SOC_PROXY_CTN_SIZE_BYTES: usize = 0x80000000;
 
-/// Memory base address for ram memory on sram_ctrl_ret_aon in top darjeeling.
-pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x30600000;
+/// Memory base address for ram memory on sram_ctrl_ret in top darjeeling.
+pub const SRAM_CTRL_RET_RAM_BASE_ADDR: usize = 0x30600000;
 
-/// Memory size for ram memory on sram_ctrl_ret_aon in top darjeeling.
-pub const SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
+/// Memory size for ram memory on sram_ctrl_ret in top darjeeling.
+pub const SRAM_CTRL_RET_RAM_SIZE_BYTES: usize = 0x1000;
 
 /// Memory base address for ram memory on sram_ctrl_main in top darjeeling.
 pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
@@ -740,10 +740,10 @@ pub enum PlicPeripheral {
     AlertHandler = 7,
     /// spi_host0
     SpiHost0 = 8,
-    /// pwrmgr_aon
-    PwrmgrAon = 9,
-    /// aon_timer_aon
-    AonTimerAon = 10,
+    /// pwrmgr
+    Pwrmgr = 9,
+    /// aon_timer
+    AonTimer = 10,
     /// hmac
     Hmac = 11,
     /// kmac
@@ -801,8 +801,8 @@ impl TryFrom<u32> for PlicPeripheral {
             6 => Ok(Self::OtpCtrl),
             7 => Ok(Self::AlertHandler),
             8 => Ok(Self::SpiHost0),
-            9 => Ok(Self::PwrmgrAon),
-            10 => Ok(Self::AonTimerAon),
+            9 => Ok(Self::Pwrmgr),
+            10 => Ok(Self::AonTimer),
             11 => Ok(Self::Hmac),
             12 => Ok(Self::Kmac),
             13 => Ok(Self::Otbn),
@@ -984,12 +984,12 @@ pub enum PlicIrqId {
     SpiHost0Error = 72,
     /// spi_host0_spi_event
     SpiHost0SpiEvent = 73,
-    /// pwrmgr_aon_wakeup
-    PwrmgrAonWakeup = 74,
-    /// aon_timer_aon_wkup_timer_expired
-    AonTimerAonWkupTimerExpired = 75,
-    /// aon_timer_aon_wdog_timer_bark
-    AonTimerAonWdogTimerBark = 76,
+    /// pwrmgr_wakeup
+    PwrmgrWakeup = 74,
+    /// aon_timer_wkup_timer_expired
+    AonTimerWkupTimerExpired = 75,
+    /// aon_timer_wdog_timer_bark
+    AonTimerWdogTimerBark = 76,
     /// hmac_hmac_done
     HmacHmacDone = 77,
     /// hmac_fifo_empty
@@ -1180,9 +1180,9 @@ impl TryFrom<u32> for PlicIrqId {
             71 => Ok(Self::AlertHandlerClassd),
             72 => Ok(Self::SpiHost0Error),
             73 => Ok(Self::SpiHost0SpiEvent),
-            74 => Ok(Self::PwrmgrAonWakeup),
-            75 => Ok(Self::AonTimerAonWkupTimerExpired),
-            76 => Ok(Self::AonTimerAonWdogTimerBark),
+            74 => Ok(Self::PwrmgrWakeup),
+            75 => Ok(Self::AonTimerWkupTimerExpired),
+            76 => Ok(Self::AonTimerWdogTimerBark),
             77 => Ok(Self::HmacHmacDone),
             78 => Ok(Self::HmacFifoEmpty),
             79 => Ok(Self::HmacHmacErr),
@@ -1407,12 +1407,12 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 132] = [
     PlicPeripheral::SpiHost0,
     // SpiHost0SpiEvent -> PlicPeripheral::SpiHost0
     PlicPeripheral::SpiHost0,
-    // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
-    PlicPeripheral::PwrmgrAon,
-    // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
+    // PwrmgrWakeup -> PlicPeripheral::Pwrmgr
+    PlicPeripheral::Pwrmgr,
+    // AonTimerWkupTimerExpired -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
+    // AonTimerWdogTimerBark -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
     // HmacHmacDone -> PlicPeripheral::Hmac
     PlicPeripheral::Hmac,
     // HmacFifoEmpty -> PlicPeripheral::Hmac
@@ -1550,20 +1550,20 @@ pub enum AlertPeripheral {
     LcCtrl = 7,
     /// spi_host0
     SpiHost0 = 8,
-    /// pwrmgr_aon
-    PwrmgrAon = 9,
-    /// rstmgr_aon
-    RstmgrAon = 10,
-    /// clkmgr_aon
-    ClkmgrAon = 11,
-    /// pinmux_aon
-    PinmuxAon = 12,
-    /// aon_timer_aon
-    AonTimerAon = 13,
+    /// pwrmgr
+    Pwrmgr = 9,
+    /// rstmgr
+    Rstmgr = 10,
+    /// clkmgr
+    Clkmgr = 11,
+    /// pinmux
+    Pinmux = 12,
+    /// aon_timer
+    AonTimer = 13,
     /// soc_proxy
     SocProxy = 14,
-    /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 15,
+    /// sram_ctrl_ret
+    SramCtrlRet = 15,
     /// rv_dm
     RvDm = 16,
     /// rv_plic
@@ -1661,24 +1661,24 @@ pub enum AlertId {
     LcCtrlFatalBusIntegError = 12,
     /// spi_host0_fatal_fault
     SpiHost0FatalFault = 13,
-    /// pwrmgr_aon_fatal_fault
-    PwrmgrAonFatalFault = 14,
-    /// rstmgr_aon_fatal_fault
-    RstmgrAonFatalFault = 15,
-    /// rstmgr_aon_fatal_cnsty_fault
-    RstmgrAonFatalCnstyFault = 16,
-    /// clkmgr_aon_recov_fault
-    ClkmgrAonRecovFault = 17,
-    /// clkmgr_aon_fatal_fault
-    ClkmgrAonFatalFault = 18,
-    /// pinmux_aon_fatal_fault
-    PinmuxAonFatalFault = 19,
-    /// aon_timer_aon_fatal_fault
-    AonTimerAonFatalFault = 20,
+    /// pwrmgr_fatal_fault
+    PwrmgrFatalFault = 14,
+    /// rstmgr_fatal_fault
+    RstmgrFatalFault = 15,
+    /// rstmgr_fatal_cnsty_fault
+    RstmgrFatalCnstyFault = 16,
+    /// clkmgr_recov_fault
+    ClkmgrRecovFault = 17,
+    /// clkmgr_fatal_fault
+    ClkmgrFatalFault = 18,
+    /// pinmux_fatal_fault
+    PinmuxFatalFault = 19,
+    /// aon_timer_fatal_fault
+    AonTimerFatalFault = 20,
     /// soc_proxy_fatal_alert_intg
     SocProxyFatalAlertIntg = 21,
-    /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 22,
+    /// sram_ctrl_ret_fatal_error
+    SramCtrlRetFatalError = 22,
     /// rv_dm_fatal_fault
     RvDmFatalFault = 23,
     /// rv_plic_fatal_fault
@@ -1807,15 +1807,15 @@ impl TryFrom<u32> for AlertId {
             11 => Ok(Self::LcCtrlFatalStateError),
             12 => Ok(Self::LcCtrlFatalBusIntegError),
             13 => Ok(Self::SpiHost0FatalFault),
-            14 => Ok(Self::PwrmgrAonFatalFault),
-            15 => Ok(Self::RstmgrAonFatalFault),
-            16 => Ok(Self::RstmgrAonFatalCnstyFault),
-            17 => Ok(Self::ClkmgrAonRecovFault),
-            18 => Ok(Self::ClkmgrAonFatalFault),
-            19 => Ok(Self::PinmuxAonFatalFault),
-            20 => Ok(Self::AonTimerAonFatalFault),
+            14 => Ok(Self::PwrmgrFatalFault),
+            15 => Ok(Self::RstmgrFatalFault),
+            16 => Ok(Self::RstmgrFatalCnstyFault),
+            17 => Ok(Self::ClkmgrRecovFault),
+            18 => Ok(Self::ClkmgrFatalFault),
+            19 => Ok(Self::PinmuxFatalFault),
+            20 => Ok(Self::AonTimerFatalFault),
             21 => Ok(Self::SocProxyFatalAlertIntg),
-            22 => Ok(Self::SramCtrlRetAonFatalError),
+            22 => Ok(Self::SramCtrlRetFatalError),
             23 => Ok(Self::RvDmFatalFault),
             24 => Ok(Self::RvPlicFatalFault),
             25 => Ok(Self::AesRecovCtrlUpdateErr),
@@ -1908,24 +1908,24 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 77] = [
     AlertPeripheral::LcCtrl,
     // SpiHost0FatalFault -> AlertPeripheral::SpiHost0
     AlertPeripheral::SpiHost0,
-    // PwrmgrAonFatalFault -> AlertPeripheral::PwrmgrAon
-    AlertPeripheral::PwrmgrAon,
-    // RstmgrAonFatalFault -> AlertPeripheral::RstmgrAon
-    AlertPeripheral::RstmgrAon,
-    // RstmgrAonFatalCnstyFault -> AlertPeripheral::RstmgrAon
-    AlertPeripheral::RstmgrAon,
-    // ClkmgrAonRecovFault -> AlertPeripheral::ClkmgrAon
-    AlertPeripheral::ClkmgrAon,
-    // ClkmgrAonFatalFault -> AlertPeripheral::ClkmgrAon
-    AlertPeripheral::ClkmgrAon,
-    // PinmuxAonFatalFault -> AlertPeripheral::PinmuxAon
-    AlertPeripheral::PinmuxAon,
-    // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
-    AlertPeripheral::AonTimerAon,
+    // PwrmgrFatalFault -> AlertPeripheral::Pwrmgr
+    AlertPeripheral::Pwrmgr,
+    // RstmgrFatalFault -> AlertPeripheral::Rstmgr
+    AlertPeripheral::Rstmgr,
+    // RstmgrFatalCnstyFault -> AlertPeripheral::Rstmgr
+    AlertPeripheral::Rstmgr,
+    // ClkmgrRecovFault -> AlertPeripheral::Clkmgr
+    AlertPeripheral::Clkmgr,
+    // ClkmgrFatalFault -> AlertPeripheral::Clkmgr
+    AlertPeripheral::Clkmgr,
+    // PinmuxFatalFault -> AlertPeripheral::Pinmux
+    AlertPeripheral::Pinmux,
+    // AonTimerFatalFault -> AlertPeripheral::AonTimer
+    AlertPeripheral::AonTimer,
     // SocProxyFatalAlertIntg -> AlertPeripheral::SocProxy
     AlertPeripheral::SocProxy,
-    // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
-    AlertPeripheral::SramCtrlRetAon,
+    // SramCtrlRetFatalError -> AlertPeripheral::SramCtrlRet
+    AlertPeripheral::SramCtrlRet,
     // RvDmFatalFault -> AlertPeripheral::RvDm
     AlertPeripheral::RvDm,
     // RvPlicFatalFault -> AlertPeripheral::RvPlic
@@ -2422,8 +2422,8 @@ impl TryFrom<u32> for MuxedPads {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerWakeUps {
-    PinmuxAonPinWkupReq = 0,
-    AonTimerAonWkupReq = 1,
+    PinmuxPinWkupReq = 0,
+    AonTimerWkupReq = 1,
     SocProxyWkupExternalReq = 2,
 }
 
@@ -2440,7 +2440,7 @@ pub enum ResetManagerSwResets {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerResetRequests {
-    AonTimerAonAonTimerRstReq = 0,
+    AonTimerAonTimerRstReq = 0,
     SocProxyRstReqExternal = 1,
 }
 

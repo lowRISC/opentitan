@@ -215,7 +215,7 @@ class Register(RegBase):
                  raw: object,
                  clocks: Clocking,
                  is_alias: bool,
-                 multireg_idx: Optional[int]) -> 'Register':
+                 multireg_idx_pair: tuple[int, int] | None) -> 'Register':
         rd = check_keys(raw, 'register', list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
@@ -233,12 +233,16 @@ class Register(RegBase):
             raise ValueError(f'alias register {name} does not define the '
                              'alias_target key.')
 
-        # If multireg_idx is not None then we are parsing a pseudo-register for
-        # some multi-register. Set up the bindings that we pass to
-        # Field.from_raw to reflect that.
+        # If multireg_idx_pair is not None then we are parsing a
+        # pseudo-register for some multi-register and the variable contains a
+        # pair of the form (idx, count).
+        #
+        # Here, the multi-register is expanding into count copies and this copy
+        # has index idx (between 0 and count-1).
         field_bindings = {}
-        if multireg_idx is not None:
-            field_bindings['multireg_idx'] = multireg_idx
+        if multireg_idx_pair is not None:
+            field_bindings['multireg_idx'] = multireg_idx_pair[0]
+            field_bindings['multireg_count'] = multireg_idx_pair[1]
 
         desc = check_str(rd['desc'], f'desc for {name} register')
 

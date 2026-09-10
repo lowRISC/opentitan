@@ -65,9 +65,11 @@ void boot_measurements_test(void) {
 }
 
 void sec_mmio_pos_test(void) {
+  // Sum of all expected `sec_mmio_check_values()` and
+  // `sec_mmio_check_counters()` in rom.c.
   enum {
     kRndOffset = 13,
-    kRomCheckValue = 6,
+    kRomCheckValue = 9,
   };
 
   sec_mmio_check_values(kRndOffset);

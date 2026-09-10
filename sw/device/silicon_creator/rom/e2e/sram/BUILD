@@ -56,7 +56,7 @@ _READBACK_TESTS = {
         name = "sram_readback_{}_test".format(name),
         srcs = ["sram_readback_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = param["otp"],
@@ -64,7 +64,7 @@ _READBACK_TESTS = {
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -114,7 +114,7 @@ _RENEW_TESTS = {
         name = "sram_key_renew_{}_test".format(name),
         srcs = ["sram_renew_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             otp = param["otp"],
@@ -122,7 +122,7 @@ _RENEW_TESTS = {
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",

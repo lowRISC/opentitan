@@ -115,19 +115,25 @@ waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -reg
       -comment "Not all POK signals are used inside top_earlgrey"
 
 # Clock / reset connections going back into AST
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_clocks..*' is connected to 'top_earlgrey' port 'clkmgr_clocks..*', and used as a clock} \
       -comment "This is a clock struct that is fed back into AST."
 
 waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
+waive -rules CLOCK_MUX -location {chip_earlgrey_asic.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
+
+waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_USE} -location {ast.sv} \
@@ -138,7 +144,7 @@ waive -rules {RESET_USE} -location {usb_clk.sv} \
       -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment "This is a reset struct that is fed back into AST."
 
-waive -rules {RESET_MUX} -location {chip_earlgrey_asic.sv} -regexp {Asynchronous reset 'rstmgr_aon_resets..*' is driven by a multiplexer here, used as a reset} \
+waive -rules {RESET_MUX} -location {chip_earlgrey_asic.sv} -regexp {Asynchronous reset 'rstmgr_resets..*' is driven by a multiplexer here, used as a reset} \
       -comment "This is a reset struct that is fed back into AST."
 
 waive -rules {RESET_MUX} -location {usb_clk.sv} \
@@ -149,3 +155,8 @@ waive -rules {RESET_MUX} -location {usb_clk.sv} \
 waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
       -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
       -comment "We want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240."
+
+# Temporary generic waiver for ast until the proper split into sub-IPs in the Main and Aon toplevels is done.
+waive -location {ast*.sv} \
+      -regexp {.*} \
+      -comment "AST is TEMPORARILY waived until properly split into Main and Aon domain."

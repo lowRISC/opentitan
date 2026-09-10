@@ -1,6 +1,8 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+#include "sw/device/tests/spi_host_flash_test_impl.h"
+
 #include <assert.h>
 
 #include "sw/device/lib/arch/device.h"
@@ -91,8 +93,8 @@ status_t test_sector_erase(dif_spi_host_t *spi) {
 }
 
 status_t test_enable_quad_mode(dif_spi_host_t *spi) {
-  if (sfdp.param.length < 14) {
-    return INVALID_ARGUMENT();
+  if (!is_quad_mode_supported()) {
+    return UNAVAILABLE();
   }
   uint8_t mech =
       (uint8_t)bitfield_field32_read(sfdp.bfpt[14], SPI_FLASH_QUAD_ENABLE);
@@ -120,6 +122,9 @@ status_t test_page_program(dif_spi_host_t *spi) {
 status_t test_page_program_quad(
     dif_spi_host_t *spi, uint8_t opcode,
     spi_flash_testutils_transaction_width_mode_t page_program_mode) {
+  if (!is_quad_mode_supported()) {
+    return UNAVAILABLE();
+  }
   enum { kPageSize = 256, kAddress = kPageSize * 10 };
 
   TRY(spi_flash_testutils_erase_sector(spi, kAddress, false));
@@ -164,6 +169,9 @@ status_t test_dual_read(dif_spi_host_t *spi) {
 
 // Read the flash device using the "fast quad read" opcode.
 status_t test_quad_read(dif_spi_host_t *spi) {
+  if (!is_quad_mode_supported()) {
+    return UNAVAILABLE();
+  }
   uint8_t buf[256];
   TRY(spi_flash_testutils_read_op(spi, kSpiDeviceFlashOpReadQuad, buf,
                                   sizeof(buf), 0,
@@ -180,6 +188,18 @@ bool is_4_bytes_address_mode_supported(void) {
       bitfield_field32_read(sfdp.bfpt[0], SPI_FLASH_ADDRESS_MODE);
   return (address_mode == kSupport3and4Bytes ||
           address_mode == kSupportOnly4Bytes);
+}
+
+bool is_quad_mode_supported(void) {
+  if (sfdp.param.length < 14) {
+    return false;
+  }
+  uint8_t qe_mechanism =
+      (uint8_t)bitfield_field32_read(sfdp.bfpt[14], SPI_FLASH_QUAD_ENABLE);
+  if (qe_mechanism == 0 || qe_mechanism == 7) {
+    return false;
+  }
+  return true;
 }
 
 status_t test_4bytes_address(dif_spi_host_t *spi) {

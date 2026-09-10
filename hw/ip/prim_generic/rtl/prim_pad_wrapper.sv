@@ -12,6 +12,7 @@ module prim_pad_wrapper
 #(
   // These parameters are ignored in this model.
   parameter pad_type_e PadType = BidirStd,
+  parameter pad_orient_e PadOrient = OrientH,
   parameter scan_role_e ScanRole = NoScan
 ) (
   // This is only used for scanmode (not used in generic models)

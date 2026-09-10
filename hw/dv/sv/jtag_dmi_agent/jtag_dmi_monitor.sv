@@ -7,7 +7,7 @@
 // Unlike the name suggests, this monitor does not actually monitor the DMI interface
 // directly, but indirectly by snooping the reads and writes to the DTM DMI register.
 // TODO: In future, it may be better to rename this to jtag_dmi_csr_monitor.
-class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
+class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_reactive_monitor #(
     .ITEM_T (ITEM_T),
     .CFG_T  (jtag_agent_cfg));
   `uvm_component_param_utils(jtag_dmi_monitor #(ITEM_T))

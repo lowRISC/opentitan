@@ -163,14 +163,6 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             range: _
         }
     ));
-    assert!(matches!(
-        epmp.entry[12],
-        EpmpEntry {
-            cfg: _,
-            kind: EpmpRegionKind::Off,
-            range: _
-        }
-    ));
 
     // Epmp entries for ROM: .text, all of ROM, peripheral address space.
     assert!(matches!(
@@ -178,15 +170,15 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x8000, _)
+            range: EpmpAddressRange(0x40000, _)
         }
     ));
     assert!(matches!(
         epmp.entry[2],
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
-            kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x8000, 0x10000)
+            kind: EpmpRegionKind::Tor,
+            range: EpmpAddressRange(_, 0x70000)
         }
     ));
     assert!(matches!(
@@ -215,14 +207,23 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             range: EpmpAddressRange(0x1000_0000, 0x1002_0000)
         }
     ));
+    // Secondary SRAM, mapped contiguously after main SRAM.
+    assert!(matches!(
+        epmp.entry[12],
+        EpmpEntry {
+            cfg: EPMP_CFG_LRW,
+            kind: EpmpRegionKind::Napot,
+            range: EpmpAddressRange(0x1002_0000, 0x1003_0000)
+        }
+    ));
 
-    // Flash execution: mapped by ROM when choosing a ROM_EXT.
+    // NVM execution: mapped by ROM when choosing a ROM_EXT.
     assert!(matches!(
         epmp.entry[4],
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x2000_0400, _)
+            range: EpmpAddressRange(0x3000_0400, _)
         }
     ));
     assert!(matches!(
@@ -230,7 +231,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
             kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x2000_0000, 0x2010_0000)
+            range: EpmpAddressRange(0x3000_0000, 0x3020_0000)
         }
     ));
     // Debug: only enabled for Test, Dev and RMA states:

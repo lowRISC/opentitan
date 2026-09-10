@@ -39,12 +39,17 @@ struct Opts {
     jedec_id: u8,
 
     /// JEDEC manufacturer product ID.
-    #[arg(long, value_parser = u8::from_str, default_value = "0x29")]
+    /// This ID consists of the following fields:
+    /// [[4 LSBs of ProductId] [1] [3 LSBs of RevisionId]]
+    /// For details, see also
+    /// - spi_device_init() in sw/device/silicon_creator/lib/drivers/spi_device.c, and
+    /// - ProductId and RevisionId in the top-level hjson file.
+    #[arg(long, value_parser = u8::from_str, default_value = "0x09")]
     jedec_product: u8,
 
-    /// Size of the internal flash.
-    #[arg(long, value_parser = u32::from_str, default_value = "0x100000")]
-    flash_size: u32,
+    /// Size of the internal NVM.
+    #[arg(long, value_parser = u32::from_str, default_value = "0x200000")]
+    nvm_size: u32,
 }
 
 /// A struct for isolating individual test points.
@@ -167,7 +172,7 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(page, opts.jedec_page);
     assert_eq!(manufacturer, opts.jedec_id);
     assert_eq!(product, opts.jedec_product);
-    assert_eq!(1u32 << density, opts.flash_size);
+    assert_eq!(1u32 << density, opts.nvm_size);
     Ok(())
 }
 
@@ -229,7 +234,7 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(sfdp.jedec.support_fast_read_114, false);
     assert_eq!(sfdp.jedec.support_fast_read_222, false);
     assert_eq!(sfdp.jedec.support_fast_read_444, false);
-    assert_eq!(sfdp.jedec.density, opts.flash_size);
+    assert_eq!(sfdp.jedec.density, opts.nvm_size);
 
     assert_eq!(sfdp.jedec.erase[0].size, 4096);
     assert_eq!(sfdp.jedec.erase[0].opcode, 0x20);
@@ -354,7 +359,7 @@ fn test_bootstrap_phase1_page_program(transport: &TransportWrapper) -> Result<()
     SpiFlash::from_spi(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
         // Note: We must start at a flash-word-aligned address.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset(UartRx::Clear)?;
@@ -389,7 +394,7 @@ fn test_bootstrap_phase1_erase(transport: &TransportWrapper, erase_cmd: u8) -> R
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
@@ -429,7 +434,7 @@ fn test_bootstrap_phase1_read(transport: &TransportWrapper) -> Result<()> {
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
@@ -443,7 +448,7 @@ fn test_bootstrap_phase1_read(transport: &TransportWrapper) -> Result<()> {
     transport.reset(UartRx::Clear)?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x00);
     let mut buf: [u8; 8] = [0xa5; 8];
-    SpiFlash::from_spi(&*spi)?.read(&*spi, 0x80330, &mut buf)?;
+    SpiFlash::from_spi(&*spi)?.read(&*spi, 0x100330, &mut buf)?;
     log::info!("Received: {:?}", &buf);
     assert_ne!(u64::from_le_bytes(buf), 0x4552_544f_0000_0000u64);
 
@@ -492,7 +497,7 @@ fn test_bootstrap_phase2_page_program(transport: &TransportWrapper) -> Result<()
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     let mut console = UartConsole::new(
         Some(Duration::new(1, 0)),
@@ -518,7 +523,7 @@ fn test_bootstrap_phase2_erase(transport: &TransportWrapper, erase_cmd: u8) -> R
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let erase = || match erase_cmd {
         // We should erase the page of the identifier of the second slot.
-        SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0x80330 & (!4096 + 1), 4096),
+        SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0x100330 & (!4096 + 1), 4096),
         SpiFlash::CHIP_ERASE => spiflash.chip_erase(&*spi),
         _ => bail!("Unexpected erase command opcode: {:?}", erase_cmd),
     };
@@ -526,7 +531,7 @@ fn test_bootstrap_phase2_erase(transport: &TransportWrapper, erase_cmd: u8) -> R
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Erase again.
     erase()?;
 
@@ -557,9 +562,9 @@ fn test_bootstrap_phase2_read(transport: &TransportWrapper) -> Result<()> {
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?
-        // Read 8 bytes starting from 0x80330.
-        .read(&*spi, 0x80330, &mut read_buf)?;
+        .program(&*spi, 0x100330, &0x4552_544f_0000_0000_u64.to_le_bytes())?
+        // Read 8 bytes starting from 0x100330.
+        .read(&*spi, 0x100330, &mut read_buf)?;
     let received = u64::from_le_bytes(read_buf);
     log::info!("Received: {:#x}", received);
     assert_ne!(received, 0x4552_544f_0000_0000_u64);

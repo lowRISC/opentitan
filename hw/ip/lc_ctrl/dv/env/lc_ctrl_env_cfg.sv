@@ -41,6 +41,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   // Enable scoreboard ral update on write
   bit en_scb_ral_update_write = 1;
 
+  // The JTAG DTM register model.
+  rand jtag_dtm_reg_block m_jtag_dtm_ral;
+
   // OTP
   rand otp_device_id_t otp_device_id;
   rand otp_device_id_t otp_manuf_state;
@@ -61,11 +64,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name = "fatal_state_error";
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     // Find parameters on config db
     if (!uvm_config_db#(lc_ctrl_parameters_cfg)::get(
@@ -95,6 +98,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
         alert_esc_agent_cfg::type_id::create("m_esc_scrap_state0_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state0_agent_cfg)
     m_esc_scrap_state0_agent_cfg.is_alert = 0;
+
+    m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");
 
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)

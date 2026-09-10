@@ -6,7 +6,6 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
@@ -15,8 +14,8 @@
  */
 extern const size_t kOtpKvCreatorSwCfgSize;
 extern const otp_kv_t kOtpKvCreatorSwCfg[];
-extern const uint32_t kCreatorSwCfgFlashDataDefaultCfgValue;
-extern const uint32_t kCreatorSwCfgFlashInfoBootDataCfgValue;
+extern const uint32_t kCreatorSwCfgNvmDataDefaultCfgValue;
+extern const uint32_t kCreatorSwCfgNvmInfoBootDataCfgValue;
 extern const uint32_t kCreatorSwCfgManufStateValue;
 extern const uint32_t kCreatorSwCfgImmutableRomExtEnValue;
 
@@ -51,23 +50,22 @@ extern const otp_kv_t kOtpKvRotCreatorAuthState[];
  * Note:
  * - The operation will fail if there are any pre-programmed words not equal
  *   to the expected test values.
- * - This operation will explicitly NOT provision the FLASH_DATA_DEFAULT_CFG
+ * - This operation will explicitly NOT provision the NVM_DATA_DEFAULT_CFG
  *   and MANUF_STATE fields in the CREATOR_SW_CFG partition. These fields must
  * be explicitly configured after all other provisioning operations are done,
  * but before the partition is locked, and the final transport image is loaded.
  * - This function will NOT lock the partition either. This must be done after
- *   provisioning the final FLASH_DATA_DEFAULT_CFG and MANUF_STATE fields
+ *   provisioning the final NVM_DATA_DEFAULT_CFG and MANUF_STATE fields
  * mentioned above.
  * - The partition must be configured and the chip reset, before the ROM can be
  *   booted, thus enabling bootstrap.
  *
  * @param otp_ctrl OTP controller instance.
- * @param flash_state Flash controller instance.
  * @return OK_STATUS if the CREATOR_SW_CFG partition was provisioned.
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_creator_sw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state);
+    const dif_otp_ctrl_t *otp_ctrl);
 
 /**
  * This must be called before both
@@ -82,25 +80,25 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
                                               uint32_t field_offset);
 
 /**
- * Checks the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
+ * Checks the NVM_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
  * partition.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the FLASH_DATA_DEFAULT_CFG field is provisioned.
+ * @return OK_STATUS if the NVM_DATA_DEFAULT_CFG field is provisioned.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_flash_data_default_cfg_check(
+status_t manuf_individualize_device_nvm_data_default_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Checks the FLASH_INFO_BOOT_DATA_CFG field in the CREATOR_SW_CFG OTP
+ * Checks the NVM_INFO_BOOT_DATA_CFG field in the CREATOR_SW_CFG OTP
  * partition.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the FLASH_INFO_BOOT_DATA_CFG field is provisioned.
+ * @return OK_STATUS if the NVM_INFO_BOOT_DATA_CFG field is provisioned.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_flash_info_boot_data_cfg_check(
+status_t manuf_individualize_device_nvm_info_boot_data_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**

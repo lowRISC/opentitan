@@ -4,9 +4,12 @@
 
 #include "sw/device/lib/crypto/include/kdf_ctr.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -69,32 +72,27 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_const_byte_buf_t *label,
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
-      key_derivation_key->keyblob == NULL) {
+      key_derivation_key == NULL || key_derivation_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(output_key_material->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow ||
-      launder32(key_derivation_key->config.security_level) !=
-          kOtcryptoKeySecurityLevelLow) {
-    // The underlying HMAC implementation is not currently hardened.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Check for null label with nonzero length.
-  if (label->data == NULL && label->len != 0) {
+  if (label == NULL || (label->data == NULL && label->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null context with nonzero length.
-  if (context->data == NULL && context->len != 0) {
+  if (context == NULL || (context->data == NULL && context->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(key_derivation_key) != kHardenedBoolTrue) {
+  if (otcrypto_integrity_blinded_key_check(key_derivation_key) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -147,6 +145,10 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
 
   // Setup
   uint8_t zero = 0x00;
+  size_t share_word_len = keyblob_share_num_words(output_key_material->config);
+  uint32_t *share0_ptr = output_key_material->keyblob;
+  uint32_t *share1_ptr = output_key_material->keyblob + share_word_len;
+  size_t words_written = 0;
 
   // Repeatedly call HMAC to generate the derived key based on input data:
   // [i]_2 || Label || 0x00 || Context || [L]_2
@@ -155,9 +157,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   // [L]_2 is the binary representation of the required bit length
   // The counter value is updated within the loop
 
-  uint32_t output_key_material_len =
-      required_word_len + digest_word_len - required_word_len % digest_word_len;
-  uint32_t output_key_material_data[output_key_material_len];
+  uint32_t tag_data[kHmacMaxDigestWords];
 
   for (uint32_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
@@ -177,23 +177,31 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
                           (const unsigned char *const)&required_bit_len,
                           sizeof(required_bit_len));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, &required_bit_len_buf));
-    uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     otcrypto_word32_buf_t tag_buf =
-        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_dest, digest_word_len);
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, digest_word_len);
     HARDENED_TRY(otcrypto_hmac_final(&ctx, &tag_buf));
+
+    size_t words_to_copy = digest_word_len;
+    if (words_written + digest_word_len > required_word_len) {
+      words_to_copy = required_word_len - words_written;
+    }
+
+    uint32_t mask_data[kHmacMaxDigestWords];
+    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+
+    uint32_t share0_data[kHmacMaxDigestWords];
+    HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
+
+    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
+                                 words_to_copy));
+    HARDENED_TRY(
+        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+
+    words_written += words_to_copy;
   }
 
-  // Generate a mask (all-zero for now, since HMAC is unhardened anyway).
-  uint32_t mask[digest_word_len];
-  memset(mask, 0, sizeof(mask));
-
-  // Construct a blinded key.
-  HARDENED_TRY(keyblob_from_key_and_mask(output_key_material_data, mask,
-                                         output_key_material->config,
-                                         output_key_material->keyblob));
-
   output_key_material->checksum =
-      integrity_blinded_checksum(output_key_material);
+      otcrypto_integrity_blinded_checksum(output_key_material);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }

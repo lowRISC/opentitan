@@ -14,6 +14,7 @@ class otbn_partial_wipe_vseq extends otbn_single_vseq;
   task inject_partial_wipe();
     string hdl_path = "tb.dut.u_otbn_core";
     int    ticks_until_err = 1;
+    err_bits_reg_t err_bits = '{bad_internal_state: 1'b1, default: 1'b0};
     randcase
       1: hdl_path = {hdl_path, ".u_otbn_alu_bignum.sec_wipe_mod_urnd_i"};
       1: hdl_path = {hdl_path, ".u_otbn_controller.sec_wipe_zero_i"};
@@ -41,7 +42,7 @@ class otbn_partial_wipe_vseq extends otbn_single_vseq;
       begin
         cfg.clk_rst_vif.wait_n_clks(ticks_until_err);
         // Tell the model to jump to the locked state
-        cfg.model_agent_cfg.vif.lock_immediately(32'd1 << 20);
+        cfg.model_agent_cfg.vif.lock_immediately(err_bits);
       end
     join
   endtask

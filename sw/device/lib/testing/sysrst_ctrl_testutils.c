@@ -22,9 +22,9 @@ void sysrst_ctrl_testutils_setup_dio(dif_pinmux_t *pinmux) {
       .drive_strength = 0,
       .flags = kDifPinmuxPadAttrOpenDrain,
   };
-  dif_result_t res = dif_pinmux_pad_write_attrs(
-      pinmux, kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL, kDifPinmuxPadKindDio,
-      in_attr, &out_attr);
+  dif_result_t res =
+      dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyDirectPadsSysrstCtrlEcRstL,
+                                 kDifPinmuxPadKindDio, in_attr, &out_attr);
   // The FPGA does not support open drain but instead has virtual open drain.
   // Try to use that if open drain did not work.
   if (res == kDifError && out_attr.flags != kDifPinmuxPadAttrOpenDrain) {
@@ -32,13 +32,13 @@ void sysrst_ctrl_testutils_setup_dio(dif_pinmux_t *pinmux) {
         "cannot use open drain for sysrst pins, trying virtual open drain");
     in_attr.flags = kDifPinmuxPadAttrVirtualOpenDrain;
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
-        pinmux, kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL, kDifPinmuxPadKindDio,
+        pinmux, kTopEarlgreyDirectPadsSysrstCtrlEcRstL, kDifPinmuxPadKindDio,
         in_attr, &out_attr));
     // Note: fallthrough with the modified `in_attr` so that the same attributes
     // are used for both pads.
   }
   CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
-      pinmux, kTopEarlgreyDirectPadsSysrstCtrlAonFlashWpL, kDifPinmuxPadKindDio,
+      pinmux, kTopEarlgreyDirectPadsSysrstCtrlFlashWpL, kDifPinmuxPadKindDio,
       in_attr, &out_attr));
 }
 

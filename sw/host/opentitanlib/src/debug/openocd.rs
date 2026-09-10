@@ -197,7 +197,9 @@ impl OpenOcd {
         let mut buf = Vec::new();
         self.reader.read_until(0x1A, &mut buf)?;
         if !buf.ends_with(b"\x1A") {
-            bail!(OpenOcdError::PrematureExit);
+            bail!(OpenOcdError::PrematureExit(
+                String::from_utf8_lossy(&buf).to_string()
+            ));
         }
         buf.pop();
         String::from_utf8(buf).context("failed to parse OpenOCD response as UTF-8")
@@ -226,6 +228,11 @@ impl OpenOcd {
         Ok(())
     }
 
+    /// Command for scanning a data register.
+    pub fn drscan_cmd<T: ParseInt + LowerHex>(&self, tap: &str, numbits: u32, data: T) -> String {
+        format!("drscan {} {} {:#x}", tap, numbits, data)
+    }
+
     /// Load data register of a given tap and return the scan.
     pub fn drscan<T: ParseInt + LowerHex>(
         &mut self,
@@ -233,7 +240,7 @@ impl OpenOcd {
         numbits: u32,
         data: T,
     ) -> Result<T> {
-        let cmd = format!("drscan {} {} {:#x}", tap, numbits, data);
+        let cmd = self.drscan_cmd(tap, numbits, data);
         let result = self.execute(&cmd)?;
         Ok(T::from_str_radix(&result, 16).map_err(|x| x.into())?)
     }
@@ -250,8 +257,8 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
-    #[error("OpenOCD server exited prematurely")]
-    PrematureExit,
+    #[error("OpenOCD server exited prematurely: {0}")]
+    PrematureExit(String),
     #[error("Generic error {0}")]
     Generic(String),
 }
@@ -277,6 +284,7 @@ impl JtagChain for OpenOcdJtagChain {
         let target = match tap {
             JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
             JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
+            JtagTap::BackdoorTap => include_str!(env!("openocd_fpga_backdoor_target_cfg")),
         };
         self.openocd.execute(target)?;
 

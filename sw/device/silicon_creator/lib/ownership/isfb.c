@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 
 enum {
-  kFlashWordSize = 64,
+  kNvmWordSize = 64,
 
   // The maximum number of product expressions is 256, which maps to 512 flash
   // words or 1024 bytes.
@@ -41,9 +42,9 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
 
   // The ISFB info page configuration is handled in the owner's
   // `FlashInfoConfig` settings.
-  flash_ctrl_info_page_t isfb_info_page;
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
-      isfb->bank, isfb->page, &isfb_info_page));
+  nvm_info_page_t isfb_info_page;
+  HARDENED_RETURN_IF_ERROR(
+      nvm_ctrl_info_page_lookup(isfb->bank, isfb->page, &isfb_info_page));
 
   // There are in total 128 bits in the strike mask. Each bit corresponds to a
   // `uint32_t` word.
@@ -54,8 +55,8 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   static_assert(sizeof(strikes) == kExpectedStrikeRegionBytesCount,
                 "Data size mismatch");
 
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(&isfb_info_page, /*offset=*/0,
-                                                ARRAYSIZE(strikes), strikes));
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(isfb_info_page, /*offset=*/0,
+                                              ARRAYSIZE(strikes), strikes));
 
   uint32_t strike_cnt_ok = 0;
   uint32_t strike_cnt_bad = 0;
@@ -86,8 +87,8 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
                 "Product expressions data size mismatch");
 
   // Read the product expressions from the ISFB info page.
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
-      &isfb_info_page, /*offset=*/1024, ARRAYSIZE(product_expr), product_expr));
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(
+      isfb_info_page, /*offset=*/1024, ARRAYSIZE(product_expr), product_expr));
 
   uint32_t pe_cnt_ok = 0;
   uint32_t p_cnt_bad = 0;
@@ -170,6 +171,11 @@ rom_error_t isfb_info_flash_erase_policy_get(
 
   // B3: `manifest_ext_isfb_erase_t` must be present and set to harden true in
   // the firmware manifest.
+  // TODO(#30890): on RRAM, there is no hardware-enforced distinction between
+  // "can write" and "can erase" (no `erase_en`), so any image with plain
+  // write access to the ISFB page can flip a struck bit back to `1` without
+  // needing this policy to hold. The one-way strike/un-strike ratchet this
+  // check is meant to enforce is not currently guaranteed on RRAM.
   if (policies[2] != kHardenedBoolTrue && ext_isfb_erase != NULL) {
     policies[2] = (hardened_bool_t)ext_isfb_erase->erase_allowed;
     check_cnt_got = launder32(check_cnt_got) + 1;

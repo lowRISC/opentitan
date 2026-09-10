@@ -9,7 +9,6 @@ IMM_SECTION_MINOR_VERSION = 4
 IMM_SECTION_VERSION = "{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION)
 
 DEFAULT_EXEC_ENV = [
-    "//hw/top_earlgrey:fpga_cw310",
     "//hw/top_earlgrey:fpga_cw340",
     "//hw/top_earlgrey:sim_dv_base",
     "//hw/top_earlgrey:sim_verilator_base",

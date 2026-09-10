@@ -8,12 +8,12 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_aes.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -25,7 +25,7 @@
 #include "hw/top/otbn_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
@@ -36,8 +36,6 @@ static dif_otbn_t otbn;
 // OTBN symbols used by the combinatorial test.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
 
 // Enum for the triggers of the combinatorial test.
 typedef enum combi_operations_trigger_t {
@@ -161,6 +159,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
 
   // Load p256 keygen from seed app into OTBN.
   // This is not used, but just set so it receives input,
+  const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
   return OK_STATUS();
@@ -171,6 +170,7 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                                                   uint32_t result[],
                                                   uint32_t trigger)
     __attribute__((optnone)) {
+  const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
   if (trigger & kCombiOpsTriggerXor) {
     init_registers(value1, value2, 0, 0, 0, 0);
 
@@ -464,36 +464,25 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
   TRY(ujson_deserialize_ibex_sca_salt_t(uj, &uj_data));
 
   if (!key_manager_init) {
-    // Initialize keymgr and advance to CreatorRootKey state.
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
-
-    // Generate identity at CreatorRootKey (to follow same sequence and reuse
-    // chip_sw_keymgr_key_derivation_vseq.sv).
-    TRY(keymgr_testutils_generate_identity(
-        &keymgr,
-        (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
-
-    // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
+    // Initialize keymgr_dpe and advance to OwnerIntermediateKey state.
+    TRY(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
     key_manager_init = true;
   }
 
   // Set the salt based on the input.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
   for (int i = 0; i < 8; i++) {
     sideload_params.salt[i] = uj_data.salt[i];
   }
 
   // Trigger keymanager to create a new key based on the provided salt.
   pentest_set_trigger_high();
-  TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
+  TRY(keymgr_dpe_testutils_generate_key(&keymgr_dpe, &sideload_params));
   pentest_set_trigger_low();
 
   // Read back generated key provided at the software interface.
-  dif_keymgr_output_t key;
-  TRY(dif_keymgr_read_output(&keymgr, &key));
+  dif_keymgr_dpe_output_t key;
+  TRY(dif_keymgr_dpe_read_output(&keymgr_dpe, &key));
 
   // Acknowledge test.
   ibex_sca_key_t uj_key;

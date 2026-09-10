@@ -52,11 +52,15 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t status) {
  *
  * @param csrng A CSRNG DIF handle.
  * @param edn0 An EDN DIF handle.
+ * @param gen_zero_output_seed If not set, the produced seed will not result in
+ * an all-zero output vector of the PRNG but it will also not trigger repetition
+ * alerts in EDN.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_testutils_masking_prng_zero_output_seed(const dif_csrng_t *csrng,
-                                                     const dif_edn_t *edn0);
+                                                     const dif_edn_t *edn0,
+                                                     bool gen_zero_output_seed);
 
 /**
  * CTR_DRBG Known-Answer-Test (KAT) using the CSRNG SW application interface.

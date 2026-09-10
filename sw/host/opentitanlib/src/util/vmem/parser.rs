@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Parsing of Verilog vmem files into the [`Vmem`] representation.
+//! Parsing of Verilog VMEM files into the [`Vmem`] representation.
 //!
 //! See the [srec_vmem] documentation for a description of the file format.
 //!
@@ -18,16 +18,19 @@ use std::num::ParseIntError;
 
 use thiserror::Error;
 
-use super::{Section, Vmem};
+use super::{Section, Vmem, Word};
 
 pub type ParseResult<T> = Result<T, ParseError>;
 
-/// Errors that can occur when parsing vmem files.
+/// Errors that can occur when parsing VMEM files.
 #[derive(Clone, Debug, Error, PartialEq, Eq)]
 pub enum ParseError {
     /// Failure to parse an integer from hexadecimal.
     #[error("failed to parse as hexadecimal integer")]
-    ParseInt(#[from] ParseIntError),
+    DecodeHexAddr(#[from] ParseIntError),
+
+    #[error("failed to parse as hexadecimal integer")]
+    DecodeHexValue(String),
 
     /// An opened comment was not closed.
     #[error("unclosed comment")]
@@ -37,19 +40,27 @@ pub enum ParseError {
     #[error("address is missing a value")]
     AddrMissingValue,
 
-    /// Catch-all for any characters that don't belong in vmem files.
+    /// Catch-all for any characters that don't belong in VMEM files.
     #[error("unknown character '{0}'")]
     UnknownChar(char),
 }
-/// Representation of the possible tokens found in vmem files.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+
+impl From<hex::FromHexError> for ParseError {
+    // hex::FromHexError does not support PartialEq/Eq, so convert the error to a String.
+    fn from(err: hex::FromHexError) -> Self {
+        Self::DecodeHexValue(err.to_string())
+    }
+}
+
+/// Representation of the possible tokens found in VMEM files.
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Token {
     /// End of file.
     Eof,
     /// Address directive, e.g. `@123abc`.
     Addr(u32),
     /// Data value, e.g. `abc123`.
-    Value(u32),
+    Value(Vec<u8>),
     /// Comments, e.g. `/* comment */` or `// comment`.
     Comment,
     /// Whitespace, including newlines.
@@ -57,18 +68,18 @@ enum Token {
 }
 
 /// Some span of the input text representing a token.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct Span {
     token: Token,
     len: usize,
 }
 
-/// Parser for vmem files.
+/// Parser for VMEM files.
 pub struct VmemParser;
 
 impl VmemParser {
-    /// Parse a complete vmem file from a string.
-    pub fn parse(mut s: &str) -> ParseResult<Vmem> {
+    /// Parse a complete VMEM file from a string.
+    pub fn parse(mut s: &str, addr_stride: Option<usize>) -> ParseResult<Vmem> {
         // Build up the vmem file as sections.
         let mut vmem = Vmem::default();
         vmem.sections.push(Section::default());
@@ -83,15 +94,17 @@ impl VmemParser {
                 Token::Addr(addr) => {
                     // Add a new section to the `Vmem` at this address.
                     // Here we translate between a "word index" to a byte address.
-                    vmem.sections.push(Section {
-                        addr: addr * 4,
-                        data: Vec::new(),
-                    });
+                    if addr != 0 || vmem.sections.last().unwrap().addr != 0 {
+                        vmem.sections.push(Section {
+                            addr: addr * addr_stride.unwrap_or(1) as u32,
+                            data: Vec::new(),
+                        });
+                    }
                 }
                 Token::Value(value) => {
                     // Add the value to the current (last added) section's data.
                     let section = vmem.sections.last_mut().unwrap();
-                    section.data.push(value)
+                    section.data.push(Word::new(value))
                 }
                 // Whitespace and comments are ignored.
                 Token::Whitespace => continue,
@@ -166,8 +179,13 @@ impl VmemParser {
             Some(len) => len,
             None => s.len(),
         };
+        let s = if len % 2 == 1 {
+            format!("0{s}")
+        } else {
+            s.to_string()
+        };
 
-        let val = u32::from_str_radix(&s[..len], 16)?;
+        let val = hex::decode(&s[..len.div_ceil(2) * 2])?;
         let token = Token::Value(val);
         let span = Span { token, len };
 
@@ -225,16 +243,19 @@ mod test {
             sections: vec![
                 Section {
                     addr: 0x00,
-                    data: vec![0xAB, 0xCD, 0xEF],
+                    data: [0xAB, 0xCD, 0xEF]
+                        .iter()
+                        .map(|&b| Word::new(vec![b]))
+                        .collect(),
                 },
                 Section {
                     addr: 0x108,
-                    data: vec![0x12, 0x34],
+                    data: [0x12, 0x34].iter().map(|&b| Word::new(vec![b])).collect(),
                 },
             ],
         };
 
-        assert_eq!(VmemParser::parse(input).unwrap(), expected);
+        assert_eq!(VmemParser::parse(input, Some(4)).unwrap(), expected);
     }
 
     #[test]
@@ -243,7 +264,7 @@ mod test {
         let expected = [
             ("", Token::Eof, 0),
             ("@ff", Token::Addr(0xff), 3),
-            ("ff", Token::Value(0xff), 2),
+            ("12345678", Token::Value(vec![0x12, 0x34, 0x56, 0x78]), 8),
             ("// X", Token::Comment, 4),
             ("/* X */", Token::Comment, 7),
             (" 	", Token::Whitespace, 2),
@@ -299,9 +320,10 @@ mod test {
         // No value:
         assert_eq!(VmemParser::parse_value("/* X */").unwrap(), None);
 
+        let token = Token::Value(vec![0x01, 0x23, 0xab, 0xcd]);
         let expected = Some(Span {
             len: 8,
-            token: Token::Value(0x0123abcd),
+            token: token.clone(),
         });
         // Partially a value:
         assert_eq!(VmemParser::parse_value("0123ABCD FF").unwrap(), expected);
@@ -310,8 +332,16 @@ mod test {
         // Lower-case hex characters:
         assert_eq!(VmemParser::parse_value("0123abcd").unwrap(), expected);
 
-        // u32 overflow:
-        assert!(VmemParser::parse_value("123456789").is_err());
+        // Odd number of nibbles:
+        let expected = Some(Span { len: 7, token });
+        assert_eq!(VmemParser::parse_value("123ABCD").unwrap(), expected);
+
+        // Word sizes larger than u32:
+        let expected = Some(Span {
+            len: 10,
+            token: Token::Value(vec![0x01, 0x23, 0xab, 0xcd, 0xef]),
+        });
+        assert_eq!(VmemParser::parse_value("0123abcdef").unwrap(), expected);
     }
 
     #[test]
@@ -353,5 +383,48 @@ mod test {
         assert_eq!(VmemParser::parse_whitespace(" 	FF").unwrap(), expected);
         // Entirely whitespace:
         assert_eq!(VmemParser::parse_whitespace(" 	").unwrap(), expected);
+    }
+
+    #[test]
+    fn addr_stride() {
+        let input = r#"
+            @000 000000
+            @010 012345 6789AB CDEFFE
+            @200 DCBA98 765432
+        "#;
+        let mut expected = Vmem {
+            sections: vec![
+                Section {
+                    addr: 0x0,
+                    data: vec![Word::new(vec![0x00, 0x00, 0x00])],
+                },
+                Section {
+                    addr: 0x10,
+                    data: vec![
+                        Word::new(vec![0x01, 0x23, 0x45]),
+                        Word::new(vec![0x67, 0x89, 0xab]),
+                        Word::new(vec![0xcd, 0xef, 0xfe]),
+                    ],
+                },
+                Section {
+                    addr: 0x200,
+                    data: vec![
+                        Word::new(vec![0xdc, 0xba, 0x98]),
+                        Word::new(vec![0x76, 0x54, 0x32]),
+                    ],
+                },
+            ],
+        };
+
+        // Using a stride of 1 word per address/index
+        assert_eq!(VmemParser::parse(input, None).unwrap(), expected);
+        // Using a stride of 1 byte per address/index, where each word is 3 bytes
+        expected.sections[1].addr = 0x10 * 3;
+        expected.sections[2].addr = 0x200 * 3;
+        assert_eq!(VmemParser::parse(input, Some(3)).unwrap(), expected);
+        // Using a stride of 1 byte per address/index, where each word is 10 bytes
+        expected.sections[1].addr = 0x10 * 10;
+        expected.sections[2].addr = 0x200 * 10;
+        assert_eq!(VmemParser::parse(input, Some(10)).unwrap(), expected);
     }
 }

@@ -14,24 +14,23 @@
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_cheriot_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_clkmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_keymgr_dpe_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_pwm_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rram_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rstmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_core_ibex_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
@@ -54,41 +53,42 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
-static dif_adc_ctrl_t adc_ctrl_aon;
+static dif_adc_ctrl_t adc_ctrl;
 static dif_aes_t aes;
-static dif_aon_timer_t aon_timer_aon;
-static dif_clkmgr_t clkmgr_aon;
+static dif_aon_timer_t aon_timer;
+static dif_cheriot_t cheriot;
+static dif_clkmgr_t clkmgr;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_pattgen_t pattgen;
-static dif_pinmux_t pinmux_aon;
-static dif_pwm_t pwm_aon;
-static dif_pwrmgr_t pwrmgr_aon;
+static dif_pinmux_t pinmux;
+static dif_pwrmgr_t pwrmgr;
 static dif_rom_ctrl_t rom_ctrl;
-static dif_rstmgr_t rstmgr_aon;
+static dif_rram_ctrl_t rram_ctrl;
+static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl_aon;
+static dif_sensor_ctrl_t sensor_ctrl;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sram_ctrl_t sram_ctrl_main;
-static dif_sram_ctrl_t sram_ctrl_ret_aon;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_sram_ctrl_t sram_ctrl_meta;
+static dif_sram_ctrl_t sram_ctrl_ret;
+static dif_sram_ctrl_t sram_ctrl_sec;
+static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_uart_t uart0;
 static dif_uart_t uart1;
 static dif_uart_t uart2;
@@ -103,17 +103,20 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
   CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR);
+  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_cheriot_init(base_addr, &cheriot));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
@@ -126,9 +129,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
@@ -145,8 +145,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
@@ -160,23 +160,20 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
-  CHECK_DIF_OK(dif_pattgen_init(base_addr, &pattgen));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
+  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux_aon));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwm_init(base_addr, &pwm_aon));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_rstmgr_init(base_addr, &rstmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_rram_ctrl_init(base_addr, &rram_ctrl));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_rstmgr_init(base_addr, &rstmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
@@ -187,8 +184,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -202,11 +199,17 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_main));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_META_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_meta));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_SEC_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_sec));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
@@ -283,10 +286,10 @@ static void trigger_alert_test(void) {
 
   // Write adc_ctrl's alert_test reg and check alert_cause.
   for (dif_adc_ctrl_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_adc_ctrl_alert_force(&adc_ctrl_aon, kDifAdcCtrlAlertFatalFault + i));
+    CHECK_DIF_OK(dif_adc_ctrl_alert_force(&adc_ctrl, kDifAdcCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdAdcCtrlAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdAdcCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -313,10 +316,25 @@ static void trigger_alert_test(void) {
 
   // Write aon_timer's alert_test reg and check alert_cause.
   for (dif_aon_timer_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer_aon, kDifAonTimerAlertFatalFault + i));
+    CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer, kDifAonTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdAonTimerAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdAonTimerFatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write cheriot's alert_test reg and check alert_cause.
+  for (dif_cheriot_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_cheriot_alert_force(&cheriot, kDifCheriotAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdCheriotFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -328,10 +346,10 @@ static void trigger_alert_test(void) {
 
   // Write clkmgr's alert_test reg and check alert_cause.
   for (dif_clkmgr_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertRecovFault + i));
+    CHECK_DIF_OK(dif_clkmgr_alert_force(&clkmgr, kDifClkmgrAlertRecovFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdClkmgrAonRecovFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdClkmgrRecovFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -392,21 +410,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = (int)kTopEarlgreyAlertIdEntropySrcRecovAlert + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write flash_ctrl's alert_test reg and check alert_cause.
-  for (dif_flash_ctrl_alert_t i = 0; i < 5; ++i) {
-    CHECK_DIF_OK(dif_flash_ctrl_alert_force(&flash_ctrl, kDifFlashCtrlAlertRecovErr + i));
-
-    // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdFlashCtrlRecovErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -491,12 +494,12 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write keymgr's alert_test reg and check alert_cause.
-  for (dif_keymgr_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_keymgr_alert_force(&keymgr, kDifKeymgrAlertRecovOperationErr + i));
+  // Write keymgr_dpe's alert_test reg and check alert_cause.
+  for (dif_keymgr_dpe_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_keymgr_dpe_alert_force(&keymgr_dpe, kDifKeymgrDpeAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdKeymgrRecovOperationErr + i;
+    exp_alert = (int)kTopEarlgreyAlertIdKeymgrDpeRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -569,42 +572,12 @@ static void trigger_alert_test(void) {
     }
   }
 
-  // Write pattgen's alert_test reg and check alert_cause.
-  for (dif_pattgen_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pattgen_alert_force(&pattgen, kDifPattgenAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPattgenFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
   // Write pinmux's alert_test reg and check alert_cause.
   for (dif_pinmux_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault + i));
+    CHECK_DIF_OK(dif_pinmux_alert_force(&pinmux, kDifPinmuxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPinmuxAonFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write pwm's alert_test reg and check alert_cause.
-  for (dif_pwm_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pwm_alert_force(&pwm_aon, kDifPwmAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPwmAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdPinmuxFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -616,10 +589,10 @@ static void trigger_alert_test(void) {
 
   // Write pwrmgr's alert_test reg and check alert_cause.
   for (dif_pwrmgr_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault + i));
+    CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, kDifPwrmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPwrmgrAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdPwrmgrFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -644,12 +617,27 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write rstmgr's alert_test reg and check alert_cause.
-  for (dif_rstmgr_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault + i));
+  // Write rram_ctrl's alert_test reg and check alert_cause.
+  for (dif_rram_ctrl_alert_t i = 0; i < 5; ++i) {
+    CHECK_DIF_OK(dif_rram_ctrl_alert_force(&rram_ctrl, kDifRramCtrlAlertRecovErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdRstmgrAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdRramCtrlRecovErr + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write rstmgr's alert_test reg and check alert_cause.
+  for (dif_rstmgr_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr, kDifRstmgrAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdRstmgrFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -706,10 +694,10 @@ static void trigger_alert_test(void) {
 
   // Write sensor_ctrl's alert_test reg and check alert_cause.
   for (dif_sensor_ctrl_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon, kDifSensorCtrlAlertRecovAlert + i));
+    CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl, kDifSensorCtrlAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdSensorCtrlAonRecovAlert + i;
+    exp_alert = (int)kTopEarlgreyAlertIdSensorCtrlRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -781,10 +769,40 @@ static void trigger_alert_test(void) {
 
   // Write sram_ctrl's alert_test reg and check alert_cause.
   for (dif_sram_ctrl_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon, kDifSramCtrlAlertFatalError + i));
+    CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_meta, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdSramCtrlRetAonFatalError + i;
+    exp_alert = (int)kTopEarlgreyAlertIdSramCtrlMetaFatalError + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write sram_ctrl's alert_test reg and check alert_cause.
+  for (dif_sram_ctrl_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_ret, kDifSramCtrlAlertFatalError + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdSramCtrlRetFatalError + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write sram_ctrl's alert_test reg and check alert_cause.
+  for (dif_sram_ctrl_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_sec, kDifSramCtrlAlertFatalError + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdSramCtrlSecFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -796,10 +814,10 @@ static void trigger_alert_test(void) {
 
   // Write sysrst_ctrl's alert_test reg and check alert_cause.
   for (dif_sysrst_ctrl_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_sysrst_ctrl_alert_force(&sysrst_ctrl_aon, kDifSysrstCtrlAlertFatalFault + i));
+    CHECK_DIF_OK(dif_sysrst_ctrl_alert_force(&sysrst_ctrl, kDifSysrstCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdSysrstCtrlAonFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdSysrstCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

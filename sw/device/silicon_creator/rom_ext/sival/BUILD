@@ -2,10 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -32,13 +33,17 @@ ROM_EXT_FEATURES = [
     "use_lld",
 ]
 
-# To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need a bitstream
-# with the sival keys pre-programmed into OTP.
-# You can manually create such a bitstream with:
+# To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need your FPGA
+# to have the sival keys pre-programmed into OTP.
+# You can manually program the FPGA in this way using OpenTitanTool:
 #
-# bazel build //hw/bitstream/universal:splice \
-#   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
-#   --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
+# bazel build //third_party/openocd:openocd_bin //hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
+# bazel run //sw/host/opentitantool -- --interface=hyper340 fpga backdoor enter
+# bazel run //sw/host/opentitantool -- --interface=hyper340 fpga backdoor \
+#   --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) batch \
+#   --write ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:mask_rom_fpga_cw340) \
+#   --write OTP=$(ci/scripts/target-location.sh //hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized) \
+#   --start
 [
     opentitan_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
@@ -48,7 +53,6 @@ ROM_EXT_FEATURES = [
         }),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
@@ -64,7 +68,7 @@ ROM_EXT_FEATURES = [
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
-            # retain ownership information across bitstream reloads.
+            # retain ownership information across test runs.
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
@@ -82,7 +86,6 @@ ROM_EXT_FEATURES = [
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
@@ -147,7 +150,7 @@ cc_library(
     srcs = ["sival_owner.c"],
     deps = [
         "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/ownership:owner_block",

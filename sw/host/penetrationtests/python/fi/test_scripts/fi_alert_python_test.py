@@ -22,19 +22,23 @@ is_fpga = False
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 case_to_alert_list_map = [
     42,  # Case 0 maps to alert_list index 42 ("aes_recov_ctrl_update_err")
     43,  # Case 1 maps to alert_list index 43 ("aes_fatal_fault")
-    31,  # Case 2 maps to alert_list index 31 ("aon_timer_aon_fatal_fault")
-    25,  # Case 3 maps to alert_list index 25 ("clkmgr_aon_recov_fault")
-    26,  # Case 4 maps to alert_list index 26 ("clkmgr_aon_fatal_fault")
+    31,  # Case 2 maps to alert_list index 31 ("aon_timer_fatal_fault")
+    25,  # Case 3 maps to alert_list index 25 ("clkmgr_recov_fault")
+    26,  # Case 4 maps to alert_list index 26 ("clkmgr_fatal_fault")
     51,  # Case 5 maps to alert_list index 51 ("csrng_recov_alert")
     52,  # Case 6 maps to alert_list index 52 ("csrng_fatal_alert")
     55,  # Case 7 maps to alert_list index 55 ("edn0_recov_alert")
@@ -67,32 +71,30 @@ case_to_alert_list_map = [
     13,  # Case 34 maps to alert_list index 13 ("otp_ctrl_fatal_bus_integ_error")
     14,  # Case 35 maps to alert_list index 14 ("otp_ctrl_fatal_prim_otp_alert")
     15,  # Case 36 maps to alert_list index 15 ("otp_ctrl_recov_prim_otp_alert")
-    9,  # Case 37 maps to alert_list index 9 ("pattgen_fatal_fault")
-    30,  # Case 38 maps to alert_list index 30 ("pinmux_aon_fatal_fault")
-    29,  # Case 39 maps to alert_list index 29 ("pwm_aon_fatal_fault")
-    22,  # Case 40 maps to alert_list index 22 ("pwrmgr_aon_fatal_fault")
-    60,  # Case 41 maps to alert_list index 60 ("rom_ctrl_fatal")
-    23,  # Case 42 maps to alert_list index 23 ("rstmgr_aon_fatal_fault")
-    24,  # Case 43 maps to alert_list index 24 ("rstmgr_aon_fatal_cnsty_fault")
-    61,  # Case 44 maps to alert_list index 61 ("rv_core_ibex_fatal_sw_err")
-    62,  # Case 45 maps to alert_list index 62 ("rv_core_ibex_recov_sw_err")
-    63,  # Case 46 maps to alert_list index 63 ("rv_core_ibex_fatal_hw_err")
-    64,  # Case 47 maps to alert_list index 64 ("rv_core_ibex_recov_hw_err")
-    41,  # Case 48 maps to alert_list index 41 ("rv_plic_fatal_fault")
-    10,  # Case 49 maps to alert_list index 10 ("rv_timer_fatal_fault")
-    32,  # Case 50 maps to alert_list index 32 ("sensor_ctrl_recov_alert")
-    33,  # Case 51 maps to alert_list index 33 ("sensor_ctrl_fatal_alert")
-    5,  # Case 52 maps to alert_list index 5 ("spi_device_fatal_fault")
-    19,  # Case 53 maps to alert_list index 19 ("spi_host0_fatal_fault")
-    20,  # Case 54 maps to alert_list index 20 ("spi_host1_fatal_fault")
-    59,  # Case 55 maps to alert_list index 59 ("sram_ctrl_main_fatal_error")
-    34,  # Case 56 maps to alert_list index 34 ("sram_ctrl_ret_aon_fatal_error")
-    27,  # Case 57 maps to alert_list index 27 ("sysrst_ctrl_aon_fatal_fault")
-    0,  # Case 58 maps to alert_list index 0 ("uart0_fatal_fault")
-    1,  # Case 59 maps to alert_list index 1 ("uart1_fatal_fault")
-    2,  # Case 60 maps to alert_list index 2 ("uart2_fatal_fault")
-    3,  # Case 61 maps to alert_list index 3 ("uart3_fatal_fault")
-    21,  # Case 62 maps to alert_list index 21 ("usbdev_fatal_fault")
+    30,  # Case 37 maps to alert_list index 30 ("pinmux_fatal_fault")
+    22,  # Case 38 maps to alert_list index 22 ("pwrmgr_fatal_fault")
+    60,  # Case 39 maps to alert_list index 60 ("rom_ctrl_fatal")
+    23,  # Case 40 maps to alert_list index 23 ("rstmgr_fatal_fault")
+    24,  # Case 41 maps to alert_list index 24 ("rstmgr_fatal_cnsty_fault")
+    61,  # Case 42 maps to alert_list index 61 ("rv_core_ibex_fatal_sw_err")
+    62,  # Case 43 maps to alert_list index 62 ("rv_core_ibex_recov_sw_err")
+    63,  # Case 44 maps to alert_list index 63 ("rv_core_ibex_fatal_hw_err")
+    64,  # Case 45 maps to alert_list index 64 ("rv_core_ibex_recov_hw_err")
+    41,  # Case 46 maps to alert_list index 41 ("rv_plic_fatal_fault")
+    10,  # Case 47 maps to alert_list index 10 ("rv_timer_fatal_fault")
+    32,  # Case 48 maps to alert_list index 32 ("sensor_ctrl_recov_alert")
+    33,  # Case 49 maps to alert_list index 33 ("sensor_ctrl_fatal_alert")
+    5,   # Case 50 maps to alert_list index 5 ("spi_device_fatal_fault")
+    19,  # Case 51 maps to alert_list index 19 ("spi_host0_fatal_fault")
+    20,  # Case 52 maps to alert_list index 20 ("spi_host1_fatal_fault")
+    59,  # Case 53 maps to alert_list index 59 ("sram_ctrl_main_fatal_error")
+    34,  # Case 54 maps to alert_list index 34 ("sram_ctrl_ret_fatal_error")
+    27,  # Case 55 maps to alert_list index 27 ("sysrst_ctrl_fatal_fault")
+    0,   # Case 56 maps to alert_list index 0 ("uart0_fatal_fault")
+    1,   # Case 57 maps to alert_list index 1 ("uart1_fatal_fault")
+    2,   # Case 58 maps to alert_list index 2 ("uart2_fatal_fault")
+    3,   # Case 59 maps to alert_list index 3 ("uart3_fatal_fault")
+    21,  # Case 60 maps to alert_list index 21 ("usbdev_fatal_fault")
 ]
 
 
@@ -359,6 +361,13 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the firmware path.
     firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
@@ -374,6 +383,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args,
     )
 

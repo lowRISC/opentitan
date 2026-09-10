@@ -134,7 +134,7 @@ To avoid mismatches, scoreboard utilizes flags `dai_wr_ip` and `dai_digest_ip` t
 ${"####"} Assertions
 * TLUL assertions: The `tb/otp_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* OTP_CTRL_IF assertions: This interface has assertions to ensure certain OTP_CTRL's outputs (such as: otp_broadcast_o, keymgr_key_o) are stable after OTP initialization.
+* OTP_CTRL_IF assertions: This interface has assertions to ensure certain OTP_CTRL's outputs (such as: otp_broadcast_o, keymgr_creator_root_key_o, keymgr_creator_seed_o, keymgr_owner_seed_o) are stable after OTP initialization.
 
 ${"##"} Building and running tests
 The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.

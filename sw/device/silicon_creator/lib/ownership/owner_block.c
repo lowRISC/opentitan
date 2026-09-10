@@ -9,34 +9,35 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// RAM copy of the owner INFO pages from flash.
+// RAM copy of the owner INFO pages from NVM.
 owner_block_t owner_page[2];
 owner_page_status_t owner_page_valid[2];
 
 enum {
-  kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
-  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashTotalSize = FLASH_CTRL_PARAM_REG_NUM_BANKS * kFlashBankSize,
+  // Page count of one firmware slot (A or B). Each NVM bank holds
+  // `NVM_NUM_BANKS == 1 ? 2 : 1` slot(s); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
+  kNvmPageSize = NVM_BYTES_PER_PAGE,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
-  kFlashSlotAStart = 0,
-  kFlashSlotAEnd = kFlashSlotAStart + kFlashBankSize,
-  kFlashSlotBStart = kFlashBankSize,
-  kFlashSlotBEnd = kFlashSlotBStart + kFlashBankSize,
+  // SlotA/B start/end (excluding the reserved region)
+  kNvmSlotAStart = 0,
+  kNvmSlotAEnd = NVM_SLOT_A_END_BYTES / kNvmPageSize,
+  kNvmSlotBStart = kNvmSlotSize,
+  kNvmSlotBEnd = NVM_SLOT_B_END_BYTES / kNvmPageSize,
 
-  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
-  kRomExtAStart = 0 / kFlashPageSize,
+  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
+  kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kFlashBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 
   kRomExtRegions = 2,
@@ -120,7 +121,7 @@ static inline hardened_bool_t is_owner_page(const uint8_t bank,
 
 // Checks if the half-open range [start..end) overlaps with the ROM_EXT region.
 // The RomExt_Start/End constants are also expressed as half-open ranges.
-hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
+hardened_bool_t rom_ext_nvm_overlap(uint32_t start, uint32_t end) {
   return (start < kRomExtAEnd && end > kRomExtAStart) ||
                  (start < kRomExtBEnd && end > kRomExtBStart)
              ? kHardenedBoolTrue
@@ -130,7 +131,7 @@ hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
 // Checks if the half-open range [start..end) is exclusively within the ROM_EXT
 // region. The RomExt_Start/End constants are also expressed as half-open
 // ranges.
-hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
+hardened_bool_t rom_ext_nvm_exclusive(uint32_t start, uint32_t end) {
   return (kRomExtAStart <= start && start < kRomExtAEnd &&
           kRomExtAStart < end && end <= kRomExtAEnd) ||
                  (kRomExtBStart <= start && start < kRomExtBEnd &&
@@ -156,12 +157,11 @@ rom_error_t owner_block_application_key_check(
   return kErrorOk;
 }
 
-rom_error_t owner_block_flash_info_check(
-    const owner_flash_info_config_t *info) {
-  if (info->header.length < sizeof(owner_flash_info_config_t)) {
+rom_error_t owner_block_nvm_info_check(const owner_nvm_info_config_t *info) {
+  if (info->header.length < sizeof(owner_nvm_info_config_t)) {
     return kErrorOwnershipInvalidTagLength;
   }
-  size_t len = (info->header.length - sizeof(owner_flash_info_config_t));
+  size_t len = (info->header.length - sizeof(owner_nvm_info_config_t));
   // Determine if the non-header length is an even multiple of the per-page
   // configuration item size.
   if (len % sizeof(owner_info_page_t) != 0) {
@@ -182,7 +182,7 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
     return kErrorOwnershipInvalidTagLength;
   }
   uint32_t end = rescue->start + rescue->size;
-  if (rescue->start < kRomExtSizeInPages || end > kFlashBankSize) {
+  if (rescue->start < kRomExtSizeInPages || end > kNvmSlotSize) {
     return kErrorOwnershipInvalidRescueBounds;
   }
   return kErrorOk;
@@ -193,8 +193,8 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
 OT_WEAK
 void owner_config_default(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
-  config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
-  config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
+  config->nvm = (const owner_nvm_config_t *)kHardenedBoolFalse;
+  config->info = (const owner_nvm_info_config_t *)kHardenedBoolFalse;
   config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
   config->isfb = (const owner_isfb_config_t *)kHardenedBoolFalse;
   config->sram_exec = kOwnerSramExecModeDisabledLocked;
@@ -247,17 +247,17 @@ rom_error_t owner_block_parse(const owner_block_t *block,
               (const owner_application_key_t *)item));
         }
         break;
-      case kTlvTagFlashConfig:
-        HARDENED_CHECK_EQ(tag, kTlvTagFlashConfig);
+      case kTlvTagNvmConfig:
+        HARDENED_CHECK_EQ(tag, kTlvTagNvmConfig);
         if (item->version.major != 0)
           return kErrorOwnershipFLSHVersion;
         if (check_only == kHardenedBoolFalse) {
-          if ((hardened_bool_t)config->flash != kHardenedBoolFalse)
+          if ((hardened_bool_t)config->nvm != kHardenedBoolFalse)
             return kErrorOwnershipDuplicateItem;
-          config->flash = (const owner_flash_config_t *)item;
+          config->nvm = (const owner_nvm_config_t *)item;
         } else {
           HARDENED_RETURN_IF_ERROR(
-              owner_block_flash_check((const owner_flash_config_t *)item));
+              owner_block_nvm_check((const owner_nvm_config_t *)item));
         }
         break;
       case kTlvTagInfoConfig:
@@ -267,10 +267,10 @@ rom_error_t owner_block_parse(const owner_block_t *block,
         if (check_only == kHardenedBoolFalse) {
           if ((hardened_bool_t)config->info != kHardenedBoolFalse)
             return kErrorOwnershipDuplicateItem;
-          config->info = (const owner_flash_info_config_t *)item;
+          config->info = (const owner_nvm_info_config_t *)item;
         } else {
-          HARDENED_RETURN_IF_ERROR(owner_block_flash_info_check(
-              (const owner_flash_info_config_t *)item));
+          HARDENED_RETURN_IF_ERROR(owner_block_nvm_info_check(
+              (const owner_nvm_info_config_t *)item));
         }
         break;
       case kTlvTagRescueConfig:
@@ -307,58 +307,63 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   return kErrorOk;
 }
 
-static hardened_bool_t in_flash_slot(uint32_t bank_start, uint32_t start,
-                                     uint32_t end) {
-  uint32_t bank_end = bank_start + kFlashBankSize;
-  return (bank_start <= start && start < bank_end && bank_start < end &&
-          end <= bank_end)
+// `slot_end` is the exclusive upper bound a region is allowed to reach within
+// the slot.
+static hardened_bool_t in_nvm_slot(uint32_t slot_start, uint32_t slot_end,
+                                   uint32_t start, uint32_t end) {
+  return (slot_start <= start && start < slot_end && slot_start < end &&
+          end <= slot_end)
              ? kHardenedBoolTrue
              : kHardenedBoolFalse;
 }
 
-rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
-  if (flash->header.length < sizeof(owner_flash_config_t)) {
+rom_error_t owner_block_nvm_check(const owner_nvm_config_t *nvm) {
+  if (nvm->header.length < sizeof(owner_nvm_config_t)) {
     return kErrorOwnershipInvalidTagLength;
   }
-  size_t len = (flash->header.length - sizeof(owner_flash_config_t));
+  size_t len = (nvm->header.length - sizeof(owner_nvm_config_t));
   // Determine if the non-header length is an even multiple of the per-region
   // configuration item size.
-  if (len % sizeof(owner_flash_region_t) != 0) {
+  if (len % sizeof(owner_nvm_region_t) != 0) {
     return kErrorOwnershipInvalidTagLength;
   }
-  len /= sizeof(owner_flash_region_t);
+  len /= sizeof(owner_nvm_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
-    return kErrorOwnershipFlashConfigLength;
+    return kErrorOwnershipNvmConfigLength;
   }
 
   uint32_t num_slot_a = 0;
   uint32_t num_slot_b = 0;
-  const owner_flash_region_t *config = flash->config;
+  const owner_nvm_region_t *config = nvm->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    // A region must contain at least one page.
+    if (config->size == 0) {
+      return kErrorOwnershipNvmConfigBounds;
+    }
     uint32_t start = config->start;
     uint32_t end = start + config->size;
-    // When checking the flash configuration, a region is a ROM_EXT region if
+    // When checking the NVM configuration, a region is a ROM_EXT region if
     // it overlaps the ROM_EXT bounds.  It is an error to accept a new config
-    // with a flash region that overlaps the ROM_EXT.
-    if (rom_ext_flash_overlap(start, end) == kHardenedBoolTrue) {
-      return kErrorOwnershipFlashConfigRomExt;
-    } else if (in_flash_slot(kFlashSlotAStart, start, end) ==
+    // with a NVM region that overlaps the ROM_EXT.
+    if (rom_ext_nvm_overlap(start, end) == kHardenedBoolTrue) {
+      return kErrorOwnershipNvmConfigRomExt;
+    } else if (in_nvm_slot(kNvmSlotAStart, kNvmSlotAEnd, start, end) ==
                kHardenedBoolTrue) {
       num_slot_a += 1;
-      if (num_slot_a > FLASH_CONFIG_REGIONS_PER_SLOT) {
-        return kErrorOwnershipFlashConfigSlots;
+      if (num_slot_a > NVM_CONFIG_REGIONS_PER_SLOT) {
+        return kErrorOwnershipNvmConfigSlots;
       }
-    } else if (in_flash_slot(kFlashSlotBStart, start, end) ==
+    } else if (in_nvm_slot(kNvmSlotBStart, kNvmSlotBEnd, start, end) ==
                kHardenedBoolTrue) {
       num_slot_b += 1;
-      if (num_slot_b > FLASH_CONFIG_REGIONS_PER_SLOT) {
-        return kErrorOwnershipFlashConfigSlots;
+      if (num_slot_b > NVM_CONFIG_REGIONS_PER_SLOT) {
+        return kErrorOwnershipNvmConfigSlots;
       }
     } else {
-      // Flash regions are not allowed to span between slots or extend beyond
-      // the end of flash.
-      return kErrorOwnershipFlashConfigBounds;
+      // NVM regions are not allowed to span between slots or extend beyond
+      // the end of NVM.
+      return kErrorOwnershipNvmConfigBounds;
     }
   }
   return kErrorOk;
@@ -377,58 +382,58 @@ rom_error_t owner_isfb_config_check(const owner_isfb_config_t *isfb) {
   return kErrorOk;
 }
 
-rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side,
-                                    uint32_t owner_lockdown,
-                                    uint32_t *mp_index) {
-  if ((hardened_bool_t)flash == kHardenedBoolFalse) {
-    // If there is no flash configuration, there is nothing to do in this
+rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
+                                  uint32_t config_side, uint32_t owner_lockdown,
+                                  uint32_t *mp_index) {
+  if ((hardened_bool_t)nvm == kHardenedBoolFalse) {
+    // If there is no NVM configuration, there is nothing to do in this
     // function.
     return kErrorOk;
   }
   // We don't check `mp_index` for null because:
   // - it is a programming error to pass null for that parameter.
-  // - if we were to return an error, we'd either skip flash configuration or
+  // - if we were to return an error, we'd either skip NVM configuration or
   //   bail out of the boot flow, resulting in a boot fault.
   // - if an attacker were to fault the value to null, we don't want an error
-  //   case to cause skipping flash configuration.  By allowing a read to null,
+  //   case to cause skipping NVM configuration.  By allowing a read to null,
   //   a fault will occur and reboot the chip.
 
   // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
   // kHardenedBoolFalse.
-  uint32_t start = config_side == kBootSlotA   ? 0
-                   : config_side == kBootSlotB ? kFlashBankSize
+  uint32_t start = config_side == kBootSlotA   ? kNvmSlotAStart
+                   : config_side == kBootSlotB ? kNvmSlotBStart
                                                : 0xFFFFFFFF;
-  uint32_t end = config_side == kBootSlotA   ? kFlashBankSize
-                 : config_side == kBootSlotB ? 2 * kFlashBankSize
+  uint32_t end = config_side == kBootSlotA   ? kNvmSlotAEnd
+                 : config_side == kBootSlotB ? kNvmSlotBEnd
                                              : 0;
-  size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
-               sizeof(owner_flash_region_t);
+  size_t len = (nvm->header.length - sizeof(owner_nvm_config_t)) /
+               sizeof(owner_nvm_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
-    return kErrorOwnershipFlashConfigLength;
+    return kErrorOwnershipNvmConfigLength;
   }
 
-  const owner_flash_region_t *config = flash->config;
+  const owner_nvm_region_t *config = nvm->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (config->start >= start && config->start + config->size <= end) {
       uint32_t val = config->properties ^ crypt;
-      flash_ctrl_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
-          .ecc = bitfield_field32_read(val, FLASH_CONFIG_ECC),
-          .he = bitfield_field32_read(val, FLASH_CONFIG_HIGH_ENDURANCE),
+      nvm_page_cfg_t cfg = {
+          .scrambling = bitfield_field32_read(val, OWNER_NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, OWNER_NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, OWNER_NVM_CONFIG_HIGH_ENDURANCE),
       };
       val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
-          .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
-          .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
-          .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
+      nvm_page_perms_t perm = {
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, OWNER_NVM_CONFIG_ERASE),
       };
 
       uint32_t pwp =
-          bitfield_field32_read(val, FLASH_CONFIG_PROTECT_WHEN_PRIMARY);
+          bitfield_field32_read(val, OWNER_NVM_CONFIG_PROTECT_WHEN_PRIMARY);
       hardened_bool_t lock =
-          bitfield_field32_read(val, FLASH_CONFIG_LOCK) != kMultiBitBool4False
+          bitfield_field32_read(val, OWNER_NVM_CONFIG_LOCK) !=
+                  kMultiBitBool4False
               ? kHardenedBoolTrue
               : kHardenedBoolFalse;
 
@@ -441,20 +446,19 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
       }
 
       // If we aren't in a lockdown state, then do not lock the region
-      // configuration via the flash_ctrl regwen bits.
+      // configuration via the nvm_ctrl regwen bits.
       if (owner_lockdown == kHardenedBoolFalse) {
         lock = kHardenedBoolFalse;
       }
 
-      if (*mp_index < 2 * FLASH_CONFIG_REGIONS_PER_SLOT) {
+      if (*mp_index < 2 * NVM_CONFIG_REGIONS_PER_SLOT) {
         // We can only apply the region protection of mp_index is
         // within its acceptable bounds.
-        flash_ctrl_data_region_protect(kRomExtRegions + *mp_index,
-                                       config->start, config->size, perm, cfg,
-                                       lock);
-        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect +
+        nvm_ctrl_data_region_protect(kRomExtRegions + *mp_index, config->start,
+                                     config->size, perm, cfg, lock);
+        SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioDataRegionProtect +
                                  (lock == kHardenedBoolTrue
-                                      ? kFlashCtrlSecMmioDataRegionProtectLock
+                                      ? kNvmCtrlSecMmioDataRegionProtectLock
                                       : 0));
       }
       *mp_index += 1;
@@ -463,55 +467,55 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
   return kErrorOk;
 }
 
-rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
+rom_error_t owner_block_info_apply(const owner_nvm_info_config_t *info) {
   if ((hardened_bool_t)info == kHardenedBoolFalse)
     return kErrorOk;
-  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+  size_t len = (info->header.length - sizeof(owner_nvm_info_config_t)) /
                sizeof(owner_info_page_t);
   const owner_info_page_t *config = info->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      nvm_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
-      flash_ctrl_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
-          .ecc = bitfield_field32_read(val, FLASH_CONFIG_ECC),
-          .he = bitfield_field32_read(val, FLASH_CONFIG_HIGH_ENDURANCE),
+      nvm_page_cfg_t cfg = {
+          .scrambling = bitfield_field32_read(val, OWNER_NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, OWNER_NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, OWNER_NVM_CONFIG_HIGH_ENDURANCE),
       };
-      flash_ctrl_info_cfg_set(&page, cfg);
+      nvm_ctrl_info_cfg_set(page, cfg);
 
       val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
-          .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
-          .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
-          .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
+      nvm_page_perms_t perm = {
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, OWNER_NVM_CONFIG_ERASE),
       };
-      flash_ctrl_info_perms_set(&page, perm);
+      nvm_ctrl_info_perms_set(page, perm);
     }
   }
   return kErrorOk;
 }
 
-rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info) {
+rom_error_t owner_block_info_lockdown(const owner_nvm_info_config_t *info) {
   if ((hardened_bool_t)info == kHardenedBoolFalse)
     return kErrorOk;
-  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+  size_t len = (info->header.length - sizeof(owner_nvm_info_config_t)) /
                sizeof(owner_info_page_t);
   const owner_info_page_t *config = info->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      nvm_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
       uint32_t val = config->access ^ crypt;
-      if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
+      if (bitfield_field32_read(val, OWNER_NVM_CONFIG_LOCK) !=
           kMultiBitBool4False) {
-        flash_ctrl_info_cfg_lock(&page);
-        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgLock);
+        nvm_ctrl_info_cfg_lock(page);
+        SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoCfgLock);
       }
     }
   }
@@ -529,8 +533,8 @@ rom_error_t owner_block_info_isfb_erase_enable(
   if ((hardened_bool_t)owner_config->info == kHardenedBoolFalse)
     return kErrorOk;
 
-  const owner_flash_info_config_t *info = owner_config->info;
-  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+  const owner_nvm_info_config_t *info = owner_config->info;
+  size_t len = (info->header.length - sizeof(owner_nvm_info_config_t)) /
                sizeof(owner_info_page_t);
 
   const owner_info_page_t *config = info->config;
@@ -539,17 +543,17 @@ rom_error_t owner_block_info_isfb_erase_enable(
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue &&
         config->bank == owner_config->isfb->bank &&
         config->page == owner_config->isfb->page) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      nvm_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
 
       uint32_t val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
-          .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
-          .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
+      nvm_page_perms_t perm = {
+          .read = bitfield_field32_read(val, OWNER_NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, OWNER_NVM_CONFIG_PROGRAM),
           .erase = kMultiBitBool4True,
       };
-      flash_ctrl_info_perms_set(&page, perm);
+      nvm_ctrl_info_perms_set(page, perm);
     }
   }
   return kErrorOk;
@@ -609,13 +613,16 @@ hardened_bool_t owner_rescue_command_allowed(
     const owner_rescue_config_t *rescue, uint32_t command) {
   // If no rescue configuration is supplied in the owner config, then all rescue
   // commands are allowed.
-  if ((hardened_bool_t)rescue == kHardenedBoolFalse)
+  if (launder32((hardened_bool_t)rescue) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ((hardened_bool_t)rescue, kHardenedBoolFalse);
     return kHardenedBoolTrue;
+  }
 
   hardened_bool_t allowed = kHardenedBoolFalse;
   size_t length = (rescue->header.length - sizeof(*rescue)) / sizeof(uint32_t);
   for (size_t i = 0; i < length; ++i) {
-    if (command == rescue->command_allow[i]) {
+    if (launder32(command) == rescue->command_allow[i]) {
+      HARDENED_CHECK_EQ(command, rescue->command_allow[i]);
       allowed = kHardenedBoolTrue;
     }
   }

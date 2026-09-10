@@ -58,10 +58,7 @@ DIFS = {
     "gpio": {},
     "hmac": {},
     "i2c": {},
-    "keymgr": {},
-    "keymgr_dpe": {
-        "no_ut": True,
-    },
+    "keymgr_dpe": {},
     "kmac": {},
     "lc_ctrl": {},
     "mbx": {
@@ -71,15 +68,14 @@ DIFS = {
     "otp_ctrl": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
-    "pattgen": {},
     "pinmux": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
-    "pwm": {},
     "pwrmgr": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
     "rom_ctrl": {},
+    "rram_ctrl": {},
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},

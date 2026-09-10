@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="254.6203mm"
+   height="188.4352mm"
+   viewBox="0 0 254.6203 188.43519"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="buffer.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.0210841"
+     inkscape:cx="378.51926"
+     inkscape:cy="312.41305"
+     inkscape:window-width="2560"
+     inkscape:window-height="1403"
+     inkscape:window-x="0"
+     inkscape:window-y="625"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-left="2"
+     fit-margin-top="2"
+     fit-margin-right="2"
+     fit-margin-bottom="2" />
+  <defs
+     id="defs2">
+    <rect
+       x="493.45419"
+       y="467.26566"
+       width="55.697521"
+       height="74.623756"
+       id="rect30117" />
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lstart"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lstart"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1543" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-3"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-1" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4-5"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7-9" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4-0"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7-96" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-6"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-11" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4-0-4"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7-96-8" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4-5-8"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7-9-5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-4-5-4"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-7-9-1" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1Lend-4-7"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1546-4-5" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-26.595145,13.377695)">
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="173.20396"
+       y="132.2737"
+       id="text61691"><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="173.20396"
+         y="132.2737"
+         id="tspan61693">Target FIFOs:</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="173.20396"
+         y="137.56535"
+         id="tspan65111" /></text>
+    <rect
+       style="fill:#fbffff;fill-opacity:0.998876;stroke:#000000;stroke-width:0.208274"
+       id="rect868"
+       width="234.36224"
+       height="34.738636"
+       x="28.699282"
+       y="69.978409" />
+    <rect
+       style="fill:#fbffff;fill-opacity:0.998876;stroke:#000000;stroke-width:0.0862048"
+       id="rect868-9"
+       width="40.205044"
+       height="34.690662"
+       x="28.704048"
+       y="69.969383" />
+    <rect
+       style="fill:#b5ffb2;fill-opacity:0.998876;stroke:#000000;stroke-width:0.101746"
+       id="rect868-9-4"
+       width="56.033051"
+       height="34.675121"
+       x="68.909088"
+       y="69.969383" />
+    <rect
+       style="fill:#fbb9ff;fill-opacity:0.998876;stroke:#000000;stroke-width:0.0707186"
+       id="rect868-9-4-1"
+       width="27.069283"
+       height="34.675121"
+       x="211.87027"
+       y="70.055275" />
+    <rect
+       style="fill:#b5ffb2;fill-opacity:0.998876;stroke:#000000;stroke-width:0.289;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect868-9-4-1-1"
+       width="6.7661052"
+       height="6.9443989"
+       x="166.10211"
+       y="56.029274" />
+    <rect
+       style="fill:#fbb9ff;fill-opacity:0.998876;stroke:#000000;stroke-width:0.289;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect868-9-4-1-1-8"
+       width="6.7661052"
+       height="6.9443989"
+       x="220.49326"
+       y="56.029274" />
+    <rect
+       style="fill:#e8aa53;fill-opacity:0.998876;stroke:#000000;stroke-width:0.0707186"
+       id="rect868-9-4-1-5"
+       width="27.069283"
+       height="34.675121"
+       x="83.95108"
+       y="69.968185" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend)"
+       d="m 69.531682,115.91945 -0.0042,-10.18111"
+       id="path1541" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4)"
+       d="m 123.35097,116.07998 -0.004,-10.1811"
+       id="path1541-4" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4-3)"
+       d="m 213.4472,116.24212 -0.004,-10.1811"
+       id="path1541-4-7" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="64.766838"
+       y="120.28496"
+       id="text3727"><tspan
+         sodipodi:role="line"
+         id="tspan3725"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="64.766838"
+         y="120.28496">min</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.20554;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4-4-0)"
+       d="m 84.576028,62.136877 -0.0034,7.119833"
+       id="path1541-4-6-3" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.28346px;line-height:1.25;font-family:sans-serif;stroke-width:0.205216"
+       x="72.714523"
+       y="67.762016"
+       id="text3727-7-8"
+       transform="scale(1.1091109,0.9016231)"><tspan
+         sodipodi:role="line"
+         id="tspan3725-8-5"
+         style="font-size:3.28346px;stroke-width:0.205216"
+         x="72.714523"
+         y="67.762016">rptr</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.20554;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4-4-0-4)"
+       d="m 111.76203,62.139754 -0.003,7.119833"
+       id="path1541-4-6-3-1" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.28346px;line-height:1.25;font-family:sans-serif;stroke-width:0.205216"
+       x="97.22599"
+       y="67.765205"
+       id="text3727-7-8-0"
+       transform="scale(1.1091109,0.9016231)"><tspan
+         sodipodi:role="line"
+         id="tspan3725-8-5-3"
+         style="font-size:3.28346px;stroke-width:0.205216"
+         x="97.22599"
+         y="67.765205">wptr</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="208.77007"
+       y="120.51968"
+       id="text3727-7-4"><tspan
+         sodipodi:role="line"
+         id="tspan3725-8-1"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="208.77007"
+         y="120.51968">min</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="118.44654"
+       y="120.20417"
+       id="text3727-2"><tspan
+         sodipodi:role="line"
+         id="tspan3725-1"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="118.44654"
+         y="120.20417">max</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4-7)"
+       d="m 237.34995,116.65111 -0.004,-10.1811"
+       id="path1541-4-3" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="232.4455"
+       y="120.42001"
+       id="text3727-2-8"><tspan
+         sodipodi:role="line"
+         id="tspan3725-1-83"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="232.4455"
+         y="120.42001">max</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.205677;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-4-6)"
+       d="m 86.19095,113.57837 -0.003,-8.1104"
+       id="path1541-4-5" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.28566px;line-height:1.25;font-family:sans-serif;stroke-width:0.205354"
+       x="84.658089"
+       y="113.43362"
+       id="text3727-2-9"
+       transform="scale(0.97429907,1.0263789)"><tspan
+         sodipodi:role="line"
+         id="tspan3725-1-8"
+         style="font-size:3.28566px;stroke-width:0.205354"
+         x="84.658089"
+         y="113.43362">pptr</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82223px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="30.478045"
+       y="132.67038"
+       id="text17887"><tspan
+         sodipodi:role="line"
+         id="tspan17885"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="30.478045"
+         y="132.67038">Controller FIFOs:</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="30.478045"
+         y="136.71355"
+         id="tspan24357" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="44.797432"
+       y="140.41629"
+       id="text39075"><tspan
+         sodipodi:role="line"
+         id="tspan39073"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="140.41629">Tx Buffer</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="145.70795"
+         id="tspan39077">Rx Buffer</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="150.99962"
+         id="tspan42673">Command Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="156.29128"
+         id="tspan42741">Response Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="161.58295"
+         id="tspan42743">IBI Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="166.8746"
+         id="tspan42745">IBI Status Descriptors</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="44.797432"
+         y="172.16626"
+         id="tspan43065" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="187.29349"
+       y="140.42696"
+       id="text39075-5"><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="140.42696"
+         id="tspan43065-3">Rx Descriptor Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="145.71861"
+         id="tspan10798">Rx Buffer</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="151.01028"
+         id="tspan10794">IBI Descriptor Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="156.30194"
+         id="tspan10800">IBI Data Buffer</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="161.5936"
+         id="tspan10806">Asynchronous Event Queue</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="166.88527"
+         id="tspan10802">Tx Descriptor Queue for each Virtual Target</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="187.29349"
+         y="172.17693"
+         id="tspan10804">Tx Buffer for each Virtual Target</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="29.404652"
+       y="3.9526711"
+       id="text103096"><tspan
+         sodipodi:role="line"
+         id="tspan103094"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="3.9526711">A single physical SRAM implements a number of logically-separate FIFOs, with the inclusive bounds of each</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="9.2443333"
+         id="tspan60947">being set by software.</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="14.535995"
+         id="tspan104102" /><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="19.827658"
+         id="tspan103100">Each FIFO has programmable `min` and `max` values and operates as a circular buffer, employing a read pointer</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="25.11932"
+         id="tspan103102">(`rptr`) and a write pointer (`wptr`). A `full` indicator differentiates between the `FIFO full` and `FIFO empty`</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="30.410982"
+         id="tspan7472">conditions.</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="35.702644"
+         id="tspan58579" /><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="40.994308"
+         id="tspan7476">A third pointer (`pptr`) is used for prefetching read data from the FIFO to ensure that this shared message buffer</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="29.404652"
+         y="46.285969"
+         id="tspan87935">remains responsive even when there is a lot of traffic.</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text30115"
+       style="font-size:10.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect30117)" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="176.55167"
+       y="60.59964"
+       id="text94849"><tspan
+         sodipodi:role="line"
+         id="tspan94847"
+         style="font-size:3.52778px;stroke-width:0.264583"
+         x="176.55167"
+         y="60.59964">Example buffer 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="231.56874"
+       y="60.59964"
+       id="text94849-9"><tspan
+         sodipodi:role="line"
+         id="tspan94847-6"
+         style="font-size:3.52778px;stroke-width:0.264583"
+         x="231.56874"
+         y="60.59964">Example buffer 2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.93889px;line-height:1.25;font-family:sans-serif;stroke-width:0.264583"
+       x="28.952999"
+       y="-7.6252961"
+       id="text104458"><tspan
+         sodipodi:role="line"
+         id="tspan104456"
+         style="font-size:4.93889px;stroke-width:0.264583"
+         x="28.952999"
+         y="-7.6252961">Message Buffer</tspan></text>
+  </g>
+</svg>

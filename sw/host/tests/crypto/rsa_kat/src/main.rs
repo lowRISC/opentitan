@@ -14,8 +14,8 @@ use serde::Deserialize;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaDecrypt, CryptotestRsaDecryptResp, CryptotestRsaEncrypt, CryptotestRsaEncryptResp,
-    CryptotestRsaKeygen, CryptotestRsaKeygenResp, CryptotestRsaSign, CryptotestRsaSignResp,
-    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
+    CryptotestRsaKeygenCheck, CryptotestRsaKeygenCheckResp, CryptotestRsaSign,
+    CryptotestRsaSignResp, CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -350,8 +350,8 @@ fn run_rsa_keygen_testcase(
     };
 
     CryptotestCommand::Rsa.send(spi_console)?;
-    RsaSubcommand::RsaKeygen.send(spi_console)?;
-    CryptotestRsaKeygen {
+    RsaSubcommand::RsaKeygenCheck.send(spi_console)?;
+    CryptotestRsaKeygenCheck {
         security_level,
         hashing,
         padding: padding_code,
@@ -360,7 +360,7 @@ fn run_rsa_keygen_testcase(
     }
     .send(spi_console)?;
 
-    let resp = CryptotestRsaKeygenResp::recv(spi_console, timeout, false, false)?;
+    let resp = CryptotestRsaKeygenCheckResp::recv(spi_console, timeout, false, false)?;
     assert!(
         resp.result,
         "RSA keygen round-trip failed for {security_level}-bit {padding} {hash_alg}"
@@ -423,6 +423,9 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             )?;
         }
     }
+
+    CryptotestCommand::Quit.send(&spi_console_device)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"PASS!|FAIL!", opts.timeout * 10)?;
     Ok(())
 }
 

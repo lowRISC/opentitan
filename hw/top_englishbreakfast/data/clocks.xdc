@@ -15,10 +15,10 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 ## destination flops few enough.
 
 set u_pll clkgen/pll
-set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
+set u_div2 top_*/u_clkmgr/u_no_scan_io_div2_div
 create_generated_clock -name clk_io_div2 -source [get_pins ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/gen_div2.u_div2/q_o[0]]
 
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
+set u_div4 top_*/u_clkmgr/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4}/gen_div.clk_int_reg/C] [get_pins ${u_div4}/gen_div.clk_int_reg/Q]
 
 
@@ -29,7 +29,7 @@ create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
+      [get_pins top_*/u_clkmgr/u_no_scan_io_div2_div/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 
@@ -67,17 +67,17 @@ create_generated_clock -name clk_spi_out -divide_by 1 -source [get_ports SPI_DEV
 
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
-create_generated_clock -name lc_jtag_tck -source [get_ports SPI_DEV_CLK] -divide_by 1 [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
-create_generated_clock -name rv_jtag_tck -source [get_ports SPI_DEV_CLK] -divide_by 1 [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name lc_jtag_tck -source [get_ports SPI_DEV_CLK] -divide_by 1 [get_pin top_*/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name rv_jtag_tck -source [get_ports SPI_DEV_CLK] -divide_by 1 [get_pin top_*/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
 
 set lc_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_englishbreakfast/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_englishbreakfast/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 set rv_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_englishbreakfast/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_englishbreakfast/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 
 set_clock_sense -negative ${lc_jtag_tck_inv_pin}
 set_clock_sense -negative ${rv_jtag_tck_inv_pin}

@@ -72,9 +72,9 @@ enum {
    * to change. This is the length that the caller should set in
    * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
    */
-  kOtcryptoRsa2048PrivateKeyblobBytes = 768,
-  kOtcryptoRsa3072PrivateKeyblobBytes = 1152,
-  kOtcryptoRsa4096PrivateKeyblobBytes = 1536,
+  kOtcryptoRsa2048PrivateKeyblobBytes = 772,
+  kOtcryptoRsa3072PrivateKeyblobBytes = 1156,
+  kOtcryptoRsa4096PrivateKeyblobBytes = 1540,
 };
 
 /**
@@ -95,7 +95,10 @@ enum {
  * @param size RSA size parameter.
  * @param[out] public_key Pointer to public key struct.
  * @param[out] private_key Pointer to blinded private key struct.
- * @return Result of the RSA key generation.
+ * @return Result of the RSA key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
@@ -110,12 +113,11 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_public_key_construct(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -136,9 +138,10 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *d_share0,
-    otcrypto_const_word32_buf_t *d_share1, otcrypto_blinded_key_t *private_key);
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *d_share0,
+    const otcrypto_const_word32_buf_t *d_share1,
+    otcrypto_blinded_key_t *private_key);
 
 /**
  * Constructs an RSA keypair from the public key and one prime cofactor.
@@ -157,9 +160,9 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1,
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
 
 /**
@@ -168,13 +171,16 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
  * The caller should allocate space for the `signature` buffer
  * and set the length of expected output in the `len` field of
  * `signature`. If the user-set length and the output length does not
- * match, an error message will be returned.
+ * match, `kOtcryptoStatusValueBadArgs` will be returned.
  *
  * @param private_key Pointer to blinded private key struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
  * @param[out] signature Pointer to the generated signature struct.
- * @return The result of the RSA signature generation.
+ * @return Result of the RSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t message_digest,
@@ -193,12 +199,16 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
  * @param padding_mode Padding scheme to be used for the data.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification.
- * @return Result of the RSA verify operation.
+ * @return Result of the RSA verify operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t *signature,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -230,12 +240,16 @@ otcrypto_status_t otcrypto_rsa_verify(
  * @param message Message to encrypt.
  * @param label Label for OAEP encoding.
  * @param[out] ciphertext Buffer for the ciphertext.
- * @return The result of the RSA encryption operation.
+ * @return Result of the RSA encryption operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext);
 
 /**
  * Decrypts a message with RSA.
@@ -265,13 +279,17 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * @param label Label for OAEP encoding.
  * @param[out] plaintext Buffer for the decrypted message.
  * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
- * @return Result of the RSA decryption operation.
+ * @return Result of the RSA decryption operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
-    otcrypto_const_word32_buf_t *ciphertext, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
+    const otcrypto_const_word32_buf_t *ciphertext,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen);
 /**
  * Starts the asynchronous RSA key generation function.
  *
@@ -309,9 +327,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
-    otcrypto_const_word32_buf_t *cofactor_share0,
-    otcrypto_const_word32_buf_t *cofactor_share1);
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
+    const otcrypto_const_word32_buf_t *cofactor_share0,
+    const otcrypto_const_word32_buf_t *cofactor_share1);
 
 /**
  * Finalizes constructing an RSA private key using a cofactor.
@@ -354,7 +372,11 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
  * See `otcrypto_rsa_sign` for details on the requirements for `signature`.
  *
  * @param[out] signature Pointer to generated signature struct.
- * @return Result of async RSA sign finalize operation.
+ * @return Result of async RSA sign finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if signature buffer
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     otcrypto_word32_buf_t *signature);
@@ -371,7 +393,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_word32_buf_t *signature);
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes the asynchronous signature verification function.
@@ -383,7 +405,11 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
  * @param[out] verification_result Result of signature verification.
- * @return Result of async RSA verify finalize operation.
+ * @return Result of async RSA verify finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const otcrypto_hash_digest_t message_digest,
@@ -395,16 +421,20 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
  * See `otcrypto_rsa_encrypt` for details on the length requirements for
  * `message`.
  *
- * @param private_key Pointer to public key struct.
+ * @param public_key Pointer to public key struct.
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param message Message to encrypt.
  * @param label Label for OAEP encoding.
- * @return The result of the RSA encryption start operation.
+ * @return Result of the RSA encryption start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
-    otcrypto_const_byte_buf_t *label);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label);
 
 /**
  * Finalizes the asynchronous encryption function.
@@ -415,7 +445,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
  * data.
  *
  * @param[out] ciphertext Buffer for the ciphertext.
- * @return The result of the RSA encryption operation.
+ * @return Result of the RSA encryption finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if ciphertext buffer
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     otcrypto_word32_buf_t *ciphertext);
@@ -432,7 +466,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
-    otcrypto_const_word32_buf_t *ciphertext);
+    const otcrypto_const_word32_buf_t *ciphertext);
 
 /**
  * Finalizes the asynchronous decryption function.
@@ -444,11 +478,16 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  * @param label Label for OAEP encoding.
  * @param[out] plaintext Buffer for the decrypted message.
  * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
- * @return Result of the RSA decryption finalize operation.
+ * @return Result of the RSA decryption finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if plaintext buffer
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *label,
-    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen);
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen);
 
 #ifdef __cplusplus
 }  // extern "C"

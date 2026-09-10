@@ -13,27 +13,26 @@ module tb;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  // Describes the layout of the ROM memory array of whichever prim_rom implementation is mapped in
+  // for this build.
+  `include "rom_ctrl_bkdr_util_hier.svh"
 
   wire                        clk, rst_n;
   bit                         digest_cal_done;
-  kmac_pkg::app_rsp_t         kmac_data_in;
-  kmac_pkg::app_req_t         kmac_data_out;
+  wire kmac_pkg::app_rsp_t    kmac_data_in;
+  wire kmac_pkg::app_req_t    kmac_data_out;
   rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
-  logic kmac_done_occured;
+  logic after_kmac_handshake;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
 
   `DV_ALERT_IF_CONNECT()
-
-  assign kmac_app_if.kmac_data_req = kmac_data_out;
-  assign kmac_data_in              = kmac_app_if.kmac_data_rsp;
-
 
   // dut
   rom_ctrl #(
@@ -45,7 +44,8 @@ module tb;
     .clk_i                (clk),
     .rst_ni               (rst_n),
 
-    .rom_cfg_i            (prim_rom_pkg::rom_cfg_t'('0)),
+    .rom_cfg_i            (prim_rom_pkg::ROM_CFG_REQ_DEFAULT),
+    .rom_cfg_o            (),
 
     .rom_tl_i             (tl_rom_if.h2d),
     .rom_tl_o             (tl_rom_if.d2h),
@@ -63,31 +63,55 @@ module tb;
     .kmac_data_o          (kmac_data_out)
   );
 
-  // Bind rom_ctrl_if into the rom_ctrl module
-  bind dut rom_ctrl_if rom_ctrl_if ();
+  // Bind rom_ctrl_bound_if next to rom_ctrl_if. This is parameterised and able to access more of
+  // the internals of the design (without needing to parameterise the environment).
+  bind dut
+    rom_ctrl_bound_if #(.Bound(1), .SecDisableScrambling(SecDisableScrambling))
+    u_bound_if (.clk_i, .rst_ni);
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
-  bind dut.gen_fsm_scramble_enabled.u_checker_fsm rom_ctrl_fsm_if u_fsm_if ();
+  bind dut.gen_fsm_scramble_enabled.u_checker_fsm
+     rom_ctrl_fsm_bound_if #(.Bound(1), .TopCount(TopCount))
+     u_bound_if (.clk_i, .rst_ni);
 
-  // Bind a rom_ctrl_compare_if into the compare module (allowing DV to easily get hold of internal
-  // values and parameters)
-  bind dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare rom_ctrl_compare_if u_compare_if ();
+  // Bind a rom_ctrl_compare_bound_if into the compare module, which will be able to access
+  // internal design signals and parameters. It will instantiate a (non-parameterised)
+  // rom_ctrl_compare_if inside it, which can be passed to the environment.
+  bind dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare
+    rom_ctrl_compare_bound_if #(.Bound(1),
+                                .StateWidth($bits(Waiting)), .Waiting (Waiting), .Done (Done),
+                                .AW (AW), .LastAddr (LastAddr))
+       u_bound_if (
+         .clk_i     (clk_i),
+         .rst_ni    (rst_ni),
+         .addr_q_i  (addr_q),
+         .state_q_i (state_q),
+         .state_d_i (state_d)
+       );
 
   // Instantiate the memory backdoor util instance.
+  //
+  // `ROM_CTRL_MEM_HIER` is the `prim_rom` instance, not the memory array: the ROM may be composed
+  // of several arrays (one per tile), so depth and width are derived from one tile and scaled by
+  // the number of tiles.
   `define ROM_CTRL_MEM_HIER \
-    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.mem
+    tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom
+  `define ROM_CTRL_MEM_TILE_HIER `ROM_CTRL_MEM_HIER.`ROM_MEM_TILE_PATH
 
   initial begin
     rom_ctrl_bkdr_util m_rom_ctrl_bkdr_util;
     m_rom_ctrl_bkdr_util = new(.name  ("rom_ctrl_bkdr_util"),
-                               .path  (`DV_STRINGIFY(`ROM_CTRL_MEM_HIER)),
-                               .depth ($size(`ROM_CTRL_MEM_HIER)),
-                               .n_bits($bits(`ROM_CTRL_MEM_HIER)),
+                               .path  (`ROM_MEM_BKDR_PATH(`ROM_CTRL_MEM_HIER)),
+                               .depth (`ROM_MEM_NUM_TILES *
+                                       $size(`ROM_CTRL_MEM_TILE_HIER)),
+                               .n_bits(`ROM_MEM_NUM_TILES *
+                                       $bits(`ROM_CTRL_MEM_TILE_HIER)),
                                .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-                               // Encryption configuration will be provided dynamically.
-                               .key('0), .nonce('0)  // Not used.
-                              );
+                               .key(dut.RndCnstScrKey), .nonce(dut.RndCnstScrNonce),
+                               .tiling_path(`ROM_MEM_TILING_PATH),
+                               .tiling_suffix_fmt_str(`ROM_MEM_TILING_FMT),
+                               .tile_depth($size(`ROM_CTRL_MEM_TILE_HIER)));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -101,32 +125,43 @@ module tb;
         "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env", "rom_ctrl_bkdr_util",
         m_rom_ctrl_bkdr_util);
-    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
-    uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", dut.rom_ctrl_if);
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
+    uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif",
+                                      dut.u_bound_if.gen_bound.u_rom_ctrl_if);
     uvm_config_db#(virtual rom_ctrl_fsm_if)::set(
         null, "*.env", "rom_ctrl_fsm_vif",
-        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_fsm_if);
+        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_bound_if.gen_bound.u_fsm_if);
     uvm_config_db#(virtual rom_ctrl_compare_if)::set(
         null, "*.env", "rom_ctrl_compare_vif",
-        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_compare_if);
+        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_bound_if.gen_bound.u_compare_if);
+
+    // Pass a flag that tells the environment that we haven't built rom_ctrl without its integrity
+    // check FSM.
+    uvm_config_db#(bit)::set(null, "*.env", "integrity_check_disabled", 0);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
   // Only get one KMAC response
-  `ASSERT(JustOneKmacResponse_A, kmac_data_in.done |=> always !kmac_data_in.done, clk, rst_n)
+  `ASSERT(JustOneKmacResponse_A,
+          kmac_data_in.rsp_valid |=> always !kmac_data_in.rsp_valid, clk, rst_n)
   // Once we signal done to pwrmgr, the done signal stays high and the good signal stays stable.
-  `ASSERT(PwrmgrDoneOneWay_A, $rose(pwrmgr_data.done == prim_mubi_pkg::MuBi4True) |=>
-          always $stable(pwrmgr_data), clk, rst_n)
+  `ASSERT(PwrmgrDoneOneWay_A,
+          $rose(pwrmgr_data.done == prim_mubi_pkg::MuBi4True) |=> always $stable(pwrmgr_data),
+          clk, rst_n)
   // Don't send any KMAC requests once we've had the response
-  `ASSERT(KmacNotOutAfterIn_A, kmac_data_in.done |=> always !kmac_data_out.valid, clk, rst_n)
+  `ASSERT(KmacNotOutAfterIn_A,
+          kmac_data_in.rsp_valid |=> always !kmac_data_out.req_valid,
+          clk, rst_n)
   always_comb begin
-    if (!rst_n) kmac_done_occured = 0;
-    else if (kmac_data_in.done) kmac_done_occured = 1;
+    if (!rst_n) after_kmac_handshake = 0;
+    else if (kmac_data_in.rsp_valid) after_kmac_handshake = 1;
   end
   // We see a response from KMAC before we assert that we're done to pwrmgr
   `ASSERT(KmacResponseBeforePwmgrDone_A,
-          pwrmgr_data.done != prim_mubi_pkg::MuBi4False |-> kmac_done_occured, clk, rst_n)
+          pwrmgr_data.done != prim_mubi_pkg::MuBi4False |-> after_kmac_handshake,
+          clk, rst_n)
+  `undef ROM_CTRL_MEM_TILE_HIER
   `undef ROM_CTRL_MEM_HIER
 
 endmodule

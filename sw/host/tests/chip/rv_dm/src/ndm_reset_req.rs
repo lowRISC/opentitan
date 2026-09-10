@@ -24,7 +24,7 @@ struct Opts {
 }
 
 // Needs to match util/openocd/target
-const RISCV_IDCODE: u32 = 0x10001cdf;
+const RISCV_IDCODE: u32 = 0x10021cdf;
 
 fn test_ndm_reset_req(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // This test requires RV_DM access so first strap and reset.
