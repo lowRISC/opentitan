@@ -75,7 +75,7 @@ static void base_w(const uint8_t *input, const size_t out_len,
                    uint8_t *output) {
   size_t bits = 0;
   size_t in_idx = 0;
-  uint8_t total;
+  uint8_t total = 0;
   for (size_t out_idx = 0; out_idx < out_len; out_idx++) {
     if (bits == 0) {
       total = input[in_idx];
