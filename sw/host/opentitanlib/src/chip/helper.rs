@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use sphincsplus::{DecodeKey, SpxSecretKey};
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -13,6 +12,7 @@ use crate::chip::boot_svc::{
     BootSlot, OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode,
 };
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use crate::crypto::spx;
 use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
 use crate::util::parse_int::ParseInt;
 
@@ -74,7 +74,7 @@ impl OwnershipUnlockParams {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(spx::load_spx_secret_key)
                 .transpose()?;
             let signature =
                 unlock.detached_sign(self.algorithm, ecdsa_key.as_ref(), spx_key.as_ref())?;
@@ -157,7 +157,7 @@ impl OwnershipActivateParams {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(spx::load_spx_secret_key)
                 .transpose()?;
             let signature =
                 activate.detached_sign(self.algorithm, ecdsa_key.as_ref(), spx_key.as_ref())?;
