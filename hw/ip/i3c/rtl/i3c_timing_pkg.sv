@@ -8,7 +8,7 @@ package i3c_timing_pkg;
   import i3c_consts_pkg::*;
   import i3c_pkg::*;
 
-  // Timing parameters for the current transfer.
+  // Timing parameters for the current request to the transceiver.
   typedef struct packed {
     // Push-pull timing parameters, as appropriate for the target and mode.
     logic [TmCycW-1:0] tcls;   // SCL low, setup data for posedge.
@@ -17,6 +17,10 @@ package i3c_timing_pkg;
     logic              hcext;  // Extend SCL high by half the IP clock period?
     logic [TmCycW-1:0] tclh;   // SCL low, hold data from negedge.
   } i3c_ctrl_timing_t;
+
+  // This structure collects together all of the timing parameters for signaling at a particular
+  // speed; local type for use in timing calculations rather than conveying them to the transceiver.
+  typedef i3c_ctrl_timing_t tm_params_t;
 
   // Timing requirements are specified in Tables 48, 49 and 50 of the I3C Basic Specification 1.2.
   // The values listed here are our target durations, e.g. tDIGH is mid-way between the permissible
@@ -65,16 +69,6 @@ package i3c_timing_pkg;
     cnt = tm_cycles(clk_freq, tm_ns) - 'b1;  // Round up and then subtract 1.
     return cnt[TmCycW-1:0];
   endfunction
-
-  // This structure collects together all of the timing parameters for push-pull signaling at a
-  // particular speed.
-  typedef struct packed {
-    logic [TmCycW-1:0] tcls;   // SCL low, setup data for posedge.
-    logic [TmCycW-1:0] tchh;   // SCL high, hold data from posedge.
-    logic [TmCycW-1:0] tchs;   // SCL high, setup data for negedge.
-    logic              hcext;  // Extend SCL high by half the IP clock period?
-    logic [TmCycW-1:0] tclh;   // SCL low, hold data from negedge.
-  } tm_params_t;
 
   // Return the default timing parameters to be used for the supplied IP clock frequency (Hz) and
   // I3C clock period (ns) and SCL high interval (ns).
