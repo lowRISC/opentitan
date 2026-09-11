@@ -294,15 +294,6 @@ package i3c_pkg;
 
   // --- End of HDR-DDR structure descriptions ---
 
-  // --- Software updates of the Controller-side DAT cache ---
-
-  typedef struct packed {
-    logic [6:0] dyn_addr;     // Dynamic Address, no parity bit.
-    logic       ibi_payload;  // IBI has an associated payload.
-    logic       ibi_reject;   // Reject In-Band Interrupts from this address?
-    logic       crr_reject;   // Reject Controller-Role Requests from this address?
-  } i3c_datc_wdata_t;
-
   // --- Interface to/from the Target Reset detector ---
 
   typedef struct packed {
@@ -484,24 +475,6 @@ package i3c_pkg;
       default:       return te0_invalid_addr(addr);
     endcase
     return 1'b0;
-  endfunction
-
-  // Return the length in bits of the given unit type, minus 1 for counting down.
-  function automatic bit [Log2DW-1:0] unitlen_bits(i3c_dtype_e dtype);
-    case (dtype)
-      I3CDType_CommandWord,
-      I3CDType_DataWord:   return Log2DW'(19);
-      // CRC Words are 12 bits including the final setup bit ('1') for HDR Restart/Exit.
-      I3CDType_CRCWord:    return Log2DW'(11);
-      I3CDType_SDRBytes,
-      I3CDType_Address,
-      I3CDType_DynAddr,
-      I3CDType_ArbAddr:    return Log2DW'(8);  // TODO: Decide whether to handle the ACK separately.
-      I3CDType_ArbDAA:     return Log2DW'(7);  // No ACK bit in DAA reads.
-      // Other requests may count down cycles during their operation, and perhaps consist of
-      // multiple phases, but they are treated as single-bit units.
-      default:             return Log2DW'(0);
-    endcase
   endfunction
 
   // The use of some CCCs is absolutely prohibited in Command Descriptors (TCRI 6.2) because the
