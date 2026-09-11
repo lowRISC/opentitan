@@ -230,6 +230,7 @@ cc_library(
         ":sha2",
         ":status",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
