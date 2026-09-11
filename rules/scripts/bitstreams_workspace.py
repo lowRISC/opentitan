@@ -10,12 +10,14 @@ import json
 import logging
 import os.path
 import re
+import ssl
 import subprocess
 import sys
 import tarfile
 import time
 import urllib.request
 import xml.etree.ElementTree
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict
 
@@ -33,6 +35,57 @@ BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 # Manifest schema directory
 MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.argv[0])
+
+# Conventional locations of the system CA bundle, in the order we try them.
+# Used only as a fallback; see SslContext() below.
+CA_BUNDLE_PATHS = (
+    '/etc/ssl/certs/ca-certificates.crt',  # Debian, Ubuntu, Alpine, Arch
+    '/etc/pki/tls/cert.pem',               # RHEL, Rocky, AlmaLinux, Fedora
+    '/etc/ssl/ca-bundle.pem',              # openSUSE
+    '/etc/ssl/cert.pem',                   # FreeBSD, some macOS setups
+)
+
+
+@lru_cache(maxsize=None)
+def SslContext():
+    """Return an SSL context that has a usable CA trust store.
+
+    Under Bazel this script runs on the hermetic CPython that rules_python
+    downloads, which bundles its own OpenSSL built with Debian-style CA paths
+    (cafile unset, capath /etc/ssl/certs). RHEL-family distributions populate
+    neither, so the trust store is empty and every request fails with
+    CERTIFICATE_VERIFY_FAILED. Debian and Ubuntu match those paths and are
+    unaffected, which is why this only appears on some hosts.
+
+    Fall back to the first system bundle we can find. SSL_CERT_FILE and
+    SSL_CERT_DIR still take precedence, being honoured by
+    ssl.create_default_context() itself.
+    """
+    ctx = ssl.create_default_context()
+
+    # A populated store means the defaults (or SSL_CERT_FILE) already work.
+    # This counts only eagerly-loaded certificates, so a capath-only store
+    # reports zero; loading a bundle is then redundant but harmless, as it can
+    # only add trust anchors.
+    if ctx.cert_store_stats()['x509_ca'] > 0:
+        return ctx
+
+    for path in CA_BUNDLE_PATHS:
+        if os.path.exists(path):
+            try:
+                ctx.load_verify_locations(cafile=path)
+            except OSError as e:
+                logging.debug(f"Could not load CA bundle {path}: {e}")
+                continue
+            logging.debug(f"Loaded CA bundle from {path}")
+            return ctx
+
+    logging.warning(
+        "No usable CA trust store was found; HTTPS requests are likely to "
+        "fail. Set SSL_CERT_FILE to your system CA bundle to override.")
+    return ctx
+
+
 # Required designs
 KNOWN_DESIGNS = {
     "chip_earlgrey_cw340": {
@@ -238,7 +291,7 @@ class BitstreamCache(object):
         while attempt < max_attempts:
             attempt += 1
             try:
-                response = urllib.request.urlopen(url)
+                response = urllib.request.urlopen(url, context=SslContext())
                 return response.read()
             except urllib.error.HTTPError as e:
                 if e.code not in (403, 408, 429, 500, 502, 503, 504):
