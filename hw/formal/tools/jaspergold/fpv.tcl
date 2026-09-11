@@ -283,6 +283,14 @@ if {$env(TASK) ne ""} {
 
 report
 
+# Machine-readable property listing, for anything that reads a run's results. It carries the task,
+# property name, type, result, engine, bound and time, one quoted row per property. Scoped like the
+# plain `report` above, so it holds the current task only. A block whose AFTER_LOAD script proves
+# properties in tasks of its own, such as rom_ctrl and otbn, has those absent here even though
+# parse-formal-report.py counts them from the log, so a consumer must not read this file as the
+# whole run.
+report -csv -include_type -file fpv_props.csv -force
+
 #-------------------------------------------------------------------------
 # check coverage and report
 #-------------------------------------------------------------------------
@@ -295,7 +303,34 @@ if {$env(COV) == 1} {
     puts "Waiving items optimized in synthesis from $file"
     source $file
 
-    check_cov -report -task ${cov_tasks} -force -exclude { reset waived }
+    # check_cov -report returns the figures it tabulates as a Tcl dict, keyed by full instance path
+    # and holding the covered, uncovered, unreachable, deadcode, unprocessed, excluded and total
+    # counts of each coverage type. Kept because no report file carries that: both the text and the
+    # HTML table render the hierarchy as indentation, leaving a full instance path to be
+    # reassembled, and show each figure only beside a rounded percentage. Capturing the return
+    # value does not suppress the text table below, so this costs nothing. That table is also where
+    # parse-formal-report.py reads the formal, stimuli and checker percentages from, and it wants
+    # exactly one match per pattern, so this must stay the only invocation that prints it.
+    set cov_summary [check_cov -report -task ${cov_tasks} -force -exclude { reset waived }]
+
     check_cov -report -no_return -report_file cover.html -task ${cov_tasks} \
                       -html -force -exclude { reset waived }
+
+    # Written out last, so a failure here costs neither the proof results nor cover.html, which are
+    # what an FPV run exists to produce. An empty dict is not the same fact as nothing being
+    # covered, and the two cannot be told apart once written, so no file is left behind rather than
+    # an empty one and the consumer reads the absence instead. Neither case fails the run, and both
+    # warn so that they are counted in the parsed results.
+    if {[string trim ${cov_summary}] eq ""} {
+        puts "WARNING: no coverage figures returned, so fpv_cov_summary.tcldict is not written."
+    } else {
+        set write_failed [catch {
+            set cov_summary_file [open fpv_cov_summary.tcldict w]
+            puts ${cov_summary_file} ${cov_summary}
+            close ${cov_summary_file}
+        } write_message]
+        if {${write_failed}} {
+            puts "WARNING: cannot write fpv_cov_summary.tcldict: ${write_message}"
+        }
+    }
 }
