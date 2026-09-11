@@ -1,0 +1,14 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  tool: "slang"
+
+  // Slang-specific results parsing script that is called after running lint
+  report_cmd:  "{proj_root}/util/dvsim/{tool}-report-parser.py "
+  report_opts: ["--repfile={build_log}",
+                "--outfile={build_dir}/results.hjson"]
+
+  // This customizes the report format
+  is_style_lint: False
+}

@@ -46,6 +46,12 @@ filesets:
       - lint/clkmgr.waiver
     file_type: waiver
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -56,6 +62,7 @@ targets:
     filesets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_slang      ? (files_slang_waiver)
       - files_rtl
     toplevel: clkmgr
 
