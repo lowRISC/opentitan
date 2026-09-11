@@ -2,11 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// Waivers are keyed by the engine that emits the property, because a property name only means
+// anything to the engine that produced it. These are `:precondition1` cover items, which
+// JasperGold synthesises for each assertion's precondition and VC Formal has no equivalent for,
+// so a flat list would have VC Formal count every one of them as a failure for being absent.
 {
-  unreachable:
-  [
-    rv_plic_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
-    rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1
-    rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.gen_enable_check.gen_not_strict.EnableCheck_A:precondition1
-  ]
+  jaspergold:
+  {
+    unreachable:
+    [
+      rv_plic_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
+      rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1
+      rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.gen_enable_check.gen_not_strict.EnableCheck_A:precondition1
+    ]
+  }
 }
