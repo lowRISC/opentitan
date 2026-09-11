@@ -19,16 +19,20 @@
 | csrng.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x2c     |        4 | Application interface command status register                              |
 | csrng.[`GENBITS_VLD`](#genbits_vld)                                   | 0x30     |        4 | Generate bits returned valid register                                      |
 | csrng.[`GENBITS`](#genbits)                                           | 0x34     |        4 | Generate bits returned register                                            |
-| csrng.[`INT_STATE_READ_ENABLE`](#int_state_read_enable)               | 0x38     |        4 | Internal state read enable register                                        |
-| csrng.[`INT_STATE_READ_ENABLE_REGWEN`](#int_state_read_enable_regwen) | 0x3c     |        4 | Internal state read enable REGWEN register                                 |
+| csrng.[`INT_STATE_READ_ENABLE_REGWEN`](#int_state_read_enable_regwen) | 0x38     |        4 | Internal state read enable REGWEN register                                 |
+| csrng.[`INT_STATE_READ_ENABLE`](#int_state_read_enable)               | 0x3c     |        4 | Internal state read enable register                                        |
 | csrng.[`INT_STATE_NUM`](#int_state_num)                               | 0x40     |        4 | Internal state number register                                             |
 | csrng.[`INT_STATE_VAL`](#int_state_val)                               | 0x44     |        4 | Internal state read access register                                        |
 | csrng.[`FIPS_FORCE`](#fips_force)                                     | 0x48     |        4 | FIPS/CC compliance flag forcing register                                   |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)                                     | 0x4c     |        4 | Hardware instance exception status register                                |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x50     |        4 | Recoverable alert status register                                          |
-| csrng.[`ERR_CODE`](#err_code)                                         | 0x54     |        4 | Hardware detection of error conditions status register                     |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)                               | 0x58     |        4 | Test error conditions register                                             |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x5c     |        4 | Main state machine state debug register                                    |
+| csrng.[`GEN_ABORT_REGWEN`](#gen_abort_regwen)                         | 0x4c     |        4 | Register write enable for [`GEN_ABORT`](#gen_abort)                        |
+| csrng.[`GEN_ABORT_0`](#gen_abort)                                     | 0x50     |        4 | Generate command abort request register                                    |
+| csrng.[`GEN_ABORT_1`](#gen_abort)                                     | 0x54     |        4 | Generate command abort request register                                    |
+| csrng.[`GEN_ABORT_2`](#gen_abort)                                     | 0x58     |        4 | Generate command abort request register                                    |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)                                     | 0x5c     |        4 | Hardware instance exception status register                                |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x60     |        4 | Recoverable alert status register                                          |
+| csrng.[`ERR_CODE`](#err_code)                                         | 0x64     |        4 | Hardware detection of error conditions status register                     |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)                               | 0x68     |        4 | Test error conditions register                                             |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x6c     |        4 | Main state machine state debug register                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -260,13 +264,14 @@ interface for software use.
 To check whether a command was successful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state) or
 [`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
 
-| Value   | Name                | Description                                                                                                                                                                                                                                                                |
-|:--------|:--------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | SUCCESS             | Request completed successfully.                                                                                                                                                                                                                                            |
-| 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation.                                                                                                                 |
-| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                   |
-| 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first. |
-| 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see [`RESEED_INTERVAL`](#reseed_interval)). This happens only for Generate commands.                                                                        |
+| Value   | Name                | Description                                                                                                                                                                                                                                                                                                   |
+|:--------|:--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | SUCCESS             | Request completed successfully.                                                                                                                                                                                                                                                                               |
+| 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation.                                                                                                                                                    |
+| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                                                      |
+| 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first.                                    |
+| 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see [`RESEED_INTERVAL`](#reseed_interval)). This happens only for Generate commands.                                                                                                           |
+| 0x5     | GEN_ABORTED         | This bit indicates that a Generate command for this instance was aborted via [`GEN_ABORT`](#gen_abort) before returning all requested genbits. The instance has been uninstantiated as a result and must be instantiated again before further commands will succeed. This happens only for Generate commands. |
 
 Other values are reserved.
 
@@ -328,9 +333,26 @@ Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [
 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Otherwise, the register reads as 0.
 
+## INT_STATE_READ_ENABLE_REGWEN
+Internal state read enable REGWEN register
+- Offset: `0x38`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "INT_STATE_READ_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 300}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                         | Description                                                                                                                                     |
+|:------:|:------:|:-------:|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                              | Reserved                                                                                                                                        |
+|   0    |  rw0c  |   0x1   | INT_STATE_READ_ENABLE_REGWEN | INT_STATE_READ_ENABLE register configuration enable bit. If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore. |
+
 ## INT_STATE_READ_ENABLE
 Internal state read enable register
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x7`
 - Reset mask: `0x7`
 - Register enable: [`INT_STATE_READ_ENABLE_REGWEN`](#int_state_read_enable_regwen)
@@ -351,23 +373,6 @@ Per-instance internal state read enable.
 Defines whether the internal state of the corresponding instance is readable via [`INT_STATE_VAL.`](#int_state_val)
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
-
-## INT_STATE_READ_ENABLE_REGWEN
-Internal state read enable REGWEN register
-- Offset: `0x3c`
-- Reset default: `0x1`
-- Reset mask: `0x1`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "INT_STATE_READ_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 300}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                         | Description                                                                                                                                     |
-|:------:|:------:|:-------:|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                              | Reserved                                                                                                                                        |
-|   0    |  rw0c  |   0x1   | INT_STATE_READ_ENABLE_REGWEN | INT_STATE_READ_ENABLE register configuration enable bit. If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore. |
 
 ## INT_STATE_NUM
 Internal state number register
@@ -451,9 +456,60 @@ After setting a particular bit to 1, the FIPS/CC compliance flag of the correspo
 
 Note that for this to work, [`CTRL.FIPS_FORCE_ENABLE`](#ctrl) needs to be set to kMultiBitBool4True.
 
+## GEN_ABORT_REGWEN
+Register write enable for [`GEN_ABORT`](#gen_abort)
+- Offset: `0x4c`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "GEN_ABORT_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+```
+
+|  Bits  |  Type  |  Reset  | Name             | Description                                                                                                              |
+|:------:|:------:|:-------:|:-----------------|:-------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                  | Reserved                                                                                                                 |
+|   0    |  rw0c  |   0x1   | GEN_ABORT_REGWEN | When true, the [`GEN_ABORT`](#gen_abort) register can be written. When false, it becomes read-only until the next reset. |
+
+## GEN_ABORT
+Generate command abort request register
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`GEN_ABORT_REGWEN`](#gen_abort_regwen)
+
+### Instances
+
+| Name        | Offset   |
+|:------------|:---------|
+| GEN_ABORT_0 | 0x50     |
+| GEN_ABORT_1 | 0x54     |
+| GEN_ABORT_2 | 0x58     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "GEN_ABORT", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                               |
+|:------:|:------:|:-------:|:-----------------------------------|
+|  31:4  |        |         | Reserved                           |
+|  3:0   |  rw1s  |   0x9   | [GEN_ABORT](#gen_abort--gen_abort) |
+
+### GEN_ABORT . GEN_ABORT
+Setting this field to kMultiBitBool4True requests aborting a Generate command that is currently in progress for this instance.
+The instance is zeroed as a result.
+It must be instantiated again before further Reseed, Update, or Generate commands can succeed.
+
+This request is only accepted while a Generate command is actually in progress for this instance.
+If no Generate command is in progress, the write is ignored and [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](#recov_alert_sts) is set instead.
+
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x4c`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -478,14 +534,14 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x50`
+- Offset: `0x60`
 - Reset default: `0x0`
-- Reset mask: `0xf01f`
+- Reset mask: `0xf07f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 7}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
@@ -495,7 +551,9 @@ Recoverable alert status register
 |   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
-|  11:5  |        |         | Reserved                                                                             |
+|  11:7  |        |         | Reserved                                                                             |
+|   6    |  rw0c  |   0x0   | [GEN_ABORT_FIELD_ALERT](#recov_alert_sts--gen_abort_field_alert)                     |
+|   5    |  rw0c  |   0x0   | [GEN_ABORT_INVALID_ALERT](#recov_alert_sts--gen_abort_invalid_alert)                 |
 |   4    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)                   |
 |   3    |  rw0c  |   0x0   | [FIPS_FORCE_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_force_enable_field_alert)     |
 |   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert)           |
@@ -527,6 +585,15 @@ This bit is set when the software application port genbits bus value is equal
 to the prior valid value on the bus, indicating a possible attack.
 Writing a zero resets this status bit.
 
+### RECOV_ALERT_STS . GEN_ABORT_FIELD_ALERT
+This bit is set when a field of the [`GEN_ABORT`](#gen_abort) register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . GEN_ABORT_INVALID_ALERT
+This bit is set when a field of the [`GEN_ABORT`](#gen_abort) register is set to kMultiBitBool4True for an instance that does not currently have a Generate command in progress.
+The write is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
+
 ### RECOV_ALERT_STS . ACMD_FLAG0_FIELD_ALERT
 This bit is set when the FLAG0 field in the Application Command is set to
 a value other than kMultiBitBool4True or kMultiBitBool4False.
@@ -553,7 +620,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x54`
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0x76700003`
 
@@ -641,7 +708,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x58`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -667,7 +734,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x5c`
+- Offset: `0x6c`
 - Reset default: `0x37`
 - Reset mask: `0x3f`
 
