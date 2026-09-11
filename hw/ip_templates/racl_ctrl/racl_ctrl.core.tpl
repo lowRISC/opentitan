@@ -42,6 +42,12 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -50,9 +56,10 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: ${module_instance_name}
 

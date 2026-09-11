@@ -36,3 +36,10 @@ targets:
         ascentlint_options:
           - "-wait_license"
           - "-stop_on_error"
+      slang:
+        slang_options:
+          - "-Wpedantic"
+          - "-Werror"
+          - "--allow-use-before-declare"
+          - "--single-unit"
+          - "--error-limit 0"
