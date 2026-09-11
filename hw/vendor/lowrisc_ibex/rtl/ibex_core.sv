@@ -1338,6 +1338,7 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   // Detect invalid MuBi encoding on cheriot_enable_i (neither On nor Off).
   // Gated by instr_exec to not trigger alerts before all signals are initialized.
+  // SEC_CM: CHERIOT_ENABLE.CTRL.MUBI
   if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_enable_check
     assign cheriot_enable_mubi_err = instr_exec & !((cheriot_enable_i == IbexMuBiOn) ||
                                                     (cheriot_enable_i == IbexMuBiOff));
