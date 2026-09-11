@@ -197,7 +197,7 @@ However, these are the requirements that the manifest format is required to supp
 [attestation-command]: ../attestation/README.md#attestation-command
 [ibex-epmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
 [identities-keys]: ../identities_and_root_keys/README.md
-[key-manager]: ../../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../../hw/ip/keymgr_dpe/README.md
 [manifest-format]: ../../../../sw/device/silicon_creator/rom_ext/doc/manifest.md
 [rom-epmp]: ../../../../sw/device/silicon_creator/rom/doc/memory_protection.md
 [ot-flash]: #

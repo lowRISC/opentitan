@@ -25,7 +25,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   // do operations at StWorkDpeReset
   rand bit do_op_before_init;
   rand keymgr_dpe_pkg::keymgr_dpe_ops_e gen_operation;
-  rand keymgr_pkg::keymgr_key_dest_e key_dest;
+  rand keymgr_dpe_pkg::keymgr_dpe_key_dest_e key_dest;
 
   rand bit do_rand_otp_key;
   rand bit do_invalid_otp_key;
@@ -250,7 +250,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task wait_op_done();
-    keymgr_pkg::keymgr_op_status_e exp_status;
+    keymgr_dpe_pkg::keymgr_dpe_op_status_e exp_status;
     bit is_good_op = 1;
     int key_version = `gmv(ral.key_version[0]);
     bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
@@ -325,10 +325,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     // wait for status to get out of OpWip and check
     // TODO(#667) - need to restructure SCB so that reading a WIP status doesn't cause error
     // for now set the minimum spinwait_delay_ns to 2 to ensure this false error doesn't happen
-    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_dpe_pkg::OpWip),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(2, 100)));
 
-    exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
+    exp_status = is_good_op ? keymgr_dpe_pkg::OpDoneSuccess : keymgr_dpe_pkg::OpDoneFail;
 
     // if keymgr_dpe_en is set to off during OP,
     // status is checked in scb. hard to predict the result
@@ -413,7 +413,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   virtual task keymgr_dpe_generate(
       keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
-      keymgr_pkg::keymgr_key_dest_e key_dest,
+      keymgr_dpe_pkg::keymgr_dpe_key_dest_e key_dest,
       bit [31:0] salt = $urandom(),
       int key_version = $urandom_range(1,4),
       bit wait_done = 1
@@ -437,7 +437,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : keymgr_dpe_generate
 
   virtual task keymgr_dpe_rd_clr();
-    bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+    bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
 
     read_sw_shares(sw_share_output);
 
@@ -449,7 +449,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : keymgr_dpe_rd_clr
 
   virtual task read_sw_shares(
-        output bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
+        output bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
     `uvm_info(`gfn, "Read generated output", UVM_MEDIUM)
 
     // read each one out and print it out (nothing to compare it against right now)
@@ -492,7 +492,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     // issue any operation
     issue_a_random_op(.wait_done(0));
     // waiting for done is called separately as this one expects to be failed
-    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_dpe_pkg::OpDoneFail),
                  .spinwait_delay_ns($urandom_range(0, 100)));
     csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StWorkDpeInvalid));
   endtask

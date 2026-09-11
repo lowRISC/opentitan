@@ -18,9 +18,9 @@ class aes_env extends cip_base_env #(
     aes_reg_block::type_id::set_type_override(aes_reg_block_extended::get_type());
     super.build_phase(phase);
 
-    keymgr_sideload_agent = key_sideload_agent#(keymgr_pkg::hw_key_req_t)::type_id::create(
+    keymgr_sideload_agent = key_sideload_agent#(keymgr_dpe_pkg::hw_key_req_t)::type_id::create(
       "keymgr_sideload_agent", this);
-    uvm_config_db#(key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t))::set(
+    uvm_config_db#(key_sideload_agent_cfg#(keymgr_dpe_pkg::hw_key_req_t))::set(
       this, "keymgr_sideload_agent*", "cfg", cfg.keymgr_sideload_agent_cfg);
     if (!uvm_config_db#(virtual pins_if #($bits(lc_ctrl_pkg::lc_tx_t) +1 ))::
          get(this, "", "lc_escalate_vif", cfg.lc_escalate_vif)) begin

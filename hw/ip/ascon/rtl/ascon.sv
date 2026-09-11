@@ -28,8 +28,8 @@ module ascon
   output edn_pkg::edn_req_t edn_o,
   input  edn_pkg::edn_rsp_t edn_i,
 
-  // Key manager (keymgr) key sideload interface
-  input  keymgr_pkg::hw_key_req_t keymgr_key_i,
+  // Key manager (keymgr_dpe) key sideload interface
+  input  keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,

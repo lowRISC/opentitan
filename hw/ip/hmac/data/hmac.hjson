@@ -92,11 +92,11 @@
       struct:  "mubi4",
       width:   "1"
     },
-    { struct:  "hw_key_req"
+    { struct:  "wide_hw_key_req"
       type:    "uni"
       name:    "keymgr_key"
       act:     "rcv"
-      package: "keymgr_pkg"
+      package: "keymgr_dpe_pkg"
     }
   ],
   param_list: [
