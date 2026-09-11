@@ -85,9 +85,10 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
     return OTCRYPTO_FATAL_ERR;
   }
 
-  // We consider the missing self-integrity case to be a user error, hence we
-  // return a recoverable error.
-  if (state->self_check_state == kHardenedBoolFalse) {
+  // The self-integrity check uses SHA-2, so the SHA-2 KAT
+  // must be allowed to execute before the self-integrity check has completed.
+  if (kat_bit != kTestHashSha512Bit &&
+      state->self_check_state == kHardenedBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
 
