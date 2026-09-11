@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -250,6 +251,32 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
       public_key, message_digest, signature));
   return otcrypto_ecdsa_p384_verify_async_finalize(signature,
                                                    verification_result);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    otcrypto_word32_buf_t *signature) {
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  return otcrypto_ecdsa_p384_sign_verify(private_key, public_key, digest,
+                                         signature);
+}
+
+otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result) {
+  uint32_t digest_data[16];
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  return otcrypto_ecdsa_p384_verify(public_key, digest, signature,
+                                    verification_result);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
