@@ -99,6 +99,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
   HARDENED_TRY(keymgr_sideload_clear_kmac());
 
 #ifdef FIPS_MODE
+  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
   HARDENED_TRY(otcrypto_integrity_check());
 #endif
 
