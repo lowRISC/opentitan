@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/crypto/include/rsa.h"
 
+#include <stdbool.h>
+
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
@@ -42,6 +44,8 @@ static_assert(kOtcryptoRsa3072PrivateKeyblobBytes ==
 static_assert(kOtcryptoRsa4096PrivateKeyblobBytes ==
                   sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
+
+static inline bool is_even(uint32_t v) { return (v & 1) == 0; }
 
 /**
  * Check if a key mode is intended for RSA.
@@ -106,6 +110,10 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
   }
 #endif
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
+
+  if (is_even(modulus->data[0])) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   switch (size) {
     case kOtcryptoRsaSize2048: {
@@ -351,6 +359,10 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 
   // Check the mode and lengths for the private key.
   HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  if (is_even(modulus->data[0])) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Randomize the keyblob.
   HARDENED_TRY(hardened_memshred(
@@ -643,6 +655,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
   // of the modulus.
   if (cofactor_share0->len != modulus->len / 2 ||
       cofactor_share1->len != modulus->len / 2) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (is_even(modulus->data[0])) {
     return OTCRYPTO_BAD_ARGS;
   }
 
