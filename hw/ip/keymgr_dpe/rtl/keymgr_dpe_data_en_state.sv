@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager date enable generation
+// Key manager dpe date enable generation
 // This is a redundant alternative to data_valid
 
 `include "prim_assert.sv"
 
-module keymgr_data_en_state
-  import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+module keymgr_dpe_data_en_state
+  import keymgr_dpe_reg_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -133,4 +132,4 @@ module keymgr_data_en_state
   end
 
 
-endmodule // keymgr_data_en_state
+endmodule // keymgr_dpe_data_en_state

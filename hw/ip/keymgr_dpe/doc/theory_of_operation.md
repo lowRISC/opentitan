@@ -12,7 +12,7 @@ In OpenTitan, the KDF is instantiated as [KMAC](../../kmac/README.md).
 Each valid operation involves a KMAC invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
 The concatenated components of the message is dependent on the context of the source slot as well as further inputs provided from HW / SW.
 
-In theory, KMAC can generate outputs of arbitrary length, however this design uses a specific variant with 256-bit security strength, 384-bit digest size, and 256-bit key input.
+In theory, KMAC can generate outputs of arbitrary length, however this design uses a specific variant with 256-bit security strength, 512-bit digest size, and 256-bit key input.
 
 Effectively, the key manager behavior is divided into 2 classes of functions:
 * Key manager state advancement (also referred to as deriving children slots/nodes). The resulting secrets/keys from these operations are not visible to software and not directly usable by any software controlled hardware.
@@ -176,17 +176,17 @@ When there is no fault and the enable signal is active by life cycle controller,
 ### Versioned Key Generation
 
 A versioned key generation operation uses the following registers:
-* `CONTROL_SHADOWED.DST_SEL` determines the target use for the generated key, and that is either one of {`AES`, `KMAC`, `OTBN`}.
+* `CONTROL_SHADOWED.DST_SEL` determines the target use for the generated key, and that is either one of {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 * `CONTROL_SHADOWED.SLOT_SRC_SEL` determines the source slot whose key should be used for the key derivation.
 * `SALT` is used as a part of the message during the key derivation.
 * `KEY_VERSION` is the target key value, and it also becomes the part of the message for KDF call.
 
 During the generate operation, a versioned key is generated from the secret of the source slot selected by `SLOT_SRC_SEL`.
-After a successful key generation operation, if the generated key is requested for HW use, then the generated key is loaded into the sideload slot that drives the specified target peripheral port (`DST_SEL` being either one of {`AES`, `KMAC`, `OTBN`}).
+After a successful key generation operation, if the generated key is requested for HW use, then the generated key is loaded into the sideload slot that drives the specified target peripheral port (`DST_SEL` being either one of {`AES`, `KMAC`, `OTBN`, `HMAC`}).
 In the case of SW key, the generated key is loaded into a CSR (see `SW_SHARE0_OUTPUT` and `SW_SHARE1_OUTPUT` registers).
 
 The key is generated with a KDF call, where the secret key is read from source slot.
-Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`}.
+Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 
 KDF used for key generation calls is the same KMAC instance used in advance calls.
 The only difference is that the input messages are 0-padded to another length parameter, `GenDataWidth`.
@@ -215,7 +215,7 @@ Disable operation simply moves the keymgr_DPE's FSM into `Disabled` state. This 
 
 ### KDF Details
 
-KDF used for advance calls is the KMAC instance with (keylen=256, digest_len=384, sec_lvl = 256) parameters. The input messages to KDF are always 0-padded to the fixed length specified below.
+KDF used for advance calls is the KMAC instance with (keylen=256, digest_len=512, sec_lvl = 256) parameters. The input messages to KDF are always 0-padded to the fixed length specified below.
 
 During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depending on the boot stage, KDF message input also receives the following inputs:
 * `hw_revision_seed` is a 256-bit netlist constant.
@@ -226,7 +226,7 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 
 During key generation operations, KDF inputs are 0 padded to `GenDataWidth` bits. Some diversification constants are:
-* `dest_seed` is a 256-bit diversification value for each cryptographic key type {AES, KMAC, OTBN}.
+* `dest_seed` is a 256-bit diversification value for each cryptographic key type {AES, KMAC, OTBN, HMAC}.
 * `output_key` is a 256-bit diversification value for distinguishing software and sideload keys.
 
 ### Life Cycle Connection
