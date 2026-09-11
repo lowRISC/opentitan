@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/state.h"
@@ -57,6 +58,8 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   for (size_t i = 0; i < 48; i++) {
     diff |= ((uint8_t *)digest.data)[i] ^ hash_ptr[i];
   }
+
+  HARDENED_TRY(hardened_memshred(digest.data, digest.len));
 
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed
