@@ -11,8 +11,12 @@ Partial support:
 
   - .file support assumes we're not using DWARF2 file numbers.
 
-  - Operands may not have embedded spaces or commas. Complicated immediate
-    expressions are not currently supported.
+  - Operands may not have embedded spaces or commas.
+
+  - Immediates for instructions that are not part of the RV32I instruction set
+    (including the LI macro) are parsed here. They must be integer literals or
+    symbols that were defined with .equ, .set or .equiv earlier in the same
+    file. Expressions are not supported.
 
 '''
 
@@ -441,6 +445,17 @@ def parse_positionals(
     return (positionals, others, flags)
 
 
+def resolve_const(expr: str, constants: Dict[str, int]) -> Optional[int]:
+    '''Interpret expr as an integer literal or a symbol from `constants`
+
+    Returns None if it is neither.
+    '''
+    try:
+        return int(expr, 0)
+    except ValueError:
+        return constants.get(expr.strip())
+
+
 def _unpack_lx(where: str, mnemonic: str,
                op_to_expr: Dict[str, Optional[str]]) -> Tuple[str, str]:
     '''Unpack the arguments to li or la'''
@@ -475,7 +490,8 @@ def _unpack_lx(where: str, mnemonic: str,
     return (grd_txt, imm)
 
 
-def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+def expand_li(where: str, op_to_expr: Dict[str, Optional[str]],
+              constants: Dict[str, int]) -> List[str]:
     '''Expand the li pseudo-op'''
 
     # This logic is slightly complicated so it has some associated tests in the
@@ -484,9 +500,8 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     # hw/ip/otbn/dv/otbnsim/test/simple/pseudos/li.s.
 
     grd_txt, imm = _unpack_lx(where, 'li', op_to_expr)
-    try:
-        imm_int = int(imm, 0)
-    except ValueError:
+    imm_int = resolve_const(imm, constants)
+    if imm_int is None:
         raise RuntimeError('{}: Cannot parse {!r}, the immediate for an LI '
                            'instruction, as an integer.'.format(where, imm))
 
@@ -538,7 +553,8 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     ]
 
 
-def expand_la(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+def expand_la(where: str, op_to_expr: Dict[str, Optional[str]],
+              constants: Dict[str, int]) -> List[str]:
     '''Expand the la pseudo-op'''
 
     # For RISC-V, "la rd, symbol" expands to two instructions:
@@ -635,6 +651,9 @@ class Transformer:
         self.in_comment = False
         self.in_string = False
 
+        # Symbols defined with .equ, .set or .equiv.
+        self.constants = {}  # type: Dict[str, int]
+
         # FSM state.
         #
         #    0: Waiting for statement
@@ -671,6 +690,11 @@ class Transformer:
                 raise RuntimeError('{}:{}: {}'.format(self.in_path,
                                                       self.line_number,
                                                       err)) from None
+            if op_val is None:
+                # This is not an integer literal, but it might be a constant
+                # that was defined earlier with .equ etc.
+                assert expr is not None
+                op_val = self.constants.get(expr.strip())
             if op_val is None:
                 raise RuntimeError('{}:{}: Cannot resolve operand expression '
                                    '{!r} to an index and the instruction {!r} '
@@ -786,7 +810,7 @@ class Transformer:
         if insn.python_pseudo_op:
             where = '{}:{}'.format(self.in_path, self.line_number)
             po_assembler = _PSEUDO_OP_ASSEMBLERS[insn.mnemonic]
-            expansion = po_assembler(where, op_to_expr)
+            expansion = po_assembler(where, op_to_expr, self.constants)
 
         reconstructed = self.key_sym + ''.join(self.acc).rstrip()
         assert '\n' not in reconstructed
@@ -984,6 +1008,25 @@ class Transformer:
         raise RuntimeError('{}:{}: Unknown mnemonic: {!r}.'.format(
             self.in_path, self.line_number, self.key_sym))
 
+    def _record_const(self) -> None:
+        '''If the current directive defines a constant, remember its value
+
+        This spots .equ, .set and .equiv directives whose value is an integer
+        literal or another known constant. Anything else is ignored and left
+        to binutils.
+        '''
+        assert self.key_sym is not None
+        if self.key_sym.lower() not in ['.equ', '.set', '.equiv']:
+            return
+
+        sym, sep, val = ''.join(self.acc).partition(',')
+        if not sep:
+            return
+
+        result = resolve_const(val, self.constants)
+        if result is not None:
+            self.constants[sym.strip()] = result
+
     def _end_stmt_line(self) -> None:
         '''Called at end of a stmt line to deal with any completed statement'''
         assert self.state == 1
@@ -999,6 +1042,7 @@ class Transformer:
         # If key_sym is a directive (starts with '.'), we can just pass it
         # straight through.
         if self.key_sym.startswith('.'):
+            self._record_const()
             self.out_handle.write(self.key_sym)
             self.out_handle.write(''.join(self.acc))
             self.acc = []
