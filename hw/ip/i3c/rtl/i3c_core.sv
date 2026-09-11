@@ -49,6 +49,12 @@ module i3c_core
   input  i3c_reg2hw_t       reg2hw_i,
   output i3c_hw2reg_t       hw2reg_o,
 
+  // Software resets for the Controller registers.
+  // TODO: This is a tricky problem because our reggen tooling has no concept of a synchronous
+  // reset and the TL-UL components are intertwined with the register instantiations.
+  output                    hc_soft_rst_o,  // Host Controller registers.
+  output                    sc_soft_rst_o,  // Standby Controller registers.
+
   // HCI Command Queue Port access.
   // HCI Response Queue Port access.
   // HCI XFER_DATA_PORT access.
@@ -143,10 +149,6 @@ module i3c_core
   wire scanmode = prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
   wire unused_dft_ = ^{mbist_en_i, scan_rst_ni};
 
-  // Software resets for Controller and Target logic.
-  wire ctrl_sw_reset = reg2hw_i.reset_control.soft_rst.qe & reg2hw_i.reset_control.soft_rst.q;
-  wire targ_sw_reset = reg2hw_i.reset_control.soft_rst.qe & reg2hw_i.reset_control.soft_rst.q;
-
   // High-level enable signals.
   logic enabling, ctrl_enabled, stby_cr_enabled, targ_enabled, buf_enabled, inbuf_enable;
   assign targ_enabled = reg2hw_i.targ_control.en.q | stby_cr_enabled;
@@ -160,6 +162,14 @@ module i3c_core
   i3c_stby_cr_en_init_e stby_cr_en_init;
   assign stby_cr_en_init = i3c_stby_cr_en_init_e'(hw2reg_o.stby_cr_control.stby_cr_enable_init.d);
   assign stby_cr_enabled = (stby_cr_en_init inside {StbyCrEn_SCMRunning, StbyCrEn_SCMHotJoin});
+
+  // Software resets for Controller registers and logic.
+  wire ctrl_sw_reset = reg2hw_i.reset_control.soft_rst.qe & reg2hw_i.reset_control.soft_rst.q;
+  assign hc_soft_rst_o = ctrl_sw_reset;
+  assign sc_soft_rst_o = ctrl_sw_reset & stby_cr_enabled;
+
+  // Software reset for the Target logic.
+  wire targ_sw_reset = reg2hw_i.targ_control.reset.qe & reg2hw_i.targ_control.reset.q;
 
   // Synchronize the SCL and SDA signals to the IP block, for monitoring of bus available/idle
   // condition, detection of Start Requests, and to present them in the debug state.
@@ -211,6 +221,9 @@ module i3c_core
 
   // Indicate to software whether the Target transceiver logic is still under reset.
   assign hw2reg_o.targ_status.active.d = targ_trx_rst_n;
+  // Indicate to software whether the Target transceiver logic is connected to the bus and
+  // monitoring traffic.
+  assign hw2reg_o.targ_status.connected.d = inbuf_enable;
 
   // We measure tAVAL from the most recently bus active _and_ the most recent transceiver reset.
   assign targ_rst_bus_avail = targ_bus_active | !targ_trx_rst_n;
@@ -243,6 +256,7 @@ module i3c_core
     .enable_i   (targ_enabled),
     .sw_reset_i (targ_sw_reset),
     // TODO: Error conditions requiring a reset shall be received and handled here.
+    .te_recov_i (1'b0),
 
     // Bus monitoring.
     .bus_avail_i(targ_bus_avail),
@@ -364,15 +378,9 @@ module i3c_core
   logic ctrl_trx_rdvalid;
   logic ctrl_trx_rvalid, ctrl_trx_rready;
 
-  logic ctrl_trx_arb_nack;  // TODO: Temporary.
-
   // Timing parameters; target- and transfer-invariant.
   logic [TmCycW-1:0] ctrl_tcas_d2;
   logic [TmCycW-1:0] ctrl_tcbp_d2;
-  logic [TmCycW-1:0] ctrl_todch_d2;
-  logic [TmCycW-1:0] ctrl_todcl_d2;
-  // Enable use of the half-cycle SCL extension?
-  logic ctrl_enable_hc_scl;
 
   // Retrying of NACKed commands within the Controller.
   logic ctrl_cmd_nacked;
@@ -491,11 +499,6 @@ module i3c_core
     // Timing parameters; target- and transfer-invariant.
     .tcas_d2_o         (ctrl_tcas_d2),
     .tcbp_d2_o         (ctrl_tcbp_d2),
-    .todch_d2_o        (ctrl_todch_d2),
-    .todcl_d2_o        (ctrl_todcl_d2),
-
-    // Configuration signals to the transceiver logic.
-    .enable_hc_scl_o   (ctrl_enable_hc_scl),
 
     // Retrying of NACKed commands.
     .cmd_nacked_o      (ctrl_cmd_nacked),
@@ -510,7 +513,6 @@ module i3c_core
     .trx_avalid_i      (ctrl_trx_avalid),
     .trx_arb_i         (ctrl_trx_arb),
     .trx_aready_o      (ctrl_trx_aready),
-    .trx_arb_nack_o    (ctrl_trx_arb_nack),
 
     // Read data from the transceiver logic.
     .trx_rdvalid_i     (ctrl_trx_rdvalid),
@@ -561,7 +563,8 @@ module i3c_core
   );
 
   // Status outputs from Target logic.
-  logic hdr_exit_det_en;  // Enable HDR Exit Pattern detector.
+  logic hdr_exit_det_en;     // Enable HDR Exit Pattern detector.
+  logic hdr_restart_det_en;  // Enable HDR Restart Pattern detector.
 
   // Target device descriptions.
   i3c_targ_dev_t      targ_dev[NumTargets];
@@ -749,6 +752,9 @@ module i3c_core
   assign async_evt_rst = reg2hw_i.targ_async_evt_control.reset.qe
                        & reg2hw_i.targ_async_evt_control.reset.q;
 
+  // TODO: This driver should be in `i3c_target`.
+  assign hdr_restart_det_en = targ_ddr_mode;
+
   // Target core.
   i3c_target #(
     .NumTargets (NumTargets),
@@ -796,6 +802,8 @@ module i3c_core
 
     // Control outputs.
     .hdr_exit_det_en_o    (hdr_exit_det_en),
+    // TODO:
+    // .hdr_restart_det_en_o (hdr_restart_det_en),
 
     // Bus signals, already synchronized to the IP clock domain.
     .scl_i                (targ_scl_sync),
@@ -1417,7 +1425,6 @@ module i3c_core
     .trx_avalid_o    (ctrl_trx_avalid),
     .trx_arb_o       (ctrl_trx_arb),
     .trx_aready_i    (ctrl_trx_aready),
-    .trx_arb_nack_i  (ctrl_trx_arb_nack),
 
     // Read data from the transceiver.
     .trx_rdvalid_o   (ctrl_trx_rdvalid),
@@ -1431,10 +1438,6 @@ module i3c_core
     // Timing parameters; target- and transfer-invariant.
     .tcas_d2_i       (ctrl_tcas_d2),
     .tcbp_d2_i       (ctrl_tcbp_d2),
-    .todch_d2_i      (ctrl_todch_d2),
-    .todcl_d2_i      (ctrl_todcl_d2),
-    // Enable the use of the half-cycle SCL extension?
-    .enable_hc_scl_i (ctrl_enable_hc_scl),
 
     // Start request signaling from Targets.
     .sreq_sda_i      (ctrl_sda_sync | !ctrl_bus_avail),
@@ -1569,20 +1572,21 @@ module i3c_core
   // - HDR Exit, HDR Restart.
   i3c_patt_detector u_patt_det (
     // No free-running clock from the IP block code; driven by SCL.
-    .rst_ni            (rst_ni),
+    .rst_ni              (rst_ni),
 
     // I3C I/O signaling.
-    .scl_i             (targ_scl_buf),
-    .sda_clk_i         (targ_sda0_clk),
-    .sda_clk_ni        (targ_sda0_clk_n),
+    .scl_buf_i           (targ_scl_buf),
+    .sda_clk_i           (targ_sda0_clk),
+    .sda_clk_ni          (targ_sda0_clk_n),
 
     // Control inputs.
-    .hdr_exit_det_en_i (hdr_exit_det_en),
-    .hdr_restart_done_i(hdr_restart_done),
+    .hdr_exit_det_en_i   (hdr_exit_det_en),
+    .hdr_restart_det_en_i(hdr_restart_det_en),
+    .hdr_restart_done_i  (hdr_restart_done),
 
     // HDR pattern detection.
-    .hdr_exit_det_o    (hdr_exit_det),
-    .hdr_restart_det_o (hdr_restart_det)
+    .hdr_exit_det_o      (hdr_exit_det),
+    .hdr_restart_det_o   (hdr_restart_det)
   );
 
   // IP block information.

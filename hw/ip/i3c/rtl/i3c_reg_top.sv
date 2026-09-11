@@ -245,6 +245,7 @@ module i3c_reg_top
   logic targ_status_rstact_virt_targ_det_qs;
   logic targ_status_vtm_qs;
   logic targ_status_protocol_error_qs;
+  logic targ_status_connected_qs;
   logic targ_status_active_qs;
   logic targ_status_present_qs;
   logic targ_sink_control_we;
@@ -2088,11 +2089,11 @@ module i3c_reg_top
 
   // R[targ_status]: V(True)
   logic targ_status_qe;
-  logic [7:0] targ_status_flds_we;
+  logic [8:0] targ_status_flds_we;
   // This ignores QEs that are set to constant 0 due to read-only fields.
   logic unused_targ_status_flds_we;
-  assign unused_targ_status_flds_we = ^(targ_status_flds_we & 8'hfe);
-  assign targ_status_qe = &(targ_status_flds_we | 8'hfe);
+  assign unused_targ_status_flds_we = ^(targ_status_flds_we & 9'h1fe);
+  assign targ_status_qe = &(targ_status_flds_we | 9'h1fe);
   //   F[ext_info]: 14:0
   prim_subreg_ext #(
     .DW    (15)
@@ -2185,6 +2186,21 @@ module i3c_reg_top
   );
   assign reg2hw.targ_status.protocol_error.qe = targ_status_qe;
 
+  //   F[connected]: 29:29
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_targ_status_connected (
+    .re     (targ_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.targ_status.connected.d),
+    .qre    (),
+    .qe     (targ_status_flds_we[6]),
+    .q      (),
+    .ds     (),
+    .qs     (targ_status_connected_qs)
+  );
+
   //   F[active]: 30:30
   prim_subreg_ext #(
     .DW    (1)
@@ -2194,7 +2210,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.active.d),
     .qre    (),
-    .qe     (targ_status_flds_we[6]),
+    .qe     (targ_status_flds_we[7]),
     .q      (),
     .ds     (),
     .qs     (targ_status_active_qs)
@@ -2209,7 +2225,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.present.d),
     .qre    (),
-    .qe     (targ_status_flds_we[7]),
+    .qe     (targ_status_flds_we[8]),
     .q      (),
     .ds     (),
     .qs     (targ_status_present_qs)
@@ -19875,6 +19891,7 @@ module i3c_reg_top
         reg_rdata_next[24] = targ_status_rstact_virt_targ_det_qs;
         reg_rdata_next[25] = targ_status_vtm_qs;
         reg_rdata_next[26] = targ_status_protocol_error_qs;
+        reg_rdata_next[29] = targ_status_connected_qs;
         reg_rdata_next[30] = targ_status_active_qs;
         reg_rdata_next[31] = targ_status_present_qs;
       end

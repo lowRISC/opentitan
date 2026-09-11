@@ -170,6 +170,7 @@ module i3c_cmd_decode
     cmd_attrs_o.toc      = cmd_reg_o.toc;
     cmd_attrs_o.has_defb = 1'b0;
     cmd_attrs_o.defb     = 8'b0;  // Not needed by default; just avoids latch creation.
+    cmd_attrs_o.data_len = 16'b0;
 
     // Index to DAT is at the same position for the majority of command descriptors.
     cmd_attrs_o.dev_index = cmd_reg_o.dev_index;
@@ -179,12 +180,20 @@ module i3c_cmd_decode
     // Default to acceptance, unless it's a CCC that's prohibited in Command Descriptors (TCRI 6.2).
     err_o = cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_imm_o.cmd);
 
+    // TODO: Check the validity of the address being used, remembering that it may be the static
+    // address rather than the dynamic address.
+
     // The most significant field is the command type (`cmd_attr`).
     // - the validity of fields is type-specific.
     case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer: begin
         cmd_attrs_o.has_defb = (cmd_imm_o.dtt > 'h4);
         cmd_attrs_o.defb     =  cmd_imm_o.data_byte_1;
+        case (cmd_imm_o.dtt)
+          // Data length does _not_ include the Defining Byte.
+          3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = cmd_imm_o.dtt - 3'h5;
+          default:          cmd_attrs_o.data_len = cmd_imm_o.dtt;
+        endcase
         if (cmd_imm_o.rnw) err_o = 1'b1;  // Immediate transfers are Write only.
         // Not all Transfer mode values are valid/supported.
         if (!mode_supported(cmd_attrs_o.mode, cmd_attrs_o.i2c)) err_o = 1'b1;
@@ -192,6 +201,7 @@ module i3c_cmd_decode
       CmdAttr_RegTransfer: begin
         cmd_attrs_o.has_defb = cmd_reg_o.dbp;
         cmd_attrs_o.defb     = cmd_reg_o.def_byte;
+        cmd_attrs_o.data_len = cmd_reg_o.data_length;
         // Not all Transfer mode values are valid/supported, and zero-length transfers shall be done
         // using Immediate Data Transfer commands.
         if (!mode_supported(cmd_attrs_o.mode, cmd_attrs_o.i2c) || ~|cmd_reg_o.data_length) begin
@@ -200,6 +210,7 @@ module i3c_cmd_decode
         if (cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_reg_o.cmd)) err_o = 1'b1;
       end
       CmdAttr_ComboTransfer: begin
+        cmd_attrs_o.data_len  = cmd_combo_o.data_length;
         // There are two phases to a Combo Transfer command.
         cmd_attrs_o.reps_left = !cmd_state_i.rep_start;
         // Not all Transfer mode values are valid/supported, and zero-length transfers are invalid.
@@ -214,10 +225,12 @@ module i3c_cmd_decode
         cmd_attrs_o.mode    = XferMode_SDR0;
         cmd_attrs_o.i2c     = 1'b0;
         cmd_attrs_o.toc     = 1'b0;
+        // TODO: Dynamic address during the write phase, but this is possibly not required.
+        cmd_attrs_o.data_len  = 'h1;
         // The first segment is a write operation, sending the CCC.
         // Subsequent segments are predominantly reads, collecting the target characteristics,
         // and then transparently changing to a write mid-segment.
-        cmd_attrs_o.rnw     = cmd_state_i.rep_start;
+        cmd_attrs_o.rnw       = cmd_state_i.rep_start;
         // The index into the DAT advances for each command phase, and is incremented _before_ use.
         cmd_attrs_o.dev_index = cmd_state_i.rep_start ? (cmd_state_i.dev_index + 'b1)
                                                       : (cmd_daa_o.dev_index   - 'b1);
