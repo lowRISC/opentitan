@@ -676,7 +676,9 @@
                 Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN mode.
                 This will also clear !!ENTROPY_REFRESH_HASH_CNT.
 
-                Note that the hardware may miss the trigger pulse if the module is not idle, or if the module is currently performing a reseed operation.
+                After setting this bit, the !!STATUS.entropy_ready bit should read as 0 and the !!STATUS.entropy_reseeding bit as 1 indicating that a reseed operation is ongoing.
+
+                If masking is disabled, this bit is ignored.
                 '''
         }
         { bits: "9"
@@ -714,6 +716,23 @@
           desc: '''If 1, SHA3 completes sponge absorbing stage.
                 In this stage, SW can manually run the hashing engine.
                 '''
+        }
+        { bits: "4"
+          name: "entropy_ready"
+          desc: '''If 1, the internal PRNG is ready.
+                If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+                If masking is disabled, this bit mirrors the !!CFG_SHADOWED.entropy_ready bit.
+                '''
+          resval: "0"
+        }
+        { bits: "5"
+          name: "entropy_reseeding"
+          desc: '''If 1, the internal PRNG is currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+                If masking is disabled, this bit always reads as 0.
+                '''
+          resval: "0"
         }
         { bits: "12:8"
           name: "fifo_depth"

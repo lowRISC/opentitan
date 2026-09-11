@@ -94,18 +94,11 @@ If the value of [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_c
 1. Ensure that the entropy complex is running.
 2. Check that the KMAC module is idle by reading the [`STATUS.sha3_idle`](registers.md#status--sha3_idle) bit.
 3. Trigger a manual reseed operation by setting the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit.
-4. Configure the module to process a message in cSHAKE mode (but not in KMAC mode).
-   More precisely, set [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed--mode) to `0x3` and [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) to 0.
-5. Configure the module to use the PRNG and block any hashing operation if the PRNG is not ready by setting [`CFG_SHADOWED.entropy_fast_process`](registers.md#cfg_shadowed--entropy_fast_process) to 0.
-6. Send the `start` command to the [`CMD`](registers.md#cmd) register.
-   The SHA3 engine will start loading and hashing the function name `N` and the customization string `S` first.
-7. Send the `process` command to the [`CMD`](registers.md#cmd) register.
-8. Wait for the [`STATUS.sha3_squeeze`](registers.md#status--sha3_squeeze) bit to get set.
-   Due to the ongoing reseed operation, the [`STATUS.sha3_squeeze`](registers.md#status--sha3_squeeze) bit should remain 0 for an extended period of time.
-9. Send the `done` command to the [`CMD`](registers.md#cmd) register to finish processing.
+4. Wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get set.
+   Due to the ongoing reseed operation, the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit should remain 1 for an extended period of time.
+5. Wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get cleared and the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit to get set.
 
 The [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register should now read as 0.
-Note however that if the manual reseed operation is triggered while the KMAC module is busy, the reseed operation may get skipped despite the hash counter being cleared back to 0.
 
 
 #### Checking Message FIFO depth before pushing data

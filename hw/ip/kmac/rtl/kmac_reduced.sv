@@ -82,6 +82,8 @@ module kmac_reduced
 
   // Entropy status signals
   output prim_mubi_pkg::mubi4_t entropy_configured_o,
+  output logic                  entropy_ready_o,
+  output logic                  entropy_reseeding_o,
   input  logic [HashCntW-1:0]   entropy_hash_threshold_i, // drive to max
   input  logic                  entropy_hash_clr_i,       // drive to 0
   output logic [HashCntW-1:0]   entropy_hash_cnt_o,
@@ -298,6 +300,8 @@ module kmac_reduced
     .hash_cnt_o      (entropy_hash_cnt_o),
 
     .entropy_configured_o(entropy_configured_o),
+    .entropy_ready_o     (entropy_ready_o),
+    .entropy_reseeding_o (entropy_reseeding_o),
 
     // LC escalation
     .lc_escalate_en_i(lc_escalate_en[1]),

@@ -254,6 +254,8 @@ module kmac_reg_top (
   logic status_sha3_idle_qs;
   logic status_sha3_absorb_qs;
   logic status_sha3_squeeze_qs;
+  logic status_entropy_ready_qs;
+  logic status_entropy_reseeding_qs;
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
@@ -1183,6 +1185,36 @@ module kmac_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_sha3_squeeze_qs)
+  );
+
+  //   F[entropy_ready]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_entropy_ready (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.entropy_ready.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_entropy_ready_qs)
+  );
+
+  //   F[entropy_reseeding]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_entropy_reseeding (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.entropy_reseeding.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_entropy_reseeding_qs)
   );
 
   //   F[fifo_depth]: 12:8
@@ -3036,6 +3068,8 @@ module kmac_reg_top (
         reg_rdata_next[0] = status_sha3_idle_qs;
         reg_rdata_next[1] = status_sha3_absorb_qs;
         reg_rdata_next[2] = status_sha3_squeeze_qs;
+        reg_rdata_next[4] = status_entropy_ready_qs;
+        reg_rdata_next[5] = status_entropy_reseeding_qs;
         reg_rdata_next[12:8] = status_fifo_depth_qs;
         reg_rdata_next[14] = status_fifo_empty_qs;
         reg_rdata_next[15] = status_fifo_full_qs;
