@@ -18,7 +18,7 @@ module tb;
   wire                                    idle;
   prim_mubi_pkg::mubi4_t                  idle_s;
   lc_ctrl_pkg::lc_tx_t                    lc_escalate_en;
-  keymgr_pkg::hw_key_req_t                keymgr_key;
+  keymgr_dpe_pkg::hw_key_req_t            keymgr_key;
 
 
   // interfaces

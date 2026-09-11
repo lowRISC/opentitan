@@ -179,7 +179,7 @@ set modules {
   pwrmgr
   clkmgr
   rstmgr
-  keymgr
+  keymgr_dpe
   csrng
   entropy_src
   aes
