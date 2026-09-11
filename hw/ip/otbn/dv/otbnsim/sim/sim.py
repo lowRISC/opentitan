@@ -108,6 +108,7 @@ class OTBNSim:
         if verbose:
             self._print_trace(self.state.pc, '(stall)', changes)
 
+        self._update_mac_rnd_offset_predec()
         return changes
 
     def _on_retire(self,

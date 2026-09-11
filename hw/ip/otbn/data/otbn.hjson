@@ -83,6 +83,12 @@
       randcount: "288",
       randtype:  "data"
     },
+    { name:    "RndCnstUrndPerm",
+      type:    "otbn_pkg::urnd_perm_t",
+      desc:    "Compile-time random permutation applied to the primary URND output, directly after the PRNG and before it is distributed to the rest of the design.",
+      randcount: "389",
+      randtype:  "perm"
+    },
     { name:    "SecFixMaiOpSeq"
       type:    "bit"
       default: "0"
@@ -133,6 +139,14 @@
         Compile-time random permutation for URND permutation in BN MAC.
       '''
       randcount: "256",
+      randtype:  "perm"
+    },
+    { name:    "RndCnstMaiUrndPerm",
+      type:    "otbn_pkg::mai_urnd_perm_t",
+      desc:    '''
+        Compile-time random permutation for URND permutation in MAI.
+      '''
+      randcount: "389",
       randtype:  "perm"
     },
     { name: "RndCnstOtbnKey",

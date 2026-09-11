@@ -25,6 +25,8 @@ module otbn_core
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
+  // Compile-time permutation applied to the primary URND output in otbn_rnd
+  parameter urnd_perm_t RndCnstUrndPerm = RndCnstUrndPermDefault,
 
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
   // Masking accelerator interface will not randomize operand start indexes.
@@ -37,6 +39,9 @@ module otbn_core
 
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
+  // Compile-time permutation for URND permutation in MAI
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
@@ -1165,7 +1170,8 @@ module otbn_core
 
   end else begin : gen_mai
     otbn_mai #(
-      .SecFixMaiOpSeq(SecFixMaiOpSeq)
+      .SecFixMaiOpSeq(SecFixMaiOpSeq),
+      .RndCnstMaiUrndPerm(RndCnstMaiUrndPerm)
     ) u_otbn_mai (
       .clk_i,
       .rst_ni,
@@ -1249,7 +1255,8 @@ module otbn_core
   );
 
   otbn_rnd #(
-    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
+    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
+    .RndCnstUrndPerm(RndCnstUrndPerm)
   ) u_otbn_rnd (
     .clk_i,
     .rst_ni,

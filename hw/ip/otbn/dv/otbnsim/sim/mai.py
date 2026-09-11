@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple
 
+from .constants import MAI_URND_PERMUTATION
 from .csr import CSRFile
 from .ispr import DumbISPR
 from .mai_ispr import MaiOperation
@@ -31,11 +32,14 @@ def _mod_smear(mod: int) -> int:
 def _urnd_fields(urnd_val: int) -> Tuple[int, int, int, int]:
     """Unpack a 389-bit Bivium keystream word into its named fields.
 
+    The raw word is first run through the MAI URND permutation, then sliced as:
+
     [321:0]   rand:     322-bit HPC3 gadget randomness
     [353:322] mask_0:   32-bit remask share 0
     [385:354] mask_1:   32-bit remask share 1
     [388:386] cnt:      3-bit starting counter offset
     """
+    urnd_val = MAI_URND_PERMUTATION.apply(urnd_val)
     rand = urnd_val & ((1 << 322) - 1)
     mask_0 = (urnd_val >> 322) & _MASK32
     mask_1 = (urnd_val >> 354) & _MASK32
@@ -682,8 +686,6 @@ class MaskingAcceleratorInterface:
         # Setting values "immediately" simplifies the status flag handling because the abort case
         # must not be considered.
 
-        rand, mask_0, mask_1, _ = _urnd_fields(self.wsrs.URND._value)
-
         # Apply deferred busy clear from the previous cycle.
         if self._pending_busy_clear:
             self._pending_busy_clear = False
@@ -695,6 +697,8 @@ class MaskingAcceleratorInterface:
                 and not self.csrs.MAI_STATUS.is_busy()
                 and not self.csrs.MAI_CTRL.is_start_bit_set()):
             return
+
+        rand, mask_0, mask_1, cnt = _urnd_fields(self.wsrs.URND.read_unsigned_full())
 
         # Writeback logic:
         # Get the newest result and write it into the output WSRs. This is done before
@@ -762,8 +766,7 @@ class MaskingAcceleratorInterface:
             self._dispatch_idx = 0
             self.is_dispatching = False
             # Latch the random dispatch index for the next execution.
-            _, _, _, new_cnt = _urnd_fields(self.wsrs.URND._value)
-            self._cnt = new_cnt
+            self._cnt = cnt
             # Immediately set the input-ready bit as the input WSRs can be overwritten in
             # this cycle.
             self.csrs.MAI_STATUS.update_input_ready_bit(True)
