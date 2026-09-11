@@ -34,10 +34,12 @@
 
     {
       name: xcelium_memutil_dpi_scrambled_build_opts
-      build_opts: ["-I{build_dir}/fusesoc-work/src/{memutil_dpi_src_dir}/cpp",
-                   "-I{build_dir}/fusesoc-work/src/{memutil_dpi_scrambled_src_dir}/cpp",
-                   "-I{build_dir}/fusesoc-work/src/{prince_ref_src_dir}",
-                   "-I{build_dir}/fusesoc-work/src/{scramble_model_dir}",
+      // Xcelium compiles the sources in place, not the FuseSoC export, see dvsim/xcelium.hjson
+      // memutil_dpi and memutil_dpi_scrambled are two cores in the same directory, so one path
+      // covers both.
+      build_opts: ["-I{proj_root}/hw/dv/verilator/cpp",
+                   "-I{proj_root}/hw/ip/prim/dv/prim_prince/crypto_dpi_prince",
+                   "-I{proj_root}/hw/ip/prim/dv/prim_ram_scr/cpp",
                    "-lelf"]
     }
 
