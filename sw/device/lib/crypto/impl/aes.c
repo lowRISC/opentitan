@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -618,6 +619,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                const otcrypto_const_byte_buf_t *cipher_input,
                                otcrypto_aes_padding_t aes_padding,
                                otcrypto_byte_buf_t *cipher_output) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || key->keyblob == NULL ||

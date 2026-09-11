@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -387,6 +388,7 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
 
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECC_P256_POINT_ON_CURVE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (point == NULL || point->key == NULL || check_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -402,6 +404,7 @@ otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
 status_t otcrypto_ecc_p256_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECC_P256_BASE_POINT_MULT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || public_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -422,11 +425,12 @@ status_t otcrypto_ecc_p256_base_point_mult(
   hardened_memshred((uint32_t *)&private_scalar,
                     kP256MaskedScalarTotalShareWords);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_KEYGEN_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -446,6 +450,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_KEYGEN_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
@@ -471,6 +477,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_word32_buf_t *attestation_seed) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -499,6 +507,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_SIGN_CONFIG_K_ASYNC_START);
   // Do initial checks on the private key and digest.
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign_async_start_setup(private_key, message_digest));
@@ -534,6 +544,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_SIGN_ASYNC_START);
   // Do initial checks on the private key and digest.
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign_async_start_setup(private_key, message_digest));
@@ -570,6 +581,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_SIGN_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -594,6 +606,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *attestation_seed) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_DICE_SIGN_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
@@ -637,6 +651,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_VERIFY_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
@@ -691,6 +706,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_VERIFY_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -708,6 +725,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
 
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -726,6 +744,8 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
 
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
@@ -748,6 +768,7 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
 otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || public_key == NULL || public_key->key == NULL ||
       private_key->keyblob == NULL) {
@@ -810,6 +831,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
 
 otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
