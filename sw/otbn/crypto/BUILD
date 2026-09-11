@@ -503,3 +503,10 @@ otbn_library(
         "xof.s",
     ],
 )
+
+otbn_library(
+    name = "sha256_masked",
+    srcs = [
+        "sha256_masked.s",
+    ],
+)

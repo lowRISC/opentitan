@@ -1054,6 +1054,17 @@ otbn_sim_test(
     ],
 )
 
+otbn_sim_test(
+    name = "sha256_masked_test",
+    srcs = [
+        "sha256_masked_test.s",
+    ],
+    exp = "sha256_masked_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha256_masked",
+    ],
+)
+
 otbn_consttime_test(
     name = "sha256_consttime",
     # All secrets are stored in DMEM; timing is permitted to depend on the
