@@ -308,7 +308,7 @@ fn provision_certificates(
     let dice_ca_key = &ca_keys["dice"];
     // DICE ML-DSA CA is optional
     let dice_mldsa_ca_key = ca_keys.get(DICE_MLDSA_CA_NAME);
-    if perso_certgen_inputs.generate_mldsa_uds_cert && dice_mldsa_ca_key.is_none() {
+    if (perso_certgen_inputs.generate_mldsa_uds_cert != 0) && dice_mldsa_ca_key.is_none() {
         bail!("Need ML-DSA CA cert for signing ML-DSA UDS certificate");
     }
 

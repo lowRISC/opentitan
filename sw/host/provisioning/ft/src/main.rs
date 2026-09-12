@@ -264,7 +264,7 @@ fn main() -> Result<()> {
     let perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
-        generate_mldsa_uds_cert: provision_mldsa_uds_cert,
+        generate_mldsa_uds_cert: if provision_mldsa_uds_cert { 1 } else { 0 },
         dice_mldsa_auth_key_key_id: dice_mldsa_ca_key_id,
     };
 
