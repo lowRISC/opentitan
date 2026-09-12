@@ -146,9 +146,8 @@ jobs:
       - name: Power cycle USB
         continue-on-error: true
         run: |
-          if ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw340\
-            fpga get-sam3x-fw-version 2>&1 \
-            | grep -q "Error: Found no USB device. Search criteria was: vid:pid=0x2b3e:0xc340"; then
+          if ! ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw340\
+            fpga get-sam3x-fw-version > /dev/null 2>&1; then
 
             sudo apt-get install -y uhubctl
             echo "USB device not found. Power cycling port..."
