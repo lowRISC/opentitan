@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "top_memory.h"
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg
@@ -71,7 +71,7 @@ rom_epmp_init:
   csrw pmpcfg0, t0
 
   // ROM the lower bound for TOR is pmpaddr1, already set above to the end of ROM TEXT.
-  li   t0, TOR(TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES)
+  li   t0, TOR(TOP_ROM_CTRL_ROM_BASE_ADDR + TOP_ROM_CTRL_ROM_SIZE_BYTES)
   csrw pmpaddr2, t0
 
   // ROM_EXT TEXT (configured after signature verification)
@@ -79,17 +79,17 @@ rom_epmp_init:
   csrw pmpaddr4, zero // ROM_EXT TEXT high
 
   // NVM
-  li   t0, NAPOT(TOP_EARLGREY_NVM_BASE_ADDR, TOP_EARLGREY_NVM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_NVM_BASE_ADDR, TOP_NVM_SIZE_BYTES)
   csrw pmpaddr5, t0
 
   // MMIO
-  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR)
+  li   t0, TOR(TOP_MMIO_BASE_ADDR)
   csrw pmpaddr10, t0
-  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES)
+  li   t0, TOR(TOP_MMIO_BASE_ADDR + TOP_MMIO_SIZE_BYTES)
   csrw pmpaddr11, t0
 
   // Debug ROM
-  li   t0, NAPOT(TOP_EARLGREY_RV_DM_MEM_BASE_ADDR, TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_RV_DM_MEM_BASE_ADDR, TOP_RV_DM_MEM_SIZE_BYTES)
   csrw pmpaddr13, t0
 
   // Stack guard
@@ -97,11 +97,11 @@ rom_epmp_init:
   csrw pmpaddr14, t0
 
   // RAM
-  li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
   csrw pmpaddr15, t0
 
   // Secondary RAM
-  li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_SRAM_CTRL_SEC_RAM_BASE_ADDR, TOP_SRAM_CTRL_SEC_RAM_SIZE_BYTES)
   csrw pmpaddr12, t0
 
   // Set the remaining PMP configuration registers (pmpcfg0 was already set

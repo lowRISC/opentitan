@@ -13,7 +13,7 @@
 _reset_start:
 
 // Write exit code 0 to `rv_core_ibex.sw_fatal_err`.
-li a0, TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+li a0, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
 lui a1, 0xc0de0
 sw a1, RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET(a0)
 

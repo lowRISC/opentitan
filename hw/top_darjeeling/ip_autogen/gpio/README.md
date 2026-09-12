@@ -1,9 +1,5 @@
 # GPIO HWIP Technical Specification
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_darjeeling/ip_autogen/gpio/data/gpio.hjson --top darjeeling -->
-| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
-|-|-|-|-|
- [`gpio`](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/dashboard.html) | 1.2.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/gpio/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/gpio/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/gpio/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/gpio/code.svg) |
-
 <!-- END CMDGEN -->
 
 # Overview

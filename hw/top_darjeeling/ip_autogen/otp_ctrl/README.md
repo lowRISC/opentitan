@@ -1,9 +1,5 @@
 # OTP Controller Technical Specification
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_darjeeling/ip_autogen/otp_ctrl/data/otp_ctrl.hjson --top darjeeling -->
-| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
-|-|-|-|-|
- [`otp_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/dashboard.html) | 3.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/otp_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/otp_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/otp_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/otp_ctrl/code.svg) |
-
 <!-- END CMDGEN -->
 
 # Overview

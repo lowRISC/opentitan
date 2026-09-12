@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "top_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/coverage/api_asm.h"
 #include "hw/top/otp_ctrl_regs.h"
@@ -91,7 +91,7 @@ _rom_ext_start_boot:
   /**
    * Call the .rom_ext_immutable first if it's not called by ROM.
    */
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_TRUE

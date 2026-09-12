@@ -11,7 +11,7 @@
  * file with the INTERRUPT_HANDLER preprocessor symbol defined to be the
  * name of the general interrupt handler for the respective target.
  */
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "top_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "hw/top/flash_ctrl_regs.h"
@@ -94,7 +94,7 @@ nvm_exception_handler:
   bne  a1, a2, .L_not_a_flash_error
 
   // Check if there is a flash error.
-  li   a3, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
+  li   a3, TOP_FLASH_CTRL_CORE_BASE_ADDR
   lw   a1, FLASH_CTRL_FAULT_STATUS_REG_OFFSET(a3)
   andi a1, a1, PHY_ERRORS
   beqz a1, .L_not_a_flash_error

@@ -1,11 +1,5 @@
 # GPIO HWIP Technical Specification
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_earlgrey/ip_autogen/gpio/data/gpio.hjson --top earlgrey -->
-| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
-|-|-|-|-|
- [`gpio`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/gpio/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/gpio/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/gpio/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/gpio/code.svg) |
-
-This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/gpio/index.html).
-
 <!-- END CMDGEN -->
 
 # Overview

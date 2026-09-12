@@ -7,8 +7,8 @@
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 //                -o hw/top_darjeeling/
 
-#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_SOC_DBG_MEMORY_H_
-#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_SOC_DBG_MEMORY_H_
+#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_MEMORY_H_
+#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_MEMORY_H_
 
 /**
  * @file
@@ -32,70 +32,70 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR 0x3000
+#define TOP_SOC_DBG_LC_CTRL_DMI_BASE_ADDR 0x3000
 
 /**
  * Peripheral size for dmi device on lc_ctrl in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR and
- * `TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR + TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_SIZE_BYTES`.
+ * address between #TOP_SOC_DBG_LC_CTRL_DMI_BASE_ADDR and
+ * `TOP_SOC_DBG_LC_CTRL_DMI_BASE_ADDR + TOP_SOC_DBG_LC_CTRL_DMI_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_SIZE_BYTES 0x1000
+#define TOP_SOC_DBG_LC_CTRL_DMI_SIZE_BYTES 0x1000
 /**
  * Peripheral base address for dbg device on rv_dm in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_RV_DM_DBG_BASE_ADDR 0x0
+#define TOP_SOC_DBG_RV_DM_DBG_BASE_ADDR 0x0
 
 /**
  * Peripheral size for dbg device on rv_dm in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SOC_DBG_RV_DM_DBG_BASE_ADDR and
- * `TOP_DARJEELING_SOC_DBG_RV_DM_DBG_BASE_ADDR + TOP_DARJEELING_SOC_DBG_RV_DM_DBG_SIZE_BYTES`.
+ * address between #TOP_SOC_DBG_RV_DM_DBG_BASE_ADDR and
+ * `TOP_SOC_DBG_RV_DM_DBG_BASE_ADDR + TOP_SOC_DBG_RV_DM_DBG_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_DBG_RV_DM_DBG_SIZE_BYTES 0x200
+#define TOP_SOC_DBG_RV_DM_DBG_SIZE_BYTES 0x200
 /**
  * Peripheral base address for soc device on mbx_jtag in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR 0x2200
+#define TOP_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR 0x2200
 
 /**
  * Peripheral size for soc device on mbx_jtag in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR and
- * `TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR + TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_SIZE_BYTES`.
+ * address between #TOP_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR and
+ * `TOP_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR + TOP_SOC_DBG_MBX_JTAG_SOC_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_SIZE_BYTES 0x20
+#define TOP_SOC_DBG_MBX_JTAG_SOC_SIZE_BYTES 0x20
 /**
  * Peripheral base address for jtag device on soc_dbg_ctrl in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR 0x2300
+#define TOP_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR 0x2300
 
 /**
  * Peripheral size for jtag device on soc_dbg_ctrl in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR and
- * `TOP_DARJEELING_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR + TOP_DARJEELING_SOC_DBG_SOC_DBG_CTRL_JTAG_SIZE_BYTES`.
+ * address between #TOP_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR and
+ * `TOP_SOC_DBG_SOC_DBG_CTRL_JTAG_BASE_ADDR + TOP_SOC_DBG_SOC_DBG_CTRL_JTAG_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_DBG_SOC_DBG_CTRL_JTAG_SIZE_BYTES 0x20
+#define TOP_SOC_DBG_SOC_DBG_CTRL_JTAG_SIZE_BYTES 0x20
 
 
 #endif  // __ASSEMBLER__
 
-#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_SOC_DBG_MEMORY_H_
+#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_MEMORY_H_
