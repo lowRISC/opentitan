@@ -26,6 +26,7 @@
 
 <%
   import tlgen.lib as lib
+  import topgen.lib as topgen_lib
 %>\
 // [UNR] Exclude unused address bits based on IP address range. It is not possible to cover this.
 % for xbar in top["xbar"]:
@@ -49,6 +50,11 @@
         if_name += "_"
     except ValueError:
         pass
+    # A split IP hosts its TL interface in the primary partition. Target the
+    # primary partition instance (u_<name>_part_primary).
+    module = topgen_lib.find_module_by_name(top["module"], dev_name)
+    if module is not None and module.get("is_split_ip"):
+        dev_name += topgen_lib.PARTITION_INFIX + topgen_lib.PART_PRIMARY
 %>\
       % for bit_range in excl_bits:
 -node tb.dut*.u_${dev_name} ${if_name}tl_*i.a_address[${bit_range[1]}:${bit_range[0]}]

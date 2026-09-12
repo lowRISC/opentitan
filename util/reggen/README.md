@@ -1159,14 +1159,14 @@ param_list: [
 
 ### Intra-IP connections
 
-A split IP must define connections between the two partitions in the following way (tool limitation as of now).
-These connections between the two partitions are called intra-IP connections.
-The important limitations are:
-- The names must match exactly.
-- Only the `uni` type is supported.
+A split IP can define connections between the two partitions like any other IP can define inter-module connections.
+Connections between the two partitions are called intra-IP connections.
+To connect two partitions, `uni` or `req_rsp` connections can be used.
+Connections with the same name for both partitions are then automatically connected by the tooling.
 
-For a bidirectional connection, two separate signal definitions are required.
+An example for an unidirectional connection is given below.
 Like regular inter-module signals, this requires that a struct `<ip>_intra_p2s` is defined in the IP's package.
+For bidirectional communication this must be defined twice or use `req_rsp`, see below.
 
 ```
 { struct:  "<ip>_intra_p2s",
@@ -1187,6 +1187,31 @@ Like regular inter-module signals, this requires that a struct `<ip>_intra_p2s` 
   package: "<ip>_pkg",
   desc:    '''
     Primary-to-secondary partition signal.
+  '''
+},
+```
+
+For a bidirectional connection, use a `req_rsp` connection.
+This requires only two entries but is maybe a little bit less ambiguous in which direction the signals flow.
+```
+{ struct:  "<ip>_intra_hs",
+  type:    "req_rsp",
+  name:    "intra_signals",
+  act:     "req",
+  partition: "primary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Intra-IP connection.
+  '''
+},
+{ struct:  "<ip>_intra_hs",
+  type:    "req_rsp",
+  name:    "intra_signals",
+  act:     "rsp",
+  partition: "secondary",
+  package: "<ip>_pkg",
+  desc:    '''
+    Intra-IP connection.
   '''
 },
 ```

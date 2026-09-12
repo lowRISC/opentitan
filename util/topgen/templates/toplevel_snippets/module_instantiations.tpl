@@ -20,35 +20,72 @@ if not lib.is_inst(m):
   continue
 
 block = name_to_block[m['type']]
-inouts, inputs, outputs = block.xputs
+
+## For split IPs, determine which partition(s) are emitted in this power domain.
+is_split = m.get("is_split_ip", False)
+%>\
+% for partition in lib.get_module_partitions(m, domain):
+<%
+clock_connections = m[lib.partition_key("clock_connections", partition)]
+reset_connections = m[lib.partition_key("reset_connections", partition)]
+
+part_suffix = lib.PARTITION_INFIX + partition if is_split else ""
+mod_type = m["type"] + part_suffix
+inst_name = m["name"] + part_suffix
+
+inouts, inputs, outputs = block.xputs_for(partition)
+interrupts = block.interrupts_for(partition)
+inter_signals = [s for s in m.get("inter_signal_list", [])
+                 if s.get("partition", lib.PART_PRIMARY) == partition]
 
 port_list = inputs + outputs + inouts
 max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
-max_intrwidth = (max(len(x.name) for x in block.interrupts)
-                 if block.interrupts else 0)
-alert_info = top["alert_connections"].get("module_" + m["name"], {})
-has_params, param_items = lib.get_params(top, m)
+max_intrwidth = (max(len(x.name) for x in interrupts)
+                 if interrupts else 0)
 
-has_scan = block.scan or block.scan_reset or block.scan_en
-has_interrupts = len(block.interrupts) > 0
+alert_info = top["alert_connections"].get(lib.alert_conn_key(m["name"], partition), {})
+has_params, param_items = lib.get_params(top, m, partition)
+
+## Scan / DFT ports are emitted only for the primary partition of a split IP.
+has_scan = (block.scan or block.scan_reset or block.scan_en) and partition == lib.PART_PRIMARY
+has_interrupts = len(interrupts) > 0
 has_cio_inputs = len(inputs + inouts) > 0
 has_cio_outputs = len(outputs + inouts) > 0
+
+## The inter-module signal loop normally emits the comma-less last port. A split IP's secondary
+## partition may have neither, so find the earlier section that holds the last port and drop its
+## trailing comma. last_section is None for every non-split instance, so their output is unchanged.
+emits_terminator = bool(inter_signals) or m.get("template_type") in ["rv_plic", "pinmux", "alert_handler"]
+if emits_terminator:
+  last_section = None
+elif has_cio_outputs:
+  last_section = "cio_out"
+elif has_cio_inputs:
+  last_section = "cio_in"
+elif alert_info:
+  last_section = "alert"
+elif has_interrupts:
+  last_section = "intr"
+else:
+  last_section = "reset"
 %>\
   % if has_params:
-  ${m["type"]} #(
+  ${mod_type} #(
+    % if partition == lib.PART_PRIMARY:
 <%include file="/toplevel_snippets/racl_parameters.tpl" args="module=m, top=top, block=block"/>\
+    % endif
     % for param_name, param_value in param_items:
     ${param_name}(${param_value})${"," if not loop.last else ""}
     % endfor
-  ) u_${m["name"]} (
+  ) u_${inst_name} (
   % else:
-  ${m["type"]} u_${m["name"]} (
+  ${mod_type} u_${inst_name} (
   % endif
     // Clock and reset connections
-  % for k, v in m["clock_connections"].items():
+  % for k, v in clock_connections.items():
     .${k}(${v}),
   % endfor
-  % for port, reset in m["reset_connections"].items():
+  % for port, reset in reset_connections.items():
 <%
     is_shadowed_port = lib.is_shadowed_port(block, port)
     unmanaged_reset = is_unmanaged_reset(top, reset['name'])
@@ -58,7 +95,7 @@ has_cio_outputs = len(outputs + inouts) > 0
   % if is_shadowed_port:
     .${lib.shadow_name(port)}(${shadowed_port}),
   % endif
-    .${port}(${reset_port}),
+    .${port}(${reset_port})${"" if (last_section == "reset" and loop.last) else ","}
   % endfor
 
 % if has_scan:
@@ -77,7 +114,7 @@ has_cio_outputs = len(outputs + inouts) > 0
 
 % if has_interrupts:
     // Interrupts
-  % for intr in block.interrupts:
+  % for intr in interrupts:
     % if "outgoing_interrupt" in m:
 <%
       intr_group = m["outgoing_interrupt"]
@@ -86,9 +123,9 @@ has_cio_outputs = len(outputs + inouts) > 0
       outgoing_interrupt_idx[intr_group] += intr.bits.width()
 %>\
     // External interrupt group "${intr_group}" [${intr_slice}]: ${intr.name}
-    .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)}(outgoing_interrupt_${intr_group}_o[${intr_slice}]),
+    .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)}(outgoing_interrupt_${intr_group}_o[${intr_slice}])${"" if (last_section == "intr" and loop.last) else ","}
     % else:
-    .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)}(intr_${m["name"]}_${intr.name}),
+    .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)}(intr_${m["name"]}_${intr.name})${"" if (last_section == "intr" and loop.last) else ","}
     % endif
   % endfor
 
@@ -99,15 +136,17 @@ has_cio_outputs = len(outputs + inouts) > 0
     // ${comment}
     % endfor
     .alert_tx_o(${alert_info["tx_expr"]}),
-    .alert_rx_i(${alert_info["rx_expr"]}),
+    .alert_rx_i(${alert_info["rx_expr"]})${"" if last_section == "alert" else ","}
 % endif\
 
+% if partition == lib.PART_PRIMARY:
 <%include file="/toplevel_snippets/racl_signals.tpl" args="module=m, top=top, block=block"/>\
+% endif
 
 % if has_cio_inputs:
     // CIO inputs
   % for p_in in inputs + inouts:
-    .${lib.ljust("cio_"+p_in.name+"_i",max_sigwidth+9)}(cio_${m["name"]}_${p_in.name}_p2d${cio_suffix_i}),
+    .${lib.ljust("cio_"+p_in.name+"_i",max_sigwidth+9)}(cio_${m["name"]}_${p_in.name}_p2d${cio_suffix_i})${"" if (last_section == "cio_in" and loop.last) else ","}
   % endfor
 
 % endif\
@@ -116,14 +155,14 @@ has_cio_outputs = len(outputs + inouts) > 0
     // CIO outputs
   % for p_out in outputs + inouts:
     .${lib.ljust("cio_"+p_out.name+"_o",   max_sigwidth+9)}(cio_${m["name"]}_${p_out.name}_d2p${cio_suffix_o}),
-    .${lib.ljust("cio_"+p_out.name+"_en_o",max_sigwidth+9)}(cio_${m["name"]}_${p_out.name}_en_d2p${cio_suffix_o}),
+    .${lib.ljust("cio_"+p_out.name+"_en_o",max_sigwidth+9)}(cio_${m["name"]}_${p_out.name}_en_d2p${cio_suffix_o})${"" if (last_section == "cio_out" and loop.last) else ","}
   % endfor
 
 % endif\
 
-% if m.get('inter_signal_list'):
+% if inter_signals:
     // Inter-module signals
-  % for sig in m['inter_signal_list']:
+  % for sig in inter_signals:
 <%
 if m.get("template_type") in ["rv_plic", "pinmux", "alert_handler"]:
   term = ","
@@ -181,4 +220,5 @@ else:
 % endif
   );
 
+% endfor
 % endfor

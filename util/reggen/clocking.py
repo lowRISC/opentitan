@@ -103,9 +103,9 @@ class Clocking:
         # Extract the raw lists for each partition.
         raw_partitions: List[Tuple[str, List[object]]] = []
         if isinstance(raw, dict):
-            # The primary partition must always be present and non-empty.
-            # An unclocked secondary partition may omit the key or leave it
-            # empty.
+            # The primary partition must always be present and non-empty. A
+            # split IP always requires a secondary partition. Handled by
+            # IpBlock.
             rd = check_keys(raw, what, [PART_PRIMARY], [PART_SECONDARY])
             if not rd.get(PART_PRIMARY):
                 raise ValueError(f'Primary partition of {what} is empty but '
