@@ -24,7 +24,12 @@ module kmac_reduced
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault,
-  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault
+  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault,
+
+  // The state is restored one bus word at a time, same as in kmac.sv.
+  localparam int unsigned StateWrWidth   = top_pkg::TL_DW,
+  localparam int unsigned StateWrEntries = sha3_pkg::StateW / StateWrWidth,
+  localparam int unsigned StateWrAddrW   = $clog2(StateWrEntries)
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -40,9 +45,13 @@ module kmac_reduced
                                                    // message
   input  logic                  process_i,         // 1 pulse after loading message into SHA3
   input  logic                  run_i,             // drive to 0
+  input  logic                  stop_i,            // drive to 0
+  input  logic                  continue_i,        // drive to 0
   input  prim_mubi_pkg::mubi4_t done_i,            // drive to MuBi4True after
                                                    // absorbed_o == MuBi4True
   output prim_mubi_pkg::mubi4_t absorbed_o,
+  output prim_mubi_pkg::mubi4_t stopped_o,
+  output logic                  stop_error_o,
   output logic                  squeezing_o,
   output logic                  block_processed_o,
   output sha3_st_e              sha3_fsm_o,
@@ -62,6 +71,12 @@ module kmac_reduced
   input logic [NSRegisterSize*8-1:0]   ns_prefix_i, // Ignored for Sha3,
                                                     // 48'h4341_4D4B_2001 for CShake
   input logic [sha3_pkg::MsgStrbW-1:0] msg_strb_i,  // drive to all-1
+
+  // State write
+  input logic [NumShares-1:0]    state_we_i,          // drive to 0
+  input logic [StateWrAddrW-1:0] state_waddr_i,       // drive to 0
+  input logic [StateWrWidth-1:0] state_wdata_i,       // drive to 0
+  input prim_mubi_pkg::mubi4_t   state_clear_i,       // drive to MuBi4False
 
   // Entropy configuration
   input logic          msg_mask_en_i,          // drive to 1
@@ -197,7 +212,8 @@ module kmac_reduced
   // SHA3 engine //
   /////////////////
   sha3 #(
-    .EnMasking(EnMasking)
+    .EnMasking   (EnMasking),
+    .StateWrWidth(StateWrWidth)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -230,12 +246,24 @@ module kmac_reduced
     .done_i,            // Clear internal variables and move back into Idle state.
     .absorbed_o,        // Absorption process is done.
     .squeezing_o,       // Currently running manually triggered processing after absorption.
+
+    .stop_i,
+    .continue_i,
+    .stopped_o,
+    .stop_error_o,
+
     .block_processed_o,
     .sha3_fsm_o,
 
     // State output
     .state_valid_o(state_valid_o),
     .state_o      (state_o),
+
+    // State write
+    .state_we_i,
+    .state_waddr_i,
+    .state_wdata_i,
+    .state_clear_i,
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o(),     // Not used

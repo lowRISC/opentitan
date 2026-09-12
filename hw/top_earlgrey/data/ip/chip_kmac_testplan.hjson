@@ -209,6 +209,24 @@
       ]
     }
     {
+      name: chip_sw_kmac_save_restore_smoketest
+      desc: '''Smoketest for the KMAC save and restore feature.
+
+            - Save a context, restore it, and check the result.
+            - Interleave two context save and restores.
+            '''
+      features: [
+        "KMAC.MODE.KMAC",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: [
+        "//sw/device/tests:kmac_save_restore_smoketest",
+      ]
+    }
+    {
       name: chip_sw_kmac_kmac_key_sideload
       desc: '''Verify all KMAC key sideload.
 

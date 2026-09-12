@@ -94,35 +94,35 @@ module kmac
   /////////////////
   // This state machine is to track the current process based on SW input and
   // KMAC operation.
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
-  //      -s 1966361510 --language=sv
+  // Encoding generated at commit 88ec88cefa using Python 3.12.13 with:
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 1966361510 --distance 3 --states 7 --bits 6
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 5
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 4
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
     // Idle state
-    KmacIdle = 6'b001011,
+    KmacIdle = 6'b001110,
 
     // When software writes CmdStart @ KmacIdle and kmac_en, FSM moves to this
-    KmacPrefix = 6'b000110,
+    KmacPrefix = 6'b011011,
 
     // When SHA3 engine processes Key block, FSM moves to here.
-    KmacKeyBlock = 6'b111110,
+    KmacKeyBlock = 6'b100011,
 
     // Message Feed
     KmacMsgFeed = 6'b010101,
@@ -130,8 +130,11 @@ module kmac
     // Complete and squeeze
     KmacDigest = 6'b101101,
 
+    // Absorb stopped, the keccak state holds a context for SW to save
+    KmacStop = 6'b111000,
+
     // Error
-    KmacTerminalError = 6'b110000
+    KmacTerminalError = 6'b110110
 
   } kmac_st_e;
 
@@ -155,9 +158,11 @@ module kmac
   // SHA3 core control signals and its response.
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
   logic sha3_start, sha3_run, sha3_squeezing;
+  logic sha3_stop, sha3_continue, sha3_stop_error;
   prim_mubi_pkg::mubi4_t sha3_done;
   prim_mubi_pkg::mubi4_t sha3_done_d;
   prim_mubi_pkg::mubi4_t sha3_absorbed;
+  prim_mubi_pkg::mubi4_t sha3_stopped;
 
   // Indicate one block processed
   logic sha3_block_processed;
@@ -203,6 +208,19 @@ module kmac
   // the output from keymgr logic goes into staterd module to be visible to SW
   logic reg_state_valid;
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
+
+  // SW state restore, driven by u_staterdwr
+  // The state is written one bus word at a time.
+  localparam int unsigned StateWrWidth   = top_pkg::TL_DW;
+  localparam int unsigned StateWrEntries = sha3_pkg::StateW / StateWrWidth;
+  localparam int unsigned StateWrAddrW   = $clog2(StateWrEntries);
+
+  logic                    reg_state_write_en;
+  logic                    state_write_en;
+  prim_mubi_pkg::mubi4_t   state_clear;
+  logic [Share-1:0]        state_we;
+  logic [StateWrAddrW-1:0] state_waddr;
+  logic [StateWrWidth-1:0] state_wdata;
 
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_early, sha3_rand_update, sha3_rand_consumed;
@@ -251,10 +269,11 @@ module kmac
   logic                          msg_ready       ;
 
   // Process control signals
-  // Process pulse propagates from register to SHA3 engine one by one.
-  // Each module (MSG_FIFO, KMAC core, SHA3 core) generates the process pulse
-  // after flushing internal data to the next module.
-  logic reg2msgfifo_process, msgfifo2kmac_process, kmac2sha3_process;
+  // The process command first flushes the message pipeline. The pulse then
+  // propagates from the message FIFO to the SHA3 engine one by one, where each
+  // module (KMAC core, SHA3 core) forwards it only after having flushed its
+  // own data to the next module.
+  logic reg2msgfifo_flush, msgfifo2kmac_flush_done, kmac2sha3_process;
 
 
   // Secret Key signals
@@ -428,8 +447,10 @@ module kmac
   always_comb begin
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
+    sha3_stop = 1'b 0;
+    sha3_continue = 1'b 0;
     sha3_done_d = prim_mubi_pkg::MuBi4False;
-    reg2msgfifo_process = 1'b 0;
+    reg2msgfifo_flush = 1'b 0;
 
     unique case (kmac_cmd)
       CmdStart: begin
@@ -437,7 +458,16 @@ module kmac
       end
 
       CmdProcess: begin
-        reg2msgfifo_process = 1'b 1;
+        reg2msgfifo_flush = 1'b 1;
+      end
+
+      CmdStop: begin
+        sha3_stop = 1'b 1;
+        reg2msgfifo_flush = 1'b 1;
+      end
+
+      CmdContinue: begin
+        sha3_continue = 1'b 1;
       end
 
       CmdManualRun: begin
@@ -464,6 +494,8 @@ module kmac
   assign hw2reg.status.sha3_idle.d     = sha3_fsm == sha3_pkg::StIdle;
   assign hw2reg.status.sha3_absorb.d   = sha3_fsm == sha3_pkg::StAbsorb;
   assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == sha3_pkg::StSqueeze;
+  assign hw2reg.status.sha3_stopped.d  = sha3_fsm == sha3_pkg::StStop;
+  assign hw2reg.status.state_write.d   = state_write_en;
 
   // FIFO related status
   assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
@@ -479,6 +511,10 @@ module kmac
 
   // SEC_CM: CFG_SHADOWED.CONFIG.REGWEN
   assign hw2reg.cfg_regwen.d = engine_stable;
+
+  // SW can write the state when the engine is idle and no HW app interface is
+  // active.
+  assign state_write_en = engine_stable & reg_state_write_en;
 
   // Secret Key
   // Secret key is defined as external register. So the logic latches when SW
@@ -557,10 +593,14 @@ module kmac
 
   // Idle control (registered output)
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
+  // While SW holds the KMAC HWIP with the StateWrite command, the SHA3 engine is idle and the
+  // message FIFO is empty. The block must not report idle in that case, as it would allow to clock
+  // gate the KMAC HWIP while SW is about to write the Keccak state.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       idle_o <= prim_mubi_pkg::MuBi4True;
-    end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty || SecIdleAcceptSwMsg)) begin
+    end else if ((sha3_fsm == sha3_pkg::StIdle) && (msgfifo_empty || SecIdleAcceptSwMsg) &&
+                 !reg_state_write_en) begin
       idle_o <= prim_mubi_pkg::MuBi4True;
     end else begin
       idle_o <= prim_mubi_pkg::MuBi4False;
@@ -584,7 +624,11 @@ module kmac
 
   // Hash process absorbed interrupt
   // Convert mubi4_t to logic to generate interrupts
-  assign event_absorbed = prim_mubi_pkg::mubi4_test_true_strict(app_absorbed);
+  // `app_absorbed` is gated in kmac_app and only forwarded while SW owns the block.
+  // `sha3_stopped` comes straight from the SHA3 core which is fine as only SW can issue the stop.
+  // If an app interface would support context save, we would need to gate `sha3_stopped`.
+  assign event_absorbed = prim_mubi_pkg::mubi4_test_true_strict(app_absorbed)
+                        | prim_mubi_pkg::mubi4_test_true_strict(sha3_stopped);
 
   prim_intr_hw #(.Width(1)) intr_kmac_done (
     .clk_i,
@@ -633,17 +677,17 @@ module kmac
   // - When seeing a negative edge on the empty signal. This signals that software has reacted to
   //   the interrupt and is filling up the FIFO again.
   assign msgfifo_full_seen_d =
-      msgfifo_full          ? 1'b 1 :
-      msgfifo_empty_negedge ? 1'b 0 :
-      msgfifo2kmac_process  ? 1'b 0 : msgfifo_full_seen_q;
+      msgfifo_full            ? 1'b 1 :
+      msgfifo_empty_negedge   ? 1'b 0 :
+      msgfifo2kmac_flush_done ? 1'b 0 : msgfifo_full_seen_q;
 
   // The interrupt is gated unless software is performing an absorption operation (but not the
-  // final block) and the FIFO was full before. The msgfifo2kmac_process pulse is arriving from the
-  // FIFO together with the empty signal.
+  // final block) and the FIFO was full before. The msgfifo2kmac_flush_done pulse is arriving
+  // from the FIFO together with the empty signal.
   assign msgfifo_empty_gate =
       app_active                     ? 1'b 1 :
       sha3_fsm != sha3_pkg::StAbsorb ? 1'b 1 :
-      msgfifo2kmac_process           ? 1'b 1 : ~msgfifo_full_seen_q;
+      msgfifo2kmac_flush_done        ? 1'b 1 : ~msgfifo_full_seen_q;
 
   assign status_msgfifo_empty = msgfifo_empty_gate ? 1'b 0 : msgfifo_empty;
 
@@ -783,6 +827,10 @@ module kmac
             // Jump to Msg feed directly
             kmac_st_d = KmacMsgFeed;
           end
+        end else if (kmac_cmd == CmdContinue) begin
+          // Resuming a saved context. Key already has been
+          // processed, so skip it.
+          kmac_st_d = KmacMsgFeed;
         end else begin
           kmac_st_d = KmacIdle;
         end
@@ -817,6 +865,9 @@ module kmac
         end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) &&
           prim_mubi_pkg::mubi4_test_false_loose(sha3_done)) begin
           kmac_st_d = KmacDigest;
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_stopped)) begin
+          // The absorb has been stopped, SW can now save the keccak state.
+          kmac_st_d = KmacStop;
         end else begin
           kmac_st_d = KmacMsgFeed;
         end
@@ -828,6 +879,15 @@ module kmac
           kmac_st_d = KmacIdle;
         end else begin
           kmac_st_d = KmacDigest;
+        end
+      end
+
+      KmacStop: begin
+        // SW reads the keccak state to save the context, wait till done
+        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_done)) begin
+          kmac_st_d = KmacIdle;
+        end else begin
+          kmac_st_d = KmacStop;
         end
       end
 
@@ -886,10 +946,11 @@ module kmac
     .key_valid_i (key_valid),
 
     // Controls
-    .start_i   (sha3_start          ),
-    .process_i (msgfifo2kmac_process),
-    .done_i    (sha3_done           ),
-    .process_o (kmac2sha3_process   ),
+    .start_i    (sha3_start),
+    .continue_i (sha3_continue),
+    .process_i  (msgfifo2kmac_flush_done),
+    .done_i     (sha3_done),
+    .process_o  (kmac2sha3_process),
 
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[1]),
@@ -926,7 +987,8 @@ module kmac
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
   end
   sha3 #(
-    .EnMasking (EnMasking)
+    .EnMasking    (EnMasking),
+    .StateWrWidth (StateWrWidth)
   ) u_sha3 (
     .clk_i,
     .rst_ni,
@@ -955,14 +1017,18 @@ module kmac
     // Controls (CMD register)
     .start_i    (sha3_start       ),
     .process_i  (kmac2sha3_process),
+    .stop_i     (sha3_stop        ),
+    .continue_i (sha3_continue    ),
     .run_i      (sha3_run         ),
     .done_i     (sha3_done        ),
 
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[2]),
 
-    .absorbed_o  (sha3_absorbed),
-    .squeezing_o (sha3_squeezing),
+    .absorbed_o       (sha3_absorbed),
+    .squeezing_o      (sha3_squeezing),
+    .stopped_o        (sha3_stopped),
+    .stop_error_o     (sha3_stop_error),
 
     .block_processed_o (sha3_block_processed),
 
@@ -970,6 +1036,12 @@ module kmac
 
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]
+
+    // State write, used to restore the state
+    .state_we_i    (state_we),
+    .state_waddr_i (state_waddr),
+    .state_wdata_i (state_wdata),
+    .state_clear_i (state_clear),
 
     // REQ/ACK interface to avoid power spikes
     .run_req_o (     ), // Not used
@@ -1099,9 +1171,11 @@ module kmac
     .keccak_state_valid_i (state_valid),
     .keccak_state_i       (state),
 
-    // to STATE TL Window
+    // State SW write
     .reg_state_valid_o    (reg_state_valid),
     .reg_state_o          (reg_state),
+    .reg_state_write_en_o (reg_state_write_en),
+    .state_clear_o        (state_clear),
 
     // Configuration: Sideloaded Key
     .keymgr_key_en_i      (reg2hw.cfg_shadowed.sideload.q),
@@ -1162,8 +1236,8 @@ module kmac
 
     .clear_i (sha3_done),
 
-    .process_i (reg2msgfifo_process ),
-    .process_o (msgfifo2kmac_process),
+    .flush_i      (reg2msgfifo_flush),
+    .flush_done_o (msgfifo2kmac_flush_done),
 
     .err_o (msgfifo_err)
   );
@@ -1175,11 +1249,12 @@ module kmac
     end
   end
 
-  // State (Digest) reader
-  kmac_staterd #(
-    .AddrW     (9), // 512B
-    .EnMasking (EnMasking)
-  ) u_staterd (
+  // State (Digest) reader and writer
+  kmac_staterdwr #(
+    .AddrW        (9), // 512B
+    .StateWrWidth (StateWrWidth),
+    .EnMasking    (EnMasking)
+  ) u_staterdwr (
     .clk_i,
     .rst_ni,
 
@@ -1187,6 +1262,11 @@ module kmac
     .tl_o (tl_win_d2h[WinState]),
 
     .state_i (reg_state_tl),
+
+    .state_write_en_i (state_write_en),
+    .state_we_o       (state_we),
+    .state_waddr_o    (state_waddr),
+    .state_wdata_o    (state_wdata),
 
     .endian_swap_i (reg2hw.cfg_shadowed.state_endianness.q)
   );
@@ -1203,6 +1283,7 @@ module kmac
     .cfg_strength_i(reg_keccak_strength),
 
     .kmac_en_i      (reg_kmac_en        ),
+    .cfg_sideload_i (reg2hw.cfg_shadowed.sideload.q),
     .cfg_prefix_6B_i(reg_ns_prefix[47:0]), // first 6B of PREFIX
 
     .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_modestrength),
@@ -1217,8 +1298,10 @@ module kmac
     .app_active_i(app_active),
 
     // Status from SHA3 core
-    .sha3_absorbed_i(sha3_absorbed       ),
-    .keccak_done_i  (sha3_block_processed),
+    .sha3_absorbed_i  (sha3_absorbed       ),
+    .sha3_stopped_i   (sha3_stopped        ),
+    .sha3_stop_error_i(sha3_stop_error     ),
+    .keccak_done_i    (sha3_block_processed),
 
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[4]),
@@ -1550,8 +1633,9 @@ module kmac
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
 
   // Command input should be sparse
-  `ASSUME(CmdSparse_M, reg2hw.cmd.cmd.qe |-> reg2hw.cmd.cmd.q inside {CmdStart, CmdProcess,
-                                                                CmdManualRun,CmdDone, CmdNone})
+  `ASSUME(CmdSparse_M, reg2hw.cmd.cmd.qe |->
+          reg2hw.cmd.cmd.q inside {CmdStart, CmdProcess, CmdManualRun, CmdDone, CmdNone,
+                                   CmdStop, CmdStateWrite, CmdContinue})
 
   // redundant counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
