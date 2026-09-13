@@ -162,7 +162,7 @@ typedef struct manifest_version {
    *
    * This field can be used to maintain or break forward compatibility in ROM
    * while preserving backward compatibility in ROM_EXT. ROM requires the major
-   * version to be `kManifestFormatVersionMajor1`.
+   * version to be `kManifestFormatVersionMajor2`.
    */
   uint16_t major;
 } manifest_version_t;
@@ -195,12 +195,7 @@ enum {
  */
 typedef struct manifest {
   /**
-   * The manifest only supports one of the following signatures:
-   *
-   * - For `kManifestVersionMajor1`: `rsa_signature`.
-   * - For `kManifestVersionMajor2`: `ecdsa_signature`.
-   *
-   * Both signatures use SHA-256 as the hash function.
+   * The kManifestVersionMajor2 manifest only ecdsa-p256-sha256 signature.
    *
    * On-target verification should also integrate usage constraints comparison
    * to signature verification to harden it against potential attacks. During
@@ -214,46 +209,43 @@ typedef struct manifest {
    * usage constraints read from the hardware can be obtained using
    * `manifest_digest_region_get()`.
    */
-  union {
-    /**
-     * RSA signature of the image.
-     *
-     * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
-     * private key and the SHA-256 hash function. The signed region of an image
-     * starts immediately after this field and ends at the end of the image.
-     */
-    sigverify_rsa_buffer_t rsa_signature;
-
-    /**
-     * ECDSA P256 signature of the image.
-     *
-     * ECDSA P256 signature of the image generated using a NIST P256 ECC key
-     * and the SHA-256 hash function. The signed region of an image starts
-     * immediately after the end of the union encapsulating this field and ends
-     * at the end of the image.
-     */
-    ecdsa_p256_signature_t ecdsa_signature;
-  };
+  /**
+   * ECDSA P256 signature of the image.
+   *
+   * ECDSA P256 signature of the image generated using a NIST P256 ECC key
+   * and the SHA-256 hash function.
+   */
+  ecdsa_p256_signature_t ecdsa_signature;
+  /**
+   * Reserved bytes for signature.
+   */
+  uint32_t reserved_signature[40];
+  /**
+   * Reserved bytes. These bytes are not signed by the signature above.
+   *
+   * The signed region of an image starts immediately after this field and ends
+   * at the end of the image.
+   */
+  uint32_t reserved_unsigned[40];
   /**
    * Usage constraints.
    */
   manifest_usage_constraints_t usage_constraints;
   /**
-   * The manifest only supports one of the following public key types:
-   *
-   * - For `kManifestVersionMajor1`: `rsa_modulus`.
-   * - For `kManifestVersionMajor2`: `ecdsa_public_key`.
+   * Signer's ECDSA NIST P256 ECC public key.
    */
-  union {
-    /**
-     * Modulus of the signer's 3072-bit RSA public key.
-     */
-    sigverify_rsa_buffer_t rsa_modulus;
-    /**
-     * Signer's ECDSA NIST P256 ECC public key.
-     */
-    ecdsa_p256_public_key_t ecdsa_public_key;
-  };
+  ecdsa_p256_public_key_t ecdsa_public_key;
+  /**
+   * Reserved bytes for public key.
+   */
+  uint32_t reserved_public_key[40];
+  /**
+   * Reserved bytes.
+   *
+   * When allocating reserved bytes, please allocate from the end of this field
+   * to allow for the potential size expansion of the public key field above.
+   */
+  uint32_t reserved[40];
   /**
    * Address translation (hardened boolean).
    */
@@ -334,11 +326,13 @@ typedef struct manifest {
   manifest_ext_table_t extensions;
 } manifest_t;
 
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_signature, 64);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_unsigned, 224);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);
