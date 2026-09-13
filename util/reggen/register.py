@@ -64,6 +64,10 @@ OPTIONAL_FIELDS = {
         "register name should be given here. empty-string for no register "
         "write protection"
     ],
+    'reinit': [
+        's', "reinit signal that restores the content of the register to its "
+        "reset state, e.g., at the request of software."
+    ],
     'resval': ['d', "reset value of full register (default 0)"],
     'tags': [
         's',
@@ -286,11 +290,28 @@ class Register(RegBase):
         hwre = check_bool(rd.get('hwre', False),
                           f'hwre flag for {name} register')
 
+        reinit = rd.get('reinit')
+        reinit_str: str | None = None
+        if reinit is not None:
+            if sync_clk is not None or async_clk is not None:
+                raise ValueError(f'{name} register has special clocking requirements '
+                                 'and does not support reinit.')
+            if hwext and not hwaccess.allows_read():
+                raise ValueError(f'{name} register cannot support reinit because it '
+                                 'is external and does not support hw reads.')
+            reinit_str = str(reinit)
+
         raw_regwen = rd.get('regwen', '')
         if not raw_regwen:
             regwen = None
         else:
             regwen = check_name(raw_regwen, f'regwen for {name} register')
+
+        # Registers that are protected by a REGWEN do not support software reinit,
+        # because that could undermine the security model.
+        if regwen is not None and reinit is not None:
+            raise ValueError(f'{name} register is protected by a regwen and '
+                             'does not support reinit.')
 
         raw_resval = rd.get('resval')
         if raw_resval is None:
@@ -305,6 +326,9 @@ class Register(RegBase):
 
         shadowed = check_bool(rd.get('shadowed', False),
                               f'shadowed flag for {name} register')
+
+        if shadowed and reinit is not None:
+            raise ValueError('reinit is not supported for shadowed registers.')
 
         raw_fields = check_list(rd['fields'], f'fields for {name} register')
         if not raw_fields:
@@ -332,8 +356,7 @@ class Register(RegBase):
             overlap_bits = used_bits & field.bits.bitmask()
             if overlap_bits:
                 raise ValueError(f'Field {field.name} uses bits '
-                                 f'{overlap_bits:#x} that appear in other '
-                                 f'fields.')
+                                 f'{overlap_bits:#x} that appear in other fields.')
 
             used_bits |= field.bits.bitmask()
             fields.append(field)
@@ -357,9 +380,9 @@ class Register(RegBase):
                        'writes_ignore_errors flag for {} register'
                        .format(name))
 
-        return Register(name, offset, async_clk, sync_clk, alias_target,
-                        desc, fields, hwext, hwqe, hwre, regwen,
-                        tags, resval, shadowed,
+        return Register(name, offset, async_clk, sync_clk, reinit_str,
+                        alias_target, desc, fields, hwext, hwqe, hwre,
+                        regwen, tags, resval, shadowed,
                         update_err_alert, storage_err_alert,
                         writes_ignore_errors)
 
@@ -367,9 +390,10 @@ class Register(RegBase):
         return self.offset + addrsep
 
     def get_n_bits(self, bittype: List[str]) -> int:
-        return sum(
+        reinit_width = 0 if self.reinit is None or 'reinit' not in bittype else 1
+        return (reinit_width + sum(
             field.get_n_bits(self.hwext, self.hwre, bittype)
-            for field in self.fields)
+            for field in self.fields))
 
     def get_field_list(self) -> List[Field]:
         return self.fields
@@ -456,6 +480,7 @@ class Register(RegBase):
     def collect_registers(offset: int,
                           name: str,
                           regs: List[Tuple['Register', int]],
+                          reinit: Optional[str],
                           alias_target: Optional[str],
                           regwen: Optional[str],
                           field_desc_override: Optional[str],
@@ -547,7 +572,7 @@ class Register(RegBase):
         new_resval = None
 
         return Register(name, offset,
-                        reg0.async_clk, reg0.sync_clk, alias_target,
+                        reg0.async_clk, reg0.sync_clk, reinit, alias_target,
                         reg0.desc, fields,
                         reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
                         reg0.tags, new_resval, reg0.shadowed,
@@ -562,6 +587,12 @@ class Register(RegBase):
         if self.async_clk is not None:
             raise ValueError(
                 f'Regwen {self.name} cannot be declared as async.')
+
+        # REGWEN registers do not offer support for software reinit signals.
+        # Doing so would allow software to unlock the controlled registers.
+        if self.reinit is not None:
+            raise ValueError(
+                f'Regwen {self.name} does not support software reinit.')
 
         # A REGWEN register should have a single field that's just bit zero.
         if len(self.fields) != 1:
@@ -646,6 +677,8 @@ class Register(RegBase):
             rd['update_err_alert'] = self.update_err_alert
         if self.storage_err_alert is not None:
             rd['storage_err_alert'] = self.storage_err_alert
+        if self.reinit is not None:
+            rd['reinit'] = self.reinit
         if self.alias_target is not None:
             rd['alias_target'] = self.alias_target
 

@@ -373,6 +373,9 @@ class Field:
           can write the field's contents and the register data is stored in the
           register block (true if the hwext flag is false).
 
+        - `reinit`: Reinitialization input is not field local. Return 0 for
+          the convenience of the parent register.
+
         """
         n_bits = 0
         if "q" in bittype and self.hwaccess.allows_read():

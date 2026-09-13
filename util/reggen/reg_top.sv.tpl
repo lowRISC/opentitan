@@ -142,6 +142,14 @@ module ${mod_name}${' (' if not racl_support else ''}
   input ${clock.clock},
   input ${clock.reset},
 % endfor
+% if rb.reinit_list:
+
+  // Register reinit inputs
+% for reinit in rb.reinit_list:
+  input  ${reinit.name},
+% endfor
+
+% endif
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 % if num_wins != 0:
@@ -566,6 +574,7 @@ ${field_sig_decl(f, sig_name, r.hwext, r.shadowed, r.async_clk)}\
 <%
       r0, srs = r0_srs[r]
       reg_name = r0.name.lower()
+      fld_count = 0
 %>\
     % for sr_idx, sr in enumerate(srs):
 <%
@@ -660,9 +669,24 @@ ${reg_hdr}
 <%
           fld_name = field.name.lower()
           fsig_name, finst_name = finst_names[(sr, field)]
+
+          reinit = r.reinit and r.get_n_bits(["q"])
+          if isinstance(r, MultiRegister):
+            sig_idx = fld_count if r.is_homogeneous() else sr_idx
+            fsig_pfx = '{}[{}]'.format(reg_name, sig_idx)
+            reinit = reinit and (r.is_homogeneous() or fidx == 0)
+            fld_count += 1
+          else:
+            fsig_pfx = reg_name
+            reinit = reinit and fidx == 0
 %>\
         % if len(sr.fields) > 1:
   //   F[${fld_name}]: ${field.bits.msb}:${field.bits.lsb}
+        % endif
+        % if reinit:
+  // Reinit
+  assign reg2hw.${fsig_pfx}.reinit = ${r.reinit};
+
         % endif
 ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
       % endfor
@@ -1147,6 +1171,13 @@ ${bits.msb}\
       % endif
       % if reg.shadowed and not reg.hwext:
     .rst_shadowed_ni (rst_shadowed_ni),
+      % endif
+      % if not reg.shadowed:
+        % if reg.reinit is None:
+    .reinit_i(1'b0),
+        % else:
+    .reinit_i(${reg.reinit}),
+        % endif
       % endif
 
     // from register interface

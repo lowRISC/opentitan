@@ -30,6 +30,10 @@ class RegBase:
     register/multiregister. Unlike an asynchronous clock, there is no CDC
     needed between the main clock and the clock used by the register.'''
 
+    reinit: str | None
+    '''An optional input that may be used to reinitialize the register
+    to its reset state, e.g. in response to a software request.'''
+
     alias_target: str | None
     '''The name of an analogous register/multiregister that we are going to
     override. This is used when building closed source components which

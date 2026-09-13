@@ -29,6 +29,7 @@ class RegBlock:
     _addrsep: int = field(init=False)
     name: str = ""
     clocks: dict[str, ClockingItem] = field(default_factory=dict)
+    reinit_list: list[Signal] = field(default_factory=list)
     offset: int = 0
     multiregs: list[MultiRegister] = field(default_factory=list)
     registers: list[Register] = field(default_factory=list)
@@ -71,7 +72,7 @@ class RegBlock:
 
     @staticmethod
     def build_blocks(block: 'RegBlock', raw: object, bus: BusInterfaces,
-                     clocks: Clocking,
+                     clocks: Clocking, reinit_list: list[Signal],
                      is_alias: bool) -> dict[str | None, 'RegBlock']:
         '''Build a dictionary of blocks for a 'registers' field in the hjson
 
@@ -108,6 +109,10 @@ class RegBlock:
         for idx, (r_key, r_val) in enumerate(raw.items()):
             if idx > 0:
                 block = RegBlock(block._reg_width, block._params)
+                # The intersection of IP blocks employing reinit signals and
+                # those with multiple blocks will likely be small; keep it simple
+                # and use one set of signals.
+                block.add_reinits(reinit_list)
 
             rb_key = check_str(
                 r_key, 'the key for item {} of '
@@ -226,6 +231,16 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
+    def _validate_reinit(self, name_reg: str, name_reinit: str | None) -> None:
+        '''Check that the reinitialization input is known.
+        '''
+        if name_reinit is not None:
+            reinits = [signal.name for signal in self.reinit_list]
+            if name_reinit not in reinits:
+                raise ValueError(
+                    f"The {name_reg} register specifies a reinitialization input "
+                    f"that is not present in 'reinit_list': {reinits}")
+
     def _handle_register(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
         reg = Register.from_raw(self._reg_width, self.offset, self._params,
@@ -233,6 +248,7 @@ class RegBlock:
 
         self._validate_async(reg.async_clk)
         self._validate_sync(reg.sync_clk)
+        self._validate_reinit(reg.name, reg.reinit)
 
         self.add_register(reg)
 
@@ -301,6 +317,8 @@ class RegBlock:
         # validate async schemes
         self._validate_async(mr.async_clk)
         self._validate_sync(mr.sync_clk)
+
+        self._validate_reinit(mr.name, mr.reinit)
 
         for reg in mr.cregs:
             lname = reg.name.lower()
@@ -372,6 +390,10 @@ class RegBlock:
         # Remove old key and reinsert register with new key name.
         self.name_to_flat_reg[new_lname] = self.name_to_flat_reg.pop(old_lname)
         self.name_to_offset[new_lname] = self.name_to_offset.pop(old_lname)
+
+    def add_reinits(self, reinits: list[Signal]) -> None:
+        '''Extend the list of reinit inputs to these registers'''
+        self.reinit_list.extend(reinits)
 
     def add_window(self, window: Window) -> None:
         if window.name is not None:
@@ -475,6 +497,7 @@ class RegBlock:
                                    self.offset,
                                    async_clk=None,
                                    sync_clk=None,
+                                   reinit=None,
                                    alias_target=None,
                                    desc=reg_desc,
                                    fields=fields,
@@ -544,6 +567,7 @@ class RegBlock:
                 self.offset,
                 async_clk=None,
                 sync_clk=None,
+                reinit=None,
                 alias_target=None,
                 desc='Interrupt State Register',
                 fields=fields,
