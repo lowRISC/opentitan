@@ -178,7 +178,7 @@ jobs:
       run_full: ${{ steps.check.outputs.run_full }}
     steps:
       - id: check
-        run: echo "run_full=${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}" >> "$GITHUB_OUTPUT"
+        run: echo "run_full=true" >> "$GITHUB_OUTPUT"
 
   build_docs:
     name: Build documentation
