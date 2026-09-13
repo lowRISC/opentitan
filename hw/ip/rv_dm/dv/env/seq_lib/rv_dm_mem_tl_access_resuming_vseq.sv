@@ -44,7 +44,7 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
 
     // Disable unavailable signal to make sure that hart should be in known
     // state. If hart is unavailable then it could not halted.
-    cfg.rv_dm_vif.unavailable <= 0;
+    cfg.rv_dm_vif.cb.unavailable <= 0;
 
     // Request a halt as the debugger and then acknowledge it as the hart.
     request_halt();
