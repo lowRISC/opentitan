@@ -256,7 +256,7 @@ impl TransportWrapperBuilder {
         Self {
             interface,
             disable_dft_on_reset,
-            reset_delay: Duration::from_millis(100),
+            reset_delay: Duration::from_millis(101),
             openocd_adapter_config: None,
             provides_list: Vec::new(),
             requires_list: Vec::new(),
