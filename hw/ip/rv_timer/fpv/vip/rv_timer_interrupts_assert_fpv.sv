@@ -20,14 +20,46 @@ module rv_timer_interrupts_assert_fpv # (
   input  [Width-1:0]  reg2hw_intr_test_q_i,
   input               reg2hw_intr_test_qe_i,
   input  [Width-1:0]  reg2hw_intr_state_q_i,
-  output              hw2reg_intr_state_de_o,
-  output [Width-1:0]  hw2reg_intr_state_d_o,
+  input               hw2reg_intr_state_de_o,
+  input  [Width-1:0]  hw2reg_intr_state_d_o,
 
   // outgoing interrupt
-  output logic [Width-1:0]  intr_o
+  input logic [Width-1:0]  intr_o
 );
+  // internal signals from inputs to mirror DUT signals
+  logic [Width-1:0] new_event;
+  assign new_event = (({Width{reg2hw_intr_test_qe_i}} & reg2hw_intr_test_q_i) | event_intr_i);
 
+  logic [Width-1:0] test_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) test_q <= '0;
+    else if (reg2hw_intr_test_qe_i) test_q <= reg2hw_intr_test_q_i;
+  end
 
-  // TODO: populate me with FPV
+  logic [Width-1:0] status;
+  assign status = (IntrT == "Event") ? reg2hw_intr_state_q_i : (event_intr_i | test_q);
+
+  // When state is event, make sure hw2reg_intr_state_de_o is only active when |new_event is high
+  `ASSERT(IntrStateWriteEnableOnEvent_A, IntrT == "Event" |-> 
+  (hw2reg_intr_state_de_o iff |new_event ))
+
+  // Checks hw2reg_intr_state_d_o equals new_event OR'd with current interrupt state in Event mode
+  `ASSERT(IntrStateOrUpdateOnEvent_A, IntrT == "Event" |-> 
+  (hw2reg_intr_state_d_o == (new_event | reg2hw_intr_state_q_i)))
+
+  // Check that in Status mode, hw2reg_intr_state_de_o is always driven high
+  `ASSERT(IntrStateDeAlwaysOnStatus_A, IntrT == "Status" |-> hw2reg_intr_state_de_o)
+  
+  // Check hw2reg_intr_state_d_o reflects event | test_q in Status mode
+  `ASSERT(IntrStateDataNewEventOrTestQ_A, IntrT == "Status" |-> 
+  (hw2reg_intr_state_d_o == (event_intr_i | test_q)))
+
+  // When FlopOutput == 1, intr_o is flopped status & reg2hw_intr_enable_q_i 
+  `ASSERT(IntrOutgoingFlopped_A, FlopOutput == 1 |->
+  (intr_o == $past(status & reg2hw_intr_enable_q_i)))
+
+  // When FlopOutput == 0, intr_o is combinational reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i 
+  `ASSERT(IntrOutgoingNotFlopped_A, FlopOutput == 0 |->
+  (intr_o == (reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i)))
 
 endmodule
