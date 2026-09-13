@@ -9,22 +9,33 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "common",
     srcs = ["common.py"],
-    imports = ["../../"],
+    imports = [
+        # //util:
+        #   util.topgen
+        "../..",
+    ],
     deps = [
         "//util/topgen",
+        "//util/topgen:secure_prng",
     ],
 )
 
 py_test(
     name = "common_test",
     srcs = ["common_test.py"],
-    deps = [":common"],
+    imports = [
+        # //util/design/lib:
+        #   util.design.lib.common
+        ".",
+    ],
+    deps = [
+        ":common",
+    ],
 )
 
 py_library(
     name = "immutable_section_processor",
     srcs = ["ImmutableSectionProcessor.py"],
-    imports = ["../../"],
     deps = [
         requirement("pycryptodome"),
         requirement("pyelftools"),
@@ -34,10 +45,18 @@ py_library(
 py_library(
     name = "lc_st_enc",
     srcs = ["LcStEnc.py"],
-    imports = ["../../"],
+    imports = [
+        # //util/design:
+        #   util.design.lib
+        "..",
+        # //util:
+        #   util.topgen
+        "../..",
+    ],
     deps = [
         ":common",
         "//util/topgen",
+        "//util/topgen:secure_prng",
         requirement("pycryptodome"),
     ],
 )
@@ -52,13 +71,19 @@ py_library(
     # temporarily resovles this issue until the entire hw/ subtree can be
     # Bazelfied.
     imports = [
-        "../",
-        "../../",
+        # //util/design:
+        #   util.design.lib
+        #   util.design.mubi
+        "..",
+        # //util:
+        #   util.topgen
+        "../..",
     ],
     deps = [
         ":common",
         "//util/design/mubi:prim_mubi",
         "//util/topgen",
+        "//util/topgen:secure_prng",
         requirement("tabulate"),
     ],
 )
@@ -66,13 +91,23 @@ py_library(
 py_library(
     name = "otp_mem_img",
     srcs = ["OtpMemImg.py"],
-    imports = ["../../"],
+    imports = [
+        # //util/design:
+        #   util.design.lib
+        #   util.design.mubi
+        "..",
+        # //util:
+        #   util.topgen
+        "../..",
+    ],
     deps = [
         ":common",
         ":lc_st_enc",
         ":otp_mem_map",
         ":present",
         "//util/design/mubi:prim_mubi",
+        "//util/topgen:secure_prng",
+        requirement("mako"),
         requirement("pycryptodome"),
     ],
 )
