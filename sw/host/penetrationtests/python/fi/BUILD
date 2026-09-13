@@ -183,6 +183,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -203,6 +204,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -223,6 +225,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -243,6 +246,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -385,6 +389,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 
@@ -405,6 +410,7 @@ py_binary(
         "//sw/host/penetrationtests/python/util:targets",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
+        requirement("pyserial"),
     ],
 )
 

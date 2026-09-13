@@ -19,7 +19,12 @@ py_library(
 py_binary(
     name = "bitstream_bisect",
     srcs = ["bitstream_bisect.py"],
-    deps = [":bitstream_bisect_support"],
+    deps = [
+        ":bitstream_bisect_support",
+        "//rules/scripts:bitstreams_workspace",
+        requirement("rich"),
+        requirement("typer"),
+    ],
 )
 
 py_test(
@@ -28,5 +33,16 @@ py_test(
         "bitstream_bisect.py",
         "bitstream_bisect_test.py",
     ],
-    deps = [":bitstream_bisect_support"],
+    imports = [
+        # //util/fpga:
+        #   util.fpga.bitstream_bisect
+        ".",
+    ],
+    deps = [
+        ":bitstream_bisect",
+        ":bitstream_bisect_support",
+        "//rules/scripts:bitstreams_workspace",
+        requirement("rich"),
+        requirement("typer"),
+    ],
 )
