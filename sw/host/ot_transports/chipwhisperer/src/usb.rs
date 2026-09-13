@@ -15,7 +15,7 @@ use opentitanlib::collection;
 use opentitanlib::io::gpio::GpioError;
 use opentitanlib::io::spi::SpiError;
 use opentitanlib::io::usb::{UsbContext, UsbDevice};
-use opentitanlib::transport::common::usb::RusbContext;
+use opentitanlib::transport::common::usb::{RusbContext, UsbHub, UsbHubOp};
 use opentitanlib::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -212,8 +212,26 @@ impl<B: Board> Backend<B> {
 
     /// Sends a reset signal to the SAM3U chip. Does not wait for the SAM3U to
     /// finish resetting.
-    pub fn reset_sam3x(&self) -> Result<()> {
-        self.send_ctrl(Backend::<B>::CMD_SAM3X_CFG, Backend::<B>::SAM3X_RESET, &[])?;
+    pub fn reset_sam3x(&self, power_cycle: bool) -> Result<()> {
+        if power_cycle {
+            let parent_hub = UsbHub::from_parent_device(&*self.usb)
+                .context("Unable to open the USB parent hub of the SAM3x device")?;
+            let port = self.usb.port_numbers()?;
+            let port = *port.last().unwrap();
+            log::info!(
+                "Power cycling port {port} of SAM3x parent hub (bus {}, address {})",
+                parent_hub.device().bus_number(),
+                parent_hub.device().address(),
+            );
+            parent_hub
+                .op(UsbHubOp::PowerOff, port, Duration::from_secs(1), true)
+                .context("Unable to power off SAM3x hub port")?;
+            parent_hub
+                .op(UsbHubOp::PowerOn, port, Duration::from_secs(1), true)
+                .context("Unable to power on SAM3x hub port")?;
+        } else {
+            self.send_ctrl(Backend::<B>::CMD_SAM3X_CFG, Backend::<B>::SAM3X_RESET, &[])?;
+        }
         Ok(())
     }
 
