@@ -142,6 +142,14 @@ module ${mod_name}${' (' if not racl_support else ''}
   input ${clock.clock},
   input ${clock.reset},
 % endfor
+% if len(rb.reinit_list):
+
+  // Register reinit inputs
+% for reinit in rb.reinit_list:
+  input ${reinit.name}_i,
+% endfor
+
+% endif
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 % if num_wins != 0:
@@ -1147,6 +1155,11 @@ ${bits.msb}\
       % endif
       % if reg.shadowed and not reg.hwext:
     .rst_shadowed_ni (rst_shadowed_ni),
+      % endif
+      % if reg.reinit is None:
+    .reinit_i (1'b0),
+      % else:
+    .reinit_i (${reg.reinit}_i),
       % endif
 
     // from register interface

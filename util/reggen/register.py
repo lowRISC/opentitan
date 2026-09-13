@@ -64,6 +64,10 @@ OPTIONAL_FIELDS = {
         "register name should be given here. empty-string for no register "
         "write protection"
     ],
+    'reinit': [
+        's', "reinit signal that restores the content of the register to its "
+        "reset state, e.g. at the request of software."
+    ],
     'resval': ['d', "reset value of full register (default 0)"],
     'tags': [
         's',
@@ -286,6 +290,12 @@ class Register(RegBase):
         hwre = check_bool(rd.get('hwre', False),
                           f'hwre flag for {name} register')
 
+        reinit = rd.get('reinit')
+        if reinit is not None:
+          if sync_clk is not None or async_clk is not None:
+            raise ValueError(f'reinit is supported only for registers '
+                             f'without special clocking requirements.')
+
         raw_regwen = rd.get('regwen', '')
         if not raw_regwen:
             regwen = None
@@ -357,9 +367,9 @@ class Register(RegBase):
                        'writes_ignore_errors flag for {} register'
                        .format(name))
 
-        return Register(name, offset, async_clk, sync_clk, alias_target,
-                        desc, fields, hwext, hwqe, hwre, regwen,
-                        tags, resval, shadowed,
+        return Register(name, offset, async_clk, sync_clk, reinit,
+                        alias_target, desc, fields, hwext, hwqe, hwre,
+                        regwen, tags, resval, shadowed,
                         update_err_alert, storage_err_alert,
                         writes_ignore_errors)
 
@@ -456,6 +466,7 @@ class Register(RegBase):
     def collect_registers(offset: int,
                           name: str,
                           regs: List[Tuple['Register', int]],
+                          reinit: Optional[str],
                           alias_target: Optional[str],
                           regwen: Optional[str],
                           field_desc_override: Optional[str],
@@ -547,7 +558,7 @@ class Register(RegBase):
         new_resval = None
 
         return Register(name, offset,
-                        reg0.async_clk, reg0.sync_clk, alias_target,
+                        reg0.async_clk, reg0.sync_clk, reinit, alias_target,
                         reg0.desc, fields,
                         reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
                         reg0.tags, new_resval, reg0.shadowed,
@@ -646,6 +657,8 @@ class Register(RegBase):
             rd['update_err_alert'] = self.update_err_alert
         if self.storage_err_alert is not None:
             rd['storage_err_alert'] = self.storage_err_alert
+        if self.reinit is not None:
+            rd['reinit'] = self.reinit
         if self.alias_target is not None:
             rd['alias_target'] = self.alias_target
 
