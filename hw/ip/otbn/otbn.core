@@ -68,10 +68,12 @@ filesets:
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
       - lowrisc:ip:otbn_pkg
+      - lowrisc:ip:kmac_pkg
       - lowrisc:ip:otp_ctrl_pkg
     files:
       - rtl/otbn_reg_top.sv
       - rtl/otbn_scramble_ctrl.sv
+      - rtl/otbn_kmac_if.sv
       - rtl/otbn.sv
     file_type: systemVerilogSource
 
