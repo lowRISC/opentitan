@@ -81,6 +81,9 @@ class MultiRegister(RegBase):
 
       stride       The address offset step.
 
+      reinit       The input signal used to reinitialize the registers
+                   to their reset states, e.g. at the request of software.
+
       cregs        The concrete registers that make up the multiregister.
                    These will each contain at least one copy of the replicated
                    register.
@@ -100,6 +103,7 @@ class MultiRegister(RegBase):
                  offset: int,
                  count: int,
                  stride: int,
+                 reinit: str | None,
                  alias_target: Optional[str],
                  pregs: List[Register],
                  cname: str,
@@ -135,7 +139,7 @@ class MultiRegister(RegBase):
             needs_qe |= preg.needs_qe()
 
         super().__init__(name, offset,
-                         pregs[0].async_clk, pregs[0].sync_clk, alias_target)
+                         pregs[0].async_clk, pregs[0].sync_clk, reinit, alias_target)
         self.count = count
         self.stride = stride
         self.pregs = pregs
@@ -195,6 +199,10 @@ class MultiRegister(RegBase):
         pregs = [Register.from_raw(reg_width, offset, params, reg_rd, clocks,
                                    is_alias, (multireg_idx, count))
                  for multireg_idx in range(count)]
+
+        # Optional register reinitialization signal.
+        reinit = rd.get('reinit')
+        reinit_str = str(reinit) if reinit else None
 
         alias_target = None
         if is_alias:
@@ -291,6 +299,7 @@ class MultiRegister(RegBase):
             creg = Register.collect_registers(creg_offset,
                                               preg0.name + creg_suff,
                                               pregs_for_creg,
+                                              reinit_str,
                                               alias_target,
                                               merged_regwen,
                                               field_desc_override,
@@ -306,8 +315,8 @@ class MultiRegister(RegBase):
         # pack them as an array
         dv_compact = (count < regs_per_creg or (count % regs_per_creg) == 0)
 
-        return MultiRegister(name, offset, count, addrsep, alias_target, pregs, cname,
-                             regwen_multi, compact, dv_compact, cregs)
+        return MultiRegister(name, offset, count, addrsep, reinit_str, alias_target,
+                             pregs, cname, regwen_multi, compact, dv_compact, cregs)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + len(self.cregs) * addrsep

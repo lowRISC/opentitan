@@ -111,6 +111,7 @@ notes | optional | string | random notes
 version | optional | string | module version
 life_stage | optional | string | life stage of module
 commit_id | optional | string | commit ID of last stage sign-off
+reinit_list | optional | name list+ | list of register reinitialization inputs
 alert_list | optional | name list+ | list of peripheral alerts
 available_inout_list | optional | name list+ | list of available peripheral inouts
 available_input_list | optional | name list+ | list of available peripheral inputs
@@ -165,6 +166,7 @@ hwext | optional | string | 'true' if the register is stored outside of the regi
 hwqe | optional | string | 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
 hwre | optional | string | 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
 regwen | optional | string | if register is write-protected by another register, that register name should be given here. empty-string for no register write protection
+reinit | optional | string | reinit signal that restores the content of the register to its reset state, e.g., at the request of software.
 resval | optional | int | reset value of full register (default 0)
 tags | optional | string | tags for the register, following the format 'tag_name:item1:item2...'
 shadowed | optional | string | 'true' if the register is shadowed
@@ -360,6 +362,7 @@ hwext | optional | string | 'true' if the register is stored outside of the regi
 hwqe | optional | string | 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
 hwre | optional | string | 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
 regwen | optional | string | if register is write-protected by another register, that register name should be given here. empty-string for no register write protection
+reinit | optional | string | reinit signal that restores the content of the register to its reset state, e.g., at the request of software.
 resval | optional | int | reset value of full register (default 0)
 tags | optional | string | tags for the register, following the format 'tag_name:item1:item2...'
 shadowed | optional | string | 'true' if the register is shadowed
@@ -676,7 +679,7 @@ For example, consider a module with registers in the address range `0x0` to `0x8
 * In contrast, a request to address `0x184` is mapped to address `0x84` internally which is a valid address.
   No error is returned for this request.
 
-Other error responses include for the following reasons:
+Error responses are also returned for other reasons, including the following:
 
 * TL-UL `a_opcode` illegal value
 * TL-UL writes of size smaller than register size
@@ -713,6 +716,14 @@ The direction is the Verilog signal definition of `subreg` for that type.
    <td><strong>direction</strong>
    </td>
    <td><strong>description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><code>reinit_i</code>
+   </td>
+   <td>input
+   </td>
+   <td>Reinitialization input, scalar, to restore the register field its reset value.
    </td>
   </tr>
   <tr>
@@ -1059,6 +1070,37 @@ The following features are currently not implemented but might be added in the f
   The ones' complement inversion could be done in software.
   This means software would first write the ones' complement of the data and only the second write would be the real data.
   This may make following bus dumps easier because the data values will be different.
+
+## Register Reinitialization
+
+A register may optionally be returned to its reset value under control of an associated input signal.
+This reinitialization takes precedence over simultaneous updates from either the bus interface or the peripheral logic in the event of a collision.
+This feature would typically be used by software to reinitialize one or more sets of registers.
+
+The list of reinitialization ports shall be described as shown below:
+```
+reinit_list: [
+  { name: "my_reinit_i", desc: "My reinit signal." }
+]
+```
+Note that all reinitialization port names must end in '_i', to conform with the comportability style guide.
+A register that must be reinitialized to its reset state by this port is then described in the follow manner:
+```hjson
+    { name:   "REGA",
+      reinit: "my_reinit_i",
+      ...register definition...
+    }
+```
+
+The value associated with the `reinit` key of a register must appear in the `reinit_list`.
+
+Reinitialization is not supported for shadowed registers, regwen registers, regwen-controlled registers or registers that have special clocking requirements (i.e., those registers that employ `sync` or `async` keys).
+
+For registers outside of the auto-generated logic (`hwext`) a reinitialization signal may be specified, and will be presented to the peripheral IP, only if one or more fields is readable by the IP (i.e., there are output signal(s), `q`, present).
+For other types of `hwext` register requiring reinitialization, the peripheral IP logic is responsible for managing that itself.
+
+It is important that this reinitialization mechanism is used sparingly, e.g. where the behavior is mandated by a standard specification.
+The asynchronous reset port `rst_ni` shall be used to put the entire IP block into a defined state.
 
 ## Generating C Header Files
 

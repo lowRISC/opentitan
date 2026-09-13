@@ -114,6 +114,7 @@ OPTIONAL_FIELDS = {
     'version': ['s', "module version"],
     'life_stage': ['s', "life stage of module"],
     'commit_id': ['s', "commit ID of last stage sign-off"],
+    'reinit_list': ['lnw', "list of register reinitialization inputs"],
     'alert_list': ['lnw', "list of peripheral alerts"],
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
@@ -238,6 +239,7 @@ class IpBlock:
     inter_signals: list[InterSignal]
     bus_interfaces: BusInterfaces
     clocking: Clocking
+    reinit_list: list[Signal]
     xputs: tuple[Sequence[Signal], Sequence[Signal], Sequence[Signal]]
     wakeups: Sequence[Signal]
     reset_requests: Sequence[Signal]
@@ -400,11 +402,20 @@ class IpBlock:
         is_split_ip = check_bool(rd.get('is_split_ip', False),
                                  'is_split_ip field of ' + what)
 
+        reinits = Signal.from_raw_list('reinit signals for block ' + name,
+                                       rd.get('reinit_list', []))
+        for sig in reinits:
+            if not sig.name.endswith("_i", 1):
+                raise ValueError(
+                    f'reinit signal {sig.name} must be of the format <x>_i for comportability.')
+        reinit_list = list(reinits)
+        init_block.add_reinits(reinit_list)
+
         # Build register block if IP really defined registers. IPs with an empty list of registers
         # but auto-generated registers should still be built.
         if "registers" in rd:
             reg_blocks = RegBlock.build_blocks(init_block, rd["registers"],
-                                               bus_interfaces, clocking, False)
+                                               bus_interfaces, clocking, reinit_list, False)
         else:
             reg_blocks = {}
 
@@ -505,8 +516,8 @@ class IpBlock:
 
         return IpBlock(name, cip_id, version, regwidth, params, reg_blocks,
                        memories, interrupts, no_auto_intr, alerts, no_auto_alert,
-                       scan, inter_signals, bus_interfaces, clocking, xputs,
-                       wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
+                       scan, inter_signals, bus_interfaces, clocking, reinit_list,
+                       xputs, wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
                        countermeasures, features, partitions, node, is_split_ip)
 
     @staticmethod
@@ -594,7 +605,8 @@ class IpBlock:
 
         alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
                                                  self.bus_interfaces,
-                                                 self.clocking, True)
+                                                 self.clocking,
+                                                 self.reinit_list, True)
 
         # Check that alias register block names are
         # a subset of the already defined register blocks
@@ -673,6 +685,9 @@ class IpBlock:
         # Only emitted for split IPs, so non-split IPs see default attribute.
         if self.is_split_ip:
             ret['is_split_ip'] = self.is_split_ip
+
+        if self.reinit_list:
+            ret['reinit_list'] = self.reinit_list
 
         inouts, inputs, outputs = self.xputs
         if inouts:
