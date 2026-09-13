@@ -85,8 +85,12 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   }
 
   function void post_randomize();
+% if ext_clk_bypass:
     calib_rdy = get_rand_mubi4_val(6, 2, 2);
     `uvm_info(`gfn, $sformatf("randomize: calib_rdy=0x%x", calib_rdy), UVM_MEDIUM)
+% else:
+    calib_rdy = MuBi4True;
+% endif
     super.post_randomize();
   endfunction
 
