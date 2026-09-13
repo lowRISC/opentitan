@@ -1,0 +1,149 @@
+{
+  "name": "earlgrey",
+  "ips": [
+    {
+      "name": "adc_ctrl"
+    },
+    {
+      "name": "aes",
+      "variant": "masked"
+    },
+    {
+      "name": "aes",
+      "variant": "unmasked"
+    },
+    {
+      "name": "aon_timer"
+    },
+    {
+      "name": "csrng"
+    },
+    {
+      "name": "edn",
+      "variant": "edn0"
+    },
+    {
+      "name": "edn",
+      "variant": "edn1"
+    },
+    {
+      "name": "entropy_src",
+      "variant": "rng4bits"
+    },
+    {
+      "name": "hmac"
+    },
+    {
+      "name": "i2c"
+    },
+    {
+      "name": "keymgr"
+    },
+    {
+      "name": "kmac",
+      "variant": "masked"
+    },
+    {
+      "name": "kmac",
+      "variant": "unmasked"
+    },
+    {
+      "name": "lc_ctrl",
+      "variant": "volatile_unlock_disabled"
+    },
+    {
+      "name": "lc_ctrl",
+      "variant": "volatile_unlock_enabled"
+    },
+    {
+      "name": "otbn"
+    },
+    {
+      "name": "pattgen"
+    },
+    {
+      "name": "prim",
+      "variant": "alert"
+    },
+    {
+      "name": "prim",
+      "variant": "esc"
+    },
+    {
+      "name": "prim",
+      "variant": "lfsr"
+    },
+    {
+      "name": "prim",
+      "variant": "present"
+    },
+    {
+      "name": "prim",
+      "variant": "prince"
+    },
+    {
+      "name": "rom_ctrl",
+      "variant": "32kB"
+    },
+    {
+      "name": "rom_ctrl",
+      "variant": "64kB"
+    },
+    {
+      "name": "rv_dm",
+      "variant": "use_jtag_interface"
+    },
+    {
+      "name": "rv_timer"
+    },
+    {
+      "name": "spi_device",
+      "variant": "1r1w"
+    },
+    {
+      "name": "spi_device",
+      "variant": "2p"
+    },
+    {
+      "name": "spi_host"
+    },
+    {
+      "name": "sram_ctrl",
+      "variant": "main"
+    },
+    {
+      "name": "sram_ctrl",
+      "variant": "ret"
+    },
+    {
+      "name": "sysrst_ctrl"
+    },
+    {
+      "name": "uart"
+    },
+    {
+      "name": "usbdev"
+    }
+  ],
+  "sim": [
+    {
+      "variant": "chip",
+      "cfg": "dv/chip_sim_cfg.hjson"
+    },
+    {
+      "cfg": "dv/top_earlgrey_sim_cfgs.hjson"
+    }
+  ],
+  "lint": [
+    "lint/top_earlgrey_dv_lint_cfgs.hjson",
+    "lint/top_earlgrey_fpga_lint_cfgs.hjson",
+    "lint/top_earlgrey_fpv_lint_cfgs.hjson",
+    "lint/top_earlgrey_lint_cfgs.hjson"
+  ],
+  "formal": [
+    "formal/chip_conn_cfg.hjson",
+    "formal/top_earlgrey_fpv_ip_cfgs.hjson",
+    "formal/top_earlgrey_fpv_prim_cfgs.hjson",
+    "formal/top_earlgrey_fpv_sec_cm_cfgs.hjson"
+  ]
+}

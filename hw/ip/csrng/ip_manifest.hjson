@@ -1,0 +1,10 @@
+{
+  "name": "csrng",
+  "sim": [
+    {
+      "cfg": "dv/csrng_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

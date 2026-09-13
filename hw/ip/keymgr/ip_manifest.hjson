@@ -1,0 +1,10 @@
+{
+  "name": "keymgr",
+  "sim": [
+    {
+      "cfg": "dv/keymgr_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

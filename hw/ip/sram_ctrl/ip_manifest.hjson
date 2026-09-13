@@ -1,0 +1,31 @@
+{
+  "name": "sram_ctrl",
+  "sim": [
+    {
+      "variant": "base_fi",
+      "cfg": "dv/sram_ctrl_base_fi_sim_cfg.hjson"
+    },
+    {
+      "variant": "base",
+      "cfg": "dv/sram_ctrl_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "exec_64kB",
+      "cfg": "dv/sram_ctrl_exec_64kB_sim_cfg.hjson"
+    },
+    {
+      "variant": "main_fi",
+      "cfg": "dv/sram_ctrl_main_fi_sim_cfg.hjson"
+    },
+    {
+      "variant": "main",
+      "cfg": "dv/sram_ctrl_main_sim_cfg.hjson"
+    },
+    {
+      "variant": "ret",
+      "cfg": "dv/sram_ctrl_ret_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

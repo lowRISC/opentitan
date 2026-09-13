@@ -1,0 +1,10 @@
+{
+  "name": "hmac",
+  "sim": [
+    {
+      "cfg": "dv/hmac_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

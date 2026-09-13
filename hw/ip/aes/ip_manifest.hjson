@@ -1,0 +1,19 @@
+{
+  "name": "aes",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/aes_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "masked",
+      "cfg": "dv/aes_masked_sim_cfg.hjson"
+    },
+    {
+      "variant": "unmasked",
+      "cfg": "dv/aes_unmasked_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
