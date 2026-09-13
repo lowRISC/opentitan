@@ -59,9 +59,9 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     cfg.rv_dm_vif.cb.unavailable <= data;
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
     if (cfg.clk_rst_vif.rst_n) begin
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+      `DV_CHECK_EQ(cfg.rv_dm_vif.mon_cb.unavailable,
                    get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+      `DV_CHECK_EQ(cfg.rv_dm_vif.mon_cb.unavailable,
                    get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
     end
   endtask

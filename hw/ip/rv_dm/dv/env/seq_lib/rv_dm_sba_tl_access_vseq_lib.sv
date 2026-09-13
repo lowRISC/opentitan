@@ -85,8 +85,7 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
   task body();
     num_times.rand_mode(0);
 
-    // TODO: Fix and invoke sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas() instead.
-    cfg.rv_dm_vif.disable_tlul_assert_host_sba_resp_svas = 1'b1;
+    cfg.rv_dm_vif.disable_assertions(SbaAssertions);
 
     sba_tl_device_seq_stop();
     for (int i = 1; i <= num_times; i++) begin
@@ -130,6 +129,8 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
       end
       sba_tl_device_seq_stop();
     end
+
+    cfg.rv_dm_vif.enable_assertions(SbaAssertions);
   endtask : body
 
   // Randomizes legal, valid requests.
