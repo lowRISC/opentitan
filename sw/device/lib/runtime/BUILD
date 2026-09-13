@@ -115,3 +115,42 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+# ---------------------------------------------------------------------------
+# Post-mortem crash-dump utility.
+#
+# Captures mepc, mcause, mtval, and mstatus into the retention SRAM owner
+# area on watchdog-bite NMI or unhandled exception, so that the values
+# survive a non-PoR reset and can be inspected at the next boot.
+# ---------------------------------------------------------------------------
+
+dual_cc_library(
+    name = "crash_dump",
+    srcs = dual_inputs(
+        shared = ["crash_dump.c"],
+    ),
+    hdrs = ["crash_dump.h"],
+    deps = dual_inputs(
+        device = [
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        ],
+        shared = [
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:macros",
+        ],
+    ),
+)
+
+cc_test(
+    name = "crash_dump_unittest",
+    srcs = ["crash_dump_unittest.cc"],
+    # -DMOCK_CSR activates the mock backend in csr.h so that unit tests can
+    # drive CSR_READ() return values via EXPECT_CSR_READ().
+    local_defines = ["MOCK_CSR"],
+    deps = [
+        ":crash_dump",
+        "//sw/device/lib/base:mock_csr",
+        "@googletest//:gtest_main",
+    ],
+)
+
