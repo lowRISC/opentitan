@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -164,16 +165,14 @@ void dfu_transport_result(dfu_ctx_t *ctx, rom_error_t result) {
 rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config) {
   set_serialnumber();
-  dfu_ctx_t ctx = {
-      .ep0 =
-          {
-              .device_desc = &device_desc,
-              .config_desc = config_desc,
-              .string_desc = string_desc,
-          },
-      .dfu_state = kDfuStateIdle,
-      .dfu_error = kDfuErrOk,
-  };
+  dfu_ctx_t ctx;
+  memset(&ctx, 0, sizeof(ctx));
+  ctx.ep0.device_desc = &device_desc;
+  ctx.ep0.config_desc = config_desc;
+  ctx.ep0.string_desc = string_desc;
+  ctx.dfu_state = kDfuStateIdle;
+  ctx.dfu_error = kDfuErrOk;
+
   dbg_printf("USB-DFU rescue ready\r\n");
   rescue_state_init(&ctx.state, bootdata, boot_log, config);
   pinmux_init_usb();
