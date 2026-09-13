@@ -30,6 +30,8 @@ module usb_fs_nb_in_pe #(
   input  logic               link_active_i,
   input  logic [6:0]         dev_addr_i,
 
+  // Packet transmission test mode (repeatedly send packet from IN Endpoint Zero).
+  input  logic                  tx_pkt_test_mode_i,
 
   ////////////////////
   // Transaction starting
@@ -156,9 +158,13 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidNak;
 
+  // Packet transmission test mode always uses Endpoint Zero.
+  logic [3:0] rx_endp;
+  assign rx_endp = rx_endp_i & {4{~tx_pkt_test_mode_i}};
+
   // Is the specified endpoint actually implemented in hardware?
-  assign ep_in_hw = {1'b0, rx_endp_i} < NumInEps;
-  assign in_ep_current_d = ep_in_hw ? rx_endp_i : '0;
+  assign ep_in_hw = {1'b0, rx_endp} < NumInEps;
+  assign in_ep_current_d = ep_in_hw ? rx_endp : '0;
 
   // Make widths work - in_ep_current_d/in_ep_current_o only hold implemented endpoint IDs.
   // These signals can be used to index signals of NumInEps width.
@@ -183,7 +189,8 @@ module usb_fs_nb_in_pe #(
   // Transaction is starting on this IN endpoint; capture the packet details.
   ////////////////////////////////////////////////////////////////////////////////
   logic in_starting;
-  assign in_starting = (in_xact_state == StIdle || in_xact_state == StWaitAck) && in_token_received;
+  assign in_starting = (in_xact_state == StIdle || in_xact_state == StWaitAck) &&
+                       (in_token_received || tx_pkt_test_mode_i);
 
   assign in_xact_starting_o = in_starting & ep_active;
   assign in_xact_start_ep_o = in_ep_current_d;
@@ -204,7 +211,7 @@ module usb_fs_nb_in_pe #(
     timeout_cntdown_d = AckTimeoutCnt[AckTimeoutCntW-1:0];
     unique case (in_xact_state)
       StIdle: begin
-        if (ep_active && in_token_received) begin
+        if (ep_active && (in_token_received | tx_pkt_test_mode_i)) begin
           in_xact_state_next = StRcvdIn;
         end else begin
           // Ignore tokens to inactive endpoints. Send no response.
@@ -267,6 +274,9 @@ module usb_fs_nb_in_pe #(
         if (rx_pkt_start_i) begin
           in_xact_state_next = StWaitAck;
         end else if (timeout_cntdown_q == '0) begin
+          // This case also handles packet transmission test mode during which there will be no
+          // received packets, and we must repeat the packet transmission continuously.
+          // The timeout interval guarantees that we meet the inter-packet gap requirement.
           in_xact_state_next = StIdle;
           rollback_in_xact = 1'b1;
         end else begin
@@ -319,7 +329,9 @@ module usb_fs_nb_in_pe #(
     if (!rst_ni) begin
       in_xact_state <= StIdle;
       in_ep_rollback_o <= 1'b0;
-    end else if (link_reset_i || !link_active_i) begin
+    end else if (link_reset_i || (!link_active_i & !tx_pkt_test_mode_i)) begin
+      // Link reset applies during TX PKT test mode, but the link activity
+      // indicator must be ignored because we will not see host activity.
       in_xact_state <= StIdle;
       in_ep_rollback_o <= 1'b0;
     end else begin
@@ -346,7 +358,7 @@ module usb_fs_nb_in_pe #(
       in_ep_current_o <= '0;
       has_data_q      <= 1'b0;
     end else begin
-      if (in_token_received) begin
+      if (in_token_received | tx_pkt_test_mode_i) begin
         in_ep_current_o <= in_ep_current_d;
         in_ep_newpkt_o  <= 1'b1;
         has_data_q      <= in_ep_has_data_i[in_ep_index_d];

@@ -131,6 +131,20 @@
       tests: ["usbdev_phy_config_tx_osc_test_mode"]
     }
     {
+      name: phy_config_tx_pkt_test_mode
+      desc: '''
+            Verify the packet transmission test mode when phy_config.tx_phy_test_mode is enabled.
+
+            - Set up a test packet on IN Endpoint Zero.
+            - Set the phy_config.tx_pkt_test_mode.
+            - Verify that the device transmits continuously and that the inter-packet gap is
+              sufficiently short that a connected analyzer will observe continual traffic and not
+              large Idle state (J) signaling.
+            '''
+      stage: V2
+      tests: ["usbdev_phy_config_tx_pkt_test_mode"]
+    }
+    {
       name: phy_config_eop_single_bit_handling
       desc: '''
             Verify the correct behavior of the phy_config.eop_single_bit configuration in the PHY module
