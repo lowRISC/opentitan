@@ -628,9 +628,7 @@ extern "C++" {
  * An attribute used to indicate that a character array variable is not intended
  * to be treated as a null-terminated string.
  */
-#if defined(__clang__) && __clang_major__ >= 21
-#define OT_NONSTRING __attribute__((nonstring))
-#elif defined(__GNUC__) && !defined(__clang__)
+#if __has_attribute(nonstring)
 #define OT_NONSTRING __attribute__((nonstring))
 #else
 #define OT_NONSTRING
