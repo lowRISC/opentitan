@@ -84,8 +84,8 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // Hold SDA a cycle longer to account for CDC delays, if CDC is enabled.
     if (cfg.en_dv_cdc) begin
       tSetupBit++;
-      cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldBit = 1;
     end
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldBit = 1;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupBit = tSetupBit;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - tSetupBit;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles;
