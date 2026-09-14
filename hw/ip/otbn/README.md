@@ -867,7 +867,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>RO</td>
       <td><a name="key-s0-l">KEY_S0_L</a></td>
       <td>
-        Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -878,7 +878,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td><a name="key-s0-h">KEY_S0_H</a></td>
       <td>
         Bits [255:128] of this register are always zero.
-        Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -888,7 +888,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>RO</td>
       <td><a name="key-s1-l">KEY_S1_L</a></td>
       <td>
-        Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -899,7 +899,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td><a name="key-s1-h">KEY_S1_H</a></td>
       <td>
         Bits [255:128] of this register are always zero.
-        Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -1117,7 +1117,7 @@ This allows to do more fine grained instruction count based countermeasures.
 
 ## Key Sideloading
 
-OTBN software can make use of a single 384b wide key provided by the [Key Manager](../keymgr/README.md), which is made available in two shares.
+OTBN software can make use of a single 384b wide key provided by the [Key Manager](../keymgr_dpe/README.md), which is made available in two shares.
 The key is passed through a dedicated connection between the Key Manager and OTBN to avoid exposing it to other components.
 Software can access the first share of the key through the [`KEY_S0_L`](#key-s0-l) and [`KEY_S0_H`](#key-s0-h) WSRs, and the second share of the key through the [`KEY_S1_L`](#key-s1-l) and [`KEY_S1_H`](#key-s1-h) WSRs.
 
