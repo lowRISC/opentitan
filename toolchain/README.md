@@ -7,6 +7,12 @@ This LLVM toolchain comes from the [lowrisc-toolchains] repository. See
 `third_party/lowrisc/BUILD.lowrisc_toolchain.bazel` for changing the toolchain
 version.
 
+Two `cc_toolchain`s are defined here: `opentitan_toolchain` for RV32 and
+`cheriot_toolchain` for the CHERIoT ISA. They are picked by the `:isa`
+constraint setting, whose default is `:isa_rv32`, so RV32 is what you get
+unless you ask otherwise with `--config=cheriot` or, for an
+`opentitan_binary`, `platform = CHERIOT_PLATFORM`.
+
 [lowrisc-toolchains]: https://github.com/lowRISC/lowrisc-toolchains
 
 ## Configuration
