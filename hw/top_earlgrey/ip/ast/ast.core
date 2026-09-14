@@ -38,8 +38,8 @@ filesets:
       - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
-      - rtl/ast_aon.sv
-      - rtl/ast_main.sv
+      - rtl/ast_part_secondary.sv
+      - rtl/ast_part_primary.sv
       - rtl/ast_reg_top.sv
       - rtl/adc.sv
       - rtl/adc_ana.sv

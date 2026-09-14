@@ -12,7 +12,7 @@
 
 `include "prim_assert.sv"
 
-module ast_aon (
+module ast_part_secondary (
   // clocks / resets
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
   input rst_ast_adc_ni,                       // Buffered AST ADC Reset
@@ -65,7 +65,7 @@ module ast_aon (
   output logic clk_src_aon_o,                 // AON Source Clock
   output logic clk_src_aon_val_o,             // AON Source Clock Valid
 
-  // USB reference and calibration (clock outputs moved to ast_main)
+  // USB reference and calibration (clock outputs moved to ast_part_primary)
   input usb_ref_pulse_i,                      // USB Reference Pulse
   input usb_ref_val_i,                        // USB Reference Valid
   input clk_src_usb_en_i,                     // USB Source Clock Enable
@@ -105,7 +105,7 @@ module ast_aon (
   output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 `endif
 
-  // flash and external clocks (clock bypass acks moved to ast_main)
+  // flash and external clocks (clock bypass acks moved to ast_part_primary)
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // All clocks bypass request
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request
@@ -301,7 +301,7 @@ assign ast_pwst_o.vcc_pok = vcc_pok_str;
 ///////////////////////////////////////
 ///////////////////////////////////////
 
-// System Clock, USB Clock, IO Clock moved to ast_main.sv
+// System Clock, USB Clock, IO Clock moved to ast_part_primary.sv
 // Keep reset signals for inter-domain communication
 logic rst_sys_clk_n, rst_io_clk_n, rst_usb_clk_n;
 assign rst_sys_clk_n = vcmain_pok_por && vcc_pok;
@@ -354,12 +354,12 @@ prim_flop_2sync #(
 );
 
 assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
-// IO Clock moved to ast_main.sv
+// IO Clock moved to ast_part_primary.sv
 
 ///////////////////////////////////////
 // AST Clocks Bypass
 ///////////////////////////////////////
-// AON clock only in ast_aon, SYS/IO/USB handled by ast_main
+// AON clock only in ast_part_secondary, SYS/IO/USB handled by ast_part_primary
 logic clk_src_aon;
 
 // Inter-domain interface signal for clock bypass (clks_byp_main_to_aon declared earlier)
@@ -565,7 +565,7 @@ assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot0_alert_src = main_to_aon_i.ot0_alert_src;
 
 // Calibration signals - simple initialization for OS
-// (REGAL register and ast_init_done_o are now in ast_main.sv)
+// (REGAL register and ast_init_done_o are now in ast_part_primary.sv)
 always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
   if ( !rst_ast_tlul_ni ) begin
     sys_io_osc_cal <= 1'b0;
@@ -653,7 +653,7 @@ assign aon_to_main_o.scan_reset_n = scan_reset_n;
 assign aon_to_main_o.sys_io_osc_cal = sys_io_osc_cal;
 assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 
-// Clock outputs and bypass acks now directly output from ast_main
+// Clock outputs and bypass acks now directly output from ast_part_primary
 
 ////////////////
 // Assertions //
@@ -667,8 +667,8 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 // ADC
 `ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
 `ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
-// Note: RNG assertions moved to ast_main.sv
-// TLUL and InitDone asserts are now in ast_main.sv
+// Note: RNG assertions moved to ast_part_primary.sv
+// TLUL and InitDone asserts are now in ast_part_primary.sv
 // POs
 `ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_ni)
 `ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_ni)
@@ -696,7 +696,7 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
-// Note: reg_we onehot assertion moved to ast_main.sv along with u_reg
+// Note: reg_we onehot assertion moved to ast_part_primary.sv along with u_reg
 /////////////////////
 // Unused Signals  //
 /////////////////////
@@ -725,4 +725,4 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         io_clk_byp_req_i
                       };
 
-endmodule : ast_aon
+endmodule : ast_part_secondary
