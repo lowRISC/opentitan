@@ -97,6 +97,22 @@ static status_t upgrade_fips_test(void) {
   CHECK(entropy_complex_health_test_config_check(kHardenedBoolFalse).value ==
         OTCRYPTO_RECOV_ERR.value);
 
+  // Verify that EDN0 and EDN1 REGWEN are locked and writes to EDN0 CTRL are
+  // ignored by hardware.
+  CHECK(abs_mmio_read32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_REGWEN_REG_OFFSET) ==
+        0);
+  CHECK(abs_mmio_read32(TOP_EARLGREY_EDN1_BASE_ADDR + EDN_REGWEN_REG_OFFSET) ==
+        0);
+  uint32_t edn0_ctrl_addr = TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET;
+  uint32_t old_edn0_ctrl = abs_mmio_read32(edn0_ctrl_addr);
+  abs_mmio_write32(edn0_ctrl_addr, 0);
+  CHECK(abs_mmio_read32(edn0_ctrl_addr) == old_edn0_ctrl);
+  TRY(entropy_complex_check(kHardenedBoolTrue));
+
+  // Verify that re-initializing in FIPS mode succeeds when EDN REGWEN is
+  // locked.
+  TRY(entropy_complex_init(kHardenedBoolTrue));
+
   return OK_STATUS();
 }
 
