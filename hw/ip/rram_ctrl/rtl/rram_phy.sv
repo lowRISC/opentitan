@@ -296,7 +296,7 @@ module rram_phy
     .rd_part_o      (rd_part),
     .rd_ecc_en_o    (rd_ecc_en),
     .rd_rdata_i     (rram_macro_rsp_i.rd_data),
-    .rd_ecc_err_i   (rram_macro_rsp_i.ecc_err),
+    .rd_ecc_err_i   (rram_macro_rsp_i.ecc_fatal_err),
     .rd_err_i       (rram_macro_rsp_i.err),
     // Status signals
     .idle_o         (rd_idle),
@@ -307,7 +307,7 @@ module rram_phy
     .fifo_err_o     (rd_fifo_err)
   );
 
-  assign ecc_corr_err_o  = 1'b0;
+  assign ecc_corr_err_o  = rram_macro_rsp_i.ecc_corr_err;
   assign ecc_corr_addr_o = '0;
   assign ecc_corr_part_o = RramPartData;
 

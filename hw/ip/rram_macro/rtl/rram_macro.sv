@@ -95,14 +95,20 @@ module rram_macro #(
   logic unused_obs;
   assign unused_obs = |obs_ctrl_i;
 
-  logic unused_ecc_en;
-  assign unused_ecc_en = rram_macro_i.ecc_en;
-
   /////////////////////////////////////
   // open-source RRAM implementation //
   /////////////////////////////////////
 
-  localparam int StoreBufWidth  = DataWidth + prim_util_pkg::vbits(WordsPerPage);
+  // ECC parameters: the RRAM word is protected with 2x64b Hamming(72,64) SECDED codes.
+  localparam int unsigned EccNumWords   = 2;
+  localparam int unsigned EccWordWidth  = 64;
+  localparam int unsigned EccCodeWidth  = 72;
+  localparam int unsigned EccCheckWidth = EccCodeWidth - EccWordWidth; // 8: check bits per half
+  localparam int unsigned FullDataWidth = EccNumWords * EccCodeWidth; // 144: physical storage width
+
+  `ASSERT_INIT(RramMacroFullDataWidth_A, DataWidth == EccNumWords * EccWordWidth)
+
+  localparam int StoreBufWidth  = FullDataWidth + prim_util_pkg::vbits(WordsPerPage);
 
   localparam int DataAddrW = prim_util_pkg::vbits(TotalDataPages * WordsPerPage);
   localparam int InfoAddrW = prim_util_pkg::vbits(TotalInfoPages * WordsPerPage);
@@ -158,6 +164,7 @@ module rram_macro #(
 
   rram_part_e           current_part_q, current_part_d;
   logic [DataAddrW-1:0] waddr_q, waddr_d;
+  logic                 ecc_en_q, ecc_en_d;
 
   // store_buf_fifo signals
   logic                      store_buf_fifo_wvalid;
@@ -166,31 +173,95 @@ module rram_macro #(
   logic                      store_buf_fifo_rvalid;
   logic                      store_buf_fifo_rready;
   logic [WordW-1:0]          store_buf_fifo_offset;
-  logic [DataWidth-1:0]      store_buf_fifo_data;
+  logic [FullDataWidth-1:0]  store_buf_fifo_data;
 
-  logic                 mem_req;
-  logic                 mem_wr;
-  logic [DataAddrW-1:0] mem_addr;
-  logic [DataWidth-1:0] mem_wdata;
-  logic [DataWidth-1:0] mem_rdata;
+  logic                     mem_req;
+  logic                     mem_wr;
+  logic [DataAddrW-1:0]     mem_addr;
+  logic [FullDataWidth-1:0] mem_wdata;
+  logic [FullDataWidth-1:0] mem_rdata;
+  logic [FullDataWidth-1:0] mem_rdata_q;
+  logic                     mem_rvalid_d, mem_rvalid_q;
 
-  logic                 data_mem_req;
-  logic                 data_mem_wr;
-  logic [DataAddrW-1:0] data_mem_addr;
-  logic [DataWidth-1:0] data_mem_wdata;
-  logic [DataWidth-1:0] data_mem_rdata;
+  logic                     data_mem_req;
+  logic                     data_mem_wr;
+  logic [DataAddrW-1:0]     data_mem_addr;
+  logic [FullDataWidth-1:0] data_mem_wdata;
+  logic [FullDataWidth-1:0] data_mem_rdata;
 
-  logic                 info_mem_req;
-  logic                 info_mem_wr;
-  logic [InfoAddrW-1:0] info_mem_addr;
-  logic [DataWidth-1:0] info_mem_wdata;
-  logic [DataWidth-1:0] info_mem_rdata;
+  logic                     info_mem_req;
+  logic                     info_mem_wr;
+  logic [InfoAddrW-1:0]     info_mem_addr;
+  logic [FullDataWidth-1:0] info_mem_wdata;
+  logic [FullDataWidth-1:0] info_mem_rdata;
 
   logic                 done;
   logic                 ack;
   logic [DataWidth-1:0] rdata;
   logic                 err;
+  logic                 ecc_corr_err;
+  logic                 ecc_fatal_err;
   logic                 init_done;
+
+  // ECC encode path (write): computed before data enters u_store_buf_fifo. Physical layout is
+  // {ecc1, ecc0, data1, data0}: both check-bit bytes grouped at the MSBs, with the two 64b data
+  // halves unchanged and contiguous below (matching rram_macro_i.wr_data exactly) at the LSBs.
+  logic [EccWordWidth-1:0]  wr_data_lo, wr_data_hi;
+  logic [EccCodeWidth-1:0]  wr_data_lo_enc, wr_data_hi_enc;
+  logic [FullDataWidth-1:0] wr_data_enc, wr_data_stored;
+
+  assign wr_data_lo = rram_macro_i.wr_data[EccWordWidth-1:0];
+  assign wr_data_hi = rram_macro_i.wr_data[DataWidth-1:EccWordWidth];
+
+  prim_secded_hamming_72_64_enc u_ecc_enc_lo (
+    .data_i(wr_data_lo),
+    .data_o(wr_data_lo_enc)
+  );
+
+  prim_secded_hamming_72_64_enc u_ecc_enc_hi (
+    .data_i(wr_data_hi),
+    .data_o(wr_data_hi_enc)
+  );
+
+  assign wr_data_enc    = {wr_data_hi_enc[EccCodeWidth-1:EccWordWidth],
+                           wr_data_lo_enc[EccCodeWidth-1:EccWordWidth],
+                           wr_data_hi_enc[EccWordWidth-1:0],
+                           wr_data_lo_enc[EccWordWidth-1:0]};
+  assign wr_data_stored = rram_macro_i.ecc_en ? wr_data_enc : FullDataWidth'(rram_macro_i.wr_data);
+
+  // ECC decode path (read): combinationally decoded from the raw storage word.
+  logic [FullDataWidth-1:0] rd_data_raw;
+  logic [EccCodeWidth-1:0]  rd_codeword_lo, rd_codeword_hi;
+  logic [EccWordWidth-1:0]  rd_data_lo_dec, rd_data_hi_dec;
+  logic [1:0]               rd_err_lo, rd_err_hi;
+  logic [DataWidth-1:0]     rd_data_dec;
+  logic                     rd_data_corr_err, rd_data_fatal_err;
+
+  assign rd_data_raw = mem_rvalid_q ? mem_rdata : mem_rdata_q;
+
+  // Reassemble each 72b codeword from the {ecc1, ecc0, data1, data0} physical layout.
+  assign rd_codeword_hi = {rd_data_raw[FullDataWidth-1 -: EccCheckWidth],
+                           rd_data_raw[DataWidth-1:EccWordWidth]};
+  assign rd_codeword_lo = {rd_data_raw[FullDataWidth-EccCheckWidth-1 -: EccCheckWidth],
+                           rd_data_raw[EccWordWidth-1:0]};
+
+  prim_secded_hamming_72_64_dec u_ecc_dec_lo (
+    .data_i    (rd_codeword_lo),
+    .data_o    (rd_data_lo_dec),
+    .syndrome_o(),
+    .err_o     (rd_err_lo)
+  );
+
+  prim_secded_hamming_72_64_dec u_ecc_dec_hi (
+    .data_i    (rd_codeword_hi),
+    .data_o    (rd_data_hi_dec),
+    .syndrome_o(),
+    .err_o     (rd_err_hi)
+  );
+
+  assign rd_data_dec       = {rd_data_hi_dec, rd_data_lo_dec};
+  assign rd_data_corr_err  = rd_err_lo[0] | rd_err_hi[0];
+  assign rd_data_fatal_err = rd_err_lo[1] | rd_err_hi[1];
 
   logic [11:0] rand_val;
   logic [1:0]  rand_val_read;
@@ -220,20 +291,38 @@ module rram_macro #(
       current_part_q <= RramPartData;
       waddr_q        <= '0;
       lfsr_en_q      <= '0;
+      ecc_en_q       <= '0;
     end else begin
       current_part_q <= current_part_d;
       waddr_q        <= waddr_d;
       lfsr_en_q      <= lfsr_en_d;
+      ecc_en_q       <= ecc_en_d;
+    end
+  end
+
+  // prim_ram_1p does not guarantee what rdata_o does once req_i goes low again. mem_rvalid_d is
+  // asserted by the FSM for the one cycle a read request is issued, so mem_rvalid_q pinpoints the
+  // one cycle later mem_rdata is guaranteed valid, and this captures it before it can go stale.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mem_rvalid_q <= 1'b0;
+      mem_rdata_q  <= '0;
+    end else begin
+      mem_rvalid_q <= mem_rvalid_d;
+      if (mem_rvalid_q) begin
+        mem_rdata_q <= mem_rdata;
+      end
     end
   end
 
   // output assignments
-  assign rram_macro_o.done      = done;
-  assign rram_macro_o.ack       = ack;
-  assign rram_macro_o.rd_data   = rdata;
-  assign rram_macro_o.err       = err;
-  assign rram_macro_o.ecc_err   = 1'b0;
-  assign rram_macro_o.init_done = init_done;
+  assign rram_macro_o.done          = done;
+  assign rram_macro_o.ack           = ack;
+  assign rram_macro_o.rd_data       = rdata;
+  assign rram_macro_o.err           = err;
+  assign rram_macro_o.ecc_corr_err  = ecc_corr_err;
+  assign rram_macro_o.ecc_fatal_err = ecc_fatal_err;
+  assign rram_macro_o.init_done     = init_done;
 
   // LFSR to generate random delays for each operation
   prim_lfsr #(
@@ -263,15 +352,19 @@ module rram_macro #(
     store_buf_fifo_wdata  = '0;
     store_buf_fifo_rready = '0;
 
-    mem_req   = '0;
-    mem_wr    = '0;
-    mem_addr  = '0;
-    mem_wdata = '0;
+    mem_req      = '0;
+    mem_wr       = '0;
+    mem_addr     = '0;
+    mem_wdata    = '0;
+    mem_rvalid_d = '0;
 
-    err = 1'b0;
+    err           = 1'b0;
+    ecc_corr_err  = 1'b0;
+    ecc_fatal_err = 1'b0;
 
     current_part_d = current_part_q;
     waddr_d        = waddr_q;
+    ecc_en_d       = ecc_en_q;
 
     cnt_clr = 1'b0;
     cnt_inc = 1'b0;
@@ -311,10 +404,12 @@ module rram_macro #(
         if (rram_macro_i.rd_req & rand_ack) begin
           ack            = 1'b1;
           current_part_d = rram_macro_i.part;
+          ecc_en_d       = rram_macro_i.ecc_en;
           mem_req        = 1'b1;
           mem_addr       = rram_macro_i.addr;
           cnt_inc        = 1'b1;
           state_d        = StRead;
+          mem_rvalid_d   = 1'b1;
         // write request to RRAM (wr_last)
         end else if (rram_macro_i.wr_req & rram_macro_i.wr_last & rand_ack) begin
           ack = 1'b1;
@@ -333,7 +428,7 @@ module rram_macro #(
             state_d = StRetErr;
           end else begin
             store_buf_fifo_wvalid = 1'b1;
-            store_buf_fifo_wdata  = {rram_macro_i.addr[WordW-1:0], rram_macro_i.wr_data};
+            store_buf_fifo_wdata  = {rram_macro_i.addr[WordW-1:0], wr_data_stored};
             state_d = StStoreBuf;
             cnt_inc = 1'b1;
           end
@@ -350,11 +445,19 @@ module rram_macro #(
       // Return data as soon as: counter >= (ReadLatency + random_delay)
       StRead: begin
         cnt_inc = 1'b1;
+        // mem_rvalid_q is only true on the cycle mem_rdata is guaranteed valid (see above).
+        // Use the registered copy on any other cycle.
         if (cnt_q >= (ReadLatency + rand_val_read)) begin
           done    = 1'b1;
           state_d = StIdle;
-          rdata   = mem_rdata;
           cnt_clr = 1'b1;
+          if (ecc_en_q) begin
+            rdata         = rd_data_dec;
+            ecc_corr_err  = rd_data_corr_err;
+            ecc_fatal_err = rd_data_fatal_err;
+          end else begin
+            rdata = rd_data_raw[DataWidth-1:0];
+          end
         end
       end
 
@@ -429,9 +532,9 @@ module rram_macro #(
   assign data_mem_wdata = (current_part_d == RramPartData) ? mem_wdata : '0;
 
   prim_ram_1p #(
-    .Width(DataWidth),
+    .Width(FullDataWidth),
     .Depth(TotalDataPages*WordsPerPage),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(FullDataWidth)
   ) u_data_array (
     .clk_i,
     .rst_ni,
@@ -439,7 +542,7 @@ module rram_macro #(
     .write_i  (data_mem_wr),
     .addr_i   (data_mem_addr),
     .wdata_i  (data_mem_wdata),
-    .wmask_i  ({DataWidth{1'b1}}),
+    .wmask_i  ({FullDataWidth{1'b1}}),
     .rdata_o  (data_mem_rdata),
     .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
     .cfg_o    ()
@@ -452,9 +555,9 @@ module rram_macro #(
   assign info_mem_wdata = (current_part_d == RramPartInfo) ? mem_wdata               : '0;
 
   prim_ram_1p #(
-    .Width(DataWidth),
+    .Width(FullDataWidth),
     .Depth(TotalInfoPages*WordsPerPage),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(FullDataWidth)
   ) u_info_array (
     .clk_i,
     .rst_ni,
@@ -462,15 +565,14 @@ module rram_macro #(
     .write_i  (info_mem_wr),
     .addr_i   (info_mem_addr),
     .wdata_i  (info_mem_wdata),
-    .wmask_i  ({DataWidth{1'b1}}),
+    .wmask_i  ({FullDataWidth{1'b1}}),
     .rdata_o  (info_mem_rdata),
     .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
     .cfg_o    ()
   );
 
   // output multiplexer
-  assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata[DataWidth-1:0] :
-                                                        info_mem_rdata[DataWidth-1:0];
+  assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,
