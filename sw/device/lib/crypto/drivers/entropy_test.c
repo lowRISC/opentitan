@@ -62,17 +62,17 @@ static status_t run_negative_test(void) {
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdCsrngRecovAlert));
 
-  // Test entropy_complex_check with a disabled EDN0
+  // Verify that EDN0 and EDN1 REGWEN are locked and writes to EDN0 CTRL are
+  // ignored by hardware.
+  CHECK(abs_mmio_read32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_REGWEN_REG_OFFSET) ==
+        0);
+  CHECK(abs_mmio_read32(TOP_EARLGREY_EDN1_BASE_ADDR + EDN_REGWEN_REG_OFFSET) ==
+        0);
   uint32_t edn0_ctrl_addr = TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET;
   uint32_t old_edn0_ctrl = abs_mmio_read32(edn0_ctrl_addr);
-  CHECK_STATUS_OK(
-      ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdEdn0RecovAlert));
   abs_mmio_write32(edn0_ctrl_addr, 0);
-  CHECK(entropy_complex_check(kHardenedBoolFalse).value ==
-        OTCRYPTO_RECOV_ERR.value);
-  abs_mmio_write32(edn0_ctrl_addr, old_edn0_ctrl);
-  CHECK_STATUS_OK(
-      ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdEdn0RecovAlert));
+  CHECK(abs_mmio_read32(edn0_ctrl_addr) == old_edn0_ctrl);
+  TRY(entropy_complex_check(kHardenedBoolFalse));
 
   return OTCRYPTO_OK;
 }
@@ -96,6 +96,10 @@ static status_t upgrade_fips_test(void) {
   TRY(entropy_complex_health_test_config_check(kHardenedBoolTrue));
   CHECK(entropy_complex_health_test_config_check(kHardenedBoolFalse).value ==
         OTCRYPTO_RECOV_ERR.value);
+
+  // Verify that re-initializing in FIPS mode succeeds when EDN REGWEN is
+  // locked.
+  TRY(entropy_complex_init(kHardenedBoolTrue));
 
   return OK_STATUS();
 }

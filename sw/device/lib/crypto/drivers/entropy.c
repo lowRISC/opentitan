@@ -721,6 +721,7 @@ static status_t edn_configure(const edn_config_t *config) {
   HARDENED_TRY(edn_ready_block(config->base_address));
   HARDENED_TRY(csrng_send_app_cmd(config->base_address, config->instantiate,
                                   kEntropyCsrngSendAppCmdTypeEdnSw, true));
+  abs_mmio_write32(config->base_address + EDN_REGWEN_REG_OFFSET, 0);
   return OTCRYPTO_OK;
 }
 
@@ -764,9 +765,11 @@ static void entropy_src_stop(void) {
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
 void entropy_complex_stop_all(void) {
-  edn_stop(kBaseEdn0);
-  edn_stop(kBaseEdn1);
-  abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  if (abs_mmio_read32(kBaseEdn0 + EDN_REGWEN_REG_OFFSET) != 0) {
+    edn_stop(kBaseEdn0);
+    edn_stop(kBaseEdn1);
+    abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  }
   entropy_src_stop();
 }
 
@@ -1051,6 +1054,9 @@ status_t entropy_complex_start(hardened_bool_t fips) {
   }
 
   HARDENED_TRY(entropy_src_configure(&config->entropy_src));
+  if (abs_mmio_read32(kBaseEdn0 + EDN_REGWEN_REG_OFFSET) == 0) {
+    return entropy_complex_check(fips);
+  }
   csrng_configure();
   HARDENED_TRY(edn_configure(&config->edn0));
   return edn_configure(&config->edn1);
