@@ -184,6 +184,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          invalid_cmd_seq_alert;
   logic [NumApps-1:0]          invalid_acmd_alert;
   logic [NumApps-1:0]          reseed_cnt_alert;
+  logic [NumApps-1:0]          gen_abort_req;
+  logic [NumApps-1:0]          gen_abort_invalid_alert;
+  logic [NumApps-1:0]          gen_abort_field_alert;
+  logic                        sw_gen_abort_ack;
   logic [1:0]                  otp_sw_app_read_en;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
@@ -395,6 +399,8 @@ module csrng_core import csrng_pkg::*; #(
          |reseed_cnt_alert ||
          |invalid_cmd_seq_alert ||
          |invalid_acmd_alert ||
+         |gen_abort_invalid_alert ||
+         |gen_abort_field_alert ||
          cs_bus_cmp_alert;
 
 
@@ -506,7 +512,30 @@ module csrng_core import csrng_pkg::*; #(
   // and return any genbits if the command
   // is a generate command.
 
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t [NumApps-1:0]      mubi_gen_abort;
+  mubi4_t [NumApps-1:0][1:0] mubi_gen_abort_fanout;
+
   for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
+
+    assign mubi_gen_abort[ai] = mubi4_t'(reg2hw.gen_abort[ai].q);
+    assign gen_abort_req[ai] = mubi4_test_true_strict(mubi_gen_abort_fanout[ai][0]);
+    assign gen_abort_field_alert[ai] = mubi4_test_invalid(mubi_gen_abort_fanout[ai][1]);
+
+    prim_mubi4_sync #(
+      .NumCopies(2),
+      .AsyncOn(0)
+    ) u_prim_mubi4_sync_gen_abort (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(mubi_gen_abort[ai]),
+      .mubi_o(mubi_gen_abort_fanout[ai])
+    );
+
+    // GEN_ABORT always self-clears the cycle after being written.
+    // The request is handled by cmd_stage.
+    assign hw2reg.gen_abort[ai].de = 1'b1;
+    assign hw2reg.gen_abort[ai].d  = prim_mubi_pkg::MuBi4False;
 
     csrng_cmd_stage u_csrng_cmd_stage (
       .clk_i                        (clk_i),
@@ -520,6 +549,8 @@ module csrng_core import csrng_pkg::*; #(
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
+      .gen_abort_req_i              (gen_abort_req[ai]),
+      .gen_abort_invalid_o          (gen_abort_invalid_alert[ai]),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
@@ -596,6 +627,10 @@ module csrng_core import csrng_pkg::*; #(
     .mubi_o(otp_sw_app_read_en_mubi)
   );
 
+  // Signal to clear SW genbits fifo on GEN abort.
+  assign sw_gen_abort_ack = cmd_stage_ack[NumApps-1] &&
+                            (cmd_stage_ack_sts[NumApps-1] == CMD_STS_GEN_ABORTED);
+
   // pack the gen bits into a 32 bit register sized word
   prim_packer_fifo #(
     .InW(BlkLen),
@@ -604,7 +639,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_sw_genbits (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .clr_i   (!cs_enable_fo[29]),
+    .clr_i   (!cs_enable_fo[29] || sw_gen_abort_ack),
     .wvalid_i(genbits_stage_vld[NumApps-1]),
     .wdata_i (genbits_stage_bus[NumApps-1]),
     .wready_o(genbits_stage_rdy[NumApps-1]),
@@ -654,6 +689,12 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.de = |reseed_cnt_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.de = |gen_abort_invalid_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.d  = |gen_abort_invalid_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.de = |gen_abort_field_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.d  = |gen_abort_field_alert;
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if

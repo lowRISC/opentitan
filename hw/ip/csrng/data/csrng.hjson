@@ -439,6 +439,14 @@
                     This happens only for Generate commands.
                     '''
             },
+            { value: "5",
+              name: "GEN_ABORTED",
+              desc: '''
+                    This bit indicates that a Generate command for this instance was aborted via !!GEN_ABORT before returning all requested genbits.
+                    The instance has been uninstantiated as a result and must be instantiated again before further commands will succeed.
+                    This happens only for Generate commands.
+                    '''
+            },
           ]
         }
       ]
@@ -484,6 +492,21 @@
       ]
     },
     {
+      name: "INT_STATE_READ_ENABLE_REGWEN",
+      desc: "Internal state read enable REGWEN register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                INT_STATE_READ_ENABLE register configuration enable bit.
+                If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore.
+                '''
+          resval: 1,
+        }
+      ]
+    },
+    {
       name: "INT_STATE_READ_ENABLE",
       desc: "Internal state read enable register",
       swaccess: "rw",
@@ -499,21 +522,6 @@
                 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 '''
           resval: 0x7
-        }
-      ]
-    },
-    {
-      name: "INT_STATE_READ_ENABLE_REGWEN",
-      desc: "Internal state read enable REGWEN register",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0",
-          desc: '''
-                INT_STATE_READ_ENABLE register configuration enable bit.
-                If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore.
-                '''
-          resval: 1,
         }
       ]
     },
@@ -585,6 +593,48 @@
         }
       ]
     },
+    { name: "GEN_ABORT_REGWEN",
+      desc: "Register write enable for !!GEN_ABORT",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                When true, the !!GEN_ABORT register can be written.
+                When false, it becomes read-only until the next reset.
+                '''
+          resval: 1
+        }
+      ]
+    },
+    { multireg: {
+      name: "GEN_ABORT",
+      desc: "Generate command abort request register",
+      count: "NumApps",
+      cname: "GEN_ABORT",
+      compact: false,
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      regwen: "GEN_ABORT_REGWEN",
+      tags: [// This register self-clears every cycle and a write can affect RECOV_ALERT_STS.
+                 "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "3:0",
+          name: "GEN_ABORT",
+          mubi: true,
+          resval: false,
+          desc: '''
+                Setting this field to kMultiBitBool4True requests aborting a Generate command that is currently in progress for this instance.
+                The instance is zeroed as a result.
+                It must be instantiated again before further Reseed, Update, or Generate commands can succeed.
+
+                This request is only accepted while a Generate command is actually in progress for this instance.
+                If no Generate command is in progress, the write is ignored and !!RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT is set instead.
+                '''
+        }
+      ]
+      }
+    },
     {
       name: "HW_EXC_STS",
       desc: "Hardware instance exception status register",
@@ -646,6 +696,21 @@
           desc: '''
                 This bit is set when the FLAG0 field in the Application Command is set to
                 a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "5",
+          name: "GEN_ABORT_INVALID_ALERT",
+          desc: '''
+                This bit is set when a field of the !!GEN_ABORT register is set to kMultiBitBool4True for an instance that does not currently have a Generate command in progress.
+                The write is ignored and CSRNG continues to operate.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "6",
+          name: "GEN_ABORT_FIELD_ALERT",
+          desc: '''
+                This bit is set when a field of the !!GEN_ABORT register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
