@@ -39,6 +39,7 @@ exports_files(glob(["**"]))
     for tool in [
         "profdata",
         "cov",
+        "objdump",
     ]
 ]
 
