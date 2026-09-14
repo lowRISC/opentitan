@@ -173,11 +173,13 @@ enum {
 };
 #undef INFO_PAGE_SUM_REGION_A_
 #undef INFO_PAGE_SUM_REGION_B_
-static_assert(kRramCtrlInfoPagesRegionATotal <= kRramCtrlReservedPageCount,
+static_assert((uint32_t)kRramCtrlInfoPagesRegionATotal <=
+                  (uint32_t)kRramCtrlReservedPageCount,
               "RRAM_CTRL_INFO_PAGES_DEFINE's Region A entries overflow "
               "kRramCtrlEmulRegionA's window");
-static_assert(kRramCtrlInfoPagesRegionBTotal <=
-                  kRramCtrlReservedPageCount - kRramCtrlOtpPageCount,
+static_assert((uint32_t)kRramCtrlInfoPagesRegionBTotal <=
+                  (uint32_t)(kRramCtrlReservedPageCount -
+                             kRramCtrlOtpPageCount),
               "RRAM_CTRL_INFO_PAGES_DEFINE's Region B entries would overlap "
               "the OTP tail");
 

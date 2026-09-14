@@ -123,8 +123,13 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
 }
 
 hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din) {
-  if (id->device_id[1] == din[0] && id->device_id[2] == din[1])
+  uint32_t diff = (id->device_id[1] ^ din[0]) | (id->device_id[2] ^ din[1]);
+  if (launder32(diff) == 0) {
+    HARDENED_CHECK_EQ(diff, 0);
+    HARDENED_CHECK_EQ(id->device_id[1], din[0]);
+    HARDENED_CHECK_EQ(id->device_id[2], din[1]);
     return kHardenedBoolTrue;
+  }
   return kHardenedBoolFalse;
 }
 
