@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager top level
+// Key manager dpe top level
 //
 
 `include "prim_assert.sv"
 
 module keymgr_dpe
-  import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
 #(
@@ -25,6 +24,7 @@ module keymgr_dpe
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
+  parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
   // Number of instantiated HW slots
   parameter int unsigned NumInstHwSlot         = 4,
@@ -46,8 +46,8 @@ module keymgr_dpe
   // key interface to crypto modules
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output hw_key_req_t hmac_key_o,
-  output otbn_key_req_t otbn_key_o,
+  output wide_hw_key_req_t hmac_key_o,
+  output wide_hw_key_req_t otbn_key_o,
 
   // data interface to/from crypto modules
   output kmac_pkg::app_req_t kmac_data_o,
@@ -77,8 +77,8 @@ module keymgr_dpe
 
   // interrupts and alerts
   output logic intr_op_done_o,
-  input  prim_alert_pkg::alert_rx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
+  input  prim_alert_pkg::alert_rx_t [keymgr_dpe_reg_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [keymgr_dpe_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   // Advance width calculation
@@ -110,25 +110,17 @@ module keymgr_dpe
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
 
-  // TODO(#31026): Provide a sideload key to the hmac
-  localparam int NumOutBufBits = $bits(hw_key_req_t);
-  prim_buf #(
-    .Width  (NumOutBufBits)
-  ) u_anchor_buf (
-    .in_i   ('0),
-    .out_o  (hmac_key_o)
-  );
-
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 7;
+  localparam int TotalSeedWidth = KeyWidth * 8;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
   seed_t aes_seed;
   seed_t otbn_seed;
   seed_t kmac_seed;
+  seed_t hmac_seed;
   seed_t none_seed;
 
   localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
@@ -137,6 +129,7 @@ module keymgr_dpe
                                                         RndCnstAesSeed,
                                                         RndCnstOtbnSeed,
                                                         RndCnstKmacSeed,
+                                                        RndCnstHmacSeed,
                                                         RndCnstNoneSeed};
 
   prim_sec_anchor_const #(
@@ -149,6 +142,7 @@ module keymgr_dpe
             aes_seed,
             otbn_seed,
             kmac_seed,
+            hmac_seed,
             none_seed})
   );
 
@@ -213,7 +207,7 @@ module keymgr_dpe
   logic reseed_done;
   logic reseed_cnt_err;
 
-  keymgr_reseed_ctrl u_reseed_ctrl (
+  keymgr_dpe_reseed_ctrl u_reseed_ctrl (
     .clk_i,
     .rst_ni,
     .clk_edn_i,
@@ -289,6 +283,7 @@ module keymgr_dpe
   logic sideload_fsm_err;
   logic sideload_sel_err;
   logic key_version_vld;
+  logic dest_sel_oob;
 
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
@@ -390,7 +385,8 @@ module keymgr_dpe
     .kmac_op_err_i(kmac_op_err),
     .kmac_done_err_i(kmac_done_err),
     .kmac_cmd_err_i(kmac_cmd_err),
-    .kmac_data_i(kmac_data_truncated)
+    .kmac_data_i(kmac_data_truncated),
+    .dest_sel_oob_i(dest_sel_oob)
   );
 
   assign hw2reg.start.d  = '0;
@@ -404,7 +400,7 @@ module keymgr_dpe
   logic cfg_regwen;
 
   // key manager registers cannot be changed once an operation starts
-  keymgr_cfg_en u_cfgen (
+  keymgr_dpe_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
@@ -431,7 +427,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_sw_binding_regwen (
     .clk_i,
@@ -446,7 +442,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_slot_policy_regwen (
     .clk_i,
@@ -461,7 +457,7 @@ module keymgr_dpe
 
   // software clears the enable
   // hardware restores it upon successful advance
-  keymgr_cfg_en #(
+  keymgr_dpe_cfg_en #(
     .NonInitClr(1'b1)  // clear has an effect regardless of init state
   ) u_max_key_ver_regwen (
     .clk_i,
@@ -573,19 +569,35 @@ module keymgr_dpe
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;
-  keymgr_key_dest_e dest_sel;
+  keymgr_dpe_key_dest_e dest_sel;
   logic [KeyWidth-1:0] dest_seed;
 
-  assign dest_sel = keymgr_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
-  assign dest_seed = dest_sel == Aes  ? aes_seed  :
-                       dest_sel == Kmac ? kmac_seed :
-                       dest_sel == Otbn ? otbn_seed : none_seed;
+  assign dest_sel = keymgr_dpe_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
+
+  always_comb begin : gen_seed_selection
+    dest_seed = none_seed;
+    unique case (dest_sel)
+      Aes:      dest_seed = aes_seed;
+      Kmac:     dest_seed = kmac_seed;
+      Otbn:     dest_seed = otbn_seed;
+      Hmac:     dest_seed = hmac_seed;
+      default : dest_seed = none_seed;
+    endcase
+  end
+
   assign output_key = mubi4_test_true_strict(hw_key_sel) ? hard_output_seed :
                       soft_output_seed;
   assign gen_in = active_key_slot.valid ? {reg2hw.key_version,
                                            reg2hw.salt,
                                            dest_seed,
                                            output_key} : {GenLfsrCopies{lfsr[31:0]}};
+  // Indicate if destination selection is out-of-bounds
+  assign dest_sel_oob = !(dest_sel inside {None,
+                                           Aes,
+                                           Kmac,
+                                           Otbn,
+                                           Hmac});
+
   hw_key_req_t curr_active_key;
   assign curr_active_key = '{
     valid: active_key_slot.valid,
@@ -596,7 +608,7 @@ module keymgr_dpe
   logic key_vld;
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
-  keymgr_input_checks #(
+  keymgr_dpe_input_checks #(
     .KmacEnMasking(KmacEnMasking),
     .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
@@ -608,7 +620,7 @@ module keymgr_dpe
     .owner_seed_i(owner_seed),
     .key_i(curr_active_key),
     .devid_i(device_id_i),
-    .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
+    .health_state_i(lc_keymgr_div_i),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),
     .devid_vld_o(devid_vld),
@@ -671,17 +683,18 @@ module keymgr_dpe
   // It does not check the validity of the requested operation, with respect to other inputs
   // such as policy violation etc.
   logic [3:0] invalid_data;
-  assign invalid_data[OpAdvance]  = ~key_vld | invalid_advance |
-                                    ~adv_dvalid[active_key_slot.boot_stage];
+  assign invalid_data[OpDpeAdvance] = ~key_vld | invalid_advance |
+                                      ~adv_dvalid[active_key_slot.boot_stage];
   // Keymgr_dpe does not have identity generation, therefore `id_en = 0`. The value of
-  // `invalid_data[OpGenId] does not matter, but assign it to 0 for the sake of lint.
-  assign invalid_data[OpGenId] = 1'b0;
-  assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
-  assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
+  // `invalid_data[OpDpeErase] does not matter, but assign it to 0 for the sake of lint.
+  assign invalid_data[OpDpeErase] = 1'b0;
+  assign invalid_data[OpDpeGenSwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpDpeGenHwOut] = ~key_vld | ~key_version_vld;
 
   // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
-  keymgr_kmac_if #(
+  keymgr_dpe_kmac_if #(
+    .RndCnstRandPerm(RndCnstRandPerm),
     .MaxAdvDataWidth(DpeAdvDataWidth)
   ) u_kmac_if (
     .clk_i,
@@ -713,12 +726,12 @@ module keymgr_dpe
   //  Side load key storage
   /////////////////////////////////////
   // SEC_CM: HW.KEY.SW_NOACCESS
-  keymgr_sideload_key_ctrl u_sideload_ctrl (
+  keymgr_dpe_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
     .init_i(init),
     .entropy_i(data_rand),
-    .clr_key_i(keymgr_sideload_clr_e'(reg2hw.sideload_clear.q)),
+    .clr_key_i(keymgr_dpe_sideload_clr_e'(reg2hw.sideload_clear.q)),
     .wipe_key_i(wipe_key),
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),
@@ -730,6 +743,7 @@ module keymgr_dpe
     .prng_en_o(sideload_lfsr_en),
     .aes_key_o,
     .otbn_key_o,
+    .hmac_key_o,
     .kmac_key_o,
     .sideload_sel_err_o(sideload_sel_err),
     .fsm_err_o(sideload_fsm_err)
@@ -919,8 +933,6 @@ module keymgr_dpe
   logic [KeyVersionWidth-1:0] unused_active_key_version;
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
-
-  `ASSERT_INIT(KeyWidthEqualityCheck_A, KeyMgrKeyWidth == KeyWidth)
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})

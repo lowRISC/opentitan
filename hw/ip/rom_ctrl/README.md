@@ -14,7 +14,7 @@ This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation a
 The ROM controller (`rom_ctrl`) is the connection between the chip and its ROM.
 It has three main tasks:
 - Pass read requests to the ROM and respond with the memory contents.
-- Generate a checksum of the ROM contents and feed its value to [keymgr](../keymgr/README.md) to be included in the device identity.
+- Generate a checksum of the ROM contents and feed its value to [keymgr_dpe](../keymgr_dpe/README.md) to be included in the device identity.
 - Inform pwrmgr, once the checksum has been computed and looks reasonable, to allow the rest of the chip startup.
   This power manager is a templated class which is documented separately for the different instantiations.
   The instantiation in Earlgrey is documented [here](../../top_earlgrey/ip_autogen/pwrmgr/README.md).

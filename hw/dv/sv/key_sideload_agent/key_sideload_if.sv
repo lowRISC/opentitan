@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 interface key_sideload_if #(
-  parameter type KEY_T = keymgr_pkg::hw_key_req_t
+  parameter type KEY_T = keymgr_dpe_pkg::hw_key_req_t
 ) (
   input logic clk_i,
   input logic rst_ni,
