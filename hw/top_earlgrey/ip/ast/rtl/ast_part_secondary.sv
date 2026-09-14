@@ -12,7 +12,13 @@
 
 `include "prim_assert.sv"
 
-module ast_part_secondary (
+module ast_part_secondary #(
+  parameter int unsigned UsbCalibWidth   = ast_pkg::UsbCalibWidth,
+  parameter int unsigned AdcChannels     = ast_pkg::AdcChannels,
+  parameter int unsigned AdcDataWidth    = ast_pkg::AdcDataWidth,
+  parameter int unsigned Pad2AstInWidth  = ast_pkg::Pad2AstInWidth,
+  parameter int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth
+) (
   // clocks / resets
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
   input rst_ast_adc_ni,                       // Buffered AST ADC Reset
@@ -67,14 +73,14 @@ module ast_part_secondary (
   input usb_ref_pulse_i,                      // USB Reference Pulse
   input usb_ref_val_i,                        // USB Reference Valid
   input clk_src_usb_en_i,                     // USB Source Clock Enable
-  output logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
+  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
 
   // adc interface
   input adc_pd_i,                             // ADC Power Down
   input ast_pkg::awire_t adc_a0_ai,           // ADC A0 Analog Input
   input ast_pkg::awire_t adc_a1_ai,           // ADC A1 Analog Input
-  input [ast_pkg::AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
-  output [ast_pkg::AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
+  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
+  output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
 
   // alerts
@@ -91,8 +97,8 @@ module ast_part_secondary (
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
-  input [ast_pkg::Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
-  output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
+  input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
+  output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   output ast_pkg::awire_t ast2pad_t0_ao,      // AST_2_PAD Analog T0 Output Signal
@@ -390,16 +396,16 @@ prim_clock_buf #(
 ///////////////////////////////////////
 adc #(
   .AdcCnvtClks ( AdcCnvtClks ),
-  .AdcChannels ( ast_pkg::AdcChannels ),
-  .AdcDataWidth ( ast_pkg::AdcDataWidth )
+  .AdcChannels ( AdcChannels ),
+  .AdcDataWidth ( AdcDataWidth )
 ) u_adc (
   .adc_a0_ai ( adc_a0_ai ),
   .adc_a1_ai ( adc_a1_ai ),
-  .adc_chnsel_i ( adc_chnsel_i[ast_pkg::AdcChannels-1:0] ),
+  .adc_chnsel_i ( adc_chnsel_i[AdcChannels-1:0] ),
   .adc_pd_i ( adc_pd_i ),
   .clk_adc_i ( clk_ast_adc_i ),
   .rst_adc_ni ( rst_ast_adc_ni ),
-  .adc_d_o ( adc_d_o[ast_pkg::AdcDataWidth-1:0] ),
+  .adc_d_o ( adc_d_o[AdcDataWidth-1:0] ),
   .adc_d_val_o ( adc_d_val_o )
 );
 
@@ -587,14 +593,14 @@ always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok ) begin
 end
 
 // USB PU-P and PU-N value selection
-assign usb_io_pu_cal_o = ast_pkg::UsbCalibWidth'(1 << (ast_pkg::UsbCalibWidth[5-1:0]/2));
+assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
 
 ///////////////////////////////////////
 // DFT (Main | Always ON)
 ///////////////////////////////////////
 ast_dft u_ast_dft (
   .obs_ctrl_o ( obs_ctrl_o ),
-  .ast2padmux_o ( ast2padmux_o[ast_pkg::Ast2PadOutWidth-1:0] ),
+  .ast2padmux_o ( ast2padmux_o[Ast2PadOutWidth-1:0] ),
   .tpram_rm_o ( tpram_rm_o ),
   .spram_rm_o ( spram_rm_o ),
   .sprom_rm_o ( sprom_rm_o )
@@ -692,6 +698,13 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
+// Ensure parameters defined in the hjson always match the pkg.
+`ASSERT_INIT(UsbCalibWidthMatchesAstPkg_A, UsbCalibWidth == ast_pkg::UsbCalibWidth)
+`ASSERT_INIT(AdcChannelsMatchesAstPkg_A, AdcChannels == ast_pkg::AdcChannels)
+`ASSERT_INIT(AdcDataWidthMatchesAstPkg_A, AdcDataWidth == ast_pkg::AdcDataWidth)
+`ASSERT_INIT(Pad2AstInWidthMatchesAstPkg_A, Pad2AstInWidth == ast_pkg::Pad2AstInWidth)
+`ASSERT_INIT(Ast2PadOutWidthMatchesAstPkg_A, Ast2PadOutWidth == ast_pkg::Ast2PadOutWidth)
+
 // Note: reg_we onehot assertion moved to ast_part_primary.sv along with u_reg
 /////////////////////
 // Unused Signals  //
@@ -706,7 +719,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         shift_en,
                         main_env_iso_en_i,
                         rst_vcmpp_aon_n,
-                        padmux2ast_i[ast_pkg::Pad2AstInWidth-1:0],
+                        padmux2ast_i[Pad2AstInWidth-1:0],
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],
