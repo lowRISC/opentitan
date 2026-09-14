@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
@@ -135,7 +136,12 @@ static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 #define CWT_PROFILE_NAME "android.16"
 
 static uint8_t get_chip_mode_cdi0(void) {
-  return (lifecycle_is_prod() ? kDiceModeNormal : kDiceModeDebug);
+  hardened_bool_t is_prod = lifecycle_is_prod();
+  if (launder32(is_prod) != kHardenedBoolTrue) {
+    return kDiceModeDebug;
+  }
+  HARDENED_CHECK_EQ(is_prod, kHardenedBoolTrue);
+  return kDiceModeNormal;
 }
 
 static uint8_t get_chip_mode_cdi1(owner_app_domain_t key_domain) {

@@ -194,6 +194,7 @@ cc_library(
         ":dice_api",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
