@@ -174,8 +174,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -625,8 +624,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
   // last potentially error-causing line before returning to the caller.
   HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sign_finalize(sig_p256));
 
-  // Clear the OTBN sideload slot (in case the key was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
@@ -907,8 +905,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   HARDENED_TRY(hardened_memshred(ss.share0, ARRAYSIZE(ss.share0)));
   HARDENED_TRY(hardened_memshred(ss.share1, ARRAYSIZE(ss.share1)));
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecc_p256_public_key_import(
