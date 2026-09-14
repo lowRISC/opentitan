@@ -19,6 +19,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "CHERIOT_PLATFORM",
     "DARJEELING_TEST_ENVS",
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
@@ -36,6 +37,7 @@ load(
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 load("//rules/opentitan:util.bzl", "flatten")
+load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -754,6 +756,116 @@ opentitan_test(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_test(
+    name = "cheriot_manifest_unittest",
+    srcs = [
+        "cheriot_manifest.h",
+        "cheriot_manifest_unittest.cc",
+    ],
+    deps = [
+        "//sw/device/silicon_creator/lib:manifest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+ld_library(
+    name = "cheriot_ld_common",
+    includes = ["cheriot_common.ld"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = ["//sw/device:info_sections"],
+)
+
+[
+    ld_library(
+        name = "cheriot_ld_{}".format(slot),
+        script = "cheriot_{}.ld".format(slot),
+        target_compatible_with = opentitan_require_top("earlgrey"),
+        deps = [
+            ":cheriot_ld_common",
+            "//hw/top:top_ld",
+        ],
+    )
+    for slot in [
+        "rom",
+        "rom_ext",
+    ]
+]
+
+opentitan_binary(
+    name = "cheriot_smoketest_rom_ext",
+    testonly = True,
+    srcs = [
+        "cheriot_manifest.h",
+        "cheriot_smoketest.S",
+    ],
+    exec_env = ["//hw/top_earlgrey:fpga_cw340_rom_ext"],
+    linker_script = ":cheriot_ld_rom_ext",
+    platform = CHERIOT_PLATFORM,
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    # Only address/register definitions; every OpenTitan library that contains
+    # code this image would call is still RV32-only.
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top:top_lib",
+        "//hw/top:uart_c_regs",
+    ],
+)
+
+opentitan_binary(
+    name = "cheriot_smoketest_rom",
+    testonly = True,
+    srcs = [
+        "cheriot_manifest.h",
+        "cheriot_smoketest.S",
+    ],
+    exec_env = ["//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys"],
+    linker_script = ":cheriot_ld_rom",
+    platform = CHERIOT_PLATFORM,
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top:top_lib",
+        "//hw/top:uart_c_regs",
+    ],
+)
+
+# `[RC]TRAP` is emitted by the diagnostic trap handler in `cheriot_smoketest.S`.
+opentitan_test(
+    name = "cheriot_smoketest_rom_ext_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        binaries = {
+            ":cheriot_smoketest_rom_ext": "firmware",
+        },
+        exit_failure = "[RC]TRAP ",
+        exit_success = "CHERIoT PASS!\r\n",
+    ),
+)
+
+opentitan_test(
+    name = "cheriot_smoketest_rom_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        binaries = {
+            ":cheriot_smoketest_rom": "firmware",
+        },
+        exit_failure = "[RC]TRAP ",
+        exit_success = "CHERIoT PASS!\r\n",
+    ),
+)
+
+test_suite(
+    name = "cheriot_smoketest",
+    tests = [
+        ":cheriot_smoketest_rom_ext_test",
+        ":cheriot_smoketest_rom_test",
     ],
 )
 
