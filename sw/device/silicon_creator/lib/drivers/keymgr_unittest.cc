@@ -271,6 +271,22 @@ TEST_F(KeymgrTest, GenOtbnSealingKey) {
             kErrorOk);
 }
 
+TEST_F(KeymgrTest, GenOtbnInvalidKeyType) {
+  sc_keymgr_diversification_t test_diversification = {
+      .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
+               0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
+      .version = cfg_.max_key_ver - 1,
+  };
+
+  EXPECT_DEATH(
+      {
+        ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+        OT_DISCARD(sc_keymgr_generate_key_otbn(
+            static_cast<sc_keymgr_key_type_t>(2), test_diversification));
+      },
+      "");
+}
+
 TEST_F(KeymgrTest, GenOtbnKeyNotIdle) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,

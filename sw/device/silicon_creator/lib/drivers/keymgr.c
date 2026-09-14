@@ -232,9 +232,16 @@ rom_error_t sc_keymgr_generate_key(
                                 destination);
 
   // Select the attestation CDI.
-  if (key_type == kScKeymgrKeyTypeAttestation) {
+  if (launder32(key_type) == kScKeymgrKeyTypeAttestation) {
+    HARDENED_CHECK_EQ(key_type, kScKeymgrKeyTypeAttestation);
     ctrl =
         bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true);
+    HARDENED_CHECK_EQ(
+        bitfield_bit32_read(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT), true);
+  } else {
+    HARDENED_CHECK_EQ(key_type, kScKeymgrKeyTypeSealing);
+    HARDENED_CHECK_EQ(
+        bitfield_bit32_read(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT), false);
   }
 
   // Select the "generate" operation.
