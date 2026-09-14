@@ -33,6 +33,10 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@//toolchain:opentitan_platform
 
+# The same, but for the CHERIoT ISA, with the argument
+# --config=cheriot
+build:cheriot --platforms=@//toolchain:cheriot_platform
+
 # These options are required to build `cc_fuzz_test` targets. Enable with
 # --config=asan-libfuzzer
 build:asan-libfuzzer --action_env=CC=clang

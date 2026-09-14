@@ -392,6 +392,8 @@ register_toolchains("//rules/opentitan:localtools")
 
 register_toolchains("//toolchain:cc_toolchain_opentitan")
 
+register_toolchains("//toolchain:cc_toolchain_cheriot")
+
 register_toolchains("//toolchain:latest_opentitantool_toolchain")
 
 # Register tops

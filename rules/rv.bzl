@@ -6,6 +6,7 @@
 
 OPENTITAN_CPU = "@platforms//cpu:riscv32"
 OPENTITAN_PLATFORM = "//toolchain:opentitan_platform"
+CHERIOT_PLATFORM = "//toolchain:cheriot_platform"
 
 # This constant holds a dictionary of per-device dependencies which are used to
 # generate slightly different binaries for each hardware target, including two
