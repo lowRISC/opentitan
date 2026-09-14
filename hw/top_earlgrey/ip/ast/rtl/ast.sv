@@ -125,13 +125,8 @@ module ast (
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   // analog test outputs
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequency is 96MHz
