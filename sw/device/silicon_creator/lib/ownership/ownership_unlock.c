@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/ownership/ownership_unlock.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
@@ -31,6 +32,11 @@ static rom_error_t do_unlock(boot_svc_msg_t *msg, boot_data_t *bootdata,
   if (!nonce_equal(&msg->ownership_unlock_req.nonce, &bootdata->nonce)) {
     return kErrorOwnershipInvalidNonce;
   }
+  HARDENED_CHECK_EQ(
+      nonce_equal((const nonce_t *)launderw(
+                      (uintptr_t)&msg->ownership_unlock_req.nonce),
+                  (const nonce_t *)launderw((uintptr_t)&bootdata->nonce)),
+      true);
 
   // Verify the device identification number is correct.
   lifecycle_device_id_t device_id;
@@ -160,6 +166,11 @@ static rom_error_t unlock_abort(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     if (!nonce_equal(&msg->ownership_unlock_req.nonce, &bootdata->nonce)) {
       return kErrorOwnershipInvalidNonce;
     }
+    HARDENED_CHECK_EQ(
+        nonce_equal((const nonce_t *)launderw(
+                        (uintptr_t)&msg->ownership_unlock_req.nonce),
+                    (const nonce_t *)launderw((uintptr_t)&bootdata->nonce)),
+        true);
 
     // Verify the device identification number is correct.
     lifecycle_device_id_t device_id;
