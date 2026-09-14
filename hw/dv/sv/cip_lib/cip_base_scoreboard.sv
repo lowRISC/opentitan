@@ -303,25 +303,65 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       automatic string alert_name = cfg.list_of_alerts[i];
       fork
         forever begin
-          wait(expected_alert[alert_name].expected == 1 && cfg.under_reset == 0);
+          alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
+
+          // The alert_due_to_ping variable will be set by check_alert_triggered if an alert it sees
+          // is a ping response. When handling a non-fatal alert, the scoreboard should clear
+          // expected_alert[alert_name].expected when it sees an alert that is not a ping response.
+          bit alert_due_to_ping;
+
+          // The seen_reset variable will be set by check_alert_triggered if the task finishes
+          // early because it detects a reset.
+          bit seen_reset;
+
+          // When expected_alert[alert_name] becomes high, we want to wait for an alert to come out.
+          // This only makes sense when the block is not under reset (!cfg.under_reset) and the
+          // alert interface itself is not under reset (agent_cfg.vif.rst_n != 0).
+          wait(expected_alert[alert_name].expected == 1 &&
+               !cfg.under_reset &&
+               agent_cfg.vif.rst_n);
+
           if (expected_alert[alert_name].is_fatal) begin
-            // Variable is unused, but declared since output arguments can't be skipped
-            bit alert_due_to_ping;
-            while (cfg.under_reset == 0) begin
-              check_alert_triggered(alert_name, alert_due_to_ping);
-              wait(under_alert_handshake[alert_name] == 0 || cfg.under_reset == 1);
+            // Because this alert is fatal, we expect it to re-trigger forever until reset is
+            // asserted.
+            forever begin
+              // Wait for an alert to be reported, or a reset to be seen. The value of the
+              // alert_due_to_ping output variable isn't actually used for fatal alerts: we won't be
+              // clearing the expected alert either way.
+              check_alert_triggered(alert_name, alert_due_to_ping, seen_reset);
+
+              // If check_alert_triggered returned because of a reset for the interface or the
+              // block, break from the forever loop. We'll end up waiting for both resets to be
+              // cleared at the start of the next iteration of the outer loop.
+              if (seen_reset) break;
+
+              // Wait for the alert handshake to finish (this takes an ack from the alert receiver,
+              // and then for each side to drop their signals in turn)
+              //
+              // Drop out early if the block or interface goes into reset.
+              wait(under_alert_handshake[alert_name] == 0 ||
+                   cfg.under_reset || !agent_cfg.vif.rst_n);
+
+              // If the block or interface has gone into reset, break from the forever loop. As with
+              // the break statement above, this will go to the next iteration of the outer loop,
+              // which will start by waiting for the end of both resets.
+              if (cfg.under_reset || !agent_cfg.vif.rst_n) break;
             end
           end else begin
-            // If set it means the alert is just a ping response
-            bit alert_due_to_ping;
-            check_alert_triggered(alert_name, alert_due_to_ping);
-            if (!alert_due_to_ping)
-              expected_alert[alert_name].expected = 0;
-            else begin
-              // If the alert is due to ping, wait until the ping finished, then check again
-              // by finishing this iteration of the loop body and leaving the alert `expected`
-              // untouched .
-              wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+            // Wait for an alert to be reported or a reset to be seen.
+            check_alert_triggered(alert_name, alert_due_to_ping, seen_reset);
+
+            if (!seen_reset) begin
+              // If a reset has not been seen, an alert has been reported. Was it a ping response?
+              if (!alert_due_to_ping) begin
+                // Since the alert is not a ping response, we should clear the expected flag for
+                // expected_alert[alert_name]: we've now seen that (non-fatal) alert.
+                expected_alert[alert_name].expected = 0;
+              end else begin
+                // Since the alert *is* due to a ping, we need to wait until the ping finishes. We
+                // won't clear the expected flag: the genuine alert is still expected.
+                wait (!agent_cfg.active_ping);
+              end
             end
           end
         end
@@ -355,9 +395,21 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end join
   endtask
 
-  // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
-  // it should not clear the `expected_alert[alert_name].expected` flag
-  local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
+  // Check that an alert is actually triggered in the expected time.
+  //
+  // This exits early (setting seen_reset) if it sees a reset on either the main clock interface or
+  // the alert interface.
+  //
+  //   - alert_name:        The alert to check
+  //
+  //   - alert_due_to_ping: This output variable is set if the alert was triggered to respond to a
+  //                        ping (so caller shouldn't clear expected_alert[alert_name].expected).
+  //
+  //   - seen_reset:        This output variable is set if we see a reset on either the main clock
+  //                        interface or on the alert interface.
+  local task check_alert_triggered(string     alert_name,
+                                   output bit alert_due_to_ping,
+                                   output bit seen_reset);
     alert_esc_agent_cfg agent_cfg = cfg.m_alert_agent_cfgs[alert_name];
 
     // A snapshot of the number of ping requests that have been seen when this task starts.
@@ -386,9 +438,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // and kill the waiting thread.
     fork : isolation_fork begin
       fork
-        wait_slower_n_cycles(max_cycles_til_alert,
-                             cfg.clk_rst_vif,
-                             agent_cfg.vif);
+        begin
+          wait_slower_n_cycles(max_cycles_til_alert,
+                               cfg.clk_rst_vif,
+                               agent_cfg.vif);
+          seen_reset = !(cfg.clk_rst_vif.rst_n && agent_cfg.vif.rst_n);
+        end
         forever begin
           @(negedge agent_cfg.vif.clk);
           if (under_alert_handshake[alert_name]) break;
