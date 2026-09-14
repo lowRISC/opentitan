@@ -1,0 +1,26 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Verilator waiver file for i3c
+
+`verilator_config
+
+lint_off -rule WIDTH -file "*/prim_diff_decode.sv"
+lint_off -rule WIDTH -file "*/tlul_fifo_sync.sv"
+lint_off -rule WIDTH -file "*/rtl/i3c_patt_detector.sv"
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_*.sv" -match "Always_comb variable driven after use: '*_tree'"
+lint_off -rule UNOPTFLAT -file "*/rtl/prim_*.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: 'tb.dut.*_tree'"
+lint_off -rule UNOPTFLAT -file "*/rtl/prim_*.sv" -match "Signal unoptimizable: Circular combinational logic: 'tb.dut.*_tree'"
+lint_off -rule MULTIDRIVEN -file "*prim_arbiter_fixed.sv"
+lint_off -rule SYMRSVDWORD -file "*/rtl/i3c_reg_pkg.sv" -match "Symbol matches C++ common word: 'abort'"
+
+// Development; Verilator can be persuaded to be balanced and reasonable, but not yet.
+// TODO: These blanket waivers need to be narrowed or eliminated.
+lint_off -rule CASEINCOMPLETE
+lint_off -rule WIDTH
+lint_off -rule UNOPTFLAT
+lint_off -rule LATCH
+
+// Investigate
+lint_off -rule IMPLICIT

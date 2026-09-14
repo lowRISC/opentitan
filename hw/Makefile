@@ -30,6 +30,7 @@ IPS ?= aes           \
        entropy_src   \
        hmac          \
        i2c           \
+       i3c           \
        keymgr_dpe    \
        kmac          \
        lc_ctrl       \
