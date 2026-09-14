@@ -376,12 +376,15 @@ Issue a command to the KMAC/SHA3 IP. The command is sparse
 encoded. To prevent sw from writing multiple commands at once,
 the field is defined as enum.
 
-| Value   | Name    | Description                                                                                                                                                                                                                                                                                                                 |
-|:--------|:--------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x1d    | start   | Writing 6'b011101 or dec 29 into this field when KMAC/SHA3 is in idle, KMAC/SHA3 begins its operation. If the mode is cSHAKE, before receiving the message, the hashing logic processes Function name string N and customization input string S first. If KMAC mode is enabled, additionally it processes secret key block. |
-| 0x2e    | process | Writing 6'b101110 or dec 46 into this field when KMAC/SHA3 began its operation and received the entire message, it computes the digest or signing.                                                                                                                                                                          |
-| 0x31    | run     | The `run` field is used in the sponge squeezing stage. It triggers the keccak round logic to run full 24 rounds. This is optional and used when software needs more digest bits than the keccak rate. It only affects when the kmac/sha3 operation is completed.                                                            |
-| 0x16    | done    | Writing 6'b010110 or dec 22 into this field when KMAC/SHA3 squeezing is completed, KMAC/SHA3 hashing engine clears internal variables and goes back to Idle state for next command.                                                                                                                                         |
+| Value   | Name        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|:--------|:------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x07    | start       | Writing 6'b000111 or dec 7 into this field when KMAC/SHA3 is in idle, KMAC/SHA3 begins its operation. If the mode is cSHAKE, before receiving the message, the hashing logic processes Function name string N and customization input string S first. If KMAC mode is enabled, additionally it processes secret key block.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 0x32    | process     | Writing 6'b110010 or dec 50 into this field when KMAC/SHA3 began its operation and received the entire message, it computes the digest or signing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 0x2e    | run         | The `run` field is used in the sponge squeezing stage. It triggers the keccak round logic to run full 24 rounds. This is optional and used when software needs more digest bits than the keccak rate. It only affects when the kmac/sha3 operation is completed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 0x35    | done        | Writing 6'b110101 or dec 53 into this field completes the operation. The KMAC/SHA3 hashing engine clears the Keccak state and internal variables and goes back to Idle state for the next command. The command also releases the KMAC HWIP when SW has claimed it with the `state_write` command.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 0x1c    | stop        | Writing 6'b011100 or dec 28 into this field when KMAC/SHA3 is receiving the message stops the sponge absorbing stage without appending any padding. The Keccak state then holds a valid intermediate sponge state, which SW can read from [`STATE`](#state) to save the context. The message received since the last `start` or `continue` command must be a multiple of the Keccak rate. Otherwise the absorbing stage is stopped anyway, but the exposed state is not a valid context and `ErrSwStopNotBlockAligned` is reported. Once [`STATUS.sha3_stopped`](#status) is set, or the `kmac_done` interrupt is raised, SW reads [`STATE`](#state) and completes the operation with the `done` command, which clears the Keccak state. This command is not available when a sideloaded key is used, as saving the context would expose the key. The command is then discarded and `ErrSwSaveRestoreSideload` is reported. |
+| 0x1b    | state_write | Writing 6'b011011 or dec 27 into this field when KMAC/SHA3 is idle claims the KMAC HWIP for SW such that it can write a previously saved context to the KMAC HWIP. The command also clears the Keccak state, so a restore always starts from a known state. SW resumes the operation with the `continue` command once the full context is written. If SW decides not to resume after all, the `done` command releases the KMAC HWIP again. This command is not available when a sideloaded key is used. The command is then discarded and `ErrSwSaveRestoreSideload` is reported.                                                                                                                                                                                                                                                                                                                                           |
+| 0x29    | continue    | Writing 6'b101001 or dec 41 into this field after the `state_write` command resumes the sponge absorbing stage from the context that SW has written into [`STATE.`](#state) Issuing it without claiming the KMAC HWIP first is discarded and reported as `ErrSwCmdSequence`. In contrast to the `start` command, the prefix and key are not processed again, as both are already part of the restored state. The [`KEY_SHARE0`](#key_share0) and [`KEY_SHARE1`](#key_share1) registers therefore do not need to be restored, but [`CFG_SHADOWED`](#cfg_shadowed) must hold the same configuration as before the context was saved. This command is not available when a sideloaded key is used. The command is then discarded and `ErrSwSaveRestoreSideload` is reported.                                                                                                                                                   |
 
 Other values are reserved.
 
@@ -389,12 +392,12 @@ Other values are reserved.
 KMAC/SHA3 Status register.
 - Offset: `0x1c`
 - Reset default: `0x4001`
-- Reset mask: `0x3df07`
+- Reset mask: `0x3df1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 5}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_stopped", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "state_write", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                |
@@ -406,7 +409,9 @@ KMAC/SHA3 Status register.
 |   14   |   ro   |   0x1   | [fifo_empty](#status--fifo_empty)                                   |
 |   13   |        |         | Reserved                                                            |
 |  12:8  |   ro   |    x    | [fifo_depth](#status--fifo_depth)                                   |
-|  7:3   |        |         | Reserved                                                            |
+|  7:5   |        |         | Reserved                                                            |
+|   4    |   ro   |    x    | [state_write](#status--state_write)                                 |
+|   3    |   ro   |    x    | [sha3_stopped](#status--sha3_stopped)                               |
 |   2    |   ro   |    x    | [sha3_squeeze](#status--sha3_squeeze)                               |
 |   1    |   ro   |    x    | [sha3_absorb](#status--sha3_absorb)                                 |
 |   0    |   ro   |   0x1   | [sha3_idle](#status--sha3_idle)                                     |
@@ -443,6 +448,20 @@ See the "Message FIFO" section in the spec for the reason.
 
 ### STATUS . fifo_depth
 Count of occupied entries in the message FIFO.
+
+### STATUS . state_write
+If 1, SW has claimed the KMAC HWIP with the `state_write`
+command and writes to [`STATE`](#state) are accepted. SW must poll this
+bit after issuing the command and before writing the context.
+
+The bit clears again when SW leaves the state with the
+`continue` or the `done` command.
+
+### STATUS . sha3_stopped
+If 1, SHA3 has stopped the sponge absorbing stage for a
+context switch. In this stage, SW can read the [`STATE`](#state) to save
+the context. The absorbing stage is resumed by restoring the
+[`STATE`](#state) and issuing the `continue` command.
 
 ### STATUS . sha3_squeeze
 If 1, SHA3 completes sponge absorbing stage.
@@ -783,12 +802,22 @@ region. Unlike MSG_FIFO, STATE memory space sees the addr[9:0].
 If Masking feature is enabled, the software reads two shares from
 this memory space.
 
+Software can write to the register to restore a previously saved
+context. Writes are only accepted once software claimed the KMAC
+HWIP with the `state_write` command and while the hashing engine
+is idle, which [`STATUS.state_write`](#status) reports. Writes at any other
+time are acknowledged on the bus and ignored.
+
+Writes must be full 32-bit word writes. Sub-word writes are
+answered with a bus error, as a partial write cannot be applied
+to the Keccak state.
+
 0x400 - 0x4C7: State share
 0x500 - 0x5C7: Mask share of the state, 0 if EnMasking = 0
 
 - Word Aligned Offset Range: `0x400`to`0x5fc`
 - Size (words): `128`
-- Access: `ro`
+- Access: `rw`
 - Byte writes are *not* supported.
 
 ## MSG_FIFO
