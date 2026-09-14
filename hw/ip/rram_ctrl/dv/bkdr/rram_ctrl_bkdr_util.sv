@@ -25,13 +25,17 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
   //   path                    Hierarchical HDL path to the memory.
   //   depth                   The number of memory rows.
   //   n_bits                  The total size of the memory in bits.
-  //   err_detection_scheme    The error detection scheme implemented for the memory. This class
-  //                           only supports `ErrDetectionNone` for now (checked below).
+  //   err_detection_scheme    The error detection scheme implemented for the memory.
+  //                           rram_macro's two inline Hamming(72,64) codes are not one of
+  //                           mem_bkdr_util's generic subword-ECC schemes, because they don't sit
+  //                           next to their own subword's data, so they're handled explicitly by
+  //                           this class's own `read()`/`write()` below instead.
+  //                           This class only supports `ErrDetectionNone` here (checked below).
   //   row_adapter             Adapter to access the internal row of a memory, for integrators
-  //                           with a custom memory architecture - not used.
-  //   num_prince_rounds_half  The number of PRINCE half-rounds - not used
+  //                           with a custom memory architecture. Not used.
+  //   num_prince_rounds_half  The number of PRINCE half-rounds. Not used.
   //   extra_bits_per_subword  The width of any additional metadata that is not captured in the
-  //                           secded package - not used.
+  //                           secded package. Not used.
   //   system_base_addr        Base address of the memory.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
@@ -42,14 +46,47 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
     super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter,
               num_prince_rounds_half, extra_bits_per_subword, system_base_addr);
 
-    // No ECC for now. once added, the functions below need to be adjusted
+    // ECC is handled explicitly by this class's own read()/write() below, not via a generic
+    // mem_bkdr_util ECC scheme.
     `DV_CHECK_EQ_FATAL(err_detection_scheme, mem_bkdr_util_pkg::ErrDetectionNone)
+
+    // Re-derive the fields `mem_bkdr_util::new()` computed from `n_bits`/`depth`, based on the
+    // 128-bit logical word size instead of the physical 144-bit row width (`EmulFullRowWidth`).
+    // Other inherited methods (`randomize_mem()`, `inject_errors()`) use them directly, and
+    // `write()` only ever consumes `data[EmulDataWidth-1:0]`.
+    this.width                 = EmulDataWidth;
+    this.data_width            = EmulDataWidth;
+    this.bytes_per_word        = EmulDataWidth / 8;
+    this.addr_lsb              = $clog2(this.bytes_per_word);
+    this.byte_addr_width       = this.addr_width + this.addr_lsb;
+    this.size_bytes            = this.depth * this.bytes_per_word;
+    this.addr_range.start_addr = system_base_addr;
+    this.addr_range.end_addr   = system_base_addr + this.size_bytes - 1;
+    this.max_errors            = EmulDataWidth;
 
     // The GF multiplier decomposition below mirrors the `prim_gf_mult` hardware, which requires
     // the datapath width to divide evenly into the number of multiplier stages.
     `DV_CHECK_EQ_FATAL(RramDataWidth % rram_ctrl_pkg::GfMultCycles, 0,
                         "RramDataWidth must be a multiple of GfMultCycles")
     `DV_CHECK_EQ_FATAL(RramDataWidth % 8, 0, "RramDataWidth must be a multiple of bytes")
+  endfunction
+
+  // Encodes `data`'s low 128 bits and backdoor-deposits the resulting row directly.
+  virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
+    if (!check_addr_valid(addr)) return;
+    rram_row_write($sformatf("%0s[%0d]", get_full_path(0), addr >> this.addr_lsb),
+                   data[EmulDataWidth-1:0]);
+  endfunction
+
+  // Backdoor-reads the physical row directly and returns only the 128 data bits.
+  //
+  // Does not run the ECC decoder (see the class comment above).
+  // This reads back whatever data bits are stored, without detecting or correcting errors in the
+  // codeword.
+  virtual function row_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    if (!check_addr_valid(addr)) return 'x;
+    return row_data_t'(rram_row_read($sformatf("%0s[%0d]", get_full_path(0),
+                                                addr >> this.addr_lsb)));
   endfunction
 
   // Randomize the memory
@@ -73,9 +110,10 @@ class rram_ctrl_bkdr_util extends mem_bkdr_util;
 
   // Generate the per-stage GF-multiplier matrix consumed by rram_galois_multiply(), mirroring
   // `prim_gf_mult`'s `gen_matrix` step.
-  // `seed` is the running GF value carried over from the previous cycle's last row; `init` is set
-  // for the very first iteration, in which case `seed` is used directly as row 0 instead of first
-  // being multiplied by x. Each subsequent row is the previous row multiplied by x (rram_gf_mult2).
+  // `seed` is the running GF value carried over from the previous cycle's last row.
+  // `init` is set for the very first iteration, in which case `seed` is used directly as row 0
+  // instead of first being multiplied by x.
+  // Each subsequent row is the previous row multiplied by x (rram_gf_mult2).
   static function rram_gf_matrix_t rram_gen_matrix(bit [RramDataWidth-1:0] seed, bit init);
     rram_gf_matrix_t matrix_out;
 

@@ -16,6 +16,7 @@ package rram_ctrl_bkdr_util_pkg;
   `include "dv_macros.svh"
 
   // sources
+  `include "rram_bkdr_helpers.sv"
   `include "rram_ctrl_bkdr_util.sv"
   `include "rram_ctrl_otp_bkdr_util.sv"
 endpackage
