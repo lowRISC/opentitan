@@ -339,6 +339,7 @@ cc_library(
         "//hw/top:keymgr_dpe_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",

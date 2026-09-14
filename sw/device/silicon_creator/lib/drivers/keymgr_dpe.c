@@ -24,6 +24,10 @@ KEYMGR_DPE_ASSERT(kScKeymgrDPEStateDisabled,
                   KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED);
 KEYMGR_DPE_ASSERT(kScKeymgrDPEStateInvalid,
                   KEYMGR_DPE_WORKING_STATE_STATE_VALUE_INVALID);
+KEYMGR_DPE_ASSERT(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT,
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
+KEYMGR_DPE_ASSERT(KEYMGR_DPE_METADATA_HIGH_MULTIREG_COUNT,
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
 
 /**
  * Internal keymgr dpe operation definition
@@ -602,6 +606,67 @@ rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot) {
 
   // Wait until the erase operation has finished
   return sc_keymgr_dpe_wait_until_done();
+}
+
+/**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ */
+rom_error_t sc_keymgr_dpe_get_metadata(uint32_t slot,
+                                       sc_keymgr_dpe_metadata_t *metadata) {
+  if (launder32(slot) >= KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_CHECK_LT(slot, KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
+
+  metadata->max_key_version = abs_mmio_read32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET +
+      slot * sizeof(uint32_t));
+
+  uint32_t reg_high = abs_mmio_read32(sc_keymgr_dpe_base() +
+                                      KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET +
+                                      slot * sizeof(uint32_t));
+  metadata->valid =
+      bitfield_bit32_read(reg_high, KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
+  metadata->boot_stage = (sc_keymgr_dpe_boot_stage_t)bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_FIELD);
+
+  metadata->slot_policy.child = bitfield_bit32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_ALLOW_CHILD_POLICY_0_BIT);
+  metadata->slot_policy.expo = bitfield_bit32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_BIT);
+  metadata->slot_policy.parent = bitfield_bit32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT);
+
+  return kErrorOk;
+}
+
+/**
+ * Checks that a keymgr_dpe HW slot holds a valid DPE context with the expected
+ * maximum key version, boot stage and slot policy.
+ */
+rom_error_t sc_keymgr_dpe_check_metadata(
+    uint32_t slot, uint32_t expected_max_key_version,
+    sc_keymgr_dpe_boot_stage_t expected_boot_stage,
+    const sc_keymgr_dpe_policies_t *expected_policy) {
+  sc_keymgr_dpe_metadata_t metadata;
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(slot, &metadata));
+  if (launder32(metadata.valid) == kHardenedBoolTrue &&
+      launder32(metadata.max_key_version) == expected_max_key_version &&
+      launder32(metadata.boot_stage) == expected_boot_stage &&
+      launder32(metadata.slot_policy.child) == expected_policy->child &&
+      launder32(metadata.slot_policy.expo) == expected_policy->expo &&
+      launder32(metadata.slot_policy.parent) == expected_policy->parent) {
+    HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
+    HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
+    HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
+    HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
+    HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
+    return kErrorOk;
+  }
+  return kErrorKeymgrInternal;
 }
 
 /**

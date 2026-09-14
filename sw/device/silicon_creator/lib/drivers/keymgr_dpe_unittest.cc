@@ -159,6 +159,26 @@ class KeymgrDpeTest : public rom_test::RomTest {
                         KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
   }
 
+  /**
+   * Expects a `sc_keymgr_dpe_get_metadata()` sequence.
+   */
+  void ExpectGetMetadata(uint32_t slot, uint32_t max_key_version, bool valid,
+                         uint32_t boot_stage, sc_keymgr_dpe_policies_t policy) {
+    EXPECT_ABS_READ32(
+        base_ + KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + slot * sizeof(uint32_t),
+        max_key_version);
+    EXPECT_ABS_READ32(
+        base_ + KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET + slot * sizeof(uint32_t),
+        {
+            {KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT, valid},
+            {KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_OFFSET, boot_stage},
+            {KEYMGR_DPE_METADATA_HIGH_0_ALLOW_CHILD_POLICY_0_BIT, policy.child},
+            {KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_BIT, policy.expo},
+            {KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT,
+             policy.parent},
+        });
+  }
+
   uint32_t base_ =
       dt_keymgr_dpe_reg_block(kDtKeymgrDpe, kDtKeymgrDpeRegBlockCore);
   keymgr_dpe_binding_value_t binding_value_sealing_ = {
@@ -676,6 +696,122 @@ TEST_F(KeymgrDpeTest, EraseSlot) {
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
   EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, GetMetadata) {
+  sc_keymgr_dpe_policies_t policy = {
+      .parent = kScKeymgrDPESlotPolRetainParent,
+      .child = kScKeymgrDPESlotPolAllowChild,
+      .expo = kScKeymgrDPESlotPolNoExport,
+  };
+  ExpectGetMetadata(/*slot=*/3, /*max_key_version=*/0xA5A5A5A5,
+                    /*valid=*/true, kScKeymgrDPEBootStageOwner, policy);
+
+  sc_keymgr_dpe_metadata_t metadata;
+  EXPECT_EQ(sc_keymgr_dpe_get_metadata(/*slot=*/3, &metadata), kErrorOk);
+  EXPECT_EQ(metadata.max_key_version, 0xA5A5A5A5);
+  EXPECT_EQ(metadata.valid, kHardenedBoolTrue);
+  EXPECT_EQ(metadata.boot_stage, kScKeymgrDPEBootStageOwner);
+  EXPECT_EQ(metadata.slot_policy.parent, kScKeymgrDPESlotPolRetainParent);
+  EXPECT_EQ(metadata.slot_policy.child, kScKeymgrDPESlotPolAllowChild);
+  EXPECT_EQ(metadata.slot_policy.expo, kScKeymgrDPESlotPolNoExport);
+}
+
+TEST_F(KeymgrDpeTest, GetMetadataInvalidSlot) {
+  sc_keymgr_dpe_policies_t policy = {
+      .parent = kScKeymgrDPESlotPolEraseParent,
+      .child = kScKeymgrDPESlotPolNoChild,
+      .expo = kScKeymgrDPESlotPolAllowExport,
+  };
+  ExpectGetMetadata(/*slot=*/0, /*max_key_version=*/0, /*valid=*/false,
+                    kScKeymgrDPEBootStageRuntime, policy);
+
+  sc_keymgr_dpe_metadata_t metadata;
+  EXPECT_EQ(sc_keymgr_dpe_get_metadata(/*slot=*/0, &metadata), kErrorOk);
+  EXPECT_EQ(metadata.max_key_version, 0u);
+  EXPECT_EQ(metadata.valid, kHardenedBoolFalse);
+  EXPECT_EQ(metadata.boot_stage, kScKeymgrDPEBootStageRuntime);
+  EXPECT_EQ(metadata.slot_policy.parent, kScKeymgrDPESlotPolEraseParent);
+  EXPECT_EQ(metadata.slot_policy.child, kScKeymgrDPESlotPolNoChild);
+  EXPECT_EQ(metadata.slot_policy.expo, kScKeymgrDPESlotPolAllowExport);
+}
+
+TEST_F(KeymgrDpeTest, GetMetadataSlotOutOfRange) {
+  // An out-of-range slot is rejected without touching any register.
+  sc_keymgr_dpe_metadata_t metadata;
+  EXPECT_EQ(
+      sc_keymgr_dpe_get_metadata(KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT, &metadata),
+      kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrDpeTest, CheckMetadata) {
+  ExpectGetMetadata(/*slot=*/1, /*max_key_version=*/0xA5A5A5A5,
+                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
+                    policy_erase_parent_);
+
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(
+                /*slot=*/1, /*expected_max_key_version=*/0xA5A5A5A5,
+                kScKeymgrDPEBootStageOwnerInt, &policy_erase_parent_),
+            kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, CheckMetadataSlotOutOfRange) {
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
+                                         /*expected_max_key_version=*/0,
+                                         kScKeymgrDPEBootStageCreator,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrDpeTest, CheckMetadataMismatch) {
+  const uint32_t kSlot = 1;
+  const uint32_t kMaxKeyVersion = 0xA5A5A5A5;
+  const sc_keymgr_dpe_boot_stage_t kBootStage = kScKeymgrDPEBootStageOwnerInt;
+
+  // Invalid slot.
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/false, kBootStage,
+                    policy_erase_parent_);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong maximum key version.
+  ExpectGetMetadata(kSlot, kMaxKeyVersion - 1, /*valid=*/true, kBootStage,
+                    policy_erase_parent_);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong boot stage.
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true,
+                    kScKeymgrDPEBootStageOwner, policy_erase_parent_);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong retain parent policy.
+  sc_keymgr_dpe_policies_t policy = policy_erase_parent_;
+  policy.parent = kScKeymgrDPESlotPolRetainParent;
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true, kBootStage, policy);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong allow child policy.
+  policy = policy_erase_parent_;
+  policy.child = kScKeymgrDPESlotPolNoChild;
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true, kBootStage, policy);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong exportable policy.
+  policy = policy_erase_parent_;
+  policy.expo = kScKeymgrDPESlotPolAllowExport;
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true, kBootStage, policy);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
 }
 
 TEST_F(KeymgrDpeTest, Disable) {
