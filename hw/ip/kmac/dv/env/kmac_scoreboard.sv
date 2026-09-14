@@ -79,6 +79,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
   bit sha3_absorb;
   bit sha3_squeeze;
 
+  // PRNG status bits
+  bit status_entropy_ready;
+  bit status_entropy_reseeding;
+
   // FIFO status bits
   bit cmd_process_triggered;
   bit msgfifo_access;
@@ -966,6 +970,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
           exp_status[KmacStatusSha3Absorb]  = sha3_absorb;
           exp_status[KmacStatusSha3Squeeze] = sha3_squeeze;
 
+          exp_status[KmacStatusEntropyReady]     = status_entropy_ready;
+          exp_status[KmacStatusEntropyReseeding] = status_entropy_reseeding;
 
           void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
 
@@ -1837,9 +1843,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
   function void set_entropy_fetch(bit val);
     if (val) begin
-      if (entropy_mode == EntropyModeEdn) in_edn_fetch = cfg.enable_masking;
+      if (entropy_mode == EntropyModeEdn) begin
+        in_edn_fetch = cfg.enable_masking;
+        status_entropy_reseeding = cfg.enable_masking;
+        status_entropy_ready = cfg.enable_masking ? 0 : entropy_ready;
+      end
     end else begin
       in_edn_fetch = 0;
+      status_entropy_reseeding = 0;
+      status_entropy_ready = 1;
       `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
     end
   endfunction
