@@ -868,6 +868,14 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // Set the checksum.
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
+  // Shred ss.
+  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
+  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
+  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
+  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
+  HARDENED_TRY(hardened_memshred(share0, ARRAYSIZE(share0)));
+  HARDENED_TRY(hardened_memshred(share1, ARRAYSIZE(share1)));
+
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }
