@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
@@ -123,9 +124,7 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
 }
 
 hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din) {
-  if (id->device_id[1] == din[0] && id->device_id[2] == din[1])
-    return kHardenedBoolTrue;
-  return kHardenedBoolFalse;
+  return hardened_memeq(&id->device_id[1], din, 2);
 }
 
 bool lifecycle_claim(uint32_t claim) {
