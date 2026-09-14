@@ -4,11 +4,9 @@
 #
 # waiver file for i3c
 
-# waive naming rules on a localparams that exist only because of overloaded
+# waive naming rules on localparams that exist only because of overloaded
 # enumeration values
-waive --rule=parameter-name-style --location="i3c_consts_pkg.sv"
-# Line numbers are fragile; use a window for now.
-#waive --rule=parameter-name-style --line=130:170 --location="i3c_consts_pkg.sv:147"
+waive --rule=parameter-name-style --line=145:150 --location="i3c_consts_pkg.sv"
 
 # waive long line violations in generated code
 waive --rule=line-length --location="i3c_reg_top.sv"

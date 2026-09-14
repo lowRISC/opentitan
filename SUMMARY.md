@@ -410,7 +410,7 @@
     - [Hardware Interfaces]()
     - [Registers](./hw/ip/i3c/doc/registers.md)
     - [Device Interface Functions]()
-    - [Checklist]()
+    - [Checklist](./hw/ip/i3c/doc/checklist.md)
   - [Key Manager](./hw/ip/keymgr/README.md)
   - [Key Manager DPE](./hw/ip/keymgr_dpe/README.md)
     - [Theory of Operation](./hw/ip/keymgr_dpe/doc/theory_of_operation.md)
