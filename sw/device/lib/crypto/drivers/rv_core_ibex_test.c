@@ -92,11 +92,18 @@ static status_t ibex_icache_test(void) {
   return OK_STATUS();
 }
 
+static status_t ibex_clear_rf_test(void) {
+  LOG_INFO("Running IBEX clear RF test.");
+  ibex_clear_rf();
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, ibex_entropy_test);
   EXECUTE_TEST(result, ibex_security_config_test);
   EXECUTE_TEST(result, ibex_icache_test);
+  EXECUTE_TEST(result, ibex_clear_rf_test);
 
   return status_ok(result);
 }
