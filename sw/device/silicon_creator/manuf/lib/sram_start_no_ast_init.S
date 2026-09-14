@@ -4,7 +4,7 @@
 
 #include "sram_start.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_memory.h"
 #include "sw/device/lib/base/multibits_asm.h"
 
 #include "hw/top/csrng_regs.h"  // Generated.
@@ -153,7 +153,7 @@ sram_start:
   // initialize memory scrambling, as well as the entropy distribution network.
   // This enables writing to the SECRET* OTP partitions, required for
   // provisioning the test unlock/exit tokens.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li a0, TOP_ENTROPY_SRC_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_FLAG_OFFSET) | \
@@ -163,13 +163,13 @@ sram_start:
   sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
-  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li a0, TOP_CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_FIPS_FORCE_ENABLE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
-  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li a0, TOP_EDN0_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \

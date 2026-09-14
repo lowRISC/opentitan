@@ -19,8 +19,9 @@ cc_library(
     ],
     hdrs = [
         "top_earlgrey.h",
-        "top_earlgrey_memory.h",
+        "top_memory.h",
     ],
+    strip_include_prefix = "/hw/top_earlgrey/sw/autogen",
     defines = ["OPENTITAN_IS_EARLGREY"],
     target_compatible_with = opentitan_require_top("earlgrey"),
 )
