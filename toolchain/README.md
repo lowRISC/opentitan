@@ -4,8 +4,7 @@ This directory contains the Bazel configuration for OpenTitan's RISC-V
 toolchain.
 
 This LLVM toolchain comes from the [lowrisc-toolchains] repository. See
-`third_party/lowrisc/BUILD.lowrisc_toolchain.bazel` for changing the toolchain
-version.
+`third_party/lowrisc/extensions.bzl` for changing the toolchain version.
 
 [lowrisc-toolchains]: https://github.com/lowRISC/lowrisc-toolchains
 
