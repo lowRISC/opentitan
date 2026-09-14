@@ -78,7 +78,6 @@ TEST_ARGS=(
     --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
     --test_env=CRYPTOTEST_SKIP_STRIDE=10
-    --//sw/host/provisioning/cert_lib:enable_mldsa_signing_for_test
 )
 
 if [[ "${mode}" == "coverage" ]]; then
