@@ -4,6 +4,8 @@
 //
 // RISC-V Platform-Level Interrupt Gateways module
 
+`include "prim_assert.sv"
+
 module ${module_instance_name}_gateway #(
   parameter int N_SOURCE = 32
 ) (

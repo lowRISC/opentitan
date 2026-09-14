@@ -252,8 +252,9 @@ module ascon_core
 
 
   // CTRL
-  assign operation            = reg2hw.ctrl_shadowed.operation.q;
-  assign variant              = reg2hw.ctrl_shadowed.ascon_variant.q;
+  assign operation            = prim_ascon_pkg::duplex_op_e'(reg2hw.ctrl_shadowed.operation.q);
+  assign variant              =
+      prim_ascon_pkg::duplex_variant_e'(reg2hw.ctrl_shadowed.ascon_variant.q);
   assign sideload_key         = reg2hw.ctrl_shadowed.sideload_key.q;
   assign masked_msg_input     = reg2hw.ctrl_shadowed.masked_msg_input.q;
   assign masked_ad_input      = reg2hw.ctrl_shadowed.masked_ad_input.q;
@@ -264,8 +265,8 @@ module ascon_core
 
   // BLOCK_CTRL
   assign valid_bytes          = reg2hw.block_ctrl_shadowed.valid_bytes.q;
-  assign data_type_last       = reg2hw.block_ctrl_shadowed.data_type_last.q;
-  assign data_type_start      = reg2hw.block_ctrl_shadowed.data_type_start.q;
+  assign data_type_last       = data_type_in_e'(reg2hw.block_ctrl_shadowed.data_type_last.q);
+  assign data_type_start      = data_type_in_e'(reg2hw.block_ctrl_shadowed.data_type_start.q);
 
   logic no_msg_mubi4invalid;
   logic no_ad_mubi4invalid;
@@ -274,20 +275,22 @@ module ascon_core
   // Sanitize values written by SW
   // TODO: This should be added to the register_top/reggen-tool, as it would
   //       be better to sanitize the values before they are written to the register.
-    if(prim_mubi_pkg::mubi4_test_invalid(reg2hw.ctrl_shadowed.no_ad.q)) begin
+    if (prim_mubi_pkg::mubi4_test_invalid(
+        prim_mubi_pkg::mubi4_t'(reg2hw.ctrl_shadowed.no_ad.q))) begin
       no_ad_mubi4invalid = 1'b1;
       no_ad              = prim_mubi_pkg::MuBi4False;
     end else begin
       no_ad_mubi4invalid = 1'b0;
-      no_ad              = reg2hw.ctrl_shadowed.no_ad.q;
+      no_ad              = prim_mubi_pkg::mubi4_t'(reg2hw.ctrl_shadowed.no_ad.q);
     end
 
-    if(prim_mubi_pkg::mubi4_test_invalid(reg2hw.ctrl_shadowed.no_msg.q)) begin
+    if (prim_mubi_pkg::mubi4_test_invalid(
+        prim_mubi_pkg::mubi4_t'(reg2hw.ctrl_shadowed.no_msg.q))) begin
       no_msg_mubi4invalid = 1'b1;
       no_msg              = prim_mubi_pkg::MuBi4True;
     end else begin
       no_msg_mubi4invalid = 1'b0;
-      no_msg              = reg2hw.ctrl_shadowed.no_msg.q;
+      no_msg              = prim_mubi_pkg::mubi4_t'(reg2hw.ctrl_shadowed.no_msg.q);
     end
   end
 
