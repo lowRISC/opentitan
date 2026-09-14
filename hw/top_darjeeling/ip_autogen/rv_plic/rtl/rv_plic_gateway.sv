@@ -4,6 +4,8 @@
 //
 // RISC-V Platform-Level Interrupt Gateways module
 
+`include "prim_assert.sv"
+
 module rv_plic_gateway #(
   parameter int N_SOURCE = 32
 ) (
