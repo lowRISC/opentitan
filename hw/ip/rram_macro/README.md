@@ -9,7 +9,8 @@ This block is expected to be used in conjunction with the RRAM controller and ca
 ## Features
 
 The RRAM macro supports read and write commands to the RRAM.
-In the open-source version, the RRAM is emulated with prim_ram_1p modules.
+Each RRAM word is protected by ECC, configurable per request via `ecc_en`.
+In the open-source version, the RRAM is emulated with prim_ram_1p modules, and the ECC is two independent Hamming(72,64) SECDED codes (one per 64-bit half of the 128-bit word).
 In the closed-source version, the real RRAM is instantiated and additional signals for production testing and scan isolation are connected.
 The macro contains a CSR block for vendor specific operations which is not used in the open-source version.
 

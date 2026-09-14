@@ -48,6 +48,7 @@ This module exists in two forms:
   This form is used in the physical ASIC.
 - **Emulation model**: Open-source, behavioural model for simulation and FPGA prototyping.
   The RRAM data and info arrays are emulated with SRAMs.
+  Each word is protected by a per-page-configurable ECC, using two independent Hamming(72,64) SECDED codes (one per 64-bit half).
   Test circuits are not connected.
 
 The full subsystem interacts with the power manager (`pwrmgr`), key manager (`keymgr_dpe`), OTP controller (`otp_ctrl`), and life cycle controller (`lc_ctrl`).
@@ -132,7 +133,8 @@ typedef struct packed {
   logic                 ack;
   logic                 done;
   logic                 err;
-  logic                 ecc_err;
+  logic                 ecc_corr_err;
+  logic                 ecc_fatal_err;
   logic [DataWidth-1:0] rd_data;
   logic                 init_done;
   logic                 fatal_err;
