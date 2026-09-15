@@ -56,6 +56,57 @@ typedef struct keymgr_dpe_output {
 } keymgr_dpe_output_t;
 
 /**
+ * Policy bits associated with the DPE context held in one HW slot.
+ */
+typedef struct keymgr_dpe_policy {
+  /**
+   * Set if this DPE context allows deriving further DPE contexts.
+   */
+  bool allow_child;
+  /**
+   * Set if the key for this slot is exportable.
+   */
+  bool exportable;
+  /**
+   * Set if further advance operations retain (do not erase) this slot.
+   */
+  bool retain_parent;
+} keymgr_dpe_policy_t;
+
+/**
+ * Boot stage associated with a DPE context.
+ * Mirrors `keymgr_dpe_boot_stage_e` in keymgr_dpe_pkg.sv.
+ */
+typedef enum keymgr_dpe_boot_stage {
+  kKeymgrDPEBootStageCreator = 0,
+  kKeymgrDPEBootStageOwnerInt = 1,
+  kKeymgrDPEBootStageOwner = 2,
+  kKeymgrDPEBootStageRuntime = 3,
+} keymgr_dpe_boot_stage_t;
+
+/**
+ * Output metadata from one HW slot.
+ */
+typedef struct keymgr_dpe_metadata {
+  /**
+   * Maximum allowed version for keys to be generated from this DPE context.
+   */
+  uint32_t max_key_version;
+  /**
+   * The current boot_stage of this DPE context.
+   */
+  keymgr_dpe_boot_stage_t boot_stage;
+  /**
+   * The current slot policy bits for this DPE context.
+   */
+  keymgr_dpe_policy_t slot_policy;
+  /**
+   * Validity of this DPE context.
+   */
+  bool valid;
+} keymgr_dpe_metadata_t;
+
+/**
  * Derive a key manager dpe key that is visible to software.
  *
  * @param diversification Diversification input for the key derivation.
@@ -129,6 +180,17 @@ status_t keymgr_dpe_sideload_clear_kmac(void);
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_dpe_sideload_clear_otbn(void);
+
+/**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ *
+ * @param slot Index of the HW slot to read metadata from.
+ * @param[out] metadata Out-param for the slot's metadata.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_get_metadata(uint32_t slot,
+                                 keymgr_dpe_metadata_t *metadata);
 
 #ifdef __cplusplus
 }
