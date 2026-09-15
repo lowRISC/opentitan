@@ -28,6 +28,10 @@ typedef struct otcrypto_interface_t {
   otcrypto_lib_version_t (*lib_version)(void);
   void (*version_decode)(uint32_t, uint32_t *, uint32_t *, uint32_t *);
 
+  // CMVP service indicator
+  otcrypto_status_t (*cmvp_service_indicator)(
+      otcrypto_cmvp_service_indicator_t *);
+
   // Entropy
   otcrypto_status_t (*entropy_init)(void);
   otcrypto_status_t (*entropy_check)(void);

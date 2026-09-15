@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -28,6 +29,7 @@ otcrypto_status_t otcrypto_kmac(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *input_message,
     const otcrypto_const_byte_buf_t *customization_string,
     size_t required_output_len, otcrypto_word32_buf_t *tag) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC);
   // TODO (#16410) Revisit/complete error checks
 
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS

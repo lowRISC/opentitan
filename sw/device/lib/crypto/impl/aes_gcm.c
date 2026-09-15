@@ -13,6 +13,7 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -281,6 +282,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
     const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
     otcrypto_word32_buf_t *auth_tag) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -340,6 +342,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     otcrypto_aes_gcm_tag_len_t tag_len,
     const otcrypto_const_word32_buf_t *auth_tag, otcrypto_byte_buf_t *plaintext,
     hardened_bool_t *success) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -392,6 +395,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_INIT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       ctx == NULL) {
@@ -428,6 +432,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_INIT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       ctx == NULL) {
@@ -463,6 +468,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
 
 otcrypto_status_t otcrypto_aes_gcm_update_aad(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *aad) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_AAD);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || aad == NULL || aad->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -500,6 +506,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *input,
     otcrypto_byte_buf_t *output, size_t *output_bytes_written) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_ENCRYPTED_DATA);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input == NULL || input->data == NULL || output == NULL ||
       output->data == NULL || output_bytes_written == NULL) {
@@ -557,6 +564,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
     otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
     otcrypto_word32_buf_t *auth_tag) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_FINAL);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || ciphertext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL) {
@@ -612,6 +620,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     const otcrypto_const_word32_buf_t *auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_FINAL);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || plaintext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL || success == NULL) {

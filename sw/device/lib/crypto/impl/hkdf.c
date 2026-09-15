@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -139,6 +140,7 @@ static status_t hkdf_check_prk(size_t digest_words,
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         const otcrypto_const_byte_buf_t *salt,
                                         otcrypto_blinded_key_t *prk) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HKDF_EXTRACT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
   if (ikm == NULL || ikm->keyblob == NULL || prk == NULL ||
@@ -248,6 +250,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        const otcrypto_const_byte_buf_t *info,
                                        otcrypto_blinded_key_t *okm) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HKDF_EXPAND);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (okm == NULL || okm->keyblob == NULL || prk == NULL ||
       prk->keyblob == NULL) {
