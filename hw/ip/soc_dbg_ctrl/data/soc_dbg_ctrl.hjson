@@ -223,6 +223,11 @@
         desc: "Trace register to observe the debug category that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
+        tags: [
+          // HW updates this register with the debug policy it determines.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "6:0"
             resval: "0x50"
@@ -237,6 +242,11 @@
         desc: "Trace register to observe the valid or relocked state that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
+        tags: [
+          // HW updates this register with the debug policy it determines.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "7:4"
             mubi: true
@@ -304,6 +314,11 @@
         desc: "Trace register to observe the debug category that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
+        tags: [
+          // HW updates this register with the debug policy it determines.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "6:0"
             resval: "0x50"
@@ -318,6 +333,11 @@
         desc: "Trace register to observe the valid or relocked state that is determined either by hardware or by software."
         swaccess: "ro"
         hwaccess: "hwo"
+        tags: [
+          // HW updates this register with the debug policy it determines.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "7:4"
             mubi: true
@@ -409,6 +429,11 @@
         swaccess: "ro"
         hwaccess: "hwo"
         hwext:    "true"
+        tags: [
+          // HW mirrors the pwrmgr boot status and the halt FSM state here while lc_dft_en is on.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "0"
             name: "main_clk_status"
@@ -484,6 +509,11 @@
         swaccess: "ro"
         hwaccess: "hwo"
         hwext:    "true"
+        tags: [
+          // HW mirrors the OTP SoC debug state here while lc_dft_en is on.
+          // So excluded from CSR automation test; see the trace_regs testpoint.
+          "excl:CsrAllTests:CsrExclCheck"
+        ]
         fields: [
           { bits: "31:0"
             name: "soc_dbg_state"
