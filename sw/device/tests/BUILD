@@ -7894,6 +7894,7 @@ opentitan_test(
     srcs = ["soc_proxy_external_wakeup.c"],
     exec_env = DARJEELING_TEST_ENVS,
     deps = [
+        "//hw/top/dt",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",

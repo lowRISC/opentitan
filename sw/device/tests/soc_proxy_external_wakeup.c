@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/soc_proxy.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -13,6 +14,13 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_soc_proxy_t kSocProxyDt = 0;
+static_assert(kDtSocProxyCount == 1, "this test expects exactly one soc_proxy");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -29,10 +37,8 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .is_only_irq = true};
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
   // Enable global and external IRQ in Ibex.
   irq_global_ctrl(true);
@@ -50,8 +56,10 @@ bool test_main(void) {
                                               &wakeup_req_srcs));
 
   // Enable external wakeup request in Power Manager.
-  const dif_pwrmgr_request_sources_t ext_wkup_req =
-      (1u << kTopDarjeelingPowerManagerWakeUpsSocProxyWkupExternalReq);
+  dif_pwrmgr_request_sources_t ext_wkup_req;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_soc_proxy_instance_id(kSocProxyDt),
+      kDtSocProxyWakeupWkupExternalReq, &ext_wkup_req));
   wakeup_req_srcs |= ext_wkup_req;
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, wakeup_req_srcs, kDifToggleEnabled));
