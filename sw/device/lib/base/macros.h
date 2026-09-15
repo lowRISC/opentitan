@@ -19,6 +19,20 @@ extern "C++" {
 #include <type_traits>
 }
 #endif
+
+/**
+ * An unsigned integer as wide as an address, and its signed counterpart.
+ *
+ * Use these where the meaning is "a RISC-V word" rather than "a pointer":
+ * under CHERI purecap `uintptr_t` is a 64-bit capability, not a plain 32-bit
+ * integer.
+ */
+#if defined(__CHERI_PURE_CAPABILITY__)
+typedef __PTRADDR_TYPE__ ot_word_t;
+#else
+typedef uintptr_t ot_word_t;
+#endif
+typedef ptrdiff_t ot_sword_t;
 #endif
 
 /**
