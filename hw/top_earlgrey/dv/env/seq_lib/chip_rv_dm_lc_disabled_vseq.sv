@@ -5,7 +5,9 @@
 // This sequence accesses the rv_dm mem interface via JTAG and the TL-UL bus with randomly
 // backdoor-loaded LC state. If the LC state gates the rv_dm mem interface (via lc_debug_en), we
 // are expecting to see a d_error on the TL-UL bus and on JTAG we expect a read-write test to an RW
-// reg to fail.
+// reg to fail. In LC states that also disable the CPU (via lc_cpu_en), the TL-UL access is
+// answered with a blank OK response by the TL-UL gate inside rv_core_ibex before it can
+// reach the rv_dm mem gate, so a blank response is expected instead of a d_error.
 //
 // Note that although this sequence runs in stub CPU mode, it still backdoor loads a valid ROM image
 // so that the ROM check can complete successfully. This is needed since the TAP straps are
@@ -158,26 +160,35 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   endtask
 
   // Access check via TL-UL bus.
+  //
+  // The stub CPU drives the Ibex data port, which passes through the TL-UL lc gate of
+  // rv_core_ibex before it reaches the fabric. That gate closes and returns a blank OK response
+  // (no error, all-zero data) whenever lc_cpu_en is off. This means that the rv_dm mem gate can't
+  // be seen in CPU-disabled life cycle states.
   virtual task rw_csr_addr_with_gating(uvm_reg csr, bit gated);
     dv_base_reg dv_reg;
     dv_base_reg_field flds[$];
     bit [TL_AW-1:0] addr = csr.get_address();
     bit [TL_DW-1:0] data = $urandom();
+    bit cpu_gated = !lc_ctrl_pkg::lc_tx_test_true_strict(
+        cfg.chip_vif.get_lc_ctrl_enable_signal(LcCtrlSignalCpuEn));
+    bit exp_err = gated && !cpu_gated;
     `downcast(dv_reg, csr)
     dv_reg.get_dv_base_reg_fields(flds);
     if (flds[0].get_access() inside {"RW", "WO"}) begin
-      `uvm_info(`gfn, $sformatf("Write addr %0h, write adata %0h, exp error %0d",
-                addr, data, gated), UVM_HIGH);
-      tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(gated));
+      `uvm_info(`gfn, $sformatf("Write addr %0h, write adata %0h, exp error %0d, cpu gated %0d",
+                addr, data, exp_err, cpu_gated), UVM_HIGH);
+      tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(exp_err));
     end
     // Most RV_DM registers cannot be predicted correctly.
     // We hence only check whether the accesses below error out or not.
-    // In case of an error, the data read back must be all ones.
+    // In case of an error, the data read back must be all ones. If the CPU is gated, the blank
+    // response must read back as all zeros.
     if (flds[0].get_access() inside {"RW", "RO"}) begin
-      `uvm_info(`gfn, $sformatf("Read addr %0h, exp error %0d",
-                addr, gated), UVM_HIGH);
-      tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated),
-                .check_exp_data(gated), .exp_data('1));
+      `uvm_info(`gfn, $sformatf("Read addr %0h, exp error %0d, cpu gated %0d",
+                addr, exp_err, cpu_gated), UVM_HIGH);
+      tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(exp_err),
+                .check_exp_data(gated || cpu_gated), .exp_data(cpu_gated ? '0 : '1));
     end
   endtask
 
