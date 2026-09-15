@@ -646,8 +646,8 @@ inline manifest_digest_region_t manifest_digest_region_get(
 OT_WARN_UNUSED_RESULT
 inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
   return (epmp_region_t){
-      .start = (uintptr_t)manifest + manifest->code_start,
-      .end = (uintptr_t)manifest + manifest->code_end,
+      .start = (ot_word_t)manifest + manifest->code_start,
+      .end = (ot_word_t)manifest + manifest->code_end,
   };
 }
 
