@@ -27,17 +27,11 @@
       notes:              "",
     }
     {
-      version:            "1.2.0",
+      version:            "2.0.0",
       life_stage:         "L1",
-% if num_inp_period_counters > 0:
-      design_stage:       "D2",
+      design_stage:       "D1",
       verification_stage: "V1",
       dif_stage:          "S1",
-% else:
-      design_stage:       "D3",
-      verification_stage: "V2S",
-      dif_stage:          "S2",
-% endif
       notes:              ""
     }
   ]

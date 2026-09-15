@@ -19,7 +19,7 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[GPIO Spec]: ../
+[GPIO Spec]: ../README.md
 [GPIO CSR]: ../data/gpio.hjson
 
 
@@ -37,24 +37,24 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | N/A         |
-Documentation | [BLOCK_DIAGRAM][]         | N/A         |
-Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
-Documentation | [MISSING_FUNC][]          | N/A         |
-Documentation | [FEATURE_FROZEN][]        | Done        |
-RTL           | [FEATURE_COMPLETE][]      | Done        |
-RTL           | [PORT_FROZEN][]           | Done        |
-RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
-RTL           | [REVIEW_TODO][]           | Done        |
-RTL           | [STYLE_X][]               | Done        |
-RTL           | [CDC_SYNCMACRO][]         | N/A         |
-Code Quality  | [LINT_PASS][]             | Done        |
-Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [AREA_CHECK][]            | Done        |
-Code Quality  | [TIMING_CHECK][]          | Done        | Fmax 50MHz on NexysVideo
-Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
+Documentation | [NEW_FEATURES][]          | Not Started |
+Documentation | [BLOCK_DIAGRAM][]         | Not Started |
+Documentation | [DOC_INTERFACE][]         | Not Started |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
+Documentation | [MISSING_FUNC][]          | Not Started |
+Documentation | [FEATURE_FROZEN][]        | Not Started |
+RTL           | [FEATURE_COMPLETE][]      | Not Started |
+RTL           | [PORT_FROZEN][]           | Not Started |
+RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
+RTL           | [REVIEW_TODO][]           | Not Started |
+RTL           | [STYLE_X][]               | Not Started |
+RTL           | [CDC_SYNCMACRO][]         | Not Started |
+Code Quality  | [LINT_PASS][]             | Not Started |
+Code Quality  | [CDC_SETUP][]             | Not Started |
+Code Quality  | [RDC_SETUP][]             | Not Started |
+Code Quality  | [AREA_CHECK][]            | Not Started |
+Code Quality  | [TIMING_CHECK][]          | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 
 [NEW_FEATURES]:          ../../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../../doc/project_governance/checklist/README.md#block_diagram
@@ -79,13 +79,13 @@ Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
-Security      | [SEC_CM_RND_CNST][]          | N/A         |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | N/A         |
-Security      | [SEC_CM_SHADOW_REGS][]       | N/A         |
-Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
+Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
+Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
@@ -99,17 +99,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | N/A         |
-RTL           | [TODO_COMPLETE][]       | Done        |
-Code Quality  | [LINT_COMPLETE][]       | Done        |
-Code Quality  | [CDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff
-Code Quality  | [RDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff
-Review        | [REVIEW_RTL][]          | Done        |
-Review        | [REVIEW_DELETED_FF][]   | Waived      | No block-level flow available - waived to top-level signoff
-Review        | [REVIEW_SW_CHANGE][]    | Done        |
-Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Review        | Reviewer(s)             | Done        | eunchan@ jeoong@ weicai@ alphan@
-Review        | Signoff date            | Done        | 2022-05-26
+Documentation | [NEW_FEATURES_D3][]     | Not Started |
+RTL           | [TODO_COMPLETE][]       | Not Started |
+Code Quality  | [LINT_COMPLETE][]       | Not Started |
+Code Quality  | [CDC_COMPLETE][]        | Not Started |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
+Review        | [REVIEW_RTL][]          | Not Started |
+Review        | [REVIEW_DELETED_FF][]   | Not Started |
+Review        | [REVIEW_SW_CHANGE][]    | Not Started |
+Review        | [REVIEW_SW_ERRATA][]    | Not Started |
+Review        | Reviewer(s)             | Not Started |
+Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      ../../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../../doc/project_governance/checklist/README.md#todo_complete
@@ -179,31 +179,26 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done            |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | N/A         |
-Documentation | [DV_DOC_COMPLETED][]                    | Done        |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        | Resolved: [#680][]
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | Resolved: [#807][]
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        | [#41][] Not quite related, [#45][] root caused
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
-
-[#41]: https://github.com/lowRISC/opentitan/issues/41
-[#45]: https://github.com/lowRISC/opentitan/issues/45
-[#680]: https://github.com/lowRISC/opentitan/pull/680
-[#807]: https://github.com/lowRISC/opentitan/pull/807
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
+Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
+Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../../doc/project_governance/checklist/README.md#dv_doc_completed
@@ -230,11 +225,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | N/A         |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived the V2S review meeting, since only 1 standard sec_cm - bus integrity.
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
+Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
@@ -246,23 +241,21 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived t
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress.
-Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        | Resolved: [#680][]
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | [common_cov_excl.el][], [gpio_cov_excl.el][]
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        | [#807][]
-Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
-Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        |
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
+Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not Started |
+Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not Started |
+Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not Started |
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Not Started |
+Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
 Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
-Issues        | [NO_ISSUES_PENDING][]             | Done        |
-Review        | Reviewer(s)                       | Done        | @eunchan @sriyerg @sjgitty
-Review        | Signoff date                      | Done        | 2019-11-04
-
-[#807]: https://github.com/lowRISC/opentitan/pull/807
+Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
+Issues        | [NO_ISSUES_PENDING][]             | Not Started |
+Review        | Reviewer(s)                       | Not Started |
+Review        | Signoff date                      | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../../doc/project_governance/checklist/README.md#x_prop_analysis_completed
@@ -277,6 +270,3 @@ Review        | Signoff date                      | Done        | 2019-11-04
 [TB_LINT_COMPLETE]:              ../../../../../doc/project_governance/checklist/README.md#tb_lint_complete
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../../doc/project_governance/checklist/README.md#pre_verified_sub_modules_v3
 [NO_ISSUES_PENDING]:             ../../../../../doc/project_governance/checklist/README.md#no_issues_pending
-
-[common_cov_excl.el]:https://github.com/lowRISC/opentitan/blob/9dff09b6c57f4962d67f5f64f8e69ac9bea6885c/hw/dv/tools/vcs/common_cov_excl.el
-[gpio_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/39aaeefdb43661b065c29ceab2efc1065aebf6dd/hw/ip/gpio/dv/cov/gpio_cov_excl.el
