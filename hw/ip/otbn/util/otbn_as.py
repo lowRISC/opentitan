@@ -904,22 +904,21 @@ class Transformer:
             quot_idx = line.find('"', pos)
             esc_quot_idx = line.find('\\"', pos)
 
-            if max(quot_idx, esc_quot_idx) < 0:
+            if quot_idx < 0:
                 # EOL within string.
                 self.acc.append(line[pos:])
                 return len(line)
 
-            if quot_idx < 0:
-                # No " before EOL, but there is a \". Eat that and keep going.
+            if 0 <= esc_quot_idx < quot_idx:
+                # The first " is part of a \". Eat that and keep going.
                 self.acc.append(line[pos:esc_quot_idx + 2])
                 pos = esc_quot_idx + 2
                 continue
 
-            if esc_quot_idx < 0 or quot_idx < esc_quot_idx:
-                # Either no \" or " comes first anyway
-                self.acc.append(line[pos:quot_idx + 1])
-                self.in_string = False
-                return quot_idx + 1
+            # Otherwise the first " ends the string.
+            self.acc.append(line[pos:quot_idx + 1])
+            self.in_string = False
+            return quot_idx + 1
 
     def _eat_ws(self, line: str, pos: int) -> int:
         '''Consume whitespace, updating FSM state if necessary'''
@@ -980,6 +979,7 @@ class Transformer:
         assert pos < len(line)
         if line[pos] == '"':
             self.acc.append(line[pos])
+            self.in_string = True
             return self._continue_string(line, pos + 1)
 
         match = re.match(r'[^ \t"]*', line[pos:])
