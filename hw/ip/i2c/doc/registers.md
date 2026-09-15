@@ -206,8 +206,8 @@ If it is 0, the decision to ACK or NACK is made only from stretching timeouts an
 Enable NACKing the address on a stretch timeout.
 
 This is a Target mode feature.
-If enabled (1), a stretch timeout will cause the device to NACK the address byte.
-If disabled (0), a stretch timeout will cause the device to ACK the address byte.
+If enabled (1), a stretch timeout will cause the target to NACK the address byte.
+If disabled (0), a stretch timeout will cause the target to ACK the address byte.
 SMBus requires that devices always ACK their address, even for read commands.
 However, non-SMBus protocols may have a different approach and can choose to NACK instead.
 
