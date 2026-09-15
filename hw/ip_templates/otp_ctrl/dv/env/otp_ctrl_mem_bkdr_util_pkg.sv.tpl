@@ -181,6 +181,18 @@ item_name_snake = item_name.as_snake_case()
   % endfor
 % endif
     partition_data = {<<32{concat_data}};
+<%
+if ones_at[-1] < len(part_items) - 1:
+  last_item_name_camel = Name.from_snake_case(part_items[-1]["name"]).as_camel_case()
+  pad_start = f"{last_item_name_camel}Offset + {last_item_name_camel}Size"
+else:
+  pad_start = f"{first_item_name_camel}Offset + 4"
+%>\
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = ${pad_start}; i < ${part_name_camel}DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(${part_name_camel}Idx, partition_data);
     mem_bkdr_util_h.write64(${part_name_camel}DigestOffset, digest);
   endfunction
@@ -242,6 +254,15 @@ sep = "" if loop.last else ","
       % endif
     % endfor
     }};
+<%
+last_item_name_camel = Name.from_snake_case(part_items[-1]["name"]).as_camel_case()
+%>\
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = ${last_item_name_camel}Offset + ${last_item_name_camel}Size;
+         i < ${part_name_camel}DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(${part_name_camel}Idx, partition_data);
     mem_bkdr_util_h.write64(${part_name_camel}DigestOffset, digest);
   endfunction
