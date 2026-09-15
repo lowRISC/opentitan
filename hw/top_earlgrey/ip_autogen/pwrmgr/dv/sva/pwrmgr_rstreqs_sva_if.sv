@@ -26,9 +26,20 @@ interface pwrmgr_rstreqs_sva_if
 );
 
   // output reset cycle with a clk enable disable
+  //
+  // The hardware reset checks below are clocked by clk_slow_i and have to cover the fast FSM's
+  // whole reset sequence up to FastPwrStateRomCheckDone, where reset_cause is cleared: the reset
+  // and clock handshakes with rstmgr and clkmgr, OTP init and LC init. Most of that is fast-clock
+  // work, so its duration does not shrink with the slow clock period.
   localparam int MinMainRstCycles = 0;
   localparam int MaxMainRstCycles = 400;
   `define MAIN_RST_CYCLES ##[MinMainRstCycles:MaxMainRstCycles]
+
+  // Software reset requests only have to reach FastPwrStateResetPrep and are checked on clk_i,
+  // so they keep a fast-clock bound of their own.
+  localparam int MinSwRstCycles = 0;
+  localparam int MaxSwRstCycles = 400;
+  `define SW_RST_CYCLES ##[MinSwRstCycles:MaxSwRstCycles]
 
   // The timing of the escalation reset is determined by the slow clock, but will not propagate if
   // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
@@ -96,7 +107,7 @@ interface pwrmgr_rstreqs_sva_if
 
   // Software initiated resets do not affect rstreqs since rstmgr generates them.
   `ASSERT(SwResetSetCause_A,
-          $rose(sw_rst_req_i) |-> `MAIN_RST_CYCLES (reset_cause == HwReq), clk_i,
+          $rose(sw_rst_req_i) |-> `SW_RST_CYCLES (reset_cause == HwReq), clk_i,
           reset_or_disable)
 
 endinterface
