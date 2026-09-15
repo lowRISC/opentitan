@@ -862,17 +862,17 @@ class mem_bkdr_util extends uvm_object;
     if (recompute_ecc) begin
       case (err_detection_scheme)
         Ecc_22_16, EccHamming_22_16, EccInv_22_16, EccInvHamming_22_16: begin
-          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+          for (int addr = 0; addr < size_bytes; addr += bytes_per_word) begin
             write16(addr, read(addr));
           end
         end
         Ecc_39_32, EccHamming_39_32, EccInv_39_32, EccInvHamming_39_32: begin
-          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+          for (int addr = 0; addr < size_bytes; addr += bytes_per_word) begin
             write32(addr, read(addr));
           end
         end
         Ecc_72_64, EccHamming_72_64, EccInv_72_64, EccInvHamming_72_64: begin
-          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+          for (int addr = 0; addr < size_bytes; addr += bytes_per_word) begin
             write64(addr, read(addr));
           end
         end
