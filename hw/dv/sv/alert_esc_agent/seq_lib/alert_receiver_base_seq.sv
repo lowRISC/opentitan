@@ -11,8 +11,7 @@ class alert_receiver_base_seq extends dv_base_seq #(
 
   `uvm_object_utils(alert_receiver_base_seq)
 
-  rand bit r_alert_ping_send;
-  rand bit r_alert_rsp;
+  alert_seq_item::txn_type_e m_txn_type;
 
   extern function new (string name = "");
   extern task body();
@@ -27,13 +26,18 @@ task alert_receiver_base_seq::body();
   `uvm_info(`gfn, $sformatf("starting alert receiver transfer"), UVM_HIGH)
   req = alert_seq_item::type_id::create("req");
   start_item(req);
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                 r_alert_ping_send == local::r_alert_ping_send;
-                                 r_alert_rsp       == local::r_alert_rsp;
-                                 int_err           == 0; // This agent do not support alert_receiver int_err
-                                 )
-  `uvm_info(`gfn, $sformatf("seq_item: ping_send=%0b alert_rsp=%0b int_err=%0b",
-                            req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_MEDIUM)
+
+  if (!req.randomize() with {
+        m_txn_type == local::m_txn_type;
+        cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+        cfg.ack_stable_min <= m_ack_stable && m_ack_stable <= cfg.ack_stable_max;
+        m_int_err_cyc == 0; // This agent do not support alert_receiver int_err
+      }) begin
+    `uvm_fatal(get_full_name(), "Failed to randomize req")
+  end
+
+  `uvm_info(`gfn, $sformatf("seq_item: %0s", m_txn_type.name()), UVM_MEDIUM)
+
   finish_item(req);
   get_response(rsp);
   `uvm_info(`gfn, "alert receiver transfer done", UVM_HIGH)
