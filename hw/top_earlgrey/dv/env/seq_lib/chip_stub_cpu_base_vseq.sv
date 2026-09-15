@@ -84,6 +84,17 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     @cfg.chip_vif.aon_clk_por_rst_if.cb;
     `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
     wait_rom_check_done();
+
+    // wait_rom_check_done() observes rom_ctrl directly, so it can return while the pwrmgr is
+    // still powering up; the RV_DM TAP is only muxed in once the pwrmgr has sampled the straps.
+    if (select_jtag == JtagTapRvDm) wait_pwrmgr_active();
+  endtask
+
+  // Wait for the pwrmgr fast FSM to reach its active state (past TAP strap sampling).
+  virtual task wait_pwrmgr_active();
+    `DV_SPINWAIT(wait(cfg.chip_vif.pwrmgr_fast_pwr_state_active);,
+                 "timeout waiting for the pwrmgr to become active before RV_DM TAP access",
+                 5_000_000)
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
