@@ -263,7 +263,7 @@ inline uint32_t launder32(uint32_t val) {
  *         runtime.
  */
 OT_WARN_UNUSED_RESULT
-inline uintptr_t launderw(uintptr_t val) {
+inline ot_word_t launderw(ot_word_t val) {
 #if OT_BUILD_FOR_STATIC_ANALYZER || \
     (defined(OT_DISABLE_HARDENING) && OT_DISABLE_HARDENING)
   return val;
@@ -368,7 +368,7 @@ inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
  *
  * @param val A value to create a barrier for.
  */
-inline void barrierw(uintptr_t val) { asm volatile("" ::"r"(val)); }
+inline void barrierw(ot_word_t val) { asm volatile("" ::"r"(val)); }
 
 /**
  * A constant-time, 32-bit boolean value.
@@ -481,7 +481,7 @@ inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
  *
  * Values of this type MUST be either all zero bits or all one bits.
  */
-typedef uintptr_t ct_boolw_t;
+typedef ot_word_t ct_boolw_t;
 
 /**
  * Performs constant-time signed comparison to zero.
@@ -492,7 +492,7 @@ typedef uintptr_t ct_boolw_t;
  * @return `a < 0`.
  */
 OT_WARN_UNUSED_RESULT
-inline ct_boolw_t ct_sltzw(intptr_t a) {
+inline ct_boolw_t ct_sltzw(ot_sword_t a) {
   return OT_UNSIGNED(a >> (sizeof(a) * 8 - 1));
 }
 
@@ -504,7 +504,7 @@ inline ct_boolw_t ct_sltzw(intptr_t a) {
  * @return `a < b`.
  */
 OT_WARN_UNUSED_RESULT
-inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
+inline ct_boolw_t ct_sltuw(ot_word_t a, ot_word_t b) {
   return ct_sltzw(OT_SIGNED((a & ~b) | ((a ^ ~b) & (a - b))));
 }
 
@@ -516,7 +516,7 @@ inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
  * @return `a == 0`.
  */
 OT_WARN_UNUSED_RESULT
-inline ct_boolw_t ct_seqzw(uintptr_t a) {
+inline ct_boolw_t ct_seqzw(ot_word_t a) {
   return ct_sltzw(OT_SIGNED(~a & (a - 1)));
 }
 
@@ -528,7 +528,7 @@ inline ct_boolw_t ct_seqzw(uintptr_t a) {
  * @return `a == b`.
  */
 OT_WARN_UNUSED_RESULT
-inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) { return ct_seqzw(a ^ b); }
+inline ct_boolw_t ct_seqw(ot_word_t a, ot_word_t b) { return ct_seqzw(a ^ b); }
 
 /**
  * Performs a constant-time select.
@@ -544,7 +544,7 @@ inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) { return ct_seqzw(a ^ b); }
  * @return `c ? a : b`.
  */
 OT_WARN_UNUSED_RESULT
-inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
+inline ot_word_t ct_cmovw(ct_boolw_t c, ot_word_t a, ot_word_t b) {
   return (launderw(c) & a) | (launderw(~c) & b);
 }
 
