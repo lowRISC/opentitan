@@ -110,7 +110,7 @@ package otp_ctrl_mem_bkdr_util_pkg;
       en_csrng_sw_app_read,
       en_sram_ifetch
     };
-    mem_bkdr_util_h.write32(0 + EnSramIfetchOffset, word);
+    mem_bkdr_util_h.write32(EnSramIfetchOffset, word);
     concat_data.push_front(word);
 
     partition_data = {<<32{concat_data}};
