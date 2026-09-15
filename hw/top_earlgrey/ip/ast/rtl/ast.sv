@@ -125,13 +125,8 @@ module ast (
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   // analog test outputs
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequency is 96MHz
@@ -151,20 +146,38 @@ module ast (
   output scan_reset_no                          // Scan Reset output
 );
 
-import ast_aon_main_pkg::*;
+localparam int unsigned EntropyStreams   = ast_pkg::EntropyStreams;
+localparam int unsigned UsbCalibWidth    = ast_pkg::UsbCalibWidth;
+localparam int unsigned AdcChannels      = ast_pkg::AdcChannels;
+localparam int unsigned AdcDataWidth     = ast_pkg::AdcDataWidth;
+localparam int unsigned Pad2AstInWidth   = ast_pkg::Pad2AstInWidth;
+localparam int unsigned Ast2PadOutWidth  = ast_pkg::Ast2PadOutWidth;
 
 // Inter-domain communication signals
-ast_aon_main_pkg::aon_to_main_t aon_to_main;
-ast_aon_main_pkg::main_to_aon_t main_to_aon;
+ast_pkg::aon_to_main_t aon_to_main;
+ast_pkg::main_to_aon_t main_to_aon;
 
-// Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
+// Read-write margins generated in the AON domain (ast_dft, inside ast_part_secondary)
 ast_pkg::tpm_rm_t tpram_rm;
 ast_pkg::spm_rm_t spram_rm;
 ast_pkg::rom_rm_t sprom_rm;
 
+// Clock bypass for OS FPGA
+ast_pkg::clks_osc_byp_t clk_osc_byp;
+`ifdef AST_BYPASS_CLK
+  assign clk_osc_byp = clk_osc_byp_i;
+`else
+  assign clk_osc_byp = '0;
+`endif
 
 // AON Domain instantiation
-ast_aon u_ast_aon (
+ast_part_secondary #(
+  .UsbCalibWidth   ( UsbCalibWidth ),
+  .AdcChannels     ( AdcChannels ),
+  .AdcDataWidth    ( AdcDataWidth ),
+  .Pad2AstInWidth  ( Pad2AstInWidth ),
+  .Ast2PadOutWidth ( Ast2PadOutWidth )
+) u_ast_part_secondary (
   .clk_ast_adc_i           ( clk_ast_adc_i ),
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
@@ -224,9 +237,7 @@ ast_aon u_ast_aon (
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .flash_bist_en_o         ( flash_bist_en_o ),
   .tpram_rm_o              ( tpram_rm ),
   .spram_rm_o              ( spram_rm ),
@@ -239,7 +250,9 @@ ast_aon u_ast_aon (
 );
 
 // Main Domain instantiation
-ast_main u_ast_main (
+ast_part_primary #(
+  .EntropyStreams ( EntropyStreams )
+) u_ast_part_primary (
   .tl_i                    ( tl_i ),
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
@@ -266,9 +279,7 @@ ast_main u_ast_main (
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .clk_src_sys_o           ( clk_src_sys_o ),
   .clk_src_sys_val_o       ( clk_src_sys_val_o ),
   .clk_src_io_o            ( clk_src_io_o ),

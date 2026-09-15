@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Created for AST domain separation - Main Domain
+// Created for AST domain separation - primary partition for Main Domain
 //
 //############################################################################
-// *Name: ast_main
-// *Module Description: Analog Sensors Top - Main Domain
+// *Name: ast_part_primary
+// *Module Description: Analog Sensors Top - Primary partition for Main Domain
 //############################################################################
 
 `include "prim_assert.sv"
 
-module ast_main (
+module ast_part_primary #(
+  parameter int unsigned EntropyStreams = ast_pkg::EntropyStreams
+) (
   // TLUL interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -22,7 +24,7 @@ module ast_main (
   input rng_en_i,
   input rng_fips_i,
   output logic rng_val_o,
-  output logic [ast_pkg::EntropyStreams-1:0] rng_b_o,
+  output logic [EntropyStreams-1:0] rng_b_o,
   // Entropy interface
   input edn_pkg::edn_rsp_t entropy_rsp_i,
   output edn_pkg::edn_req_t entropy_req_o,
@@ -31,8 +33,8 @@ module ast_main (
   input logic rst_ast_es_ni,
   input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i,
   // Inter-domain communication
-  input ast_aon_main_pkg::aon_to_main_t aon_to_main_i,
-  output ast_aon_main_pkg::main_to_aon_t main_to_aon_o,
+  input ast_pkg::aon_to_main_t aon_to_main_i,
+  output ast_pkg::main_to_aon_t main_to_aon_o,
   // Clock bypass interface
   input  logic clk_ast_ext_i,
   input  logic clk_src_sys_en_i,
@@ -44,10 +46,8 @@ module ast_main (
   input  prim_mubi_pkg::mubi4_t all_clk_byp_req_i,
   input  prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,
 
-`ifdef AST_BYPASS_CLK
-  // Clocks' Oschillator bypass for OS FPGA
-  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
-`endif
+  // Clocks' Oscillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oscillator bypass for OS FPGA/VERILATOR
 
   // Clock outputs
   output logic clk_src_sys_o,
@@ -62,7 +62,6 @@ module ast_main (
 );
 
 import ast_pkg::* ;
-import ast_aon_main_pkg::* ;
 
 ///////////////////////////////////////
 // TLUL Register Interface
@@ -138,7 +137,7 @@ prim_mubi4_sync #(
 ///////////////////////////////////////
 // Inter-domain Interface Unpacking
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
+ast_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
 assign clks_byp_aon_to_main = aon_to_main_i.clks_byp;
 
 ///////////////////////////////////////
@@ -172,6 +171,10 @@ logic clk_osc_io;
 logic clk_osc_usb;
 logic clk_osc_sys_val, clk_osc_io_val, clk_osc_usb_val;
 
+`ifndef AST_BYPASS_CLK
+logic unused_clk_osc_byp;
+assign unused_clk_osc_byp = ^clk_osc_byp_i;
+`endif
 
 `ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
@@ -238,7 +241,7 @@ usb_clk u_usb_clk (
 ///////////////////////////////////////
 // Main Domain Clock Bypass
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
+ast_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
 logic clk_src_sys, clk_src_io, clk_src_usb;
 
 `ifdef AST_BYPASS_CLK
@@ -354,7 +357,7 @@ ast_entropy u_entropy (
 // RNG (OS simplified - fewer ports)
 ///////////////////////////////////////
 rng #(
-  .EntropyStreams ( ast_pkg::EntropyStreams )
+  .EntropyStreams ( EntropyStreams )
 ) u_rng (
   .clk_i ( aon_to_main_i.clk_rst.clk_ast_tlul ),
   .rst_ni ( aon_to_main_i.clk_rst.rst_ast_tlul_n ),
@@ -402,6 +405,9 @@ assign main_to_aon_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_ast_tlul_i, rst_ast_tlul_ni)
 //
 `ASSERT_KNOWN(InitDoneKnownO_A, ast_init_done_o, clk_ast_tlul_i, rst_ast_tlul_ni)
+
+// Ensure parameters defined in the hjson always match the pkg.
+`ASSERT_INIT(EntropyStreamsMatchesAstPkg_A, EntropyStreams == ast_pkg::EntropyStreams)
 
 /////////////////////
 // Unused Signals  //
@@ -464,4 +470,4 @@ assign unused_sigs = ^{ reg2hw.rega0,
                         reg2hw.regb   // [0:3]
                       };
 
-endmodule : ast_main
+endmodule : ast_part_primary

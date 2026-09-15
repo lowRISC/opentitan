@@ -14,7 +14,7 @@
 `include "prim_assert.sv"
 
 module ast_clks_byp_main
-  import ast_aon_main_pkg::*;
+  import ast_pkg::*;
 (
   input  logic vcmain_pok_i,                       // VCMAIN POK
   input  logic vcmain_pok_por_i,                   // VCMAIN POK POR
