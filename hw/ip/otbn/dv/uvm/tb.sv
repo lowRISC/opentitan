@@ -15,7 +15,7 @@ module tb;
   import otbn_reg_pkg::*;
   import edn_pkg::*;
   import otp_ctrl_pkg::*;
-  import keymgr_pkg::*;
+  import keymgr_dpe_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -32,8 +32,8 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
   assign interrupts[0] = {intr_done};
 
-  otbn_key_req_t sideload_key;
-  key_sideload_if#(keymgr_pkg::otbn_key_req_t) keymgr_if (
+  wide_hw_key_req_t sideload_key;
+  key_sideload_if#(keymgr_dpe_pkg::wide_hw_key_req_t) keymgr_if (
     .clk_i        (clk),
     .rst_ni       (rst_n),
     .sideload_key (sideload_key)
@@ -318,7 +318,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if#(.ImemSizeByte(ImemSizeByte)))::set(
       null, "*.env.model_agent", "vif", model_if);
-    uvm_config_db#(virtual key_sideload_if#(keymgr_pkg::otbn_key_req_t))::set(
+    uvm_config_db#(virtual key_sideload_if#(keymgr_dpe_pkg::wide_hw_key_req_t))::set(
       null, "*.env.keymgr_sideload_agent", "vif", keymgr_if);
 
     uvm_config_db#(otp_key_vif)::set(

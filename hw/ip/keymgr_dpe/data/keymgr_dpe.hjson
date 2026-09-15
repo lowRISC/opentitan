@@ -4,7 +4,7 @@
 {
   name:               "keymgr_dpe",
   human_name:         "Key Manager DPE",
-  one_line_desc:      "Manage multiple DICE sessions in a DPE-compatible way",
+  one_line_desc:      "Managing identities and root keys; shielding confidential assets from sw; Manage multiple DICE sessions in a DPE-compatible way",
   one_paragraph_desc: '''
   Key Manager DPE serves as the core hardware block for DPE. DPE stands for DICE Protection Environment.
   [DPE-version1.0-rev0.6]: https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Protection-Environment-Specification_14february2023-1.pdf
@@ -57,25 +57,25 @@
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "hw_key_req",  // kmac_key_req_t
       type:    "uni",
       name:    "kmac_key",    // kmac_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "hw_key_req",  // hmac_key_req_t
       type:    "uni",
       name:    "hmac_key",    // hmac_key_o (req)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "otbn_key_req",
+    { struct:  "wide_hw_key_req",
       type:    "uni",
       name:    "otbn_key",
       act:     "req",
-      package: "keymgr_pkg",
+      package: "keymgr_dpe_pkg",
     },
     { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
@@ -146,67 +146,67 @@
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "keymgr_pkg::lfsr_seed_t"
+      type:      "keymgr_dpe_pkg::lfsr_seed_t"
       randcount: "64",
       randtype:  "data",
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "keymgr_pkg::lfsr_perm_t"
+      type:      "keymgr_dpe_pkg::lfsr_perm_t"
       randcount: "64",
       randtype:  "perm",
     },
     { name:      "RndCnstRandPerm",
       desc:      "Compile-time random permutation for entropy used in share overriding",
-      type:      "keymgr_pkg::rand_perm_t"
+      type:      "keymgr_dpe_pkg::rand_perm_t"
       randcount: "32",
       randtype:  "perm",
     }
     { name:      "RndCnstRevisionSeed",
       desc:      "Compile-time random bits for revision seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstSoftOutputSeed",
       desc:      "Compile-time random bits for software generation seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstHardOutputSeed",
       desc:      "Compile-time random bits for hardware generation seed",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstAesSeed",
       desc:      "Compile-time random bits for generation seed when aes destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstKmacSeed",
       desc:      "Compile-time random bits for generation seed when kmac destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstOtbnSeed",
       desc:      "Compile-time random bits for generation seed when otbn destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
 
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
-      type:      "keymgr_pkg::seed_t"
+      type:      "keymgr_dpe_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
     },
@@ -337,13 +337,11 @@ countermeasures: [
         Main control fsm is sparsely encoded.
       '''
     }
-    // TODO(#30721): reenable countermeasures after integrating all keymgr
-    // modules into the keymgr_dpe
-    //{ name: "DATA.FSM.SPARSE",
-    //  desc: '''
-    //    Control data fsm (for redundant data control) is sparsely encoded.
-    //  '''
-    //}
+    { name: "DATA.FSM.SPARSE",
+      desc: '''
+        Control data fsm (for redundant data control) is sparsely encoded.
+      '''
+    }
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
         Main control fsm locally escalates based on any detected fault in keymgr.
@@ -351,13 +349,11 @@ countermeasures: [
         further legal operations from executing.
       '''
     }
-    // TODO(#30721): reenable countermeasures after integrating all keymgr
-    // modules into the keymgr_dpe
-    //{ name: "CTRL.FSM.CONSISTENCY",
-    //  desc: '''
-    //    Main and operational fsm transitions are consistent with software commands.
-    //  '''
-    //}
+    { name: "CTRL.FSM.CONSISTENCY",
+      desc: '''
+        Main and operational fsm transitions are consistent with software commands.
+      '''
+    }
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
         When the system globally escalates, the main control fsm also transitions to invalid state
@@ -369,48 +365,46 @@ countermeasures: [
         Primary count is duplicated.
       '''
     }
-    // TODO(#30721): reenable countermeasures after integrating all keymgr
-    // modules into the keymgr_dpe
-    //{ name: "KMAC_IF.FSM.SPARSE",
-    //  desc: '''
-    //    kmac interface fsm is sparsely encoded.
-    //  '''
-    //}
-    //{ name: "KMAC_IF.CTR.REDUN",
-    //  desc: '''
-    //    Primary count uses cross count.
-    //  '''
-    //}
-    //{ name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
-    //  desc: '''
-    //    One hot check for kmac interface commands.
-    //    Also, command enable (adv_en, id_en, gen_en) is checked for consistency
-    //    throughout the operation.
-    //  '''
-    //}
-    //{ name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
-    //  desc: '''
-    //    Spurious kmac done check.
-    //  '''
-    //}
-    //{ name: "RESEED.CTR.REDUN",
-    //  desc: '''
-    //    Primary count is duplicated.
-    //  '''
-    //}
-    //{ name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
-    //  desc: '''
-    //    Sideload key slot select is checked for consistency.
-    //    When a key slot is valid when it should not be, an error is triggered.
-    //    The reverse case is not checked, since an invalid key cannot be used
-    //    anyways.
-    //  '''
-    //}
-    //{ name: "SIDELOAD_CTRL.FSM.SPARSE",
-    //  desc: '''
-    //    Sideload control fsm is sparsely encoded.
-    //  '''
-    //}
+    { name: "KMAC_IF.FSM.SPARSE",
+      desc: '''
+        kmac interface fsm is sparsely encoded.
+      '''
+    }
+    { name: "KMAC_IF.CTR.REDUN",
+      desc: '''
+        Primary count uses cross count.
+      '''
+    }
+    { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
+      desc: '''
+        One hot check for kmac interface commands.
+        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+        throughout the operation.
+      '''
+    }
+    { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
+      desc: '''
+        Spurious kmac done check.
+      '''
+    }
+    { name: "RESEED.CTR.REDUN",
+      desc: '''
+        Primary count is duplicated.
+      '''
+    }
+    { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
+      desc: '''
+        Sideload key slot select is checked for consistency.
+        When a key slot is valid when it should not be, an error is triggered.
+        The reverse case is not checked, since an invalid key cannot be used
+        anyways.
+      '''
+    }
+    { name: "SIDELOAD_CTRL.FSM.SPARSE",
+      desc: '''
+        Sideload control fsm is sparsely encoded.
+      '''
+    }
     { name: "CTRL.KEY.INTEGRITY",
       desc: '''
         Internal secret key is protected with ECC.
