@@ -15,7 +15,8 @@
 
     {
       name: xcelium_dpi_build_opts
-      build_opts: ["-I{build_dir}/fusesoc-work/src/{dpi_common_dir}", "-lutil"]
+      // Xcelium compiles the sources in place, not the FuseSoC export, see dvsim/xcelium.hjson
+      build_opts: ["-I{proj_root}/hw/dv/dpi/common/tcp_server", "-lutil"]
     }
   ]
 }
