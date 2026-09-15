@@ -22,80 +22,83 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     OutselPad
   } outsel_value_e;
 
+  // Pad type of the pad each DIO is connected to, indexed by the pinmux / peripheral side DIO
+  // index (top_darjeeling_pkg::dio_e, same order as chip_common_pkg::DioToDioPadMap). The pad
+  // types match the DioPadType parameter of the padring in chip_darjeeling_asic.sv.
   localparam prim_pad_wrapper_pkg::pad_type_e DioPadType[DioCount] = '{
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D0
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D1
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D2
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D3
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_CLK
-    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_CS_L
-    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D0
-    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D1
-    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D2
-    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D3
-    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_CLK
-    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_CS_L
-    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_TPM_CS_L
-    prim_pad_wrapper_pkg::InputStd, // UART_RX
-    prim_pad_wrapper_pkg::BidirStd, // UART_TX
-    prim_pad_wrapper_pkg::InputStd, // I2C_SCL
-    prim_pad_wrapper_pkg::BidirStd, // I2C_SDA
-    prim_pad_wrapper_pkg::BidirStd, // GPIO0
-    prim_pad_wrapper_pkg::BidirStd, // GPIO1
-    prim_pad_wrapper_pkg::BidirStd, // GPIO2
-    prim_pad_wrapper_pkg::BidirStd, // GPIO3
-    prim_pad_wrapper_pkg::BidirStd, // GPIO4
-    prim_pad_wrapper_pkg::BidirStd, // GPIO5
-    prim_pad_wrapper_pkg::BidirStd, // GPIO6
-    prim_pad_wrapper_pkg::BidirStd, // GPIO7
-    prim_pad_wrapper_pkg::BidirStd, // GPIO8
-    prim_pad_wrapper_pkg::BidirStd, // GPIO9
-    prim_pad_wrapper_pkg::BidirStd, // GPIO10
-    prim_pad_wrapper_pkg::BidirStd, // GPIO11
-    prim_pad_wrapper_pkg::BidirStd, // GPIO12
-    prim_pad_wrapper_pkg::BidirStd, // GPIO13
-    prim_pad_wrapper_pkg::BidirStd, // GPIO14
-    prim_pad_wrapper_pkg::BidirStd, // GPIO15
-    prim_pad_wrapper_pkg::BidirStd, // GPIO16
-    prim_pad_wrapper_pkg::BidirStd, // GPIO17
-    prim_pad_wrapper_pkg::BidirStd, // GPIO18
-    prim_pad_wrapper_pkg::BidirStd, // GPIO19
-    prim_pad_wrapper_pkg::BidirStd, // GPIO20
-    prim_pad_wrapper_pkg::BidirStd, // GPIO21
-    prim_pad_wrapper_pkg::BidirStd, // GPIO22
-    prim_pad_wrapper_pkg::BidirStd, // GPIO23
-    prim_pad_wrapper_pkg::BidirStd, // GPIO24
-    prim_pad_wrapper_pkg::BidirStd, // GPIO25
-    prim_pad_wrapper_pkg::BidirStd, // GPIO26
-    prim_pad_wrapper_pkg::BidirStd, // GPIO27
-    prim_pad_wrapper_pkg::BidirStd, // GPIO28
-    prim_pad_wrapper_pkg::BidirStd, // GPIO29
-    prim_pad_wrapper_pkg::BidirStd, // GPIO30
-    prim_pad_wrapper_pkg::BidirStd, // GPIO31
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI0
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI1
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI2
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI3
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI4
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI5
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI6
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI7
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI8
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI9
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI10
-    prim_pad_wrapper_pkg::InputStd, // SOC_GPI11
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO0
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO1
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO2
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO3
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO4
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO5
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO6
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO7
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO8
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO9
-    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO10
-    prim_pad_wrapper_pkg::BidirStd  // SOC_GPO11
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Sd0 -> SPI_HOST_D0
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Sd1 -> SPI_HOST_D1
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Sd2 -> SPI_HOST_D2
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Sd3 -> SPI_HOST_D3
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiDeviceSd0 -> SPI_DEV_D0
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiDeviceSd1 -> SPI_DEV_D1
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiDeviceSd2 -> SPI_DEV_D2
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiDeviceSd3 -> SPI_DEV_D3
+    prim_pad_wrapper_pkg::BidirStd, // DioI2c0Scl -> I2C_SCL
+    prim_pad_wrapper_pkg::BidirStd, // DioI2c0Sda -> I2C_SDA
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio0 -> GPIO0
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio1 -> GPIO1
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio2 -> GPIO2
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio3 -> GPIO3
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio4 -> GPIO4
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio5 -> GPIO5
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio6 -> GPIO6
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio7 -> GPIO7
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio8 -> GPIO8
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio9 -> GPIO9
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio10 -> GPIO10
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio11 -> GPIO11
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio12 -> GPIO12
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio13 -> GPIO13
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio14 -> GPIO14
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio15 -> GPIO15
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio16 -> GPIO16
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio17 -> GPIO17
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio18 -> GPIO18
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio19 -> GPIO19
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio20 -> GPIO20
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio21 -> GPIO21
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio22 -> GPIO22
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio23 -> GPIO23
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio24 -> GPIO24
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio25 -> GPIO25
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio26 -> GPIO26
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio27 -> GPIO27
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio28 -> GPIO28
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio29 -> GPIO29
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio30 -> GPIO30
+    prim_pad_wrapper_pkg::BidirStd, // DioGpioGpio31 -> GPIO31
+    prim_pad_wrapper_pkg::InputStd, // DioSpiDeviceSck -> SPI_DEV_CLK
+    prim_pad_wrapper_pkg::InputStd, // DioSpiDeviceCsb -> SPI_DEV_CS_L
+    prim_pad_wrapper_pkg::InputStd, // DioSpiDeviceTpmCsb -> SPI_DEV_TPM_CS_L
+    prim_pad_wrapper_pkg::InputStd, // DioUart0Rx -> UART_RX
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi0 -> SOC_GPI0
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi1 -> SOC_GPI1
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi2 -> SOC_GPI2
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi3 -> SOC_GPI3
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi4 -> SOC_GPI4
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi5 -> SOC_GPI5
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi6 -> SOC_GPI6
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi7 -> SOC_GPI7
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi8 -> SOC_GPI8
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi9 -> SOC_GPI9
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi10 -> SOC_GPI10
+    prim_pad_wrapper_pkg::InputStd, // DioSocProxySocGpi11 -> SOC_GPI11
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Sck -> SPI_HOST_CLK
+    prim_pad_wrapper_pkg::BidirStd, // DioSpiHost0Csb -> SPI_HOST_CS_L
+    prim_pad_wrapper_pkg::BidirStd, // DioUart0Tx -> UART_TX
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo0 -> SOC_GPO0
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo1 -> SOC_GPO1
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo2 -> SOC_GPO2
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo3 -> SOC_GPO3
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo4 -> SOC_GPO4
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo5 -> SOC_GPO5
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo6 -> SOC_GPO6
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo7 -> SOC_GPO7
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo8 -> SOC_GPO8
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo9 -> SOC_GPO9
+    prim_pad_wrapper_pkg::BidirStd, // DioSocProxySocGpo10 -> SOC_GPO10
+    prim_pad_wrapper_pkg::BidirStd  // DioSocProxySocGpo11 -> SOC_GPO11
   };
 
   int dio_input_pads[$];
