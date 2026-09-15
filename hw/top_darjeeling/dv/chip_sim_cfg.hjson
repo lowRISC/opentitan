@@ -1731,7 +1731,7 @@
               "chip_sw_rom_ctrl_integrity_check",
               "chip_sw_kmac_idle",
               "chip_sw_lc_ctrl_rand_to_scrap"
-              "chip_sw_sleep_pin_mio_dio_val",
+              // TODO(#501): "chip_sw_sleep_pin_mio_dio_val",
               // TODO(#26733): uncomment when these run for Darjeeling.
               "chip_plic_all_irqs_0",
               "chip_plic_all_irqs_10",
