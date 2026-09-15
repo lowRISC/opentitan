@@ -28,6 +28,8 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/kmac_regs.h"
@@ -118,6 +120,10 @@ rom_error_t keymgr_dpe_rom_test(void) {
       .sel_dst_slot = kSealingSlot,
       .version = kMaxVerRom};
 
+  // When the CreatorRootKey is derived by the rom code, it uses the maximum key
+  // version from the manifest of this image.
+  uint32_t creator_max_key_version = manifest_def_get()->max_key_version;
+
   // Bypass the CreatorRootKey when not in TEST_ROM as the key should already be
   // derived by the rom code.
   if (retention_sram_get()
@@ -146,15 +152,19 @@ rom_error_t keymgr_dpe_rom_test(void) {
         sc_keymgr_dpe_advance_creator(sealing_key, attestation_key));
     LOG_INFO("Keymgr DPE: CreatorRootKey derived");
     sec_mmio_check_values(/*rnd_offset=*/0);
+    creator_max_key_version = kMaxVerRom;
   } else {
     // Two dummy `sec_mmio_check_values` to keep both path in sync.
     sec_mmio_check_values(/*rnd_offset=*/0);
     sec_mmio_check_values(/*rnd_offset=*/0);
   }
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, creator_max_key_version,
+                                     kScKeymgrDPEBootStageOwnerInt,
+                                     &kDefaultPolicy) == kErrorOk);
+  CHECK(sc_keymgr_dpe_check_metadata(kAttestationSlot, creator_max_key_version,
+                                     kScKeymgrDPEBootStageOwnerInt,
+                                     &kDefaultPolicy) == kErrorOk);
 
   // ------ OwnerIntKey Stage ------------------------
   // Derive both the attestation and sealing OwnerIntKey
@@ -174,9 +184,12 @@ rom_error_t keymgr_dpe_rom_test(void) {
 
   sec_mmio_check_counters(/*expected_check_count=*/3);
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageOwner (2). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, kMaxVerRomExt,
+                                     kScKeymgrDPEBootStageOwner,
+                                     &kDefaultPolicy) == kErrorOk);
+  CHECK(sc_keymgr_dpe_check_metadata(kAttestationSlot, kMaxVerRomExt,
+                                     kScKeymgrDPEBootStageOwner,
+                                     &kDefaultPolicy) == kErrorOk);
   return kErrorOk;
 }
 
@@ -207,9 +220,12 @@ rom_error_t keymgr_dpe_rom_ext_test(void) {
 
   sec_mmio_check_counters(/*expected_check_count=*/5);
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageRuntime (3). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, kMaxVerBl0,
+                                     kScKeymgrDPEBootStageRuntime,
+                                     &kDefaultPolicy) == kErrorOk);
+  CHECK(sc_keymgr_dpe_check_metadata(kAttestationSlot, kMaxVerBl0,
+                                     kScKeymgrDPEBootStageRuntime,
+                                     &kDefaultPolicy) == kErrorOk);
   return kErrorOk;
 }
 
