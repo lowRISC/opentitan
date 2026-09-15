@@ -125,8 +125,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   //
   // Driving out of the chip:
   //   There are MioOutCount signals that can be driven to MioPadCount number of MIO pads. There are
-  //   thus, MioPadCount number of outsel registers. Randomly pick MioPadCount number of signals and
-  //   map them onto each pad in the outsel direction.
+  //   thus, MioPadCount number of outsel registers. Randomly pick a signal for each pad in the
+  //   outsel direction. The same signal may be selected by more than one pad.
   rand logic [MioOutCount-1:0]  periph_to_mio;
   rand logic [MioOutCount-1:0]  periph_to_mio_oe;
   rand mio_out_e                periph_to_mio_map[MioPadCount];
@@ -140,7 +140,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   }
 
   constraint periph_to_mio_pad_map_c {
-    unique {periph_to_mio_map};
+    // Darjeeling has more MIO pads than MIO peripheral outputs (MioPadCount > MioOutCount), so a
+    // unique map does not exist: with only MioOutCount outputs to choose from, some values in
+    // periph_to_mio_map must repeat. That is fine, because the checks look up each pad's mapped
+    // output independently.
     foreach (periph_to_mio_map[i]) {
       periph_to_mio_map[i] != MioOutCount;
     }
