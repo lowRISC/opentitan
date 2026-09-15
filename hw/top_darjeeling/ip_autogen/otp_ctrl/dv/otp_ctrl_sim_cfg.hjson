@@ -96,6 +96,13 @@
     }
 
     {
+      name: otp_ctrl_bkdr_write_partitions
+      uvm_test_seq: otp_ctrl_bkdr_write_partitions_vseq
+      run_opts: ["+en_scb=0"]
+      reseed: 5
+    }
+
+    {
       name: otp_ctrl_partition_walk
       uvm_test_seq: otp_ctrl_partition_walk_vseq
       reseed: 1
