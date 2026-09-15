@@ -6,8 +6,8 @@
 // These functions end up performing reads and writes to the underlying simulated otp memory, so
 // the functions must get a handle to the mem_bkdr_util instance for otp_ctrl as an argument.
 //
-// NB: this package is only suitable for top-level environments since it depends on SKU-dependent
-// OTP ctrl fields.
+// NB: this package depends on the SKU-dependent OTP map of the top it is generated for, so only
+// environments of that top (its chip-level and otp_ctrl block-level ones) can use it.
 <%
 from topgen.lib import Name
 %>
