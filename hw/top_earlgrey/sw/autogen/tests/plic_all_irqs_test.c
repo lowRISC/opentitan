@@ -2065,7 +2065,7 @@ static void peripheral_irqs_trigger(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralRramCtrl;
   status_default_mask = 0x3;
-  for (dif_rram_ctrl_irq_t irq = kDifRramCtrlIrqWrEmpty; irq <= kDifRramCtrlIrqCorrErr;
+  for (dif_rram_ctrl_irq_t irq = kDifRramCtrlIrqWrEmpty; irq <= kDifRramCtrlIrqCorr2Err;
        ++irq) {
     rram_ctrl_irq_expected = irq;
     LOG_INFO("Triggering rram_ctrl IRQ %d.", irq);
