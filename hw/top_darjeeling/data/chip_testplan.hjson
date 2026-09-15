@@ -2750,7 +2750,8 @@
       name: chip_sw_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
       stage: V3
-      tests: ["chip_sw_coremark"]
+      // TODO: map to chip_sw_coremark once there is a Darjeeling CoreMark port.
+      tests: []
     }
     {
       name: chip_sw_boot
