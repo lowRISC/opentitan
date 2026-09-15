@@ -42,13 +42,17 @@ module rram_phy_rd
   output rram_part_e              rd_part_o,
   output logic                    rd_ecc_en_o,
   input  logic [DataWidth-1:0]    rd_rdata_i,
-  input  logic                    rd_ecc_err_i,
+  input  logic [2:0]              rd_ecc_err_i,
   input  logic                    rd_err_i,
   // status signals
   output logic                    idle_o,
   // error signals
   output logic                    intg_err_o,
   output logic                    ctrl_err_o,
+  output logic                    ecc_corr1_err_o, // correctable, single-bit
+  output logic                    ecc_corr2_err_o, // correctable, double-bit
+  output logic [AddrW-1:0]        ecc_corr_addr_o, // address of the last ECC error
+  output rram_part_e              ecc_corr_part_o, // partition of the last ECC error
   output logic                    ecc_fatal_err_o,
   output logic                    fifo_err_o
 );
@@ -383,6 +387,21 @@ module rram_phy_rd
     end
   end
 
+  // Address/partition of the currently outstanding RRAM read, latched when the request is
+  // accepted so a corrected-error report can be attributed to the right address even if a new
+  // request is granted on the very same cycle this one completes.
+  logic [AddrW-1:0] rd_pend_addr_q;
+  rram_part_e       rd_pend_part_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rd_pend_addr_q <= '0;
+      rd_pend_part_q <= RramPartData;
+    end else if (rd_req_o & rd_ack_i) begin
+      rd_pend_addr_q <= shadow_sel ? shadow_rram_word_addr : rram_word_addr;
+      rd_pend_part_q <= shadow_sel ? shadow_rram_part      : part_i;
+    end
+  end
+
   // we can only issue one read_request at the time
   assign rd_rdy = ~rd_busy | (rd_busy & rd_done_i);
 
@@ -392,7 +411,10 @@ module rram_phy_rd
   assign rd_fifo_req = rd_busy & rd_done_i;
 
   // storage for read data from RRAM
-  assign rd_fifo_d.err  = rd_ecc_err_i | rd_err_i;
+  // Only a fatal (uncorrectable) ECC error invalidates the returned data.
+  // A corrected single- or double-bit error still returns valid data (see
+  // ecc_corr1_err_o/ecc_corr2_err_o below).
+  assign rd_fifo_d.err  = rd_ecc_err_i[2] | rd_err_i;
   assign rd_fifo_d.data = rd_rdata_i;
 
   prim_fifo_sync #(
@@ -687,7 +709,14 @@ module rram_phy_rd
   assign intg_err_o = |buf_intg_err;
 
   // If an uncorrectable error is detected
-  assign ecc_fatal_err_o = rd_fifo_req & rd_ecc_err_i;
+  assign ecc_fatal_err_o = rd_fifo_req & rd_ecc_err_i[2];
+
+  // Correctable errors, reported for software bookkeeping (e.g. scheduling a rewrite).
+  // The corrected data is still returned to the requester regardless.
+  assign ecc_corr1_err_o = rd_fifo_req & rd_ecc_err_i[0];
+  assign ecc_corr2_err_o = rd_fifo_req & rd_ecc_err_i[1];
+  assign ecc_corr_addr_o = rd_pend_addr_q;
+  assign ecc_corr_part_o = rd_pend_part_q;
 
   ////////////////
   // Assertions //

@@ -199,8 +199,7 @@ module rram_macro #(
   logic                 ack;
   logic [DataWidth-1:0] rdata;
   logic                 err;
-  logic                 ecc_corr_err;
-  logic                 ecc_fatal_err;
+  logic [2:0]           ecc_err;
   logic                 init_done;
 
   // ECC encode path (write): computed before data enters u_store_buf_fifo. Physical layout is
@@ -235,7 +234,7 @@ module rram_macro #(
   logic [EccWordWidth-1:0]  rd_data_lo_dec, rd_data_hi_dec;
   logic [1:0]               rd_err_lo, rd_err_hi;
   logic [DataWidth-1:0]     rd_data_dec;
-  logic                     rd_data_corr_err, rd_data_fatal_err;
+  logic                     rd_data_corr1_err, rd_data_corr2_err, rd_data_fatal_err;
 
   assign rd_data_raw = mem_rvalid_q ? mem_rdata : mem_rdata_q;
 
@@ -259,9 +258,14 @@ module rram_macro #(
     .err_o     (rd_err_hi)
   );
 
-  assign rd_data_dec       = {rd_data_hi_dec, rd_data_lo_dec};
-  assign rd_data_corr_err  = rd_err_lo[0] | rd_err_hi[0];
+  assign rd_data_dec = {rd_data_hi_dec, rd_data_lo_dec};
+
+  // ecc_err encoding: single-bit corrected when exactly one half corrects and the other is clean,
+  // double-bit corrected when both halves independently correct one bit each, and fatal when
+  // either half detects more than one error on its own. See rram_ctrl_pkg::rram_macro_rsp_t.
   assign rd_data_fatal_err = rd_err_lo[1] | rd_err_hi[1];
+  assign rd_data_corr2_err = rd_err_lo[0] & rd_err_hi[0];
+  assign rd_data_corr1_err = (rd_err_lo[0] ^ rd_err_hi[0]) & ~rd_data_fatal_err;
 
   logic [11:0] rand_val;
   logic [1:0]  rand_val_read;
@@ -316,13 +320,12 @@ module rram_macro #(
   end
 
   // output assignments
-  assign rram_macro_o.done          = done;
-  assign rram_macro_o.ack           = ack;
-  assign rram_macro_o.rd_data       = rdata;
-  assign rram_macro_o.err           = err;
-  assign rram_macro_o.ecc_corr_err  = ecc_corr_err;
-  assign rram_macro_o.ecc_fatal_err = ecc_fatal_err;
-  assign rram_macro_o.init_done     = init_done;
+  assign rram_macro_o.done      = done;
+  assign rram_macro_o.ack       = ack;
+  assign rram_macro_o.rd_data   = rdata;
+  assign rram_macro_o.err       = err;
+  assign rram_macro_o.ecc_err   = ecc_err;
+  assign rram_macro_o.init_done = init_done;
 
   // LFSR to generate random delays for each operation
   prim_lfsr #(
@@ -358,9 +361,8 @@ module rram_macro #(
     mem_wdata    = '0;
     mem_rvalid_d = '0;
 
-    err           = 1'b0;
-    ecc_corr_err  = 1'b0;
-    ecc_fatal_err = 1'b0;
+    err     = 1'b0;
+    ecc_err = '0;
 
     current_part_d = current_part_q;
     waddr_d        = waddr_q;
@@ -452,9 +454,8 @@ module rram_macro #(
           state_d = StIdle;
           cnt_clr = 1'b1;
           if (ecc_en_q) begin
-            rdata         = rd_data_dec;
-            ecc_corr_err  = rd_data_corr_err;
-            ecc_fatal_err = rd_data_fatal_err;
+            rdata   = rd_data_dec;
+            ecc_err = {rd_data_fatal_err, rd_data_corr2_err, rd_data_corr1_err};
           end else begin
             rdata = rd_data_raw[DataWidth-1:0];
           end
@@ -573,6 +574,8 @@ module rram_macro #(
 
   // output multiplexer
   assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
+
+  `ASSERT(EccErrOnehot0_A, $onehot0(rram_macro_o.ecc_err))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,

@@ -110,12 +110,12 @@ To modify less than a full RRAM word, software must perform a read-modify-write:
 
 ## Issuing a Rewrite Operation
 
-A degraded RRAM word can be restored with a rewrite operation, typically after a `corr_err` interrupt.
+A degraded RRAM word can be restored with a rewrite operation, typically after a `corr1_err` or `corr2_err` interrupt.
 See [Correctable ECC Errors](#correctable-ecc-errors) for details.
 To issue a rewrite, software must:
 
 1. Wait for any previous operation to complete.
-2. Write the byte address of the word to rewrite into [`ADDR`](registers.md#addr), typically taken from [`CORR_ERR_LOC`](registers.md#corr_err_loc).
+2. Write the byte address of the word to rewrite into [`ADDR`](registers.md#addr), typically taken from [`CORR1_ERR_LOC`](registers.md#corr1_err_loc) or [`CORR2_ERR_LOC`](registers.md#corr2_err_loc), matching whichever interrupt fired.
 3. Write [`CONTROL`](registers.md#control) with:
    - `OP = Rewrite`
    - `PARTITION = 0` for the data partition, `1` for the info partition
@@ -187,7 +187,7 @@ See [Memory Protection for LCMGR Hardware Plug](theory_of_operation.md#memory-pr
 
 If software reads RRAM directly via the host TL-UL port, it may encounter ECC failures or read data integrity errors.
 Correctable ECC errors are fixed transparently.
-The `corr_err` interrupt is asserted and the address of the corrected error is recorded in [`CORR_ERR_LOC`](registers.md#corr_err_loc).
+The `corr1_err` (single-bit) or `corr2_err` (double-bit) interrupt is asserted, and the address of the corrected error is recorded in [`CORR1_ERR_LOC`](registers.md#corr1_err_loc) or [`CORR2_ERR_LOC`](registers.md#corr2_err_loc) respectively.
 Uncorrectable ECC errors or integrity failures produce in-band TL-UL error responses which will trigger a processor exception.
 
 ### Error Encountered by Software Initiated Controller Operations
@@ -234,11 +234,11 @@ If software provisions these pages without both scrambling and ECC enabled, the 
 
 Correctable ECC errors are not fatal.
 The controller fixes the data in place and continues.
-The `corr_err` interrupt fires and the error counter is incremented in [`CORR_ERR_CNT`](registers.md#corr_err_cnt).
-The address and partition of the last corrected error are recorded in [`CORR_ERR_LOC`](registers.md#corr_err_loc).
-See [Single-Bit Error (Correctable)](theory_of_operation.md#single-bit-error-correctable) in the theory of operation for a known limitation of this mechanism.
+`corr1_err` (single-bit) or `corr2_err` (double-bit) fires, and the matching error counter is incremented in [`CORR1_ERR_CNT`](registers.md#corr1_err_cnt) or [`CORR2_ERR_CNT`](registers.md#corr2_err_cnt).
+The address and partition of the last corrected error are recorded in [`CORR1_ERR_LOC`](registers.md#corr1_err_loc) or [`CORR2_ERR_LOC`](registers.md#corr2_err_loc), matching whichever interrupt fired.
+See [Double-Bit Error (Correctable)](theory_of_operation.md#double-bit-error-correctable) in the theory of operation for why `corr2_err` warrants a more urgent rewrite than `corr1_err`.
 
-On `corr_err`, software can attempt to fix the affected word by issuing a [Rewrite operation](#issuing-a-rewrite-operation) at the address recorded in `CORR_ERR_LOC`.
+On `corr1_err`/`corr2_err`, software can attempt to fix the affected word by issuing a [Rewrite operation](#issuing-a-rewrite-operation) at the recorded address.
 If correctable errors keep recurring at the same address, this may indicate RRAM cell degradation.
 
 ## Scrambling Consistency

@@ -21,7 +21,7 @@ package rram_ctrl_reg_pkg;
   parameter int CoreAw = 9;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 71;
+  parameter int NumRegsCore = 73;
 
   // Alert indices
   typedef enum int {
@@ -39,7 +39,10 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } corr_err;
+    } corr2_err;
+    struct packed {
+      logic        q;
+    } corr1_err;
     struct packed {
       logic        q;
     } op_done;
@@ -60,7 +63,10 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } corr_err;
+    } corr2_err;
+    struct packed {
+      logic        q;
+    } corr1_err;
     struct packed {
       logic        q;
     } op_done;
@@ -82,7 +88,11 @@ package rram_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } corr_err;
+    } corr2_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } corr1_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -322,7 +332,11 @@ package rram_ctrl_reg_pkg;
 
   typedef struct packed {
     logic [7:0]  q;
-  } rram_ctrl_reg2hw_corr_err_cnt_reg_t;
+  } rram_ctrl_reg2hw_corr1_err_cnt_reg_t;
+
+  typedef struct packed {
+    logic [7:0]  q;
+  } rram_ctrl_reg2hw_corr2_err_cnt_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -352,7 +366,11 @@ package rram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } corr_err;
+    } corr2_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } corr1_err;
     struct packed {
       logic        d;
       logic        de;
@@ -565,7 +583,12 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     logic [7:0]  d;
     logic        de;
-  } rram_ctrl_hw2reg_corr_err_cnt_reg_t;
+  } rram_ctrl_hw2reg_corr1_err_cnt_reg_t;
+
+  typedef struct packed {
+    logic [7:0]  d;
+    logic        de;
+  } rram_ctrl_hw2reg_corr2_err_cnt_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -576,7 +599,18 @@ package rram_ctrl_reg_pkg;
       logic [20:0] d;
       logic        de;
     } addr;
-  } rram_ctrl_hw2reg_corr_err_loc_reg_t;
+  } rram_ctrl_hw2reg_corr1_err_loc_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } part;
+    struct packed {
+      logic [20:0] d;
+      logic        de;
+    } addr;
+  } rram_ctrl_hw2reg_corr2_err_loc_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -600,23 +634,24 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [814:809]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [808:803]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [802:791]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [790:781]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [780:773]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [772:741]
-    rram_ctrl_reg2hw_init_reg_t init; // [740:740]
-    rram_ctrl_reg2hw_control_reg_t control; // [739:726]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [725:705]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [704:505]
-    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [504:265]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [264:249]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [248:89]
-    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [88:81]
-    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [80:68]
-    rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [67:54]
-    rram_ctrl_reg2hw_corr_err_cnt_reg_t corr_err_cnt; // [53:46]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [826:820]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [819:813]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [812:799]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [798:789]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [788:781]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [780:749]
+    rram_ctrl_reg2hw_init_reg_t init; // [748:748]
+    rram_ctrl_reg2hw_control_reg_t control; // [747:734]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [733:713]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [712:513]
+    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [512:273]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [272:257]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [256:97]
+    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [96:89]
+    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [88:76]
+    rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [75:62]
+    rram_ctrl_reg2hw_corr1_err_cnt_reg_t corr1_err_cnt; // [61:54]
+    rram_ctrl_reg2hw_corr2_err_cnt_reg_t corr2_err_cnt; // [53:46]
     rram_ctrl_reg2hw_scratch_reg_t scratch; // [45:14]
     rram_ctrl_reg2hw_fifo_lvl_reg_t fifo_lvl; // [13:4]
     rram_ctrl_reg2hw_fifo_clr_reg_t fifo_clr; // [3:0]
@@ -624,17 +659,19 @@ package rram_ctrl_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [161:150]
-    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [149:149]
-    rram_ctrl_hw2reg_control_reg_t control; // [148:147]
-    rram_ctrl_hw2reg_op_status_reg_t op_status; // [146:143]
-    rram_ctrl_hw2reg_status_reg_t status; // [142:131]
-    rram_ctrl_hw2reg_err_code_reg_t err_code; // [130:123]
-    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [122:97]
-    rram_ctrl_hw2reg_fault_status_reg_t fault_status; // [96:69]
-    rram_ctrl_hw2reg_err_addr_reg_t err_addr; // [68:47]
-    rram_ctrl_hw2reg_corr_err_cnt_reg_t corr_err_cnt; // [46:38]
-    rram_ctrl_hw2reg_corr_err_loc_reg_t corr_err_loc; // [37:14]
+    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [196:183]
+    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [182:182]
+    rram_ctrl_hw2reg_control_reg_t control; // [181:180]
+    rram_ctrl_hw2reg_op_status_reg_t op_status; // [179:176]
+    rram_ctrl_hw2reg_status_reg_t status; // [175:164]
+    rram_ctrl_hw2reg_err_code_reg_t err_code; // [163:156]
+    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [155:130]
+    rram_ctrl_hw2reg_fault_status_reg_t fault_status; // [129:102]
+    rram_ctrl_hw2reg_err_addr_reg_t err_addr; // [101:80]
+    rram_ctrl_hw2reg_corr1_err_cnt_reg_t corr1_err_cnt; // [79:71]
+    rram_ctrl_hw2reg_corr2_err_cnt_reg_t corr2_err_cnt; // [70:62]
+    rram_ctrl_hw2reg_corr1_err_loc_reg_t corr1_err_loc; // [61:38]
+    rram_ctrl_hw2reg_corr2_err_loc_reg_t corr2_err_loc; // [37:14]
     rram_ctrl_hw2reg_phy_status_reg_t phy_status; // [13:10]
     rram_ctrl_hw2reg_curr_fifo_lvl_reg_t curr_fifo_lvl; // [9:0]
   } rram_ctrl_core_hw2reg_t;
@@ -704,22 +741,25 @@ package rram_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] RRAM_CTRL_STD_FAULT_STATUS_OFFSET = 9'h f4;
   parameter logic [CoreAw-1:0] RRAM_CTRL_FAULT_STATUS_OFFSET = 9'h f8;
   parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 9'h fc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_CNT_OFFSET = 9'h 100;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_LOC_OFFSET = 9'h 104;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h 108;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h 10c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h 110;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h 114;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 118;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_CNT_OFFSET = 9'h 100;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_CNT_OFFSET = 9'h 104;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_LOC_OFFSET = 9'h 108;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_LOC_OFFSET = 9'h 10c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h 110;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h 114;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h 118;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h 11c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 120;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [5:0] RRAM_CTRL_INTR_TEST_RESVAL = 6'h 0;
+  parameter logic [6:0] RRAM_CTRL_INTR_TEST_RESVAL = 7'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_WR_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_WR_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_RD_FULL_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
-  parameter logic [0:0] RRAM_CTRL_INTR_TEST_CORR_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RRAM_CTRL_INTR_TEST_CORR1_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RRAM_CTRL_INTR_TEST_CORR2_ERR_RESVAL = 1'h 0;
   parameter logic [4:0] RRAM_CTRL_ALERT_TEST_RESVAL = 5'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_FATAL_STD_ERR_RESVAL = 1'h 0;
@@ -736,10 +776,10 @@ package rram_ctrl_reg_pkg;
   parameter logic [4:0] RRAM_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 11c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 124;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_IDX    = 0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 120;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 128;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_IDX    = 1;
 
@@ -809,8 +849,10 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_STD_FAULT_STATUS,
     RRAM_CTRL_FAULT_STATUS,
     RRAM_CTRL_ERR_ADDR,
-    RRAM_CTRL_CORR_ERR_CNT,
-    RRAM_CTRL_CORR_ERR_LOC,
+    RRAM_CTRL_CORR1_ERR_CNT,
+    RRAM_CTRL_CORR2_ERR_CNT,
+    RRAM_CTRL_CORR1_ERR_LOC,
+    RRAM_CTRL_CORR2_ERR_LOC,
     RRAM_CTRL_PHY_STATUS,
     RRAM_CTRL_SCRATCH,
     RRAM_CTRL_FIFO_LVL,
@@ -819,7 +861,7 @@ package rram_ctrl_reg_pkg;
   } rram_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [71] = '{
+  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [73] = '{
     4'b 0001, // index[ 0] RRAM_CTRL_INTR_STATE
     4'b 0001, // index[ 1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] RRAM_CTRL_INTR_TEST
@@ -884,13 +926,15 @@ package rram_ctrl_reg_pkg;
     4'b 0011, // index[61] RRAM_CTRL_STD_FAULT_STATUS
     4'b 0011, // index[62] RRAM_CTRL_FAULT_STATUS
     4'b 0111, // index[63] RRAM_CTRL_ERR_ADDR
-    4'b 0001, // index[64] RRAM_CTRL_CORR_ERR_CNT
-    4'b 1111, // index[65] RRAM_CTRL_CORR_ERR_LOC
-    4'b 0001, // index[66] RRAM_CTRL_PHY_STATUS
-    4'b 1111, // index[67] RRAM_CTRL_SCRATCH
-    4'b 0011, // index[68] RRAM_CTRL_FIFO_LVL
-    4'b 0001, // index[69] RRAM_CTRL_FIFO_CLR
-    4'b 0011  // index[70] RRAM_CTRL_CURR_FIFO_LVL
+    4'b 0001, // index[64] RRAM_CTRL_CORR1_ERR_CNT
+    4'b 0001, // index[65] RRAM_CTRL_CORR2_ERR_CNT
+    4'b 1111, // index[66] RRAM_CTRL_CORR1_ERR_LOC
+    4'b 1111, // index[67] RRAM_CTRL_CORR2_ERR_LOC
+    4'b 0001, // index[68] RRAM_CTRL_PHY_STATUS
+    4'b 1111, // index[69] RRAM_CTRL_SCRATCH
+    4'b 0011, // index[70] RRAM_CTRL_FIFO_LVL
+    4'b 0001, // index[71] RRAM_CTRL_FIFO_CLR
+    4'b 0011  // index[72] RRAM_CTRL_CURR_FIFO_LVL
   };
 
 endpackage
