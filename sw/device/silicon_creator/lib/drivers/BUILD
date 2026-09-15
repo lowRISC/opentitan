@@ -469,6 +469,7 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:hardened_memory",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/silicon_creator/lib/base:sec_mmio",

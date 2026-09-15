@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 
 namespace rom_test {
@@ -23,9 +24,7 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
 }
 
 hardened_bool_t lifecycle_din_eq(lifecycle_device_id_t *id, uint32_t *din) {
-  if (id->device_id[1] == din[0] && id->device_id[2] == din[1])
-    return kHardenedBoolTrue;
-  return kHardenedBoolFalse;
+  return hardened_memeq(&id->device_id[1], din, 2);
 }
 }  // extern "C"
 }  // namespace rom_test

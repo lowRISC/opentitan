@@ -73,6 +73,19 @@ TEST_F(LifecycleTest, HwRev) {
   EXPECT_EQ(hw_rev.revision_id, exp_revision_id);
 }
 
+TEST_F(LifecycleTest, DinEq) {
+  lifecycle_device_id_t device_id = {
+      .device_id = {0, 0x12345678, 0x9abcdef0, 0, 0, 0, 0, 0},
+  };
+  uint32_t matching_din[2] = {0x12345678, 0x9abcdef0};
+  uint32_t mismatch_din[2] = {0x12345678, 0x00000000};
+  uint32_t mismatch_din2[2] = {0x00000000, 0x9abcdef0};
+
+  EXPECT_EQ(lifecycle_din_eq(&device_id, matching_din), kHardenedBoolTrue);
+  EXPECT_EQ(lifecycle_din_eq(&device_id, mismatch_din), kHardenedBoolFalse);
+  EXPECT_EQ(lifecycle_din_eq(&device_id, mismatch_din2), kHardenedBoolFalse);
+}
+
 struct ValidStateTestCase {
   /**
    * Value reported by hardware.
