@@ -176,6 +176,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     int unsigned         excluded_ip_idxs[$];
     ip_fatal_alert_t     ip_alert;
     bit [7:0]            sw_alert_num[];
+    bit                  otp_part_esc;
 
     get_excluded_indices(excluded_ip_idxs);
 
@@ -186,6 +187,11 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
       `uvm_fatal(get_full_name(), "Failed to randomize ip_idx")
     end
     ip_alert = ip_alerts[ip_idx];
+    // Faults that raise otp_ctrl's fatal_macro_error or fatal_check_error make otp_ctrl escalate
+    // all of its partitions internally, which drops otp_lc_data.valid and hence lc_init_done
+    // before the LC FSM reaches EscalateSt. Bus-integrity faults do not.
+    otp_part_esc = ip_alert.alert_num inside {TopEarlgreyAlertIdOtpCtrlFatalMacroError,
+                                              TopEarlgreyAlertIdOtpCtrlFatalCheckError};
 
     // Run chip_sw_base_vseq::body, which will start the SW on the CPU
     super.body();
@@ -214,6 +220,15 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
               $sformatf("Injecting fault for IP block at %0s, with alert %0d",
                         ip_alert.ip_inst_glob, ip_alert.alert_num),
               UVM_LOW);
+    if (otp_part_esc) `DV_ASSERT_CTRL_REQ("LcInitDoneSticky_A", 0)
     find_proxy_for_alert(ip_alert).inject_fault();
+    if (otp_part_esc) begin
+      // The escalation reset re-initialises lc_ctrl; once the ROM runs again lc_init_done has
+      // legitimately been re-asserted, so resume checking that it stays high.
+      fork begin
+        wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom);
+        `DV_ASSERT_CTRL_REQ("LcInitDoneSticky_A", 1)
+      end join_none
+    end
   endtask
 endclass
