@@ -107,6 +107,7 @@
           # nixpkgs bump can't silently drift the devshell's tool versions.
           lowrisc-nix.packages.${system}.verilator_5_048
           lowrisc-nix.packages.${system}.verible_0_0_4080
+          lowrisc-nix.packages.${system}.sv-lang_11
           # Bazel pinned to match .bazelversion (8.7.0). With this on PATH,
           # ./bazelisk.sh uses it directly instead of downloading Bazel over the
           # network, so the build is hermetic and reproducible. Keep this version
