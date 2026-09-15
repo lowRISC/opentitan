@@ -519,6 +519,7 @@ interface chip_if;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
   wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
       == pwrmgr_pkg::FastPwrStateActive;
+  wire pwrmgr_strap_sampled = `PWRMGR_HIER.u_fsm.strap_sampled_o;
 
 `ifdef GATE_LEVEL
   wire rom_ctrl_done = 0;
