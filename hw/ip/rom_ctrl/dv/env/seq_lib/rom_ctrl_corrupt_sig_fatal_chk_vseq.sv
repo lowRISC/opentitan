@@ -261,7 +261,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::run_compare_early();
-  virtual alert_esc_if alert_vif = cfg.m_alert_agent_cfgs["fatal"].vif;
+  virtual alert_if alert_vif = cfg.m_alert_agent_cfgs["fatal"].vif;
 
   // Wait a short time (to avoid always starting at exactly the start)
   wait_with_bound(100);

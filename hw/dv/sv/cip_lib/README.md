@@ -176,7 +176,7 @@ the above components are created based on env cfg settings, along with the TileL
 host agent and alert device agents if the module has alerts. In the connect phase,
 the scoreboard connects with the monitor within the TileLink agent to be able to
 grab packets from the TL interface during address and the data phases. The scoreboard
-also connects the alert monitor within the alert_esc_agent to grab packets
+also connects the alert monitor within the alert_agent to grab packets
 regarding alert handshake status. In the end of elaboration phase, the ral
 model within the env cfg handle is locked and the ral sequencer and adapters are
 set to be used with the TileLink interface.

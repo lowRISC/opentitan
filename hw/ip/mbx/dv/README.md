@@ -56,7 +56,7 @@ To ensure the quality of the constrained random stimuli, it is necessary to deve
 The following covergroups have been developed to ensure that the stimulus intent is met:
 
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
-* common covergroups for alerts `hw/dv/sv/alert_esc_agent/alert_esc_agent_cov.sv`: Cover alert handshake signaling (RoT side).
+* common covergroups for alerts `hw/dv/sv/alert_agent/alert_agent_cov.sv`: Cover alert handshake signaling (RoT side).
 * common covergroups for CSRs `hw/dv/sv/dv_base_reg/*cov.sv`: Cover lockable register fields (RoT side; SoC side has no REGWENs).
 * common covergroups for TL-UL accesses `hw/dv/sv/tl_agent/tl_agent_cov.sv`: Covert TL-UL A/D channel traffic (RoT and SoC registers).
 * mbx_mem_range_cg `hw/ip/mbx/dv/env/mbx_env_cov.sv`: Ensure that different Inbound and Outbound mailbox addresses have been tested.
