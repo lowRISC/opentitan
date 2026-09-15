@@ -486,6 +486,9 @@ status_t ghash_update_redundant(ghash_context_t *ctx,
       consttime_memeq_byte(diff0.data, diff1.data, kGhashBlockNumBytes),
       kHardenedBoolTrue);
 
+  hardened_memshred((uint32_t *)&ctx_redundant,
+                    sizeof(ctx_redundant) / sizeof(uint32_t));
+
   return OTCRYPTO_OK;
 }
 
