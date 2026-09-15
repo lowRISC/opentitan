@@ -55,7 +55,7 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 inline ptrdiff_t misalignment32_of(uintptr_t addr) {
-  return addr % alignof(uint32_t);
+  return (ptrdiff_t)(addr % alignof(uint32_t));
 }
 
 /**
