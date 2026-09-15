@@ -90,6 +90,12 @@ package otp_ctrl_mem_bkdr_util_pkg;
       manuf_state,
       device_id
     }};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = ManufStateOffset + ManufStateSize;
+         i < HwCfg0DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(HwCfg0Idx, partition_data);
     mem_bkdr_util_h.write64(HwCfg0DigestOffset, digest);
   endfunction
@@ -117,6 +123,11 @@ package otp_ctrl_mem_bkdr_util_pkg;
     concat_data.push_front(word);
 
     partition_data = {<<32{concat_data}};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = EnCsrngSwAppReadOffset + 4; i < HwCfg1DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(HwCfg1Idx, partition_data);
     mem_bkdr_util_h.write64(HwCfg1DigestOffset, digest);
   endfunction
@@ -148,6 +159,12 @@ package otp_ctrl_mem_bkdr_util_pkg;
       scrambled_test_exit_token,
       scrambled_test_unlock_token
     }};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = TestExitTokenOffset + TestExitTokenSize;
+         i < Secret0DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(Secret0Idx, partition_data);
     mem_bkdr_util_h.write64(Secret0DigestOffset, digest);
   endfunction
@@ -170,6 +187,12 @@ package otp_ctrl_mem_bkdr_util_pkg;
     partition_data = {<<32{
       scrambled_sram_data_key_seed
     }};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = SramDataKeySeedOffset + SramDataKeySeedSize;
+         i < Secret1DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(Secret1Idx, partition_data);
     mem_bkdr_util_h.write64(Secret1DigestOffset, digest);
   endfunction
@@ -219,6 +242,12 @@ package otp_ctrl_mem_bkdr_util_pkg;
       scrambled_creator_root_key_share0,
       scrambled_rma_token
     }};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = CreatorSeedOffset + CreatorSeedSize;
+         i < Secret2DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(Secret2Idx, partition_data);
     mem_bkdr_util_h.write64(Secret2DigestOffset, digest);
   endfunction
@@ -241,6 +270,12 @@ package otp_ctrl_mem_bkdr_util_pkg;
     partition_data = {<<32{
       scrambled_owner_seed
     }};
+    // The hardware digests every 64-bit block up to the digest offset, whether or not the items
+    // fill that region. Append the remaining words as stored in OTP.
+    for (int i = OwnerSeedOffset + OwnerSeedSize;
+         i < Secret3DigestOffset; i += 4) begin
+      partition_data.push_back(mem_bkdr_util_h.read32(i));
+    end
     digest = cal_digest(Secret3Idx, partition_data);
     mem_bkdr_util_h.write64(Secret3DigestOffset, digest);
   endfunction
