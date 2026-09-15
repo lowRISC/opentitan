@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -288,23 +289,20 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
   HARDENED_TRY(p256_read_point(public_key));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY(keymgr_sideload_clear_otbn());
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenSideloadInsCnt);
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY(p256_read_point(public_key));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_ecdsa_sign_start(const uint32_t digest[kP256ScalarWords],
@@ -379,6 +377,7 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY(keymgr_sideload_clear_otbn());
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
@@ -397,9 +396,7 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
@@ -440,9 +437,7 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
   *result = hardened_memeq(x_r, signature->r, kP256ScalarWords);
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_ecdh_start(p256_masked_scalar_t *private_key,
@@ -464,6 +459,7 @@ status_t p256_ecdh_start(p256_masked_scalar_t *private_key,
 status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY(keymgr_sideload_clear_otbn());
 
   HARDENED_TRY(p256_check_otbn_status());
 
@@ -485,9 +481,7 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   shared_key->checksum = p256_ecdh_shared_key_checksum(shared_key);
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
