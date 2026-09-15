@@ -111,7 +111,7 @@ package otp_ctrl_mem_bkdr_util_pkg;
     word = {
       en_sram_ifetch
     };
-    mem_bkdr_util_h.write32(1 + EnSramIfetchOffset, word);
+    mem_bkdr_util_h.write32(EnSramIfetchOffset, word);
     concat_data.push_front(word);
 
     partition_data = {<<32{concat_data}};
