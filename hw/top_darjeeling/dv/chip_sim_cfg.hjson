@@ -63,7 +63,10 @@
                 // Enable C compilation of AES model for DPI-C
                 "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
 
-                // TODO(#26733): fix these smoke tests for Darjeeling.
+                // TODO(#26733): importing csr_tests.hjson would also add chip_csr_hw_reset
+                // and chip_csr_rw to the smoke regression, which were failing on Darjeeling
+                // when the import was disabled. The CSR tests and csr_tests_mode are
+                // replicated locally instead; re-enable the import once they pass.
                 //"{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
 
                 // TODO #5484, comment these 2 lines out because spi host memory is dummy
@@ -383,8 +386,11 @@
       run_opts: ["+stub_cpu=1"]
     }
     {
-      // Append stub cpu mode to csr_tests_mode.
+      // Local copy of csr_tests_mode from hw/dv/tools/dvsim/tests/csr_tests.hjson (the import
+      // is disabled above), with stub cpu mode appended.
       name: csr_tests_mode
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+en_scb=0"]
       en_run_modes: ["stub_cpu_mode"]
     }
     {
@@ -433,24 +439,53 @@
   // value by 20% and use the relationship that 5 minutes of runtime is roughly
   // 4 milliseconds of timeout.
   tests: [
+    // The CSR tests below are copied from hw/dv/tools/dvsim/tests/csr_tests.hjson (see the
+    // note on the disabled import above), with the chip-specific timeouts and CSR limits.
     {
-      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
+      name: "chip_csr_hw_reset"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_hw_reset"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 1
+    }
+    {
+      name: "chip_csr_rw"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
+    }
+    {
       name: "chip_csr_bit_bash"
+      build_mode: "cover_reg_top"
       // Don't test over 200 randomly picked CSRs at a time.
-      run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=200"]
+      run_opts: ["+csr_bit_bash", "+test_timeout_ns=120_000_000", "+num_test_csrs=200"]
+      en_run_modes: ["csr_tests_mode"]
       run_timeout_mins: 180
+      reseed: 1
     }
     {
-      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_csr_aliasing"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_aliasing", "+test_timeout_ns=120_000_000"]
+      en_run_modes: ["csr_tests_mode"]
       run_timeout_mins: 180
-      run_opts: ["+test_timeout_ns=120_000_000"]
+      reseed: 1
     }
     {
-      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_same_csr_outstanding"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_same_csr_outstanding", "+test_timeout_ns=120_000_000"]
+      en_run_modes: ["csr_tests_mode"]
       run_timeout_mins: 120
-      run_opts: ["+test_timeout_ns=120_000_000"]
+      reseed: 5
+    }
+    {
+      name: "chip_csr_mem_rw_with_rand_reset"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
     }
     {
       name: chip_sw_example_rom
