@@ -30,7 +30,7 @@ class i2c_base_seq extends dv_base_seq #(
   REQ req_q[$];
 
   // Set this bit via. seq_stop() to immediately halt the sequence.
-  protected bit stop;
+  local bit stop;
 
   `uvm_object_utils(i2c_base_seq)
   `uvm_object_new
