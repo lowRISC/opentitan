@@ -670,11 +670,12 @@ static status_t personalize_gen_dice_certificates(
       kPersoBlobVersionV0, &pre_endorse_data->blob_to_host));
 
   // Build MLDSA certificate in temp buffer if requested
-  if (pre_endorse_data->certgen_inputs.generate_mldsa_uds_cert) {
+  if (pre_endorse_data->certgen_inputs.has_dice_mldsa_auth_key_key_id != 0) {
     curr_cert_size = kUdsMaxTbsSizeBytes;  // From template code
 
     // Copy Key ID to endorse UDS MLDSA certificate sent by ATE. This must be
-    // populated by the ATE tool when `generate_mldsa_uds_cert` is set to `true`
+    // populated by the ATE tool when `has_dice_mldsa_auth_key_key_id` is
+    // non-zero
     static_assert(
         sizeof(pre_endorse_data->certgen_inputs.dice_mldsa_auth_key_key_id) ==
             kCertKeyIdSizeInBytes,

@@ -214,47 +214,44 @@ fn main() -> Result<()> {
 
     // Parse and prepare personalization ujson data payload.
     let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
-    let (
-        provision_mldsa_uds_cert,
-        dice_mldsa_ca_key_id,
-        dice_mldsa_certs_from_device,
-        dice_mldsa_certs_to_device,
-    ) = if let Some(dice_mldsa_certs_from_device) =
-        opts.provisioning_data.dice_mldsa_certs_from_device
-    {
-        if dice_mldsa_certs_from_device.is_empty() {
-            (false, ArrayVec::<u8, 20>::new(), HashSet::new(), Vec::new())
-        } else {
-            let dice_mldsa_ca = ca_cfgs.get(DICE_MLDSA_CA_NAME).ok_or(anyhow::anyhow!("Expect DICE ML-DSA CA configuration to be present when DICE ML-DSA certificates from device need to be endorsed"))?;
-            let dice_mldsa_certs_from_device: HashSet<String> =
-                dice_mldsa_certs_from_device.into_iter().collect();
-            let dice_mldsa_certs_to_device: HashSet<String> = opts
-                .provisioning_data
-                .dice_mldsa_certs_to_device
-                .clone()
-                .unwrap_or(Vec::new())
-                .into_iter()
-                .collect();
-            if !dice_mldsa_certs_to_device.is_subset(&dice_mldsa_certs_from_device) {
-                bail!(
-                    "List of ML-DSA endorsed certificates to send to the device contains certificate names which are not present in the list of TBS certificates expected from device during provisioning. Difference: {:?}",
-                    dice_mldsa_certs_to_device.difference(&dice_mldsa_certs_from_device)
-                );
-            }
-
-            log::info!("Will request UDS ML-DSA certificate generation from device");
-            (
-                true,
-                hex_string_to_u8_arrayvec::<20>(dice_mldsa_ca.key_id.as_str())?,
-                dice_mldsa_certs_from_device,
-                opts.provisioning_data
+    let (dice_mldsa_ca_key_id, dice_mldsa_certs_from_device, dice_mldsa_certs_to_device) =
+        if let Some(dice_mldsa_certs_from_device) =
+            opts.provisioning_data.dice_mldsa_certs_from_device
+        {
+            if dice_mldsa_certs_from_device.is_empty() {
+                (None, HashSet::new(), Vec::new())
+            } else {
+                let dice_mldsa_ca = ca_cfgs.get(DICE_MLDSA_CA_NAME).ok_or(anyhow::anyhow!("Expect DICE ML-DSA CA configuration to be present when DICE ML-DSA certificates from device need to be endorsed"))?;
+                let dice_mldsa_certs_from_device: HashSet<String> =
+                    dice_mldsa_certs_from_device.into_iter().collect();
+                let dice_mldsa_certs_to_device: HashSet<String> = opts
+                    .provisioning_data
                     .dice_mldsa_certs_to_device
-                    .unwrap_or(Vec::new()),
-            )
-        }
-    } else {
-        (false, ArrayVec::<u8, 20>::new(), HashSet::new(), Vec::new())
-    };
+                    .clone()
+                    .unwrap_or(Vec::new())
+                    .into_iter()
+                    .collect();
+                if !dice_mldsa_certs_to_device.is_subset(&dice_mldsa_certs_from_device) {
+                    bail!(
+                        "List of ML-DSA endorsed certificates to send to the device contains certificate names which are not present in the list of TBS certificates expected from device during provisioning. Difference: {:?}",
+                        dice_mldsa_certs_to_device.difference(&dice_mldsa_certs_from_device)
+                    );
+                }
+
+                log::info!("Will request UDS ML-DSA certificate generation from device");
+                (
+                    Some(hex_string_to_u8_arrayvec::<20>(
+                        dice_mldsa_ca.key_id.as_str(),
+                    )?),
+                    dice_mldsa_certs_from_device,
+                    opts.provisioning_data
+                        .dice_mldsa_certs_to_device
+                        .unwrap_or(Vec::new()),
+                )
+            }
+        } else {
+            (None, HashSet::new(), Vec::new())
+        };
 
     let ext_ca_key_id = if let Some(ext) = ca_cfgs.get("ext") {
         hex_string_to_u8_arrayvec::<20>(ext.key_id.as_str())?
@@ -264,7 +261,6 @@ fn main() -> Result<()> {
     let perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
-        generate_mldsa_uds_cert: provision_mldsa_uds_cert,
         dice_mldsa_auth_key_key_id: dice_mldsa_ca_key_id,
     };
 

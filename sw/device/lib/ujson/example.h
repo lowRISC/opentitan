@@ -29,6 +29,80 @@ extern "C" {
     string(message, 20)
 UJSON_SERDE_STRUCT(Foo, foo, STRUCT_FOO);
 
+/////////////////////////////////////////////////////////////////////////////
+// Automatic generation of structs with serialize/deserialize functions:
+//
+// The following creates a `struct FooOptional1` with optional fields at end of the struct:
+//
+// typedef struct FooOptional1 {
+//     int32_t foo1;
+//     int32_t foo2[2];
+//     char message[20];
+//     uint8_t has_bar1;
+//     uint32_t bar1;
+//     uint8_t has_bar2;
+//     uint32_t bar2[2];
+// } foo_optional_1_t;
+// status_t ujson_serialize_foo_optional_1_t(ujson_t *context, const foo_optional_1_t *self);
+// status_t ujson_deserialize_foo_optional_1_t(ujson_t *context, foo_optional_1_t *self);
+#define STRUCT_FOO_OPTIONAL_1(field, string, field_optional) \
+    field(foo1, int32_t) \
+    field(foo2, int32_t, 2) \
+    string(message, 20) \
+    field_optional(bar1, uint32_t) \
+    field_optional(bar2, uint32_t, 2)
+UJSON_SERDE_STRUCT_OPT_FIELDS(FooOptional1, foo_optional_1_t, STRUCT_FOO_OPTIONAL_1);
+
+/////////////////////////////////////////////////////////////////////////////
+// Automatic generation of structs with serialize/deserialize functions:
+//
+// The following creates a `struct FooOptional2` with optional fields at beginning:
+//
+// typedef struct FooOptional2 {
+//     uint8_t has_bar1;
+//     uint32_t bar1;
+//     uint8_t has_bar2;
+//     uint32_t bar2[2];
+//     int32_t foo1;
+//     int32_t foo2[2];
+//     char message[20];
+// } foo_optional_2_t;
+// status_t ujson_serialize_foo_optional_2_t(ujson_t *context, const foo_optional_2_t *self);
+// status_t ujson_deserialize_foo_optional_2_t(ujson_t *context, foo_optional_2_t *self);
+#define STRUCT_FOO_OPTIONAL_2(field, string, field_optional) \
+    field_optional(bar1, uint32_t) \
+    field_optional(bar2, uint32_t, 2) \
+    field(foo1, int32_t) \
+    field(foo2, int32_t, 2) \
+    string(message, 20)
+UJSON_SERDE_STRUCT_OPT_FIELDS(FooOptional2, foo_optional_2_t, STRUCT_FOO_OPTIONAL_2);
+
+/////////////////////////////////////////////////////////////////////////////
+// Automatic generation of structs with serialize/deserialize functions:
+//
+// The following creates a `struct FooOptional3` with optional fields in the middle and non-optional fields in between optional fields
+//
+// typedef struct FooOptional3 {
+//     int32_t foo1;
+//     uint8_t has_bar1;
+//     uint32_t bar1;
+//     int32_t foo2[2];
+//     char message[20];
+//     uint8_t has_bar2;
+//     uint32_t bar2[2];
+//     int32_t foo3;
+// } foo_optional_3_t;
+// status_t ujson_serialize_foo_optional_3_t(ujson_t *context, const foo_optional_3_t *self);
+// status_t ujson_deserialize_foo_optional_3_t(ujson_t *context, foo_optional_3_t *self);
+#define STRUCT_FOO_OPTIONAL_3(field, string, field_optional) \
+    field(foo1, int32_t) \
+    field_optional(bar1, uint32_t) \
+    field(foo2, int32_t, 2) \
+    string(message, 20) \
+    field_optional(bar2, uint32_t, 2) \
+    field(foo3, int32_t)
+UJSON_SERDE_STRUCT_OPT_FIELDS(FooOptional3, foo_optional_3_t, STRUCT_FOO_OPTIONAL_3);
+
 // The next two structs demonstrate struct nesting:
 // typedef struct Coord { int32_t x; int32_t y; } coord;
 //
