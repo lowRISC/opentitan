@@ -29,6 +29,7 @@ class RegBlock:
     _addrsep: int = field(init=False)
     name: str = ""
     clocks: dict[str, ClockingItem] = field(default_factory=dict)
+    reinit_list: list[Signal] = field(default_factory=list)
     offset: int = 0
     multiregs: list[MultiRegister] = field(default_factory=list)
     registers: list[Register] = field(default_factory=list)
@@ -373,6 +374,10 @@ class RegBlock:
         self.name_to_flat_reg[new_lname] = self.name_to_flat_reg.pop(old_lname)
         self.name_to_offset[new_lname] = self.name_to_offset.pop(old_lname)
 
+    def add_reinits(self, reinits: list[Signal]) -> None:
+        '''Extend the list of reinit inputs to these registers'''
+        self.reinit_list.extend(reinits)
+
     def add_window(self, window: Window) -> None:
         if window.name is not None:
             lname = window.name.lower()
@@ -475,6 +480,7 @@ class RegBlock:
                                    self.offset,
                                    async_clk=None,
                                    sync_clk=None,
+                                   reinit=None,
                                    alias_target=None,
                                    desc=reg_desc,
                                    fields=fields,
@@ -544,6 +550,7 @@ class RegBlock:
                 self.offset,
                 async_clk=None,
                 sync_clk=None,
+                reinit=None,
                 alias_target=None,
                 desc='Interrupt State Register',
                 fields=fields,

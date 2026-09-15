@@ -45,6 +45,9 @@ ${hdr}
 %>\
 
   typedef struct packed {
+    % if r.reinit is not None:
+    logic reinit;
+    % endif
     % if r.is_homogeneous():
       ## If we have a homogeneous register or multireg, there is just one field
       ## (possibly replicated many times). The typedef is for one copy of that

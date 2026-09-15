@@ -114,6 +114,7 @@ OPTIONAL_FIELDS = {
     'version': ['s', "module version"],
     'life_stage': ['s', "life stage of module"],
     'commit_id': ['s', "commit ID of last stage sign-off"],
+    'reinit_list': ['lnw', "list of reinit inputs"],
     'alert_list': ['lnw', "list of peripheral alerts"],
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
@@ -238,6 +239,7 @@ class IpBlock:
     inter_signals: list[InterSignal]
     bus_interfaces: BusInterfaces
     clocking: Clocking
+    reinit_list: Sequence[Signal]
     xputs: tuple[Sequence[Signal], Sequence[Signal], Sequence[Signal]]
     wakeups: Sequence[Signal]
     reset_requests: Sequence[Signal]
@@ -413,6 +415,10 @@ class IpBlock:
             for (name, desc) in rd.get('memory', {}).items()  # type: ignore
         }
 
+        reinit_list = Signal.from_raw_list('reinit signals for block ' + name,
+                                           rd.get('reinit_list', []))
+        init_block.add_reinits(reinit_list);
+
         xputs = (Signal.from_raw_list('available_inout_list for block ' + name,
                                       rd.get('available_inout_list', [])),
                  Signal.from_raw_list('available_input_list for block ' + name,
@@ -505,8 +511,8 @@ class IpBlock:
 
         return IpBlock(name, cip_id, version, regwidth, params, reg_blocks,
                        memories, interrupts, no_auto_intr, alerts, no_auto_alert,
-                       scan, inter_signals, bus_interfaces, clocking, xputs,
-                       wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
+                       scan, inter_signals, bus_interfaces, clocking, reinit_list,
+                       xputs, wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
                        countermeasures, features, partitions, node, is_split_ip)
 
     @staticmethod
@@ -662,6 +668,7 @@ class IpBlock:
         ret['version'] = str(self.version)
         ret['interrupt_list'] = self.interrupts
         ret['no_auto_intr_regs'] = self.no_auto_intr
+        ret['reinit_list'] = self.reinit_list
         ret['alert_list'] = self.alerts
         ret['no_auto_alert_regs'] = self.no_auto_alert
         ret['scan'] = self.scan
@@ -673,6 +680,9 @@ class IpBlock:
         # Only emitted for split IPs, so non-split IPs see default attribute.
         if self.is_split_ip:
             ret['is_split_ip'] = self.is_split_ip
+
+        if self.reinit_list:
+            ret['reinit_list'] = reinit_list
 
         inouts, inputs, outputs = self.xputs
         if inouts:
