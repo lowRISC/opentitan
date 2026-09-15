@@ -98,6 +98,18 @@ cc_library(
     deps = ["//sw/device/lib/ujson"],
 )
 
+cc_test(
+    name = "provisioning_data_test",
+    srcs = ["provisioning_data_test.cc"],
+    deps = [
+        ":provisioning_data",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/ujson",
+        "//sw/device/lib/ujson:test_helpers",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "ottf",
     srcs = ["ottf.c"],
