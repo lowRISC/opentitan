@@ -9,7 +9,7 @@ class chip_sw_keymgr_dpe_sideload_otbn_vseq extends chip_sw_keymgr_dpe_key_deriv
 
 
   virtual task run_test_sequence(key_shares_t creator_key);
-    keymgr_pkg::otbn_key_req_t otbn_key;
+    keymgr_dpe_pkg::otbn_key_req_t otbn_key;
     otbn_key_shares_t otbn_key_shares;
 
     // Wait until the sideloaded key is generated
@@ -17,7 +17,7 @@ class chip_sw_keymgr_dpe_sideload_otbn_vseq extends chip_sw_keymgr_dpe_key_deriv
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),
-                           .dest(keymgr_pkg::Otbn),
+                           .dest(keymgr_dpe_pkg::Otbn),
                            .version(kVersionVersionedKey),
                            .salt(kSaltVersionedKey));
 

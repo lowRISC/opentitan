@@ -36,7 +36,7 @@ KNOWN_CIP_IDS = {
     9: 'gpio',
     10: 'hmac',
     11: 'i2c',
-    12: 'keymgr',
+    12: 'keymgr',  # deprecated
     13: 'kmac',
     14: 'lc_ctrl',
     15: 'otbn',
