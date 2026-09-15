@@ -157,12 +157,13 @@ sep = "" if loop.last else ","
       ${item_name.as_snake_case()}${sep}
 % endfor
     };
-## Write the word.
+## Write the word at the offset of the first single-byte item. This is 32-bit
+## aligned because all preceding items are multiples of 4 bytes.
 <%
 first_item_name = Name.from_snake_case(part_items[ones_at[0]]["name"])
 first_item_name_camel = first_item_name.as_camel_case()
 %>\
-    mem_bkdr_util_h.write32(${ones_at[0]} + ${first_item_name_camel}Offset, word);
+    mem_bkdr_util_h.write32(${first_item_name_camel}Offset, word);
     concat_data.push_front(word);
 
 ## Write all trailing consecutive non-single byte variables.
