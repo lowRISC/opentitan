@@ -25,11 +25,6 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
   // load_mem_from_file() skip verifying unused padding rows it never computed.
   protected bit touched_intg_row[bit [bus_params_pkg::BUS_AW-1:0]];
 
-  // Set for the duration of inject_errors() below, so write() can skip recomputing integrity for
-  // the corrupted word - otherwise the injected error would always be masked by a freshly valid
-  // syndrome, making it undetectable by rram_ctrl_otp.
-  protected bit suppress_integrity_update = 1'b0;
-
   // path/depth/n_bits cover the whole RRAM data array, same as RramData/RramInfo.
   // err_detection_scheme is always ErrDetectionNone - OTP's integrity is handled in
   // update_integrity() below instead of via a generic ECC scheme.
@@ -54,18 +49,53 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
   // write8/16/32/64/128 funnel through here.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
     super.write(addr + OtpDataByteOffset, data);
-    if (!suppress_integrity_update) update_integrity(addr, data);
+    update_integrity(addr, data);
   endfunction
 
-  // inject_errors funnels through write() above (inherited unmodified from mem_bkdr_util), which
-  // would otherwise recompute a fresh, self-consistent integrity byte for the corrupted data -
-  // masking the injected error instead of making it detectable. Suppress that for the single
-  // write() call the base implementation makes.
+  // Corrupts the data word or its integrity byte, chosen at random. See inject_intg_error().
   virtual function void inject_errors(bit [bus_params_pkg::BUS_AW-1:0] addr,
                                       uint32_t inject_num_errors);
-    suppress_integrity_update = 1'b1;
-    super.inject_errors(addr, inject_num_errors);
-    suppress_integrity_update = 1'b0;
+    bit data_word;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(data_word)
+    inject_intg_error(addr, inject_num_errors, data_word);
+  endfunction
+
+  // Flips `inject_num_errors` bits in the 64b chunk that holds `addr` if `data_word` is set, or in
+  // its integrity byte otherwise. rram_ctrl_otp checks only that pair when reading `addr`; one or
+  // two flipped bits always make them mismatch.
+  virtual function void inject_intg_error(bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                          uint32_t inject_num_errors, bit data_word);
+    localparam int unsigned ChunkBits = rram_ctrl_pkg::OtpIntgDataWidth;
+    int unsigned byte_addr, row_addr, field_lsb, field_bits;
+    row_data_t rw_data, err_mask, field_mask;
+
+    // Checking `addr` alone first keeps the sum below from wrapping onto a valid row.
+    if (!check_addr_valid(addr) || !check_addr_valid(addr + OtpDataByteOffset)) return;
+    if (data_word) begin
+      byte_addr  = addr + OtpDataByteOffset;
+      field_bits = ChunkBits;
+    end else begin
+      byte_addr  = get_intg_byte_addr(addr);
+      field_bits = rram_ctrl_pkg::OtpIntgWidth;
+    end
+    row_addr  = (byte_addr / this.bytes_per_word) * this.bytes_per_word;
+    field_lsb = ((byte_addr - row_addr) / (field_bits / 8)) * field_bits;
+    `DV_CHECK_LE_FATAL(inject_num_errors, field_bits)
+    field_mask = ((row_data_t'(1) << field_bits) - 1) << field_lsb;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask,
+                                       $countones(err_mask) == inject_num_errors;
+                                       (err_mask & ~field_mask) == '0;)
+    // Raw access to the absolute row: write() above would recompute the integrity byte.
+    rw_data = super.read(row_addr);
+    super.write(row_addr, rw_data ^ err_mask);
+    `uvm_info(`gfn, $sformatf(
+              "Addr: %0h, data_word: %0b, row: %0h, original data: %0h, error_mask: %0h",
+              addr, data_word, row_addr, rw_data, err_mask), UVM_HIGH)
+  endfunction
+
+  // Byte address in the shared array of the integrity byte for the 64b chunk that holds `addr`.
+  protected function int unsigned get_intg_byte_addr(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    return OtpIntgByteOffset + addr / (rram_ctrl_pkg::OtpIntgDataWidth / 8);
   endfunction
 
   // Updates the integrity byte(s) for the row `write()` just touched: one 8-bit Hamming(72,64)
@@ -76,7 +106,6 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
   // internally, which would double-apply OtpDataByteOffset and recurse back into this function.
   protected function void update_integrity(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
     localparam int unsigned ChunkBits  = rram_ctrl_pkg::OtpIntgDataWidth;
-    localparam int unsigned ChunkBytes = ChunkBits / 8;
     int unsigned row_start = (addr / this.bytes_per_word) * this.bytes_per_word;
 
     for (int unsigned lsb = 0; lsb < this.width; lsb += ChunkBits) begin
@@ -85,7 +114,7 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
       bit [71:0] enc = prim_secded_pkg::prim_secded_hamming_72_64_enc(chunk);
       bit [7:0] intg = enc[71:64];
       // Compute integrity word address and index
-      int unsigned intg_byte_addr = OtpIntgByteOffset + (row_start + lsb / 8) / ChunkBytes;
+      int unsigned intg_byte_addr = get_intg_byte_addr(row_start + lsb / 8);
       int unsigned intg_row_addr = (intg_byte_addr / this.bytes_per_word) * this.bytes_per_word;
       int unsigned byte_idx = intg_byte_addr - intg_row_addr;
       // Read the full row
