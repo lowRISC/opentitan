@@ -325,7 +325,8 @@
             In this test, passthrough feature is not tested.
             '''
       stage: V2
-      tests: ["chip_sw_sleep_pin_mio_dio_val"]
+      // TODO(#501): map to chip_sw_sleep_pin_mio_dio_val once it runs on Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_sleep_pin_wake
@@ -376,7 +377,7 @@
             - Repeat process for all mailboxes in the system
             '''
       stage: V2
-      tests: ["chip_sw_mbx_smoke"]
+      tests: ["chip_sw_mbx_smoketest"]
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -589,7 +590,8 @@
               not be reset.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
+      // TODO: map to chip_sw_pwrmgr_smoketest once pwrmgr_smoketest is ported to Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_aon_timer_wdog_bark_irq
@@ -677,7 +679,7 @@
             high value.
             '''
       stage: V2
-      tests: ["chip_plic_all_irqs"]
+      tests: ["chip_plic_all_irqs_0", "chip_plic_all_irqs_10"]
     }
     {
       name: chip_sw_plic_sw_irq
@@ -742,7 +744,8 @@
             watchdog event results, and verify the rstmgr crash dump info records the CSR address.
             '''
       stage: V2
-      tests: ["chip_sw_clkmgr_off_peri"]
+      // TODO: map to chip_sw_clkmgr_off_peri once the test no longer depends on flash.
+      tests: []
     }
     {
       name: chip_sw_clkmgr_jitter
@@ -759,10 +762,11 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
-              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
+              // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
-              "chip_sw_edn_entropy_reqs_jitter"]
+              // TODO: "chip_sw_edn_entropy_reqs_jitter" once edn_entropy_reqs_test is ported.
+             ]
     }
     {
       name: chip_sw_clkmgr_extended_range
@@ -789,7 +793,7 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
-              "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
+              // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
@@ -867,7 +871,8 @@
             state dependent corner cases with wakeup interactions.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
+      // TODO: map to chip_sw_pwrmgr_random_sleep_all_wake_ups once its sim cfg entry is enabled.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
@@ -882,7 +887,8 @@
             expected wakeup.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
+      // TODO: map to chip_sw_pwrmgr_normal_sleep_all_wake_ups once its sim cfg entry is enabled.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_sleep_all_reset_reqs
@@ -908,7 +914,8 @@
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+      // TODO: map to chip_sw_pwrmgr_deep_sleep_all_wake_ups once its sim cfg entry is enabled.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
@@ -921,7 +928,8 @@
             - esc reset is followed by normal mode because it does not work with sleep mode
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
+      // TODO: map to chip_sw_pwrmgr_deep_sleep_all_reset_reqs once its sim cfg entry is enabled.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
@@ -935,7 +943,8 @@
               with sleep mode
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
+      // TODO: map to chip_sw_pwrmgr_normal_sleep_all_reset_reqs once its sim cfg entry is enabled.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_wdog_reset
@@ -1030,7 +1039,8 @@
             - esc reset is followd by normal mode because it does not work with sleep mode
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
+      // TODO: map to chip_sw_pwrmgr_random_sleep_all_reset_reqs once its sim cfg entry is enabled.
+      tests: []
     }
     // {
     //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
@@ -1080,7 +1090,8 @@
             TODO(maturana) Add specific tests once they are developed.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
+      // TODO: map to chip_sw_pwrmgr_smoketest once pwrmgr_smoketest is ported to Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_rstmgr_sys_reset_info
@@ -1235,7 +1246,7 @@
             X-ref'ed with the automated PLIC test.
             '''
       stage: V2
-      tests: ["chip_plic_all_irqs"]
+      tests: ["chip_plic_all_irqs_0", "chip_plic_all_irqs_10"]
     }
     {
       name: chip_sw_alert_handler_entropy
@@ -1481,7 +1492,8 @@
             - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_dpe_key_derivation_prod"]
+      // TODO(#30923): map to chip_sw_keymgr_dpe_key_derivation_prod once it runs on Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_lc_ctrl_broadcast
@@ -1514,7 +1526,7 @@
         "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr
+        // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation", // lc_keymgr_en_o: keymgr
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
@@ -1726,7 +1738,8 @@
             X-ref'ed with keymgr test.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_dpe_key_derivation"]
+      // TODO(#30923): map to chip_sw_keymgr_dpe_key_derivation once it runs on Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_kmac_app_lc
@@ -1887,8 +1900,8 @@
             X'ref'ed with each IP test that requests entropy from EDN.
             '''
       stage: V2
-      tests: ["chip_sw_edn_entropy_reqs",
-              "chip_sw_csrng_edn_concurrency"]
+      // TODO: add chip_sw_edn_entropy_reqs once edn_entropy_reqs_test is ported to Darjeeling.
+      tests: ["chip_sw_csrng_edn_concurrency"]
     }
 
     // KEYMGR_DPE (pre-verified IP) integration tests:
@@ -1924,7 +1937,9 @@
             X-ref'ed with kmac test.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_dpe_key_derivation", "chip_sw_keymgr_dpe_key_derivation_jitter_en"]
+      // TODO(#30923): map to chip_sw_keymgr_dpe_key_derivation and
+      // chip_sw_keymgr_dpe_key_derivation_jitter_en once they run on Darjeeling.
+      tests: []
     }
     {
       name: chip_sw_keymgr_sideload_kmac
@@ -2141,7 +2156,8 @@
               | Reset due to a reset request |    Yes    |       No       |
             '''
       stage: V2
-      tests: ["chip_sw_sleep_sram_ret_contents"]
+      // TODO: map to chip_sw_sleep_sram_ret_contents once the test no longer depends on flash.
+      tests: []
     }
     {
       name: chip_sw_sram_execution
@@ -2227,7 +2243,7 @@
       stage: V2
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_keymgr_dpe_key_derivation",
+              // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
     }
@@ -2240,7 +2256,7 @@
             '''
       stage: V2
       tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_keymgr_dpe_key_derivation",
+              // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
     }
@@ -2436,7 +2452,8 @@
             Repeat 1-4 to check it is ok.
             '''
       stage: V2
-      tests: ["chip_sw_ast_clk_rst_inputs"]
+      // TODO: map to chip_sw_ast_clk_rst_inputs once the test no longer relies on ADC_CTRL.
+      tests: []
     }
     {
       name: chip_sw_ast_sys_clk_jitter
@@ -2449,10 +2466,11 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
-              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
+              // TODO(#30923): "chip_sw_keymgr_dpe_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
-              "chip_sw_edn_entropy_reqs_jitter"]
+              // TODO: "chip_sw_edn_entropy_reqs_jitter" once edn_entropy_reqs_test is ported.
+             ]
     }
     {
       name: chip_sw_ast_alerts
@@ -2461,7 +2479,8 @@
              X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
              '''
       stage: V2
-      tests: ["chip_sw_sensor_ctrl_alert"]
+      // Darjeeling has no sensor_ctrl.
+      tests: []
     }
 
     // SENSOR_CTRL tests:
@@ -2477,8 +2496,8 @@
                as either recoverable or fatal.
              '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
-              "chip_sw_sensor_ctrl_alert"]
+      // Darjeeling has no sensor_ctrl.
+      tests: []
     }
     {
       name: chip_sw_sensor_ctrl_ast_status
@@ -2489,7 +2508,8 @@
                from a sensor_ctrl register.
             '''
       stage: V2
-      tests: ["chip_sw_sensor_ctrl_status"]
+      // Darjeeling has no sensor_ctrl.
+      tests: []
     }
     {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
@@ -2498,7 +2518,8 @@
                AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
              '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      // Darjeeling has no sensor_ctrl.
+      tests: []
     }
 
     // soc_proxy tests:
@@ -2690,7 +2711,7 @@
             '''
       stage: V1
       tests: ["chip_sw_example_rom",
-              "chip_sw_example_flash",
+              // No flash on Darjeeling, so no chip_sw_example_flash.
               "chip_sw_uart_smoketest_signed",
               "chip_sw_example_manufacturer",
               "chip_sw_example_concurrency"
@@ -2714,7 +2735,7 @@
               "chip_sw_kmac_smoketest",
               "chip_sw_otbn_smoketest",
               "chip_sw_otp_ctrl_smoketest",
-              "chip_sw_pwrmgr_smoketest",
+              // TODO: "chip_sw_pwrmgr_smoketest" once pwrmgr_smoketest is ported to Darjeeling.
               "chip_sw_rv_plic_smoketest",
               "chip_sw_rv_timer_smoketest",
               "chip_sw_rstmgr_smoketest",

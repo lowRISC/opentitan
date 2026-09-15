@@ -114,10 +114,8 @@
     }
   ]
   regressions: [
-    {
-      name: smoke
-      tests: ["chip_sw_pwrmgr_smoketest"]
-    }
+    // TODO: add chip_sw_pwrmgr_smoketest to the smoke regression once pwrmgr_smoketest is
+    // ported to Darjeeling.
     {
       name: dif
       tests: ["chip_sw_aes_smoketest",
@@ -134,7 +132,7 @@
               "chip_sw_otbn_smoketest",
               "chip_sw_otp_ctrl_smoketest",
               "chip_sw_rv_plic_smoketest",
-              "chip_sw_pwrmgr_smoketest",
+              // TODO: "chip_sw_pwrmgr_smoketest" once pwrmgr_smoketest is ported to Darjeeling.
               "chip_sw_rv_timer_smoketest",
               "chip_sw_rstmgr_smoketest",
               "chip_sw_uart_smoketest",
