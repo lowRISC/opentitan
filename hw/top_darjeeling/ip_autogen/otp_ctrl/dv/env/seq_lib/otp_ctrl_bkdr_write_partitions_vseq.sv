@@ -38,6 +38,27 @@ class otp_ctrl_bkdr_write_partitions_vseq extends otp_ctrl_base_vseq;
 
     super.otp_ctrl_init();
 
+    // Fill each partition with random words first, so that bytes the items do not cover but the
+    // hardware digests are not left at zero.
+    for (int i = HwCfg0Offset; i < HwCfg0DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+    for (int i = HwCfg1Offset; i < HwCfg1DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+    for (int i = Secret0Offset; i < Secret0DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+    for (int i = Secret1Offset; i < Secret1DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+    for (int i = Secret2Offset; i < Secret2DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+    for (int i = Secret3Offset; i < Secret3DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_id)
     `DV_CHECK_STD_RANDOMIZE_FATAL(manuf_state)
     otp_ctrl_mem_bkdr_util_pkg::otp_write_hw_cfg0_partition(
