@@ -77,6 +77,17 @@ SW needs to configure the following registers to erase a slot:
 
 At the end of a successful erase operation, the secret of the destination slot is removed and the slot is marked as invalid.
 
+## Read Slot Metadata
+
+Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` at the corresponding slot index:
+*  `METADATA_LOW[i].VERSION` reports `max_key_version` of slot `i`.
+*  `METADATA_HIGH[i].VALID` reports whether slot `i` currently holds a valid DPE context.
+*  `METADATA_HIGH[i].BOOT_STAGE` reports the `boot_stage` of slot `i`.
+*  `METADATA_HIGH[i].POLICY` reports the `key_policy` of slot `i`.
+
+The secret key itself is never exposed through these registers.
+Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
+
 # Disable
 
 SW needs to configure the following registers to disable keymgr_dpe:
