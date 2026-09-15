@@ -10,15 +10,15 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct        | Type    | Act   |   Width | Description   |
-|:---------------|:-----------------------|:--------|:------|--------:|:--------------|
-| idle           | prim_mubi_pkg::mubi4   | uni     | req   |       1 |               |
-| output_valid   | logic                  | uni     | req   |       1 |               |
-| input_ready    | logic                  | uni     | req   |       1 |               |
-| lc_escalate_en | lc_ctrl_pkg::lc_tx     | uni     | rcv   |       1 |               |
-| edn            | edn_pkg::edn           | req_rsp | req   |       1 |               |
-| keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   |       1 |               |
-| tl             | tlul_pkg::tl           | req_rsp | rsp   |       1 |               |
+| Port Name      | Package::Struct            | Type    | Act   |   Width | Description   |
+|:---------------|:---------------------------|:--------|:------|--------:|:--------------|
+| idle           | prim_mubi_pkg::mubi4       | uni     | req   |       1 |               |
+| output_valid   | logic                      | uni     | req   |       1 |               |
+| input_ready    | logic                      | uni     | req   |       1 |               |
+| lc_escalate_en | lc_ctrl_pkg::lc_tx         | uni     | rcv   |       1 |               |
+| edn            | edn_pkg::edn               | req_rsp | req   |       1 |               |
+| keymgr_key     | keymgr_dpe_pkg::hw_key_req | uni     | rcv   |       1 |               |
+| tl             | tlul_pkg::tl               | req_rsp | rsp   |       1 |               |
 
 ## Security Alerts
 
