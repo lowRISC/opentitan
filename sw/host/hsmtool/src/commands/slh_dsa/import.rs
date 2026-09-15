@@ -65,7 +65,7 @@ impl Import {
         let wrapper: Wrap = self
             .unwrap_mechanism
             .ok_or(anyhow!(
-                "unwrap_mechanism is required when wrap is specified"
+                "unwrap_mechanism is required when unwrap is specified"
             ))?
             .into();
         let _key = wrapper.unwrap(session, key.as_bytes(), self.unwrap.as_deref(), template)?;
