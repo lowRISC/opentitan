@@ -44,6 +44,17 @@ item_name = Name.from_snake_case(item["name"])
 % endfor
 
     super.otp_ctrl_init();
+
+    // Fill each partition with random words first, so that bytes the items do not cover but the
+    // hardware digests are not left at zero.
+% for part in buf_parts:
+<%
+part_name_camel = Name.from_snake_case(part["name"]).as_camel_case()
+%>\
+    for (int i = ${part_name_camel}Offset; i < ${part_name_camel}DigestOffset; i += 4) begin
+      cfg.mem_bkdr_util_h.write32(i, $urandom);
+    end
+% endfor
 % for part in buf_parts:
 <%
 part_name_snake = Name.from_snake_case(part["name"]).as_snake_case()
