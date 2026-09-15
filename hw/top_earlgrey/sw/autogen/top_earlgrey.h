@@ -1140,28 +1140,29 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdRramCtrlRdFull = 160, /**< rram_ctrl_rd_full */
   kTopEarlgreyPlicIrqIdRramCtrlRdLvl = 161, /**< rram_ctrl_rd_lvl */
   kTopEarlgreyPlicIrqIdRramCtrlOpDone = 162, /**< rram_ctrl_op_done */
-  kTopEarlgreyPlicIrqIdRramCtrlCorrErr = 163, /**< rram_ctrl_corr_err */
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 164, /**< hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 165, /**< hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 166, /**< hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 167, /**< kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 168, /**< kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 169, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdOtbnDone = 170, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdKeymgrDpeOpDone = 171, /**< keymgr_dpe_op_done */
-  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 172, /**< csrng_cs_cmd_req_done */
-  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 173, /**< csrng_cs_entropy_req */
-  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 174, /**< csrng_cs_hw_inst_exc */
-  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 175, /**< csrng_cs_fatal_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 176, /**< entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 177, /**< entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 178, /**< entropy_src_es_observe_fifo_ready */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 179, /**< entropy_src_es_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 180, /**< edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 181, /**< edn0_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 182, /**< edn1_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 183, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdLast = 183, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdRramCtrlCorr1Err = 163, /**< rram_ctrl_corr1_err */
+  kTopEarlgreyPlicIrqIdRramCtrlCorr2Err = 164, /**< rram_ctrl_corr2_err */
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 165, /**< hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 166, /**< hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 167, /**< hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 168, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 169, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 170, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdOtbnDone = 171, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdKeymgrDpeOpDone = 172, /**< keymgr_dpe_op_done */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 173, /**< csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 174, /**< csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 175, /**< csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 176, /**< csrng_cs_fatal_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 177, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 178, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 179, /**< entropy_src_es_observe_fifo_ready */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 180, /**< entropy_src_es_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 181, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182, /**< edn0_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184, /**< edn1_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdLast = 184, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -1171,7 +1172,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[184];
+    top_earlgrey_plic_interrupt_for_peripheral[185];
 
 /**
  * PLIC Interrupt Target.
