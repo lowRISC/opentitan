@@ -100,8 +100,8 @@ typedef enum epmp_mode {
  * The `start` address is inclusive and the `end` address is exclusive.
  */
 typedef struct epmp_region {
-  uintptr_t start;
-  uintptr_t end;
+  ot_word_t start;
+  ot_word_t end;
 } epmp_region_t;
 
 /**
