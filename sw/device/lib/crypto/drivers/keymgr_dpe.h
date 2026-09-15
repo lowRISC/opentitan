@@ -5,10 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_KEYMGR_DPE_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_KEYMGR_DPE_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -54,6 +54,57 @@ typedef struct keymgr_dpe_output {
   uint32_t share0[kKeymgrDPEOutputShareNumWords];
   uint32_t share1[kKeymgrDPEOutputShareNumWords];
 } keymgr_dpe_output_t;
+
+/**
+ * Policy bits associated with the DPE context held in one HW slot.
+ */
+typedef struct keymgr_dpe_policy {
+  /**
+   * Set if this DPE context allows deriving further DPE contexts.
+   */
+  hardened_bool_t allow_child;
+  /**
+   * Set if the key for this slot is exportable.
+   */
+  hardened_bool_t exportable;
+  /**
+   * Set if further advance operations retain (do not erase) this slot.
+   */
+  hardened_bool_t retain_parent;
+} keymgr_dpe_policy_t;
+
+/**
+ * Boot stage associated with a DPE context.
+ * Mirrors `keymgr_dpe_boot_stage_e` in keymgr_dpe_pkg.sv.
+ */
+typedef enum keymgr_dpe_boot_stage {
+  kKeymgrDPEBootStageCreator = 0,
+  kKeymgrDPEBootStageOwnerInt = 1,
+  kKeymgrDPEBootStageOwner = 2,
+  kKeymgrDPEBootStageRuntime = 3,
+} keymgr_dpe_boot_stage_t;
+
+/**
+ * Output metadata from one HW slot.
+ */
+typedef struct keymgr_dpe_metadata {
+  /**
+   * Maximum allowed version for keys to be generated from this DPE context.
+   */
+  uint32_t max_key_version;
+  /**
+   * The current boot_stage of this DPE context.
+   */
+  keymgr_dpe_boot_stage_t boot_stage;
+  /**
+   * The current slot policy bits for this DPE context.
+   */
+  keymgr_dpe_policy_t slot_policy;
+  /**
+   * Validity of this DPE context.
+   */
+  hardened_bool_t valid;
+} keymgr_dpe_metadata_t;
 
 /**
  * Derive a key manager dpe key that is visible to software.
@@ -150,6 +201,18 @@ status_t keymgr_dpe_sideload_clear_otbn(void);
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_dpe_sideload_clear_hmac(void);
+
+/**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ *
+ * @param slot Index of the HW slot to read metadata from. Must be less than
+ * `KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT`.
+ * @param[out] metadata Metadata of the DPE context held in `slot`.
+ * @return OK, or `OTCRYPTO_BAD_ARGS` if `slot` is out of range.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_get_metadata(uint32_t slot,
+                                 keymgr_dpe_metadata_t *metadata);
 
 #ifdef __cplusplus
 }
