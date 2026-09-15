@@ -207,7 +207,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // Create the JTAG RV debugger instance.
     debugger = jtag_rv_debugger::type_id::create("debugger");
-    debugger.set_cfg(m_jtag_agent_cfg);
     debugger.num_harts = rv_dm_reg_pkg::NrHarts;
     debugger.num_triggers = 4;  // TODO: wire this from `top_earlgrey_pkg`.
 
@@ -278,8 +277,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     jtag_dmi_ral.sbcs.sbasize.set_reset(32);
     apply_jtag_dmi_ral_csr_excl();
 
-    // Finally, tell the debugger (which should already exist) about the register block we just
-    // created.
+    // Finally, tell the debugger (which should already exist) about the JTAG agent config and
+    // the register block we just created.
+    debugger.set_cfg(m_jtag_agent_cfg);
     debugger.set_ral(jtag_dmi_ral);
   endfunction
 
