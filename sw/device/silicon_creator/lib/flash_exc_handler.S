@@ -99,6 +99,34 @@ nvm_exception_handler:
   andi a1, a1, PHY_ERRORS
   beqz a1, .L_not_a_flash_error
 
+  // Check whether mtval points to flash memory
+  csrr a1, mtval
+
+  // Physical eflash
+  li   t0, TOP_EARLGREY_EFLASH_BASE_ADDR
+  sub  a2, a1, t0
+  li   t0, TOP_EARLGREY_EFLASH_SIZE_BYTES
+  bltu a2, t0, .L_is_valid_flash_addr
+
+  // ROM_EXT virtual window
+  lui  t0, %hi(_rom_ext_virtual_start_address)
+  addi t0, t0, %lo(_rom_ext_virtual_start_address)
+  sub  a2, a1, t0
+  lui  t0, %hi(_rom_ext_virtual_size)
+  addi t0, t0, %lo(_rom_ext_virtual_size)
+  bltu a2, t0, .L_is_valid_flash_addr
+
+  // Owner virtual window
+  lui  t0, %hi(_owner_virtual_start_address)
+  addi t0, t0, %lo(_owner_virtual_start_address)
+  sub  a2, a1, t0
+  lui  t0, %hi(_owner_virtual_size)
+  addi t0, t0, %lo(_owner_virtual_size)
+  bltu a2, t0, .L_is_valid_flash_addr
+
+  j    .L_not_a_flash_error
+
+.L_is_valid_flash_addr:
   // Clear the flash error.
   sw   x0, FLASH_CTRL_FAULT_STATUS_REG_OFFSET(a3)
   // Hardening: check that the error is cleared.
