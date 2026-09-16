@@ -23,7 +23,7 @@ enum {
   /* Number of bytes in a P-256 private key. */
   kP256PrivateKeyBytes = 256 / 8,
   /* Number of bytes in an ECDH/P-256 shared key. */
-  kP256SharedKeyBytes = 256 / 8,
+  kP256SharedKeyBytes = 512 / 8,
   /* Number of 32-bit words in an ECDH/P-256 shared key. */
   kP256SharedKeyWords = kP256SharedKeyBytes / sizeof(uint32_t),
 };
@@ -142,6 +142,16 @@ status_t key_exchange_test(void) {
   TRY(hardened_xor(keyA0, keyA1, kP256SharedKeyWords, keyA));
   TRY(hardened_xor(keyB0, keyB1, kP256SharedKeyWords, keyB));
   CHECK_ARRAYS_EQ(keyA, keyB, ARRAYSIZE(keyA));
+
+  // Sanity check that x- and y-coordinates of the shared secret are sound.
+  otcrypto_unblinded_key_t shared_point = {
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = sizeof(keyA),
+      .key = keyA,
+  };
+  hardened_bool_t on_curve = kHardenedBoolFalse;
+  TRY(otcrypto_ecc_p256_point_on_curve(&shared_point, &on_curve));
+  CHECK(on_curve == kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }

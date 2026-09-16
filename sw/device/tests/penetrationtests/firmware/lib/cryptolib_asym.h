@@ -59,6 +59,12 @@ enum {
   kPentestP256Bytes = 256 / 8,
   kPentestP256Words = kPentestP256Bytes / sizeof(uint32_t),
   /**
+   * ECDH/P256 shared secret parameters.
+   */
+  kPentestP256SharedSecretBytes = 2 * kPentestP256Bytes,
+  kPentestP256SharedSecretWords =
+      kPentestP256SharedSecretBytes / sizeof(uint32_t),
+  /**
    * P384 parameters.
    */
   kPentestP384Bytes = 384 / 8,
