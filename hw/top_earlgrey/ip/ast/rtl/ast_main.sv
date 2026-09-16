@@ -31,8 +31,8 @@ module ast_main (
   input logic rst_ast_es_ni,
   input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i,
   // Inter-domain communication
-  input ast_aon_main_pkg::aon_to_main_t aon_to_main_i,
-  output ast_aon_main_pkg::main_to_aon_t main_to_aon_o,
+  input ast_pkg::aon_to_main_t aon_to_main_i,
+  output ast_pkg::main_to_aon_t main_to_aon_o,
   // Clock bypass interface
   input  logic clk_ast_ext_i,
   input  logic clk_src_sys_en_i,
@@ -62,7 +62,6 @@ module ast_main (
 );
 
 import ast_pkg::* ;
-import ast_aon_main_pkg::* ;
 
 ///////////////////////////////////////
 // TLUL Register Interface
@@ -138,7 +137,7 @@ prim_mubi4_sync #(
 ///////////////////////////////////////
 // Inter-domain Interface Unpacking
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
+ast_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
 assign clks_byp_aon_to_main = aon_to_main_i.clks_byp;
 
 ///////////////////////////////////////
@@ -238,7 +237,7 @@ usb_clk u_usb_clk (
 ///////////////////////////////////////
 // Main Domain Clock Bypass
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
+ast_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
 logic clk_src_sys, clk_src_io, clk_src_usb;
 
 `ifdef AST_BYPASS_CLK

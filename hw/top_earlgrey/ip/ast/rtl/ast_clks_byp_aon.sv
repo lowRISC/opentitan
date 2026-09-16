@@ -14,7 +14,7 @@
 `include "prim_assert.sv"
 
 module ast_clks_byp_aon
-  import ast_aon_main_pkg::*;
+  import ast_pkg::*;
 (
   // Power OK signals
   input  logic vcaon_pok_i,                 // VCAON POK

@@ -122,19 +122,18 @@ module ast_aon (
   output scan_reset_no,                          // Scan Reset output
 
   // Inter-domain communication
-  output ast_aon_main_pkg::aon_to_main_t aon_to_main_o,
-  input ast_aon_main_pkg::main_to_aon_t main_to_aon_i
+  output ast_pkg::aon_to_main_t aon_to_main_o,
+  input ast_pkg::main_to_aon_t main_to_aon_i
 );
 
 import ast_pkg::* ;
 import ast_reg_pkg::* ;
-import ast_aon_main_pkg::* ;
 import ast_bhv_pkg::* ;
 
 ///////////////////////////////////////
 // Inter-domain Interface Unpacking (OS simplified)
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
+ast_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
 assign clks_byp_main_to_aon = main_to_aon_i.clks_byp;
 
 logic scan_mode, shift_en, scan_reset_n;
@@ -364,7 +363,7 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 logic clk_src_aon;
 
 // Inter-domain interface signal for clock bypass (clks_byp_main_to_aon declared earlier)
-ast_aon_main_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
+ast_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
 
 // AON clock bypass - simplified for OS domain-split
 ast_clks_byp_aon u_ast_clks_byp_aon (

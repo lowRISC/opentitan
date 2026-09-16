@@ -151,11 +151,10 @@ module ast (
   output scan_reset_no                          // Scan Reset output
 );
 
-import ast_aon_main_pkg::*;
 
 // Inter-domain communication signals
-ast_aon_main_pkg::aon_to_main_t aon_to_main;
-ast_aon_main_pkg::main_to_aon_t main_to_aon;
+ast_pkg::aon_to_main_t aon_to_main;
+ast_pkg::main_to_aon_t main_to_aon;
 
 // Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
 ast_pkg::tpm_rm_t tpram_rm;

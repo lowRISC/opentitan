@@ -37,7 +37,6 @@ filesets:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
-      - rtl/ast_aon_main_pkg.sv
       - rtl/ast.sv
       - rtl/ast_aon.sv
       - rtl/ast_main.sv
