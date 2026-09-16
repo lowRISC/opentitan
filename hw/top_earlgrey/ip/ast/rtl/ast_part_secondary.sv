@@ -33,7 +33,7 @@ module ast_part_secondary #(
   input clk_ast_usb_i,                        // Buffered AST USB Clock
   input rst_ast_usb_ni,                       // Buffered AST USB Reset
   input clk_ast_ext_i,                        // Buffered AST External Clock
-  input por_ni,                               // Power ON Reset
+  input por_n_i,                              // Power ON Reset
 
   // sensed clocks / resets
   input clkmgr_pkg::clkmgr_out_t sns_clks_i,  // Sensed Clocks
@@ -179,7 +179,7 @@ logic rst_poks_n, rst_poks_por_n, por_sync_n;
 logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_brout;
 
 assign rst_poks_n = vcc_pok_str && vcaon_pok;
-assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_ni;
+assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_n_i;
 assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
 // Reset De-Assert Sync
@@ -672,14 +672,14 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 // Note: RNG assertions moved to ast_part_primary.sv
 // TLUL and InitDone asserts are now in ast_part_primary.sv
 // POs
-`ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(VioaPokKnownO_A, ast_pwst_o.io_pok[0], clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(ViobPokKnownO_A, ast_pwst_o.io_pok[1], clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(VcaonPokHKnownO_A, ast_pwst_h_o.aon_pok, clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(VcmainPokHKnownO_A, ast_pwst_h_o.main_pok, clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_ni)
-`ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(VioaPokKnownO_A, ast_pwst_o.io_pok[0], clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(ViobPokKnownO_A, ast_pwst_o.io_pok[1], clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(VcaonPokHKnownO_A, ast_pwst_h_o.aon_pok, clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(VcmainPokHKnownO_A, ast_pwst_h_o.main_pok, clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_n_i)
 // FLASH/OTP
 `ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)

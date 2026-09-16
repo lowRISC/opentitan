@@ -189,7 +189,7 @@ ast_part_secondary #(
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
   .rst_ast_tlul_ni         ( rst_ast_tlul_ni ),
   .clk_ast_ext_i           ( clk_ast_ext_i ),
-  .por_ni                  ( por_ni ),
+  .por_n_i                 ( por_ni ),
   .sns_clks_i              ( sns_clks_i ),
   .sns_rsts_i              ( sns_rsts_i ),
   .sns_spi_ext_clk_i       ( sns_spi_ext_clk_i ),
