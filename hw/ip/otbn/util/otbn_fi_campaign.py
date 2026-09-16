@@ -176,8 +176,8 @@ def run_test_and_get_dmem(
     sim = FISim(fi_skip_pc=skip_pc, fi_skip_occurrence=skip_occurrence)
     exp_end_addr = load_elf(sim, elf_path)
 
-    key0 = int((str("deadbeef") * 12), 16)
-    key1 = int((str("baadf00d") * 12), 16)
+    key0 = int((str("deadbeef") * 16), 16)
+    key1 = int((str("baadf00d") * 16), 16)
     sim.state.wsrs.set_sideload_keys(key0, key1)
 
     if dmem_json:

@@ -482,8 +482,8 @@ def run_experiment(
         sim = TVLASim(trace_hw_file=trace_hw)
         load_elf(sim, elf_path)
 
-        key0 = int((str("deadbeef") * 12), 16)
-        key1 = int((str("baadf00d") * 12), 16)
+        key0 = int((str("deadbeef") * 16), 16)
+        key1 = int((str("baadf00d") * 16), 16)
         sim.state.wsrs.set_sideload_keys(key0, key1)
 
         sim.run_batch(
@@ -586,8 +586,8 @@ def generate_reference_trace(
         sim = TVLASim(trace_hw_file=ref_trace_file)
         load_elf(sim, elf_path)
 
-        key0 = int((str("deadbeef") * 12), 16)
-        key1 = int((str("baadf00d") * 12), 16)
+        key0 = int((str("deadbeef") * 16), 16)
+        key1 = int((str("baadf00d") * 16), 16)
         sim.state.wsrs.set_sideload_keys(key0, key1)
 
         sim.run_batch(verbose=False, batch_size=1, dmem_batch_data=[parsed_dmem])

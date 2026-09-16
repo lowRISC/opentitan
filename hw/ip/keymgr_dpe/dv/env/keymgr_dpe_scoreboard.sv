@@ -321,7 +321,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       UpdateInternalKey: begin
         // flag a key slot comparison
         compare_internal_key_slot = 1;
-        // digest is 384 bits wide while internal key is only 256, need to truncate it
+        // digest is 512 bits wide while internal key is only 256, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key =
           {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
            txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
@@ -378,7 +378,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       UpdateSwOut: begin
         if (!get_fault_err && !get_invalid_op()) begin
           bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
-          // digest is 384 bits wide while SW output is only 256, need to truncate it
+          // digest is 512 bits wide while SW output is only 256, need to truncate it
           sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
                              txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
           foreach (sw_share_output[i, j]) begin

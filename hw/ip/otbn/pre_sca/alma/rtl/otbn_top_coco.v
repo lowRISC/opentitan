@@ -8,7 +8,7 @@ module otbn_top_coco #(
   // Data path width for BN (wide) instructions, in bits.
   parameter WLEN = 256,
   // Sideload key data width
-  parameter SideloadKeyWidth = 384
+  parameter SideloadKeyWidth = 512
 ) (
   input clk_sys,
   input rst_sys_n,

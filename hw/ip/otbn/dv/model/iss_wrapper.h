@@ -87,8 +87,8 @@ struct ISSWrapper {
   void edn_urnd_step(uint32_t edn_urnd_data);
 
   // Provide keymgr values to model
-  void set_keymgr_value(const std::array<uint32_t, 12> &key0_arr,
-                        const std::array<uint32_t, 12> &key1_arr, bool valid);
+  void set_keymgr_value(const std::array<uint32_t, 16> &key0_arr,
+                        const std::array<uint32_t, 16> &key1_arr, bool valid);
 
   // Signals that the received OTP key is valid in the RTL.
   void otp_key_cdc_done();

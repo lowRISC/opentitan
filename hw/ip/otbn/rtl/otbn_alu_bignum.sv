@@ -750,12 +750,12 @@ module otbn_alu_bignum
       {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}}, flags_flattened};
 
   // SEC_CM: KEY.SIDELOAD
-  assign ispr_rdata_no_intg_mux_in[IsprKeyS0LNoIntg] = sideload_key_shares_i[0][255:0];
+  assign ispr_rdata_no_intg_mux_in[IsprKeyS0LNoIntg] = sideload_key_shares_i[0][WLEN-1:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS0HNoIntg] =
-      {{(WLEN - (SideloadKeyWidth - 256)){1'b0}}, sideload_key_shares_i[0][SideloadKeyWidth-1:256]};
-  assign ispr_rdata_no_intg_mux_in[IsprKeyS1LNoIntg] = sideload_key_shares_i[1][255:0];
+      sideload_key_shares_i[0][SideloadKeyWidth-1:WLEN];
+  assign ispr_rdata_no_intg_mux_in[IsprKeyS1LNoIntg] = sideload_key_shares_i[1][WLEN-1:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1HNoIntg] =
-      {{(WLEN - (SideloadKeyWidth - 256)){1'b0}}, sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+      sideload_key_shares_i[1][SideloadKeyWidth-1:WLEN];
   assign ispr_rdata_no_intg_mux_in[IsprInsnCntNoIntg] = {{(WLEN - 32){1'b0}}, insn_cnt_i};
 
   assign ispr_rdata_no_intg_mux_in[IsprKmacStatusNoIntg] =

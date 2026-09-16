@@ -545,10 +545,10 @@ countermeasures: [
             { value: "3",
               name: "OTBN",
               desc: '''
-                OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
+                OTBN selected.  Note for OTBN hardware operations, the generated output is 512-bits, while for all
                 other operations (including OTBN software), it is 256-bits.
 
-                Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
+                Generating a hardware 512-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
                 When generating for software, this is not a concern.
                 '''
             },

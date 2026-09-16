@@ -338,18 +338,18 @@ call_stack_3:
   bn.wsrr w1, 0x4
   bn.add w2, w2, w1
 
-  # w1 = KEY_S0H = 0xdeadbeef_deadbeef_deadbeef_deadbeef
-  # w2 = w2 + w1 = w2 + KEY_S0H = 0x8958699a_78475889_8958699a_7847588a_6806288a_56f51779_6806288a_56f51777
+  # w1 = KEY_S0H = 0xdeadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef
+  # w2 = w2 + w1 = w2 + KEY_S0H = 0x6806288a_56f51779_6806288a_56f51779_6806288a_56f51779_6806288a_56f51777
   bn.wsrr w1, 0x5
   bn.add w2, w2, w1
 
   # w1 = KEY_S1L = 0xbaadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d
-  # w2 = w2 + w1 = w2 + KEY_S1L = 0x440659a8_32f54897_440659a8_32f54898_22b41898_11a30787_22b41898_11a30784
+  # w2 = w2 + w1 = w2 + KEY_S1L = 0x22b41898_11a30787_22b41898_11a30787_22b41898_11a30787_22b41898_11a30784
   bn.wsrr w1, 0x6
   bn.add w2, w2, w1
 
-  # w1 = KEY_S1H = 0xbaadf00d_baadf00d_baadf00d_baadf00d
-  # w2 = w2 + w1 = w2 + KEY_S1H = 0x440659a8_32f54897_440659a8_32f54898_dd6208a5_cc50f794_dd6208a5_cc50f791
+  # w1 = KEY_S1H = 0xbaadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d
+  # w2 = w2 + w1 = w2 + KEY_S1H = 0xdd6208a5_cc50f794_dd6208a5_cc50f794_dd6208a5_cc50f794_dd6208a5_cc50f791
   bn.wsrr w1, 0x7
   bn.add w2, w2, w1
 .endif
