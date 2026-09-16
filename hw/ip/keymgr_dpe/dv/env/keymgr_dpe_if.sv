@@ -306,7 +306,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
       end
       keymgr_dpe_pkg::Otbn: begin
         if (otbn_sideload_status != SideLoadClear) begin
-          // only otbn uses full 384 bits digest data
+          // only otbn uses full 512 bits digest data
           otbn_key_exp         <= '{1'b1, wide_key_shares};
           otbn_sideload_status <= SideLoadAvail;
         end
