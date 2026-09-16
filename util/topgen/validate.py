@@ -12,7 +12,9 @@ from reggen.ip_block import IpBlock
 from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
-from topgen.lib import find_module, find_modules
+from topgen.lib import (PART_PRIMARY, PART_SECONDARY, PART_BOTH, find_module, find_modules,
+                        get_partitions_of, get_conns_for, get_domain_of_partition,
+                        secondary_key)
 
 # For the reference
 # val_types = {
@@ -259,6 +261,9 @@ eflash_optional = {}
 
 eflash_added = {}
 
+# The keys describe the primary partition. A split IP has a 2nd set of such keys suffixed with
+# PART_SECONDARY for the secondary partition.
+# normalize_partition_connections() generates this 2nd set. See also below.
 module_required = {
     'name': ['s', 'name of the instance'],
     'type': ['s', 'comportable IP type'],
@@ -269,8 +274,25 @@ module_required = {
 
 module_optional = {
     'domain': [
-        's', 'power domain of the module, defaults to the domain specified '
-        'in top["power"]["default"]'
+        's', 'power domain of the module (of its primary partition), defaults '
+        'to the domain specified in top["power"]["default"]'
+    ],
+    'domain_secondary': [
+        's', 'power domain of the secondary partition. Required for a split '
+        'IP. It may name the same domain as "domain", in which case both '
+        'partitions are emitted into one domain.'
+    ],
+    'clock_srcs_secondary': [
+        'g', 'dict with clock sources of the secondary partition'
+    ],
+    'clock_group_secondary': [
+        's', 'clock group of the secondary partition'
+    ],
+    'reset_connections_secondary': [
+        'g', 'dict with reset sources of the secondary partition'
+    ],
+    'is_split_ip': [
+        'pb', 'whether this IP is split into a primary and secondary partition'
     ],
     'clock_reset_export': [
         'l', 'optional list with prefixes for exported '
@@ -330,6 +352,9 @@ module_optional = {
 
 module_added = {
     'clock_connections': ['g', 'generated clock connections'],
+    'clock_connections_secondary': [
+        'g', 'generated clock connections of the secondary partition'
+    ],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
@@ -416,6 +441,7 @@ alert_optional = {
     'lpg_name': ['s', 'the low power group of the alert'],
     'lpg_idx': ['d', 'the index in the lpg group'],
     'type': ['s', 'should contain "alert"'],
+    'partition': ['s', 'for a split IP, the owning partition of this alert'],
 }
 alert_added = {}
 
@@ -433,6 +459,7 @@ interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
     'plic': ['s', 'controller for this interrupt'],
+    'partition': ['s', 'for a split IP, the owning partition of this interrupt'],
 }
 interrupt_added = {}
 
@@ -450,6 +477,10 @@ param_optional = {
     'randtype': ['s', 'whether it is for "data" or "perm"issions'],
     'randwidth': ['d', 'the number of bits'],
     'unpacked_dimensions': ['s', 'the unpacked dimensions for arrays'],
+    'partition': [
+        's', 'defines for a split IP, to which the parameter belongs to.'
+        f'Can be {PART_PRIMARY}, {PART_SECONDARY} or {PART_BOTH}.'
+    ],
 }
 param_added = {}
 
@@ -472,6 +503,9 @@ inter_sig_optional = {
     'default': ['s', 'TODO'],
     'end_idx': ['d', 'TODO'],
     'top_signame': ['s', 'TODO'],
+    'partition': [
+        's', 'for a split IP, the partition that owns this inter-module signal'
+    ],
 }
 inter_sig_added = {}
 
@@ -1026,36 +1060,17 @@ def check_wakeups(top: ConfigT, component: str) -> int:
     return error
 
 
-# Checks the following
-# - For each defined reset connection in top*.hjson, there exists a defined
-#   port at the destination and defined reset net
-# - There are the same number of defined connections as there are ports
-def validate_reset(top: ConfigT,
-                   module: ConfigT,
-                   inst: Union[IpBlock, ConfigT],
-                   unmanaged_reset_nets: List[str],
-                   prefix="") -> int:
-    # Gather inst port list
+def _check_reset_connections(top: ConfigT,
+                             module: ConfigT,
+                             reset_connections: ConfigT,
+                             reset_signals: List[str],
+                             domain: str,
+                             reset_nets: List[str],
+                             unmanaged_reset_nets: List[str],
+                             name: str,
+                             prefix: str) -> int:
+    '''Check the reset connections of one partition of a module instance.'''
     error = 0
-
-    # all defined clock/reset nets
-    if isinstance(top['resets'], Resets):
-        reset_nets = [reset.name for reset in top['resets'].nodes.values()]
-    else:
-        reset_nets = [reset['name'] for reset in top['resets']['nodes']]
-
-    # Handle either an IpBlock (generated by reggen) or an OrderedDict
-    # (generated by topgen for a crossbar)
-    if isinstance(inst, IpBlock):
-        name = inst.name
-        reset_signals = inst.clocking.reset_signals()
-    else:
-        name = inst['name']
-        reset_signals = ([inst.get('reset_primary', 'rst_ni')] +
-                         inst.get('other_reset_list', []))
-
-    log.info(f"{prefix} {name} resets are {reset_signals}")
-
     # Check if reset connections are properly formatted
     # There are two options
     # The reset connection for a particular port must be a str
@@ -1063,11 +1078,11 @@ def validate_reset(top: ConfigT,
     # If value is a string, the module can only have ONE domain
     # If value is a dict, it must have the keys name / domain, and the
     # value of domain must match that defined for the module.
-    for port, reset in module['reset_connections'].items():
+    for port, reset in reset_connections.items():
         if isinstance(reset, str):
-            module['reset_connections'][port] = {}
-            module['reset_connections'][port]['name'] = reset
-            module['reset_connections'][port]['domain'] = top['power']['default']
+            reset_connections[port] = {}
+            reset_connections[port]['name'] = reset
+            reset_connections[port]['domain'] = domain
 
         elif isinstance(reset, dict):
             error += check_keys(reset, reset_connection_required,
@@ -1086,12 +1101,12 @@ def validate_reset(top: ConfigT,
                       f"of type string or dict")
 
     # Check if the reset connections are fully populated
-    if len(module['reset_connections']) != len(reset_signals):
+    if len(reset_connections) != len(reset_signals):
         error += 1
         log.error(f"{prefix} {name} mismatched number of reset ports and nets")
 
     missing_port = [
-        port for port in module['reset_connections'].keys()
+        port for port in reset_connections.keys()
         if port not in reset_signals
     ]
 
@@ -1101,7 +1116,7 @@ def validate_reset(top: ConfigT,
         [log.error(f"{port}") for port in missing_port]
 
     missing_net = [
-        net['name'] for net in module['reset_connections'].values()
+        net['name'] for net in reset_connections.values()
         if net['name'] not in reset_nets + unmanaged_reset_nets
     ]
 
@@ -1114,33 +1129,74 @@ def validate_reset(top: ConfigT,
 
 
 # Checks the following
-# - For each defined clock_src in top*.hjson, there exists a defined port at
-#   the destination and defined clock source
+# - For each defined reset connection in top*.hjson, there exists a defined
+#   port at the destination and defined reset net
 # - There are the same number of defined connections as there are ports
-def validate_clock(top: ConfigT,
+def validate_reset(top: ConfigT,
+                   module: ConfigT,
                    inst: Union[IpBlock, ConfigT],
-                   clock_srcs: List[str],
-                   unmanaged_clock_srcs: List[str],
+                   unmanaged_reset_nets: List[str],
                    prefix="") -> int:
     # Gather inst port list
     error = 0
 
-    # Handle either an IpBlock (generated by reggen) or an OrderedDict
-    # (generated by topgen for a crossbar)
+    # all defined clock/reset nets
+    if isinstance(top['resets'], Resets):
+        reset_nets = [reset.name for reset in top['resets'].nodes.values()]
+    else:
+        reset_nets = [reset['name'] for reset in top['resets']['nodes']]
+
+    # Handle either an IpBlock or an OrderedDict representing a crossbar.
+    # A crossbar can never be split, so it has a single primary partition whose
+    # signals come from its own dict.
     if isinstance(inst, IpBlock):
         name = inst.name
-        clock_signals = inst.clocking.clock_signals(False)
+        partition_resets = {p: inst.clocking.reset_signals(p)
+                            for p in inst.clocking.partitions}
     else:
         name = inst['name']
-        clock_signals = ([inst.get('clock_primary', 'rst_ni')] +
-                         inst.get('other_clock_list', []))
+        partition_resets = {
+            PART_PRIMARY: ([inst.get('reset_primary', 'rst_ni')] +
+                           inst.get('other_reset_list', []))
+        }
 
-    if len(top['clock_srcs']) != len(clock_signals):
+    # Flatten the reset signals for logging purposes.
+    reset_signals = [s for signals in partition_resets.values()
+                     for s in signals]
+    log.info(f"{prefix} {name} resets are {reset_signals}")
+
+    default_domain = top['power']['default']
+
+    # Validate each partition's connections against the reset signals of that
+    # same partition. The instance and the IP must agree the partitions.
+    for partition, reset_connections in get_conns_for(module,
+                                                      'reset_connections'):
+        if partition not in partition_resets:
+            error += 1
+            log.error(f"{prefix} {name} connects resets for its {partition} "
+                      "partition, but the IP declares no clocking for it")
+            continue
+        error += _check_reset_connections(
+            top, module, reset_connections, partition_resets[partition],
+            get_domain_of_partition(module, partition, default_domain),
+            reset_nets, unmanaged_reset_nets, name, prefix)
+
+    return error
+
+
+def _check_clock_srcs(clock_srcs_map: ConfigT,
+                      clock_signals: List[str],
+                      clock_srcs: List[str],
+                      unmanaged_clock_srcs: List[str],
+                      name: str,
+                      prefix: str) -> int:
+    error = 0
+    if len(clock_srcs_map) != len(clock_signals):
         error += 1
         log.error(f"{prefix} {name} mismatched number of clock ports and nets")
 
     missing_port = [
-        port for port in top['clock_srcs'].keys() if port not in clock_signals
+        port for port in clock_srcs_map.keys() if port not in clock_signals
     ]
 
     if missing_port:
@@ -1149,7 +1205,7 @@ def validate_clock(top: ConfigT,
         [log.error(f"{port}") for port in missing_port]
 
     missing_net = []
-    for port, net in top['clock_srcs'].items():
+    for _, net in clock_srcs_map.items():
         net_name = net['clock'] if isinstance(net, Dict) else net
 
         if net_name not in clock_srcs and net_name not in unmanaged_clock_srcs:
@@ -1159,6 +1215,54 @@ def validate_clock(top: ConfigT,
         error += 1
         log.error(f"{prefix} {name} Following clock nets do not exist:")
         [log.error(f"{net}") for net in missing_net]
+
+    return error
+
+
+# Checks the following
+# - For each defined clock_src in top*.hjson, there exists a defined port at
+#   the destination and defined clock source
+# - There are the same number of defined connections as there are ports
+def validate_clock(module: ConfigT,
+                   inst: Union[IpBlock, ConfigT],
+                   clock_srcs: List[str],
+                   unmanaged_clock_srcs: List[str],
+                   prefix="") -> int:
+    error = 0
+
+    # Handle either an IpBlock or an OrderedDict representing a crossbar.
+    # A crossbar can never be split, so it has a single primary partition whose
+    # clocks come from its own dict.
+    if isinstance(inst, IpBlock):
+        name = inst.name
+        partition_clocks = {p: inst.clocking.clock_signals(False, p)
+                            for p in inst.clocking.partitions}
+    else:
+        name = inst['name']
+        partition_clocks = {
+            PART_PRIMARY: ([inst.get('clock_primary', 'rst_ni')] +
+                           inst.get('other_clock_list', []))
+        }
+
+    # Validate each partition's connections against the clock signals of that
+    # same partition. The instance and the IP must agree on the partitions.
+    described = set()
+    for partition, clock_srcs_map in get_conns_for(module, 'clock_srcs'):
+        described.add(partition)
+        if partition not in partition_clocks:
+            error += 1
+            log.error(f"{prefix} {name} defines clock sources for its "
+                      f"{partition} partition, but the IP declares no "
+                      "clocking for it")
+            continue
+        error += _check_clock_srcs(clock_srcs_map, partition_clocks[partition],
+                                   clock_srcs, unmanaged_clock_srcs, name,
+                                   prefix)
+
+    for partition in sorted(set(partition_clocks) - described):
+        error += 1
+        log.error(f"{prefix} {name} defines no clock sources for its "
+                  f"{partition} partition, which the IP clocks")
 
     return error
 
@@ -1197,6 +1301,23 @@ def validate_alert(top, module, block, handlers, default_handler=None):
     return errors
 
 
+def check_split_config(top: ConfigT):
+    '''Check that the split IP configuration matches the IP's definition.'''
+    for end_point in top['module']:
+        # Check that the instance is actually a split IP by comparing the
+        # is_split_ip flag with the presence of a secondary domain.
+        is_split = end_point.get('is_split_ip')
+        has_secondary_domain = secondary_key('domain') in end_point
+        if is_split and not has_secondary_domain:
+            raise ValueError(
+                f"{end_point['name']} is a split IP, but does not define "
+                f"{secondary_key('domain')}.")
+        if not is_split and has_secondary_domain:
+            raise ValueError(
+                f"{end_point['name']} names a {secondary_key('domain')}, but is not "
+                "marked is_split_ip.")
+
+
 def check_power_domains(top: ConfigT):
     # check that a default power domain is specified
     if 'default' not in top['power']:
@@ -1209,14 +1330,17 @@ def check_power_domains(top: ConfigT):
 
     # Check that each module, xbar, memory has a power domain defined.
     # If not, give it a default.
-    # If there is one defined, check that it is a valid definition
     for end_point in top['module'] + top['xbar']:
         if 'domain' not in end_point:
             end_point['domain'] = top['power']['default']
 
-        if end_point['domain'] not in top['power']['domains']:
-            raise ValueError(
-                f"{end_point['name']} defines invalid domain {end_point['domain']}")
+        # Check that the domains defined for each partition are valid.
+        for partition in get_partitions_of(end_point):
+            domain = get_domain_of_partition(end_point, partition)
+            if domain not in top['power']['domains']:
+                raise ValueError(
+                    f"{end_point['name']} defines invalid domain {domain} for "
+                    f"its {partition} partition")
 
 
 def check_modules(top: ConfigT, prefix: str) -> int:
@@ -1328,6 +1452,9 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
 
     # Power domain check
     check_power_domains(top)
+
+    # Check the split configuration
+    check_split_config(top)
 
     error += check_reset_requests(top, component)
     error += check_exported_resets(top, component)
