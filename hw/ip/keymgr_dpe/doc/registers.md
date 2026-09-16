@@ -177,13 +177,13 @@ Other values are reserved.
 Key manager operation controls
 - Offset: `0x18`
 - Reset default: `0x10`
-- Reset mask: `0x5df070`
+- Reset mask: `0x5df870`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "DEST_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SW_BINDING_ONLY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "DEST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SW_BINDING_ONLY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                  |
@@ -194,8 +194,8 @@ Key manager operation controls
 | 20:18  |   rw   |   0x0   | [SLOT_DST_SEL](#control_shadowed--slot_dst_sel)       |
 |   17   |        |         | Reserved                                              |
 | 16:14  |   rw   |   0x0   | [SLOT_SRC_SEL](#control_shadowed--slot_src_sel)       |
-| 13:12  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)               |
-|  11:7  |        |         | Reserved                                              |
+| 13:11  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)               |
+|  10:7  |        |         | Reserved                                              |
 |  6:4   |   rw   |   0x1   | [OPERATION](#control_shadowed--operation)             |
 |  3:0   |        |         | Reserved                                              |
 
@@ -220,7 +220,9 @@ This field should be programmed for both HW / SW generation, as this helps diver
 | 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                                  |
 | 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                                 |
 | 0x3     | OTBN   | OTBN selected.  Note for OTBN hardware operations, the generated output is 512-bits, while for all other operations (including OTBN software), it is 256-bits. Generating a hardware 512-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion. When generating for software, this is not a concern. |
+| 0x4     | HMAC   | HMAC selected.  Note for HMAC hardware operations, the generated output is 512-bits.                                                                                                                                                                                                                                                          |
 
+Other values are reserved.
 
 ### CONTROL_SHADOWED . OPERATION
 Key manager DPE operation selection
@@ -266,6 +268,7 @@ toggle the clear bit again (i.e. disable continuous clearing).
 | 0x1     | AES    | The AES sideload key is continuously cleared with entropy.  |
 | 0x2     | KMAC   | The KMAC sideload key is continuously cleared with entropy. |
 | 0x3     | OTBN   | The OTBN sideload key is continuously cleared with entropy. |
+| 0x4     | HMAC   | The HMAC sideload key is continuously cleared with entropy. |
 
 Other values are reserved.
 
