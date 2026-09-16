@@ -238,7 +238,100 @@ exports_files(["bl0_owner_upgrade.c"])
 
 exports_files(["bl0_self_signed_owner_upgrade.c"])
 
+exports_files(["bl0_owner_rollback.c"])
+
+exports_files(["bl0_rom_ext_flash_rollback.c"])
+
+manifest(d = {
+    "name": "rom_ext_flash_rollback_slot_a_manifest",
+    "address_translation": hex(CONST.HARDENED_TRUE),
+    "identifier": hex(CONST.OWNER),
+    "security_version": "2",
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
+    "name": "rom_ext_flash_rollback_slot_b_manifest",
+    "address_translation": hex(CONST.HARDENED_TRUE),
+    "identifier": hex(CONST.OWNER),
+    "security_version": "0",
+    "visibility": ["//visibility:public"],
+})
+
+opentitan_binary(
+    name = "bl0_rom_ext_flash_rollback_slot_b",
+    testonly = True,
+    srcs = [":bl0_rom_ext_flash_rollback.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = ":rom_ext_flash_rollback_slot_b_manifest",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_min_bl0_sec_ver",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+otp_json(
+    name = "otp_json_rom_ext_flash_rollback_fi",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                # Number of Ibex cycles to spin: we set this to the highest value
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0xffffffff",
+                # Set minimum security versions in OTP to 0 so fallback to default boot_data resets to 0
+                "CREATOR_SW_CFG_MIN_SEC_VER_BL0": "0x0",
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x0",
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
+                "CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x0),
+                # Turn off the ROM_EXT_IMM
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(0x0),
+                # We disable randomness since that messes with GDB
+                "CREATOR_SW_CFG_RNG_EN": otp_hex(0x0),
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # We set reproducible bitstreams for the tests
+                "RMA_TOKEN": "0000000000000005",
+                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
+                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
+            },
+            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_rom_ext_flash_rollback_fi",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_rom_ext_flash_rollback_fi",
+    ],
+)
+
 cc_library(
     name = "self_signed_owner_config_bin_h",
     hdrs = ["self_signed_owner_config_bin.h"],
+)
+
+cc_library(
+    name = "owner_rollback_config_bin_h",
+    hdrs = ["owner_rollback_config_bin.h"],
 )
