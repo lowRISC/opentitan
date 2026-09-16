@@ -95,13 +95,8 @@ module ast_part_secondary (
   output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_ao,      // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_ao,      // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks (clock bypass acks moved to ast_part_primary)
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
