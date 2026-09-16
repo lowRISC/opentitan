@@ -60,8 +60,8 @@ module otbn_top_sim (
   // Instruction counter (feeds into otbn.INSN_CNT in full block)
   logic [31:0]              insn_cnt;
   logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares;
-  assign sideload_key_shares[0] = {12{32'hDEADBEEF}};
-  assign sideload_key_shares[1] = {12{32'hBAADF00D}};
+  assign sideload_key_shares[0] = {16{32'hDEADBEEF}};
+  assign sideload_key_shares[1] = {16{32'hBAADF00D}};
   wide_hw_key_req_t keymgr_key;
   assign keymgr_key.key[0] = sideload_key_shares[0];
   assign keymgr_key.key[1] = sideload_key_shares[1];

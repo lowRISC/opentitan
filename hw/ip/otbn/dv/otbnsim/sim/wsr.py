@@ -202,7 +202,7 @@ class KeyTrace(Trace):
 
 
 class SideloadKey:
-    '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
+    '''Represents a sideloaded key, with 512 bits of data and a valid signal'''
     def __init__(self, name: str):
         self.name = name
         self._value: Optional[int] = None
@@ -226,7 +226,7 @@ class SideloadKey:
         keys to the WSR file in the RTL. Note that we do still report the
         change until the next commit.
         '''
-        assert value is None or (0 <= value < (1 << 384))
+        assert value is None or (0 <= value < (1 << 512))
         self._value = value
         self._new_value = (False, 0) if value is None else (True, value)
 
@@ -243,7 +243,7 @@ class SideloadKey:
 
 class KeyWSR(ISPR):
     def __init__(self, name: str, shift: int, key_reg: SideloadKey):
-        assert 0 <= shift < 384
+        assert 0 <= shift < 512
         super().__init__(name, 256)
         self._shift = shift
         self._key_reg = key_reg
