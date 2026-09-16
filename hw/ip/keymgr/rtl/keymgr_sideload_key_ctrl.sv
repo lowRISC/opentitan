@@ -68,9 +68,11 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   logic keys_en;
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
   logic [Shares-1:0][OtbnKeyWidth-1:0] data_truncated_otbn;
+  logic [Shares-1:0][kmac_pkg::AppDigestW-OtbnKeyWidth-1:0] unused_key;
   for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign data_truncated[i]      = data_i[i][KeyWidth-1:0];
     assign data_truncated_otbn[i] = data_i[i][OtbnKeyWidth-1:0];
+    assign unused_key[i]          = data_i[i][kmac_pkg::AppDigestW-1:OtbnKeyWidth];
   end
 
   // clear all keys when selected by software, or when

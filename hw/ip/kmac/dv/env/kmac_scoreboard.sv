@@ -1478,7 +1478,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
     // - the expected output length in bytes
     // - if we are using the xof version of kmac
     if (in_kmac_app) begin
-      // Static app interfaces always return 384 bits (48 bytes).
+      // Static app interfaces always return 512 bits (64 bytes).
       output_len_bytes = AppDigestW / 8;
       // xof_en is 1 when the padded output length is 0,
       // but this will never happen in KMAC_APP

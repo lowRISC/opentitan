@@ -308,7 +308,7 @@ Note, for SHA3-224 this does not divide properly.
 As such, the interface sends back 4 responses where the last one contains some bits which must be ignored.
 
 For KMAC the requested output length is fixed to `AppDigestW` bits.
-Therefore, the interface sends back `AppDigestW / DynAppDigestW = 384 / 64 = 6` responses.
+Therefore, the interface sends back `AppDigestW / DynAppDigestW = 512 / 64 = 8` responses.
 
 For SHAKE and cSHAKE the standard defines the `StateWidth` to be 1600 bits (Same as SHA3) and these algorithms produce `StateWidth - 2 * Strength` bits of digest per squeeze.
 A dynamic app interface then returns this digest data in `(StateWidth - 2 * Strength) / DynAppDigestW` responses.
