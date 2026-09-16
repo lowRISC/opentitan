@@ -255,9 +255,9 @@ ecdsa_verify:
 /**
  * Generate a shared key from a secret and public key (ECDH).
  *
- * Returns the shared key, which is the affine x-coordinate of (d*Q). The
- * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
- * x1).
+ * Returns the affine coordinates (x, y) of the shared point (d*Q). Each
+ * coordinate is expressed in boolean shares such that x = (x0 ^ x1) and
+ * y = (y0 ^ y1).
  *
  * If `ok` is false, the public key is invalid and the shared key is
  * meaningless. The value will be either HARDENED_BOOL_TRUE or
@@ -271,8 +271,10 @@ ecdsa_verify:
  * @param[in]   dmem[x]: Public key (Q) x-coordinate.
  * @param[in]   dmem[y]: Public key (Q) y-coordinate.
  * @param[out] dmem[ok]: Whether the public key is valid.
- * @param[out]  dmem[x]: x0, first share of shared key.
- * @param[out]  dmem[y]: x1, second share of shared key.
+ * @param[out] dmem[ecdh_x0]: x0, first share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_x1]: x1, second share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_y0]: y0, first share of shared key y-coordinate.
+ * @param[out] dmem[ecdh_y1]: y1, second share of shared key y-coordinate.
  */
 shared_key:
   /* Validate the public key (ends the program on failure). */
@@ -283,9 +285,11 @@ shared_key:
   addi     x3, x0, HARDENED_BOOL_TRUE
   sw       x3, 0(x2)
 
-  /* Generate boolean-masked shared key (d*Q).x.
-       dmem[x] <= x0
-       dmem[y] <= x1 */
+  /* Generate boolean-masked shared point (d*Q).
+       dmem[ecdh_x0] <= x0
+       dmem[ecdh_x1] <= x1
+       dmem[ecdh_y0] <= y0
+       dmem[ecdh_y1] <= y1 */
   jal      x1, p256_shared_key
 
   ecall
@@ -330,9 +334,9 @@ sideload_ecdsa_sign:
 /**
  * Generate a shared key from a keymgr-derived seed.
  *
- * Returns the shared key, which is the affine x-coordinate of (d*Q). The
- * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
- * x1).
+ * Returns the affine coordinates (x, y) of the shared point (d*Q). Each
+ * coordinate is expressed in boolean shares such that x = (x0 ^ x1) and
+ * y = (y0 ^ y1).
  *
  * If `ok` is false, the public key is invalid and the shared key is
  * meaningless. The value will be either HARDENED_BOOL_TRUE or
@@ -344,8 +348,10 @@ sideload_ecdsa_sign:
  * @param[in]   dmem[x]: Public key (Q) x-coordinate.
  * @param[in]   dmem[y]: Public key (Q) y-coordinate.
  * @param[out] dmem[ok]: Whether the public key is valid.
- * @param[out]  dmem[x]: x0, first share of shared key.
- * @param[out]  dmem[y]: x1, second share of shared key.
+ * @param[out] dmem[ecdh_x0]: x0, first share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_x1]: x1, second share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_y0]: y0, first share of shared key y-coordinate.
+ * @param[out] dmem[ecdh_y1]: y1, second share of shared key y-coordinate.
  */
 shared_key_from_seed:
   /* Generate secret key d in shares.
@@ -565,6 +571,24 @@ k1_io:
 .globl x_r
 .balign 32
 x_r:
+  .zero 32
+
+/* ECDH shared key output: boolean shares of the x- and y-coordinates. */
+.globl ecdh_x0
+.balign 32
+ecdh_x0:
+  .zero 32
+.globl ecdh_x1
+.balign 32
+ecdh_x1:
+  .zero 32
+.globl ecdh_y0
+.balign 32
+ecdh_y0:
+  .zero 32
+.globl ecdh_y1
+.balign 32
+ecdh_y1:
   .zero 32
 
 /* DRBG output to XOR with key manager seed. */
