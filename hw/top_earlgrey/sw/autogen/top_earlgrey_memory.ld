@@ -16,6 +16,11 @@ MEMORY {
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
 
+_rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
+_rom_ext_virtual_size = LENGTH(rom_ext_virtual);
+_owner_virtual_start_address = ORIGIN(owner_virtual);
+_owner_virtual_size = LENGTH(owner_virtual);
+
 /**
  * Exception frame at the top of main SRAM
  */
