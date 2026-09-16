@@ -10,6 +10,7 @@ It follows these specifications:
 * `RISC-V External Debug Support, version 0.13.2 <https://content.riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf>`_
 * `RISC-V Bit-Manipulation Extension, version 1.0.0 <https://github.com/riscv/riscv-bitmanip/releases/download/1.0.0/bitmanip-1.0.0-38-g865e7a7.pdf>`_ and `version 0.93 (draft from January 10, 2021) <https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.93.pdf>`_
 * `PMP Enhancements for memory access and execution prevention on Machine mode (Smepmp) version 1.0 <https://github.com/riscv/riscv-tee/blob/191b563b08b31cc2974d604a3b670d8666a2e093/Smepmp/Smepmp.pdf>`_
+* `CHERIoT Architecture specification - Version 1.0 <https://github.com/microsoft/cheriot-sail/releases/>`_
 
 Many features in the RISC-V specification are optional, and Ibex can be parametrized to enable or disable some of them.
 
@@ -17,6 +18,12 @@ Ibex can be parametrized to support either of the following two instruction sets
 
 * The RV32I Base Integer Instruction Set, version 2.1
 * The RV32E Base Integer Instruction Set, version 1.9 (draft from June 8, 2019)
+
+When the ``BaseIsa`` parameter is set to ``BaseIsaRV32IorCHERIoT``, Ibex can additionally operate as a CHERIoT processor.
+CHERIoT is a capability-based ISA extension providing hardware-enforced memory safety.
+The active mode (RV32I or CHERIoT) is selected at runtime via the ``cheriot_enable_i`` signal.
+This switch can be done exactly once. When CHERIoT mode is enabled it cannot be disabled again until reset.
+See :ref:`cheriot` for details.
 
 In addition, the following instruction set extensions are available.
 
@@ -62,6 +69,11 @@ In addition, the following instruction set extensions are available.
    * - **Smepmp** - PMP Enhancements for memory access and execution prevention on Machine mode
      - 1.0
      - always enabled in configurations with PMP see :ref:`PMP Enhancements<pmp-enhancements>`
+
+   * - **CHERIoT** - Capability Hardware Extension to RISC-V for Internet of Things
+     - 1.0
+     - optional. Enabled at runtime via ``cheriot_enable_i`` when ``BaseIsa == BaseIsaRV32IorCHERIoT``
+       (see :ref:`cheriot`)
 
 Ibex currently supports the following features according to the RISC-V Privileged Specification, version 1.12.
 

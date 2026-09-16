@@ -19,6 +19,7 @@ It describes the design in detail, discusses the verification approach and the r
    exception_interrupts
    pmp
    security
+   cheriot
    debug
    tracer
    verification

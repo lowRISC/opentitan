@@ -5,6 +5,10 @@ Control and Status Registers
 
 Ibex implements all the Control and Status Registers (CSRs) listed in the following table according to the RISC-V Privileged Specification, version 1.11.
 
+When CHERIoT mode is active (``BaseIsa == BaseIsaRV32IorCHERIoT`` and ``cheriot_enable_i == IbexMuBiOn``),
+additional CHERIoT-specific registers are accessible.
+These are summarised in a separate table below.
+
 +---------+--------------------+--------+-----------------------------------------------+
 | Address |   Name             | Access | Description                                   |
 +=========+====================+========+===============================================+
@@ -15,6 +19,8 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 |  0x304  | ``mie``            | WARL   | Machine Interrupt Enable Register             |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x305  | ``mtvec``          | WARL   | Machine Trap-Vector Base Address              |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x306  | ``mcounteren``     | WARL   | Machine Counter-Enable Register               |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x320  | ``mcountinhibit``  | RW     | Machine Counter-Inhibit Register              |
 +---------+--------------------+--------+-----------------------------------------------+
@@ -95,6 +101,31 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 |     .             .               .                    .                              |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0xB9F  | ``mhpmcounter31h`` | WARL   | Upper 32 bits of ``mhmpcounter31``            |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xBC1  | ``mshwm``          | WARL   | Machine Stack High Watermark (CHERIoT only)   |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xBC2  | ``mshwmb``         | WARL   | Machine Stack High Watermark Base (CHERIoT)   |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC00  | ``cycle``          | R      | Cycle Counter (U-mode alias of ``mcycle``)    |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC02  | ``instret``        | R      | Instructions-Retired (U-mode alias of         |
+|         |                    |        | ``minstret``)                                 |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC03  | ``hpmcounter3``    | R      | Performance-Monitoring Counter (U-mode alias) |
++---------+--------------------+--------+-----------------------------------------------+
+|     .             .               .                    .                              |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC1F  | ``hpmcounter31``   | R      | Performance-Monitoring Counter (U-mode alias) |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC80  | ``cycleh``         | R      | Upper 32 bits of ``cycle``                    |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC82  | ``instreth``       | R      | Upper 32 bits of ``instret``                  |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC83  | ``hpmcounter3h``   | R      | Upper 32 bits of ``hpmcounter3``              |
++---------+--------------------+--------+-----------------------------------------------+
+|     .             .               .                    .                              |
++---------+--------------------+--------+-----------------------------------------------+
+|  0xC9F  | ``hpmcounter31h``  | R      | Upper 32 bits of ``hpmcounter31``             |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0xF11  | ``mvendorid``      | R      | Machine Vendor ID                             |
 +---------+--------------------+--------+-----------------------------------------------+
@@ -187,6 +218,36 @@ Reset Value: ``0x0000_0001``
 +-------+--------------------------------------------------------------------------------------+
 | 1:0   | **MODE:** Always set to 2'b01 to indicate vectored interrupt handling (read-only).   |
 +-------+--------------------------------------------------------------------------------------+
+
+
+Machine Counter-Enable Register (mcounteren)
+--------------------------------------------
+
+CSR Address: ``0x306``
+
+Reset Value: ``0x0000_0000``
+
+``mcounteren`` is a WARL register that controls which performance counters are accessible in User Mode.
+When a bit is set, the corresponding counter can be read from U-mode, when clear, a U-mode access to that counter raises an illegal instruction exception.
+
++--------+------+-------------------------------------------------------------------------------------+
+| Bit#   | R/W  | Description                                                                         |
++========+======+=====================================================================================+
+| 31:3   | WARL | **HPMx:** Enable U-mode access to ``hpmcounterX`` / ``hpmcounterXh`` (bits 3–31,    |
+|        |      | where the bit index matches the counter number).                                    |
+|        |      | Bits above ``MHPMCounterNum + 2`` always read as zero.                              |
++--------+------+-------------------------------------------------------------------------------------+
+| 2      | RW   | **IR:** Enable U-mode access to ``instret`` / ``instreth``.                         |
++--------+------+-------------------------------------------------------------------------------------+
+| 1      | R    | **TM:** Always reads as zero. The ``time`` CSR is not implemented.                  |
++--------+------+-------------------------------------------------------------------------------------+
+| 0      | RW   | **CY:** Enable U-mode access to ``cycle`` / ``cycleh``.                             |
++--------+------+-------------------------------------------------------------------------------------+
+
+Writes to ``mcounteren`` are only accepted when the ``mcounteren_writable_i`` input is set to ``IbexMuBiOn``.
+If ``mcounteren_writable_i`` is not ``IbexMuBiOn``, writes are silently ignored, effectively locking the register.
+This allows a system integrator to prevent software from granting U-mode counter access after an initial configuration phase.
+See :ref:`performance-counters` for the synthesis-time parameters that control counter availability.
 
 
 Machine Exception PC (mepc)
@@ -614,11 +675,12 @@ Machine Architecture ID (marchid)
 
 CSR Address: ``0xF12``
 
-Reset Value: ``0x0000_0016``
+Reset Value: ``0x0000_0016`` (RV32I mode) / ``0x0000_0CE1`` (CHERIoT mode)
 
-Use the ``CSR_MARCHID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
-The value used is allocated specifically to Ibex.
-If significant changes are made a different ID should be used.
+The value of ``marchid`` depends on the active ISA mode.
+In standard RV32I mode it reads as 0x16, the architecture ID allocated to Ibex.
+When CHERIoT mode is enabled (``cheriot_enable_i == IbexMuBiOn``), it reads as 0xCE1 to indicate the CHERIoT architecture.
+The constants ``CSR_MARCHID_VALUE`` and ``CSR_MARCHID_CHERIOT_VALUE`` in :file:`rtl/ibex_pkg.sv` define these values.
 Details of what the ID represents can be found in the RISC-V Privileged Specification.
 
 Machine Implementation ID (mimpid)
@@ -640,3 +702,81 @@ CSR Address: ``0xF14``
 
 Reads directly return the value of the ``hart_id_i`` input signal.
 See also :ref:`core-integration`.
+
+Machine Stack High Watermark (mshwm)
+-------------------------------------
+
+CSR Address: ``0xBC1``
+
+Reset Value: ``0x0000_0000``
+
+**CHERIoT only.** Accessible only when ``BaseIsa == BaseIsaRV32IorCHERIoT`` and ``cheriot_enable_i == IbexMuBiOn``.
+Any access in RV32I mode will trigger an illegal instruction exception.
+Accessing this register also requires ``PCC.PERMIT_ACCESS_SYSTEM_REGISTERS``, without it a CHERIoT exception is raised.
+
+Tracks the lowest address written by a store instruction within the stack region since last reset.
+Hardware automatically updates this register whenever a store is issued to an address within ``[mshwmb, mshwm)``.
+This effectively tracks the maximum stack depth.
+The lower 4 bits are always zero (16-byte aligned).
+
+Because the reset value is ``0x0`` the hardware update condition ``addr < mshwm`` can never be satisfied at reset.
+Software must write an initial value (typically the top of the stack region) to ``mshwm`` before hardware tracking takes effect.
+
+Software can also write to this register to reset the watermark.
+Writes are rounded down to the nearest 16-byte boundary.
+
+Machine Stack High Watermark Base (mshwmb)
+------------------------------------------
+
+CSR Address: ``0xBC2``
+
+Reset Value: ``0x0000_0000``
+
+**CHERIoT only.** Accessible only when ``BaseIsa == BaseIsaRV32IorCHERIoT`` and ``cheriot_enable_i == IbexMuBiOn``.
+Any access in RV32I mode will trigger an illegal instruction exception.
+Accessing this register also requires ``PCC.PERMIT_ACCESS_SYSTEM_REGISTERS``, without it a CHERIoT exception is raised.
+
+Configures the lower bound (bottom) of the tracked stack region.
+Stores to addresses below ``mshwmb`` are outside the tracked region and do not update ``mshwm``.
+The lower 4 bits are always zero (16-byte aligned).
+
+.. _cheriot-scrs:
+
+CHERIoT Special Capability Registers (SCRs)
+--------------------------------------------
+
+**CHERIoT only.** These registers are accessible via the ``CSpecialRW`` instruction rather than the standard CSR access instructions.
+They hold capability values (address plus metadata) and are not visible through the standard ``csrr``/``csrw`` RISC-V interface.
+
+Accessing an SCR via ``CSpecialRW`` requires the **SR** (AccessSysReg) permission in the PCC.
+Without it, a CHERIoT fault (``mcause`` = 0x1C, violation code 0x18) is raised (see :ref:`cheriot`).
+The same SR requirement applies to all regular ``csrr``/``csrw`` accesses in CHERIoT mode (the sole exception being the unprivileged read-only counters 0xC00–0xC9F).
+
+In CHERIoT mode, the standard ``mtvec`` (0x305) and ``mepc`` (0x341) CSR addresses are inaccessible via ``csrr``/``csrw`` — they raise an illegal instruction exception.
+``mtcc`` and ``mepcc`` replace them entirely and are only accessible via ``CSpecialRW``.
+
++----+-----------------------+-------+--------------------------------------------------------------------+
+| ID |   Name                | Mode  | Description                                                        |
++====+=======================+=======+====================================================================+
+| 28 | ``mtcc``              | RW    | Machine Trap Code Capability (holds mtvec as a capability)         |
++----+-----------------------+-------+--------------------------------------------------------------------+
+| 29 | ``mtdc``              | RW    | Machine Trap Data Capability (scratch capability for trap handler) |
++----+-----------------------+-------+--------------------------------------------------------------------+
+| 30 | ``mscratchc``         | RW    | Machine Scratch Capability (independent of the integer mscratch)   |
++----+-----------------------+-------+--------------------------------------------------------------------+
+| 31 | ``mepcc``             | RW    | Machine Exception Program Counter Capability (holds mepc as cap)   |
++----+-----------------------+-------+--------------------------------------------------------------------+
+
+The following debug-mode SCRs are accessible only in Debug Mode:
+
++----+-----------------------+-------+------------------------------------------------------------------+
+| ID |   Name                | Mode  | Description                                                      |
++====+=======================+=======+==================================================================+
+| 24 | ``depcc``             | RW    | Debug Exception Program Counter Capability (holds dpc as cap)    |
++----+-----------------------+-------+------------------------------------------------------------------+
+| 25 | ``dscratchc0``        | RW    | Debug Scratch Capability 0                                       |
++----+-----------------------+-------+------------------------------------------------------------------+
+| 26 | ``dscratchc1``        | RW    | Debug Scratch Capability 1                                       |
++----+-----------------------+-------+------------------------------------------------------------------+
+
+See :ref:`cheriot` for a full description of CHERIoT registers and their semantics.

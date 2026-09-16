@@ -29,21 +29,8 @@
  *    >= `DataWidth` so that in non-CHERIoT mode, standard data writes to upper registers can be
  *    zero-extended into `rf_shared`.
  *
- * These configuration options result in the following physical register allocations:
- * +---------+-------+-------+--------------------+--------------------+-----------------------+
- * | CHERIoT | Dummy | RV32E | rf_data Flops      | rf_shared Flops    | Total Storage (Flops) |
- * +---------+-------+-------+--------------------+--------------------+-----------------------+
- * |    1    |   1   |   0   | 16 x DataWidth     | 16 x CapWidth      | 16 x Data + 16 x Cap  |
- * |    1    |   1   |   1   | 16 x DataWidth     | 16 x CapWidth      | 16 x Data + 16 x Cap  |
- * |    1    |   0   |   0   | 15 x DataWidth     | 16 x CapWidth^     | 16 x Data^+ 15 x Cap^ |
- * |    1    |   0   |   1   | 15 x DataWidth     | 15 x CapWidth      | 15 x Data + 15 x Cap  |
- * |    0    |   1   |   0   | 32 x DataWidth     | N/A (plain array)  | 32 x Data             |
- * |    0    |   1   |   1   | 16 x DataWidth     | N/A (plain array)  | 16 x Data             |
- * |    0    |   0   |   0   | 31 x DataWidth     | N/A (plain array)  | 31 x Data             |
- * |    0    |   0   |   1   | 15 x DataWidth     | N/A (plain array)  | 15 x Data             |
- * +---------+-------+-------+--------------------+--------------------+-----------------------+
- * ^In this mode, the x16 register (part of the rf_shared flops) is only DataWidth wide since it's
- *  only used as a data register because it is the x0 register for the capability part in CHERIoT.
+ * The physical register allocation across all parameter combinations is documented in
+ * doc/03_reference/register_file.rst (section "Physical Register Allocation").
  */
 
 `include "prim_assert.sv"

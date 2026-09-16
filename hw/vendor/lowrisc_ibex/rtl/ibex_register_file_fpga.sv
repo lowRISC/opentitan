@@ -29,6 +29,9 @@
  *    as `rf_shared` storage to hold CHERIoT capability metadata. Therefore, `CapWidth` must be
  *    >= `DataWidth` so that in non-CHERIoT mode, standard data writes to upper registers can be
  *    zero-extended into `rf_shared`.
+ *
+ * The physical register allocation across all parameter combinations is documented in
+ * doc/03_reference/register_file.rst (section "Physical Register Allocation").
  */
 
  `include "prim_assert.sv"
