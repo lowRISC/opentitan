@@ -1172,6 +1172,14 @@ module otbn
                            ~(done_core | (wfi_pending & ~wfi_resume_q)));
   assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
 
+  // TODO: Remove these unused signal as soon as OTBN consumes 512 bit wide sideload keys
+  logic [1:0][127:0] unused_sideload_key;
+  logic [1:0][SideloadKeyWidth-1:0] sideload_key_trunc;
+  for (genvar i = 0; i < 2; ++i) begin : gen_unused_signal_sideload_key
+    assign unused_sideload_key[i] = keymgr_key_i.key[i][511:SideloadKeyWidth];
+    assign sideload_key_trunc[i] = keymgr_key_i.key[i][SideloadKeyWidth-1:0];
+  end
+
   otbn_core #(
     .RegFile(RegFile),
     .DmemSizeByte(DmemSizeByte),
@@ -1240,7 +1248,7 @@ module otbn
 
     .software_errs_fatal_i       (software_errs_fatal_q),
 
-    .sideload_key_shares_i       (keymgr_key_i.key),
+    .sideload_key_shares_i       (sideload_key_trunc),
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
 
     // The naming kmac_data is just to be consistent with other IPs connecting to KMAC. From here
@@ -1530,6 +1538,7 @@ module otbn
 
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
+  `ASSERT_INIT(SideloadKeySizeMismatch_A, SideloadKeyWidth <= kmac_pkg::AppDigestW)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnStartStopFsmCheck_A,
