@@ -10,15 +10,15 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct        | Type    | Act   |   Width | Description   |
-|:---------------|:-----------------------|:--------|:------|--------:|:--------------|
-| idle           | prim_mubi_pkg::mubi4   | uni     | req   |       1 |               |
-| output_valid   | logic                  | uni     | req   |       1 |               |
-| input_ready    | logic                  | uni     | req   |       1 |               |
-| lc_escalate_en | lc_ctrl_pkg::lc_tx     | uni     | rcv   |       1 |               |
-| edn            | edn_pkg::edn           | req_rsp | req   |       1 |               |
-| keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   |       1 |               |
-| tl             | tlul_pkg::tl           | req_rsp | rsp   |       1 |               |
+| Port Name      | Package::Struct            | Type    | Act   |   Width | Description   |
+|:---------------|:---------------------------|:--------|:------|--------:|:--------------|
+| idle           | prim_mubi_pkg::mubi4       | uni     | req   |       1 |               |
+| output_valid   | logic                      | uni     | req   |       1 |               |
+| input_ready    | logic                      | uni     | req   |       1 |               |
+| lc_escalate_en | lc_ctrl_pkg::lc_tx         | uni     | rcv   |       1 |               |
+| edn            | edn_pkg::edn               | req_rsp | req   |       1 |               |
+| keymgr_key     | keymgr_dpe_pkg::hw_key_req | uni     | rcv   |       1 |               |
+| tl             | tlul_pkg::tl               | req_rsp | rsp   |       1 |               |
 
 ## Security Alerts
 
@@ -76,7 +76,7 @@ Signal             | Direction        | Type                   | Description
 `lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from [life cycle controller](../../lc_ctrl/README.md). This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
 `edn_o`            | `output`         | `edn_pkg::edn_req_t`   | Entropy request to [entropy distribution network (EDN)](../../edn/README.md) for reseeding internal pseudo-random number generators (PRNGs) used for register clearing and masking.
 `edn_i`            | `input`          | `edn_pkg::edn_rsp_t`   | [EDN](../../edn/README.md) acknowledgment and entropy input for reseeding internal PRNGs.
-`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager](../../keymgr/README.md).
+`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager](../../keymgr_dpe/README.md).
 
 Note that the `edn_o` and `edn_i` signals used to interface [EDN](../../edn/README.md) follow a REQ/ACK protocol.
 The entropy distributed by EDN is obtained from the [cryptographically secure random number generator (CSRNG)](../../csrng/README.md).

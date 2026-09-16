@@ -481,53 +481,53 @@ package top_darjeeling_rnd_cnst_pkg;
   // keymgr_dpe
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
-  parameter keymgr_pkg::lfsr_seed_t RndCnstKeymgrDpeLfsrSeed = {
+  parameter keymgr_dpe_pkg::lfsr_seed_t RndCnstKeymgrDpeLfsrSeed = {
     64'h1FFF9CB9_84752F8F
   };
 
   // Compile-time random permutation for LFSR output
-  parameter keymgr_pkg::lfsr_perm_t RndCnstKeymgrDpeLfsrPerm = {
+  parameter keymgr_dpe_pkg::lfsr_perm_t RndCnstKeymgrDpeLfsrPerm = {
     128'h899C6BDC_76FA4209_82692A04_CD1B1D60,
     256'h114697E3_ADE1F276_7B2AB0F7_F9E43EE4_F55D58CA_20B0FC00_CE6135CB_D6529EF4
   };
 
   // Compile-time random permutation for entropy used in share overriding
-  parameter keymgr_pkg::rand_perm_t RndCnstKeymgrDpeRandPerm = {
+  parameter keymgr_dpe_pkg::rand_perm_t RndCnstKeymgrDpeRandPerm = {
     160'hBED3DFC4_41A93874_42D3C987_A07A5472_96F660AD
   };
 
   // Compile-time random bits for revision seed
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeRevisionSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeRevisionSeed = {
     256'hE47AD94F_5821271E_989D6BF0_3E6D542C_A581A594_A3386C07_0F167A20_A40E1D28
   };
 
   // Compile-time random bits for software generation seed
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeSoftOutputSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeSoftOutputSeed = {
     256'hBA99DCE5_06FC589B_E1DE2D8A_B7AC5145_761EEC82_45451D88_E292D0B0_D1B10882
   };
 
   // Compile-time random bits for hardware generation seed
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeHardOutputSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeHardOutputSeed = {
     256'hA692C834_639F6783_25EEA439_47620421_0404C00B_6F6EFA39_97E2B24E_53C49217
   };
 
   // Compile-time random bits for generation seed when aes destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeAesSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeAesSeed = {
     256'h9FE8105A_C442A5EB_C0F3D851_63644ADA_3407543C_75421F2A_ADF4C089_2E3F7B37
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeKmacSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeKmacSeed = {
     256'h84405243_A4AA4FB8_970DF6E0_F78B6434_10259E59_CDA4FC00_E7ED6728_6F310752
   };
 
   // Compile-time random bits for generation seed when otbn destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeOtbnSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeOtbnSeed = {
     256'h618844D2_F81C1925_5FE753B7_995CCB8A_2EEC70F2_2745C139_DB09B25B_0FEDC9F6
   };
 
   // Compile-time random bits for generation seed when no destination selected
-  parameter keymgr_pkg::seed_t RndCnstKeymgrDpeNoneSeed = {
+  parameter keymgr_dpe_pkg::seed_t RndCnstKeymgrDpeNoneSeed = {
     256'h1C67905E_31CC3F10_03D7AB63_75B104A4_631FD6E1_F9A5CACE_A485646E_645F99C7
   };
 
