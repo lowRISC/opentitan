@@ -92,6 +92,7 @@ module sram_ctrl
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi8_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
 
   // The memory can have a non-power-of-2 size (checked inside prim_ram_1p_scr) but the size needs
   // to be divisible by 4.
@@ -208,7 +209,18 @@ module sram_ctrl
   assign hw2reg.status.sram_alert.de = sram_alert;
 
   logic alert_req;
-  assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert;
+  // SEC_CM: EXEC.CONFIG.MUBI, MEM.READBACK
+  // Detect software-written invalid mubi values in security-critical CSR fields.
+  // A value that is neither MuBi4True nor MuBi4False cannot be trusted: a
+  // single-bit fault on top of such an encoding can reach a valid True state,
+  // defeating the purpose of multi-bit encoding entirely.
+  logic mubi_config_error;
+  assign mubi_config_error = mubi4_test_invalid(mubi4_t'(reg2hw.readback.q)) |
+                             (InstrExec ? mubi4_test_invalid(mubi4_t'(reg2hw.exec.q))
+                                        : 1'b0);
+
+  assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert |
+                     mubi_config_error;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -442,7 +454,11 @@ module sram_ctrl
     // SEC_CM: INSTR.BUS.LC_GATED
     assign lc_ifetch_en = lc_to_mubi4(lc_hw_debug_en);
     // SEC_CM: EXEC.CONFIG.MUBI
-    assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
+    // Sanitize the SW-written CSR value. Any encoding that is not strictly MuBi4True
+    // is treated as disabled. This prevents a single-bit corruption of an invalid
+    // intermediate value from silently enabling instruction fetch from SRAM.
+    assign reg_ifetch_en = mubi4_test_invalid(mubi4_t'(reg2hw.exec.q)) ?
+                           MuBi4False : mubi4_t'(reg2hw.exec.q);
     // SEC_CM: EXEC.INTERSIG.MUBI
     assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch)) ? reg_ifetch_en :
                                                                       lc_ifetch_en;
@@ -528,9 +544,14 @@ module sram_ctrl
   logic sram_compound_txn_in_progress;
 
 
-  // // SEC_CM: MEM.READBACK
+  // SEC_CM: MEM.READBACK
   mubi4_t reg_readback_en;
-  assign reg_readback_en = mubi4_t'(reg2hw.readback.q);
+  // Sanitize the SW-written CSR value. Any invalid encoding is clamped to MuBi4True so
+  // that the readback fault-injection detection mechanism stays active even if SW
+  // writes a malformed mubi value. Disabling readback protection requires a clean
+  // MuBi4False write, nothing else.
+  assign reg_readback_en = mubi4_test_invalid(mubi4_t'(reg2hw.readback.q)) ?
+                           MuBi4True : mubi4_t'(reg2hw.readback.q);
 
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
