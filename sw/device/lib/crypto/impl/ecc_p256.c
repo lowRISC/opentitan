@@ -843,9 +843,6 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   }
 #endif
 
-  // Randomize the output before computing it.
-  HARDENED_TRY(hardened_memshred(shared_secret->keyblob, kP256CoordWords));
-
   // Shared keys cannot be sideloaded because they are software-generated.
   if (launder32(shared_secret->config.hw_backed) != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
@@ -853,11 +850,11 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   HARDENED_CHECK_EQ(launder32(shared_secret->config.hw_backed),
                     kHardenedBoolFalse);
 
-  // Check shared secret length.
-  if (launder32(shared_secret->config.key_length) != kP256CoordBytes) {
+  // Check shared secret length (affine point x-coordinate || y-coordinate).
+  if (launder32(shared_secret->config.key_length) != kP256SharedSecretBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(shared_secret->config.key_length, kP256CoordBytes);
+  HARDENED_CHECK_EQ(shared_secret->config.key_length, kP256SharedSecretBytes);
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
@@ -866,16 +863,33 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
       shared_secret->keyblob_length,
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t));
 
+  // Randomize the output before computing it.
+  HARDENED_TRY(hardened_memshred(shared_secret->keyblob,
+                                 keyblob_num_words(shared_secret->config)));
+
   // Note: This operation wipes DMEM after retrieving the keys, so if an error
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
   p256_ecdh_shared_key_t ss;
-  HARDENED_TRY(hardened_memshred(ss.share0, ARRAYSIZE(ss.share0)));
-  HARDENED_TRY(hardened_memshred(ss.share1, ARRAYSIZE(ss.share1)));
+  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
+  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
+  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
+  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
   HARDENED_TRY_WIPE_DMEM(p256_ecdh_finalize(&ss));
   HARDENED_CHECK_EQ(p256_ecdh_shared_key_checksum_check(&ss),
                     kHardenedBoolTrue);
-  HARDENED_TRY(keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,
+
+  // Assemble the two shares of the shared point. Each share holds the share
+  // of the x-coordinate followed by the share of the y-coordinate.
+  uint32_t share0[kP256SharedSecretWords];
+  uint32_t share1[kP256SharedSecretWords];
+  HARDENED_TRY(hardened_memcpy(share0, ss.x_share0, kP256CoordWords));
+  HARDENED_TRY(
+      hardened_memcpy(share0 + kP256CoordWords, ss.y_share0, kP256CoordWords));
+  HARDENED_TRY(hardened_memcpy(share1, ss.x_share1, kP256CoordWords));
+  HARDENED_TRY(
+      hardened_memcpy(share1 + kP256CoordWords, ss.y_share1, kP256CoordWords));
+  HARDENED_TRY(keyblob_from_shares(share0, share1, shared_secret->config,
                                    shared_secret->keyblob));
 
   // Set the checksum.
