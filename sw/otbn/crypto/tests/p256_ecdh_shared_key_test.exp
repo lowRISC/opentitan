@@ -1,2 +1,7 @@
-# Expected value for shared key:
+# Expected values for the shared key x- and y-coordinates:
 w11 = 0x5f33d746a326640a739a9490ec15c10372869f3de675b2e85742271d18c9eb82
+w12 = 0xb5ebbd1e4ac99c9e3d70a862e41fe23ace6ab34f7ac9f99a4c403defb76c462d
+# Both sides of the Weierstrass equation y^2 = x^3 + ax + b mod p evaluated
+# on the unmasked point, i.e. y^2 mod p:
+w18 = 0x1c0ed4c5fd2b4489ce061adb0d35b7aaf748798e00baa4d15ffac4249e1b353a
+w19 = 0x1c0ed4c5fd2b4489ce061adb0d35b7aaf748798e00baa4d15ffac4249e1b353a

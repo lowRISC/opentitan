@@ -221,6 +221,8 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen(
 /**
  * Elliptic Curve Diffie Hellman shared secret generation with curve P-256.
  *
+ * The shared secret is the affine point d*Q in Boolean shares.
+ *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
