@@ -31,7 +31,7 @@ Secondly a signal to the flush the cache which is set every time a ``fence.i`` i
 Branch Prediction
 -----------------
 
-Ibex can be configured to use static branch prediction by setting the ``BranchPrediction`` parameter to 1.
+Ibex can be configured to use static branch prediction by setting the ``BranchPredictor`` parameter to 1.
 This improves performance by predicting that any branch with a negative offset is taken and that any branch with a positive offset is not.
 When successful, the prediction removes a stall cycle from a taken branch.
 However, there is a mis-predict penalty if a branch is wrongly predicted to be taken.

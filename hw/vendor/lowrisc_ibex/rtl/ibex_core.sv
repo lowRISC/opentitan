@@ -1342,6 +1342,9 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_enable_check
     assign cheriot_enable_mubi_err = instr_exec & !((cheriot_enable_i == IbexMuBiOn) ||
                                                     (cheriot_enable_i == IbexMuBiOff));
+    // Once CHERIoT mode is enabled it must stay enabled until reset.
+    `ASSERT(CheriotEnableOneWaySwitch,
+            (cheriot_enable_i == IbexMuBiOn) |=> (cheriot_enable_i == IbexMuBiOn), clk_i, !rst_ni)
   end else begin : gen_no_cheriot_enable_check
     assign cheriot_enable_mubi_err = 1'b0;
   end

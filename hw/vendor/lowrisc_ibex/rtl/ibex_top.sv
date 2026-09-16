@@ -1385,11 +1385,21 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   `ASSERT_KNOWN(IbexAlertMajorInternalX, alert_major_internal_o)
   `ASSERT_KNOWN(IbexAlertMajorBusX, alert_major_bus_o)
   `ASSERT_KNOWN(IbexCoreSleepX, core_sleep_o)
+  `ASSERT_KNOWN(IbexRamCfgIcacheTagOX, ram_cfg_icache_tag_o)
+  `ASSERT_KNOWN(IbexRamCfgIcacheDataOX, ram_cfg_icache_data_o)
+  `ASSERT_KNOWN(IbexLockstepCmpEnX, lockstep_cmp_en_o)
+  `ASSERT_KNOWN(IbexDataReqShadowX, data_req_shadow_o)
+  `ASSERT_KNOWN_IF(IbexDataReqShadowPayloadX,
+    {data_we_shadow_o, data_be_shadow_o, data_addr_shadow_o,
+     data_wdata_shadow_o, data_wdata_intg_shadow_o}, data_req_shadow_o)
+  `ASSERT_KNOWN(IbexInstrReqShadowX, instr_req_shadow_o)
+  `ASSERT_KNOWN_IF(IbexInstrReqShadowPayloadX, instr_addr_shadow_o, instr_req_shadow_o)
 
   // X check for top-level inputs
   `ASSERT_KNOWN(IbexTestEnX, test_en_i)
   `ASSERT_KNOWN(IbexRamCfgTagX, ram_cfg_icache_tag_i)
   `ASSERT_KNOWN(IbexRamCfgDataX, ram_cfg_icache_data_i)
+  `ASSERT_KNOWN(IbexCHERIoTEnableX, cheriot_enable_i)
   `ASSERT_KNOWN(IbexHartIdX, hart_id_i)
   `ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
   `ASSERT_KNOWN(IbexTrvkHeapBaseAddrX, trvk_heap_base_addr_i)
@@ -1406,6 +1416,16 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   `ASSERT_KNOWN(IbexTrvkRevbmRValidX, trvk_revbm_rvalid_i)
   `ASSERT_KNOWN_IF(IbexTrvkRevbmRPayloadX,
     {trvk_revbm_rdata_i, trvk_revbm_rdata_intg_i, trvk_revbm_err_i}, trvk_revbm_rvalid_i)
+
+  // current_pc and next_pc in crash_dump_o depend on FFs that are only defined at reset if the
+  // ResetAll flag is set
+  `ASSERT_KNOWN(IbexCrashDumpLastDataAddrX, crash_dump_o.last_data_addr)
+  `ASSERT_KNOWN(IbexCrashDumpExceptionPcX, crash_dump_o.exception_pc)
+  `ASSERT_KNOWN(IbexCrashDumpExceptionAddrX, crash_dump_o.exception_addr)
+  if (ResetAll) begin : g_reset_all_ibex_assert_known
+    `ASSERT_KNOWN(IbexCrashDumpCurrentPcX, crash_dump_o.current_pc)
+    `ASSERT_KNOWN(IbexCrashDumpNextPcX, crash_dump_o.next_pc)
+  end
 
   `ifdef INC_ASSERT
     typedef struct packed {
@@ -1575,6 +1595,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   `ASSERT_KNOWN(IbexDebugReqX, debug_req_i)
   `ASSERT_KNOWN(IbexFetchEnableX, fetch_enable_i)
+  `ASSERT_KNOWN(IbexMcounterEnableWritableX, mcounteren_writable_i)
 
   // Dummy instructions may only write to register 0, which is a special register when dummy
   // instructions are enabled.

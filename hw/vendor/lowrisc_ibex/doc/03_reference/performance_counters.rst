@@ -74,7 +74,8 @@ Access to the U-mode counter aliases (``cycle(h)``, ``instret(h)``, and ``hpmcou
 
 When a bit in ``mcounteren`` is clear (0), any attempt to read the corresponding counter alias from U-mode will trigger an illegal instruction exception.
 
-To secure this mechanism, the ``mcounteren`` register can be locked against software modifications using a MUBI input signal called ``mcounteren_writeable``. When this signal disables writes, any attempt by software to modify the contents of ``mcounteren`` is ignored.
+To secure this mechanism, the ``mcounteren`` register can be locked against software modifications using a MUBI input signal called ``mcounteren_writable_i``.
+See :ref:`cs-registers` for full details of this signal's behaviour.
 
 Parametrization at synthesis time
 ---------------------------------
@@ -82,12 +83,12 @@ Parametrization at synthesis time
 The ``mcycle(h)`` and ``minstret(h)`` counters are always available and 64 bit wide.
 
 The event counters ``mhpmcounter3(h)`` - ``mhpmcounter31(h)`` are parametrizable.
-Their width can be parametrized between 1 and 64 bit through the ``WidthMHPMCounters`` parameter, which defaults to 40 bit wide counters.
+Their width can be parametrized between 1 and 64 bit through the ``MHPMCounterWidth`` parameter, which defaults to 40 bit wide counters.
 
-The number of available event counters ``mhpmcounterX(h)`` can be controlled via the ``NumMHPMCounters`` parameter.
-By default (``NumMHPMCounters`` set to 0), no counters are available to software.
-Set ``NumMHPMCounters`` to a value between 1 and 8 to make the counters ``mhpmcounter3(h)`` - ``mhpmcounter10(h)`` available as listed below.
-Setting ``NumMHPMCounters`` to values larger than 8 does not result in any more performance counters.
+The number of available event counters ``mhpmcounterX(h)`` can be controlled via the ``MHPMCounterNum`` parameter.
+By default (``MHPMCounterNum`` set to 0), no counters are available to software.
+Set ``MHPMCounterNum`` to a value between 1 and 10 to make the counters ``mhpmcounter3(h)`` - ``mhpmcounter12(h)`` available as listed below.
+Setting ``MHPMCounterNum`` to values larger than 10 does not result in any more performance counters.
 
 Unavailable counters always read 0.
 

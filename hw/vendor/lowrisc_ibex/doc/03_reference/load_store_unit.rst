@@ -52,12 +52,22 @@ Signals that are used by the LSU:
 | ``data_rdata_intg_i[6:0]`` | input     | Integrity bits read from memory (ignored      |
 |                            |           | unless the SecureIbex parameter is set)       |
 +----------------------------+-----------+-----------------------------------------------+
+| ``data_tag_o``             | output    | Capability tag signal (CHERIoT only. See      |
+|                            |           | :ref:`cheriot`). High on a capability store   |
+|                            |           | if the stored capability has a valid tag.     |
+|                            |           | Also driven high on both beats of a           |
+|                            |           | capability load to request tag data from      |
+|                            |           | memory.                                       |
++----------------------------+-----------+-----------------------------------------------+
+| ``data_tag_i``             | input     | Capability tag returned for a capability load |
+|                            |           | (CHERIoT only; see :ref:`cheriot`)            |
++----------------------------+-----------+-----------------------------------------------+
 
 
 Bus Integrity Checking
 ----------------------
 
-The core can optionally generate and verify check bits sent alongside the data for memory accesses.
+The core can optionally generate integrity bits for all outgoing data bus requests and verify integrity bits on every incoming data bus response (``data_rvalid_i``), regardless of whether the response data is consumed by the instruction.
 Checkbits are generated and checked using an inverted 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv`).
 An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
 Where load data has bad checkbits the write to the load's destination register will be suppressed.
@@ -65,7 +75,7 @@ Ibex checks the integrity against the response data for both loads and stores.
 For stores the response data is otherwise ignored so the data can be any value provided the integrity is valid (``data_rdata_intg_i`` must match with ``data_rdata_i``).
 It is recommended for write responses some fixed value is placed on ``data_rdata_i`` and ``data_rdata_intg_i`` by the memory system Ibex is connected to in configurations where integrity is used.
 
-This feature is only used if the core is configured with the SecureIbex parameter set.
+This feature is only used if the core is configured with the MemECC parameter set.
 For all other configurations, the integrity signals can be ignored.
 
 Misaligned Accesses
@@ -156,3 +166,20 @@ The protocol that is used by the LSU to communicate with a memory works as follo
      ],
      "config": { "hscale": 2 }
    }
+
+CHERIoT Extensions
+------------------
+
+When ``BaseIsa == BaseIsaRV32IorCHERIoT`` the LSU gains two responsibilities beyond standard RV32I operation.
+
+Capability Loads and Stores
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Capabilities are 64-bit values (32-bit address + 32 bits of metadata) plus an out-of-band tag bit, so a capability load or store always occupies two consecutive, 8-byte-aligned 32-bit bus transactions.
+The LSU serialises these automatically: a capability store performs two word writes in order (low word, then high word) and drives ``data_tag_o`` high on both beats if the stored capability carries a valid tag.
+A capability load performs two word reads and collects both data words together with the two ``data_tag_i`` values; the capability is considered valid only if the tag is set on both beats.
+
+After a capability load the loaded tag passes through the TRVK revocation filter before reaching the register file.
+If the filter determines the capability has been software-revoked, the tag is silently cleared without raising an exception.
+
+For the ``data_tag_o`` / ``data_tag_i`` signal descriptions and the full TRVK revocation bitmap interface see :ref:`cheriot`.

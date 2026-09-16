@@ -38,6 +38,8 @@ Precise details of fetch timing will depend upon the memory system Ibex is conne
 
 If data independent timing is needed for branches, turn off the branch prediction feature as it is :ref:`experimental<branch-prediction>`.
 
+.. _dummy-instruction-insertion:
+
 Dummy Instruction Insertion
 ---------------------------
 
@@ -69,6 +71,8 @@ This will make the insertion interval of dummy instructions much harder for an a
 Note that the dummy instruction feature inserts multiply and divide instructions.
 The core must be configured with a multiplier (`RV32M != ibex_pkg::RV32MNone`) or errors will occur using this feature.
 
+.. _lockstep:
+
 Dual core lockstep
 ------------------
 
@@ -76,14 +80,17 @@ This configuration option instantiates a second copy of the core logic, referred
 The shadow core executes using a delayed version of all inputs supplied to the main core.
 All outputs of the shadow core are compared against a delayed version of the outputs of the main core.
 Any mismatch between the two sets of outputs will trigger an internal major alert.
+The shadow bus signals (``data_req_shadow_o``, ``data_addr_shadow_o``, etc. and ``instr_req_shadow_o``, ``instr_addr_shadow_o``) are exposed at the ``ibex_top`` level so that users can conduct additional security checks on integration-specific bus protocol conversion modules (see :ref:`core-integration` for the full signal list).
 
 Note that the register file and icache RAMs are not duplicated since these units are covered by other countermeasures.
+
+.. _bus-integrity:
 
 Bus integrity checking
 ----------------------
 
 Extra signals are available alongside the instruction and data side memory channels to support bus integrity checking.
-When the SecureIbex parameter is set, incoming data will be checked against the supplied checkbits.
+When the MemECC parameter is set, incoming data will be checked against the supplied checkbits.
 An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
 Where load data has bad checkbits the write to the load's destination register will be suppressed.
 Write data can be checked against the supplied checkbits at its destination to confirm integrity.
@@ -107,8 +114,10 @@ Instead, ECC protection is added to the ICache.
 When an ECC error is detected a minor alert is signaled.
 See :ref:`icache-ecc` for more information.
 
+.. _icache-tweak-infection:
+
 ICache Tweak Infection
-----------
+----------------------
 
 In addition to the ICache ECC, SecureIbex also uses a tweak infection based countermeasure.
 After computing the ECC and before writing to the data or tag banks, the ICache XORs a tweak to the data.

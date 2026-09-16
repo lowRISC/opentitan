@@ -10,8 +10,42 @@ Register ``x0`` is statically bound to 0 and can only be read, it does not conta
 The register file has two read ports and one write port, register file data is available the same cycle a read is requested.
 There is no write to read forwarding path so if one register is being both read and written the read will return the current value rather than the value being written.
 
+In CHERIoT mode (``BaseIsa == BaseIsaRV32IorCHERIoT`` and ``cheriot_enable_i == IbexMuBiOn``) the register file operates on 16 registers (``x0``–``x15``).
+Each register is extended with ``CapWidth`` bits of capability metadata alongside the 32-bit integer value. See :ref:`cheriot` for details.
+To save area the upper physical registers (``x16``–``x31``) that are unused in CHERIoT mode are repurposed for the capability metadata of ``x0``–``x15``.
+
 There are three flavors of register file available, each having their own benefits and trade-offs.
 The register file flavor is selected via the enumerated parameter ``RegFile`` defined in :file:`rtl/ibex_pkg.sv`.
+
+.. _register-file-allocation:
+
+Physical Register Allocation
+----------------------------
+
+Three parameters jointly determine the number and width of physical registers.
+The FPGA register file does not support ``DummyInstructions``.
+
++---------+-------+-------+-------------------+---------------------+---------------------------+
+| CHERIoT | Dummy | RV32E | ``rf_data`` flops | ``rf_shared`` flops | Total storage             |
++=========+=======+=======+===================+=====================+===========================+
+|    1    |   1   |   X   | 16 × DataWidth    | 16 × CapWidth       | 16 × Data + 16 × Cap      |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    1    |   0   |   0   | 15 × DataWidth    | 16 × CapWidth †     | 16 × Data + 15 × Cap †    |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    1    |   0   |   1   | 15 × DataWidth    | 15 × CapWidth       | 15 × Data + 15 × Cap      |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    0    |   1   |   0   | 32 × DataWidth    | N/A (plain array)   | 32 × Data                 |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    0    |   1   |   1   | 16 × DataWidth    | N/A (plain array)   | 16 × Data                 |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    0    |   0   |   0   | 31 × DataWidth    | N/A (plain array)   | 31 × Data                 |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+|    0    |   0   |   1   | 15 × DataWidth    | N/A (plain array)   | 15 × Data                 |
++---------+-------+-------+-------------------+---------------------+---------------------------+
+
+† In this configuration ``x16`` (within the ``rf_shared`` bank) is only ``DataWidth`` wide.
+In CHERIoT mode ``x16`` acts as the capability-side ``x0`` alias, so a full ``CapWidth`` slot is not required there.
+The ``rf_shared`` count is therefore 15 × CapWidth + 1 × DataWidth, and the Total column reflects the same split.
 
 Flip-Flop-Based Register File
 -----------------------------
