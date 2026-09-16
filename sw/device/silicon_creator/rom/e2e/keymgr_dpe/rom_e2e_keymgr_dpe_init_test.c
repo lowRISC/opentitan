@@ -20,7 +20,8 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top/otp_ctrl_regs.h"  // Generated
+#include "hw/top/keymgr_dpe_regs.h"  // Generated
+#include "hw/top/otp_ctrl_regs.h"    // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -44,6 +45,11 @@ enum {
    * Keymgr DPE default slot for attestation context
    */
   kKeymgrDPEAttestSlot = 1,
+  /**
+   * Boot stage reached once the ROM has derived the OwnerIntKey.
+   * Mirrors `keymgr_dpe_boot_stage_e` in keymgr_dpe_pkg.sv.
+   */
+  kKeymgrDPEBootStageOwnerInt = 1,
 };
 
 static void print_otp_sw_cfg_digests(void) {
@@ -103,11 +109,21 @@ bool test_main(void) {
   CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
       &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
-  // keys with boot stage set to BootStageOwnerInt (1). (Note: Current bootstage
-  // + 1)
-
   const manifest_t *manifest = manifest_def_get();
+
+  // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with boot
+  // stage set to BootStageOwnerInt (1), the MaxKeyVersion matches with the
+  // manifest and its default policy (allow_child=1, exportable=0,
+  // retain_parent=0, allow_keygen=1).
+  const uint32_t kRomDefaultPolicy =
+      (1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT) +
+      (1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT);
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_metadata(
+      &keymgr_dpe, kKeymgrDPESealSlot, manifest->max_key_version,
+      kKeymgrDPEBootStageOwnerInt, kRomDefaultPolicy));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_metadata(
+      &keymgr_dpe, kKeymgrDPEAttestSlot, manifest->max_key_version,
+      kKeymgrDPEBootStageOwnerInt, kRomDefaultPolicy));
 
   if (otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN_OFFSET) ==
       kHardenedBoolTrue) {
