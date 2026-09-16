@@ -34,10 +34,8 @@ module ast_part_secondary (
   input rstmgr_pkg::rstmgr_out_t sns_rsts_i,  // Sensed Resets
   input sns_spi_ext_clk_i,                    // Sensed SPI External Clock
 
-`ifdef AST_BYPASS_CLK
-  // Clocks' Oschillator bypass for OS FPGA
-  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
-`endif
+  // Clocks' Oscillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oscillator bypass for OS FPGA/VERILATOR
 
   // power OK control
   // In non-power aware DV environment, the <>_supp_i is for debug only!
@@ -321,6 +319,9 @@ logic aon_osc_cal;
 `ifdef AST_BYPASS_CLK
 logic clk_aon_ext;
 assign clk_aon_ext = clk_osc_byp_i.aon;
+`else
+logic unused_clk_osc_byp;
+assign unused_clk_osc_byp = ^clk_osc_byp_i;
 `endif
 
 assign rst_aon_clk_n = vcc_pok_str && vcaon_pok;
