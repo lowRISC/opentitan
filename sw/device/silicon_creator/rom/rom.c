@@ -659,12 +659,11 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       SEC_MMIO_WRITE_INCREMENT(kScKeymgrDPESecMmioReseedIntervalSet);
 
       // Advance the keymgr dpe into the Available state and load the UDS in
-      // the selected DPE slot.
+      // the selected DPE slot. The driver verifies the kKeymgrDPESealSlot holds
+      // the UDS with boot stage set to BootStageCreator (0), the default
+      // MaxKeyVersion and the default UDS policy.
       HARDENED_RETURN_IF_ERROR(
           sc_keymgr_dpe_advance_initial(kKeymgrDPESealSlot));
-
-      // TODO(#30759): Verify the kKeymgrDPESealSlot hold the UDS with boot
-      // stage set to BootStageCreator (0). (Note: Current bootstage + 1)
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
       // TODO(#30830): Gracefully handle if secret2 is not locked. This option
@@ -730,12 +729,10 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
                                     kScKeymgrDPESecMmioMaxVerSet +
                                     kScKeymgrDPESecMmioSlotPolicy));
+      // The driver verifies the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
+      // keys with boot stage set to BootStageOwnerInt (1).
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
           adv_sealing_data, adv_attestation_data));
-
-      // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
-      // Current bootstage + 1)
 
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
