@@ -84,8 +84,8 @@ module ast_part_secondary #(
   output adc_d_val_o,                         // ADC Digital Valid
 
   // alerts
-  input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
-  output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
+  input ast_pkg::ast_alert_rsp_t alert_i,  // Alerts Trigger & Acknowledge Inputs
+  output ast_pkg::ast_alert_req_t alert_o, // Alerts Output
 
   // dft interface
   input pinmux_pkg::dft_strap_test_req_t dft_strap_test_i,  // DFT Straps
@@ -431,9 +431,9 @@ ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( as_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::AsSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::AsSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::AsSel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::AsSel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::AsSel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::AsSel] )
 );
 
 // Clock Glitch (CG)
@@ -442,9 +442,9 @@ ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( cgc_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::CgSel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::CgSel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::CgSel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::CgSel] )
 );
 
 // Glitch Detector (GD)
@@ -453,9 +453,9 @@ ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( gd_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::GdSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::GdSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::GdSel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::GdSel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::GdSel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::GdSel] )
 );
 
 // Temprature Sensor High (TS Hi)
@@ -464,9 +464,9 @@ ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_hi_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsHiSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsHiSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::TsHiSel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::TsHiSel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::TsHiSel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::TsHiSel] )
 );
 
 // Temprature Sensor Low (TS Lo)
@@ -475,9 +475,9 @@ ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ts_alert_lo_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsLoSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::TsLoSel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::TsLoSel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::TsLoSel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::TsLoSel] )
 );
 
 // Other-0 Alert (OT0)
@@ -486,9 +486,9 @@ ast_alert u_alert_ot0 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot0_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot0Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot0Sel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot0Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::Ot0Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::Ot0Sel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::Ot0Sel] )
 ); // of u_alert_ot0
 
 // Other-1 Alert (OT1)
@@ -497,9 +497,9 @@ ast_alert u_alert_ot1 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot1_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot1Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot1Sel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot1Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::Ot1Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::Ot1Sel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::Ot1Sel] )
 ); // of u_alert_ot1
 
 // Other-2 Alert (OT2)
@@ -508,9 +508,9 @@ ast_alert u_alert_ot2 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot2_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot2Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot2Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot2Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[Ot2Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[Ot2Sel] ),
+  .alert_req_o ( alert_o.alerts[Ot2Sel] )
 ); // of u_alert_ot2
 
 // Other-3 Alert (OT3)
@@ -519,9 +519,9 @@ ast_alert u_alert_ot3 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot3_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot3Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot3Sel] ),
-  .alert_req_o ( alert_req_o.alerts[Ot3Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[Ot3Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[Ot3Sel] ),
+  .alert_req_o ( alert_o.alerts[Ot3Sel] )
 ); // of u_alert_ot3
 
 // Other-4 Alert (OT4)
@@ -530,9 +530,9 @@ ast_alert u_alert_ot4 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot4_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot4Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot4Sel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot4Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::Ot4Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::Ot4Sel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::Ot4Sel] )
 ); // of u_alert_ot4
 
 // Other-5 Alert (OT5)
@@ -541,9 +541,9 @@ ast_alert u_alert_ot5 (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_src_i ( ot5_alert_src ),
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Ot5Sel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Ot5Sel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot5Sel] )
+  .alert_trig_i ( alert_i.alerts_trig[ast_pkg::Ot5Sel] ),
+  .alert_ack_i ( alert_i.alerts_ack[ast_pkg::Ot5Sel] ),
+  .alert_req_o ( alert_o.alerts[ast_pkg::Ot5Sel] )
 ); // of u_alert_ot5
 
 // Alerts Open-Source Selection
@@ -685,7 +685,7 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
 // Alerts
-`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
+`ASSERT_KNOWN(AlertReqKnownO_A, alert_o, clk_ast_alert_i, rst_ast_alert_ni)
 // Read-write margins
 `ASSERT_KNOWN(TpramRmKnownO_A, tpram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(SpramRmKnownO_A, spram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
