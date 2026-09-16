@@ -327,6 +327,26 @@ status_t keymgr_dpe_testutils_check_state(
     const dif_keymgr_dpe_t *keymgr_dpe, const dif_keymgr_dpe_state_t exp_state);
 
 /**
+ * Checks that a keymgr dpe HW slot holds a valid DPE context with the expected
+ * maximum key version, boot stage and slot policy.
+ *
+ * @param keymgr_dpe A key manager dpe handle.
+ * @param slot The HW slot to check.
+ * @param exp_max_key_version The expected maximum key version for the DPE
+ * context in `slot`.
+ * @param exp_boot_stage The expected boot stage for the DPE context in
+ * `slot`.
+ * @param exp_policy The expected policy bits for the DPE context in `slot`,
+ * using the same bit layout as the `SLOT_POLICY` register.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_testutils_check_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
+                                             uint32_t slot,
+                                             uint32_t exp_max_key_version,
+                                             uint32_t exp_boot_stage,
+                                             uint32_t exp_policy);
+
+/**
  * Issues a keymgr dpe HW/SW versioned key generation and wait for it
  * to complete.
  *
