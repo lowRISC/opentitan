@@ -430,11 +430,15 @@ void sc_keymgr_dpe_lock_uds(void);
 /**
  * Load the UDS into an empty hw slot.
  *
- * Load the UDS into the selected hw slot. If the selected hw slot is not
- * empty then the keymgr_dpe will throw an error.
+ * Verifies that the selected hw slot is empty (not valid) before the load
+ * operation. After the UDS is loaded the slot metadata is read back and
+ * compared against the boot stage `kScKeymgrDPEBootStageCreator`, the default
+ * UDS max key version (all-ones) and the default UDS policy.
  *
  * @param sel_dst_slot empty destination slot for the UDS.
- * @return `kErrorOk`
+ * @return `kErrorOk` on success. `kErrorKeymgrInternal` if the destination slot
+ * is not empty, the load operation failed or the resulting slot metadata does
+ * not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
@@ -443,10 +447,16 @@ rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
  * Executes the first advance call to load the UDS in the selected slot and
  * sets the keymgr_dpe FSM to available.
  *
+ * After the advance the destination slot is verified: it must hold a valid
+ * DPE context with boot stage `kScKeymgrDPEBootStageCreator`, the default UDS
+ * max key version (all-ones) and the default UDS policy (allow child, no
+ * export, erase parent, no keygen).
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateReset`
  *
- * @param sel_dst_slot DPE context slot for the UDS.
- * @return The result of the advance call.
+ * @param sel_dst_slot_uds DPE context slot for the UDS.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds);
@@ -461,13 +471,18 @@ rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds);
  * the creator keys existing beyond its designated boot stage. This
  * function blocks until the advance operation was successfully.
  *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageOwnerInt`.
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data to advance the UDS to the
  * sealing owner key.
  * @param adv_data_attestation All required data to advance the UDS to the
  * attestation owner key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_creator(
@@ -483,11 +498,16 @@ rom_error_t sc_keymgr_dpe_advance_creator(
  * policy on the creator keys the source and destination slot have to be equal.
  * This function blocks until the advance operation was successfully.
  *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageOwner`.
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data for the sealing key.
  * @param adv_data_attestation All required data for the attestation key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_owner_int(
@@ -502,11 +522,16 @@ rom_error_t sc_keymgr_dpe_advance_owner_int(
  * destination slot have to be equal. This function is blocking until the
  * advance operation was successfully.
  *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageRuntime`.
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data for the sealing key.
  * @param adv_data_attestation All required data for the attestation key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_owner(
@@ -516,10 +541,12 @@ rom_error_t sc_keymgr_dpe_advance_owner(
 /**
  * Erase the DPE context of any slot
  *
- * This function blocks until the advance operation was successfully.
+ * This function blocks until the erase operation has finished and then reads
+ * back the slot metadata to verify the `valid` bit is cleared.
  *
  * @param sel_dst_slot selected DPE context to erase.
- * @return The result of the erase call.
+ * @return The result of the erase call. `kErrorKeymgrInternal` if the
+ * operation failed, `sel_dst_slot` is out of range or the slot is still valid.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot);
