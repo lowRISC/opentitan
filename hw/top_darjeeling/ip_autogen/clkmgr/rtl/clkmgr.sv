@@ -304,7 +304,8 @@
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .mubi_i(MuBi4False),
+    // No calib_rdy_i on this top: the clocks are always considered calibrated.
+    .mubi_i(MuBi4True),
     .mubi_o({calib_rdy})
   );
 
