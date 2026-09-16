@@ -333,15 +333,13 @@ interface otbn_trace_if
   assign ispr_read_data[IsprKeyS0L] = sideload_key_shares_i[0][255:0];
 
   assign ispr_read[IsprKeyS0H] = any_ispr_read & (ispr_addr == IsprKeyS0H);
-  assign ispr_read_data[IsprKeyS0H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
-                                       sideload_key_shares_i[0][SideloadKeyWidth-1:256]};
+  assign ispr_read_data[IsprKeyS0H] = sideload_key_shares_i[0][SideloadKeyWidth-1:256];
 
-  assign ispr_read[IsprKeyS1L] = any_ispr_read & (ispr_addr == IsprKeyS0L);
+  assign ispr_read[IsprKeyS1L] = any_ispr_read & (ispr_addr == IsprKeyS1L);
   assign ispr_read_data[IsprKeyS1L] = sideload_key_shares_i[1][255:0];
 
   assign ispr_read[IsprKeyS1H] = any_ispr_read & (ispr_addr == IsprKeyS1H);
-  assign ispr_read_data[IsprKeyS1H] = {{(WLEN - (SideloadKeyWidth - 256)){1'b0}},
-                                       sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+  assign ispr_read_data[IsprKeyS1H] = sideload_key_shares_i[1][SideloadKeyWidth-1:256];
 
 
   assign ispr_read[IsprMaiResS0]  = any_ispr_read & (ispr_addr == IsprMaiResS0);
