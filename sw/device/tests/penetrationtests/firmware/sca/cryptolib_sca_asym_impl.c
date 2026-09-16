@@ -257,14 +257,14 @@ status_t cryptolib_sca_p256_ecdh_impl(
   HARDENED_TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a destination for the shared secret.
-  uint32_t shared_secretblob[kPentestP256Words * 2];
+  uint32_t shared_secretblob[kPentestP256SharedSecretWords * 2];
   memset(shared_secretblob, 0, sizeof(shared_secretblob));
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
               .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
-              .key_length = kPentestP256Bytes,
+              .key_length = kPentestP256SharedSecretBytes,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
               .security_level = kOtcryptoKeySecurityLevelHigh,
@@ -278,16 +278,16 @@ status_t cryptolib_sca_p256_ecdh_impl(
       otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret);
   pentest_set_trigger_low();
 
-  uint32_t ss_share0[kPentestP256Words];
-  uint32_t ss_share1[kPentestP256Words];
+  uint32_t ss_share0[kPentestP256SharedSecretWords];
+  uint32_t ss_share1[kPentestP256SharedSecretWords];
   otcrypto_word32_buf_t ss_share0_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
   otcrypto_word32_buf_t ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
-  uint32_t ss[kPentestP256Words];
+  uint32_t ss[kPentestP256SharedSecretWords];
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
-  for (size_t i = 0; i < kPentestP256Words; i++) {
+  for (size_t i = 0; i < kPentestP256SharedSecretWords; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
 

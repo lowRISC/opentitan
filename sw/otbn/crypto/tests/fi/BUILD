@@ -109,7 +109,7 @@ otbn_fi_sim_test(
     col_threshold = "0.75",
     collision_mode = "boolean",
     collision_size = 32,
-    collision_symbol = "x,y",
+    collision_symbol = "ecdh_x0,ecdh_x1",
     fixed_instruction_count = True,
     ok_size = 4,
     ok_symbol = "ok",

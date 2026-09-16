@@ -8,13 +8,13 @@
  * Uses OTBN ECC P-256 lib to perform a scalar multiplication with a valid
  * example curve point and an example scalar. Both scalar and coordinates of
  * the curve point are contained in the .data section below.
- * The x coordinate of the resulting curve point is masked arithmetically
- * with a random value. As the x coorodinate represents the actual
- * shared key, the x coordinate and its mask are then converted from an
- * arithmetic to a boolean masking scheme.
+ * The x and y coordinates of the resulting curve point are masked
+ * arithmetically with random values and then converted from an arithmetic
+ * to a boolean masking scheme.
  *
- * The result of arithmetical unmasking as well as the result of boolean
- * unmasking are compared with an expected value.
+ * The results of boolean unmasking of both coordinates are compared with the
+ * expected values. In addition, the unmasked point is checked to satisfy the
+ * curve equation, i.e. that the x- and y-coordinates belong to each other.
  */
 
 .section .text.start
@@ -22,22 +22,48 @@
 p256_ecdh_shared_key_test:
 
   /* Call P-256 shared key generation to get a boolean-masked key.
-       dmem[x] <= x0
-       dmem[y] <= x1 */
+       dmem[ecdh_x0] <= x0
+       dmem[ecdh_x1] <= x1
+       dmem[ecdh_y0] <= y0
+       dmem[ecdh_y1] <= y1 */
   jal      x1, p256_shared_key
 
-  /* Load the two shares.
-       w11 <= dmem[x] = x0
-       w12 <= dmem[y] = x1 */
+  /* Load the shares of both coordinates.
+       w11 <= dmem[ecdh_x0] = x0
+       w12 <= dmem[ecdh_x1] = x1
+       w13 <= dmem[ecdh_y0] = y0
+       w14 <= dmem[ecdh_y1] = y1 */
   li        x3, 11
-  la        x4, x
+  la        x4, ecdh_x0
   bn.lid    x3++, 0(x4)
-  la        x4, y
+  la        x4, ecdh_x1
+  bn.lid    x3++, 0(x4)
+  la        x4, ecdh_y0
+  bn.lid    x3++, 0(x4)
+  la        x4, ecdh_y1
   bn.lid    x3, 0(x4)
 
-  /* Unmask the shared key, x.
-       w11 <= x0 ^ x1 = x */
+  /* Unmask the shared key coordinates.
+       w11 <= x0 ^ x1 = x
+       w12 <= y0 ^ y1 = y */
   bn.xor    w11, w11, w12
+  bn.xor    w12, w13, w14
+
+  /* Store the unmasked point for the on-curve check. The input public key
+     is no longer needed.
+       dmem[x] <= w11 = x
+       dmem[y] <= w12 = y */
+  li        x3, 11
+  la        x4, x
+  bn.sid    x3++, 0(x4)
+  la        x4, y
+  bn.sid    x3, 0(x4)
+
+  /* Check that the unmasked coordinates belong to the same curve point by
+     computing both sides of the Weierstrass equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal       x1, p256_isoncurve
 
   ecall
 
