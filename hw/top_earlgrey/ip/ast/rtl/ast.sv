@@ -156,14 +156,21 @@ module ast (
 ast_pkg::aon_to_main_t aon_to_main;
 ast_pkg::main_to_aon_t main_to_aon;
 
-// Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
+// Read-write margins generated in the AON domain (ast_dft, inside ast_part_secondary)
 ast_pkg::tpm_rm_t tpram_rm;
 ast_pkg::spm_rm_t spram_rm;
 ast_pkg::rom_rm_t sprom_rm;
 
+// Clock bypass for OS FPGA
+ast_pkg::clks_osc_byp_t clk_osc_byp;
+`ifdef AST_BYPASS_CLK
+  assign clk_osc_byp = clk_osc_byp_i;
+`else
+  assign clk_osc_byp = '0;
+`endif
 
 // AON Domain instantiation
-ast_aon u_ast_aon (
+ast_part_secondary u_ast_part_secondary (
   .clk_ast_adc_i           ( clk_ast_adc_i ),
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
@@ -238,7 +245,7 @@ ast_aon u_ast_aon (
 );
 
 // Main Domain instantiation
-ast_main u_ast_main (
+ast_part_primary u_ast_part_primary (
   .tl_i                    ( tl_i ),
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),

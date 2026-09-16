@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Created for AST domain separation - Main Domain
+// Created for AST domain separation - primary partition for Main Domain
 //
 //############################################################################
-// *Name: ast_main
-// *Module Description: Analog Sensors Top - Main Domain
+// *Name: ast_part_primary
+// *Module Description: Analog Sensors Top - Primary partition for Main Domain
 //############################################################################
 
 `include "prim_assert.sv"
 
-module ast_main (
+module ast_part_primary (
   // TLUL interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -463,4 +463,4 @@ assign unused_sigs = ^{ reg2hw.rega0,
                         reg2hw.regb   // [0:3]
                       };
 
-endmodule : ast_main
+endmodule : ast_part_primary
