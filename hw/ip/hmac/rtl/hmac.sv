@@ -956,9 +956,11 @@ module hmac
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
+  `ASSERT_KNOWN(IntrHmacErrOKnown, intr_hmac_err_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `ASSERT_KNOWN(IdleKnown, idle_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR
