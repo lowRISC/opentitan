@@ -255,6 +255,7 @@ package rram_ctrl_pkg;
   parameter int unsigned HwLcMgrInfoRules = 5;
   parameter int unsigned HwLcMgrDataRules = 1;
   parameter int unsigned HwOtpDataRules   = 1;
+  parameter int unsigned HwOtpInfoRules   = 1;
   parameter int unsigned HostDataRules    = 1;
 
   parameter page_cfg_t CfgAllowRd = '{
@@ -360,6 +361,15 @@ package rram_ctrl_pkg;
       cfg:   CfgAllowRdWrOtp,
       base:  PageW'(OtpStartPage),
       size:  OtpPages-1
+    }
+  };
+
+  // RD/WR access to the relocated OTP SECRET0 info page, everything else is disabled
+  parameter mp_info_cfg_t HwOtpInfoPageCfg[HwOtpInfoRules] = '{
+    '{
+      page:  OtpRemapInfoPage,
+      phase: PhaseInvalid,
+      cfg:   CfgAllowRdWrOtp
     }
   };
 

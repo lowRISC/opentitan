@@ -5777,6 +5777,8 @@
       {
         WrFifoDepth: "4"
         RdFifoDepth: "16"
+        RemapStart: otp_ctrl_reg_pkg::Secret0Offset
+        RemapSize: otp_ctrl_reg_pkg::Secret0Size
       }
       memory:
       {
@@ -5823,6 +5825,24 @@
           local: "false"
           expose: "true"
           name_top: RramCtrlRdFifoDepth
+        }
+        {
+          name: RemapStart
+          desc: Byte offset of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.
+          type: int
+          default: otp_ctrl_reg_pkg::Secret0Offset
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlRemapStart
+        }
+        {
+          name: RemapSize
+          desc: Byte size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.
+          type: int
+          default: otp_ctrl_reg_pkg::Secret0Size
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlRemapSize
         }
       ]
       inter_signal_list:

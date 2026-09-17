@@ -771,6 +771,8 @@
       param_decl: {
         WrFifoDepth: "4",
         RdFifoDepth: "16",
+        RemapStart: "otp_ctrl_reg_pkg::Secret0Offset",
+        RemapSize: "otp_ctrl_reg_pkg::Secret0Size",
       },
       memory: {
         host: {

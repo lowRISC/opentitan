@@ -177,12 +177,29 @@ module rram_ctrl_mp
   // Check info partition access //
   /////////////////////////////////
   logic [InfoPageW-1:0] info_page_addr;
-  page_cfg_t            info_page_cfg_pre, hw_lcmgr_info_page_cfg, info_page_cfg;
+  page_cfg_t            info_page_cfg_pre, hw_lcmgr_info_page_cfg, hw_otp_info_page_cfg;
+  page_cfg_t            info_page_cfg;
 
   // rule match used for assertions only
   logic [HwLcMgrInfoRules-1:0] unused_rule_match;
+  logic [HwOtpInfoRules-1:0]   unused_otp_info_rule_match;
 
   assign info_page_addr = InfoPageW'(ctrl_addr[BusAddrW-1 -: PageW]);
+
+  // Select appropriate hw page configuration for the relocated OTP SECRET0 info page
+  always_comb begin
+    hw_otp_info_page_cfg = CfgDisable;
+    unused_otp_info_rule_match = '0;
+    if (otp_req) begin
+      for (int unsigned i = 0; i < HwOtpInfoRules; i++) begin: hw_otp_info_region_comps
+        if (info_page_addr == HwOtpInfoPageCfg[i].page &&
+            ctrl_phase_i == HwOtpInfoPageCfg[i].phase) begin
+          unused_otp_info_rule_match[i] = 1'b1;
+          hw_otp_info_page_cfg = HwOtpInfoPageCfg[i].cfg;
+        end
+      end
+    end
+  end
 
   // Select appropriate hw page configuration based on phase and page matching
   always_comb begin
@@ -215,6 +232,7 @@ module rram_ctrl_mp
     unique case (if_sel_i)
       HwLoopBack: info_page_cfg = CfgRw;
       SwSel:      info_page_cfg = info_page_cfgs_i[info_page_addr].cfg;
+      HwOtpSel:   info_page_cfg = hw_otp_info_page_cfg;
       HwLcMgrSel: info_page_cfg = hw_lcmgr_info_page_cfg;
       default: ;
     endcase
@@ -374,6 +392,7 @@ module rram_ctrl_mp
 
   // Cannot match more than one info rule at a time
   `ASSERT(hwInfoRuleOnehot_A, lcmgr_req |-> $onehot0(unused_rule_match))
+  `ASSERT(hwOtpInfoRuleOnehot_A, otp_req |-> $onehot0(unused_otp_info_rule_match))
 
   // The phy cannot handle back pressure
   `ASSERT(IllegalBackPressure_A, (host_rd_done_i & forward_err) == 1'b0)

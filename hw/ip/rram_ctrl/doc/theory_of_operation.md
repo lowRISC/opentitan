@@ -401,6 +401,10 @@ Software has no visibility into the OTP region and cannot modify these protectio
 This is enforced by a fixed, hardwired region (`SwInitDataCfg`) placed at the highest-priority position (region index 0) in the software-path region table, denying all read and write access to the OTP page range.
 This region is not exposed via any register and cannot be reconfigured or overridden by software.
 
+When `RemapSize` is nonzero, `rram_ctrl_otp` also relocates one OTP partition onto `OtpRemapInfoPage` in the info partition, instead of the data-partition OTP region.
+Its accesses to this page still use the `HwOtpSel` requester identity, but are matched against the fixed table `HwOtpInfoPageCfg`, the info-partition counterpart of `HwOtpDataCfg`, which grants `rd_en`/`wr_en` for `OtpRemapInfoPage` only, with `scramble_en` disabled for the same reason as the data-partition OTP region.
+Unlike the creator, owner, and isolated info pages, software's `rd_en`/`wr_en` for `OtpRemapInfoPage` are unconditionally forced to `MuBi4False`.
+
 ## RRAM Errors and Faults
 
 The RRAM controller maintains three categories of observed errors and faults.
