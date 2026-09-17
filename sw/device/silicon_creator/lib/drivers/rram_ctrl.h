@@ -102,11 +102,12 @@ enum {
    * no way to combine physical info pages, so anything needing more than
    * 512 bytes must be an emulated page instead (see below).
    */ \
-  X(kRramCtrlInfoPageFactoryId,           0, false, 1) \
-  X(kRramCtrlInfoPageAttestationKeySeeds, 1, false, 1) \
-  X(kRramCtrlInfoPageCreatorSecret,       5, false, 1) \
-  X(kRramCtrlInfoPageOwnerSecret,         6, false, 1) \
-  X(kRramCtrlInfoPageWaferAuthSecret,     7, false, 1) \
+  X(kRramCtrlInfoPageAttestationKeySeeds, 0, false, 1) \
+  X(kRramCtrlInfoPageCreatorSecret,       1, false, 1) \
+  X(kRramCtrlInfoPageOwnerSecret,         2, false, 1) \
+  X(kRramCtrlInfoPageFactoryId,           5, false, 1) \
+  X(kRramCtrlInfoPageWaferAuthSecret,     6, false, 1) \
+  X(kRramCtrlInfoPageOtpRemap,            7, false, 1) \
   /**
    * Emulated info pages, relocated onto the data partition.
    *
