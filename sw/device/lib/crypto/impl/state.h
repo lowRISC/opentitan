@@ -16,14 +16,17 @@ extern "C" {
 typedef struct crypto_state {
   uint32_t imem_cache;
   uint32_t kat_state;
-  otcrypto_key_security_level_t security_level;
-  hardened_bool_t self_check_state;
-  hardened_bool_t locked_state;
-  hardened_bool_t csrng_instantiated;
-  hardened_bool_t csrng_is_default;
-  otcrypto_cmvp_service_indicator_t cmvp_service_indicator;
-  uint32_t cmvp_call_depth;
+  uint16_t security_level;
+  uint8_t self_check_state;
+  uint8_t locked_state;
+  uint8_t csrng_instantiated;
+  uint8_t csrng_is_default;
+  uint8_t cmvp_service_indicator;
+  uint8_t cmvp_call_depth;
 } crypto_state_t;
+
+static_assert(sizeof(crypto_state_t) == 16,
+              "crypto_state_t size must be 128 bits (16 bytes)");
 
 /**
  * Initializes the state structure and stores it in the OTBN scratch registers.
