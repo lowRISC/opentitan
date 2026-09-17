@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
     files:
       - rtl/hmac_reg_pkg.sv
       - rtl/hmac_reg_top.sv
