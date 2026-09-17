@@ -12,7 +12,7 @@ static void cmvp_start_service(otcrypto_cmvp_service_indicator_t indicator) {
   crypto_state_t state;
   if (status_ok(read_state(&state))) {
     if (state.cmvp_call_depth == 0) {
-      state.cmvp_service_indicator = indicator;
+      state.cmvp_service_indicator = (uint8_t)indicator;
     }
     state.cmvp_call_depth++;
     (void)store_state(&state);
@@ -55,7 +55,7 @@ otcrypto_status_t otcrypto_cmvp_service_indicator(
     *indicator = kOtcryptoCmvpNoService;
     return OTCRYPTO_OK;
   }
-  *indicator = state.cmvp_service_indicator;
+  *indicator = (otcrypto_cmvp_service_indicator_t)state.cmvp_service_indicator;
   state.cmvp_service_indicator = kOtcryptoCmvpNoService;
   state.cmvp_call_depth = 0;
   HARDENED_TRY(store_state(&state));

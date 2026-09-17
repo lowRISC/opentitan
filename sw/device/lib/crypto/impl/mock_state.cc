@@ -13,10 +13,10 @@ static crypto_state_t stored_state = {
     .imem_cache = 0,
     .kat_state = 0,
     .security_level = kOtcryptoKeySecurityLevelLow,
-    .self_check_state = kHardenedBoolFalse,
-    .locked_state = kHardenedBoolFalse,
-    .csrng_instantiated = kHardenedBoolFalse,
-    .csrng_is_default = kHardenedBoolFalse,
+    .self_check_state = kHardenedByteBoolFalse,
+    .locked_state = kHardenedByteBoolFalse,
+    .csrng_instantiated = kHardenedByteBoolFalse,
+    .csrng_is_default = kHardenedByteBoolFalse,
 #ifdef FIPS_MODE
     .cmvp_service_indicator = kOtcryptoCmvpNoService,
     .cmvp_call_depth = 0,
@@ -25,15 +25,15 @@ static crypto_state_t stored_state = {
 
 otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
   memset(&stored_state, 0, sizeof(stored_state));
-  stored_state.locked_state = kHardenedBoolFalse;
-  stored_state.self_check_state = kHardenedBoolFalse;
-  stored_state.csrng_instantiated = kHardenedBoolFalse;
-  stored_state.csrng_is_default = kHardenedBoolFalse;
+  stored_state.locked_state = kHardenedByteBoolFalse;
+  stored_state.self_check_state = kHardenedByteBoolFalse;
+  stored_state.csrng_instantiated = kHardenedByteBoolFalse;
+  stored_state.csrng_is_default = kHardenedByteBoolFalse;
 #ifdef FIPS_MODE
   stored_state.cmvp_service_indicator = kOtcryptoCmvpNoService;
   stored_state.cmvp_call_depth = 0;
 #endif
-  stored_state.security_level = security_level;
+  stored_state.security_level = (uint16_t)security_level;
   return OTCRYPTO_OK;
 }
 

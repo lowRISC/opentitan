@@ -36,7 +36,6 @@ status_t read_state(crypto_state_t *state) {
   if (state == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  memset(state, 0, sizeof(*state));
   uint32_t words[OTBN_SCRATCH_MULTIREG_COUNT];
   uint32_t base = otbn_base() + OTBN_SCRATCH_0_REG_OFFSET;
   for (size_t i = 0; i < OTBN_SCRATCH_MULTIREG_COUNT; ++i) {
@@ -53,11 +52,11 @@ otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
   crypto_state_t internal_state = {
       .imem_cache = 0,
       .kat_state = 0,
-      .security_level = security_level,
-      .self_check_state = kHardenedBoolFalse,
-      .locked_state = kHardenedBoolFalse,
-      .csrng_instantiated = kHardenedBoolFalse,
-      .csrng_is_default = kHardenedBoolFalse,
+      .security_level = (uint16_t)security_level,
+      .self_check_state = kHardenedByteBoolFalse,
+      .locked_state = kHardenedByteBoolFalse,
+      .csrng_instantiated = kHardenedByteBoolFalse,
+      .csrng_is_default = kHardenedByteBoolFalse,
 #ifdef FIPS_MODE
       .cmvp_service_indicator = kOtcryptoCmvpNoService,
       .cmvp_call_depth = 0,
@@ -73,14 +72,14 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   HARDENED_TRY(read_state(&state));
 
   // If we are in a locked state, the health check returns a fatal error
-  if (state.locked_state == kHardenedBoolTrue) {
+  if (state.locked_state == kHardenedByteBoolTrue) {
     return OTCRYPTO_FATAL_ERR;
   }
 
   // The self-integrity check uses SHA-2, so the SHA-2 KAT
   // must be allowed to execute before the self-integrity check has completed.
   if (kat_bit != kTestHashSha512Bit &&
-      state.self_check_state == kHardenedBoolFalse) {
+      state.self_check_state == kHardenedByteBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -96,7 +95,7 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
     // If the KAT failed, lock the cryptolib
     if (result.value != kHardenedBoolTrue) {
       HARDENED_TRY(read_state(&state));
-      state.locked_state = kHardenedBoolTrue;
+      state.locked_state = kHardenedByteBoolTrue;
       HARDENED_TRY(store_state(&state));
       return result;
     }

@@ -1195,21 +1195,21 @@ status_t entropy_csrng_instantiate(
   crypto_state_t state;
   bool has_state = status_ok(read_state(&state));
 
-  hardened_bool_t is_default = kHardenedBoolFalse;
+  uint8_t is_default = kHardenedByteBoolFalse;
   if (launder32(disable_trng_input) == kHardenedBoolFalse &&
       (seed_material == NULL || seed_material->len == 0)) {
     HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
-    is_default = kHardenedBoolTrue;
+    is_default = kHardenedByteBoolTrue;
   }
 
   hardened_bool_t skip_inst = kHardenedBoolFalse;
   if (has_state) {
-    if (launder32(is_default) == kHardenedBoolTrue &&
-        launder32(state.csrng_instantiated) == kHardenedBoolTrue &&
-        launder32(state.csrng_is_default) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(is_default, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(state.csrng_is_default, kHardenedBoolTrue);
+    if (launder32(is_default) == kHardenedByteBoolTrue &&
+        launder32(state.csrng_instantiated) == kHardenedByteBoolTrue &&
+        launder32(state.csrng_is_default) == kHardenedByteBoolTrue) {
+      HARDENED_CHECK_EQ(is_default, kHardenedByteBoolTrue);
+      HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedByteBoolTrue);
+      HARDENED_CHECK_EQ(state.csrng_is_default, kHardenedByteBoolTrue);
       skip_inst = kHardenedBoolTrue;
     }
   }
@@ -1219,7 +1219,7 @@ status_t entropy_csrng_instantiate(
     return OTCRYPTO_OK;
   }
 
-  if (has_state && state.csrng_instantiated == kHardenedBoolTrue) {
+  if (has_state && state.csrng_instantiated == kHardenedByteBoolTrue) {
     HARDENED_TRY(entropy_csrng_uninstantiate());
   }
 
@@ -1233,7 +1233,7 @@ status_t entropy_csrng_instantiate(
                                   kEntropyCsrngSendAppCmdTypeCsrng, true));
 
   if (has_state) {
-    state.csrng_instantiated = kHardenedBoolTrue;
+    state.csrng_instantiated = kHardenedByteBoolTrue;
     state.csrng_is_default = is_default;
     HARDENED_TRY(store_state(&state));
   }
@@ -1268,10 +1268,10 @@ status_t entropy_csrng_generate_start(
   crypto_state_t state;
   // Check whether the state is present and use it if so
   if (status_ok(read_state(&state))) {
-    if (state.csrng_instantiated != kHardenedBoolTrue) {
+    if (state.csrng_instantiated != kHardenedByteBoolTrue) {
       return OTCRYPTO_RECOV_ERR;
     }
-    HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedByteBoolTrue);
   }
 
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
@@ -1353,8 +1353,8 @@ status_t entropy_csrng_uninstantiate(void) {
   crypto_state_t state;
   // Check whether the state is present and use it if so
   if (status_ok(read_state(&state))) {
-    state.csrng_instantiated = kHardenedBoolFalse;
-    state.csrng_is_default = kHardenedBoolFalse;
+    state.csrng_instantiated = kHardenedByteBoolFalse;
+    state.csrng_is_default = kHardenedByteBoolFalse;
     HARDENED_TRY(store_state(&state));
   }
 
