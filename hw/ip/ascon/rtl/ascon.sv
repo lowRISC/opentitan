@@ -149,4 +149,15 @@ module ascon
     );
   end
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  // All outputs should have a known value after reset
+  `ASSERT_KNOWN(IdleKnown, idle_o)
+  `ASSERT_KNOWN(EdnReqKnown, edn_o)
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
+
 endmodule
