@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:cryptoc_dpi:0.1
+      - lowrisc:dv:key_sideload_agent
       - lowrisc:dv:test_vectors
     files:
       - hmac_env_pkg.sv
