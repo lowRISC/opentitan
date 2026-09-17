@@ -12,12 +12,16 @@ use std::str::FromStr;
 use strum::{Display, EnumString};
 use zeroize::Zeroize;
 
+/// A SPHINCS+ public (verifying) key, stored as an algorithm (parameter set)
+/// and raw bytes.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SpxPublicKey {
     algorithm: SphincsPlus,
     key: Vec<u8>,
 }
 
+/// A SPHINCS+ secret (signing/private) key, stored as an algorithm (parameter
+/// set) and raw bytes.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SpxSecretKey {
     algorithm: SphincsPlus,
@@ -33,6 +37,15 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
+/// The SPHINCS+ domain separator that should be used with a given key.
+/// SPHINCS+ has two signature modes - Pure and Pre-Hash. There are many
+/// variations depending on the pre-hash function or (XOF) used - OpenTitan
+/// only uses Sha256 currently.
+///
+/// The current implementation of these two modes assumes that the default
+/// empty context string is always being used. If this is not the case,
+/// then the `None` domain should be used, and the domain separator must be
+/// manually prepended to the string.
 #[derive(
     Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
 )]
@@ -162,7 +175,7 @@ impl EncodeKey for SpxSecretKey {
     /// Encodes the SPHINCS+ secret key as a PEM encoded string.
     fn to_pem(&self) -> Result<String, SpxError> {
         // RFC7468 permits hyphen-minus in the label as long as it isn't the
-        // first character.  The pem_rfc7468 crate does not.
+        // first character.  The `pem_rfc7468` crate does not.
         let algorithm = self.algorithm.to_string().replace('-', "_");
         pem_rfc7468::encode_string(
             &format!("RAW:{algorithm} PRIVATE KEY"),
@@ -274,7 +287,7 @@ impl EncodeKey for SpxPublicKey {
     /// Encodes the SPHINCS+ public key as a PEM encoded string.
     fn to_pem(&self) -> Result<String, SpxError> {
         // RFC7468 permits hyphen-minus in the label as long as it isn't the
-        // first character.  The pem_rfc7468 crate does not.
+        // first character.  The `pem_rfc7468` crate does not.
         let algorithm = self.algorithm.to_string().replace('-', "_");
         pem_rfc7468::encode_string(
             &format!("RAW:{algorithm} PUBLIC KEY"),
