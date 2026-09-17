@@ -782,6 +782,7 @@ module keymgr
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN(EdnReqKnownO_A,  edn_o)
 
 
   // kmac parameter consistency
