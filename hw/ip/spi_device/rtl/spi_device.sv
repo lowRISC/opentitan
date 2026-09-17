@@ -1958,6 +1958,9 @@ module spi_device
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
   `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+
   `ASSERT_KNOWN(IntrUploadCmdfifoNotEmptyOKnown,
                 intr_upload_cmdfifo_not_empty_o)
   `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
