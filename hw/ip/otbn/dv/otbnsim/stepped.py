@@ -379,8 +379,8 @@ def on_wfi_resume(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('set_keymgr_value', 3, args)
-    key0 = read_word('key0', args[0], 384)
-    key1 = read_word('key1', args[1], 384)
+    key0 = read_word('key0', args[0], 512)
+    key1 = read_word('key1', args[1], 512)
     valid = read_word('valid', args[2], 1) == 1
     sim.state.wsrs.set_sideload_keys(key0 if valid else None,
                                      key1 if valid else None)

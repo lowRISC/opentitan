@@ -59,8 +59,8 @@ class OtbnModel {
 
   // Set or unset the two keys from keymgr. Returns 0 on success or -1
   // on error.
-  int set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                       svLogicVecVal *key1 /* logic [383:0] */,
+  int set_keymgr_value(svLogicVecVal *key0 /* logic [511:0] */,
+                       svLogicVecVal *key1 /* logic [511:0] */,
                        unsigned char valid);
 
   // Step once in the model. Returns 1 if the model has finished, 0 if not and

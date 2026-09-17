@@ -998,7 +998,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [hmac-testvectors-rfc]: https://datatracker.ietf.org/doc/html/rfc4231
 [hmac-usage-rfc]: https://datatracker.ietf.org/doc/html/rfc4868
 [kdf-prf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
-[keymgr]:  ../../../hw/ip/keymgr/README.md
+[keymgr_dpe]:  ../../../hw/ip/keymgr_dpe/README.md
 [kmac]:  ../../../hw/ip/kmac/README.md
 [kwp-spec]: https://csrc.nist.gov/publications/detail/sp/800-38f/final
 [nist-drbg-spec]: https://csrc.nist.gov/publications/detail/sp/800-90a/rev-1/final

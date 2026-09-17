@@ -58,7 +58,7 @@ module kmac
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // KeyMgr sideload (secret key) interface
-  input keymgr_pkg::hw_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // KeyMgr KDF data path
   input  app_req_t [NumAppIntf-1:0] app_i,

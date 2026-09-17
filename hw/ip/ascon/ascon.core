@@ -13,7 +13,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
     files:
       - rtl/ascon_pkg.sv
       - rtl/ascon_reg_pkg.sv

@@ -23,13 +23,15 @@ interface keymgr_dpe_if(input clk, input rst_n);
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t               owner_seed;
   rom_ctrl_pkg::keymgr_data_t[DvNumRomDigestInputs-1:0] rom_digests;
 
-  keymgr_pkg::hw_key_req_t kmac_key;
-  keymgr_pkg::hw_key_req_t aes_key;
-  keymgr_pkg::otbn_key_req_t otbn_key;
+  keymgr_dpe_pkg::hw_key_req_t kmac_key;
+  keymgr_dpe_pkg::hw_key_req_t aes_key;
+  keymgr_dpe_pkg::wide_hw_key_req_t otbn_key;
+  keymgr_dpe_pkg::wide_hw_key_req_t hmac_key;
 
-  keymgr_pkg::hw_key_req_t kmac_key_exp;
-  keymgr_pkg::hw_key_req_t aes_key_exp;
-  keymgr_pkg::otbn_key_req_t otbn_key_exp;
+  keymgr_dpe_pkg::hw_key_req_t kmac_key_exp;
+  keymgr_dpe_pkg::hw_key_req_t aes_key_exp;
+  keymgr_dpe_pkg::wide_hw_key_req_t hmac_key_exp;
+  keymgr_dpe_pkg::wide_hw_key_req_t otbn_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;
@@ -57,6 +59,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // sideload status
   keymgr_dpe_sideload_status_e aes_sideload_status;
   keymgr_dpe_sideload_status_e otbn_sideload_status;
+  keymgr_dpe_sideload_status_e hmac_sideload_status;
 
   // When kmac sideload key is generated, `kmac_key` becomes valid with the generated digest data.
   // If SW requests keymgr_dpe to do another operation, kmac_key will be updated to the internal key
@@ -67,7 +70,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   keymgr_dpe_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
-  // or any name at keymgr_key_dest_e
+  // or any name at keymgr_dpe_key_dest_e
   keymgr_dpe_env_pkg::key_shares_t keys_a_array[
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e][string];
 
@@ -144,11 +147,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
     kmac_key_exp = '0;
     aes_key_exp  = '0;
     otbn_key_exp = '0;
+    hmac_key_exp = '0;
     is_kmac_key_good = 0;
     is_kmac_data_good = 0;
     kmac_sideload_status = SideLoadNotAvail;
     aes_sideload_status = SideLoadNotAvail;
     otbn_sideload_status = SideLoadNotAvail;
+    hmac_sideload_status = SideLoadNotAvail;
 
     // edn related
     edn_interval  = 'h100;
@@ -279,12 +284,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
   function automatic void update_sideload_key(
       keymgr_dpe_env_pkg::kmac_digests_t key_shares,
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
-      keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac
+      keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest = keymgr_dpe_pkg::Kmac
   );
-    keymgr_dpe_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
-                                                    key_shares[0][keymgr_pkg::KeyWidth-1:0]};
+    keymgr_dpe_env_pkg::key_shares_t trun_key_shares =
+        {key_shares[1][keymgr_dpe_pkg::KeyWidth-1:0], key_shares[0][keymgr_dpe_pkg::KeyWidth-1:0]};
     case (dest)
-      keymgr_pkg::Kmac: begin
+      keymgr_dpe_pkg::Kmac: begin
         if (kmac_sideload_status != SideLoadClear) begin
           kmac_sideload_status     <= SideLoadAvail;
           kmac_key_exp             <= '{1'b1, trun_key_shares};
@@ -292,17 +297,24 @@ interface keymgr_dpe_if(input clk, input rst_n);
           kmac_sideload_key_shares <= trun_key_shares;
         end
       end
-      keymgr_pkg::Aes: begin
+      keymgr_dpe_pkg::Aes: begin
         if (aes_sideload_status != SideLoadClear) begin
           aes_key_exp         <= '{1'b1, trun_key_shares};
           aes_sideload_status <= SideLoadAvail;
         end
       end
-      keymgr_pkg::Otbn: begin
+      keymgr_dpe_pkg::Otbn: begin
         if (otbn_sideload_status != SideLoadClear) begin
-          // only otbn uses full 384 bits digest data
+          // otbn uses full 512 bits digest data
           otbn_key_exp         <= '{1'b1, key_shares};
           otbn_sideload_status <= SideLoadAvail;
+        end
+      end
+      keymgr_dpe_pkg::Hmac: begin
+        if (hmac_sideload_status != SideLoadClear) begin
+          // hmac uses full 512 bits digest data
+          hmac_key_exp         <= '{1'b1, key_shares};
+          hmac_sideload_status <= SideLoadAvail;
         end
       end
       default: `uvm_fatal("keymgr_dpe_if", $sformatf("Unexpect dest type %0s", dest.name))
@@ -311,39 +323,51 @@ interface keymgr_dpe_if(input clk, input rst_n);
     keys_a_array[state][dest.name] = trun_key_shares;
   endfunction
 
-  function automatic void clear_sideload_key(keymgr_pkg::keymgr_sideload_clr_e clear_dest);
+  function automatic void clear_sideload_key(keymgr_dpe_pkg::keymgr_dpe_sideload_clr_e clear_dest);
     // reset from Clear to NotAvail
     if (kmac_sideload_status == SideLoadClear) kmac_sideload_status <= SideLoadNotAvail;
     if (aes_sideload_status == SideLoadClear)  aes_sideload_status  <= SideLoadNotAvail;
     if (otbn_sideload_status == SideLoadClear) otbn_sideload_status <= SideLoadNotAvail;
+    if (hmac_sideload_status == SideLoadClear) hmac_sideload_status <= SideLoadNotAvail;
     case (clear_dest)
-      keymgr_pkg::SideLoadClrIdle: ; // do nothing
-      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrOtbn: begin
+      keymgr_dpe_pkg::SideLoadClrIdle: ; // do nothing
+      keymgr_dpe_pkg::SideLoadClrAes,
+      keymgr_dpe_pkg::SideLoadClrKmac,
+      keymgr_dpe_pkg::SideLoadClrOtbn,
+      keymgr_dpe_pkg::SideLoadClrHmac: begin
         clear_one_sideload_key(clear_dest);
       end
       // clear all
       default: begin
-        clear_one_sideload_key(keymgr_pkg::SideLoadClrAes);
-        clear_one_sideload_key(keymgr_pkg::SideLoadClrKmac);
-        clear_one_sideload_key(keymgr_pkg::SideLoadClrOtbn);
+        clear_one_sideload_key(keymgr_dpe_pkg::SideLoadClrAes);
+        clear_one_sideload_key(keymgr_dpe_pkg::SideLoadClrKmac);
+        clear_one_sideload_key(keymgr_dpe_pkg::SideLoadClrOtbn);
+        clear_one_sideload_key(keymgr_dpe_pkg::SideLoadClrHmac);
       end
     endcase
   endfunction
 
-  function automatic void clear_one_sideload_key(keymgr_pkg::keymgr_sideload_clr_e clear_dest);
+  function automatic void clear_one_sideload_key(
+      keymgr_dpe_pkg::keymgr_dpe_sideload_clr_e clear_dest
+    );
+
     case (clear_dest)
-      keymgr_pkg::SideLoadClrAes: begin
+      keymgr_dpe_pkg::SideLoadClrAes: begin
         aes_sideload_status <= SideLoadClear;
         aes_key_exp.valid <= 0;
       end
-      keymgr_pkg::SideLoadClrKmac: begin
+      keymgr_dpe_pkg::SideLoadClrKmac: begin
         is_kmac_key_good <= 0;
         kmac_key_exp.valid <= 0;
         kmac_sideload_status <= SideLoadClear;
       end
-      keymgr_pkg::SideLoadClrOtbn: begin
+      keymgr_dpe_pkg::SideLoadClrOtbn: begin
         otbn_sideload_status <= SideLoadClear;
         otbn_key_exp.valid <= 0;
+      end
+      keymgr_dpe_pkg::SideLoadClrHmac: begin
+        hmac_sideload_status <= SideLoadClear;
+        hmac_key_exp.valid <= 0;
       end
       default: begin
         `uvm_fatal(msg_id, $sformatf("Unexpected clear_dest %0d", clear_dest))
@@ -361,10 +385,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
     aes_key_exp.valid  <= 0;
     kmac_key_exp.valid <= 0;
     otbn_key_exp.valid <= 0;
+    hmac_key_exp.valid <= 0;
 
     aes_sideload_status  <= SideLoadClear;
     kmac_sideload_status <= SideLoadClear;
     otbn_sideload_status <= SideLoadClear;
+    hmac_sideload_status <= SideLoadClear;
   endfunction
 
   function automatic void update_edn_tolerance_upd(int edn_clk, int main_clk);
@@ -388,8 +414,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
                            tb.dut.u_ctrl.adv_en_o};
   kmac_pkg::app_rsp_t invalid_kmac_rsp;
   logic [2:0] force_sideload_valids, pre_sideload_valids;
-  logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
-        force_internal_key, pre_internal_key;
   task automatic inject_fault(keymgr_dpe_fault_inject_type_e fi_type);
     @(posedge clk);
     `uvm_info(msg_id, $sformatf("injecting fault: %s", fi_type.name), UVM_LOW)
@@ -454,7 +478,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
         // TODO(opentitan-integrated/issues/669):
         // re-evaluate this key logic, as key_state_q does not exist
         // in keymgr_dpe
-
+        //
+        // logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
+        // force_internal_key, pre_internal_key;
+        // ...
         //pre_internal_key = tb.dut.u_ctrl.key_state_q;
         //// flip up to 2 bits
         //`DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_internal_key,
@@ -584,10 +611,16 @@ interface keymgr_dpe_if(input clk, input rst_n);
         repeat (2) @(posedge clk);
         if (otbn_sideload_status != SideLoadAvail) check_invalid_key(otbn_key, "OTBN");
       end
+      forever begin
+        @(hmac_key or hmac_sideload_status);
+        // one cycle to sync with clock, one cycle to allow design to clear the key
+        repeat (2) @(posedge clk);
+        if (hmac_sideload_status != SideLoadAvail) check_invalid_key(hmac_key, "HMAC");
+      end
     join
   end
 
-  function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
+  function automatic void check_invalid_key(keymgr_dpe_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && en_chk) begin
       foreach (keys_a_array[state, dest]) begin
         `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][dest],
@@ -636,6 +669,16 @@ interface keymgr_dpe_if(input clk, input rst_n);
     CheckOtbnKeyValid,
     otbn_sideload_status != SideLoadClear ->
     otbn_key_exp.valid == otbn_key.valid
+  )
+
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckHmacKey, hmac_sideload_status == SideLoadAvail &&
+    hmac_key_exp.valid -> hmac_key == hmac_key_exp
+  )
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckHmacKeyValid,
+    hmac_sideload_status != SideLoadClear ->
+    hmac_key_exp.valid == hmac_key.valid
   )
 
   // for EDN assertion
