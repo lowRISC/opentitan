@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use bitflags::bitflags;
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 
 #[derive(Debug, Default)]
 pub struct KeyEntry {
@@ -14,8 +14,8 @@ pub struct KeyEntry {
     pub hash: Option<String>,
     /// Algorithm to be used with the key.
     pub algorithm: String,
-    /// Domain to be used with the key (only when keys are restricted to a specific domain).
-    pub domain: Option<SpxDomain>,
+    /// SPX signature mode (only when keys are explicitly restricted to a specific domain).
+    pub domain: Option<SpxSignatureMode>,
     /// Opaque representation of the private key material.
     pub private_blob: Vec<u8>,
     /// Exported private key material (only when GenerateFlags::EXPORT_PRIVATE is set).
@@ -28,8 +28,8 @@ pub struct KeyInfo {
     pub hash: String,
     /// Algorithm to be used with the key.
     pub algorithm: String,
-    /// Domain to be used with the key (only when keys are restricted to a specific domain).
-    pub domain: Option<SpxDomain>,
+    /// SPX signature mode (only when keys are explicitly restricted to a specific domain).
+    pub domain: Option<SpxSignatureMode>,
     /// Public key material.
     pub public_key: Vec<u8>,
     /// Opaque representation of the private key material.
@@ -60,7 +60,7 @@ pub trait SpxInterface {
         &self,
         alias: &str,
         algorithm: &str,
-        domain: SpxDomain,
+        domain: Option<SpxSignatureMode>,
         token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry>;
@@ -71,7 +71,7 @@ pub trait SpxInterface {
         &self,
         alias: &str,
         algorithm: &str,
-        domain: SpxDomain,
+        domain: Option<SpxSignatureMode>,
         token: &str,
         overwrite: bool,
         public_key: &[u8],
@@ -83,7 +83,7 @@ pub trait SpxInterface {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
     ) -> Result<Vec<u8>>;
 
@@ -92,7 +92,7 @@ pub trait SpxInterface {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool>;

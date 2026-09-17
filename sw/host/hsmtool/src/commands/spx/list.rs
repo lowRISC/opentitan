@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -20,7 +20,7 @@ pub struct Key {
     pub id: String,
     pub label: String,
     pub algorithm: String,
-    pub domain: Option<SpxDomain>,
+    pub domain: Option<SpxSignatureMode>,
 }
 
 #[derive(Default, Debug, Serialize)]

@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use libloading::Library;
-use sphincsplus::SpxDomain;
+use sphincsplus::{SpxDomain, SpxSignatureMode};
 use std::ffi::{CStr, CString};
 use thiserror::Error;
 
@@ -323,7 +323,7 @@ impl SpxInterface for Acorn {
         &self,
         alias: &str,
         algorithm: &str,
-        _domain: SpxDomain,
+        _domain: Option<SpxSignatureMode>,
         token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -380,7 +380,7 @@ impl SpxInterface for Acorn {
         &self,
         alias: &str,
         algorithm: &str,
-        _domain: SpxDomain,
+        _domain: Option<SpxSignatureMode>,
         token: &str,
         overwrite: bool,
         public_key: &[u8],
@@ -446,12 +446,12 @@ impl SpxInterface for Acorn {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
     ) -> Result<Vec<u8>> {
         let alias = alias.map(CString::new).transpose()?;
         let key_hash = key_hash.map(CString::new).transpose()?;
-        let message = domain.prepare(message);
+        let message = SpxDomain::from(domain).prepare(message);
         // SAFETY: The signature returned by `sign` is copied into a rust Vec.
         // The memory allocated by the acorn library is freed by the acorn library's
         // free function.
@@ -491,13 +491,13 @@ impl SpxInterface for Acorn {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool> {
         let alias = alias.map(CString::new).transpose()?;
         let key_hash = key_hash.map(CString::new).transpose()?;
-        let message = domain.prepare(message);
+        let message = SpxDomain::from(domain).prepare(message);
         // SAFETY: The signature returned by `sign` is copied into a rust Vec.
         // The memory allocated by the acorn library is freed by the acorn library's
         // free function.
