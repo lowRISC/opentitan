@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_ip")
+load(
+    "//hw/top:defs.bzl",
+    "opentitan_if_ip",
+    "opentitan_require_ip",
+    "opentitan_select_top",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -95,7 +100,13 @@ cc_library(
 
 cc_library(
     name = "sim_dv",
-    srcs = ["device_sim_dv.c"],
+    # The DV clock frequencies differ per top; see hw/top_<top>/sw/dt/sim_dv.c.
+    srcs = opentitan_select_top(
+        {
+            "darjeeling": ["device_sim_dv_darjeeling.c"],
+        },
+        ["device_sim_dv.c"],
+    ),
     deps = [
         ":device",
         ":stub",
