@@ -162,9 +162,12 @@ impl DecodeKey for SpxSecretKey {
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
         if !label.contains("PRIVATE KEY") {
-            return Err(SpxError::ParseError(format!(
-                "not a private key: {label:?}"
-            )));
+            let err_msg = if label.contains("PUBLIC KEY") {
+                format!("not a private key, this looks like a public key instead? {label:?}")
+            } else {
+                format!("not a private key: {label:?}")
+            };
+            return Err(SpxError::ParseError(err_msg));
         }
         let algorithm = algorithm
             .strip_prefix("RAW:")
@@ -277,12 +280,13 @@ impl DecodeKey for SpxPublicKey {
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
         if !label.contains("PUBLIC KEY") {
-            if label.contains("PRIVATE KEY") {
-                // Decode the private key and convert to public key.
-                return SpxSecretKey::from_pem_bytes(pem).map(|ref k| k.into());
-            }
-            return Err(SpxError::ParseError(format!("not a public key: {label:?}")));
-        };
+            let err_msg = if label.contains("PRIVATE KEY") {
+                format!("not a public key, this looks like a private key instead? {label:?}")
+            } else {
+                format!("not a public key: {label:?}")
+            };
+            return Err(SpxError::ParseError(err_msg));
+        }
         // WORKAROUND: Additionally fallback to handle parsing ASN.1 SPKIs with
         // a specific OID, which is commonly distributed by HSMs. We try this
         // if we detect that the key is not a custom RAW format.
@@ -349,11 +353,8 @@ mod test {
         let xk = SpxPublicKey::from_pem(&public_pem)?;
         assert_eq!(pk, xk);
 
-        // Public key decode from private key.
-        let xk = SpxPublicKey::from_pem(&secret_pem)?;
-        assert_eq!(pk, xk);
-
         // Error conditions for confusing secret/public.
+        assert!(SpxPublicKey::from_pem(&secret_pem).is_err());
         assert!(SpxSecretKey::from_pem(&public_pem).is_err());
         Ok(())
     }
