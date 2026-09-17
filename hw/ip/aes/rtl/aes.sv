@@ -257,6 +257,8 @@ module aes
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(IdleKnown, idle_o)
+  `ASSERT_KNOWN(OutputValidKnown, output_valid_o)
+  `ASSERT_KNOWN(InputReadyKnown, input_ready_o)
   `ASSERT_KNOWN(EdnReqKnown, edn_o)
   `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
