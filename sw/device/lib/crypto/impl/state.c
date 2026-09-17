@@ -18,15 +18,15 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
   crypto_state_t *internal_state = (crypto_state_t *)state;
   internal_state->imem_cache = 0;
   internal_state->kat_state = 0;
-  internal_state->locked_state = kHardenedBoolFalse;
-  internal_state->self_check_state = kHardenedBoolFalse;
-  internal_state->csrng_instantiated = kHardenedBoolFalse;
-  internal_state->csrng_is_default = kHardenedBoolFalse;
+  internal_state->locked_state = kHardenedByteBoolFalse;
+  internal_state->self_check_state = kHardenedByteBoolFalse;
+  internal_state->csrng_instantiated = kHardenedByteBoolFalse;
+  internal_state->csrng_is_default = kHardenedByteBoolFalse;
 #ifdef FIPS_MODE
   internal_state->cmvp_service_indicator = kOtcryptoCmvpNoService;
   internal_state->cmvp_call_depth = 0;
 #endif
-  internal_state->security_level = security_level;
+  internal_state->security_level = (uint16_t)security_level;
   return OTCRYPTO_OK;
 }
 
@@ -85,14 +85,14 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   HARDENED_TRY(read_state_pointer(&state));
 
   // If we are in a locked state, the health check returns a fatal error
-  if (state->locked_state == kHardenedBoolTrue) {
+  if (state->locked_state == kHardenedByteBoolTrue) {
     return OTCRYPTO_FATAL_ERR;
   }
 
   // The self-integrity check uses SHA-2, so the SHA-2 KAT
   // must be allowed to execute before the self-integrity check has completed.
   if (kat_bit != kTestHashSha512Bit &&
-      state->self_check_state == kHardenedBoolFalse) {
+      state->self_check_state == kHardenedByteBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -106,7 +106,7 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
 
     // If the KAT failed, lock the cryptolib
     if (result.value != kHardenedBoolTrue) {
-      state->locked_state = kHardenedBoolTrue;
+      state->locked_state = kHardenedByteBoolTrue;
       return result;
     }
   }
