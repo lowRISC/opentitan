@@ -3,21 +3,25 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/otbn/data/otbn.hjson -->
 ## Summary
 
-| Name                                           | Offset   |   Length | Description                                     |
-|:-----------------------------------------------|:---------|---------:|:------------------------------------------------|
-| otbn.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                        |
-| otbn.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                       |
-| otbn.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                         |
-| otbn.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                             |
-| otbn.[`CMD`](#cmd)                             | 0x10     |        4 | Command Register                                |
-| otbn.[`CTRL`](#ctrl)                           | 0x14     |        4 | Control Register                                |
-| otbn.[`STATUS`](#status)                       | 0x18     |        4 | Status Register                                 |
-| otbn.[`ERR_BITS`](#err_bits)                   | 0x1c     |        4 | Operation Result Register                       |
-| otbn.[`FATAL_ALERT_CAUSE`](#fatal_alert_cause) | 0x20     |        4 | Fatal Alert Cause Register                      |
-| otbn.[`INSN_CNT`](#insn_cnt)                   | 0x24     |        4 | Instruction Count Register                      |
-| otbn.[`LOAD_CHECKSUM`](#load_checksum)         | 0x28     |        4 | A 32-bit CRC checksum of data written to memory |
-| otbn.[`IMEM`](#imem)                           | 0x4000   |    16384 | Instruction Memory Access                       |
-| otbn.[`DMEM`](#dmem)                           | 0x8000   |    16384 | Data Memory Access                              |
+| Name                                           | Offset   |   Length | Description                                               |
+|:-----------------------------------------------|:---------|---------:|:----------------------------------------------------------|
+| otbn.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                  |
+| otbn.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                 |
+| otbn.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                   |
+| otbn.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                       |
+| otbn.[`CMD`](#cmd)                             | 0x10     |        4 | Command Register                                          |
+| otbn.[`CTRL`](#ctrl)                           | 0x14     |        4 | Control Register                                          |
+| otbn.[`STATUS`](#status)                       | 0x18     |        4 | Status Register                                           |
+| otbn.[`ERR_BITS`](#err_bits)                   | 0x1c     |        4 | Operation Result Register                                 |
+| otbn.[`FATAL_ALERT_CAUSE`](#fatal_alert_cause) | 0x20     |        4 | Fatal Alert Cause Register                                |
+| otbn.[`INSN_CNT`](#insn_cnt)                   | 0x24     |        4 | Instruction Count Register                                |
+| otbn.[`LOAD_CHECKSUM`](#load_checksum)         | 0x28     |        4 | A 32-bit CRC checksum of data written to memory           |
+| otbn.[`SCRATCH_0`](#scratch)                   | 0x2000   |        4 | General-purpose 128-bit scratch storage for software use. |
+| otbn.[`SCRATCH_1`](#scratch)                   | 0x2004   |        4 | General-purpose 128-bit scratch storage for software use. |
+| otbn.[`SCRATCH_2`](#scratch)                   | 0x2008   |        4 | General-purpose 128-bit scratch storage for software use. |
+| otbn.[`SCRATCH_3`](#scratch)                   | 0x200c   |        4 | General-purpose 128-bit scratch storage for software use. |
+| otbn.[`IMEM`](#imem)                           | 0x4000   |    16384 | Instruction Memory Access                                 |
+| otbn.[`DMEM`](#dmem)                           | 0x8000   |    16384 | Data Memory Access                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -297,6 +301,31 @@ See the "Memory Load Integrity" section of the manual for full details.
 |  Bits  |  Type  |  Reset  | Name     | Description          |
 |:------:|:------:|:-------:|:---------|:---------------------|
 |  31:0  |   rw   |   0x0   | checksum | Checksum accumulator |
+
+## SCRATCH
+General-purpose 128-bit scratch storage for software use.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name      | Offset   |
+|:----------|:---------|
+| SCRATCH_0 | 0x2000   |
+| SCRATCH_1 | 0x2004   |
+| SCRATCH_2 | 0x2008   |
+| SCRATCH_3 | 0x200c   |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SCRATCH", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name    | Description   |
+|:------:|:------:|:-------:|:--------|:--------------|
+|  31:0  |   rw   |   0x0   | SCRATCH | Scratch data  |
 
 ## IMEM
 Instruction Memory Access
