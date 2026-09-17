@@ -21,7 +21,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
 
   HARDENED_TRY(read_state_pointer(&state));
 
-  if (state->locked_state == kHardenedBoolTrue) {
+  if (state->locked_state == kHardenedByteBoolTrue) {
     otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
@@ -69,13 +69,13 @@ otcrypto_status_t otcrypto_integrity_check(void) {
 
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed
-    state->locked_state = kHardenedBoolTrue;
+    state->locked_state = kHardenedByteBoolTrue;
     otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 
   // Set the stateful word that the self-integrity check is done
-  state->self_check_state = kHardenedBoolTrue;
+  state->self_check_state = kHardenedByteBoolTrue;
   otcrypto_cmvp_end_service();
   return OTCRYPTO_OK;
 }

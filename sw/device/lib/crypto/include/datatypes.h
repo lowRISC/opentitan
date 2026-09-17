@@ -557,7 +557,7 @@ typedef struct otcrypto_hash_digest {
  */
 typedef struct otcrypto_state {
   /// Internal state of the crypto library.
-  uint32_t data[24];
+  uint32_t data[4];
 } otcrypto_state_t;
 
 /**

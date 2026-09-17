@@ -239,7 +239,7 @@ status_t otbn_busy_wait_for_done(void) {
     if ((err_bits & (1u << 3)) != 0) {
       crypto_state_t *state = NULL;
       if (status_ok(read_state_pointer(&state)) && state != NULL) {
-        state->locked_state = kHardenedBoolTrue;
+        state->locked_state = kHardenedByteBoolTrue;
       }
       return OTCRYPTO_FATAL_ERR;
     }

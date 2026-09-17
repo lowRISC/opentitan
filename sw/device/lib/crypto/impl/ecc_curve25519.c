@@ -410,7 +410,7 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
   if (result != kHardenedBoolTrue) {
     crypto_state_t *state = NULL;
     if (status_ok(read_state_pointer(&state)) && state != NULL) {
-      state->locked_state = kHardenedBoolTrue;
+      state->locked_state = kHardenedByteBoolTrue;
     }
     return OTCRYPTO_FATAL_ERR;
   }

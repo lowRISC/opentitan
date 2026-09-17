@@ -503,7 +503,7 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
   if (verification_result != kHardenedBoolTrue) {
     crypto_state_t *state = NULL;
     if (status_ok(read_state_pointer(&state)) && state != NULL) {
-      state->locked_state = kHardenedBoolTrue;
+      state->locked_state = kHardenedByteBoolTrue;
     }
     return OTCRYPTO_FATAL_ERR;
   }
