@@ -88,7 +88,7 @@ module otbn
   output otp_ctrl_pkg::otbn_otp_key_req_t otbn_otp_key_o,
   input  otp_ctrl_pkg::otbn_otp_key_rsp_t otbn_otp_key_i,
 
-  input keymgr_pkg::otbn_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::wide_hw_key_req_t keymgr_key_i,
 
   // KMAC application interface.
   output kmac_pkg::app_req_t kmac_data_o,
@@ -1530,6 +1530,8 @@ module otbn
 
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
+  `ASSERT_INIT(SideloadKeySizeMismatch_A, SideloadKeyWidth == kmac_pkg::AppDigestW)
+  `ASSERT_INIT(SideloadKeyRegisterSizeMismatch_A, SideloadKeyWidth == WLEN*2)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnStartStopFsmCheck_A,

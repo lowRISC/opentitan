@@ -414,7 +414,7 @@ package kmac_pkg;
 
   // MsgWidth : 64
   // MsgStrbW : 8
-  parameter int unsigned AppDigestW = 384;
+  parameter int unsigned AppDigestW = 512;
   parameter int unsigned AppKeyW = 256;
   // Width of one digest chunk returned per rsp_valid pulse in AppDynamic mode.
   parameter int unsigned DynAppDigestW = MsgWidth;
