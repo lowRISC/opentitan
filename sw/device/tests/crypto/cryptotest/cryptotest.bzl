@@ -50,7 +50,12 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
+FIRMWARE_OTBN_DEPS = [
+    dep if dep != "//sw/device/tests/crypto/cryptotest/firmware:hash" else "//sw/device/tests/crypto/cryptotest/firmware:hash_otbn"
+    for dep in FIRMWARE_DEPS
+]
+
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, use_otbn_hash = False):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -59,8 +64,10 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
         test_args: additional arguments to pass to the test.
         test_harness: the test harness to use.
         slow_test: indicate if the test should be run in the nightly CI.
+        use_otbn_hash: whether to link hash_otbn instead of hash.
     """
     tags = ["slow_test"] if slow_test else []
+    deps = FIRMWARE_OTBN_DEPS if use_otbn_hash else FIRMWARE_DEPS
     opentitan_test(
         name = name,
         srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
@@ -92,5 +99,5 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
             """ + test_args,
             test_harness = test_harness,
         ),
-        deps = FIRMWARE_DEPS,
+        deps = deps,
     )
