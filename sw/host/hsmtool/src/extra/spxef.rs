@@ -46,8 +46,8 @@ impl SpxEf {
         if let Some(app) = &ef.application {
             match app.split_once(':') {
                 Some((Self::APPLICATION, _algo)) => {
-                    let data = Zeroizing::new(String::from_utf8(ef.read(&self.session)?)?);
-                    return Ok(SpxSecretKey::from_pem(data.as_str())?);
+                    let data = Zeroizing::new(ef.read(&self.session)?);
+                    return Ok(SpxSecretKey::from_pem_bytes(data.as_ref())?);
                 }
                 Some((_, _)) | None => {
                     return Err(HsmError::UnknownApplication(app.into()).into());

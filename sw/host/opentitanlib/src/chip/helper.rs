@@ -74,7 +74,7 @@ impl OwnershipUnlockParams {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(SpxSecretKey::from_pem_file)
                 .transpose()?;
             let signature =
                 unlock.detached_sign(self.algorithm, ecdsa_key.as_ref(), spx_key.as_ref())?;
@@ -157,7 +157,7 @@ impl OwnershipActivateParams {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(SpxSecretKey::from_pem_file)
                 .transpose()?;
             let signature =
                 activate.detached_sign(self.algorithm, ecdsa_key.as_ref(), spx_key.as_ref())?;

@@ -347,7 +347,7 @@ impl CommandDispatch for OwnershipDetachedSignatureCommand {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(SpxSecretKey::from_pem_file)
                 .transpose()?;
             let mut sig = match self.command {
                 DetachedSignatureCommand::Owner => {
