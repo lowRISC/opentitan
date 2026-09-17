@@ -33,15 +33,21 @@ module hmac
   output prim_mubi_pkg::mubi4_t idle_o
 );
 
-  // TODO(#31026): Consume the key from the keymgr_dpe
-  localparam int NumInBufBits = $bits(keymgr_pkg::hw_key_req_t);
-  keymgr_pkg::hw_key_req_t unused_key;
-  prim_buf #(
-    .Width  (NumInBufBits)
-  ) u_anchor_buf (
-    .in_i   (keymgr_key_i),
-    .out_o  (unused_key)
-  );
+  /////////////////
+  // Definitions //
+  /////////////////
+
+  localparam int KeyMgrKeyW = $bits(keymgr_key_i.key[0]);
+
+  localparam key_length_e KeyLengths [5] = '{Key_128, Key_256, Key_384, Key_512, Key_1024};
+
+  localparam int SelKeySize = (KeyMgrKeyW == 128)  ? 0 :
+                              (KeyMgrKeyW == 256)  ? 1 :
+                              (KeyMgrKeyW == 384)  ? 2 :
+                              (KeyMgrKeyW == 512)  ? 3 :
+                              (KeyMgrKeyW == 1024) ? 4 : 0 ;
+  // The key length is always given by the width of the sideload interface.
+  localparam key_length_e SideloadedKey = KeyLengths[SelKeySize];
 
   /////////////////////////
   // Signal declarations //
@@ -53,6 +59,15 @@ module hmac
   tlul_pkg::tl_d2h_t  tl_win_d2h;
 
   logic [1023:0] secret_key, secret_key_d;
+
+  // Key used in the HMAC core. Either use the sideload or the SW key.
+  logic [1023:0] core_secret_key;
+
+  // Unmasked sideload key received from the keymanager.
+  logic [KeyMgrKeyW-1:0] keymgr_key;
+
+  // Sideload interface handling
+  logic        sideload_en;
 
   // Logic will support key length <= block size
   // Will default to key length = block size, if key length > block size or unsupported value
@@ -236,6 +251,27 @@ module hmac
     assign hw2reg.key[31-i].d      = '0;
   end
 
+  //////////////////
+  // Key handling //
+  //////////////////
+
+  // Secret Key Mux
+  // Unmask the key shares as HMAC does not have masking implemented.
+  // SEC_CM: KEY.SIDELOAD
+  always_comb begin
+    keymgr_key = '0;
+    for (int i = 0; i < keymgr_pkg::Shares; i++) begin
+      keymgr_key ^= keymgr_key_i.key[i];
+    end
+  end
+
+  // Only use the sideload key for keyed HMAC operations.
+  assign sideload_en = cfg_reg.sideload.q & hmac_en;
+
+  // Mux the key instead of explicitly storing it in the HMAC module - this models the behavior in
+  // KMAC.
+  assign core_secret_key = sideload_en ? {keymgr_key, {(1024-KeyMgrKeyW){1'b0}}} : secret_key;
+
   // Retain the previous digest in CSRs until HMAC is actually started with a valid configuration
   always_comb begin : assign_digest_reg
     // default
@@ -289,7 +325,7 @@ module hmac
   assign unused_cfg_qe = ^{cfg_reg.sha_en.qe,      cfg_reg.hmac_en.qe,
                            cfg_reg.endian_swap.qe, cfg_reg.digest_swap.qe,
                            cfg_reg.key_swap.qe,    cfg_reg.digest_size.qe,
-                           cfg_reg.key_length.qe };
+                           cfg_reg.key_length.qe,  cfg_reg.sideload.qe };
 
   assign sha_en               = cfg_reg.sha_en.q;
   assign hmac_en              = cfg_reg.hmac_en.q;
@@ -317,7 +353,7 @@ module hmac
     else         digest_size_started_q <= digest_size_started_d;
   end
 
-  assign key_length_supplied  = key_length_e'(cfg_reg.key_length.q);
+  assign key_length_supplied  = sideload_en ? SideloadedKey : key_length_e'(cfg_reg.key_length.q);
   always_comb begin : cast_key_length
     key_length = Key_None;
 
@@ -345,6 +381,7 @@ module hmac
   assign hw2reg.cfg.endian_swap.d = cfg_reg.endian_swap.q;
   assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
   assign hw2reg.cfg.key_swap.d    = cfg_reg.key_swap.q;
+  assign hw2reg.cfg.sideload.d    = cfg_reg.sideload.q;
 
   assign reg_hash_start    = reg2hw.cmd.hash_start.qe & reg2hw.cmd.hash_start.q;
   assign reg_hash_stop     = reg2hw.cmd.hash_stop.qe & reg2hw.cmd.hash_stop.q;
@@ -402,6 +439,10 @@ module hmac
         },
         key_length: '{
           q: HMAC_CFG_KEY_LENGTH_RESVAL,
+          qe: 1'b0
+        },
+        sideload: '{
+          q: HMAC_CFG_SIDELOAD_RESVAL,
           qe: 1'b0
         },
         default:'0
@@ -699,7 +740,7 @@ module hmac
   hmac_core u_hmac (
     .clk_i,
     .rst_ni,
-    .secret_key_i  (secret_key),
+    .secret_key_i  (core_secret_key),
     .hmac_en_i     (hmac_en),
     .digest_size_i (digest_size),
     .key_length_i  (key_length),
@@ -952,6 +993,9 @@ module hmac
   // value specifed in the register
   `ASSERT(WipeSecretKeyAssert,
           wipe_secret |=> (secret_key == {($bits(secret_key)/$bits(wipe_v)){$past(wipe_v)}}))
+
+  // Check if the keymgr key width is valid.
+  `ASSERT_INIT(ValidKeyMgrKeyW_A, KeyMgrKeyW inside {128, 256, 384, 512, 1024})
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)

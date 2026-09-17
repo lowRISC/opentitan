@@ -161,17 +161,18 @@ The register is updated when the engine is in Idle.
 If the software updates the register while the engine computes the hash, the updated value is discarded.
 - Offset: `0x10`
 - Reset default: `0x4100`
-- Reset mask: `0x7fff`
+- Reset mask: `0xffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "key_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 6, "attr": ["rw"], "rotate": 0}, {"name": "sideload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                             |
 |:------:|:------:|:-------:|:---------------------------------|
-| 31:15  |        |         | Reserved                         |
+| 31:16  |        |         | Reserved                         |
+|   15   |   rw   |   0x0   | [sideload](#cfg--sideload)       |
 |  14:9  |   rw   |  0x20   | [key_length](#cfg--key_length)   |
 |  8:5   |   rw   |   0x8   | [digest_size](#cfg--digest_size) |
 |   4    |   rw   |   0x0   | [key_swap](#cfg--key_swap)       |
@@ -179,6 +180,11 @@ If the software updates the register while the engine computes the hash, the upd
 |   2    |   rw   |   0x0   | [endian_swap](#cfg--endian_swap) |
 |   1    |   rw   |    x    | [sha_en](#cfg--sha_en)           |
 |   0    |   rw   |    x    | [hmac_en](#cfg--hmac_en)         |
+
+### CFG . sideload
+Sideloaded Key.
+
+If 1, HMAC uses the key provided by the key manager over the sideload interface.
 
 ### CFG . key_length
 Key length configuration.
@@ -191,7 +197,8 @@ The position of these zeros depends on the endianness, thus on the programmed [`
 For example, for an 80-bit key, HMAC should be configured with an 128-bit key length, fed with the 80-bit key and with 48 zero-bits.
 
 Note that the key length cannot be greater than the block size: up to 1024-bit for SHA-2 384/512 and up to 512-bit for SHA-2 256.
-The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured, and when the key is sideloaded from the key manager (see [`CFG.sideload`](registers.md#cfg--sideload)).
+In the latter case, the key length is forced to the width of the sideload interface and reading this register returns that forced value.
 However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while [`KEY_LENGTH`](#key_length) holds `Key_None` or [`KEY_LENGTH`](#key_length) holds `Key_1024` for [`DIGEST_SIZE`](#digest_size) = `SHA2_256`, starting is blocked and an error is signalled to SW.
 
 | Value   | Name     | Description                                                                                                                                                                                                                                                                                                                                                                  |
@@ -353,6 +360,8 @@ key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
 
 The registers are allowed to be updated only when the engine is in Idle state.
 If the engine computes the hash, it discards any attempts to update the secret keys and report an error.
+
+These registers are ignored when the key is sideloaded from the key manager, see [`CFG.sideload`](registers.md#cfg--sideload).
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
