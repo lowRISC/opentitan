@@ -304,9 +304,9 @@ ecdsa_verify:
 /**
  * Generate a shared key from a secret and public key.
  *
- * Returns the shared key, which is the affine x-coordinate of (d*Q). The
- * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
- * x1).
+ * Returns the affine coordinates (x, y) of the shared point (d*Q). Each
+ * coordinate is expressed in boolean shares such that x = (x0 ^ x1) and
+ * y = (y0 ^ y1).
  *
  * This routine runs in constant time.
  *
@@ -315,8 +315,10 @@ ecdsa_verify:
  * @param[in]   dmem[d1]: 2nd private key share d1
  * @param[in]    dmem[x]: x-coordinate of public key
  * @param[in]    dmem[y]: y-coordinate of public key
- * @param[out]   dmem[x]: x0, first share of shared key.
- * @param[out]   dmem[y]: x1, second share of shared key.
+ * @param[out] dmem[ecdh_x0]: x0, first share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_x1]: x1, second share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_y0]: y0, first share of shared key y-coordinate.
+ * @param[out] dmem[ecdh_y1]: y1, second share of shared key y-coordinate.
  *
  * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
@@ -330,24 +332,12 @@ shared_key:
   addi     x3, x0, HARDENED_BOOL_TRUE
   sw       x3, 0(x2)
 
-  /* Generate arithmetically masked shared key d*Q.
-     dmem[x] <= (d*Q).x - m mod p
-     dmem[y] <= m */
+  /* Generate arithmetically masked shared point d*Q.
+     dmem[ecdh_x0] <= (d*Q).x - r_x mod p
+     dmem[ecdh_x1] <= r_x
+     dmem[ecdh_y0] <= (d*Q).y - r_y mod p
+     dmem[ecdh_y1] <= r_y */
   jal       x1, p384_scalar_mult
-
-  /* Arithmetic-to-boolean conversion*/
-
-  /* load result to WDRs for a2b conversion.
-     [w12,w11] <= dmem[x] = x_m
-     [w19,w18] <= dmem[y] = m */
-  li        x2, 11
-  la        x3, x
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-  li        x2, 18
-  la        x3, y
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2, 32(x3)
 
   /* Load domain parameter.
      [w14,w13] = dmem[p384_p] */
@@ -356,14 +346,31 @@ shared_key:
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
-  jal       x1, p384_arithmetic_to_boolean_mod
+  /* Arithmetic-to-boolean conversion of both coordinates.
+     dmem[ecdh_x0] <= x0 such that x = x0 ^ dmem[ecdh_x1]
+     dmem[ecdh_y0] <= y0 such that y = y0 ^ dmem[ecdh_y1] */
+  la        x3, ecdh_x0
+  loopi     2, 13
+    /* load masked value and mask for a2b conversion.
+       [w12,w11] <= dmem[x3] = c_m
+       [w19,w18] <= dmem[x3 + 64] = r */
+    li        x2, 11
+    bn.lid    x2++, 0(x3)
+    bn.lid    x2++, 32(x3)
+    bn.xor    w31, w31, w31 /* dummy */
+    li        x2, 18
+    bn.lid    x2++, 64(x3)
+    bn.lid    x2, 96(x3)
 
-  /* Store arithmetically masked key to DMEM
-     dmem[x] <= [w21,w20] = x_m' */
-  li        x2, 20
-  la        x3, x
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
+    jal       x1, p384_arithmetic_to_boolean_mod
+
+    /* Store boolean masked value to DMEM.
+       dmem[x3] <= [w21,w20] = c_m' */
+    li        x2, 20
+    bn.sid    x2++, 0(x3)
+    bn.sid    x2++, 32(x3)
+    addi      x3, x3, 128
+    bn.xor    w31, w31, w31 /* dummy */
 
   ecall
 
@@ -489,16 +496,18 @@ p384_pct_verify:
  * Generate a shared key from a fresh secret key with sideloaded seed
  * and a given public key.
  *
- * Returns the shared key, which is the affine x-coordinate of (d*Q). The
- * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
- * x1).
+ * Returns the affine coordinates (x, y) of the shared point (d*Q). Each
+ * coordinate is expressed in boolean shares such that x = (x0 ^ x1) and
+ * y = (y0 ^ y1).
  * Returns secret key d in 384-bit shares d0, d1.
  *
  * This routine runs in constant time.
  *
  * @param[in]        w31: all-zero
- * @param[out]   dmem[x]: x0, first share of shared key.
- * @param[out]   dmem[y]: x1, second share of shared key.
+ * @param[out] dmem[ecdh_x0]: x0, first share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_x1]: x1, second share of shared key x-coordinate.
+ * @param[out] dmem[ecdh_y0]: y0, first share of shared key y-coordinate.
+ * @param[out] dmem[ecdh_y1]: y1, second share of shared key y-coordinate.
  *
  * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0

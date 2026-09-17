@@ -33,6 +33,12 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p384,
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);  // ECDSA verification result.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);   // Status code.
 
+// ECDH shared key output: boolean shares of the x- and y-coordinates.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ecdh_x0);  // Share 0 of x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ecdh_x1);  // Share 1 of x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ecdh_y0);  // Share 0 of y-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ecdh_y1);  // Share 1 of y-coordinate.
+
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p384, MODE_SIGN);
@@ -85,8 +91,8 @@ enum {
   kModeKeygenInsCnt = 1961351,
   kModeKeygenSideloadInsCnt = 1961244,
 #endif
-  kModeEcdhInsCnt = 1972956,
-  kModeEcdhSideloadInsCnt = 1973102,
+  kModeEcdhInsCnt = 1983982,
+  kModeEcdhSideloadInsCnt = 1984128,
   kModeEcdsaSignConfigKInsCnt = 1600471,
   kModeEcdsaSignInsCnt = 1600692,
   kModeEcdsaSignSideloadInsCnt = 1600838,
@@ -224,7 +230,8 @@ uint32_t p384_ecdh_shared_key_checksum(const p384_ecdh_shared_key_t *key) {
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)key->share0, kP384CoordBytes);
+  crc32_add(&ctx, (unsigned char *)key->x_share0, kP384CoordBytes);
+  crc32_add(&ctx, (unsigned char *)key->y_share0, kP384CoordBytes);
   return crc32_finish(&ctx);
 }
 
@@ -451,11 +458,19 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdhInsCnt);
   }
 
-  // Read the shares of the key from OTBN dmem (at vars x and y).
-  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarX, shared_key->share0));
-  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
-  HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
+  // Read the shares of both coordinates of the shared point from OTBN dmem.
+  const otbn_addr_t kOtbnVarEcdhX0 = OTBN_ADDR_T_INIT(run_p384, ecdh_x0);
+  HARDENED_TRY(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhX0, shared_key->x_share0));
+  const otbn_addr_t kOtbnVarEcdhX1 = OTBN_ADDR_T_INIT(run_p384, ecdh_x1);
+  HARDENED_TRY(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhX1, shared_key->x_share1));
+  const otbn_addr_t kOtbnVarEcdhY0 = OTBN_ADDR_T_INIT(run_p384, ecdh_y0);
+  HARDENED_TRY(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhY0, shared_key->y_share0));
+  const otbn_addr_t kOtbnVarEcdhY1 = OTBN_ADDR_T_INIT(run_p384, ecdh_y1);
+  HARDENED_TRY(
+      otbn_dmem_read(kP384CoordWords, kOtbnVarEcdhY1, shared_key->y_share1));
 
   shared_key->checksum = p384_ecdh_shared_key_checksum(shared_key);
 
