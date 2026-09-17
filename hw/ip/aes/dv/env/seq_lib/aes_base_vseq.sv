@@ -669,7 +669,7 @@ class aes_base_vseq extends cip_base_vseq #(
   // the new keys are run with priority 100: to pass a different key, send a sequence with a higher
   // priority.
   task start_sideload_seq();
-    typedef key_sideload_set_seq#(keymgr_pkg::hw_key_req_t) sideload_seq_t;
+    typedef key_sideload_set_seq#(keymgr_dpe_pkg::hw_key_req_t) sideload_seq_t;
 
     bit end_loop = 0;
 
@@ -717,7 +717,7 @@ class aes_base_vseq extends cip_base_vseq #(
   //
   // Exit immediately on reset.
   task req_sideload_key();
-    typedef key_sideload_set_seq#(keymgr_pkg::hw_key_req_t) sideload_seq_t;
+    typedef key_sideload_set_seq#(keymgr_dpe_pkg::hw_key_req_t) sideload_seq_t;
 
     sideload_seq_t req_key_seq = sideload_seq_t::type_id::create("req_key_seq");
 

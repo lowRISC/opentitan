@@ -605,6 +605,50 @@ rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot) {
 }
 
 /**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ */
+void sc_keymgr_dpe_get_metadata(uint32_t slot,
+                                sc_keymgr_dpe_metadata_t *metadata) {
+  metadata->max_key_version = abs_mmio_read32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET +
+      slot * sizeof(uint32_t));
+
+  uint32_t reg_high = abs_mmio_read32(sc_keymgr_dpe_base() +
+                                      KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET +
+                                      slot * sizeof(uint32_t));
+  metadata->valid =
+      bitfield_bit32_read(reg_high, KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT);
+  metadata->boot_stage = (sc_keymgr_dpe_boot_stage_t)bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_FIELD);
+
+  uint32_t policy_bits = bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_POLICY_0_FIELD);
+  metadata->slot_policy.child =
+      bitfield_bit32_read(policy_bits, KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT);
+  metadata->slot_policy.expo =
+      bitfield_bit32_read(policy_bits, KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT);
+  metadata->slot_policy.parent = bitfield_bit32_read(
+      policy_bits, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT);
+}
+
+/**
+ * Checks that a keymgr_dpe HW slot holds a valid DPE context at the expected
+ * boot stage.
+ */
+rom_error_t sc_keymgr_dpe_boot_stage_check(
+    uint32_t slot, sc_keymgr_dpe_boot_stage_t expected_boot_stage) {
+  sc_keymgr_dpe_metadata_t metadata;
+  sc_keymgr_dpe_get_metadata(slot, &metadata);
+  if (launder32(metadata.valid) == 1u &&
+      launder32(metadata.boot_stage) == expected_boot_stage) {
+    HARDENED_CHECK_EQ(metadata.valid, 1u);
+    HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
+    return kErrorOk;
+  }
+  return kErrorKeymgrInternal;
+}
+
+/**
  * Advances the keymgr dpe into the disable state. All keys store in the
  * sideloaded interface are continuously scrambled.
  */

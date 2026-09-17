@@ -38,7 +38,7 @@
   address: 4
   read-only: true
   doc: |
-    Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+    Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
 
@@ -47,7 +47,7 @@
   read-only: true
   doc: |
     Bits [255:128] of this register are always zero.
-    Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+    Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
 
@@ -55,7 +55,7 @@
   address: 6
   read-only: true
   doc: |
-    Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+    Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
 
@@ -64,7 +64,7 @@
   read-only: true
   doc: |
     Bits [255:128] of this register are always zero.
-    Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+    Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr_dpe/README.md).
 
     A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
 
