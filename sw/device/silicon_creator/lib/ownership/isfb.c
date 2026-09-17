@@ -158,14 +158,16 @@ rom_error_t isfb_info_flash_erase_policy_get(
   // B0: Firmware must be signed with key specified by `key_domain` field.
   if (policies[0] != kHardenedBoolTrue && key_domain &&
       key_domain == owner_config->isfb->key_domain) {
+    HARDENED_CHECK_EQ(launder32(key_domain),
+                      launder32(owner_config->isfb->key_domain));
     policies[0] = kHardenedBoolTrue;
     check_cnt_got = launder32(check_cnt_got) + 1;
   }
 
   // B1: Firmware must be node locked.
   if (policies[1] != kHardenedBoolTrue &&
-      manifest_is_node_locked == kHardenedBoolTrue) {
-    policies[1] = kHardenedBoolTrue;
+      launder32(manifest_is_node_locked) == kHardenedBoolTrue) {
+    policies[1] = manifest_is_node_locked;
     check_cnt_got = launder32(check_cnt_got) + 1;
   }
 
@@ -176,7 +178,8 @@ rom_error_t isfb_info_flash_erase_policy_get(
   // write access to the ISFB page can flip a struck bit back to `1` without
   // needing this policy to hold. The one-way strike/un-strike ratchet this
   // check is meant to enforce is not currently guaranteed on RRAM.
-  if (policies[2] != kHardenedBoolTrue && ext_isfb_erase != NULL) {
+  if (policies[2] != kHardenedBoolTrue && ext_isfb_erase != NULL &&
+      launder32(ext_isfb_erase->erase_allowed) == kHardenedBoolTrue) {
     policies[2] = (hardened_bool_t)ext_isfb_erase->erase_allowed;
     check_cnt_got = launder32(check_cnt_got) + 1;
   }
