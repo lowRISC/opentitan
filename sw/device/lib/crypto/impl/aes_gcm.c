@@ -283,6 +283,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
     otcrypto_word32_buf_t *auth_tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -306,8 +307,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
 
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext->len) != plaintext->len) {
@@ -343,6 +342,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const otcrypto_const_word32_buf_t *auth_tag, otcrypto_byte_buf_t *plaintext,
     hardened_bool_t *success) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -365,8 +365,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -396,6 +394,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_INIT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       ctx == NULL) {
@@ -407,8 +406,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -433,6 +430,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_INIT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       ctx == NULL) {
@@ -444,8 +442,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -469,6 +465,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
 otcrypto_status_t otcrypto_aes_gcm_update_aad(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *aad) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_AAD);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || aad == NULL || aad->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -507,6 +504,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     otcrypto_aes_gcm_context_t *ctx, const otcrypto_const_byte_buf_t *input,
     otcrypto_byte_buf_t *output, size_t *output_bytes_written) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_ENCRYPTED_DATA);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input == NULL || input->data == NULL || output == NULL ||
       output->data == NULL || output_bytes_written == NULL) {
@@ -565,6 +563,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
     otcrypto_word32_buf_t *auth_tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_FINAL);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || ciphertext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL) {
@@ -621,6 +620,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_FINAL);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || plaintext_bytes_written == NULL || auth_tag == NULL ||
       auth_tag->data == NULL || success == NULL) {

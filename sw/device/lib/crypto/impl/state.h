@@ -84,16 +84,41 @@ status_t read_state_pointer(crypto_state_t **state);
  */
 #ifndef FIPS_MODE
 
+// Standard build: Locked state check is disabled (non FIPS).
+static inline otcrypto_status_t locked_state_check(void) { return OTCRYPTO_OK; }
+
 // Standard build: Stateful KAT evaluation is disabled (non FIPS).
 static inline otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   (void)kat_bit;
   return OTCRYPTO_OK;
 }
 
+#define OTCRYPTO_HEALTH_CHECK(kat_bit) ((void)(kat_bit))
+#define OTCRYPTO_LOCKED_STATE_CHECK() ((void)0)
+
 #else
+
+// FIPS build: Checks if the cryptolib is in an error/locked state.
+otcrypto_status_t locked_state_check(void);
 
 // FIPS build: Evaluates kats in a stateful manner
 otcrypto_status_t stateful_health_check(kat_bits_t kat_bit);
+
+#define OTCRYPTO_HEALTH_CHECK(kat_bit)              \
+  do {                                              \
+    status_t res_ = stateful_health_check(kat_bit); \
+    if (res_.value < 0) {                           \
+      return res_;                                  \
+    }                                               \
+  } while (0)
+
+#define OTCRYPTO_LOCKED_STATE_CHECK()     \
+  do {                                    \
+    status_t res_ = locked_state_check(); \
+    if (res_.value < 0) {                 \
+      return res_;                        \
+    }                                     \
+  } while (0)
 
 #endif  // FIPS_MODE
 

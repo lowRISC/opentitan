@@ -79,10 +79,33 @@ status_t read_state_pointer(crypto_state_t **state) {
 
 #ifdef FIPS_MODE
 
+otcrypto_status_t locked_state_check(void) {
+  crypto_state_t *state = NULL;
+
+  status_t res = read_state_pointer(&state);
+  if (res.value < 0) {
+    return res;
+  }
+
+  // If we are in a locked state, return a fatal error
+  if (state->locked_state == kHardenedBoolTrue) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  if (state->self_check_state == kHardenedBoolFalse) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   crypto_state_t *state = NULL;
 
-  HARDENED_TRY(read_state_pointer(&state));
+  status_t res = read_state_pointer(&state);
+  if (res.value < 0) {
+    return res;
+  }
 
   // If we are in a locked state, the health check returns a fatal error
   if (state->locked_state == kHardenedBoolTrue) {
