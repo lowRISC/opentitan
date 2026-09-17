@@ -78,6 +78,27 @@ d1:
 x_r:
   .zero 64
 
+/* ECDH shared key output: boolean shares of the x- and y-coordinates. */
+.globl ecdh_x0
+.balign 32
+ecdh_x0:
+  .zero 64
+
+.globl ecdh_x1
+.balign 32
+ecdh_x1:
+  .zero 64
+
+.globl ecdh_y0
+.balign 32
+ecdh_y0:
+  .zero 64
+
+.globl ecdh_y1
+.balign 32
+ecdh_y1:
+  .zero 64
+
 /* Secret scalar input buffer. */
 .globl k0_io
 .balign 32
