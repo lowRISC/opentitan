@@ -102,8 +102,9 @@ The RRAM controller sits between the software interface, other hardware IPs, and
   - The controller reads one RRAM word and writes the corrected data back to restore full ECC headroom before further bit flips make the word uncorrectable.
   - Software typically issues it after `corr1_err` or `corr2_err` fires, at the address captured in `CORR1_ERR_LOC` or `CORR2_ERR_LOC`.
 - Secure wipe upon RMA request from the life cycle controller.
-  - The `rram_ctrl_lcmgr` FSM overwrites three info pages and all data partition pages except the OTP region with pseudo-random data from a 64-bit LFSR.
-    The three info pages are the creator seed page, the owner seed page and the isolated page.
+  - The `rram_ctrl_lcmgr` FSM overwrites two info pages and all data partition pages except the OTP region with pseudo-random data from a 64-bit LFSR.
+    The two info pages are the creator seed page and the owner seed page.
+    The isolated info page is excluded: it is written with a high-endurance operation and cannot be overwritten by the normal wipe/write path.
     It then asserts `rma_ack`.
     See [RMA Handling](doc/theory_of_operation.md#rma-handling).
   - RRAM access is permanently disabled after RMA completes until the next reset.
@@ -294,7 +295,7 @@ Its top 6 pages (3 KiB) form the OTP region, which acts as NVM backing storage f
 The OTP region is inaccessible to software.
 Software-initiated controller operations to it fail with a memory protection error, host reads to it return a TL-UL error, and the RMA wipe does not touch it.
 See [Memory Protection for OTP Hardware Plug](doc/theory_of_operation.md#memory-protection-for-otp-hardware-plug).
-The info partition holds design-specific data, including the two secret seed pages (creator/owner) and an isolated page for manufacturing authentication.
+The info partition holds design-specific data, including the two secret seed pages (creator/owner), an isolated page for manufacturing authentication, and a page relocating the OTP SECRET0 partition.
 
 #### Address Map
 
@@ -322,10 +323,12 @@ Software selects between them via `CONTROL.PARTITION`, and each address range be
 | Data (OTP) | ... | ... | ... | ... |
 | Data (OTP) | 4095 (last page) | 31 (last word) | `0x1FFFF0` | otp-hw-if |
 | Info | 0 | 0 | `0x000000` | SW, lcmgr-hw-if |
+| Info | 1 (`CreatorInfoPage`) | 0 | `0x000200` | SW, lcmgr-hw-if |
+| Info | 2 (`OwnerInfoPage`) | 0 | `0x000400` | SW, lcmgr-hw-if |
 | Info | ... | ... | ... | ... |
-| Info | 5 (`CreatorInfoPage`) | 0 | `0x000A00` | SW, lcmgr-hw-if |
-| Info | 6 (`OwnerInfoPage`) | 0 | `0x000C00` | SW, lcmgr-hw-if |
-| Info | 7 (`IsolatedInfoPage`, last page) | 0 | `0x000E00` | SW, lcmgr-hw-if |
+| Info | 6 (`IsolatedInfoPage`) | 0 | `0x000C00` | SW, lcmgr-hw-if |
+| Info (OTP remap) | 7 (`OtpRemapInfoPage`) | 0 | `0x000E00`<br>(`RemapInfoStartAddr`) | otp-hw-if |
+| Info (OTP remap integrity) | 7 (`OtpRemapInfoPage`) | 28 | `0x000FC0`<br>(`RemapIntgInfoStartAddr`) | otp-hw-if |
 
 When accessed by the host TL-UL interface, RRAM's base address in the system memory map (defined by the top-level address map) should be added to the byte addresses in the table above.
 
