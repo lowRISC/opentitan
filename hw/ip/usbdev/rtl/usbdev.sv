@@ -1431,6 +1431,7 @@ module usbdev
   // These pins are not necessarily associated with any clock but it probably makes most sense to
   // check them on the fastest clock.
   `ASSERT_KNOWN(USBTxDKnown_A, usb_tx_d_o)
+  `ASSERT_KNOWN(USBTxUseDSe0Known_A, usb_tx_use_d_se0_o)
   `ASSERT_KNOWN(CIODpKnown_A, cio_usb_dp_o)
   `ASSERT_KNOWN(CIODpEnKnown_A, cio_usb_dp_en_o)
   `ASSERT_KNOWN(CIODnKnown_A, cio_usb_dn_o)
