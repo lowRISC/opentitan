@@ -75,6 +75,8 @@ typedef struct dif_hmac_transaction {
   dif_sha2_digest_size_t digest_size;
   /** HMAC key length. */
   dif_hmac_key_length_t key_length;
+  /** Use the sideload key from the key manager. */
+  bool sideload;
 } dif_hmac_transaction_t;
 
 /**
@@ -98,7 +100,7 @@ typedef struct dif_hmac_digest {
  * be used to test scenarios where the key is not loaded.
  *
  * @param hmac The HMAC device to start HMAC operation for.
- * @param key The 256-bit HMAC key.
+ * @param key The 256-bit HMAC key. Ignored if `config.sideload` is set.
  * @param config The per-transaction configuration.
  * @return The result of the operation.
  */
