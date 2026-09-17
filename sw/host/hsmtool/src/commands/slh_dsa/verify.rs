@@ -6,7 +6,7 @@ use anyhow::Result;
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -27,7 +27,7 @@ pub struct Verify {
     #[arg(short, long, default_value = "plain-text", help=SignData::HELP)]
     format: SignData,
     #[arg(short = 'd', long, default_value = "pure")]
-    domain: SpxDomain,
+    domain: SpxSignatureMode,
     signature: PathBuf,
     input: PathBuf,
 }

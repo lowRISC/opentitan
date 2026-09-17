@@ -8,7 +8,7 @@ mod signature;
 mod variants;
 
 pub use error::SpxError;
-pub use key::{SpxDomain, SpxPublicKey, SpxSecretKey};
+pub use key::{SpxDomain, SpxPublicKey, SpxSecretKey, SpxSignatureMode};
 pub use signature::SpxRawSignature;
 pub use variants::SphincsPlus;
 

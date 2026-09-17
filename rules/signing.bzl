@@ -172,7 +172,10 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest_attr, ecdsa_key, rsa
     if spx_key:
         spx_domain = spx_key.config.get("domain", "Pure")
         selected_spx_key = getattr(spx_key, "file", None)
-        spx_args.append("--spx-key={}".format(selected_spx_key.path))
+        spx_args.extend([
+            "--spx-key={}".format(selected_spx_key.path),
+            "--domain={}".format(spx_domain),
+        ])
         inputs.append(selected_spx_key)
     args = [
         "--rcfile=",
@@ -184,7 +187,6 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest_attr, ecdsa_key, rsa
     if manifest_file:
         args.append("--manifest={}".format(manifest_file.path))
     args.extend([
-        "--domain={}".format(spx_domain),
         "--output={}".format(pre.path),
         src.path,
     ])

@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -25,7 +25,7 @@ pub struct Sign {
     format: SignData,
     /// The SPHINCS+ signing domain.
     #[arg(short = 'd', long, default_value = "pure")]
-    domain: SpxDomain,
+    domain: SpxSignatureMode,
     #[arg(short, long)]
     output: PathBuf,
     input: PathBuf,
