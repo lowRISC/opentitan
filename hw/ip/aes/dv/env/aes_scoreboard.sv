@@ -23,7 +23,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
   bit          reset_rebuilding   = 0;        // reset message rebuilding task
   bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
-  keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
+  keymgr_dpe_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
   uvm_tlm_analysis_fifo #(key_sideload_item)  key_manager_fifo;
   bit [3:0]    datain_rdy         = '0;       // indicate if DATA_IN can be updated
 
@@ -564,9 +564,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
       forever begin
         // Wait for a valid sideloaded key
         key_manager_fifo.get(sideload_item);
-        // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
+        // Note: max size of sideloaded key is keymgr_dpe_pkg::KeyWidth
 
-        for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
+        for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / 32; i++) begin
           key_item.key[0][i]     = sideload_item.key0[i*32 +: 32];
           key_item.key[1][i]     = sideload_item.key1[i*32 +: 32];
           key_item.key_vld[0][i] = sideload_item.valid;

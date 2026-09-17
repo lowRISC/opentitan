@@ -23,7 +23,7 @@ module ascon_core
   input logic error_fatal_i,
 
   // Key Manager
-  input keymgr_pkg::hw_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::hw_key_req_t keymgr_key_i,
 
   // Bus Interface
   input  ascon_reg2hw_t reg2hw,
@@ -124,8 +124,8 @@ module ascon_core
   logic duplex_fatal_error;
   assign alert_fatal_o = duplex_fatal_error;
 
-  lc_ctrl_pkg::lc_tx_t      unused_lc_escalate_en_i;
-  keymgr_pkg::hw_key_req_t  unused_keymgr_key_i;
+  lc_ctrl_pkg::lc_tx_t         unused_lc_escalate_en_i;
+  keymgr_dpe_pkg::hw_key_req_t unused_keymgr_key_i;
 
   prim_mubi_pkg::mubi4_t tag_match;
   prim_mubi_pkg::mubi4_t tag_calculated;

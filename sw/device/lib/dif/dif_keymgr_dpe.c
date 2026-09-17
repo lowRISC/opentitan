@@ -97,6 +97,21 @@ static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 28,
               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
 
+static_assert(KEYMGR_DPE_METADATA_LOW_1_REG_OFFSET ==
+                  KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + 4,
+              "METADATA_LOW_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_METADATA_HIGH_1_REG_OFFSET ==
+                  KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET + 4,
+              "METADATA_HIGH_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT ==
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
+              "METADATA_LOW_N register count must match the number of HW "
+              "slots.");
+static_assert(KEYMGR_DPE_METADATA_HIGH_MULTIREG_COUNT ==
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
+              "METADATA_HIGH_N register count must match the number of HW "
+              "slots.");
+
 /**
  * Error code constants of `dif_keymgr_dpe_status_code_t` are masks for the bits
  * of ERR_CODE register shifted left by 1.
@@ -279,6 +294,33 @@ dif_result_t dif_keymgr_dpe_erase_slot(
                                reg_control);
   mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_START_REG_OFFSET,
                       1 << KEYMGR_DPE_START_EN_BIT);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_get_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
+                                         uint32_t slot,
+                                         dif_keymgr_dpe_metadata_t *metadata) {
+  if (keymgr_dpe == NULL || metadata == NULL ||
+      slot >= KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT) {
+    return kDifBadArg;
+  }
+
+  ptrdiff_t offset_low = (ptrdiff_t)(KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET +
+                                     slot * sizeof(uint32_t));
+  ptrdiff_t offset_high = (ptrdiff_t)(KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET +
+                                      slot * sizeof(uint32_t));
+
+  metadata->max_key_version =
+      mmio_region_read32(keymgr_dpe->base_addr, offset_low);
+
+  uint32_t reg_high = mmio_region_read32(keymgr_dpe->base_addr, offset_high);
+  metadata->valid =
+      bitfield_bit32_read(reg_high, KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT);
+  metadata->boot_stage = bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_FIELD);
+  metadata->slot_policy = bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_POLICY_0_FIELD);
 
   return kDifOk;
 }

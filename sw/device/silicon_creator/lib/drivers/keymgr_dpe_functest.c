@@ -152,9 +152,10 @@ rom_error_t keymgr_dpe_rom_test(void) {
     sec_mmio_check_values(/*rnd_offset=*/0);
   }
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_boot_stage_check(
+            kSealingSlot, kScKeymgrDPEBootStageOwnerInt) == kErrorOk);
+  CHECK(sc_keymgr_dpe_boot_stage_check(
+            kAttestationSlot, kScKeymgrDPEBootStageOwnerInt) == kErrorOk);
 
   // ------ OwnerIntKey Stage ------------------------
   // Derive both the attestation and sealing OwnerIntKey
@@ -174,9 +175,10 @@ rom_error_t keymgr_dpe_rom_test(void) {
 
   sec_mmio_check_counters(/*expected_check_count=*/3);
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageOwner (2). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_boot_stage_check(kSealingSlot,
+                                       kScKeymgrDPEBootStageOwner) == kErrorOk);
+  CHECK(sc_keymgr_dpe_boot_stage_check(kAttestationSlot,
+                                       kScKeymgrDPEBootStageOwner) == kErrorOk);
   return kErrorOk;
 }
 
@@ -207,9 +209,10 @@ rom_error_t keymgr_dpe_rom_ext_test(void) {
 
   sec_mmio_check_counters(/*expected_check_count=*/5);
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-  // hold keys with boot stage set to BootStageRuntime (3). (Note:
-  // Current bootstage + 1)
+  CHECK(sc_keymgr_dpe_boot_stage_check(
+            kSealingSlot, kScKeymgrDPEBootStageRuntime) == kErrorOk);
+  CHECK(sc_keymgr_dpe_boot_stage_check(
+            kAttestationSlot, kScKeymgrDPEBootStageRuntime) == kErrorOk);
   return kErrorOk;
 }
 

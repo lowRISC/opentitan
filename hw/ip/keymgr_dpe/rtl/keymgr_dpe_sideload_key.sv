@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager sideload key
+// Key manager dpe sideload key
 
 `include "prim_assert.sv"
 
-module keymgr_sideload_key import keymgr_pkg::*; #(
+module keymgr_dpe_sideload_key import keymgr_dpe_pkg::*; #(
   parameter int Width = KeyWidth
 ) (
   input clk_i,
@@ -53,4 +53,4 @@ module keymgr_sideload_key import keymgr_pkg::*; #(
     end
   end
 
-endmodule // keymgr_sideload_key
+endmodule // keymgr_dpe_sideload_key

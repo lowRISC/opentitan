@@ -44,6 +44,11 @@ enum {
    * Keymgr DPE default slot for attestation context
    */
   kKeymgrDPEAttestSlot = 1,
+  /**
+   * Boot stage reached once the ROM has derived the OwnerIntKey.
+   * Mirrors `keymgr_dpe_boot_stage_e` in keymgr_dpe_pkg.sv.
+   */
+  kKeymgrDPEBootStageOwnerInt = 1,
 };
 
 static void print_otp_sw_cfg_digests(void) {
@@ -103,9 +108,12 @@ bool test_main(void) {
   CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
       &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 
-  // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
-  // keys with boot stage set to BootStageOwnerInt (1). (Note: Current bootstage
-  // + 1)
+  // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with boot
+  // stage set to BootStageOwnerInt (1).
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_boot_stage(
+      &keymgr_dpe, kKeymgrDPESealSlot, kKeymgrDPEBootStageOwnerInt));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_boot_stage(
+      &keymgr_dpe, kKeymgrDPEAttestSlot, kKeymgrDPEBootStageOwnerInt));
 
   const manifest_t *manifest = manifest_def_get();
 
