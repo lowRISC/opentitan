@@ -208,6 +208,8 @@ endtask : sha_enable
 // Attempt to change config reg during msg write, design will ignore the change
 task hmac_base_vseq::write_discard_config();
   bit [TL_DW-1:0] rand_config_value = $urandom();
+  // TODO: Disable sideloading for now.
+  rand_config_value[ral.cfg.sideload.get_lsb_pos()] = 1'b0;
   csr_wr(ral.cfg, rand_config_value);
 endtask : write_discard_config
 

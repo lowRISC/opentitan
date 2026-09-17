@@ -31,7 +31,7 @@
     }
     {
       name: sec_cm_key_sideload
-      desc: "Verify the key from KeyMgr is sideloaded."
+      desc: "Verify the countermeasure(s) KEY.SIDELOAD."
       stage: V2S
       tests: ["N/A"]
     }

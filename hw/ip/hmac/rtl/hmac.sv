@@ -1048,6 +1048,9 @@ module hmac
   // The intermediate hash is never visible to SW while a sideloaded operation is in progress.
   `ASSERT(SideloadHidesIntermediateDigest_A, sideload_en && cfg_block |-> hw2reg.digest == '0)
 
+  // On abort, make sure that the software exposed digest is 0.
+  `ASSERT(SideloadDigestZeroAfterAbort_A, abort |=> hw2reg.digest == '0)
+
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
