@@ -19,9 +19,18 @@
 
   "output": {
     "regs": {
-      # [w1, w0] is the unmasked shared key
+      # [w1, w0] is the unmasked shared key x-coordinate
       "w0": "0x00a94f93d1320a59c0007d74e572772c2722a257017480a1bfdea3697c461791",
-      "w1": "0x00000000000000000000000000000000f1d4b5254d1cfebc4a0deafdda8fe3c9"
+      "w1": "0x00000000000000000000000000000000f1d4b5254d1cfebc4a0deafdda8fe3c9",
+      # [w3, w2] is the unmasked shared key y-coordinate
+      "w2": "0xfc2ccf585d28367910c8e5c67b51377e463973e917f19246da116a52da39b3d2",
+      "w3": "0x00000000000000000000000000000000d54b700ee57d297b293be2bee8b30389"
+    }
+    "dmem": {
+      # Both sides of the Weierstrass equation y^2 = x^3 + ax + b mod p evaluated
+      # on the unmasked point, i.e. y^2 mod p
+      "rhs": "0x000000000000000000000000000000000c26b93bda39e7a00b1a1962a6a323b415038b2ea16227191f0e57005fb6c64aecbfdd535105d656769346cb21d405d8",
+      "lhs": "0x000000000000000000000000000000000c26b93bda39e7a00b1a1962a6a323b415038b2ea16227191f0e57005fb6c64aecbfdd535105d656769346cb21d405d8"
     }
   }
 }
