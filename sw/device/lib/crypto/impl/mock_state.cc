@@ -57,6 +57,8 @@ status_t read_state_pointer(crypto_state_t **state) {
 }
 
 #ifdef FIPS_MODE
+otcrypto_status_t locked_state_check(void) { return OTCRYPTO_OK; }
+
 otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   return OTCRYPTO_OK;
 }

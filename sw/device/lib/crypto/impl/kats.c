@@ -74,11 +74,6 @@ static const uint8_t hmac_sha512_ans[64] = {
     0x7e, 0x67, 0xc8, 0x07, 0xb9, 0x46, 0xa3, 0x37, 0xbe, 0xe8, 0x94,
     0x26, 0x74, 0x27, 0x88, 0x59, 0xe1, 0x32, 0x92, 0xfb};
 
-// FIPS 180-4 SHA Test Vectors for Hashing Byte-Oriented Messages SHA-512
-// ShortMsg Len = 8 Msg = 21 MD =
-// 3831a6a6155e509dee59a7f451eb35324d8f8f2df6e3708894740f98fdee23889f4de5adb0c5010dfb555cda77c8ab5dc902094c52de3278f35a75ebc25f093a
-static const uint8_t sha512_in[] = {0x21};
-
 static const uint8_t sha512_ans[64] = {
     0x38, 0x31, 0xa6, 0xa6, 0x15, 0x5e, 0x50, 0x9d, 0xee, 0x59, 0xa7,
     0xf4, 0x51, 0xeb, 0x35, 0x32, 0x4d, 0x8f, 0x8f, 0x2d, 0xf6, 0xe3,
@@ -442,8 +437,12 @@ static status_t kat_sha512_hash(void) {
   otcrypto_sha2_context_t ctx;
   HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  otcrypto_const_byte_buf_t msg_buf =
-      otcrypto_make_const_byte_buf(sha512_in, sizeof(sha512_in));
+  // FIPS 180-4 SHA Test Vectors for Hashing Byte-Oriented Messages SHA-512
+  // ShortMsg Len = 8 Msg = 21 MD =
+  // 3831a6a6155e509dee59a7f451eb35324d8f8f2df6e3708894740f98fdee23889f4de5adb0c5010dfb555cda77c8ab5dc902094c52de3278f35a75ebc25f093a
+  const uint8_t sha512_in[] = {0x21};
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, sha512_in, sizeof(sha512_in));
   HARDENED_TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[512 / 32];
