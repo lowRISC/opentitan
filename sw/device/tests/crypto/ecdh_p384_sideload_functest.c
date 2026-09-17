@@ -23,7 +23,7 @@ enum {
   /* Number of bytes in a P-384 private key. */
   kP384PrivateKeyBytes = 384 / 8,
   /* Number of bytes in an ECDH/P-384 shared key. */
-  kP384SharedKeyBytes = 384 / 8,
+  kP384SharedKeyBytes = 768 / 8,
   /* Number of 32-bit words in an ECDH/P-384 shared key. */
   kP384SharedKeyWords = kP384SharedKeyBytes / sizeof(uint32_t),
 };
@@ -153,6 +153,16 @@ status_t key_exchange_test(void) {
     keyB[i] = keyB0[i] ^ keyB1[i];
   }
   CHECK_ARRAYS_EQ(keyA, keyB, ARRAYSIZE(keyA));
+
+  // Sanity check that x- and y-coordinates of the shared secret are sound.
+  otcrypto_unblinded_key_t shared_point = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = sizeof(keyA),
+      .key = keyA,
+  };
+  hardened_bool_t on_curve = kHardenedBoolFalse;
+  TRY(otcrypto_ecc_p384_point_on_curve(&shared_point, &on_curve));
+  CHECK(on_curve == kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }

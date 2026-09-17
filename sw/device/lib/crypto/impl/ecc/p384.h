@@ -29,6 +29,14 @@ enum {
    */
   kP384CoordWords = kP384CoordBytes / sizeof(uint32_t),
   /**
+   * Length of an ECDH/P-384 shared secret in bytes.
+   */
+  kP384SharedSecretBytes = 2 * kP384CoordBytes,
+  /**
+   * Length of an ECDH/P-384 shared secret in words.
+   */
+  kP384SharedSecretWords = kP384SharedSecretBytes / sizeof(uint32_t),
+  /**
    * Length of an element in the P-384 scalar field (modulo the curve order n).
    */
   kP384ScalarBits = 384,
@@ -128,9 +136,11 @@ typedef struct p384_ecdsa_signature_t {
  * The key is boolean-masked (XOR of the two shares).
  */
 typedef struct p384_ecdh_shared_key {
-  uint32_t share0[kP384CoordWords];
-  uint32_t share1[kP384CoordWords];
-  // Checksum over share0.
+  uint32_t x_share0[kP384CoordWords];
+  uint32_t x_share1[kP384CoordWords];
+  uint32_t y_share0[kP384CoordWords];
+  uint32_t y_share1[kP384CoordWords];
+  // Checksum over x_share0 and y_share0.
   uint32_t checksum;
 } p384_ecdh_shared_key_t;
 
@@ -355,7 +365,7 @@ status_t p384_ecdh_start(p384_masked_scalar_t *private_key,
  * Blocks until OTBN is idle. May be used after either `p384_ecdh_start` or
  * `p384_sideload_ecdh_start`; the operation is the same.
  *
- * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
+ * @param[out] shared_key Shared secret key (x- and y-coordinates of d*Q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
