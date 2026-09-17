@@ -542,6 +542,13 @@ module otp_macro
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A, pwr_seq_o)
   `ASSERT_KNOWN(OtpMacroTlOutKnown_A, prim_tl_o)
+  `ASSERT_KNOWN(OtpObsKnown_A, otp_obs_o)
+  `ASSERT_KNOWN(OtpTestOKnown_A, test_o)
+  `ASSERT_KNOWN(CioTestKnown_A, cio_test_o)
+  `ASSERT_KNOWN(CioTestEnKnown_A, cio_test_en_o)
+  `ASSERT_KNOWN(OtpOKnown_A, otp_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `ASSERT_KNOWN(CfgRspKnown_A, cfg_rsp_o)
 
   // Assertions for countermeasures inside otp_macro are done in three parts
   // - Assert invalid conditions propagate to otp_o.fatal_alert
