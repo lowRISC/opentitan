@@ -386,6 +386,19 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   TRY(hardened_xor(dest_share0, dest_share1, shared_secret_words,
                    shared_point));
 
+  // Check that the unmasked shared point (x || y) lies on the curve.
+  otcrypto_unblinded_key_t shared_point_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = kP384SharedSecretBytes,
+      .key = shared_point,
+  };
+  hardened_bool_t on_curve = kHardenedBoolFalse;
+  TRY(otcrypto_ecc_p384_point_on_curve(&shared_point_key, &on_curve));
+  if (on_curve != kHardenedBoolTrue) {
+    LOG_ERROR("ECDH/P-384 shared point is not on the curve");
+    return INTERNAL();
+  }
+
   // Only the x-coordinate of the shared point is returned to the host.
   memcpy(ss, shared_point, kP384CoordinateBytes);
   return OK_STATUS();
