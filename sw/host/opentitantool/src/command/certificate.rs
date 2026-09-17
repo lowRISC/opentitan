@@ -79,7 +79,7 @@ impl CommandDispatch for CodegenCommand {
                 let template = load_template(&self.template)?;
                 (
                     template.name.clone(),
-                    codegen::generate_cert(&self.template.display().to_string(), &template)?,
+                    codegen::generate_source(&self.template.display().to_string(), &template)?,
                 )
             }
 
@@ -169,6 +169,9 @@ impl CommandDispatch for GenCertCommand {
                 .collect::<Vec<_>>()
                 .join(", ");
             bail!("the substition data does not cover the following variables: {rem_vars}")
+        }
+        if template.certificate().is_err() {
+            bail!("cannot generate a full certificate from an extension-only template");
         }
         // Generate
         let der =
