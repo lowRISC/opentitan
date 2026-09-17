@@ -8,6 +8,8 @@ class hmac_env extends cip_base_env #(.CFG_T               (hmac_env_cfg),
                                       .SCOREBOARD_T        (hmac_scoreboard));
   `uvm_component_utils(hmac_env)
 
+  key_sideload_agent keymgr_sideload_agent;
+
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
@@ -26,6 +28,11 @@ function void hmac_env::build_phase(uvm_phase phase);
   if (!uvm_config_db#(hmac_vif)::get(this, "", "hmac_vif", cfg.hmac_vif)) begin
     `uvm_fatal(`gfn, "failed to get hmac_vif from uvm_config_db")
   end
+
+  keymgr_sideload_agent = key_sideload_agent#(keymgr_pkg::hw_key_req_t)::type_id::create(
+    "keymgr_sideload_agent", this);
+  uvm_config_db#(key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t))::set(
+    this, "keymgr_sideload_agent*", "cfg", cfg.keymgr_sideload_agent_cfg);
 endfunction : build_phase
 
 function void hmac_env::end_of_elaboration_phase(uvm_phase phase);

@@ -27,6 +27,8 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
 
   hmac_vif hmac_vif;
 
+  rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
+
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -50,6 +52,10 @@ function void hmac_env_cfg::initialize(bit inherit_ral_models = 1'b0);
 
   // Used to allow reset operations without waiting for CSR accesses to complete
   can_reset_with_csr_accesses = 1;
+
+  keymgr_sideload_agent_cfg = key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t)::type_id
+                              ::create("keymgr_sideload_agent_cfg");
+  keymgr_sideload_agent_cfg.start_default_seq = 0;
 
   void'($value$plusargs("is_nist_test=%b", is_nist_test));
 endfunction : initialize
