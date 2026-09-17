@@ -281,6 +281,7 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
 otcrypto_status_t otcrypto_aes_padded_plaintext_length(
     size_t plaintext_len, otcrypto_aes_padding_t aes_padding,
     size_t *padded_len) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   size_t padded_nblocks;
   HARDENED_TRY(
       num_padded_blocks_get(plaintext_len, aes_padding, &padded_nblocks));
@@ -340,9 +341,6 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  // Run the AES ECB 256 KAT exactly once before utilizing the block
-  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
@@ -527,6 +525,7 @@ static otcrypto_status_t otcrypto_aes_impl(
 otcrypto_status_t otcrypto_aes_padding_strip(
     otcrypto_byte_buf_t *padded_plaintext, otcrypto_aes_padding_t aes_padding,
     size_t *plaintext_len) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (padded_plaintext == NULL || padded_plaintext->data == NULL ||
       plaintext_len == NULL) {
@@ -616,6 +615,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_aes_padding_t aes_padding,
                                otcrypto_byte_buf_t *cipher_output) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || key->keyblob == NULL ||

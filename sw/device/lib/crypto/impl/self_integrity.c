@@ -26,7 +26,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   }
 
   // Ensure the SHA-2 KAT has executed before running the self-integrity check.
-  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
+  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
 
   // Re-read the state after running the SHA-2 KAT so we preserve kat_state.
   HARDENED_TRY(read_state(&state));

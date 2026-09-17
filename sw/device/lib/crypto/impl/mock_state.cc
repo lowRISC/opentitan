@@ -37,7 +37,7 @@ otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t store_state(const crypto_state_t *state) {
+status_t store_state(const crypto_state_t *state) {
   if (state == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -54,6 +54,8 @@ status_t read_state(crypto_state_t *state) {
 }
 
 #ifdef FIPS_MODE
+otcrypto_status_t locked_state_check(void) { return OTCRYPTO_OK; }
+
 otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   return OTCRYPTO_OK;
 }
