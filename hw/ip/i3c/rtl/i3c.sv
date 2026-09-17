@@ -504,6 +504,13 @@ module i3c
     );
   end
 
+  // Assert Known for the register interface.
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+
+  // Assert Known for the RACL error log.
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+
   // Assert Known for I3C Controller outputs.
   `ASSERT_KNOWN(CtrlSCLEnKnown_A, cio_ctrl_bus_drv_o.scl_en, clk_i, !rst_ni)
   `ASSERT_KNOWN(CtrlSCLKnown_A, cio_ctrl_bus_drv_o.scl, clk_i, !rst_ni ||
@@ -553,6 +560,10 @@ module i3c
   // Assert Known for interrupts.
   `ASSERT_KNOWN(IntrHCIKnown_A, intr_hci_o)
   `ASSERT_KNOWN(IntrTargKnown_A, intr_targ_o)
+
+  // Assert Known for the driver-enable outputs.
+  `ASSERT_KNOWN(CtrlBusDrvEnKnown_A, cio_ctrl_bus_drv_en_o)
+  `ASSERT_KNOWN(TargBusDrvEnKnown_A, cio_targ_bus_drv_en_o)
 
   // Check that the bus width meets the requirements of the message buffer, DAT and DCT tables.
   if (DataWidth != 32) $fatal(1, "This design presently supports only 32-bit system buses.");
