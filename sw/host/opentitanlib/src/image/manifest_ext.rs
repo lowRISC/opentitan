@@ -253,7 +253,7 @@ impl ManifestExtEntry {
     pub fn from_spec(spec: &ManifestExtEntrySpec) -> Result<Self> {
         Ok(match spec {
             ManifestExtEntrySpec::SpxKey { spx_key } => {
-                ManifestExtEntry::new_spx_key_entry(&SpxPublicKey::read_pem_file(spx_key)?)?
+                ManifestExtEntry::new_spx_key_entry(&SpxPublicKey::from_pem_file(spx_key)?)?
             }
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
                 ManifestExtEntry::new_spx_signature_entry(&std::fs::read(spx_signature)?)?

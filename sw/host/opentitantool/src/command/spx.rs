@@ -37,7 +37,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let key = SpxPublicKey::read_pem_file(&self.key_file)?;
+        let key = SpxPublicKey::from_pem_file(&self.key_file)?;
         let bytes = key.as_bytes();
 
         // The OTP creation tool is written in python and parses arbitrary
@@ -139,7 +139,7 @@ impl CommandDispatch for SpxSignCommand {
         if self.spx_hash_reversal_bug {
             message.reverse();
         }
-        let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
+        let private_key = SpxSecretKey::from_pem_file(&self.private_key)?;
         let signature = private_key.sign(self.domain, &message)?;
         if let Some(output) = &self.output {
             std::fs::write(output, &signature)?;
@@ -179,7 +179,7 @@ impl CommandDispatch for SpxVerifyCommand {
         if self.spx_hash_reversal_bug {
             message.reverse();
         }
-        let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
+        let public_key = SpxPublicKey::from_pem_file(&self.public_key)?;
         let signature = SpxRawSignature::read_from_file(&self.signature, self.spx_algorithm)?;
         public_key.verify(self.domain, signature.as_bytes(), &message)?;
         Ok(None)

@@ -120,9 +120,10 @@ impl Drop for SpxSecretKey {
 }
 
 impl DecodeKey for SpxSecretKey {
-    /// Decodes a SPHINCS+ secret key from a PEM encoded string.
-    fn from_pem(s: &str) -> Result<Self, SpxError> {
-        let (label, mut key) = pem_rfc7468::decode_vec(s.as_bytes()).map_err(SpxError::Pem)?;
+    /// Deserialize a SPHINCS+ secret key from raw bytes representing the key stored in
+    /// OpenTitan's custom legacy RAW PEM format.
+    fn from_pem_bytes(pem: &[u8]) -> Result<Self, SpxError> {
+        let (label, mut key) = pem_rfc7468::decode_vec(pem).map_err(SpxError::Pem)?;
         let (algorithm, _) = label
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
@@ -131,10 +132,12 @@ impl DecodeKey for SpxSecretKey {
                 "not a private key: {label:?}"
             )));
         }
-        if !algorithm.starts_with("RAW:") {
-            return Err(SpxError::ParseError(format!("not a RAW key: {label:?}")));
-        }
-        let algorithm = algorithm[4..].replace('_', "-");
+        let algorithm = algorithm
+            .strip_prefix("RAW:")
+            .ok_or_else(|| SpxError::ParseError(format!("not a RAW key: {label:?}")))?;
+        // The `pem_rfc7468` crate does not correctly handle `-` in labels, so
+        // the labels we're decoding from use `_` separators instead.
+        let algorithm = algorithm.replace('_', "-");
         let algorithm = SphincsPlus::from_str(&algorithm).map_err(SpxError::Strum)?;
         if key.len() == algorithm.public_key_len() + algorithm.secret_key_len() {
             // Older versions of our tooling would save the private key as PubKey || SecretKey.
@@ -232,23 +235,29 @@ impl SpxPublicKey {
 }
 
 impl DecodeKey for SpxPublicKey {
-    /// Decodes a SPHINCS+ public key from a PEM encoded string.
-    fn from_pem(s: &str) -> Result<Self, SpxError> {
-        let (label, key) = pem_rfc7468::decode_vec(s.as_bytes()).map_err(SpxError::Pem)?;
+    /// Deserialize a SPHINCS+ public key from raw bytes representing the key stored in
+    /// OpenTitan's custom legacy RAW PEM format.
+    fn from_pem_bytes(pem: &[u8]) -> Result<Self, SpxError> {
+        let (label, key) = pem_rfc7468::decode_vec(pem).map_err(SpxError::Pem)?;
         let (algorithm, _) = label
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
         if !label.contains("PUBLIC KEY") {
             if label.contains("PRIVATE KEY") {
                 // Decode the private key and convert to public key.
-                return SpxSecretKey::from_pem(s).map(|ref k| k.into());
+                return SpxSecretKey::from_pem_bytes(pem).map(|ref k| k.into());
             }
             return Err(SpxError::ParseError(format!("not a public key: {label:?}")));
-        }
-        if !algorithm.starts_with("RAW:") {
+        };
+        // WORKAROUND: Additionally fallback to handle parsing ASN.1 SPKIs with
+        // a specific OID, which is commonly distributed by HSMs. We try this
+        // if we detect that the key is not a custom RAW format.
+        let Some(algorithm) = algorithm.strip_prefix("RAW:") else {
             return Self::parse_asn1_public_key(&key, label);
-        }
-        let algorithm = algorithm[4..].replace('_', "-");
+        };
+        // The `pem_rfc7468` crate does not correctly handle `-` in labels, so
+        // the labels we're decoding from use `_` separators instead.
+        let algorithm = algorithm.replace('_', "-");
         let algorithm = SphincsPlus::from_str(&algorithm).map_err(SpxError::Strum)?;
         if key.len() != algorithm.public_key_len() {
             return Err(SpxError::ParseError(format!(
