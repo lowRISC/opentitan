@@ -141,6 +141,10 @@ attestation_keygen:
   bn.mov    w2, w10
   bn.mov    w1, w21
   bn.mov    w3, w11
+
+  /* Hide the secret key before running the scalar multiplication. */
+  jal       x1, p256_masked_scalar_reblind
+
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
