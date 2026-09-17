@@ -37,6 +37,18 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
+/// The SPHINCS+ signature mode. OpenTitan currently only uses the SHA256
+/// variant of the Pre-Hash mode.
+#[derive(
+    Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
+)]
+#[strum(ascii_case_insensitive)]
+pub enum SpxSignatureMode {
+    #[default]
+    Pure,
+    PreHashedSha256,
+}
+
 /// The SPHINCS+ domain separator that should be used with a given key.
 /// SPHINCS+ has two signature modes - Pure and Pre-Hash. There are many
 /// variations depending on the pre-hash function or (XOF) used - OpenTitan
@@ -55,6 +67,15 @@ pub enum SpxDomain {
     #[default]
     Pure,
     PreHashedSha256,
+}
+
+impl From<SpxSignatureMode> for SpxDomain {
+    fn from(mode: SpxSignatureMode) -> Self {
+        match mode {
+            SpxSignatureMode::Pure => SpxDomain::Pure,
+            SpxSignatureMode::PreHashedSha256 => SpxDomain::PreHashedSha256,
+        }
+    }
 }
 
 impl SpxDomain {
