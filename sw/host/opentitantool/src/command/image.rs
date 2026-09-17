@@ -201,10 +201,10 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Load / write SPX+ public key.
         let mut spx_private_key: Option<SpxSecretKey> = None;
         if let Some(key) = &self.spx_key {
-            let (pk, sk) = if let Ok(sk) = SpxSecretKey::read_pem_file(key) {
+            let (pk, sk) = if let Ok(sk) = SpxSecretKey::from_pem_file(key) {
                 (SpxPublicKey::from(&sk), Some(sk))
             } else {
-                (SpxPublicKey::read_pem_file(key)?, None)
+                (SpxPublicKey::from_pem_file(key)?, None)
             };
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;

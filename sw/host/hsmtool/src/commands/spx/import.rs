@@ -41,7 +41,7 @@ impl Dispatch for Import {
         let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
-        let sk = SpxSecretKey::read_pem_file(&self.filename)?;
+        let sk = SpxSecretKey::from_pem_file(&self.filename)?;
         let pk = SpxPublicKey::from(&sk);
 
         let key = spx.import_keypair(
