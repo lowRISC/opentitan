@@ -167,6 +167,7 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
  * @return OK or error.
  */
 static status_t check_key(const otcrypto_blinded_key_t *key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -194,6 +195,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HMAC);
+  // Check the key for locked state, null pointers, or invalid configurations.
+  HARDENED_TRY(check_key(key));
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
@@ -201,8 +204,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  // Check the key for null pointers or invalid configurations.
-  HARDENED_TRY(check_key(key));
 
   if (key->config.key_length < 14) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
@@ -211,11 +212,9 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
 
-  if (key->config.key_mode == kOtcryptoKeyModeHmacSha256) {
-    HARDENED_TRY(stateful_health_check(kTestHmacSha256Bit));
-  } else {
-    HARDENED_TRY(stateful_health_check(kTestHmacSha512Bit));
-  }
+  OTCRYPTO_HEALTH_CHECK(key->config.key_mode == kOtcryptoKeyModeHmacSha256
+                            ? kTestHmacSha256Bit
+                            : kTestHmacSha512Bit);
 
   // Call the appropriate function from the HMAC driver.
   status_t (*cl_fn)(const hmac_key_t *, const otcrypto_const_byte_buf_t *,
@@ -321,24 +320,21 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HMAC_INIT);
+  // Check the key for locked state, null pointers, or invalid configurations.
+  HARDENED_TRY(check_key(key));
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
 
-  // Check the key for null pointers or invalid configurations.
-  HARDENED_TRY(check_key(key));
-
   if (key->config.key_length < 14) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
-  if (key->config.key_mode == kOtcryptoKeyModeHmacSha256) {
-    HARDENED_TRY(stateful_health_check(kTestHmacSha256Bit));
-  } else {
-    HARDENED_TRY(stateful_health_check(kTestHmacSha512Bit));
-  }
+  OTCRYPTO_HEALTH_CHECK(key->config.key_mode == kOtcryptoKeyModeHmacSha256
+                            ? kTestHmacSha256Bit
+                            : kTestHmacSha512Bit);
 
   hmac_ctx_t primary_ctx;
   hmac_ctx_t redundant_ctx;
@@ -422,6 +418,7 @@ otcrypto_status_t otcrypto_hmac_update(
     otcrypto_hmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HMAC_UPDATE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -475,6 +472,7 @@ otcrypto_status_t otcrypto_hmac_update(
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HMAC_FINAL);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

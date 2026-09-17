@@ -344,6 +344,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
@@ -362,8 +363,6 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
   barrier32(hw_cleanup_guard);
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
-
-  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
 
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
   HARDENED_TRY(check_key(key));
@@ -443,6 +442,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
 otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_INIT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -451,8 +451,6 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
 
   HARDENED_TRY(check_key(key));
 
@@ -510,6 +508,7 @@ otcrypto_status_t otcrypto_cmac_update(
     otcrypto_cmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_UPDATE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -564,6 +563,7 @@ otcrypto_status_t otcrypto_cmac_update(
 otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_FINAL);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

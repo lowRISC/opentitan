@@ -110,6 +110,7 @@ otcrypto_status_t otcrypto_kmac(
     const otcrypto_const_byte_buf_t *customization_string,
     size_t required_output_len, otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC);
+  OTCRYPTO_HEALTH_CHECK(kTestKmac256Bit);
   // TODO (#16410) Revisit/complete error checks
 
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
@@ -136,8 +137,6 @@ otcrypto_status_t otcrypto_kmac(
   if (key->config.hw_backed == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-
-  HARDENED_TRY(stateful_health_check(kTestKmac256Bit));
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {

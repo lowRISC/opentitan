@@ -58,8 +58,7 @@ otcrypto_status_t otcrypto_cmvp_service_indicator(
   *indicator = (otcrypto_cmvp_service_indicator_t)state.cmvp_service_indicator;
   state.cmvp_service_indicator = kOtcryptoCmvpNoService;
   state.cmvp_call_depth = 0;
-  HARDENED_TRY(store_state(&state));
-  return OTCRYPTO_OK;
+  return store_state(&state);
 }
 
 #else  // !defined(FIPS_MODE)

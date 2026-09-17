@@ -19,7 +19,7 @@ static inline uint32_t otbn_base(void) {
   return dt_otbn_primary_reg_block(kOtbnDt);
 }
 
-otcrypto_status_t store_state(const crypto_state_t *state) {
+status_t store_state(const crypto_state_t *state) {
   if (state == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -67,9 +67,34 @@ otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
 
 #ifdef FIPS_MODE
 
+otcrypto_status_t locked_state_check(void) {
+  crypto_state_t state;
+
+  status_t res = read_state(&state);
+  if (res.value < 0) {
+    return res;
+  }
+
+  // If we are in a locked state, return a fatal error
+  if (state.locked_state == kHardenedByteBoolTrue) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  if ((state.kat_state & (1UL << kTestHashSha512Bit)) == 0 &&
+      state.self_check_state == kHardenedByteBoolFalse) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   crypto_state_t state;
-  HARDENED_TRY(read_state(&state));
+
+  status_t res = read_state(&state);
+  if (res.value < 0) {
+    return res;
+  }
 
   // If we are in a locked state, the health check returns a fatal error
   if (state.locked_state == kHardenedByteBoolTrue) {

@@ -12,6 +12,7 @@
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -25,6 +26,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
     const otcrypto_const_byte_buf_t *perso_string,
     otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SYMMETRIC_KEYGEN);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -67,6 +69,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
                                          const uint32_t salt[7],
                                          otcrypto_blinded_key_t *key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -95,6 +98,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
 
 otcrypto_status_t otcrypto_hw_backed_attestation_key(
     uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -116,6 +120,7 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
 otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
                                              otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -170,6 +175,7 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
 
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
                                            size_t *wrapped_num_words) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
@@ -264,6 +270,7 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
                                     otcrypto_word32_buf_t *wrapped_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_WRAP);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key == NULL ||
       wrapped_key->data == NULL) {
@@ -328,17 +335,18 @@ otcrypto_status_t otcrypto_key_unwrap(
     const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
     otcrypto_blinded_key_t *unwrapped_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_UNWRAP);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   if (wrapped_key == NULL || wrapped_key->data == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
+  *success = kHardenedBoolFalse;
+
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
-
-  *success = kHardenedBoolFalse;
 
   // Check the integrity/lengths/mode of the key encryption key, and construct
   // an internal AES key.
@@ -400,6 +408,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
     const otcrypto_const_word32_buf_t *key_share0,
     const otcrypto_const_word32_buf_t *key_share1,
     otcrypto_blinded_key_t *blinded_key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (blinded_key == NULL || blinded_key->keyblob == NULL ||
       key_share0->data == NULL || key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -438,6 +447,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
 otcrypto_status_t otcrypto_export_blinded_key(
     const otcrypto_blinded_key_t *blinded_key,
     otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (blinded_key->keyblob == NULL || key_share0->data == NULL ||
       key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -498,6 +508,8 @@ otcrypto_status_t otcrypto_export_blinded_key(
 
 otcrypto_status_t otcrypto_blinded_key_migrate(
     const otcrypto_blinded_key_t *old_key, otcrypto_blinded_key_t *new_key) {
+  (void)new_key;
+  OTCRYPTO_LOCKED_STATE_CHECK();
   if (launder32((uint32_t)old_key->config.version) !=
       (uint32_t)kCryptoLibVersion) {
     return OTCRYPTO_BAD_ARGS;

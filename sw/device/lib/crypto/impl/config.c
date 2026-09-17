@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/crypto/drivers/alert.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -45,7 +46,7 @@ otcrypto_status_t otcrypto_security_config_check(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_set_security_config(
+static status_t set_security_config_internal(
     otcrypto_key_security_level_t security_level) {
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
     // Enable the jittery clock.
@@ -62,12 +63,20 @@ otcrypto_status_t otcrypto_set_security_config(
   return OTCRYPTO_OK;
 }
 
+otcrypto_status_t otcrypto_set_security_config(
+    otcrypto_key_security_level_t security_level) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+  return set_security_config_internal(security_level);
+}
+
 otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   HARDENED_TRY(ibex_disable_icache(icache_enabled));
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
   ibex_restore_icache(icache_enabled);
   return LAUNDERED_OTCRYPTO_OK;
 }
@@ -78,15 +87,15 @@ otcrypto_status_t otcrypto_clear_alerts(void) {
 }
 
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
-  HARDENED_TRY(otcrypto_set_security_config(security_level));
+  HARDENED_TRY(set_security_config_internal(security_level));
 
   HARDENED_TRY(init_alert_registers());
 
   // Instantiate the state in the OTBN scratch registers.
   HARDENED_TRY(init_state(security_level));
 
-  // Instantiate the RNG.
-  HARDENED_TRY(otcrypto_entropy_init());
+  // Instantiate the entropy source in FIPS mode.
+  HARDENED_TRY(entropy_complex_init(kHardenedBoolTrue));
 
   // The OTBN is still left with DMEM from the boot.
   HARDENED_TRY(otbn_dmem_sec_wipe());
@@ -95,7 +104,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
 
 #ifdef FIPS_MODE
-  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
+  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
   HARDENED_TRY(otcrypto_integrity_check());
 #endif
 
