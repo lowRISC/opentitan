@@ -6,14 +6,14 @@
 
 `include "prim_assert.sv"
 
-module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
+module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
-  input keymgr_sideload_clr_e clr_key_i, // clear key just deletes the key
+  input keymgr_dpe_sideload_clr_e clr_key_i, // clear key just deletes the key
   input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [Shares-1:0][RandWidth-1:0] entropy_i,
-  input keymgr_key_dest_e dest_sel_i,
+  input keymgr_dpe_key_dest_e dest_sel_i,
   input prim_mubi_pkg::mubi4_t hw_key_sel_i,
   input data_en_i,
   input data_valid_i,
@@ -22,7 +22,8 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
-  output otbn_key_req_t otbn_key_o,
+  output wide_hw_key_req_t hmac_key_o,
+  output wide_hw_key_req_t otbn_key_o,
   output logic sideload_sel_err_o,
   output logic fsm_err_o
 );
@@ -56,21 +57,21 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     StSideloadIdle  = 10'b0101000101,
     StSideloadWipe  = 10'b1110110010,
     StSideloadStop  = 10'b1000001010
-  } keymgr_sideload_e;
+  } keymgr_dpe_sideload_e;
 
-  keymgr_sideload_e state_q, state_d;
+  keymgr_dpe_sideload_e state_q, state_d;
 
   // SEC_CM: SIDELOAD_CTRL.FSM.SPARSE
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_sideload_e, StSideloadReset)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_sideload_e, StSideloadReset)
 
   logic keys_en;
   logic [Shares-1:0][KeyWidth-1:0] data_truncated;
-  logic [Shares-1:0][OtbnKeyWidth-1:0] data_truncated_otbn;
+  logic [Shares-1:0][WideHwKeyWidth-1:0] data_truncated_wide;
   for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign data_truncated[i]      = data_i[i][KeyWidth-1:0];
-    assign data_truncated_otbn[i] = data_i[i][OtbnKeyWidth-1:0];
+    assign data_truncated_wide[i] = data_i[i][WideHwKeyWidth-1:0];
   end
 
   // clear all keys when selected by software, or when
@@ -81,11 +82,13 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
                         !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
-                                            SideLoadClrOtbn});
+                                            SideLoadClrOtbn,
+                                            SideLoadClrHmac});
 
   assign slot_clr[AesIdx]  = clr_all_keys | (clr_key_i == SideLoadClrAes);
   assign slot_clr[KmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrKmac);
   assign slot_clr[OtbnIdx] = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
+  assign slot_clr[HmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrHmac);
 
   logic clr;
   assign clr = |slot_clr;
@@ -146,8 +149,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   assign slot_sel[AesIdx] = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[AesIdx]);
   assign slot_sel[KmacIdx] = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[KmacIdx]);
   assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
+  assign slot_sel[HmacIdx] = (dest_sel_i == Hmac) & mubi4_test_true_strict(hw_key_sel[HmacIdx]);
 
-  keymgr_sideload_key u_aes_key (
+  keymgr_dpe_sideload_key u_aes_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -160,8 +164,8 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .key_o(aes_key_o.key)
   );
 
-  keymgr_sideload_key #(
-    .Width(OtbnKeyWidth)
+  keymgr_dpe_sideload_key #(
+    .Width(WideHwKeyWidth)
   ) u_otbn_key (
     .clk_i,
     .rst_ni,
@@ -170,13 +174,28 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .set_i(data_valid_i & slot_sel[OtbnIdx]),
     .clr_i(slot_clr[OtbnIdx]),
     .entropy_i(entropy_i),
-    .key_i(data_truncated_otbn),
+    .key_i(data_truncated_wide),
     .valid_o(otbn_key_o.valid),
     .key_o(otbn_key_o.key)
   );
 
+  keymgr_dpe_sideload_key #(
+    .Width(WideHwKeyWidth)
+  ) u_hmac_key (
+    .clk_i,
+    .rst_ni,
+    .en_i(keys_en),
+    .set_en_i(data_en_i),
+    .set_i(data_valid_i & slot_sel[HmacIdx]),
+    .clr_i(slot_clr[HmacIdx]),
+    .entropy_i(entropy_i),
+    .key_i(data_truncated_wide),
+    .valid_o(hmac_key_o.valid),
+    .key_o(hmac_key_o.key)
+  );
+
   hw_key_req_t kmac_sideload_key;
-  keymgr_sideload_key u_kmac_key (
+  keymgr_dpe_sideload_key u_kmac_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -207,6 +226,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   assign valids[AesIdx] = aes_key_o.valid;
   assign valids[KmacIdx] = kmac_sideload_key.valid;
   assign valids[OtbnIdx] = otbn_key_o.valid;
+  assign valids[HmacIdx] = hmac_key_o.valid;
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.
@@ -215,7 +235,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   // 1 outside that window, then an error is triggered.
   assign sideload_sel_err_o = |(~valid_tracking_q & valids);
 
-  // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
+  // when directed by keymgr_dpe_ctrl, switch over to internal key and feed to kmac
   assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
 
   // when clearing, request prng
@@ -231,7 +251,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
   // The sideload keys are truncated from the KMAC output. Hence the width of the KMAC
   // output needs to be at least size of the largest key.
-  `ASSERT_INIT(OtbnKeyFitsInDigest_A, OtbnKeyWidth <= kmac_pkg::AppDigestW)
+  `ASSERT_INIT(OtbnKeyFitsInDigest_A, WideHwKeyWidth <= kmac_pkg::AppDigestW)
   `ASSERT_INIT(KeyFitsInDigest_A, KeyWidth <= kmac_pkg::AppDigestW)
 
-endmodule // keymgr_sideload_key_ctrl
+endmodule // keymgr_dpe_sideload_key_ctrl
