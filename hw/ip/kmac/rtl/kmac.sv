@@ -1545,6 +1545,9 @@ module kmac
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
   `ASSERT_KNOWN(EnMaskingKnown_A, en_masking_o)
+  `ASSERT_KNOWN(AppRspKnown_A, app_o)
+  `ASSERT_KNOWN(EntropyReqKnown_A, entropy_o)
+  `ASSERT_KNOWN(IdleKnown_A, idle_o)
 
   // Parameter as desired
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
