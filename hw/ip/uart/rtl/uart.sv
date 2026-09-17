@@ -122,6 +122,8 @@ module uart
   // Assert Known for outputs
   `ASSERT(TxEnIsOne_A, cio_tx_en_o === 1'b1)
   `ASSERT_KNOWN(TxKnown_A, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
 
   // Assert Known for alerts
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
