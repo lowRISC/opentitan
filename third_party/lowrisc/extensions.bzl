@@ -14,6 +14,15 @@ def _lowrisc_repos():
         build_file = ":BUILD.lowrisc_rv32imcb_toolchain.bazel",
     )
 
+    CHERIOT_VERSION = "20260913-1"
+    http_archive(
+        name = "lowrisc_cheriot_toolchain",
+        url = "https://github.com/lowRISC/lowrisc-toolchains/releases/download/{v}/lowrisc-toolchain-rv32imcb-x86_64-{v}.tar.xz".format(v = CHERIOT_VERSION),
+        sha256 = "65b79c615aacdb034d8dce78d865397e6e674e8e6790c3b544d534d3c5cdc136",
+        strip_prefix = "lowrisc-toolchain-rv32imcb-x86_64-{}".format(CHERIOT_VERSION),
+        build_file = ":BUILD.lowrisc_cheriot_toolchain.bazel",
+    )
+
 lowrisc_rv32imcb_toolchain = module_extension(
     implementation = lambda _: _lowrisc_repos(),
 )

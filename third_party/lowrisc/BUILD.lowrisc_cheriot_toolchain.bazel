@@ -6,4 +6,8 @@ load("@lowrisc_opentitan//third_party/lowrisc:toolchain.bzl", "lowrisc_toolchain
 
 package(default_visibility = ["//visibility:public"])
 
-lowrisc_toolchain_targets(clang_version = 21)
+# `llvm-objdump` is the only disassembler that decodes CHERI instructions.
+lowrisc_toolchain_targets(
+    clang_version = 22,
+    llvm_tools = ["objdump"],
+)
