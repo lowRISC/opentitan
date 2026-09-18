@@ -22,17 +22,17 @@ proc move_to_task {task_name assert_name} {
 # Call the task "pre0", which means that fpv.tcl will try to prove it, before just proving the
 # FpvSecCm task that it would do otherwise.
 task -create pre0
-stopat -task pre0 "u_tlul_adapter_sram_dmem.u_rspfifo.err_o"
+stopat -task pre0 "u_tlul_adapter_sram_dmem.gen_no_sec_u_rspfifo.u_rspfifo.err_o"
 move_to_task pre0 "otbn.FpvSecCmDmemRspFifoFullCheck_A"
-stopat -task pre0 "u_tlul_adapter_sram_dmem.u_sramreqfifo"
+stopat -task pre0 "u_tlul_adapter_sram_dmem.gen_no_sec_u_sramreqfifo.u_sramreqfifo"
 move_to_task pre0 "otbn.FpvSecCmDmemSramReqFifoFullCheck_A"
-stopat -task pre0 "u_tlul_adapter_sram_dmem.u_reqfifo"
+stopat -task pre0 "u_tlul_adapter_sram_dmem.gen_no_sec_u_reqfifo.u_reqfifo"
 move_to_task pre0 "otbn.FpvSecCmDmemReqFifoFullCheck_A"
-stopat -task pre0 "u_tlul_adapter_sram_imem.u_rspfifo.err_o"
+stopat -task pre0 "u_tlul_adapter_sram_imem.gen_no_sec_u_rspfifo.u_rspfifo.err_o"
 move_to_task pre0 "otbn.FpvSecCmImemRspFifoFullCheck_A"
-stopat -task pre0 "u_tlul_adapter_sram_imem.u_sramreqfifo"
+stopat -task pre0 "u_tlul_adapter_sram_imem.gen_no_sec_u_sramreqfifo.u_sramreqfifo"
 move_to_task pre0 "otbn.FpvSecCmImemSramReqFifoFullCheck_A"
-stopat -task pre0 "u_tlul_adapter_sram_imem.u_reqfifo"
+stopat -task pre0 "u_tlul_adapter_sram_imem.gen_no_sec_u_reqfifo.u_reqfifo"
 move_to_task pre0 "otbn.FpvSecCmImemReqFifoFullCheck_A"
 
 # Make the runner try to prove these assertions too
