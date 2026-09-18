@@ -205,6 +205,8 @@ module hmac_reg_top (
   logic [3:0] cfg_digest_size_wd;
   logic [5:0] cfg_key_length_qs;
   logic [5:0] cfg_key_length_wd;
+  logic cfg_sideload_qs;
+  logic cfg_sideload_wd;
   logic cmd_we;
   logic cmd_hash_start_wd;
   logic cmd_hash_process_wd;
@@ -597,7 +599,7 @@ module hmac_reg_top (
 
   // R[cfg]: V(True)
   logic cfg_qe;
-  logic [6:0] cfg_flds_we;
+  logic [7:0] cfg_flds_we;
   assign cfg_qe = &cfg_flds_we;
   //   F[hmac_en]: 0:0
   prim_subreg_ext #(
@@ -710,6 +712,22 @@ module hmac_reg_top (
     .qs     (cfg_key_length_qs)
   );
   assign reg2hw.cfg.key_length.qe = cfg_qe;
+
+  //   F[sideload]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_cfg_sideload (
+    .re     (cfg_re),
+    .we     (cfg_we),
+    .wd     (cfg_sideload_wd),
+    .d      (hw2reg.cfg.sideload.d),
+    .qre    (),
+    .qe     (cfg_flds_we[7]),
+    .q      (reg2hw.cfg.sideload.q),
+    .ds     (),
+    .qs     (cfg_sideload_qs)
+  );
+  assign reg2hw.cfg.sideload.qe = cfg_qe;
 
 
   // R[cmd]: V(True)
@@ -2108,6 +2126,8 @@ module hmac_reg_top (
   assign cfg_digest_size_wd = reg_wdata[8:5];
 
   assign cfg_key_length_wd = reg_wdata[14:9];
+
+  assign cfg_sideload_wd = reg_wdata[15];
   assign cmd_we = addr_hit[5] & reg_we & !reg_error;
 
   assign cmd_hash_start_wd = reg_wdata[0];
@@ -2387,6 +2407,7 @@ module hmac_reg_top (
         reg_rdata_next[4] = cfg_key_swap_qs;
         reg_rdata_next[8:5] = cfg_digest_size_qs;
         reg_rdata_next[14:9] = cfg_key_length_qs;
+        reg_rdata_next[15] = cfg_sideload_qs;
       end
 
       addr_hit[5]: begin

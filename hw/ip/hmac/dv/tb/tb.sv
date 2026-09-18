@@ -21,11 +21,20 @@ module tb;
   wire intr_fifo_empty;
   wire intr_hmac_err;
 
+  // keymgr/hmac sideload wires
+  keymgr_pkg::hw_key_req_t hmac_sideload_key;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   hmac_if hmac_if(.clk_i(clk), .rst_ni(rst_n));
+
+  key_sideload_if sideload_if(
+    .clk_i        (clk),
+    .rst_ni       (rst_n),
+    .sideload_key (hmac_sideload_key)
+  );
 
   `DV_ALERT_IF_CONNECT()
 
@@ -39,6 +48,8 @@ module tb;
 
     .alert_rx_i         ( alert_rx       ),
     .alert_tx_o         ( alert_tx       ),
+
+    .keymgr_key_i       ( hmac_sideload_key),
 
     .intr_hmac_done_o   ( intr_hmac_done ),
     .intr_fifo_empty_o  ( intr_fifo_empty),
@@ -57,6 +68,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual key_sideload_if)::set(null, "*.env.keymgr_sideload_agent*",
+                                                 "vif", sideload_if);
     uvm_config_db#(virtual hmac_if)::set(null, "*.env", "hmac_vif", hmac_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
