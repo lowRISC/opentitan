@@ -10374,6 +10374,7 @@
         NumAddrScrRounds: "0"
         NumPrinceRoundsHalf: "2"
         InstSize: "38912"
+        SecZeroInit: "1"
       }
       base_addrs:
       {
@@ -10485,7 +10486,7 @@
           name: SecZeroInit
           desc: Initialize the memory with zeros instead of pseudo-random data.
           type: bit
-          default: "0"
+          default: "1"
           local: "false"
           expose: "true"
           name_top: SecSramCtrlMetaZeroInit
