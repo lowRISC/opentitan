@@ -86,6 +86,7 @@ module earlgrey_pd_main #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
+  parameter bit SecSramCtrlMainZeroInit = 0,
   // parameters for sram_ctrl_sec
   parameter int SramCtrlSecInstSize = 65536,
   parameter int SramCtrlSecNumRamInst = 1,
@@ -93,6 +94,7 @@ module earlgrey_pd_main #(
   parameter int SramCtrlSecNumPrinceRoundsHalf = 2,
   parameter int SramCtrlSecNumAddrScrRounds = 2,
   parameter bit SramCtrlSecEccCorrection = 0,
+  parameter bit SecSramCtrlSecZeroInit = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -145,7 +147,8 @@ module earlgrey_pd_main #(
   parameter bit SramCtrlMetaInstrExec = 0,
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMetaNumAddrScrRounds = 0,
-  parameter bit SramCtrlMetaEccCorrection = 0
+  parameter bit SramCtrlMetaEccCorrection = 0,
+  parameter bit SramCtrlMetaZeroInit = 0
 ) (
   // Inter-module Signal External type
   output alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump_o,
@@ -2427,7 +2430,8 @@ module earlgrey_pd_main #(
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .NumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection)
+    .EccCorrection(SramCtrlMainEccCorrection),
+    .SecZeroInit(SecSramCtrlMainZeroInit)
   ) u_sram_ctrl_main (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
@@ -2473,7 +2477,8 @@ module earlgrey_pd_main #(
     .NumPrinceRoundsHalf(SramCtrlSecNumPrinceRoundsHalf),
     .NumAddrScrRounds(SramCtrlSecNumAddrScrRounds),
     .Outstanding(SramCtrlSecOutstanding),
-    .EccCorrection(SramCtrlSecEccCorrection)
+    .EccCorrection(SramCtrlSecEccCorrection),
+    .SecZeroInit(SecSramCtrlSecZeroInit)
   ) u_sram_ctrl_sec (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
@@ -2689,7 +2694,8 @@ module earlgrey_pd_main #(
     .NumPrinceRoundsHalf(SramCtrlMetaNumPrinceRoundsHalf),
     .NumAddrScrRounds(SramCtrlMetaNumAddrScrRounds),
     .Outstanding(SramCtrlMetaOutstanding),
-    .EccCorrection(SramCtrlMetaEccCorrection)
+    .EccCorrection(SramCtrlMetaEccCorrection),
+    .SecZeroInit(SecSramCtrlMetaZeroInit)
   ) u_sram_ctrl_meta (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),

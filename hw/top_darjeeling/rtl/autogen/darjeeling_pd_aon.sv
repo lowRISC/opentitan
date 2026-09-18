@@ -24,7 +24,8 @@ module darjeeling_pd_aon #(
   parameter bit SramCtrlRetInstrExec = 0,
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
   parameter int SramCtrlRetNumAddrScrRounds = 2,
-  parameter bit SramCtrlRetEccCorrection = 0
+  parameter bit SramCtrlRetEccCorrection = 0,
+  parameter bit SecSramCtrlRetZeroInit = 0
 ) (
   // Inter-module Signal External type
   input  alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump_i,
@@ -383,7 +384,8 @@ module darjeeling_pd_aon #(
     .NumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
     .NumAddrScrRounds(SramCtrlRetNumAddrScrRounds),
     .Outstanding(SramCtrlRetOutstanding),
-    .EccCorrection(SramCtrlRetEccCorrection)
+    .EccCorrection(SramCtrlRetEccCorrection),
+    .SecZeroInit(SecSramCtrlRetZeroInit)
   ) u_sram_ctrl_ret (
     // Clock and reset connections
     .clk_i(clkmgr_clocks.clk_io_infra),

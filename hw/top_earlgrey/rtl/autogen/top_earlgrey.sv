@@ -49,6 +49,7 @@ module top_earlgrey #(
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
   parameter int SramCtrlRetNumAddrScrRounds = 2,
   parameter bit SramCtrlRetEccCorrection = 0,
+  parameter bit SecSramCtrlRetZeroInit = 0,
   // parameters for rram_ctrl
   parameter bit SecRramCtrlScrambleEn = 1,
   parameter int RramCtrlWrFifoDepth = 4,
@@ -96,6 +97,7 @@ module top_earlgrey #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
+  parameter bit SecSramCtrlMainZeroInit = 0,
   // parameters for sram_ctrl_sec
   parameter int SramCtrlSecInstSize = 65536,
   parameter int SramCtrlSecNumRamInst = 1,
@@ -103,6 +105,7 @@ module top_earlgrey #(
   parameter int SramCtrlSecNumPrinceRoundsHalf = 2,
   parameter int SramCtrlSecNumAddrScrRounds = 2,
   parameter bit SramCtrlSecEccCorrection = 0,
+  parameter bit SecSramCtrlSecZeroInit = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -155,7 +158,8 @@ module top_earlgrey #(
   parameter bit SramCtrlMetaInstrExec = 0,
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMetaNumAddrScrRounds = 0,
-  parameter bit SramCtrlMetaEccCorrection = 0
+  parameter bit SramCtrlMetaEccCorrection = 0,
+  parameter bit SramCtrlMetaZeroInit = 0
 ) (
   // Base clocks from AST
   input ast_pkg::ast_clks_t ast_base_clks_i,
@@ -398,12 +402,14 @@ module top_earlgrey #(
   .SramCtrlMainNumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
   .SramCtrlMainNumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
   .SramCtrlMainEccCorrection(SramCtrlMainEccCorrection),
+  .SecSramCtrlMainZeroInit(SecSramCtrlMainZeroInit),
   .SramCtrlSecInstSize(SramCtrlSecInstSize),
   .SramCtrlSecNumRamInst(SramCtrlSecNumRamInst),
   .SramCtrlSecInstrExec(SramCtrlSecInstrExec),
   .SramCtrlSecNumPrinceRoundsHalf(SramCtrlSecNumPrinceRoundsHalf),
   .SramCtrlSecNumAddrScrRounds(SramCtrlSecNumAddrScrRounds),
   .SramCtrlSecEccCorrection(SramCtrlSecEccCorrection),
+  .SecSramCtrlSecZeroInit(SecSramCtrlSecZeroInit),
   .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
   .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
   .RvCoreIbexPMPEnable(RvCoreIbexPMPEnable),
@@ -450,7 +456,8 @@ module top_earlgrey #(
   .SramCtrlMetaInstrExec(SramCtrlMetaInstrExec),
   .SramCtrlMetaNumPrinceRoundsHalf(SramCtrlMetaNumPrinceRoundsHalf),
   .SramCtrlMetaNumAddrScrRounds(SramCtrlMetaNumAddrScrRounds),
-  .SramCtrlMetaEccCorrection(SramCtrlMetaEccCorrection)
+  .SramCtrlMetaEccCorrection(SramCtrlMetaEccCorrection),
+  .SecSramCtrlMetaZeroInit(SecSramCtrlMetaZeroInit)
   ) earlgrey_pd_main (
     // Clocks and clock gating control from clkmgr
     .clkmgr_clocks_i(clkmgr_clocks_o),
@@ -623,7 +630,8 @@ module top_earlgrey #(
   .SramCtrlRetInstrExec(SramCtrlRetInstrExec),
   .SramCtrlRetNumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
   .SramCtrlRetNumAddrScrRounds(SramCtrlRetNumAddrScrRounds),
-  .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection)
+  .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection),
+  .SecSramCtrlRetZeroInit(SecSramCtrlRetZeroInit)
   ) earlgrey_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks_i.clk_sys),

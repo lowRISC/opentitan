@@ -41,6 +41,7 @@ module englishbreakfast_pd_main #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
+  parameter bit SecSramCtrlMainZeroInit = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b1,
@@ -984,7 +985,8 @@ module englishbreakfast_pd_main #(
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .NumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection)
+    .EccCorrection(SramCtrlMainEccCorrection),
+    .SecZeroInit(SecSramCtrlMainZeroInit)
   ) u_sram_ctrl_main (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_secure),

@@ -43,6 +43,7 @@ module top_darjeeling #(
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
   parameter int SramCtrlRetNumAddrScrRounds = 2,
   parameter bit SramCtrlRetEccCorrection = 0,
+  parameter bit SecSramCtrlRetZeroInit = 0,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
@@ -89,6 +90,7 @@ module top_darjeeling #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
+  parameter bit SecSramCtrlMainZeroInit = 0,
   // parameters for sram_ctrl_mbox
   parameter int SramCtrlMboxInstSize = 4096,
   parameter int SramCtrlMboxNumRamInst = 1,
@@ -96,6 +98,7 @@ module top_darjeeling #(
   parameter int SramCtrlMboxNumPrinceRoundsHalf = 3,
   parameter int SramCtrlMboxNumAddrScrRounds = 2,
   parameter bit SramCtrlMboxEccCorrection = 0,
+  parameter bit SecSramCtrlMboxZeroInit = 0,
   // parameters for rom_ctrl0
   parameter RomCtrl0BootRomInitFile = "",
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
@@ -397,12 +400,14 @@ module top_darjeeling #(
   .SramCtrlMainNumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
   .SramCtrlMainNumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
   .SramCtrlMainEccCorrection(SramCtrlMainEccCorrection),
+  .SecSramCtrlMainZeroInit(SecSramCtrlMainZeroInit),
   .SramCtrlMboxInstSize(SramCtrlMboxInstSize),
   .SramCtrlMboxNumRamInst(SramCtrlMboxNumRamInst),
   .SramCtrlMboxInstrExec(SramCtrlMboxInstrExec),
   .SramCtrlMboxNumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf),
   .SramCtrlMboxNumAddrScrRounds(SramCtrlMboxNumAddrScrRounds),
   .SramCtrlMboxEccCorrection(SramCtrlMboxEccCorrection),
+  .SecSramCtrlMboxZeroInit(SecSramCtrlMboxZeroInit),
   .RomCtrl0BootRomInitFile(RomCtrl0BootRomInitFile),
   .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
   .RomCtrl1BootRomInitFile(RomCtrl1BootRomInitFile),
@@ -638,7 +643,8 @@ module top_darjeeling #(
   .SramCtrlRetInstrExec(SramCtrlRetInstrExec),
   .SramCtrlRetNumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
   .SramCtrlRetNumAddrScrRounds(SramCtrlRetNumAddrScrRounds),
-  .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection)
+  .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection),
+  .SecSramCtrlRetZeroInit(SecSramCtrlRetZeroInit)
   ) darjeeling_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks_i.clk_sys),

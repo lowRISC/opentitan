@@ -3845,6 +3845,15 @@
           expose: "true"
           name_top: SramCtrlMainEccCorrection
         }
+        {
+          name: SecZeroInit
+          desc: Initialize the memory with zeros instead of pseudo-random data.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecSramCtrlMainZeroInit
+        }
       ]
       inter_signal_list:
       [
