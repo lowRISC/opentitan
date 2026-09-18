@@ -47,7 +47,7 @@ _manifest_code_end = _text_end - _ottf_start_address;
  * The location of the entry point relative to the beginning of the associated
  * slot for use in the manifest.
  */
-_manifest_entry_point = _ottf_start - _ottf_start_address;
+_manifest_entry_point = ABSOLUTE(_ottf_start - _ottf_start_address);
 /*
  * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
  * the NVM region.  Otherwise, the value kHardenedBoolTrue (0x739) is
