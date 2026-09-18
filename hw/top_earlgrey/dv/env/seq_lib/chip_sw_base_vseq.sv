@@ -1313,16 +1313,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     string mypath;
     logic [1:0] rma_wipe_idx;
     logic [3:0] rma_ack;
-    // Wait for the data-partition entry -- the last of the 4 RmaWipeEntries (info pages are
-    // entries 0-2; the data partition, the big one, is entry 3 == MaxWipeEntry).
+    // Wait for the data-partition entry -- the last of the 3 RmaWipeEntries (info pages are
+    // entries 0-1; the data partition, the big one, is entry 2 == MaxWipeEntry).
     mypath = {path, ".rma_wipe_idx"};
 
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
         `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_wipe_idx), 1, "hdl read failure")
-      end while (rma_wipe_idx != 2'h3);,
-      "waiting for rma index = 3", 100_000_000
+      end while (rma_wipe_idx != 2'h2);,
+      "waiting for rma index = 2", 100_000_000
     )
 
     // Reduce page size to 'd2

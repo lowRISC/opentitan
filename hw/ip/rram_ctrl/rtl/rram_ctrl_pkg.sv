@@ -242,14 +242,20 @@ package rram_ctrl_pkg;
   // One page for creator seeds
   // One page for owner seeds
   // One page for isolated rram page
-  parameter bit [InfoPageW-1:0] CreatorInfoPage  = 5;
-  parameter bit [InfoPageW-1:0] OwnerInfoPage    = 6;
-  parameter bit [InfoPageW-1:0] IsolatedInfoPage = 7;
+  parameter bit [InfoPageW-1:0] CreatorInfoPage  = 1;
+  parameter bit [InfoPageW-1:0] OwnerInfoPage    = 2;
+  parameter bit [InfoPageW-1:0] IsolatedInfoPage = 6;
+
+  // Info page used to relocate the OTP SECRET0 partition.
+  // Accessible only to the OTP hardware interface (HwOtpSel).
+  // software access is forced off in rram_ctrl_region_cfg.
+  parameter bit [InfoPageW-1:0] OtpRemapInfoPage = 7;
 
   // hardware interface memory protection rules
   parameter int unsigned HwLcMgrInfoRules = 5;
   parameter int unsigned HwLcMgrDataRules = 1;
   parameter int unsigned HwOtpDataRules   = 1;
+  parameter int unsigned HwOtpInfoRules   = 1;
   parameter int unsigned HostDataRules    = 1;
 
   parameter page_cfg_t CfgAllowRd = '{
@@ -358,6 +364,15 @@ package rram_ctrl_pkg;
     }
   };
 
+  // RD/WR access to the relocated OTP SECRET0 info page, everything else is disabled
+  parameter mp_info_cfg_t HwOtpInfoPageCfg[HwOtpInfoRules] = '{
+    '{
+      page:  OtpRemapInfoPage,
+      phase: PhaseInvalid,
+      cfg:   CfgAllowRdWrOtp
+    }
+  };
+
   // RD/WR access to OTP space, everything else is disabled
   parameter mp_region_cfg_t SwInitDataCfg = '{
     phase: PhaseInvalid,
@@ -380,7 +395,7 @@ package rram_ctrl_pkg;
   } rma_wipe_entry_t;
 
   // entries to be wiped at RMA
-  parameter int unsigned     WipeEntries = 4;
+  parameter int unsigned     WipeEntries = 3;
   parameter rma_wipe_entry_t RmaWipeEntries[WipeEntries] = '{
     '{
        part: RramPartInfo,
@@ -390,11 +405,6 @@ package rram_ctrl_pkg;
     '{
        part: RramPartInfo,
        base: PageW'(OwnerInfoPage),
-       size: 0
-     },
-    '{
-       part: RramPartInfo,
-       base: PageW'(IsolatedInfoPage),
        size: 0
      },
     '{

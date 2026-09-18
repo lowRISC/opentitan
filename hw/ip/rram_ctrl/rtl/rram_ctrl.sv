@@ -30,7 +30,11 @@ module rram_ctrl
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int unsigned          WrFifoDepth     = MaxFifoDepth,
   parameter int unsigned          RdFifoDepth     = MaxFifoDepth,
-  parameter bit                   SecScrambleEn   = 1'b1
+  parameter bit                   SecScrambleEn   = 1'b1,
+  // Byte offset and size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the
+  // relocation. See rram_ctrl_otp's parameter doc for details.
+  parameter int unsigned          RemapStart      = 0,
+  parameter int unsigned          RemapSize       = 0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -652,7 +656,10 @@ module rram_ctrl
   // OTP reads raw data without address infection
   assign hw_otp_rdata = phy_ctrl_rd_data;
 
-  rram_ctrl_otp u_rram_ctrl_otp (
+  rram_ctrl_otp #(
+    .RemapStart(RemapStart),
+    .RemapSize (RemapSize)
+  ) u_rram_ctrl_otp (
     .clk_i,
     .rst_ni,
     .clk_otp_i,

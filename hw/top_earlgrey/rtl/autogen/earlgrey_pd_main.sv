@@ -43,6 +43,8 @@ module earlgrey_pd_main #(
   parameter bit SecRramCtrlScrambleEn = 1,
   parameter int RramCtrlWrFifoDepth = 4,
   parameter int RramCtrlRdFifoDepth = 16,
+  parameter int RramCtrlRemapStart = otp_ctrl_reg_pkg::Secret0Offset,
+  parameter int RramCtrlRemapSize = otp_ctrl_reg_pkg::Secret0Size,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -1905,7 +1907,9 @@ module earlgrey_pd_main #(
     .RndCnstLfsrPerm(RndCnstRramCtrlLfsrPerm),
     .SecScrambleEn(SecRramCtrlScrambleEn),
     .WrFifoDepth(RramCtrlWrFifoDepth),
-    .RdFifoDepth(RramCtrlRdFifoDepth)
+    .RdFifoDepth(RramCtrlRdFifoDepth),
+    .RemapStart(RramCtrlRemapStart),
+    .RemapSize(RramCtrlRemapSize)
   ) u_rram_ctrl (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),

@@ -22,11 +22,12 @@ module rram_ctrl_region_cfg
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
 
-  // All page configurations
-  input sw_region_t [MpRegions-1:0]        region_i,
-  input sw_region_cfg_t [MpRegions-1:0]    region_cfg_i,
-  input sw_default_cfg_t                   default_cfg_i,
-  input sw_info_cfg_t [TotalInfoPages-1:0] info_page_cfg_i,
+  // All page configurations. Only pages below OtpRemapInfoPage have a backing
+  // INFO_PAGE_CFG/INFO_REGWEN register; the rest are hardware-only (see below).
+  input sw_region_t [MpRegions-1:0]           region_i,
+  input sw_region_cfg_t [MpRegions-1:0]       region_cfg_i,
+  input sw_default_cfg_t                      default_cfg_i,
+  input sw_info_cfg_t [OtpRemapInfoPage-1:0]  info_page_cfg_i,
 
   // Combined page configurations
   output mp_region_cfg_t region_cfgs_o[TotalMpRegions],
@@ -126,7 +127,9 @@ module rram_ctrl_region_cfg
   /////////////////////////////////////////////
   // Info partition properties configuration //
   /////////////////////////////////////////////
-  for (genvar i = 0; i < TotalInfoPages; i++) begin : gen_info_page
+
+  // Pages below OtpRemapInfoPage have a real INFO_PAGE_CFG/INFO_REGWEN register.
+  for (genvar i = 0; i < OtpRemapInfoPage; i++) begin : gen_info_page
     mubi4_t reg_en;
     mubi4_t reg_wr_en;
     mubi4_t reg_rd_en;
@@ -162,5 +165,11 @@ module rram_ctrl_region_cfg
       assign info_page_cfgs_o[i].cfg.wr_en = reg_wr_en;
     end
   end
+
+  // OtpRemapInfoPage has no backing register at all. It is hardware-only, accessible solely to
+  // the OTP hardware interface.
+  assign info_page_cfgs_o[OtpRemapInfoPage].page  = OtpRemapInfoPage;
+  assign info_page_cfgs_o[OtpRemapInfoPage].phase = PhaseInvalid;
+  assign info_page_cfgs_o[OtpRemapInfoPage].cfg   = CfgDisable;
 
 endmodule // rram_ctrl_region_cfg
