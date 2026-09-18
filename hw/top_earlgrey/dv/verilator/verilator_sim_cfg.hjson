@@ -132,6 +132,10 @@
       sw_images: ["//sw/device/tests:kmac_mode_kmac_test:1"]
     }
     {
+      name: kmac_save_restore_smoketest
+      sw_images: ["//sw/device/tests:kmac_save_restore_smoketest:1"]
+    }
+    {
       name: crt_test
       sw_images: ["//sw/device/tests:crt_test:1"]
     }

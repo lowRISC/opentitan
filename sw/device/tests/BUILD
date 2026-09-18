@@ -2918,6 +2918,28 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "kmac_save_restore_smoketest",
+    srcs = ["kmac_save_restore_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "kmac_smoketest",
     srcs = ["kmac_smoketest.c"],
     exec_env = dicts.add(
