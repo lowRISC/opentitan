@@ -387,6 +387,10 @@ jobs:
     with:
       top_name: earlgrey
       design_suffix: cw340
+      # For now, use the GitHub cache only in pull requests. This means that we here force
+      # bitstream rebuilds on merge. We may remove this restriction once we have tested the GitHub
+      # cache for some time and if we deem this a safe behaviour.
+      use_gh_cache: ${{ github.event_name == 'pull_request' }}
 
   cache_bitstreams:
     name: Cache bitstreams to GCP

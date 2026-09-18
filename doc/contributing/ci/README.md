@@ -74,16 +74,15 @@ The status of GitHub Actions is displayed below a pull request, as marks next to
 
 ## Bitstream Caching
 
-Since full bitstream builds for FPGA testing & development can take over an hour, we cache the output artifacts in a GCS bucket.
-Refer to the relevant documentation on the [implementation of bitstream caching](../fpga/ref_manual_fpga.md#implementation-of-bitstream-caching-and-splicing) for more information on how the bitstreams are built and exposed to the cache.
+Since full bitstream builds for FPGA testing & development can take over an hour, we cache the output artifacts in multiple ways.
 
-To determine whether a bitstream should be built and a cache entry should be created, CI uses a [high-level approach to determine the bitstream strategy](../../../.github/workflows/bitstream.yml).
-This involves checking the files that were changed by a pull request or merge, and comparing them to a list of excluded patterns.
-If this check decides that a build is needed, then the relevant bitstream targets will be built via their Bazel targets and uploaded to the GCS bucket.
+First, a GCS bucket is used to keep bitstreams for merged PRs. When a new PR is subsequently uploaded, CI evaluates whether to reuse an entry from the cache or instead rebuilt the bitstream from scratch. This involves checking the files that were changed since the last cached bitstream entry, and comparing these to a list of excluded patterns. If this check decides that a build is needed, then the relevant Bazel targets are built and the corresponding bitstream artifacts are uploaded to the GCS bucket. Refer to the relevant documentation on the [implementation of bitstream caching](../fpga/ref_manual_fpga.md#implementation-of-bitstream-caching-and-splicing) for more information on this caching mechanism.
 
-Just because CI decides to rebuild a bitstream, that does not necessarily mean that the full cost of the bitstream build is incurred.
-Bazel itself may be able to cache the bitstream build action, depending on whether any of the input files that it feeds to FuseSoC have been changed.
-You can get a rough measure of what Bazel considers as an input to the bitstream build by enumerating the dependencies of the relevant target.
+Second, the [GitHub action cache](https://github.com/actions/cache) is used to save bitstreams during a PR's review lifetime. This is useful for PRs that change the bitstream and require it to be rebuilt. The GitHub cache saves the bitstream in early PR uploads so that it can be reused in later revisions where possible, e.g. for PR revisions that fix bits of documentation or touch parts of the codebase not involved in the bitstream creation. This mechanism works by collecting a list of files (from FuseSoC) that are used as source for the Bitstream creation and generating a digest SHA that identifies them. This SHA is then used as a key to index the GitHub cache. A bitstream will then be reused in revisions of the same PR with matching digest. Note that the GitHub action cache is scoped to the repository branch and therefore cannot be reused across different PRs.
+
+It is important to note that the digest is created solely based on the list of source files involved in the bitstream creation. A PR update that only changes the FuseSoC command line may end up incorrectly reusing a bitstream from an earlier revision of the same PR. This issue may be resolved in the future by making the FuseSoC command line part of the inputs used to calculate the digest SHA.
+
+Finally, it should be noted that Bazel itself may be able to cache the bitstream build action, depending on whether any of the input files that it feeds to FuseSoC have been changed. (This is effectively a third caching mechanism for bitstreams.) You can get a rough measure of what Bazel considers as an input to the bitstream build by enumerating the dependencies of the relevant target.
 For example:
 
 ```sh

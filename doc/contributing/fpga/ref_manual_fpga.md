@@ -113,7 +113,7 @@ The following files are produced as a result:
 * `lowrisc_systems_chip_earlgrey_cw340_0.1.runs` (information about the Synthesis & Implementation runs)
 * `memories.mmi` (a dummy MMI file used by the legacy bitstream splicing flow - to be removed in the future).
 
-If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz
+If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it uploads to the GCS bucket on PR merges. The latest tarball is available [here](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
 
 ### Exposing GCS-cached artifacts to Bazel
 
