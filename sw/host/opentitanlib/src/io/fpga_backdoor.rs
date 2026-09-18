@@ -28,14 +28,17 @@ pub mod regs {
     pub const CONTROL_DONE_BIT: u32 = 0;
     pub const CONTROL_WRITE_ENA_BIT: u32 = 1;
     pub const CONTROL_CLEAR_START_BIT: u32 = 2;
-    pub const CONTROL_AUTO_INCR_BIT: u32 = 3;
+    pub const CONTROL_CLEAR_SEGMENT_START_BIT: u32 = 3;
+    pub const CONTROL_AUTO_INCR_BIT: u32 = 4;
     pub const CONTROL_TARGET_IDX_MASK: u32 = 0xff;
     pub const CONTROL_TARGET_IDX_OFFSET: usize = 8;
 
     // Other registers (all have one 32-bit `VAL` field)
     pub const NUM_BKDR_TARGETS_REG_OFFSET: usize = 0x8;
     pub const MISSION_MODE_SWITCH_DELAY_REG_OFFSET: usize = 0xc;
-    pub const USR_ACCESS_TIMESTAMP_REG_OFFSET: usize = 0x10;
+    pub const CLEAR_INDEX_START_REG_OFFSET: usize = 0x10;
+    pub const CLEAR_INDEX_END_REG_OFFSET: usize = 0x14;
+    pub const USR_ACCESS_TIMESTAMP_REG_OFFSET: usize = 0x18;
     pub const TARGET_INFO_0_REG_OFFSET: usize = 0x100;
     pub const WIDTH_INFO_0_REG_OFFSET: usize = 0x200;
     pub const DEPTH_INFO_0_REG_OFFSET: usize = 0x300;

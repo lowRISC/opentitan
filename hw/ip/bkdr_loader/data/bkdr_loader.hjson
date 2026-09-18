@@ -128,6 +128,19 @@
                   ''',
           },
           { bits: "3"
+            name: "CLEAR_SEGMENT_START"
+            swaccess: "rw",
+            hwaccess: "hrw"
+            desc: '''
+                  Write 1 to trigger the bkdr_loader to clear a memory segment defined by
+                  [`CLEAR_INDEX_START`, `CLEAR_INDEX_END`) in the target, which is currently
+                  selected by `TARGET_IDX`. Register self-clears and always reads
+                  back 0. The word that is cleared with is selected by `WRITE_DATA`.
+                  Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
+                  bkdr writes will not have any effects during an active clear operation.
+                  ''',
+          },
+          { bits: "4"
             name: "AUTO_INCR"
             swaccess: "rw",
             hwaccess: "hro"
@@ -182,6 +195,42 @@
           { bits: "31:0"
             name: "VAL"
             resval: "25000"
+            swaccess: "rw",
+            hwaccess: "hro",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "CLEAR_INDEX_START",
+        desc: '''
+          Word index the segment to be cleared running a segment clear operation by asserting
+          `CLEAR_SEGMENT_START` begins. Inclusive.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            resval: "0"
+            swaccess: "rw",
+            hwaccess: "hro",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "CLEAR_INDEX_END",
+        desc: '''
+         Word index the segment to be cleared running a segment clear operation by asserting
+          `CLEAR_SEGMENT_START` ends. Exclusive.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            resval: "1"
             swaccess: "rw",
             hwaccess: "hro",
             desc: '''
