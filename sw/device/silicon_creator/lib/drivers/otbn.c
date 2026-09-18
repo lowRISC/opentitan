@@ -5,12 +5,14 @@
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -70,46 +72,48 @@ rom_error_t sc_otbn_busy_wait_for_done(void) {
 }
 
 /**
- * Helper function for writing to OTBN's DMEM or IMEM.
+ * Helper function for writing public data linearly to OTBN's DMEM or IMEM with
+ * LOAD_CHECKSUM verification.
  *
- * @param dest_addr Destination address.
+ * @param dest_reg_offset Base register offset (OTBN_IMEM_REG_OFFSET or
+ * OTBN_DMEM_REG_OFFSET).
+ * @param is_imem True for IMEM writes, false for DMEM writes.
+ * @param dest Destination address in OTBN memory.
  * @param src Source buffer.
  * @param num_words Number of words to copy.
+ * @return Result of the operation.
  */
-static void sc_otbn_write(uint32_t dest_addr, const uint32_t *src,
-                          size_t num_words) {
-  // Start from a random index less than `num_words`.
-  uint32_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
-  enum { kStep = 1 };
-  uint32_t iter_cnt = 0, r_iter_cnt = num_words - 1;
-  for (; launder32(iter_cnt) < num_words && launder32(r_iter_cnt) < num_words;
-       ++iter_cnt, --r_iter_cnt) {
-    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
-    i += kStep;
-    if (launder32(i) >= num_words) {
-      i -= num_words;
-    }
-    HARDENED_CHECK_LT(i, num_words);
-  }
-  HARDENED_CHECK_EQ(iter_cnt, num_words);
-  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
-}
+OT_WARN_UNUSED_RESULT
+static rom_error_t sc_otbn_write_public(uint32_t dest_reg_offset, bool is_imem,
+                                        sc_otbn_addr_t dest,
+                                        const uint32_t *src, size_t num_words) {
+  const uint32_t kBase = otbn_base();
+  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
 
-/**
- * Helper function for writing public data linearly to OTBN's DMEM or IMEM.
- *
- * @param dest_addr Destination address.
- * @param src Source buffer.
- * @param num_words Number of words to copy.
- */
-static void sc_otbn_write_public(uint32_t dest_addr, const uint32_t *src,
-                                 size_t num_words) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+
   uint32_t i = 0, r = num_words - 1;
   for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
-    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
+    size_t idx_word = i * sizeof(uint32_t);
+    abs_mmio_write32(kBase + dest_reg_offset + dest + idx_word, src[i]);
+
+    uint32_t offset =
+        (((dest + idx_word) >> 2) & 0x7FFF) | (is_imem ? (1 << 15) : 0);
+    crc32_add32(&ctx, src[i]);
+    crc32_add8(&ctx, (uint8_t)offset);
+    crc32_add8(&ctx, (uint8_t)(offset >> 8));
   }
   HARDENED_CHECK_EQ(i, num_words);
   HARDENED_CHECK_EQ(r, UINT32_MAX);
+
+  uint32_t checksum_expected = crc32_finish(&ctx);
+  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  if (launder32(checksum) != checksum_expected) {
+    return kErrorOtbnBadChecksum;
+  }
+  HARDENED_CHECK_EQ(checksum, checksum_expected);
+  return kErrorOk;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -117,15 +121,48 @@ static rom_error_t sc_otbn_imem_write(size_t num_words, const uint32_t *src,
                                       sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_IMEM_SIZE_BYTES));
-  sc_otbn_write(otbn_base() + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
-  return kErrorOk;
+  return sc_otbn_write_public(OTBN_IMEM_REG_OFFSET, /*is_imem=*/true, dest, src,
+                              num_words);
 }
 
 rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
                                sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
-  sc_otbn_write(otbn_base() + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
+  const uint32_t kBase = otbn_base();
+  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+
+  uint32_t ctx;
+  crc32_init(&ctx);
+
+  // Start from a random index less than `num_words`.
+  uint32_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
+  uint32_t iter_cnt = 0, r_iter_cnt = num_words - 1;
+  for (; launder32(iter_cnt) < num_words && launder32(r_iter_cnt) < num_words;
+       ++iter_cnt, --r_iter_cnt) {
+    size_t idx_word = i * sizeof(uint32_t);
+    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + idx_word, src[i]);
+
+    uint32_t offset = ((dest + idx_word) >> 2) & 0x7FFF;
+    crc32_add32(&ctx, src[i]);
+    crc32_add8(&ctx, (uint8_t)offset);
+    crc32_add8(&ctx, (uint8_t)(offset >> 8));
+
+    ++i;
+    if (launder32(i) >= num_words) {
+      i -= num_words;
+    }
+    HARDENED_CHECK_LT(i, num_words);
+  }
+  HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
+
+  uint32_t checksum_expected = crc32_finish(&ctx);
+  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  if (launder32(checksum) != checksum_expected) {
+    return kErrorOtbnBadChecksum;
+  }
+  HARDENED_CHECK_EQ(checksum, checksum_expected);
   return kErrorOk;
 }
 
@@ -133,9 +170,8 @@ rom_error_t sc_otbn_dmem_write_public(size_t num_words, const uint32_t *src,
                                       sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
-  sc_otbn_write_public(otbn_base() + OTBN_DMEM_REG_OFFSET + dest, src,
-                       num_words);
-  return kErrorOk;
+  return sc_otbn_write_public(OTBN_DMEM_REG_OFFSET, /*is_imem=*/false, dest,
+                              src, num_words);
 }
 
 rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,

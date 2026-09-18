@@ -213,7 +213,8 @@ typedef struct sc_otbn_app {
  * (Re-)loads an application into OTBN.
  *
  * Load the application image with both instruction and data segments into
- * OTBN.
+ * OTBN. Verifies written memory integrity using the hardware LOAD_CHECKSUM
+ * register.
  *
  * @param app The application to load into OTBN.
  * @return The result of the operation.
@@ -224,9 +225,13 @@ rom_error_t sc_otbn_load_app(const sc_otbn_app_t app);
 /**
  * Copies data from the CPU memory to OTBN data memory.
  *
+ * To mitigate SCA, data is written in pseudo-random order starting at a random
+ * word offset. Verifies written data integrity using the hardware LOAD_CHECKSUM
+ * register.
+ *
  * @param num_words Number of 32b words to copy.
- * @param dest Address of the destination in OTBN's data memory.
  * @param src Source of the data to copy.
+ * @param dest Address of the destination in OTBN's data memory.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -236,7 +241,9 @@ rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
 /**
  * Copies non-sensitive public data from CPU memory to OTBN data memory.
  *
- * Performs linear MMIO writes without randomizing the starting offset.
+ * Performs linear MMIO store transfers without randomizing the starting offset,
+ * and verifies written data integrity using the hardware LOAD_CHECKSUM
+ * register.
  *
  * @param num_words Number of 32b words to copy.
  * @param src Source of the data to copy.
