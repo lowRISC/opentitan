@@ -380,8 +380,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
   HARDENED_TRY_WIPE_DMEM(
       internal_p384_keygen_finalize(private_key, public_key));
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 #ifdef FIPS_MODE
@@ -537,8 +536,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
   // last potentially error-causing line before returning to the caller.
   HARDENED_TRY_WIPE_DMEM(p384_ecdsa_sign_finalize(sig_p384));
 
-  // Clear the OTBN sideload slot (in case the key was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
@@ -774,8 +772,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   HARDENED_TRY(hardened_memshred(ss.share0, ARRAYSIZE(ss.share0)));
   HARDENED_TRY(hardened_memshred(ss.share1, ARRAYSIZE(ss.share1)));
 
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ecc_p384_public_key_import(
