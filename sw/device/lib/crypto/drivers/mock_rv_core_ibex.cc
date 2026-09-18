@@ -25,8 +25,6 @@ void ibex_restore_icache(hardened_bool_t icache_enabled) {
 // real. https://xkcd.com/221/
 uint32_t ibex_rnd32_read(void) { return 4; }
 
-void ibex_clear_rf(void) { asm volatile("nop"); }
-
 uint32_t hardened_memshred_random_word(void) { return ibex_rnd32_read(); }
 
 uint32_t random_order_random_word(void) { return ibex_rnd32_read(); }

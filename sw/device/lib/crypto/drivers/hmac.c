@@ -555,7 +555,11 @@ static status_t hmac_redundant_core(const hmac_key_t *key,
       digest_words * sizeof(uint32_t));
   HARDENED_TRY(hmac_update(&ctx, &h_i_key_pad_msg_buf));
 
-  return hmac_final(&ctx, tag);
+  HARDENED_TRY(hmac_final(&ctx, tag));
+  HARDENED_TRY(hardened_memshred(o_key_pad, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(i_key_pad, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(h_i_key_pad_msg, kHmacMaxDigestWords));
+  return OTCRYPTO_OK;
 }
 
 static status_t hmac_init_redundant_core(hmac_key_t key, hmac_ctx_t *ctx,
@@ -582,7 +586,9 @@ static status_t hmac_init_redundant_core(hmac_key_t key, hmac_ctx_t *ctx,
   otcrypto_const_byte_buf_t i_key_pad_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)i_key_pad,
                         block_words * sizeof(uint32_t));
-  return hmac_update(ctx, &i_key_pad_buf);
+  HARDENED_TRY(hmac_update(ctx, &i_key_pad_buf));
+  HARDENED_TRY(hardened_memshred(i_key_pad, kHmacMaxBlockWords));
+  return OTCRYPTO_OK;
 }
 
 static status_t hmac_final_redundant_core(
@@ -617,7 +623,11 @@ static status_t hmac_final_redundant_core(
       otcrypto_const_byte_buf_t, (const uint8_t *)inner_digest_data,
       digest_words * sizeof(uint32_t));
   HARDENED_TRY(hmac_update(ctx, &inner_buf));
-  return hmac_final(ctx, tag);
+  HARDENED_TRY(hmac_final(ctx, tag));
+  HARDENED_TRY(hardened_memshred(saved_key.key_block, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(o_key_pad, kHmacMaxBlockWords));
+  HARDENED_TRY(hardened_memshred(inner_digest_data, kHmacMaxDigestWords));
+  return OTCRYPTO_OK;
 }
 
 // --- Specific Drivers mapping to common helper targets ---
