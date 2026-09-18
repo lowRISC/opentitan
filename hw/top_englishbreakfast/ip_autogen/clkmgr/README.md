@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_englishbreakfast/ip_autogen/clkmgr/data/clkmgr.hjson --top englishbreakfast -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`clkmgr`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 1.0.1 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/code.svg) |
+ [`clkmgr`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 2.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/clkmgr/code.svg) |
 
 <!-- END CMDGEN -->
 
