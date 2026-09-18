@@ -351,3 +351,207 @@ impl SpxRawPublicKey {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use sphincsplus::SpxDomain;
+    use strum::IntoEnumIterator;
+
+    use crate::util::tmpfilename;
+
+    /// A SLH-DSA-SHA2-128s key pair in Opentitan's Pre-Standardization RAW PEM format.
+    const PRESTANDARD_PRIVATE_PEM: &str = "-----BEGIN RAW:SLH_DSA_SHA2_128s PRIVATE KEY-----\n\
+        6bjY0UDbmzL4TnTVYwINqOCrxxyGNC8hJXMzKB9WDNfaSaVWNOfNyXSDc9opKeh2\n\
+        dNVIlMTKhAWCYUnLhZ0gsw==\n\
+        -----END RAW:SLH_DSA_SHA2_128s PRIVATE KEY-----\n";
+    const PRESTANDARD_PUBLIC_PEM: &str = "-----BEGIN RAW:SLH_DSA_SHA2_128s PUBLIC KEY-----\n\
+        2kmlVjTnzcl0g3PaKSnodnTVSJTEyoQFgmFJy4WdILM=\n\
+        -----END RAW:SLH_DSA_SHA2_128s PUBLIC KEY-----\n";
+    const SHA2_PUBLIC_HEX: &str =
+        "da49a55634e7cdc9748373da2929e87674d54894c4ca8405826149cb859d20b3";
+
+    #[test]
+    fn test_pre_standard_pem_vectors() -> Result<()> {
+        let public_key = load_spx_public_key_from_bytes(
+            PRESTANDARD_PUBLIC_PEM.as_bytes(),
+            SpxKeyLoadingMode::PublicOnly,
+        )?;
+        assert_eq!(public_key.algorithm(), SphincsPlus::Sha2128sSimple);
+        assert_eq!(hex::encode(public_key.as_bytes()), SHA2_PUBLIC_HEX);
+
+        let private_key = load_spx_private_key_from_bytes(PRESTANDARD_PRIVATE_PEM.as_bytes())?;
+        assert_eq!(SpxPublicKey::from(&private_key), public_key);
+
+        // We shouldn't be able to load the public key from the private key
+        // unless the fallthrough option is enabled - in which case we should.
+        assert!(
+            load_spx_public_key_from_bytes(
+                PRESTANDARD_PRIVATE_PEM.as_bytes(),
+                SpxKeyLoadingMode::PublicOnly
+            )
+            .is_err()
+        );
+        assert_eq!(
+            load_spx_public_key_from_bytes(
+                PRESTANDARD_PRIVATE_PEM.as_bytes(),
+                SpxKeyLoadingMode::Fallback
+            )?,
+            public_key
+        );
+
+        // Check that we can also use keys with `SPHINCS+` algorithm names instead of `SLH_DSA`.
+        let sphincsplus =
+            |pem: &str| pem.replace("RAW:SLH_DSA_SHA2_128s", "RAW:SPHINCS+_SHA2_128s_simple");
+        assert_eq!(
+            load_spx_public_key_from_bytes(
+                sphincsplus(PRESTANDARD_PUBLIC_PEM).as_bytes(),
+                SpxKeyLoadingMode::Fallback
+            )?,
+            public_key
+        );
+        assert_eq!(
+            load_spx_private_key_from_bytes(sphincsplus(PRESTANDARD_PRIVATE_PEM).as_bytes())?,
+            private_key
+        );
+
+        // A public key should never satisfy a request for a private key.
+        assert!(load_spx_private_key_from_bytes(PRESTANDARD_PUBLIC_PEM.as_bytes()).is_err());
+        Ok(())
+    }
+
+    /// A standard PKCS#8 / SPKI SLH-DSA-SHAKE-128s key pair encoded in both PEM and DER formats.
+    const PKCS8_PRIVATE_PEM: &str = "-----BEGIN PRIVATE KEY-----\n\
+        MFICAQAwCwYJYIZIAWUDBAMaBEB4i2IQNhIQvc97tjjHtV/b6ZrcuOg1Vn82LANY\n\
+        QzQkhsxiHYkfzmmQt6u8AgCwa5IgqxgaKEjNtvbjc7wWDMFn\n\
+        -----END PRIVATE KEY-----\n";
+    const SPKI_PUBLIC_PEM: &str = "-----BEGIN PUBLIC KEY-----\n\
+        MDAwCwYJYIZIAWUDBAMaAyEAzGIdiR/OaZC3q7wCALBrkiCrGBooSM229uNzvBYM\n\
+        wWc=\n\
+        -----END PUBLIC KEY-----\n";
+    const PKCS8_PRIVATE_DER_HEX: &str = "3052020100300b060960864801650304031a0440788b6210361210bdcf7bb\
+        638c7b55fdbe99adcb8e835567f362c035843342486cc621d891fce6990b7abbc0200b06b9220ab181a2848cdb6f6e\
+        373bc160cc167";
+    const SPKI_PUBLIC_DER_HEX: &str = "3030300b060960864801650304031a032100cc621d891fce6990b7abbc0200b\
+        06b9220ab181a2848cdb6f6e373bc160cc167";
+    const SHAKE2_PUBLIC_HEX: &str =
+        "cc621d891fce6990b7abbc0200b06b9220ab181a2848cdb6f6e373bc160cc167";
+
+    #[test]
+    fn test_standard_pem_vectors() -> Result<()> {
+        let public_key = load_spx_public_key_from_bytes(
+            SPKI_PUBLIC_PEM.as_bytes(),
+            SpxKeyLoadingMode::PublicOnly,
+        )?;
+        assert_eq!(public_key.algorithm(), SphincsPlus::Shake128sSimple);
+        assert_eq!(hex::encode(public_key.as_bytes()), SHAKE2_PUBLIC_HEX);
+
+        let private_key = load_spx_private_key_from_bytes(PKCS8_PRIVATE_PEM.as_bytes())?;
+        assert_eq!(SpxPublicKey::from(&private_key), public_key);
+
+        // We shouldn't be able to load the public key from the private key
+        // unless the fallthrough option is enabled - in which case we should.
+        assert!(
+            load_spx_public_key_from_bytes(
+                PKCS8_PRIVATE_PEM.as_bytes(),
+                SpxKeyLoadingMode::PublicOnly
+            )
+            .is_err()
+        );
+        assert_eq!(
+            load_spx_public_key_from_bytes(
+                PKCS8_PRIVATE_PEM.as_bytes(),
+                SpxKeyLoadingMode::Fallback
+            )?,
+            public_key
+        );
+
+        // A public key should never satisfy a request for a private key.
+        assert!(load_spx_private_key_from_bytes(SPKI_PUBLIC_PEM.as_bytes()).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn test_standard_der_vectors() -> Result<()> {
+        let spki_public_der = hex::decode(SPKI_PUBLIC_DER_HEX)?;
+        let public_key =
+            load_spx_public_key_from_bytes(&spki_public_der, SpxKeyLoadingMode::PublicOnly)?;
+        assert_eq!(public_key.algorithm(), SphincsPlus::Shake128sSimple);
+        assert_eq!(hex::encode(public_key.as_bytes()), SHAKE2_PUBLIC_HEX);
+
+        let pkcs8_private_der = hex::decode(PKCS8_PRIVATE_DER_HEX)?;
+        let private_key = load_spx_private_key_from_bytes(&pkcs8_private_der)?;
+        assert_eq!(SpxPublicKey::from(&private_key), public_key);
+
+        // We shouldn't be able to load the public key from the private key
+        // unless the fallthrough option is enabled - in which case we should.
+        assert!(
+            load_spx_public_key_from_bytes(&pkcs8_private_der, SpxKeyLoadingMode::PublicOnly)
+                .is_err()
+        );
+        assert_eq!(
+            load_spx_public_key_from_bytes(&pkcs8_private_der, SpxKeyLoadingMode::Fallback)?,
+            public_key
+        );
+
+        // A public key should never satisfy a request for a private key.
+        assert!(load_spx_private_key_from_bytes(&spki_public_der).is_err());
+        Ok(())
+    }
+
+    // Save -> Load roundtrip tests for every supported key format
+    #[test]
+    fn test_spx_format_roundtrip() -> Result<()> {
+        for algorithm in [SphincsPlus::Shake128sSimple, SphincsPlus::Sha2128sSimple] {
+            let (private_key, public_key) = SpxSecretKey::new_keypair(algorithm)?;
+
+            for format in SpxKeyFormat::iter() {
+                let private_path =
+                    tmpfilename(&format!("test_private_{:?}.{}", algorithm, format.ext()));
+                let public_path =
+                    tmpfilename(&format!("test_public_{:?}.{}", algorithm, format.pub_ext()));
+
+                save_spx_private_key(&private_key, &private_path, format)?;
+                save_spx_public_key(&public_key, &public_path, format)?;
+
+                let loaded_private_key = load_spx_private_key(&private_path)?;
+                let loaded_public_key =
+                    load_spx_public_key(&public_path, SpxKeyLoadingMode::PublicOnly)?;
+
+                assert_eq!(loaded_private_key, private_key);
+                assert_eq!(loaded_public_key, public_key);
+
+                // Test extracting public key from private key file, with and without the fallback.
+                assert!(load_spx_public_key(&private_path, SpxKeyLoadingMode::PublicOnly).is_err());
+                let extracted_public_key =
+                    load_spx_public_key(&private_path, SpxKeyLoadingMode::Fallback)?;
+                assert_eq!(extracted_public_key, public_key);
+            }
+        }
+        Ok(())
+    }
+
+    // [`SpxKeyFormat::PreStandardPem`] is tested in the `sphincsplus` implementation.
+    // Do a very simple sign/verify smoketest with keys instead loaded from PKCS#8
+    // formats to check that everything still works.
+    #[test]
+    fn test_pkcs8_sign_verify() -> Result<()> {
+        let algorithm = SphincsPlus::Shake128sSimple;
+        let (private_key, public_key) = SpxSecretKey::new_keypair(algorithm)?;
+
+        let private_path = tmpfilename("test_pkcs8_private.der");
+        let public_path = tmpfilename("test_pkcs8_public.der");
+
+        save_spx_private_key(&private_key, &private_path, SpxKeyFormat::Pkcs8Der)?;
+        save_spx_public_key(&public_key, &public_path, SpxKeyFormat::Pkcs8Der)?;
+
+        let loaded_private_key = load_spx_private_key(&private_path)?;
+        let loaded_public_key = load_spx_public_key(&public_path, SpxKeyLoadingMode::PublicOnly)?;
+
+        let message = b"OpenTitan SLH-DSA PKCS#8 test message";
+        let signature = loaded_private_key.sign(SpxDomain::Pure, message)?;
+        loaded_public_key.verify(SpxDomain::Pure, &signature, message)?;
+        Ok(())
+    }
+}
