@@ -135,11 +135,18 @@ fpga_cw340(
     }),
     design = "earlgrey",
     exec_env = "fpga_cw340",
-    libs = [
-        "//sw/device/lib/arch:boot_stage_rom_ext",
-        "//sw/device/lib/arch:fpga_cw340",
-        "//hw/top_earlgrey/sw/dt:fpga_cw340",
-    ],
+    libs = select({
+        # `//sw/device/lib/arch:fpga_cw340` does not yet compile purecap.
+        "//toolchain:isa_cheriot": [
+            "//sw/device/lib/arch:boot_stage_rom_ext",
+            "//hw/top_earlgrey/sw/dt:fpga_cw340",
+        ],
+        "//conditions:default": [
+            "//sw/device/lib/arch:boot_stage_rom_ext",
+            "//sw/device/lib/arch:fpga_cw340",
+            "//hw/top_earlgrey/sw/dt:fpga_cw340",
+        ],
+    }),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     param = {
         "interface": "hyper340",
@@ -193,11 +200,18 @@ fpga_cw340(
         "//conditions:default": {"//signing:appkey": "0"},
     }),
     exec_env = "fpga_cw340_rom_ext",
-    libs = [
-        "//sw/device/lib/arch:boot_stage_owner",
-        "//sw/device/lib/arch:fpga_cw340",
-        "//hw/top_earlgrey/sw/dt:fpga_cw340",
-    ],
+    libs = select({
+        # `//sw/device/lib/arch:fpga_cw340` does not yet compile purecap.
+        "//toolchain:isa_cheriot": [
+            "//sw/device/lib/arch:boot_stage_owner",
+            "//hw/top_earlgrey/sw/dt:fpga_cw340",
+        ],
+        "//conditions:default": [
+            "//sw/device/lib/arch:boot_stage_owner",
+            "//sw/device/lib/arch:fpga_cw340",
+            "//hw/top_earlgrey/sw/dt:fpga_cw340",
+        ],
+    }),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",

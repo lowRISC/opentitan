@@ -7,6 +7,7 @@
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
+    _CHERIOT_PLATFORM = "CHERIOT_PLATFORM",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
@@ -80,6 +81,8 @@ CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 OPENTITAN_CPU = _OPENTITAN_CPU
 OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
 opentitan_transition = _opentitan_transition
+
+CHERIOT_PLATFORM = _CHERIOT_PLATFORM
 
 opentitan_binary_blob = _opentitan_binary_blob
 fpga_cw305 = _fpga_cw305
