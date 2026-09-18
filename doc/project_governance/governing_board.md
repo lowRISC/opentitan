@@ -16,8 +16,8 @@ The OTGB membership is:
 
 * Claus Dietze (Giesecke & Devrient)
 * Jay Alphey (lowRISC)
-* Miguel Osorio (Google)
 * Ran Klier (Nuvoton)
+* Will Drewry (Google)
 
 ## Roles
 
