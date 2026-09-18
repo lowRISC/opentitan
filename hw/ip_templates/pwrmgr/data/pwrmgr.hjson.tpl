@@ -39,6 +39,15 @@
       design_stage:       "D3",
       verification_stage: "V2S",
       dif_stage:          "S2",
+      commit_id:          "5967df933a814f72d5212bd43d13a0041a3aaf9d",
+    }
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
+      commit_id:          "",
     }
   ]
   clocking: [
