@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::spx;
 use opentitanlib::crypto::spx::{SpxKeyFormat, SpxKeyLoadingMode};
-use sphincsplus::{SphincsPlus, SpxRawSignature, SpxSecretKey, SpxSignatureMode};
+use sphincsplus::{SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey, SpxSignatureMode};
 
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
@@ -116,10 +116,63 @@ impl CommandDispatch for SpxKeyGenerateCommand {
     }
 }
 
+/// Convert a SPHINCS+ / SLH-DSA key to a different encoding format.
+#[derive(Debug, Args)]
+pub struct SpxKeyConvertCommand {
+    /// Key encoding format to convert to
+    #[arg(long, default_value_t = SpxKeyFormat::default())]
+    format: SpxKeyFormat,
+    /// Convert to a public key, regardless of whether the input file is a private key or not.
+    #[arg(long)]
+    public: bool,
+    /// The SPHINCS+ / SLH-DSA key file to convert.
+    input: PathBuf,
+    /// Output key file.
+    output: PathBuf,
+}
+
+impl CommandDispatch for SpxKeyConvertCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        if let Ok(private_key) = spx::load_spx_private_key(&self.input) {
+            let (private_path, public_path) = if self.public {
+                let public_key = SpxPublicKey::from(&private_key);
+                spx::save_spx_public_key(&public_key, self.output.clone(), self.format)?;
+                (None, Some(self.output.to_string_lossy().into_owned()))
+            } else {
+                spx::save_spx_private_key(&private_key, &self.output, self.format)?;
+                (Some(self.output.to_string_lossy().into_owned()), None)
+            };
+            return Ok(Some(Box::new(SpxKeyFileInfo {
+                algorithm: private_key.algorithm().to_string(),
+                format: self.format.to_string(),
+                private_key: private_path,
+                public_key: public_path,
+            })));
+        }
+        let pk = spx::load_spx_public_key(self.input.clone(), SpxKeyLoadingMode::PublicOnly)
+            .context(format!(
+                "{:?} was not recognized as a valid public or private key",
+                self.input
+            ))?;
+        spx::save_spx_public_key(&pk, &self.output, self.format)?;
+        Ok(Some(Box::new(SpxKeyFileInfo {
+            algorithm: pk.algorithm().to_string(),
+            format: self.format.to_string(),
+            private_key: None,
+            public_key: Some(self.output.to_string_lossy().into_owned()),
+        })))
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum SpxKeySubcommands {
     Show(SpxKeyShowCommand),
     Generate(SpxKeyGenerateCommand),
+    Convert(SpxKeyConvertCommand),
 }
 
 #[derive(serde::Serialize, Annotate)]
