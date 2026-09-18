@@ -13,7 +13,7 @@ package otbn_reg_pkg;
   parameter int BlockAw = 16;
 
   // Number of registers for every interface
-  parameter int NumRegs = 11;
+  parameter int NumRegs = 15;
 
   // Alert indices
   typedef enum int {
@@ -305,6 +305,10 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
   parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
   parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 28;
+  parameter logic [BlockAw-1:0] OTBN_SCRATCH_0_OFFSET = 16'h 2000;
+  parameter logic [BlockAw-1:0] OTBN_SCRATCH_1_OFFSET = 16'h 2004;
+  parameter logic [BlockAw-1:0] OTBN_SCRATCH_2_OFFSET = 16'h 2008;
+  parameter logic [BlockAw-1:0] OTBN_SCRATCH_3_OFFSET = 16'h 200c;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -361,11 +365,15 @@ package otbn_reg_pkg;
     OTBN_ERR_BITS,
     OTBN_FATAL_ALERT_CAUSE,
     OTBN_INSN_CNT,
-    OTBN_LOAD_CHECKSUM
+    OTBN_LOAD_CHECKSUM,
+    OTBN_SCRATCH_0,
+    OTBN_SCRATCH_1,
+    OTBN_SCRATCH_2,
+    OTBN_SCRATCH_3
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [11] = '{
+  parameter logic [3:0] OTBN_PERMIT [15] = '{
     4'b 0001, // index[ 0] OTBN_INTR_STATE
     4'b 0001, // index[ 1] OTBN_INTR_ENABLE
     4'b 0001, // index[ 2] OTBN_INTR_TEST
@@ -376,7 +384,11 @@ package otbn_reg_pkg;
     4'b 0111, // index[ 7] OTBN_ERR_BITS
     4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
     4'b 1111, // index[ 9] OTBN_INSN_CNT
-    4'b 1111  // index[10] OTBN_LOAD_CHECKSUM
+    4'b 1111, // index[10] OTBN_LOAD_CHECKSUM
+    4'b 1111, // index[11] OTBN_SCRATCH_0
+    4'b 1111, // index[12] OTBN_SCRATCH_1
+    4'b 1111, // index[13] OTBN_SCRATCH_2
+    4'b 1111  // index[14] OTBN_SCRATCH_3
   };
 
 endpackage

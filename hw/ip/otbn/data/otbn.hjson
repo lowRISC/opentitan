@@ -822,6 +822,27 @@
       ]
     }
 
+    { skipto: "0x2000" }
+
+    { multireg: {
+      name: "SCRATCH",
+      desc: '''
+        General-purpose 128-bit scratch storage for software use.
+      '''
+      count: "4",
+      cname: "SCRATCH",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+        { bits: "31:0",
+          name: "SCRATCH",
+          resval: "0",
+          desc: "Scratch data"
+        }
+      ]
+      }
+    }
+
     { skipto: "0x4000" }
 
     // Imem size (given as `items` below) must be a power of two.
