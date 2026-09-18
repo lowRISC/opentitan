@@ -4,6 +4,7 @@ The following steps generate a new fake test SPHINCS+ key pair and update the
 various places that reference it. The instructions can be modified to generate
 other types of keys:
 - To generate ECDSA keys, replace every occurrence of `spx` with `ecdsa`.
+  - For key generation, you will also need to drop the `--algorithm` argument.
 - To generate prod or dev keys, replace every occurrenct of `test_key` with `prod_key` or `dev_key`.
 - To generate unauthorized keys, use `keys/unauthorized` instead of `keys/fake`.
 
@@ -15,7 +16,7 @@ bazel build //sw/host/opentitantool
 ```
 Generate new key:
 ```
-bazel-bin/sw/host/opentitantool/opentitantool spx key generate sw/device/silicon_creator/rom/keys/fake/spx/ spx_keyset "test_key_0"
+bazel-bin/sw/host/opentitantool/opentitantool spx key generate --algorithm SHA2-128s-simple sw/device/silicon_creator/rom/keys/fake/spx/ "test_key_0_spx"
 ```
 Manually fix data in the header file (in this case `sw/device/silicon_creator/rom/keys/fake/spx/test_key_0_spx.h`). Skip this step for unauthorized keys. This command prints the data in the right format:
 ```
