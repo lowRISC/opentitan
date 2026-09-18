@@ -31,6 +31,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
     "//sw/device/tests/crypto/cryptotest/firmware:ed25519",
     "//sw/device/tests/crypto/cryptotest/firmware:hash",
+    "//sw/device/tests/crypto/cryptotest/firmware:hkdf",
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
     "//sw/device/tests/crypto/cryptotest/firmware:mldsa",
@@ -51,7 +52,7 @@ FIRMWARE_DEPS = [
 ]
 
 FIRMWARE_OTBN_DEPS = [
-    dep if dep != "//sw/device/tests/crypto/cryptotest/firmware:hash" else "//sw/device/tests/crypto/cryptotest/firmware:hash_otbn"
+    "//sw/device/tests/crypto/cryptotest/firmware:hash_otbn" if dep == "//sw/device/tests/crypto/cryptotest/firmware:hash" else ("//sw/device/tests/crypto/cryptotest/firmware:hkdf_otbn" if dep == "//sw/device/tests/crypto/cryptotest/firmware:hkdf" else dep)
     for dep in FIRMWARE_DEPS
 ]
 
