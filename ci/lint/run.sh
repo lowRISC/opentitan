@@ -10,12 +10,14 @@
 #   ci/lint/run.sh                 # run every category (all tops)
 #   ci/lint/run.sh <category>...   # run the named categories
 #   ci/lint/run.sh hw <top>        # run hardware lint for a single top
+#   ci/lint/run.sh slang <top>     # run slang lint for a single top
 #   ci/lint/run.sh bazel <group>   # run one group of the bazel category
 #
 # Categories:
 #   hygiene   text/metadata/python hygiene checks     (Nix tools)
 #   gen       generated & vendored file freshness     (Nix tools)
 #   hw        per-top Verible + countermeasure lint   (Nix tools)
+#   slang     per-top slang lint and elaboration      (Nix tools)
 #   sv        whole-tree Verible sweep, advisory only (Nix tools)
 #   bazel     Bazel-graph hygiene + link/alert checks (requires Bazel)
 #             groups: graph (query-only checks), alerts (alert classification,
@@ -172,6 +174,41 @@ cat_hw() {
 }
 
 # ---------------------------------------------------------------------------
+# Slang lint for the top.
+#
+# englishbreakfast is skipped: there is an RTL error that cannot be fixed
+# right now. See issue #31379.
+#
+# The chip-level entry in each cfg exercises full-hierarchy elaboration, not
+# just per-IP checks.
+# ---------------------------------------------------------------------------
+cat_slang() {
+    local top="$1"
+    if [ -z "$top" ]; then
+        echo "::error::the 'slang' category requires a top name" >&2
+        exit 2
+    fi
+    # Without this an unknown top just matches no lint cfgs and no
+    # countermeasure case, so a typo would run nothing and report success.
+    if ! printf '%s\n' "${ALL_TOPS[@]}" | grep -qxF "$top"; then
+        echo "::error::unknown top: $top" >&2
+        echo "Valid tops: ${ALL_TOPS[*]}" >&2
+        exit 2
+    fi
+
+    # englishbreakfast currently fails linting. See issue #31379
+    if [ "$top" = "englishbreakfast" ]; then
+        echo "Slang RTL for englishbreakfast: skipped pending a hw fix."
+        return 0
+    fi
+
+    local cfg="hw/top_${top}/lint/top_${top}_lint_cfgs.hjson"
+    if [ -f "$cfg" ]; then
+        check "Slang RTL (${top})" ci/scripts/slang-lint.sh "$top"
+    fi
+}
+
+# ---------------------------------------------------------------------------
 # sv: Sweep the whole tree with Verible as a style check. Advisory only.
 #
 # This covers files the per-top lint cfgs never reach: vendored RTL, DV/FPV
@@ -302,7 +339,7 @@ cat_bazel() {
 # ---------------------------------------------------------------------------
 # Dispatch
 # ---------------------------------------------------------------------------
-ALL_CATEGORIES=(hygiene gen hw sv bazel)
+ALL_CATEGORIES=(hygiene gen hw slang sv bazel)
 
 # _is_category <word>: true if <word> names a lint category.
 _is_category() {
@@ -322,6 +359,13 @@ run_category() {
                 cat_hw "$2"
             else
                 for top in "${ALL_TOPS[@]}"; do cat_hw "$top"; done
+            fi
+            ;;
+        slang)
+            if [ -n "${2:-}" ]; then
+                cat_slang "$2"
+            else
+                for top in "${ALL_TOPS[@]}"; do cat_slang "$top"; done
             fi
             ;;
         *)
@@ -349,9 +393,10 @@ main() {
         cat_hygiene
         cat_gen
         for top in "${ALL_TOPS[@]}"; do cat_hw "$top"; done
+        for top in "${ALL_TOPS[@]}"; do cat_slang "$top"; done
         cat_sv
         cat_bazel
-    elif [ "$#" -eq 2 ] && { [ "$1" = hw ] || [ "$1" = bazel ]; } &&
+    elif [ "$#" -eq 2 ] && { [ "$1" = hw ] || [ "$1" = bazel ] || [ "$1" = slang ]; } &&
          ! _is_category "$2"; then
         # The parameterised forms `hw <top>` and `bazel <group>`: the second
         # word is an argument to the category, not another category. Requiring
