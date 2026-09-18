@@ -21,6 +21,7 @@ exports_files([
     "ecdh_schema.json",
     "ed25519_schema.json",
     "hash_schema.json",
+    "hkdf_schema.json",
     "hmac_schema.json",
     "kmac_schema.json",
     "mldsa_schema.json",
