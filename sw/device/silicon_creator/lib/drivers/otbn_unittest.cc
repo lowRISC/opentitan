@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/base/mock_crc32.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
@@ -19,6 +20,7 @@
 namespace otbn_unittest {
 namespace {
 using ::testing::ElementsAre;
+using ::testing::NotNull;
 using ::testing::Return;
 
 class OtbnTest : public rom_test::RomTest {
@@ -56,9 +58,65 @@ class OtbnTest : public rom_test::RomTest {
     }
   }
 
+  void ExpectDmemWrite(sc_otbn_addr_t dest, const uint32_t *src,
+                       size_t num_words, uint32_t rnd_val = 0,
+                       uint32_t checksum = 0xabcdef01) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+    EXPECT_CALL(crc32_, Init(NotNull()));
+    EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(rnd_val));
+    uint32_t start_idx = ((uint64_t)rnd_val * (uint64_t)num_words) >> 32;
+    for (size_t iter = 0; iter < num_words; ++iter) {
+      size_t i = (start_idx + iter) % num_words;
+      size_t idx_word = i * sizeof(uint32_t);
+      uint32_t offset = ((dest + idx_word) >> 2) & 0x7FFF;
+      EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest + idx_word,
+                         src[i]);
+      EXPECT_CALL(crc32_, Add32(NotNull(), src[i]));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+    }
+    EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(checksum));
+    EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, checksum);
+  }
+
+  void ExpectDmemWritePublic(sc_otbn_addr_t dest, const uint32_t *src,
+                             size_t num_words, uint32_t checksum = 0xabcdef01) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+    EXPECT_CALL(crc32_, Init(NotNull()));
+    for (size_t i = 0; i < num_words; ++i) {
+      size_t idx_word = i * sizeof(uint32_t);
+      uint32_t offset = ((dest + idx_word) >> 2) & 0x7FFF;
+      EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest + idx_word,
+                         src[i]);
+      EXPECT_CALL(crc32_, Add32(NotNull(), src[i]));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+    }
+    EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(checksum));
+    EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, checksum);
+  }
+
+  void ExpectImemWrite(sc_otbn_addr_t dest, const uint32_t *src,
+                       size_t num_words, uint32_t checksum = 0xabcdef01) {
+    EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+    EXPECT_CALL(crc32_, Init(NotNull()));
+    for (size_t i = 0; i < num_words; ++i) {
+      size_t idx_word = i * sizeof(uint32_t);
+      uint32_t offset = (((dest + idx_word) >> 2) & 0x7FFF) | (1 << 15);
+      EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + dest + idx_word,
+                         src[i]);
+      EXPECT_CALL(crc32_, Add32(NotNull(), src[i]));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+      EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+    }
+    EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(checksum));
+    EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, checksum);
+  }
+
   uint32_t base_ = dt_otbn_primary_reg_block(kDtOtbn);
   uint32_t err_bits_ok_ = 0;
   rom_test::MockAbsMmio abs_mmio_;
+  rom_test::MockCrc32 crc32_;
   rom_test::MockRnd rnd_;
   rom_test::MockSecMmio sec_mmio_;
 };
@@ -181,10 +239,7 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
   sc_otbn_addr_t dest_addr = 0;
 
-  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  ExpectDmemWrite(dest_addr, test_data.data(), test_data.size());
 
   EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
@@ -196,10 +251,7 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
   sc_otbn_addr_t dest_addr = 4;
 
-  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  ExpectDmemWrite(dest_addr, test_data.data(), test_data.size());
 
   EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
@@ -211,9 +263,7 @@ TEST_F(DmemWriteTest, PublicSuccessWithoutOffset) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
   sc_otbn_addr_t dest_addr = 0;
 
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  ExpectDmemWritePublic(dest_addr, test_data.data(), test_data.size());
 
   EXPECT_EQ(sc_otbn_dmem_write_public(2, test_data.data(), dest_addr),
             kErrorOk);
@@ -226,12 +276,59 @@ TEST_F(DmemWriteTest, PublicSuccessWithOffset) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
   sc_otbn_addr_t dest_addr = 4;
 
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
-                     test_data[1]);
+  ExpectDmemWritePublic(dest_addr, test_data.data(), test_data.size());
 
   EXPECT_EQ(sc_otbn_dmem_write_public(2, test_data.data(), dest_addr),
             kErrorOk);
+}
+
+TEST_F(DmemWriteTest, FailureBadChecksum) {
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_otbn_addr_t dest_addr = 0;
+  constexpr uint32_t kExpectedChecksum = 0x11223344;
+  constexpr uint32_t kBadChecksum = 0x55667788;
+
+  EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  EXPECT_CALL(crc32_, Init(NotNull()));
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  for (size_t i = 0; i < test_data.size(); ++i) {
+    size_t idx_word = i * sizeof(uint32_t);
+    uint32_t offset = ((dest_addr + idx_word) >> 2) & 0x7FFF;
+    EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + idx_word,
+                       test_data[i]);
+    EXPECT_CALL(crc32_, Add32(NotNull(), test_data[i]));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+  }
+  EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(kExpectedChecksum));
+  EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, kBadChecksum);
+
+  EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr),
+            kErrorOtbnBadChecksum);
+}
+
+TEST_F(DmemWriteTest, PublicFailureBadChecksum) {
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_otbn_addr_t dest_addr = 0;
+  constexpr uint32_t kExpectedChecksum = 0x11223344;
+  constexpr uint32_t kBadChecksum = 0x55667788;
+
+  EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  EXPECT_CALL(crc32_, Init(NotNull()));
+  for (size_t i = 0; i < test_data.size(); ++i) {
+    size_t idx_word = i * sizeof(uint32_t);
+    uint32_t offset = ((dest_addr + idx_word) >> 2) & 0x7FFF;
+    EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + idx_word,
+                       test_data[i]);
+    EXPECT_CALL(crc32_, Add32(NotNull(), test_data[i]));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+  }
+  EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(kExpectedChecksum));
+  EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, kBadChecksum);
+
+  EXPECT_EQ(sc_otbn_dmem_write_public(2, test_data.data(), dest_addr),
+            kErrorOtbnBadChecksum);
 }
 
 TEST_F(DmemWriteTest, FailureOutOfRange) {
@@ -302,7 +399,7 @@ TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
       .imem_start = imem_data.data(),
       .imem_end = imem_data.data() + imem_data.size(),
       .dmem_data_start = dmem_data.data(),
-      .dmem_data_end = dmem_data.data() + imem_data.size(),
+      .dmem_data_end = dmem_data.data() + dmem_data.size(),
       .dmem_data_start_addr = dmem_data_offset,
   };
 
@@ -324,19 +421,92 @@ TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
   ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
   // `sc_otbn_imem_sec_wipe`
   ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
-  // `otbn_imem_write`
-  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
-  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, imem_data[0]);
-  EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + sizeof(uint32_t),
-                     imem_data[1]);
+  // `sc_otbn_imem_write`
+  ExpectImemWrite(0, imem_data.data(), imem_data.size());
   // `sc_otbn_dmem_write_public`
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset,
-                     dmem_data[0]);
-  EXPECT_ABS_WRITE32(
-      base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset + sizeof(uint32_t),
-      dmem_data[1]);
+  ExpectDmemWritePublic(dmem_data_offset, dmem_data.data(), dmem_data.size());
 
   EXPECT_EQ(sc_otbn_load_app(app), kErrorOk);
+}
+
+TEST_F(OtbnAppTest, OtbnLoadAppFailureBadImemChecksum) {
+  std::array<uint32_t, 2> imem_data = {0x01234567, 0x89abcdef};
+  std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
+  sc_otbn_addr_t dmem_data_offset = 0x12;
+  sc_otbn_app_t app = {
+      .imem_start = imem_data.data(),
+      .imem_end = imem_data.data() + imem_data.size(),
+      .dmem_data_start = dmem_data.data(),
+      .dmem_data_end = dmem_data.data() + dmem_data.size(),
+      .dmem_data_start_addr = dmem_data_offset,
+  };
+
+  // `sc_otbn_busy_wait_for_done`
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  // `sc_otbn_dmem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_write` with mismatched checksum
+  constexpr uint32_t kExpectedChecksum = 0x11223344;
+  constexpr uint32_t kBadChecksum = 0x55667788;
+  EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  EXPECT_CALL(crc32_, Init(NotNull()));
+  for (size_t i = 0; i < imem_data.size(); ++i) {
+    size_t idx_word = i * sizeof(uint32_t);
+    uint32_t offset = (((idx_word) >> 2) & 0x7FFF) | (1 << 15);
+    EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + idx_word, imem_data[i]);
+    EXPECT_CALL(crc32_, Add32(NotNull(), imem_data[i]));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+  }
+  EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(kExpectedChecksum));
+  EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, kBadChecksum);
+
+  EXPECT_EQ(sc_otbn_load_app(app), kErrorOtbnBadChecksum);
+}
+
+TEST_F(OtbnAppTest, OtbnLoadAppFailureBadDmemChecksum) {
+  std::array<uint32_t, 2> imem_data = {0x01234567, 0x89abcdef};
+  std::array<uint32_t, 2> dmem_data = {0x456789ab, 0xcdef0123};
+  sc_otbn_addr_t dmem_data_offset = 0x12;
+  sc_otbn_app_t app = {
+      .imem_start = imem_data.data(),
+      .imem_end = imem_data.data() + imem_data.size(),
+      .dmem_data_start = dmem_data.data(),
+      .dmem_data_end = dmem_data.data() + dmem_data.size(),
+      .dmem_data_start_addr = dmem_data_offset,
+  };
+
+  // `sc_otbn_busy_wait_for_done`
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  EXPECT_ABS_READ32(base_ + OTBN_STATUS_REG_OFFSET, kScOtbnStatusIdle);
+  // `sc_otbn_dmem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeDmem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_sec_wipe`
+  ExpectCmdRun(kScOtbnCmdSecWipeImem, err_bits_ok_, kScOtbnStatusIdle);
+  // `sc_otbn_imem_write` succeeds
+  ExpectImemWrite(0, imem_data.data(), imem_data.size());
+  // `sc_otbn_dmem_write_public` with mismatched checksum
+  constexpr uint32_t kExpectedChecksum = 0x11223344;
+  constexpr uint32_t kBadChecksum = 0x55667788;
+  EXPECT_ABS_WRITE32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+  EXPECT_CALL(crc32_, Init(NotNull()));
+  for (size_t i = 0; i < dmem_data.size(); ++i) {
+    size_t idx_word = i * sizeof(uint32_t);
+    uint32_t offset = ((dmem_data_offset + idx_word) >> 2) & 0x7FFF;
+    EXPECT_ABS_WRITE32(
+        base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset + idx_word,
+        dmem_data[i]);
+    EXPECT_CALL(crc32_, Add32(NotNull(), dmem_data[i]));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset)));
+    EXPECT_CALL(crc32_, Add8(NotNull(), static_cast<uint8_t>(offset >> 8)));
+  }
+  EXPECT_CALL(crc32_, Finish(NotNull())).WillOnce(Return(kExpectedChecksum));
+  EXPECT_ABS_READ32(base_ + OTBN_LOAD_CHECKSUM_REG_OFFSET, kBadChecksum);
+
+  EXPECT_EQ(sc_otbn_load_app(app), kErrorOtbnBadChecksum);
 }
 
 TEST_F(OtbnAppTest, OtbnLoadInvalidAppEmptyImem) {
@@ -397,11 +567,7 @@ TEST_F(OtbnWriteTest, Success) {
       OTBN_DMEM_SIZE_BYTES >= sizeof(uint32_t) * test_data.size() + kDestAddr,
       "OTBN DMEM size too small.");
 
-  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
-  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + kDestAddr, test_data[0]);
-  EXPECT_ABS_WRITE32(
-      base_ + OTBN_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
-      test_data[1]);
+  ExpectDmemWrite(kDestAddr, test_data.data(), test_data.size());
 
   EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), kDestAddr), kErrorOk);
 }

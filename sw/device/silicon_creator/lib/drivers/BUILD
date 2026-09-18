@@ -498,6 +498,7 @@ cc_library(
         "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:crc32",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -509,6 +510,7 @@ cc_test(
     srcs = ["otbn_unittest.cc"],
     deps = [
         ":otbn",
+        "//sw/device/lib/base:crc32",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
