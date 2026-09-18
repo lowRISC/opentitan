@@ -760,6 +760,8 @@ module rv_dm
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
   `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
+  `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
   `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
 
   if (UseDmiInterface) begin : gen_dmi_assertions
