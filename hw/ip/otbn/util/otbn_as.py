@@ -6,8 +6,9 @@
 
 Partial support:
 
-  - This doesn't currently support .include directives fully (the included file
-    will not be transformed, so OTBN instructions won't work there).
+  - .include directives are supported and transformed here before being passed
+    to the binutils assembler. For simplicity, recursive includes are not
+    allowed.
 
   - .file support assumes we're not using DWARF2 file numbers.
 
@@ -904,22 +905,21 @@ class Transformer:
             quot_idx = line.find('"', pos)
             esc_quot_idx = line.find('\\"', pos)
 
-            if max(quot_idx, esc_quot_idx) < 0:
+            if quot_idx < 0:
                 # EOL within string.
                 self.acc.append(line[pos:])
                 return len(line)
 
-            if quot_idx < 0:
-                # No " before EOL, but there is a \". Eat that and keep going.
+            if 0 <= esc_quot_idx < quot_idx:
+                # The first " is part of a \". Eat that and keep going.
                 self.acc.append(line[pos:esc_quot_idx + 2])
                 pos = esc_quot_idx + 2
                 continue
 
-            if esc_quot_idx < 0 or quot_idx < esc_quot_idx:
-                # Either no \" or " comes first anyway
-                self.acc.append(line[pos:quot_idx + 1])
-                self.in_string = False
-                return quot_idx + 1
+            # Otherwise the first " ends the string.
+            self.acc.append(line[pos:quot_idx + 1])
+            self.in_string = False
+            return quot_idx + 1
 
     def _eat_ws(self, line: str, pos: int) -> int:
         '''Consume whitespace, updating FSM state if necessary'''
@@ -980,6 +980,7 @@ class Transformer:
         assert pos < len(line)
         if line[pos] == '"':
             self.acc.append(line[pos])
+            self.in_string = True
             return self._continue_string(line, pos + 1)
 
         match = re.match(r'[^ \t"]*', line[pos:])
@@ -1008,24 +1009,51 @@ class Transformer:
         raise RuntimeError('{}:{}: Unknown mnemonic: {!r}.'.format(
             self.in_path, self.line_number, self.key_sym))
 
-    def _record_const(self) -> None:
-        '''If the current directive defines a constant, remember its value
+    def _record_const(self, key_sym: str, body: str) -> None:
+        '''Remember a constant defined by directive key_sym with operands body
 
         This spots .equ, .set and .equiv directives whose value is an integer
         literal or another known constant. Anything else is ignored and left
         to binutils.
         '''
-        assert self.key_sym is not None
-        if self.key_sym.lower() not in ['.equ', '.set', '.equiv']:
+        if key_sym.lower() not in ['.equ', '.set', '.equiv']:
             return
 
-        sym, sep, val = ''.join(self.acc).partition(',')
+        sym, sep, val = body.partition(',')
         if not sep:
             return
 
         result = resolve_const(val, self.constants)
         if result is not None:
             self.constants[sym.strip()] = result
+
+    def _include(self, operand: str) -> None:
+        '''Handle a .include directive, whose operand is in operand
+
+        The directive is passed through to binutils, which does the actual
+        inclusion. Wwe also read the included file here to record any
+        constants that it defines with .equ, .set and .equiv.
+        '''
+        where = '{}:{}'.format(self.in_path, self.line_number)
+        match = re.fullmatch(r'"([^"\\]*)"', operand.strip())
+        if match is None:
+            raise RuntimeError('{}: Expected a quoted file name after '
+                               '.include, but found {!r}.'.format(
+                                   where, operand.strip()))
+
+        path = os.path.join(os.path.dirname(self.in_path), match.group(1))
+        if not os.path.isfile(path):
+            raise RuntimeError('{}: Cannot find {!r} for .include.'.format(
+                where, path))
+
+        with open(path, 'r') as handle:
+            for line in handle:
+                # Strip comments, then split the directive from its operands.
+                words = re.sub(r'/\*.*?\*/|#.*', '', line).split(None, 1)
+                if len(words) == 2:
+                    self._record_const(words[0], words[1])
+
+        self.out_handle.write(f'.include "{path}"\n')
 
     def _end_stmt_line(self) -> None:
         '''Called at end of a stmt line to deal with any completed statement'''
@@ -1042,9 +1070,12 @@ class Transformer:
         # If key_sym is a directive (starts with '.'), we can just pass it
         # straight through.
         if self.key_sym.startswith('.'):
-            self._record_const()
-            self.out_handle.write(self.key_sym)
-            self.out_handle.write(''.join(self.acc))
+            body = ''.join(self.acc)
+            if self.key_sym.lower() == '.include':
+                self._include(body)
+            else:
+                self._record_const(self.key_sym, body)
+                self.out_handle.write(self.key_sym + body)
             self.acc = []
             self.key_sym = None
             return
