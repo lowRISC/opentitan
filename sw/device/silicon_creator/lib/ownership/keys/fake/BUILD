@@ -95,6 +95,12 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
+# Downstream targets may need access to SPX public key for e2e tests
+filegroup(
+    name = "app_prod_spx_pub",
+    srcs = ["app_prod_spx.pub.pem"],
+)
+
 pkg_files(
     name = "fpga_dev_files",
     testonly = True,
