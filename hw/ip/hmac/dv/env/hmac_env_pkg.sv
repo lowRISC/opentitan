@@ -15,6 +15,7 @@ package hmac_env_pkg;
   import test_vectors_pkg::*;
   import hmac_ral_pkg::*;
   import prim_sha2_pkg::*;
+  import key_sideload_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
