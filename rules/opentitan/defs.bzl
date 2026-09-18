@@ -316,6 +316,7 @@ def opentitan_test(
         includes = [],
         linkopts = [],
         linker_script = None,
+        platform = None,
         ecdsa_key = None,
         rsa_key = None,
         spx_key = None,
@@ -344,6 +345,7 @@ def opentitan_test(
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
       linker_script: Linker script for this test.
+      platform: Platform to build the binary for (defaults to RV32).
       ecdsa_key: ECDSA key to sign the binary for this test.
       rsa_key: RSA key to sign the binary for this test.
       spx_key: SPX key to sign the binary for this test.
@@ -510,6 +512,7 @@ def opentitan_test(
             local_defines = local_defines,
             includes = includes,
             linker_script = linker_script,
+            platform = platform,
             linkopts = linkopts,
             naming_convention = "{name}",
             ecdsa_key = ecdsa_key,
