@@ -35,6 +35,12 @@ OTBN_DECLARE_SYMBOL_ADDR(
     run_p256,
     attestation_additional_seed);  // Additional seed for attestation keygen.
 
+// ECDH shared key output: boolean shares of the x- and y-coordinates.
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, ecdh_x0);  // Share 0 of x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, ecdh_x1);  // Share 1 of x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, ecdh_y0);  // Share 0 of y-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, ecdh_y1);  // Share 1 of y-coordinate.
+
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIGN);
@@ -75,8 +81,8 @@ enum {
   kModeKeygenInsCnt = 573922,
   kModeKeygenSideloadInsCnt = 573814,
 #endif
-  kModeEcdhInsCnt = 581607,
-  kModeEcdhSideloadInsCnt = 581672,
+  kModeEcdhInsCnt = 588956,
+  kModeEcdhSideloadInsCnt = 589021,
   kModeEcdsaSignConfigKInsCnt = 606946,
   kModeEcdsaSignInsCnt = 607096,
   kModeEcdsaSignSideloadInsCnt = 607161,
@@ -228,7 +234,8 @@ uint32_t p256_ecdh_shared_key_checksum(const p256_ecdh_shared_key_t *key) {
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)key->share0, kP256CoordBytes);
+  crc32_add(&ctx, (unsigned char *)key->x_share0, kP256CoordBytes);
+  crc32_add(&ctx, (unsigned char *)key->y_share0, kP256CoordBytes);
   return crc32_finish(&ctx);
 }
 
@@ -476,11 +483,19 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdhInsCnt);
   }
 
-  // Read the shares of the key from OTBN dmem (at vars x and y).
-  const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p256, x);
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarX, shared_key->share0));
-  const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p256, y);
-  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, shared_key->share1));
+  // Read the shares of both coordinates of the shared point from OTBN dmem.
+  const otbn_addr_t kOtbnVarEcdhX0 = OTBN_ADDR_T_INIT(run_p256, ecdh_x0);
+  HARDENED_TRY(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhX0, shared_key->x_share0));
+  const otbn_addr_t kOtbnVarEcdhX1 = OTBN_ADDR_T_INIT(run_p256, ecdh_x1);
+  HARDENED_TRY(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhX1, shared_key->x_share1));
+  const otbn_addr_t kOtbnVarEcdhY0 = OTBN_ADDR_T_INIT(run_p256, ecdh_y0);
+  HARDENED_TRY(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhY0, shared_key->y_share0));
+  const otbn_addr_t kOtbnVarEcdhY1 = OTBN_ADDR_T_INIT(run_p256, ecdh_y1);
+  HARDENED_TRY(
+      otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhY1, shared_key->y_share1));
 
   shared_key->checksum = p256_ecdh_shared_key_checksum(shared_key);
 

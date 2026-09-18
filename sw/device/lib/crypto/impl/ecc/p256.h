@@ -29,6 +29,14 @@ enum {
    */
   kP256CoordWords = kP256CoordBytes / sizeof(uint32_t),
   /**
+   * Length of an ECDH/P-256 shared secret in bytes.
+   */
+  kP256SharedSecretBytes = 2 * kP256CoordBytes,
+  /**
+   * Length of an ECDH/P-256 shared secret in words.
+   */
+  kP256SharedSecretWords = kP256SharedSecretBytes / sizeof(uint32_t),
+  /**
    * Length of an element in the P-256 scalar field (modulo the curve order n).
    */
   kP256ScalarBits = 256,
@@ -132,9 +140,11 @@ typedef struct p256_ecdsa_signature_t {
  * The key is boolean-masked (XOR of the two shares).
  */
 typedef struct p256_ecdh_shared_key {
-  uint32_t share0[kP256CoordWords];
-  uint32_t share1[kP256CoordWords];
-  // Checksum over share0.
+  uint32_t x_share0[kP256CoordWords];
+  uint32_t x_share1[kP256CoordWords];
+  uint32_t y_share0[kP256CoordWords];
+  uint32_t y_share1[kP256CoordWords];
+  // Checksum over x_share0 and y_share0.
   uint32_t checksum;
 } p256_ecdh_shared_key_t;
 
@@ -389,7 +399,7 @@ status_t p256_ecdh_start(p256_masked_scalar_t *private_key,
  * Blocks until OTBN is idle. May be used after either `p256_ecdh_start` or
  * `p256_sideload_ecdh_start`; the operation is the same.
  *
- * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
+ * @param[out] shared_key Shared secret key (x- and y-coordinates of d*Q).
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
