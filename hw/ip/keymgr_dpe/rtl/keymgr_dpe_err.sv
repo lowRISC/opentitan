@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Key manager error and fault collection
+// Key manager dpe error and fault collection
 //
 
 `include "prim_assert.sv"
 
-module keymgr_err
-  import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+module keymgr_dpe_err
+  import keymgr_dpe_pkg::*;
+  import keymgr_dpe_reg_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -150,4 +150,4 @@ module keymgr_err
   assign fault_o[FaultKeyEcc]     = async_fault_o[AsyncFaultKeyEcc];
 
 
-endmodule // keymgr_err
+endmodule // keymgr_dpe_err
