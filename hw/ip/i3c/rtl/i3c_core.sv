@@ -225,7 +225,7 @@ module i3c_core
   logic targ_scl_buf, targ_scl_buf_n;    // Posedge and negedge SCL clock signals.
   logic targ_sda0_clk, targ_sda0_clk_n;  // Posedge and negedge SDA signals, suitable for clocking.
   logic [NumSDALanes-1:0] targ_sda_buf;  // Buffered SDA lanes, to avoid SCL-relative skew.
-  logic targ_reset_trx;                  // Initiate reset of Target-side transceiver logic.
+  logic targ_trx_rst_trig;               // Initiate reset of Target-side transceiver logic.
   logic targ_trx_rst_n;                  // Asynchronous reset into Target-side transceiver.
 
   // Indicate to software whether the Target transceiver logic is still under reset.
@@ -271,18 +271,26 @@ module i3c_core
     .bus_avail_i(targ_bus_avail),
 
     // Initiate asynchronous reset of Target-side transceiver logic.
-    .reset_trx_o(targ_reset_trx),
+    .reset_trig_o(targ_trx_rst_trig),
 
     // Buffer enable for SCL and SDA into the SCL-driven target transceiver logic.
     .inbuf_en_o (inbuf_enable)
   );
 
+  // Ensure that the asynchronous reset into the Target transceiver is glitch free.
+  logic targ_trx_prst_n;
+  prim_flop #(.Width(1), .ResetValue(0)) u_targ_rst_src (
+    .clk_i (clk_i),
+    .rst_ni(rst_ni),
+    .d_i   (targ_trx_prst_n),
+    .q_o   (targ_trx_rst_n)
+  );
+
   // Controller-side I3C input buffering.
   logic [NumSDALanes-1:0] ctrl_sda_buf;
   i3c_buf_en #(.Width(NumSDALanes)) u_ctrl_inbufs (
-    // Enable input propagation.
-    // TODO: Probably want to gate off the SDA lane when the bus is available and the Controller
-    //       does not need to drive it. We need a transceiver output to achieve this.
+    // Enable input propagation; disconnect from the SDA input only when the Controller logic;
+    // at other times even if the Controller is not active, it must still accept Start Requests.
     .en_i (ctrl_enabled),
     .in_i (ctrl_bus_obs_i.sda),
     .out_o(ctrl_sda_buf)
@@ -1561,7 +1569,7 @@ module i3c_core
                    ctrl_bus_active,
                    rst_read_stalled,
                    targ_rst_bus_avail,
-                   targ_reset_trx,
+                   targ_trx_rst_trig,
                    targ_bus_active,
                    targ_bus_active,
                    ctrl_cmd_nacked}),
@@ -1571,7 +1579,7 @@ module i3c_core
                    ctrl_bus_avail,
                    read_stalled,
                    targ_bus_avail,
-                   targ_trx_rst_n,
+                   targ_trx_prst_n,
                    te0_recov,
                    targ_bus_idle,
                    ctrl_cmd_retry})
