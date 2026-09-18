@@ -44,6 +44,19 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     // does not conflict with any background power-up activity
     `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
     wait_rom_check_done();
+
+    // wait_rom_check_done() observes rom_ctrl directly, so it can return while the pwrmgr is
+    // still powering up; rv_dm answers DMI requests blank until the pwrmgr has sampled the straps.
+    if (cfg.m_jtag_riscv_agent_cfg.is_rv_dm || cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi) begin
+      wait_pwrmgr_active();
+    end
+  endtask
+
+  // Wait for the pwrmgr fast FSM to reach its active state (past strap sampling).
+  virtual task wait_pwrmgr_active();
+    `DV_SPINWAIT(wait(cfg.chip_vif.pwrmgr_fast_pwr_state_active);,
+                 "timeout waiting for the pwrmgr to become active before rv_dm DMI access",
+                 5_000_000)
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
