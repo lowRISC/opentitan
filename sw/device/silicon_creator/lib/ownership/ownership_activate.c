@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
@@ -80,6 +81,11 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
   if (!nonce_equal(&msg->ownership_activate_req.nonce, &bootdata->nonce)) {
     return kErrorOwnershipInvalidNonce;
   }
+  HARDENED_CHECK_EQ(
+      nonce_equal((const nonce_t *)launderw(
+                      (uintptr_t)&msg->ownership_activate_req.nonce),
+                  (const nonce_t *)launderw((uintptr_t)&bootdata->nonce)),
+      true);
 
   // Verify the device identification number is correct.
   lifecycle_device_id_t device_id;
