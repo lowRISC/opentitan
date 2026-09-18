@@ -29,7 +29,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the core CSRs](../../../dv/sv/tl_agent/README.md)
 * [TileLink host interface for the host registers](../../../dv/sv/tl_agent/README.md) (the RRAM data array, `tl_host`)
 * [TileLink host interface for the prim registers](../../../dv/sv/tl_agent/README.md) (the RRAM macro's `tl_prim` interface)
-* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Alerts ([`alert_esc_if`](../../../dv/sv/alert_agent/README.md))
 * `rram_ctrl_otp_key_if`: the `otp_ctrl` scrambling-key request/response handshake, driven by `rram_ctrl_otp_key_driver` (see [OTP key driver](#otp-key-driver) below)
 
 The DUT's other input-only signals (life cycle qualifiers, the RMA handshake) are not yet exercised by any test and are tied to fixed values directly in `tb.sv`.
@@ -70,7 +70,7 @@ parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
 The `tl_agent` monitors supply partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `rram_ctrl` scoreboard.
 
 ### Alert_agent
-`rram_ctrl` testbench instantiates (already handled in CIP base env) [alert_agents](../../../dv/sv/alert_esc_agent/README.md):
+`rram_ctrl` testbench instantiates (already handled in CIP base env) [alert_agents](../../../dv/sv/alert_agent/README.md):
 `recov_err`, `fatal_std_err`, `fatal_err`, `fatal_macro_err`, `recov_macro_err`.
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RRAM_CTRL device.
 

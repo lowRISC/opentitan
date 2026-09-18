@@ -5,8 +5,6 @@
 # This is a list of files to be passed to Verible formatter
 # by calling verible-format.sh
 
-hw/dv/sv/alert_esc_agent/alert_esc_base_monitor.sv
-hw/dv/sv/alert_esc_agent/alert_esc_probe_if.sv
 hw/dv/sv/cip_lib/seq_lib/cip_seq_list.sv
 hw/dv/sv/csrng_agent/csrng_agent_pkg.sv
 hw/dv/sv/csrng_agent/seq_lib/csrng_host_seq.sv

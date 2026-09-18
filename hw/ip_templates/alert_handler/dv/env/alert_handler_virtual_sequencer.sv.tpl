@@ -6,8 +6,8 @@ class ${module_instance_name}_virtual_sequencer extends cip_base_virtual_sequenc
     .CFG_T(${module_instance_name}_env_cfg),
     .COV_T(${module_instance_name}_env_cov)
   );
-  alert_esc_sequencer alert_host_seqr_h[];
-  alert_esc_sequencer esc_device_seqr_h[];
+  alert_sequencer alert_host_seqr_h[];
+  esc_sequencer   esc_device_seqr_h[];
 
   `uvm_component_utils(${module_instance_name}_virtual_sequencer)
 

@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:esc_agent
       - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:kmac_app_agent
       - lowrisc:dv:lc_ctrl_dv_utils

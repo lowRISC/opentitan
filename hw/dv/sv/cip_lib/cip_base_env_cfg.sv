@@ -61,7 +61,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
   uvm_reg_data_t      shadow_storage_err_status_fields[dv_base_reg_field];
 
-  alert_esc_agent_cfg m_alert_agent_cfgs[string];
+  alert_agent_cfg     m_alert_agent_cfgs[string];
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfgs[];
 
   // EDN clk freq setting, if EDN is present.
@@ -170,7 +170,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       check_alert_configs();
       foreach(list_of_alerts[i]) begin
         string alert_name = list_of_alerts[i];
-        m_alert_agent_cfgs[alert_name] = alert_esc_agent_cfg::type_id::create(
+        m_alert_agent_cfgs[alert_name] = alert_agent_cfg::type_id::create(
             $sformatf("m_alert_agent_cfgs[%s]", alert_name));
         m_alert_agent_cfgs[alert_name].is_active = is_active;
         m_alert_agent_cfgs[alert_name].if_mode = (is_active ?

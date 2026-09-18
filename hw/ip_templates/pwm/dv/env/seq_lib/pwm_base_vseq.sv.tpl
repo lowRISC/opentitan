@@ -158,7 +158,7 @@ endfunction
 task ${module_instance_name}_base_vseq::start_alert_clks();
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
-    // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
+    // Restart the clock without advancing the simulation time; `alert_agent` runs on two
     // clocks (our TL-UL clock and this internal asynchronous clock).
     cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.start_clk(.wait_for_posedge(1'b0));
   end
@@ -192,7 +192,7 @@ task ${module_instance_name}_base_vseq::monitor_dut_outputs(bit low_power_mode, 
     // Use core clk to determine when to turn the TL-UL clk back on.
     cfg.clk_rst_core_vif.wait_clks(sleep_cycles);
     `uvm_info(`gfn, "Resuming TL-UL clock", UVM_MEDIUM)
-    // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
+    // Restart the clock without advancing the simulation time; `alert_agent` runs on two
     // clocks (an internal asynchronous clock and this TL-UL clock).
     cfg.clk_rst_vif.start_clk(.wait_for_posedge(1'b0));
     // Resume the alert agents.
