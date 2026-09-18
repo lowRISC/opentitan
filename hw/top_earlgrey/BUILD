@@ -140,7 +140,10 @@ fpga_cw340(
         "//sw/device/lib/arch:fpga_cw340",
         "//hw/top_earlgrey/sw/dt:fpga_cw340",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    linker_script = select({
+        "//toolchain:isa_cheriot": "//sw/device/lib/testing/test_framework/cheriot:ottf_ld_silicon_creator_slot_a",
+        "//conditions:default": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    }),
     param = {
         "interface": "hyper340",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -198,7 +201,10 @@ fpga_cw340(
         "//sw/device/lib/arch:fpga_cw340",
         "//hw/top_earlgrey/sw/dt:fpga_cw340",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    linker_script = select({
+        "//toolchain:isa_cheriot": "//sw/device/lib/testing/test_framework/cheriot:ottf_ld_silicon_owner_slot_a",
+        "//conditions:default": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    }),
     manifest = "//sw/device/silicon_owner:manifest",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
@@ -350,7 +356,10 @@ sim_verilator(
         "//sw/device/lib/arch:sim_verilator",
         "//hw/top_earlgrey/sw/dt:sim_verilator",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    linker_script = select({
+        "//toolchain:isa_cheriot": "//sw/device/lib/testing/test_framework/cheriot:ottf_ld_silicon_creator_slot_a",
+        "//conditions:default": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    }),
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_data_perm = "//util/design/data:data_perm",
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
@@ -414,7 +423,10 @@ sim_dv(
         "//sw/device/lib/arch:sim_dv",
         "//hw/top_earlgrey/sw/dt:sim_dv",
     ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    linker_script = select({
+        "//toolchain:isa_cheriot": "//sw/device/lib/testing/test_framework/cheriot:ottf_ld_silicon_creator_slot_a",
+        "//conditions:default": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    }),
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_data_perm = "//util/design/data:data_perm",
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",

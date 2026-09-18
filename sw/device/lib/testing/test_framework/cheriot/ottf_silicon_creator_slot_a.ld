@@ -1,0 +1,36 @@
+/* Copyright lowRISC contributors (OpenTitan project). */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * Linker script for CHERIoT OTTF-launched test binaries.
+ *
+ * Portions of this file are Ibex-specific.
+ *
+ * This linker script generates a binary to run silicon creator tests.
+ */
+
+/* This linker script is preprocessed, OPENTITAN_TOP_MEMORY_LD is a define
+ * set by Bazel to point to the top's linker file. */
+INCLUDE OPENTITAN_TOP_MEMORY_LD
+
+#include "ottf_ld_top_config.ld"
+
+/**
+ * Symbols to be used in the setup of the address translation for the OTTF run
+ * at the silicon creator boot stage in slot A.
+ */
+_ottf_start_address = ORIGIN(ottf_storage);
+
+/*
+ * Leaves `_nvm_slot_reserved_bytes` empty at the end of Slot A.
+ */
+MEMORY {
+  ottf_creator_a(rx) : ORIGIN = _ottf_start_address,
+    LENGTH = (LENGTH(ottf_storage) / 2) - _nvm_slot_reserved_bytes
+}
+_ottf_size = LENGTH(ottf_creator_a);
+
+REGION_ALIAS("ottf_nvm", ottf_creator_a);
+
+INCLUDE sw/device/lib/testing/test_framework/cheriot/ottf_common.ld
