@@ -128,6 +128,41 @@ It is also up to the software to shrink the key to the supported key length (up 
 For example, common key sizes may be 2048-bit or 4096-bit.
 Software is expected to hash these into the supported key length and write the hashed result as the configured key to the HMAC IP.
 
+### Key sideloading
+
+Instead of taking the secret key from the [`KEY_0-KEY_31`](registers.md#key) registers, HMAC can take it directly from the key manager over a sideload interface.
+Software selects the sideloaded key by setting [`CFG.sideload`](registers.md#cfg--sideload).
+The bit only takes effect for keyed HMAC operation ([`CFG.hmac_en`](registers.md#cfg--hmac_en) set); it is ignored when only SHA-2 is computed, as that does not use a key.
+
+The key manager provides the key in two shares.
+HMAC does not implement masking, so the shares are combined into a single key by XORing them.
+The combined key is muxed into the HMAC core rather than latched, so no copy of the sideloaded key is kept inside HMAC and the key manager revoking the key takes effect immediately.
+
+The length of the sideloaded key is given by the width of the sideload interface, so it overrides whatever is configured in [`CFG.key_length`](registers.md#cfg--key_length).
+Reading that field back returns the length actually in use.
+[`CFG.key_swap`](registers.md#cfg--key_swap) has no effect on the sideloaded key, as the key manager delivers it in a fixed order.
+
+The key manager has to keep the key valid for the entire duration of an operation.
+HMAC reacts to an invalid key as follows:
+
+- Triggering `CMD.hash_start` or `CMD.hash_continue` while the key is invalid is blocked and reported to software as `SwInvalidConfig`.
+- Losing the key while an operation is in progress aborts that operation and reports the same error.
+  The SHA-2 engine is disabled, which clears its internal state and the digest, the message packer and the message FIFO are cleared so that no residual message data is carried into the next operation, and the HMAC core returns to its idle state.
+  No `hmac_done` interrupt is raised for an aborted operation.
+
+#### Restrictions with a sideloaded key
+
+While an operation with a sideloaded key is in progress, reads from the [`DIGEST_0-DIGEST_15`](registers.md#digest) registers return zero.
+Only the final digest, which becomes available once the operation has completed, can be read back.
+
+For the same reason, saving and restoring the context is not available with a sideloaded key: `CMD.hash_stop` and `CMD.hash_continue` are rejected with `SwInvalidConfig`.
+
+Both restrictions exist because the intermediate hash state is equivalent to the key.
+After the inner key padding has been absorbed, the state is the SHA-2 compression of `key ^ ipad`, and during the outer round it is the compression of `key ^ opad`.
+These are exactly the two values a software HMAC implementation precomputes once per key and reuses for every message.
+Software holding both could therefore compute HMAC under the sideloaded key on its own, without the key manager and even after the key has been revoked, which is what sideloading is meant to prevent.
+Restoring a context would additionally let software feed a state of its choosing into the outer round, which is computed with the sideloaded key.
+
 ### Performance in SHA-2 mode and HMAC mode
 
 The SHA-2 256 hash algorithm computes 512 bits of data at a time.
