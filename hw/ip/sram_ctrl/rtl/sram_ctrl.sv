@@ -32,6 +32,8 @@ module sram_ctrl
   parameter int Outstanding                                = 2,
   // Enable single-bit error correction and error logging
   parameter bit                         EccCorrection      = 0,
+  // Initialize the memory with zeros instead of pseudo-random data.
+  parameter bit                         SecZeroInit        = 0,
   // RACL configuration
   parameter bit                         EnableRacl       = 1'b0,
   parameter bit                         RaclErrorRsp     = EnableRacl,
@@ -457,32 +459,45 @@ module sram_ctrl
   end
 
   /////////////////////////
-  // Initialization LFSR //
+  // Initialization Data //
   /////////////////////////
 
-  logic [LfsrOutWidth-1:0] lfsr_out;
-  prim_lfsr #(
-    .LfsrDw      ( LfsrWidth       ),
-    .EntropyDw   ( LfsrWidth       ),
-    .StateOutDw  ( LfsrOutWidth    ),
-    .DefaultSeed ( RndCnstLfsrSeed ),
-    .StatePermEn ( 1'b1            ),
-    .StatePerm   ( RndCnstLfsrPerm )
-  ) u_lfsr (
-    .clk_i,
-    .rst_ni,
-    .lfsr_en_i(init_req),
-    .seed_en_i(init_trig),
-    .seed_i(nonce_q[NonceWidth +: LfsrWidth]),
-    .entropy_i('0),
-    .state_o(lfsr_out)
-  );
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(SramCtrlSecZeroInitNonDefault, SecZeroInit == 0)
 
-  // Compute the correct integrity alongside for the pseudo-random initialization values.
-  logic [DataWidth - 1 :0] lfsr_out_integ;
+  // The memory is either initialized through the LFSR, or with zeros.
+  logic [LfsrOutWidth-1:0] init_data;
+
+  if (SecZeroInit) begin : gen_zero_init
+    // Tie-off unused nonce bits
+    logic unused_nonce_lfsr;
+    assign unused_nonce_lfsr = ^nonce_q[NonceWidth +: LfsrWidth];
+    // Initialize with zeros
+    assign init_data = '0;
+  end else begin : gen_lfsr_init
+    prim_lfsr #(
+      .LfsrDw      ( LfsrWidth       ),
+      .EntropyDw   ( LfsrWidth       ),
+      .StateOutDw  ( LfsrOutWidth    ),
+      .DefaultSeed ( RndCnstLfsrSeed ),
+      .StatePermEn ( 1'b1            ),
+      .StatePerm   ( RndCnstLfsrPerm )
+    ) u_lfsr (
+      .clk_i,
+      .rst_ni,
+      .lfsr_en_i(init_req),
+      .seed_en_i(init_trig),
+      .seed_i(nonce_q[NonceWidth +: LfsrWidth]),
+      .entropy_i('0),
+      .state_o(init_data)
+    );
+  end
+
+  // Compute the matching integrity bits for the initialization values.
+  logic [DataWidth - 1 :0] init_data_integ;
   tlul_data_integ_enc u_tlul_data_integ_enc (
-    .data_i(lfsr_out),
-    .data_intg_o(lfsr_out_integ)
+    .data_i(init_data),
+    .data_intg_o(init_data_integ)
   );
 
   ////////////////////////////
@@ -579,7 +594,7 @@ module sram_ctrl
 
   logic key_valid;
 
-  // Interposing mux logic for initialization with pseudo random data.
+  // Interposing mux logic for the memory initialization.
   assign sram_req        = tlul_req | init_req;
   // This grant signal acts more like a ready internally in tlul_adapter_sram. In particular it's
   // fine to assert it when tlul_req is low (it has no effect). So here tlul_gnt is asserted when
@@ -590,7 +605,7 @@ module sram_ctrl
   assign sram_we         = tlul_we | init_req;
   assign sram_intg_error = |bus_integ_error[2:1] & ~init_req;
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
-  assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
+  assign sram_wdata      = (init_req) ? init_data_integ   : tlul_wdata;
   assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
 
   if (EccCorrection) begin : gen_ecc_correction

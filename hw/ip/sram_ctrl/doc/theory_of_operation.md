@@ -47,6 +47,8 @@ This behavior, combined with other top level defenses, forms a multi-layered def
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable from a security perspective to initialize the memory with all zeros.
 Doing so would reveal the XOR keystream.
 To avoid this, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the entire memory with pseudorandom data.
+Some memories, however, are required to read back as zero right after initialization.
+The `SecZeroInit` parameter described in [Zero Initialization](#zero-initialization) below provides a deliberate, explicitly-waived exception to this rule.
 
 Initialization can be triggered via the [`CTRL.INIT`](registers.md#ctrl) CSR.
 When initialization is triggered, the LFSR is first re-seeded with the nonce that has been fetched, together with the scrambling key.
@@ -57,6 +59,15 @@ If SW triggers the scrambling key update and LFSR initialization at the same tim
 
 There is no limit on how often the initialization feature can be called, and hence it can also be used as a cheap SRAM wiping mechanism at runtime.
 Note however that the PRNG sequence does not have strong security guarantees, since it is produced using an LFSR.
+
+#### Zero Initialization
+
+For memories where the contents are required to read back as zero after initialization, the `SecZeroInit` parameter can be set to 1.
+The initialization mechanism then writes all-zero data words (together with the matching integrity bits) instead of the pseudorandom LFSR output.
+
+Note that zero initialization weakens security guarantees: an attacker who can probe the SRAM contents after initialization can learn the keystream.
+This option must not be used for memories that hold confidential data.
+Furthermore, any SRAM with `SecZeroInit` enabled must use its own dedicated scrambling key that is not shared with other SRAM instances.
 
 ### Code Execution from SRAM
 

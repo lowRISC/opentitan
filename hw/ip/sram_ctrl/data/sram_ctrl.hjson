@@ -144,6 +144,15 @@
       expose:    "true",
       default:   "0"
     },
+    { name:      "SecZeroInit",
+      desc:      '''
+                 Initialize the memory with zeros instead of pseudo-random data.
+                 ''',
+      type:      "bit",
+      local:     "false",
+      expose:    "true",
+      default:   "0"
+    },
   ]
 
   features: [
