@@ -14,7 +14,7 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     bit [TL_AW-1:0] hw_cfg_addr = otp_ctrl_reg_pkg::HwCfg0Offset;
-    bit [TL_DW-1:0] val;
+    row_data_t      val;
     bit [7:0] sw_alert_num[];
 
     super.body();
@@ -29,7 +29,8 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
 
-    val = cfg.mem_bkdr_util_h[Otp].read32(hw_cfg_addr);
+    // inject_errors() may flip any bit of the row, so save the whole row.
+    val = cfg.mem_bkdr_util_h[Otp].read(hw_cfg_addr);
 
     // Inject 2 bits error in this hw_cfg_addr to trigger a ECC non-correctable error.
     cfg.mem_bkdr_util_h[Otp].inject_errors(hw_cfg_addr, 2);
@@ -37,11 +38,14 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "OTP_CTRL error inject done",
              "Timeout waiting for OTP_CTRL error injection done.")
+    // SW logs that after starting the DAI read, not after it completes.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusUnderReset,
+             "Timeout waiting for the escalation reset to start.")
 
     // TODO: backdoor check if alerts are firing.
 
     // Backdoor write back the original value so the chip can reboot successfully.
-    cfg.mem_bkdr_util_h[Otp].write32(hw_cfg_addr, val);
+    cfg.mem_bkdr_util_h[Otp].write(hw_cfg_addr, val);
 
   endtask
 
