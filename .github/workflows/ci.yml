@@ -90,6 +90,22 @@ jobs:
       - name: Run hardware lint
         run: nix run --quiet --no-warn-dirty .#lint -- hw ${{ matrix.top }}
 
+  # Per-top slang lint and elaboration. Englishbreakfast is skipped pending
+  # an RTL fix that cannot be addressed right now.
+  lint_slang:
+    name: Lint slang (${{ matrix.top }})
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        top: [earlgrey, darjeeling, englishbreakfast]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare Nix
+        uses: ./.github/actions/prepare-nix
+      - name: Run slang lint
+        run: nix run --quiet --no-warn-dirty .#lint -- slang ${{ matrix.top }}
+
   # Whole-tree Verible style check:
   #
   # Covers .sv/.v files no per-top lint cfg reaches
@@ -155,7 +171,7 @@ jobs:
   quick_lint:
     name: Lint (quick)
     runs-on: ubuntu-latest
-    needs: [lint_hygiene, lint_gen, lint_hw, lint_bazel]
+    needs: [lint_hygiene, lint_gen, lint_hw, lint_slang, lint_bazel]
     if: ${{ !cancelled() }}
     steps:
       - name: Check lint results
