@@ -10,10 +10,9 @@ use std::path::PathBuf;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use sphincsplus::{
-    DecodeKey, EncodeKey, SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey,
-    SpxSignatureMode,
-};
+use opentitanlib::crypto::spx;
+use opentitanlib::crypto::spx::{SpxKeyFormat, SpxKeyLoadingMode};
+use sphincsplus::{SphincsPlus, SpxRawSignature, SpxSecretKey, SpxSignatureMode};
 
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
@@ -38,7 +37,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let key = SpxPublicKey::from_pem_file(&self.key_file)?;
+        let key = spx::load_spx_public_key(&self.key_file, SpxKeyLoadingMode::Fallback)?;
         let bytes = key.as_bytes();
 
         // The OTP creation tool is written in python and parses arbitrary
@@ -90,10 +89,10 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
         file.set_extension("pem");
-        private_key.write_pem_file(&file)?;
+        spx::save_spx_private_key(&private_key, &file, SpxKeyFormat::PreStandardPem)?;
 
         file.set_extension("pub.pem");
-        public_key.write_pem_file(&file)?;
+        spx::save_spx_public_key(&public_key, &file, SpxKeyFormat::PreStandardPem)?;
 
         Ok(None)
     }
@@ -122,7 +121,7 @@ pub struct SpxSignCommand {
     domain: SpxSignatureMode,
     /// The filename for the message to sign.
     message: PathBuf,
-    /// The file containing the SPHINCS+ raw private key in PEM format.
+    /// The file containing the SPHINCS+ raw private key in a PEM or DER format.
     #[arg(value_name = "KEY_FILE")]
     private_key: PathBuf,
     /// The filename to write the signature to.
@@ -140,7 +139,7 @@ impl CommandDispatch for SpxSignCommand {
         if self.spx_hash_reversal_bug {
             message.reverse();
         }
-        let private_key = SpxSecretKey::from_pem_file(&self.private_key)?;
+        let private_key = spx::load_spx_private_key(&self.private_key)?;
         let signature = private_key.sign(self.domain.into(), &message)?;
         if let Some(output) = &self.output {
             std::fs::write(output, &signature)?;
@@ -161,7 +160,7 @@ pub struct SpxVerifyCommand {
     /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
     #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
     spx_algorithm: SphincsPlus,
-    /// The file containing the SPHINCS+ raw public key in PEM format.
+    /// The file containing the SPHINCS+ raw public key in a PEM or DER format.
     #[arg(value_name = "KEY")]
     public_key: PathBuf,
     /// Message file to verify the signature against.
@@ -180,7 +179,7 @@ impl CommandDispatch for SpxVerifyCommand {
         if self.spx_hash_reversal_bug {
             message.reverse();
         }
-        let public_key = SpxPublicKey::from_pem_file(&self.public_key)?;
+        let public_key = spx::load_spx_public_key(&self.public_key, SpxKeyLoadingMode::PublicOnly)?;
         let signature = SpxRawSignature::read_from_file(&self.signature, self.spx_algorithm)?;
         public_key.verify(self.domain.into(), signature.as_bytes(), &message)?;
         Ok(None)

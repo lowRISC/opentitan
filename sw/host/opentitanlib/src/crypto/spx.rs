@@ -326,8 +326,11 @@ impl TryFrom<sphincsplus::SpxPublicKey> for SpxRawPublicKey {
 
 impl FromStr for SpxRawPublicKey {
     type Err = Error;
+
+    // Note: this function is a bit unintuitive - it loads from the file path,
+    // not the string contents.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let key = SpxPublicKey::from_pem_file(s)
+        let key = load_spx_public_key(s, SpxKeyLoadingMode::Fallback)
             .with_context(|| format!("Failed to load {s}"))
             .map_err(Error::Other)?;
         SpxRawPublicKey::try_from(&key)

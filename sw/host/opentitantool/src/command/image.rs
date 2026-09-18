@@ -19,15 +19,15 @@ use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::crypto::spx;
+use opentitanlib::crypto::spx::SpxKeyLoadingMode;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
-use sphincsplus::{
-    DecodeKey, SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey, SpxSignatureMode,
-};
+use sphincsplus::{SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey, SpxSignatureMode};
 
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
@@ -203,10 +203,13 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Load / write SPX+ public key.
         let mut spx_private_key: Option<SpxSecretKey> = None;
         if let Some(key) = &self.spx_key {
-            let (pk, sk) = if let Ok(sk) = SpxSecretKey::from_pem_file(key) {
+            let (pk, sk) = if let Ok(sk) = spx::load_spx_private_key(key) {
                 (SpxPublicKey::from(&sk), Some(sk))
             } else {
-                (SpxPublicKey::from_pem_file(key)?, None)
+                (
+                    spx::load_spx_public_key(key, SpxKeyLoadingMode::PublicOnly)?,
+                    None,
+                )
             };
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;

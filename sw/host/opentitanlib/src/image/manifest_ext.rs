@@ -9,11 +9,13 @@ use thiserror::Error;
 use zerocopy::IntoBytes;
 
 use crate::chip::boolean::HardenedBool;
+use crate::crypto::spx;
+use crate::crypto::spx::SpxKeyLoadingMode;
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
 use crate::util::num_de::HexEncoded;
 use crate::with_unknown;
-use sphincsplus::{DecodeKey, SpxPublicKey};
+use sphincsplus::SpxPublicKey;
 
 #[derive(Debug, Error)]
 pub enum ManifestExtError {
@@ -252,9 +254,9 @@ impl ManifestExtEntry {
     /// Creates a new manifest extension from a given `spec`.
     pub fn from_spec(spec: &ManifestExtEntrySpec) -> Result<Self> {
         Ok(match spec {
-            ManifestExtEntrySpec::SpxKey { spx_key } => {
-                ManifestExtEntry::new_spx_key_entry(&SpxPublicKey::from_pem_file(spx_key)?)?
-            }
+            ManifestExtEntrySpec::SpxKey { spx_key } => ManifestExtEntry::new_spx_key_entry(
+                &spx::load_spx_public_key(spx_key, SpxKeyLoadingMode::PublicOnly)?,
+            )?,
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
                 ManifestExtEntry::new_spx_signature_entry(&std::fs::read(spx_signature)?)?
             }
