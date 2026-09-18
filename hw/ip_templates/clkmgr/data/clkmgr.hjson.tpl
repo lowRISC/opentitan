@@ -32,6 +32,14 @@ rg_srcs = get_rg_srcs(typed_clocks)
       design_stage:       "D3",
       verification_stage: "V2S",
       dif_stage:          "S2",
+      commit_id:          "676fe222252f7a9fc4e0f4b2a4c14c53dfff1b96",
+    }
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
     }
   ]
   scan: "true",
