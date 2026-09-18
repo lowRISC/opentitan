@@ -148,7 +148,7 @@ module earlgrey_pd_main #(
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMetaNumAddrScrRounds = 0,
   parameter bit SramCtrlMetaEccCorrection = 0,
-  parameter bit SramCtrlMetaZeroInit = 0
+  parameter bit SecSramCtrlMetaZeroInit = 1
 ) (
   // Inter-module Signal External type
   output alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump_o,

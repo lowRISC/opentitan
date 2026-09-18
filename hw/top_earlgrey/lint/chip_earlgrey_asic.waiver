@@ -156,6 +156,10 @@ waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
       -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
       -comment "We want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240."
 
+waive -rules {LHS_TOO_SHORT} -location {sram_ctrl.sv} \
+      -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'SramCtrlSecZeroInitNonDefault'\(1'b1\)' length 2} \
+      -comment "SecZeroInit is intentionally enabled for the CHERIoT meta SRAM to ensure capabilities are cleared on initialization."
+
 # Temporary generic waiver for ast until the proper split into sub-IPs in the Main and Aon toplevels is done.
 waive -location {ast*.sv} \
       -regexp {.*} \

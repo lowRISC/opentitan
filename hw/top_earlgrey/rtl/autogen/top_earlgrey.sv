@@ -159,7 +159,7 @@ module top_earlgrey #(
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
   parameter int SramCtrlMetaNumAddrScrRounds = 0,
   parameter bit SramCtrlMetaEccCorrection = 0,
-  parameter bit SramCtrlMetaZeroInit = 0
+  parameter bit SecSramCtrlMetaZeroInit = 1
 ) (
   // Base clocks from AST
   input ast_pkg::ast_clks_t ast_base_clks_i,

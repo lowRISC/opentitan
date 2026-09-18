@@ -1120,6 +1120,11 @@
         NumAddrScrRounds: "0",
         NumPrinceRoundsHalf: "2",
         InstSize: "38912",
+        // The CHERIoT revocation bitmap and validity tags must read back as zero initially, to
+        // avoid very long software initialization processes. Note that this only takes effect
+        // once early boot code actually triggers the SRAM controller's hardware initialization
+        // via CTRL.INIT; the ROM does not yet do so for this instance.
+        SecZeroInit: "1",
       },
       base_addrs: {
         regs: {hart: "0x411A0000"},
