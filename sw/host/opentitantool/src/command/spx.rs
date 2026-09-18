@@ -65,6 +65,15 @@ impl CommandDispatch for SpxKeyShowCommand {
     }
 }
 
+/// Describes the SPHINCS+ / SLH-DSA key files written by commands.
+#[derive(Annotate, serde::Serialize)]
+pub struct SpxKeyFileInfo {
+    pub algorithm: String,
+    pub format: String,
+    pub private_key: Option<String>,
+    pub public_key: Option<String>,
+}
+
 /// Generate a SPHINCS+-SHAKE256-128s-simple public private key pair. The full keypair will be
 /// written to <OUTPUT_DIR>/<BASENAME>.key and the public key will be written to
 /// <OUTPUT_DIR>/<BASENAME>.pub.key.
@@ -73,6 +82,9 @@ pub struct SpxKeyGenerateCommand {
     /// SPHINCS+ algorithm (SHAKE-128s-simple, SHA2-128s-simple)
     #[arg(long, default_value = "SHAKE-128s-simple")]
     algorithm: SphincsPlus,
+    /// Key encoding format
+    #[arg(long, default_value_t = SpxKeyFormat::default())]
+    format: SpxKeyFormat,
     /// Output directory.
     output_dir: PathBuf,
     /// Basename for the generated key pair.
@@ -86,15 +98,22 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let (private_key, public_key) = SpxSecretKey::new_keypair(self.algorithm)?;
-        let mut file = self.output_dir.to_owned();
-        file.push(&self.basename);
-        file.set_extension("pem");
-        spx::save_spx_private_key(&private_key, &file, SpxKeyFormat::PreStandardPem)?;
+        let private_path = self
+            .output_dir
+            .join(format!("{}.{}", self.basename, self.format.ext()));
+        let public_path =
+            self.output_dir
+                .join(format!("{}.{}", self.basename, self.format.pub_ext()));
 
-        file.set_extension("pub.pem");
-        spx::save_spx_public_key(&public_key, &file, SpxKeyFormat::PreStandardPem)?;
+        spx::save_spx_private_key(&private_key, &private_path, self.format)?;
+        spx::save_spx_public_key(&public_key, &public_path, self.format)?;
 
-        Ok(None)
+        Ok(Some(Box::new(SpxKeyFileInfo {
+            algorithm: self.algorithm.to_string(),
+            format: self.format.to_string(),
+            private_key: Some(private_path.to_string_lossy().into_owned()),
+            public_key: Some(public_path.to_string_lossy().into_owned()),
+        })))
     }
 }
 
