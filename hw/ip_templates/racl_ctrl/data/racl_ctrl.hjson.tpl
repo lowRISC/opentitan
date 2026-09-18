@@ -143,6 +143,12 @@
                 '''
         }
       ]
+      tags: [
+        // Don't write this register in the generic CSR tests. Its value is the live policy for
+        // every subscribing IP, so a random write can revoke the ROT role's access and make later
+        // accesses in the same test fail with d_error, which the CSR tests can't model.
+        "excl:CsrAllTests:CsrExclWrite"
+      ]
     }
     { reserved: "1" }
     % endfor
