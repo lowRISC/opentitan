@@ -18,16 +18,16 @@ use sphincsplus::{SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey, SpxS
 pub struct SpxPublicKeyInfo {
     pub algorithm: String,
     pub public_key_num_bits: usize,
-    #[annotate(format=hex,comment="Words in little endian order.")]
+    #[annotate(format=hex,comment="Words in little endian order")]
     pub public_key: Vec<u32>,
     #[annotate(comment = "Formatted for use in OTP configuration")]
     pub otp_encoded: String,
 }
 
-/// Show public information of a SPHINCS+ public key or key pair.
+/// Show public information of a SPHINCS+ / SLH-DSA public or private key.
 #[derive(Debug, Args)]
 pub struct SpxKeyShowCommand {
-    /// SPHINCS+ key file (either just the public key or full keypair).
+    /// SPHINCS+ / SLH-DSA key file
     key_file: PathBuf,
 }
 
@@ -44,11 +44,11 @@ impl CommandDispatch for SpxKeyShowCommand {
         // sized integers using python's `int` constructor and then writes
         // the values into the OTP image as little-endian values.
         //
-        // We want to store into OTP the natural representaion of the
-        // SPHINCS+ key.  Since the value is parsed by the `int` constructor
-        // is interpreted as a big-endian integer, but written into OTP in
-        // little-endian byte order, we want to reverse the byte representation
-        // of the key for the OTP creation tool.
+        // We want to store into OTP the natural representation of the
+        // SPHINCS+ / SLH-DSA key. Since the value is parsed by the `int`
+        // constructor is interpreted as a big-endian integer, but written
+        // into OTP in little-endian byte order, we want to reverse the
+        // byte representation of the key for the OTP creation tool.
         let mut otp = bytes.to_vec();
         otp.reverse();
         let otp = format!("0x{}", hex::encode(otp));
@@ -74,12 +74,13 @@ pub struct SpxKeyFileInfo {
     pub public_key: Option<String>,
 }
 
-/// Generate a SPHINCS+-SHAKE256-128s-simple public private key pair. The full keypair will be
-/// written to <OUTPUT_DIR>/<BASENAME>.key and the public key will be written to
-/// <OUTPUT_DIR>/<BASENAME>.pub.key.
+/// Generate a SPHINCS+ / SLH-DSA public & private key pair. The private key will
+/// be written to <OUTPUT_DIR>/<BASENAME>.<EXT> and the public key will be
+/// written to <OUTPUT_DIR>/<BASENAME>.pub.<EXT>, where <EXT> is determined
+/// by the given format.
 #[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
-    /// SPHINCS+ algorithm (SHAKE-128s-simple, SHA2-128s-simple)
+    /// SPHINCS+ / SLH-DSA parameter set (SHA2-128s-simple, SHAKE-128s-simple)
     #[arg(long, default_value = "SHAKE-128s-simple")]
     algorithm: SphincsPlus,
     /// Key encoding format
@@ -187,12 +188,12 @@ pub struct SpxSignCommand {
     /// Set to true if signing for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
     spx_hash_reversal_bug: bool,
-    /// The SPHINCS+ signature mode (Pure or PreHashedSha256)
+    /// The SPHINCS+ / SLH-DSA signature mode (Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxSignatureMode::default())]
     domain: SpxSignatureMode,
     /// The filename for the message to sign.
     message: PathBuf,
-    /// The file containing the SPHINCS+ raw private key in a PEM or DER format.
+    /// The file containing the SPHINCS+ / SLH-DSA raw private key in a PEM or DER format.
     #[arg(value_name = "KEY_FILE")]
     private_key: PathBuf,
     /// The filename to write the signature to.
@@ -225,18 +226,18 @@ pub struct SpxVerifyCommand {
     /// Set to true if verifying for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
     spx_hash_reversal_bug: bool,
-    /// The SPHINCS+ signature mode (Pure or PreHashedSha256)
+    /// The SPHINCS+ / SLH-DSA signature mode (Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxSignatureMode::default())]
     domain: SpxSignatureMode,
-    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
-    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
+    /// The signature algorithm (SHA2-128s-simple, SHAKE-128s-simple)
+    #[arg(long, default_value = "SHA2-128s-simple")]
     spx_algorithm: SphincsPlus,
-    /// The file containing the SPHINCS+ raw public key in a PEM or DER format.
+    /// The file containing the SPHINCS+ / SLH-DSA public key.
     #[arg(value_name = "KEY")]
     public_key: PathBuf,
     /// Message file to verify the signature against.
     message: PathBuf,
-    /// SPHINCS+ signature file to verify (raw binary).
+    /// SPHINCS+ / SLH-DSA signature file to verify (raw binary).
     signature: PathBuf,
 }
 
@@ -258,11 +259,14 @@ impl CommandDispatch for SpxVerifyCommand {
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
-/// SPHINCS+ commands.
+/// SPHINCS+ / SLH-DSA commands.
 #[allow(clippy::large_enum_variant)]
 pub enum Spx {
     #[command(subcommand)]
+    /// Commands for interacting with & manipulating SPHINCS+ / SLH-DSA keys.
     Key(SpxKeySubcommands),
+    /// Sign a message using SPHINCS+ / SLH-DSA.
     Sign(SpxSignCommand),
+    /// Verify a signature using SPHINCS+ / SLH-DSA.
     Verify(SpxVerifyCommand),
 }
