@@ -204,6 +204,36 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   EXPECT_EQ(sc_otbn_dmem_write(2, test_data.data(), dest_addr), kErrorOk);
 }
 
+TEST_F(DmemWriteTest, PublicSuccessWithoutOffset) {
+  // Test assumption.
+  static_assert(OTBN_DMEM_SIZE_BYTES >= 8, "OTBN DMEM size too small.");
+
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_otbn_addr_t dest_addr = 0;
+
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
+                     test_data[1]);
+
+  EXPECT_EQ(sc_otbn_dmem_write_public(2, test_data.data(), dest_addr),
+            kErrorOk);
+}
+
+TEST_F(DmemWriteTest, PublicSuccessWithOffset) {
+  // Test assumption.
+  static_assert(OTBN_DMEM_SIZE_BYTES >= 12, "OTBN DMEM size too small.");
+
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  sc_otbn_addr_t dest_addr = 4;
+
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr, test_data[0]);
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dest_addr + 4,
+                     test_data[1]);
+
+  EXPECT_EQ(sc_otbn_dmem_write_public(2, test_data.data(), dest_addr),
+            kErrorOk);
+}
+
 TEST_F(DmemWriteTest, FailureOutOfRange) {
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
   sc_otbn_addr_t dest_addr = OTBN_DMEM_SIZE_BYTES;

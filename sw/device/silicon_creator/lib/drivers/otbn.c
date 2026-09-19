@@ -95,6 +95,23 @@ static void sc_otbn_write(uint32_t dest_addr, const uint32_t *src,
   HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 }
 
+/**
+ * Helper function for writing public data linearly to OTBN's DMEM or IMEM.
+ *
+ * @param dest_addr Destination address.
+ * @param src Source buffer.
+ * @param num_words Number of words to copy.
+ */
+static void sc_otbn_write_public(uint32_t dest_addr, const uint32_t *src,
+                                 size_t num_words) {
+  uint32_t i = 0, r = num_words - 1;
+  for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
+    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
+  }
+  HARDENED_CHECK_EQ(i, num_words);
+  HARDENED_CHECK_EQ(r, UINT32_MAX);
+}
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t sc_otbn_imem_write(size_t num_words, const uint32_t *src,
                                       sc_otbn_addr_t dest) {
@@ -109,6 +126,15 @@ rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
   sc_otbn_write(otbn_base() + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
+  return kErrorOk;
+}
+
+rom_error_t sc_otbn_dmem_write_public(size_t num_words, const uint32_t *src,
+                                      sc_otbn_addr_t dest) {
+  HARDENED_RETURN_IF_ERROR(
+      check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
+  sc_otbn_write_public(otbn_base() + OTBN_DMEM_REG_OFFSET + dest, src,
+                       num_words);
   return kErrorOk;
 }
 
