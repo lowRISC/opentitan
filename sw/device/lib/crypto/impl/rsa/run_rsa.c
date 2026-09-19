@@ -204,7 +204,7 @@ static status_t keygen_start(uint32_t mode) {
 
   // Set mode and start OTBN.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
 
   return otbn_execute();
 }
@@ -334,13 +334,13 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
 
   // Set mode.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
 
   // Set the base, the modulus n and private exponent d.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
-  HARDENED_TRY(otbn_dmem_write(num_words, base, kOtbnVarRsaInOut));
+  HARDENED_TRY(otbn_dmem_write_public(num_words, base, kOtbnVarRsaInOut));
   const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
-  HARDENED_TRY(otbn_dmem_write(num_words, modulus, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write_public(num_words, modulus, kOtbnVarRsaN));
   const otbn_addr_t kOtbnVarRsaD0 = OTBN_ADDR_T_INIT(run_rsa, rsa_d0);
   HARDENED_TRY(otbn_dmem_write(num_words, exp0, kOtbnVarRsaD0));
   const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
@@ -388,13 +388,13 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
 
   // Set mode.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
 
   // Set the base and the modulus n.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
-  HARDENED_TRY(otbn_dmem_write(num_words, base, kOtbnVarRsaInOut));
+  HARDENED_TRY(otbn_dmem_write_public(num_words, base, kOtbnVarRsaInOut));
   const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
-  HARDENED_TRY(otbn_dmem_write(num_words, modulus, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write_public(num_words, modulus, kOtbnVarRsaN));
 
   // Start OTBN.
   return otbn_execute();

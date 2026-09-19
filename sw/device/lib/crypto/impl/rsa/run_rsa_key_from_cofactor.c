@@ -83,13 +83,14 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_n);
   const otbn_addr_t kOtbnVarRsaCofactor =
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_cofactor);
-  HARDENED_TRY(otbn_dmem_write(num_words, public_key_n, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write_public(num_words, public_key_n, kOtbnVarRsaN));
   HARDENED_TRY(otbn_dmem_write(num_words / 2, cofactor, kOtbnVarRsaCofactor));
 
   // Set mode and start OTBN.
   const otbn_addr_t kOtbnVarRsaMode =
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, mode);
-  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeWords, &mode, kOtbnVarRsaMode));
+  HARDENED_TRY(
+      otbn_dmem_write_public(kOtbnRsaModeWords, &mode, kOtbnVarRsaMode));
   return otbn_execute();
 }
 
