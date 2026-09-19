@@ -234,6 +234,20 @@ rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
                                sc_otbn_addr_t dest);
 
 /**
+ * Copies non-sensitive public data from CPU memory to OTBN data memory.
+ *
+ * Performs linear MMIO writes without randomizing the starting offset.
+ *
+ * @param num_words Number of 32b words to copy.
+ * @param src Source of the data to copy.
+ * @param dest Address of the destination in OTBN's data memory.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_otbn_dmem_write_public(size_t num_words, const uint32_t *src,
+                                      sc_otbn_addr_t dest);
+
+/**
  * Copies data from OTBN's data memory to CPU memory.
  *
  * @param num_words The number of 32b words to copy.
