@@ -190,7 +190,7 @@ def main(argv: List[str]):
     # Write re-formatted output file. Use binary mode and a large buffer size
     # to improve performance.
     with open(args.out_flash_vmem, "wb", buffering=2097152) as of:
-        of.write("\n".join(reformatted_vmem_lines).encode('utf-8'))
+        of.write(("\n".join(reformatted_vmem_lines) + "\n").encode('utf-8'))
 
 
 if __name__ == "__main__":

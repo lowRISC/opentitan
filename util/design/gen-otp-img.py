@@ -203,6 +203,7 @@ def main():
     with open(memfile_path, 'wb', buffering=2097152) as outfile:
         outfile.write(file_header.encode('utf-8'))
         outfile.write(memfile_body.encode('utf-8'))
+        outfile.write(b'\n')
 
 
 if __name__ == "__main__":
