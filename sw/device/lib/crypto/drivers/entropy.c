@@ -764,9 +764,11 @@ static void entropy_src_stop(void) {
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
 void entropy_complex_stop_all(void) {
-  edn_stop(kBaseEdn0);
-  edn_stop(kBaseEdn1);
-  abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  if (abs_mmio_read32(kBaseEdn0 + EDN_REGWEN_REG_OFFSET) != 0) {
+    edn_stop(kBaseEdn0);
+    edn_stop(kBaseEdn1);
+    abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  }
   entropy_src_stop();
 }
 
@@ -1023,15 +1025,23 @@ static status_t csrng_check(void) {
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t edn_check(const edn_config_t *config) {
+static status_t edn_check(const edn_config_t *config, hardened_bool_t fips) {
   uint32_t reg = abs_mmio_read32(config->base_address + EDN_CTRL_REG_OFFSET);
   uint32_t edn_enable = bitfield_field32_read(reg, EDN_CTRL_EDN_ENABLE_FIELD);
   uint32_t auto_req_mode =
       bitfield_field32_read(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD);
-  if (edn_enable == kMultiBitBool4True && auto_req_mode == kMultiBitBool4True) {
-    return OTCRYPTO_OK;
+  if (edn_enable != kMultiBitBool4True || auto_req_mode != kMultiBitBool4True) {
+    return OTCRYPTO_RECOV_ERR;
   }
-  return OTCRYPTO_RECOV_ERR;
+  if (launder32(fips) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(fips, kHardenedBoolFalse);
+  } else {
+    HARDENED_CHECK_EQ(fips, kHardenedBoolTrue);
+    if (abs_mmio_read32(config->base_address + EDN_REGWEN_REG_OFFSET) != 0) {
+      return OTCRYPTO_RECOV_ERR;
+    }
+  }
+  return OTCRYPTO_OK;
 }
 
 status_t entropy_complex_start(hardened_bool_t fips) {
@@ -1051,9 +1061,17 @@ status_t entropy_complex_start(hardened_bool_t fips) {
   }
 
   HARDENED_TRY(entropy_src_configure(&config->entropy_src));
+  if (abs_mmio_read32(kBaseEdn0 + EDN_REGWEN_REG_OFFSET) == 0) {
+    return entropy_complex_check(fips);
+  }
   csrng_configure();
   HARDENED_TRY(edn_configure(&config->edn0));
-  return edn_configure(&config->edn1);
+  HARDENED_TRY(edn_configure(&config->edn1));
+  if (launder32(fips) == kHardenedBoolTrue) {
+    abs_mmio_write32(kBaseEdn0 + EDN_REGWEN_REG_OFFSET, 0);
+    abs_mmio_write32(kBaseEdn1 + EDN_REGWEN_REG_OFFSET, 0);
+  }
+  return OTCRYPTO_OK;
 }
 
 status_t entropy_complex_check(hardened_bool_t fips) {
@@ -1074,8 +1092,8 @@ status_t entropy_complex_check(hardened_bool_t fips) {
 
   HARDENED_TRY(entropy_src_check(&config->entropy_src));
   HARDENED_TRY(csrng_check());
-  HARDENED_TRY(edn_check(&config->edn0));
-  return edn_check(&config->edn1);
+  HARDENED_TRY(edn_check(&config->edn0, fips));
+  return edn_check(&config->edn1, fips);
 }
 
 status_t entropy_complex_init(hardened_bool_t fips) {
