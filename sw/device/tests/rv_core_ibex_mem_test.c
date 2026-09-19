@@ -129,13 +129,16 @@ static void use_icache(bool enable) {
  * Sets up the flash test location.
  */
 static void setup_flash(void) {
-  // Create a PMP region for the flash
+  // ROM_EXT only maps the verified active images in ePMP. Create a PMP region
+  // in entry 12 to unlock execution of the rest of flash without overwriting
+  // the TOR entry (8/9) used for the active owner stage image.
   pmp_region_config_t config = {
       .lock = kPmpRegionLockLocked,
       .permissions = kPmpRegionPermissionsReadWriteExecute,
   };
-  pmp_region_configure_napot_result_t result = pmp_region_configure_napot(
-      8, config, TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES);
+  pmp_region_configure_napot_result_t result =
+      pmp_region_configure_napot(12, config, TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 TOP_EARLGREY_EFLASH_SIZE_BYTES);
   CHECK(result == kPmpRegionConfigureNapotOk,
         "Load configuration failed, error code = %d", result);
   // When running as ROM_EXT, ROM configures the flash memory to be readonly.

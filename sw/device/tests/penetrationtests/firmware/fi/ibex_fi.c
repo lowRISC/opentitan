@@ -21,6 +21,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
@@ -4774,6 +4775,13 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
+  // ROM_EXT only maps the verified active images in ePMP. Unlock the entire
+  // flash in ePMP so this test can access the rest of flash.
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
 
   // Init OTP.
   TRY(dif_otp_ctrl_init(

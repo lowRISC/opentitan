@@ -17,6 +17,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -255,6 +256,14 @@ status_t handle_boot_fi_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
                    kPentestPeripheralCsrng | kPentestPeripheralEntropy |
                    kPentestPeripheralKmac | kPentestPeripheralHmac);
+
+  // ROM_EXT only maps the verified active images in ePMP. Unlock the entire
+  // flash in ePMP so this test can access the rest of flash.
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(

@@ -119,6 +119,7 @@ VARIANTS = {
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/cert:dice_storage",
             "//sw/device/silicon_creator/lib/cert:ram_msg",
+            "//sw/device/silicon_creator/lib/drivers:epmp",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",

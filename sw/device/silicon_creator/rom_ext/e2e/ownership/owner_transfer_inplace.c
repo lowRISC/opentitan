@@ -8,6 +8,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -15,6 +16,8 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -28,6 +31,13 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static status_t trigger_inplace_transfer(void) {
   LOG_INFO("Slot A firmware started: Locating Slot B manifest...");
+  // ROM_EXT only maps the verified active images in ePMP. Unlock the entire
+  // flash in ePMP so this test can read the Slot B manifest.
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
   boot_data_t boot_data = {
       .identifier = kBootDataIdentifier,
   };
