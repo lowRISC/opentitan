@@ -12,7 +12,8 @@ class chip_sw_keymgr_dpe_sideload_otbn_vseq extends chip_sw_keymgr_dpe_key_deriv
     wide_key_t otbn_key;
 
     // Wait until the sideloaded key is generated
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HW output for OTBN from the CreatorRootKey")
+    cfg.sw_logger_vif.wait_for_log_message({"KeymgrDpe generated ",
+                                            "HW output for OTBN from the CreatorRootKey"});
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),
