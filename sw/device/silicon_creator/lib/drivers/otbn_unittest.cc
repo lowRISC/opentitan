@@ -329,8 +329,7 @@ TEST_F(OtbnAppTest, OtbnLoadAppSuccess) {
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, imem_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + sizeof(uint32_t),
                      imem_data[1]);
-  // `sc_otbn_dmem_write`
-  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  // `sc_otbn_dmem_write_public`
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + dmem_data_offset,
                      dmem_data[0]);
   EXPECT_ABS_WRITE32(

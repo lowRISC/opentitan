@@ -91,7 +91,7 @@ rom_error_t otbn_boot_attestation_keygen(
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeygen;
   HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+      sc_otbn_dmem_write_public(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
@@ -168,7 +168,7 @@ rom_error_t otbn_boot_attestation_key_save(
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeySave;
   HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+      sc_otbn_dmem_write_public(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Load the additional seed from flash info.
   uint32_t seed[kAttestationSeedWords];
@@ -210,8 +210,8 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
       (size_t)(kOtbnAppBoot.dmem_data_end - kOtbnAppBoot.dmem_data_start);
   if (data_num_words > 0) {
     HARDENED_RETURN_IF_ERROR(
-        sc_otbn_dmem_write(data_num_words, kOtbnAppBoot.dmem_data_start,
-                           kOtbnAppBoot.dmem_data_start_addr));
+        sc_otbn_dmem_write_public(data_num_words, kOtbnAppBoot.dmem_data_start,
+                                  kOtbnAppBoot.dmem_data_start_addr));
   }
   return kErrorOk;
 }
@@ -222,11 +222,11 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationEndorse;
   HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+      sc_otbn_dmem_write_public(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Write the message digest.
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
 
   // Run the OTBN program (blocks until OTBN is done).
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
@@ -265,23 +265,23 @@ rom_error_t otbn_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
   // Write the mode.
   uint32_t mode = kOtbnBootModeSigverify;
   HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+      sc_otbn_dmem_write_public(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Write the public key.
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kEcdsaP256PublicKeyCoordWords, key->x, kOtbnVarBootX));
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kEcdsaP256PublicKeyCoordWords, key->y, kOtbnVarBootY));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kEcdsaP256PublicKeyCoordWords, key->x, kOtbnVarBootX));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kEcdsaP256PublicKeyCoordWords, key->y, kOtbnVarBootY));
 
   // Write the message digest.
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kHmacDigestNumWords, digest->digest, kOtbnVarBootMsg));
 
   // Write the signature.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kEcdsaP256SignatureComponentWords,
-                                              sig->r, kOtbnVarBootR));
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(kEcdsaP256SignatureComponentWords,
-                                              sig->s, kOtbnVarBootS));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kEcdsaP256SignatureComponentWords, sig->r, kOtbnVarBootR));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
+      kEcdsaP256SignatureComponentWords, sig->s, kOtbnVarBootS));
 
   // Start the OTBN routine.
   SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
@@ -305,7 +305,7 @@ rom_error_t otbn_boot_sigverify_finish(uint32_t *recovered_r) {
 
   // Clear the status in OTBN.
   uint32_t zero = 0;
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(1, &zero, kOtbnVarBootOk));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(1, &zero, kOtbnVarBootOk));
 
   // Read the recovered `r` value from DMEM.
   return sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords, kOtbnVarBootXr,
