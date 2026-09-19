@@ -99,7 +99,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_init_otbn(
   const otbn_app_t kOtbnAppP384 = OTBN_APP_T_INIT(run_p384);
   HARDENED_TRY(otbn_load_app(kOtbnAppP384));
   const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
-  return otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode);
+  return otbn_dmem_write_public(kP384ModeWords, &mode, kOtbnVarMode);
 }
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_read_point(
@@ -147,7 +147,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_masked_scalar_write(
  */
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_scalar_write(
     const uint32_t src[kP384ScalarWords], const otbn_addr_t addr) {
-  HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, src, addr));
+  HARDENED_TRY(otbn_dmem_write_public(kP384ScalarWords, src, addr));
 
   return otbn_dmem_set(kScalarPaddingWords, 0, addr + kP384ScalarBytes);
 }
@@ -161,8 +161,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t set_public_key(
     const p384_point_t *p) {
   const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
   const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->x, kOtbnVarX));
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->y, kOtbnVarY));
+  HARDENED_TRY(otbn_dmem_write_public(kP384CoordWords, p->x, kOtbnVarX));
+  HARDENED_TRY(otbn_dmem_write_public(kP384CoordWords, p->y, kOtbnVarY));
 
   HARDENED_TRY(
       otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarX + kP384CoordBytes));

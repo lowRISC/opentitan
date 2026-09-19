@@ -93,7 +93,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_init_otbn(
   HARDENED_TRY(otbn_load_app(kOtbnAppP256));
   // Set mode so start() will jump into the requested routine.
   const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p256, mode);
-  return otbn_dmem_write(kOtbnP256ModeWords, &mode, kOtbnVarMode);
+  return otbn_dmem_write_public(kOtbnP256ModeWords, &mode, kOtbnVarMode);
 }
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_write_point(
@@ -101,9 +101,9 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_write_point(
   const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p256, x);
   const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p256, y);
   // Set the point x coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP256CoordWords, point->x, kOtbnVarX));
+  HARDENED_TRY(otbn_dmem_write_public(kP256CoordWords, point->x, kOtbnVarX));
   // Set the point y coordinate.
-  return otbn_dmem_write(kP256CoordWords, point->y, kOtbnVarY);
+  return otbn_dmem_write_public(kP256CoordWords, point->y, kOtbnVarY);
 }
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_read_point(
@@ -193,7 +193,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t set_message_digest(
   }
   HARDENED_CHECK_EQ(i, kP256ScalarWords);
   const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p256, msg);
-  return otbn_dmem_write(kP256ScalarWords, digest_little_endian, kOtbnVarMsg);
+  return otbn_dmem_write_public(kP256ScalarWords, digest_little_endian,
+                                kOtbnVarMsg);
 }
 
 uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar) {
@@ -402,11 +403,13 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
 
   // Set the signature R.
   const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p256, r);
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, signature->r, kOtbnVarR));
+  HARDENED_TRY(
+      otbn_dmem_write_public(kP256ScalarWords, signature->r, kOtbnVarR));
 
   // Set the signature S.
   const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p256, s);
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, signature->s, kOtbnVarS));
+  HARDENED_TRY(
+      otbn_dmem_write_public(kP256ScalarWords, signature->s, kOtbnVarS));
 
   HARDENED_TRY(p256_write_point(public_key));
 
