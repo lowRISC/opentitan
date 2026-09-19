@@ -112,7 +112,7 @@ status_t mldsa87_keygen_internal_start(void) {
   uint32_t mode = kMldsa87KeygenRndMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   return otbn_execute();
 }
@@ -126,7 +126,7 @@ status_t mldsa87_det_keygen_internal_start(const otcrypto_blinded_key_t *xi) {
   uint32_t mode = kMldsa87KeygenDetMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   // Write both shares of the seed to DMEM.
   const otbn_addr_t kOtbnXi =
@@ -164,14 +164,14 @@ status_t mldsa87_sign_internal_start(const otcrypto_blinded_key_t *secret_key,
 
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mldsa87_sign, mldsa87_sign_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   const otbn_addr_t kOtbnSk = OTBN_ADDR_T_INIT(mldsa87_sign, mldsa87_sign_sk);
   HARDENED_TRY(otbn_dmem_write(secret_key->keyblob_length / sizeof(uint32_t),
                                secret_key->keyblob, kOtbnSk));
 
   const otbn_addr_t kOtbnMu = OTBN_ADDR_T_INIT(mldsa87_sign, mldsa87_sign_mu);
-  HARDENED_TRY(otbn_dmem_write(mu->len, mu->data, kOtbnMu));
+  HARDENED_TRY(otbn_dmem_write_public(mu->len, mu->data, kOtbnMu));
 
   return otbn_execute();
 }
@@ -200,7 +200,7 @@ status_t mldsa87_sign_internal_finalize(otcrypto_word32_buf_t *signature,
   uint32_t mode = kMldsa87SignAbridgedMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mldsa87_sign, mldsa87_sign_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   // Buffer for the second signature value.
   uint32_t sig_cmp_data[kMldsa87SigWords];
@@ -234,16 +234,17 @@ status_t mldsa87_verify_internal_start(
 
   const otbn_addr_t kOtbnPk =
       OTBN_ADDR_T_INIT(mldsa87_verify, mldsa87_verify_pk);
-  HARDENED_TRY(otbn_dmem_write(public_key->key_length / sizeof(uint32_t),
-                               public_key->key, kOtbnPk));
+  HARDENED_TRY(otbn_dmem_write_public(public_key->key_length / sizeof(uint32_t),
+                                      public_key->key, kOtbnPk));
 
   const otbn_addr_t kOtbnSig =
       OTBN_ADDR_T_INIT(mldsa87_verify, mldsa87_verify_sig);
-  HARDENED_TRY(otbn_dmem_write(signature->len, signature->data, kOtbnSig));
+  HARDENED_TRY(
+      otbn_dmem_write_public(signature->len, signature->data, kOtbnSig));
 
   const otbn_addr_t kOtbnMu =
       OTBN_ADDR_T_INIT(mldsa87_verify, mldsa87_verify_mu);
-  HARDENED_TRY(otbn_dmem_write(mu->len, mu->data, kOtbnMu));
+  HARDENED_TRY(otbn_dmem_write_public(mu->len, mu->data, kOtbnMu));
 
   return otbn_execute();
 }

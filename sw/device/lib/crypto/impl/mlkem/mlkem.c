@@ -84,7 +84,7 @@ status_t mlkem1024_keygen_internal_start(void) {
   uint32_t mode = kMlkem1024KeygenRndMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mlkem1024_keygen, mlkem1024_keygen_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   return otbn_execute();
 }
@@ -99,7 +99,7 @@ status_t mlkem1024_det_keygen_internal_start(
   uint32_t mode = kMlkem1024KeygenDetMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mlkem1024_keygen, mlkem1024_keygen_mode);
-  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+  HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnMode));
 
   // Write seed d shares
   uint32_t d_share0[16] = {0};
@@ -200,11 +200,12 @@ status_t mlkem1024_encaps_start(const otcrypto_unblinded_key_t *public_key,
   // Write public key components.
   const otbn_addr_t kOtbnPkT =
       OTBN_ADDR_T_INIT(mlkem1024_encaps, mlkem1024_encaps_pk_t);
-  HARDENED_TRY(otbn_dmem_write(kMlkem1024PkTWords, public_key->key, kOtbnPkT));
+  HARDENED_TRY(
+      otbn_dmem_write_public(kMlkem1024PkTWords, public_key->key, kOtbnPkT));
 
   const otbn_addr_t kOtbnPkRho =
       OTBN_ADDR_T_INIT(mlkem1024_encaps, mlkem1024_encaps_pk_rho);
-  HARDENED_TRY(otbn_dmem_write(
+  HARDENED_TRY(otbn_dmem_write_public(
       kMlkem1024PkRhoWords, public_key->key + kMlkem1024PkTWords, kOtbnPkRho));
 
   // Write message m.
@@ -259,11 +260,12 @@ status_t mlkem1024_decaps_start(const otcrypto_blinded_key_t *secret_key,
 
   const otbn_addr_t kOtbnCtU =
       OTBN_ADDR_T_INIT(mlkem1024_decaps, mlkem1024_decaps_ct_u);
-  HARDENED_TRY(otbn_dmem_write(kMlkem1024CtUWords, ciphertext->data, kOtbnCtU));
+  HARDENED_TRY(
+      otbn_dmem_write_public(kMlkem1024CtUWords, ciphertext->data, kOtbnCtU));
 
   const otbn_addr_t kOtbnCtV =
       OTBN_ADDR_T_INIT(mlkem1024_decaps, mlkem1024_decaps_ct_v);
-  HARDENED_TRY(otbn_dmem_write(
+  HARDENED_TRY(otbn_dmem_write_public(
       kMlkem1024CtVWords, ciphertext->data + kMlkem1024CtUWords, kOtbnCtV));
 
   const otbn_addr_t kOtbnSkS0 =
