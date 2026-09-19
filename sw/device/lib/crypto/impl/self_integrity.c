@@ -27,7 +27,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   }
 
   // Ensure the SHA-2 KAT has executed before running the self-integrity check.
-  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
+  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
 
   const size_t lib_len = (size_t)(_libotcrypto_end_ - _libotcrypto_start_);
 

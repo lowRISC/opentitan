@@ -425,6 +425,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ED25519_PUBLIC_KEY_FROM_PRIVATE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -449,6 +450,7 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
   // Validate signature buffer
   HARDENED_TRY(ed25519_signature_check(signature));
 
@@ -496,6 +498,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -542,6 +545,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
     const otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ED25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_START);
+  OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
   // Check the private key.
   HARDENED_TRY(curve25519_private_key_length_check(private_key,
                                                    kOtcryptoKeyModeEd25519));
@@ -568,6 +572,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
     otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ED25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Finalize the keygen operation and retrieve the public key.
   HARDENED_TRY_WIPE_DMEM(curve25519_keygen_finalize(public_key->key));
   // Calculate the public key checksum.
@@ -582,6 +587,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     otcrypto_word32_buf_t *s1, otcrypto_word32_buf_t *r0,
     otcrypto_word32_buf_t *r1) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN_PART1_ASYNC_START);
+  OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
   // Check the private key.
   HARDENED_TRY(curve25519_private_key_length_check(private_key,
                                                    kOtcryptoKeyModeEd25519));
@@ -653,6 +659,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     otcrypto_word32_buf_t *s0, otcrypto_word32_buf_t *s1,
     otcrypto_word32_buf_t *r0, otcrypto_word32_buf_t *r1) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN_PART2_ASYNC_START);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Check the signature.
   HARDENED_TRY(ed25519_signature_check(signature));
 
@@ -718,6 +725,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Check the signature.
   HARDENED_TRY(ed25519_signature_check(signature));
 
@@ -736,6 +744,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_VERIFY_ASYNC_START);
+  OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
   // Check the public key.
   HARDENED_TRY(
       curve25519_public_key_length_check(public_key, kOtcryptoKeyModeEd25519));
@@ -793,6 +802,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_VERIFY_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Finalize the verify operation and retrieve the verification result.
   HARDENED_TRY_WIPE_DMEM(curve25519_verify_finalize(verification_result));
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -814,6 +824,7 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
 otcrypto_status_t otcrypto_x25519_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_KEYGEN_ASYNC_START);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Check the private key.
   HARDENED_TRY(
       curve25519_private_key_length_check(private_key, kOtcryptoKeyModeX25519));
@@ -842,6 +853,7 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_KEYGEN_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   (void)private_key;
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
@@ -853,6 +865,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_ASYNC_START);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   // Check the private key.
   HARDENED_TRY(
       curve25519_private_key_length_check(private_key, kOtcryptoKeyModeX25519));
@@ -886,6 +899,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
