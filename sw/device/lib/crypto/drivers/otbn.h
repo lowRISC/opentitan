@@ -275,6 +275,27 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest);
 
 /**
+ * Write public data to OTBN's data memory (DMEM).
+ *
+ * Writes non-sensitive public parameters (such as public keys, signatures, and
+ * message digests) linearly into OTBN DMEM and verifies the LOAD_CHECKSUM
+ * register. Does not randomize the write order.
+ *
+ * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
+ * word-aligned or if the length and offset exceed the DMEM size, this function
+ * will return an error.
+ *
+ * The caller must ensure OTBN is idle before calling this function.
+ *
+ * @param num_words Length of the data in 32-bit words.
+ * @param src The main memory location to copy from.
+ * @param dest The DMEM location to copy to.
+ * @return Result of the operation.
+ */
+status_t otbn_dmem_write_public(size_t num_words, const uint32_t *src,
+                                otbn_addr_t dest);
+
+/**
  * Set a range of OTBN's data memory (DMEM) to a particular value.
  *
  * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
