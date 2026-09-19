@@ -270,7 +270,9 @@ class dv_base_reg_block extends uvm_reg_block;
     // Sort m_mem_ranges by start_addr, ensuring that the ordering in the list only depends on the
     // addresses of the ranges (rather than the order in which they were defined in the
     // configuration)
-    m_mem_ranges.sort() with (item.start_addr);
+    if (m_mem_ranges.size() > 0) begin
+      m_mem_ranges.sort() with (item.start_addr);
+    end
 
     m_mem_ranges_known = 1;
 
