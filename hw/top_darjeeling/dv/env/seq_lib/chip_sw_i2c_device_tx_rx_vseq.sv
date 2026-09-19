@@ -8,8 +8,6 @@
 //     run_opts: ["+i2c_idx=i"]
 
 class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
-  import i2c_pkg::*;
-
   int tran_id = 0;
 
   rand bit [6:0] i2c_device_address_0;
@@ -132,7 +130,9 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   endtask
 
   // Fill the I2C transfer fields before driving it.
-  local function void fill_i2c_xfer_flds(i2c_item item, rw_e dir, bus_op_e bus_op);
+  local function void fill_i2c_xfer_flds(i2c_item item, i2c_pkg::rw_e dir, bus_op_e bus_op);
+    import i2c_pkg::acknack_e, i2c_pkg::ACK, i2c_pkg::NACK;
+
     item.addr = choose_address ? (i2c_device_address_0 | (r & ~i2c_device_mask_0)) :
                                  (i2c_device_address_1 | (r & ~i2c_device_mask_1));
     item.addr_ack = ACK;
@@ -154,7 +154,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     end
   endfunction
 
-  local task create_and_drive_i2c_xfer(i2c_item item, rw_e dir, bus_op_e bus_op);
+  local task create_and_drive_i2c_xfer(i2c_item item, i2c_pkg::rw_e dir, bus_op_e bus_op);
     i2c_transaction txn;
 
     fill_i2c_xfer_flds(item, dir, bus_op);
@@ -168,7 +168,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   virtual task drive_i2c_agent_stimulus();
     i2c_item xfer  = i2c_item::type_id::create("xfer");
 
-    create_and_drive_i2c_xfer(xfer, READ, BusOpRead);
+    create_and_drive_i2c_xfer(xfer, i2c_pkg::READ, BusOpRead);
 
     // At this point, we are out of i2c_target_base_seq.body() and all the transfer packets are sent
     // to the i2c_driver. i2c_driver initiates the traffic or waits for the response to / from the I2C
@@ -199,7 +199,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // The read bytes are pushed into data_q by the i2c_monitor. data_ack_q contains the N/Ack
     // information from the previous read transfer but that shouldn't matter because N/Acking is a
     // device's job entirely in a write transfer.
-    create_and_drive_i2c_xfer(xfer, WRITE, BusOpWrite);
+    create_and_drive_i2c_xfer(xfer, i2c_pkg::WRITE, BusOpWrite);
   endtask : drive_i2c_agent_stimulus
 
 endclass : chip_sw_i2c_device_tx_rx_vseq
