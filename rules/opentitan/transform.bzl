@@ -331,3 +331,84 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
         executable = tool,
     )
     return (output, hashfile)
+
+def obj_blob(ctx, src, output_section, exports = [], abs = True, prefix_exports = "", **kwargs):
+    """Transform an ELF to a binary blob and package it in an object file with symbols.
+
+    Args:
+      ctx: The rule context.
+      src: The src ELF or BIN File object.
+      output_section: The section name for the binary blob in the output object file.
+      exports: A list of exact symbol names to export from the ELF.
+      abs: Whether to export symbols as absolute symbols (default True).
+      prefix_exports: Prefix to add to the exported symbols.
+      kwargs: Overrides of values normally retrieved from the context object.
+        name: Name of the output object file (without extension).
+    Returns:
+      The output object File.
+    """
+    name = get_override(ctx, "attr.name", kwargs)
+
+    if src.extension == "bin":
+        if exports:
+            fail("Cannot export symbols from a raw binary file: {}".format(src.path))
+        binary = src
+    else:
+        # 1. Convert ELF to binary blob
+        binary = obj_transform(
+            ctx,
+            name = name + "_blob",
+            strip_llvm_prf_cnts = True,
+            suffix = "bin",
+            format = "binary",
+            src = src,
+        )
+
+    # 2. Convert binary blob to object file and add symbols
+    output_o = ctx.actions.declare_file("{}.o".format(name))
+    tool = get_override(ctx, "executable._add_shared_symbols_tool", kwargs)
+
+    cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objcopy = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OBJ_COPY_ACTION_NAME,
+    )
+    objdump = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OT_ACTION_OBJDUMP,
+    )
+
+    args = ctx.actions.args()
+    args.add("--bin", binary)
+    args.add("--output", output_o)
+    args.add("--output-section", output_section)
+    if exports:
+        args.add("--elf", src)
+        args.add_all(exports, before_each = "--symbol")
+    if abs:
+        args.add("--abs")
+    args.add("--prefix", prefix_exports)
+    args.add("--objcopy", objcopy)
+    args.add("--objdump", objdump)
+
+    inputs = [binary]
+    if exports:
+        inputs.append(src)
+
+    ctx.actions.run(
+        outputs = [output_o],
+        inputs = depset(
+            inputs,
+            transitive = [cc_toolchain.all_files],
+        ),
+        arguments = [args],
+        executable = tool,
+    )
+
+    return output_o
