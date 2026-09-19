@@ -304,10 +304,6 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  epmp_clear_lock_bits();
-
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
-
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
   // Otherwise, compute the epmp regions and the entry point for the load
@@ -331,7 +327,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
                                  (uintptr_t)_owner_virtual_size},
-          kEpmpPermReadOnly);
+          kEpmpPermLockedReadOnly);
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
       // Move the ROM_EXT execution section from the load address to the virtual
@@ -349,7 +345,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   }
 
   // Allow execution of owner stage executable code (text) sections.
-  epmp_set_tor(2, text_region, kEpmpPermReadExecute);
+  epmp_set_tor(2, text_region, kEpmpPermLockedReadExecute);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Lock the address translation windows.
@@ -374,6 +370,14 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
 
   HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
+
+  // Disable the ROM_EXT stack guard.
+  epmp_clear(11);
+
+  // Clear lock bits as late as possible in ROM_EXT.
+  // Leave unverified flash locked.
+  epmp_clear_lock_bits();
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);

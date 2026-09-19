@@ -44,7 +44,7 @@ extern "C" {
 void epmp_clear(uint8_t entry);
 
 /**
- * Clear the lock bit in all ePMP entries.
+ * Clear the lock bit in all ePMP entries except Entry 12 (physical flash).
  */
 void epmp_clear_lock_bits(void);
 
