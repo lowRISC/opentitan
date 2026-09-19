@@ -94,11 +94,17 @@ status_t keymgr_print(void) { return OK_STATUS(); }
 #endif
 
 #ifdef WITH_MANIFEST
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 status_t manifest_print(void) {
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
   const manifest_t *a = (const manifest_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
   const manifest_t *b =
       (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
