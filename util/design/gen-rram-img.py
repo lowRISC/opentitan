@@ -433,7 +433,7 @@ def main(argv: List[str]):
         # Write re-formatted output file. Use binary mode and a large buffer size
         # to improve performance.
         with open(args.out_rram_vmem, "wb", buffering=2097152) as of:
-            of.write("\n".join(reformatted_vmem_lines).encode('utf-8'))
+            of.write(("\n".join(reformatted_vmem_lines) + "\n").encode('utf-8'))
 
     # Separately, generate OTP's own image (data + integrity page) if requested.
     if args.out_otp_vmem:
@@ -441,7 +441,7 @@ def main(argv: List[str]):
             raise ValueError("--out-otp-vmem requires --in-otp-vmem.")
         otp_vmem_lines = _gen_otp_rram_vmem_lines(args.in_otp_vmem, args.otp_data_perm)
         with open(args.out_otp_vmem, "wb", buffering=2097152) as of:
-            of.write("\n".join(otp_vmem_lines).encode('utf-8'))
+            of.write(("\n".join(otp_vmem_lines) + "\n").encode('utf-8'))
 
 
 if __name__ == "__main__":
