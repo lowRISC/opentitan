@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/hkdf_schema.json",
+  "title": "Cryptotest HKDF Test Vector",
+  "description": "A list of testvectors for HKDF testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "test_case_id",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be hkdf",
+        "type": "string",
+        "enum": ["hkdf"]
+      },
+      "hash_alg": {
+        "description": "Hash algorithm",
+        "type": "string",
+        "enum": ["sha-256", "sha-384", "sha-512"]
+      },
+      "ikm": {
+        "description": "Input keying material",
+        "$ref": "#/$defs/byte_array"
+      },
+      "salt": {
+        "description": "Salt value",
+        "$ref": "#/$defs/byte_array"
+      },
+      "info": {
+        "description": "Context and application specific information",
+        "$ref": "#/$defs/byte_array"
+      },
+      "size": {
+        "description": "Length of output keying material in bytes",
+        "type": "integer"
+      },
+      "okm": {
+        "description": "Output keying material",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether HKDF should succeed and match `okm`",
+        "type": "boolean"
+      }
+    }
+  }
+}

@@ -557,6 +557,15 @@ cryptotest(
     test_vectors = SHA256_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "sha256_otbn_kat",
+    slow_test = True,
+    test_args = SHA256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA256_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
 SHA384_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha384_{}_json".format(
         msg_type.lower(),
@@ -580,6 +589,15 @@ cryptotest(
     test_vectors = SHA384_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "sha384_otbn_kat",
+    slow_test = True,
+    test_args = SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA384_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
 SHA512_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha512_{}_json".format(
         msg_type.lower(),
@@ -601,6 +619,15 @@ cryptotest(
     test_args = SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA512_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "sha512_otbn_kat",
+    slow_test = True,
+    test_args = SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA512_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
 )
 
 SHA3_224_TESTVECTOR_TARGETS = [
@@ -842,6 +869,84 @@ cryptotest(
     test_args = HMAC_SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
     test_vectors = HMAC_SHA512_TESTVECTOR_TARGETS,
+)
+
+HKDF_SHA256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hkdf_sha256.json",
+]
+
+HKDF_SHA256_TESTVECTOR_ARGS = " ".join([
+    "--hkdf-json=\"$(rootpath {})\"".format(target)
+    for target in HKDF_SHA256_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hkdf_sha256_kat",
+    slow_test = True,
+    test_args = HKDF_SHA256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA256_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "hkdf_sha256_otbn_kat",
+    slow_test = True,
+    test_args = HKDF_SHA256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA256_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
+HKDF_SHA384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hkdf_sha384.json",
+]
+
+HKDF_SHA384_TESTVECTOR_ARGS = " ".join([
+    "--hkdf-json=\"$(rootpath {})\"".format(target)
+    for target in HKDF_SHA384_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hkdf_sha384_kat",
+    slow_test = True,
+    test_args = HKDF_SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA384_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "hkdf_sha384_otbn_kat",
+    slow_test = True,
+    test_args = HKDF_SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA384_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
+HKDF_SHA512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hkdf_sha512.json",
+]
+
+HKDF_SHA512_TESTVECTOR_ARGS = " ".join([
+    "--hkdf-json=\"$(rootpath {})\"".format(target)
+    for target in HKDF_SHA512_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hkdf_sha512_kat",
+    slow_test = True,
+    test_args = HKDF_SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA512_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "hkdf_sha512_otbn_kat",
+    slow_test = True,
+    test_args = HKDF_SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_SHA512_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
 )
 
 KMAC_TESTVECTOR_TARGETS = [

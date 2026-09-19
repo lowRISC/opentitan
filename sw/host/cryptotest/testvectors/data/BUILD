@@ -463,6 +463,33 @@ run_binary(
 
 [
     run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "@wycheproof//testvectors_v1:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:hkdf_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hkdf_schema.json)",
+            "--hash",
+            hash_alg,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_hkdf_parser",
+    )
+    for src_name, hash_alg, cryptotest_name in [
+        ("hkdf_sha256_test.json", "sha-256", "wycheproof_hkdf_sha256"),
+        ("hkdf_sha384_test.json", "sha-384", "wycheproof_hkdf_sha384"),
+        ("hkdf_sha512_test.json", "sha-512", "wycheproof_hkdf_sha512"),
+    ]
+]
+
+[
+    run_binary(
         name = "nist_cavp_aes_{}_{}_json".format(
             function_name.lower(),
             keylen_with_tmode,

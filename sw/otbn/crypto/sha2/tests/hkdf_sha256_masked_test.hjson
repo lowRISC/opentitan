@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Expected values from RFC 5869 Section A.1 (Test Case 1):
+{
+  "entrypoint": "main",
+  "output": {
+    "regs": {
+      "w2": "0xe5b3c2d74a84ec22319c0fb53bc7b69063ba7bc40d3fdc0ddf322e2c36097707",
+      "w5": "0xbfc5c4ec562db05d4c5a1acf900a2d2d2a2f36d0644f43907ad5acfa255fb23c",
+      "w8": "0x6f0b9d03ff8fd206010fd68356b6b9893b995aa8b0b465581887b8d508720034"
+    }
+  }
+}
