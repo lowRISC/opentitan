@@ -285,7 +285,7 @@ rom_error_t sc_otbn_load_app(const sc_otbn_app_t app) {
       sc_otbn_imem_write(imem_num_words, app.imem_start, imem_start_addr));
 
   if (data_num_words > 0) {
-    HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
+    HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write_public(
         data_num_words, app.dmem_data_start, app.dmem_data_start_addr));
   }
   return kErrorOk;
