@@ -404,6 +404,31 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
   return OTCRYPTO_OK;
 }
 
+#ifdef FIPS_MODE
+/**
+ * Perform Pairwise Consistency Test (PCT) for ECDSA P-256 key generation.
+ * Signs a dummy message with the generated private key and verifies the
+ * signature with the generated public key.
+ */
+static otcrypto_status_t ecdsa_p256_pct_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key) {
+  uint8_t dummy_msg_data[32] = {0};
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, dummy_msg_data, sizeof(dummy_msg_data));
+
+  enum {
+    kEcdsaP256SigWords = sizeof(p256_ecdsa_signature_t) / sizeof(uint32_t),
+  };
+  uint32_t sig_data[kEcdsaP256SigWords];
+  otcrypto_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kEcdsaP256SigWords);
+
+  return otcrypto_ecdsa_p256_hash_sign_verify(
+      private_key, public_key, kOtcryptoHashModeSha256, &msg, &sig);
+}
+#endif
+
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdh_p256_keygen_async_start(private_key));
@@ -505,6 +530,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
 
   HARDENED_TRY_WIPE_DMEM(
       internal_p256_keygen_finalize(private_key, public_key));
+
+#ifdef FIPS_MODE
+  // Perform FIPS Pairwise Consistency Test (PCT).
+  HARDENED_TRY(ecdsa_p256_pct_verify(private_key, public_key));
+#endif
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
