@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
