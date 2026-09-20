@@ -69,7 +69,7 @@ static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
 
 #define kEcdhP256PrivateKeyConfig                     \
   ((otcrypto_key_config_t){                           \
-      .version = otcrypto_lib_version(),              \
+      .version = kOtcryptoLibVersion1,                \
       .key_mode = kOtcryptoKeyModeEcdhP256,           \
       .key_length = kP256PrivateKeyBytes,             \
       .hw_backed = kHardenedBoolFalse,                \
@@ -78,7 +78,7 @@ static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
 
 #define kEcdhP384PrivateKeyConfig                     \
   ((otcrypto_key_config_t){                           \
-      .version = otcrypto_lib_version(),              \
+      .version = kOtcryptoLibVersion1,                \
       .key_mode = kOtcryptoKeyModeEcdhP384,           \
       .key_length = kP384PrivateKeyBytes,             \
       .hw_backed = kHardenedBoolFalse,                \
