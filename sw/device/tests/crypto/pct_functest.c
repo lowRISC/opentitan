@@ -72,8 +72,26 @@ enum {
       .security_level = kOtcryptoKeySecurityLevelLow, \
   })
 
+#define kEcdhP256PrivateKeyConfig                     \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdhP256,           \
+      .key_length = kP256PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
+
+#define kEcdhP384PrivateKeyConfig                     \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdhP384,           \
+      .key_length = kP384PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
+
 static status_t p256_pct_keygen_test(void) {
-  LOG_INFO("Starting P-256 FIPS PCT Keygen test...");
+  LOG_INFO("Starting ECDSA P-256 FIPS PCT Keygen test...");
 
   // Allocate space for a masked private key.
   uint32_t keyblob[keyblob_num_words(kP256PrivateKeyConfig)];
@@ -92,15 +110,42 @@ static status_t p256_pct_keygen_test(void) {
       .key = pk,
   };
 
-  // Generate keypair with OTBN FIPS PCT active.
+  // Generate keypair with Ibex/OTBN FIPS PCT (sign & verify) active.
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
 
-  LOG_INFO("P-256 FIPS PCT Keygen test passed.");
+  LOG_INFO("ECDSA P-256 FIPS PCT Keygen test passed.");
+  return OK_STATUS();
+}
+
+static status_t ecdh_p256_pct_keygen_test(void) {
+  LOG_INFO("Starting ECDH P-256 FIPS PCT Keygen test...");
+
+  // Allocate space for a masked private key.
+  uint32_t keyblob[keyblob_num_words(kEcdhP256PrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key = {
+      .config = kEcdhP256PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Allocate space for a public key.
+  uint32_t pk[kP256PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Generate keypair with OTBN FIPS PCT active.
+  CHECK_STATUS_OK(otcrypto_ecdh_p256_keygen(&private_key, &public_key));
+
+  LOG_INFO("ECDH P-256 FIPS PCT Keygen test passed.");
   return OK_STATUS();
 }
 
 static status_t p384_pct_keygen_test(void) {
-  LOG_INFO("Starting P-384 FIPS PCT Keygen test...");
+  LOG_INFO("Starting ECDSA P-384 FIPS PCT Keygen test...");
 
   // Allocate space for a masked private key.
   uint32_t keyblob[keyblob_num_words(kP384PrivateKeyConfig)];
@@ -119,10 +164,37 @@ static status_t p384_pct_keygen_test(void) {
       .key = pk,
   };
 
-  // Generate keypair with OTBN FIPS PCT active.
+  // Generate keypair with Ibex/OTBN FIPS PCT (sign & verify) active.
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
-  LOG_INFO("P-384 FIPS PCT Keygen test passed.");
+  LOG_INFO("ECDSA P-384 FIPS PCT Keygen test passed.");
+  return OK_STATUS();
+}
+
+static status_t ecdh_p384_pct_keygen_test(void) {
+  LOG_INFO("Starting ECDH P-384 FIPS PCT Keygen test...");
+
+  // Allocate space for a masked private key.
+  uint32_t keyblob[keyblob_num_words(kEcdhP384PrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key = {
+      .config = kEcdhP384PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Allocate space for a public key.
+  uint32_t pk[kP384PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Generate keypair with OTBN FIPS PCT active.
+  CHECK_STATUS_OK(otcrypto_ecdh_p384_keygen(&private_key, &public_key));
+
+  LOG_INFO("ECDH P-384 FIPS PCT Keygen test passed.");
   return OK_STATUS();
 }
 
@@ -226,7 +298,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   EXECUTE_TEST(result, p256_pct_keygen_test);
+  EXECUTE_TEST(result, ecdh_p256_pct_keygen_test);
   EXECUTE_TEST(result, p384_pct_keygen_test);
+  EXECUTE_TEST(result, ecdh_p384_pct_keygen_test);
   EXECUTE_TEST(result, ed25519_pct_keygen_test);
   EXECUTE_TEST(result, x25519_pct_keygen_test);
   EXECUTE_TEST(result, rsa2048_pct_keygen_test);
