@@ -82,16 +82,11 @@ enum {
   kCoordPaddingWords =
       (kOtbnWideWordNumWords - (kP384CoordWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
-/*
- * The expected instruction counts for constant time functions.
- */
-#ifdef FIPS_MODE
-  kModeKeygenInsCnt = 3922457,
-  kModeKeygenSideloadInsCnt = 3922355,
-#else
+  /*
+   * The expected instruction counts for constant time functions.
+   */
   kModeKeygenInsCnt = 1961351,
   kModeKeygenSideloadInsCnt = 1961249,
-#endif
   kModeEcdhInsCnt = 1983982,
   kModeEcdhSideloadInsCnt = 1984133,
   kModeEcdsaSignConfigKInsCnt = 1600471,
