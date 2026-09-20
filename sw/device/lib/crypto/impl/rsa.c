@@ -16,7 +16,6 @@
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa_key_from_cofactor.h"
-#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -522,10 +521,8 @@ otcrypto_status_t otcrypto_rsa_hash_verify(
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  status_t res = otcrypto_rsa_verify(public_key, digest, padding_mode,
-                                     signature, verification_result);
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
-  return res;
+  return otcrypto_rsa_verify(public_key, digest, padding_mode, signature,
+                             verification_result);
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt(
@@ -559,24 +556,19 @@ static otcrypto_status_t rsa_pct_verify(
     otcrypto_rsa_size_t size, const otcrypto_unblinded_key_t *public_key,
     const otcrypto_blinded_key_t *private_key) {
   uint8_t dummy_msg_data[32] = {0};
-  otcrypto_const_byte_buf_t msg = {
-      .data = dummy_msg_data,
-      .len = sizeof(dummy_msg_data),
-  };
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, dummy_msg_data, sizeof(dummy_msg_data));
 
   uint32_t sig_data[128];
   size_t sig_words = 0;
-  switch (launder32(size)) {
+  switch (size) {
     case kOtcryptoRsaSize2048:
-      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       sig_words = 2048 / 32;
       break;
     case kOtcryptoRsaSize3072:
-      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       sig_words = 3072 / 32;
       break;
     case kOtcryptoRsaSize4096:
-      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       sig_words = 4096 / 32;
       break;
     default:
@@ -584,7 +576,7 @@ static otcrypto_status_t rsa_pct_verify(
   }
 
   otcrypto_rsa_padding_t padding_mode = kOtcryptoRsaPaddingPkcs;
-  if (launder32(private_key->config.key_mode) == kOtcryptoKeyModeRsaSignPss) {
+  if (private_key->config.key_mode == kOtcryptoKeyModeRsaSignPss) {
     padding_mode = kOtcryptoRsaPaddingPss;
   }
 
