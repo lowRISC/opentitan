@@ -604,7 +604,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         lc_state = lc_ctrl_dv_utils_pkg::encode_lc_state(next_lc_state);
         lc_cnt   = next_lc_cnt;
       end
-      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_cnt, lc_state});
+      // h_data ordering must mirror lc_otp_program_req_t in otp_ctrl_pkg.sv,
+      // which is packed as {req, state, count}. Without the req bit, the lower
+      // half of the user data is {lc_state, lc_cnt} — state is the MSB-side
+      // field, cnt the LSB-side field. Swapping the two corrupts the LC state
+      // delivered to the DUT (see #27451).
+      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_state, lc_cnt});
     end
 
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
