@@ -3,58 +3,60 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/bkdr_loader/data/bkdr_loader.hjson -->
 ## Summary
 
-| Name                                                                  | Offset   |   Length | Description                                                                         |
-|:----------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------------|
-| bkdr_loader.[`STATUS`](#status)                                       | 0x0      |        4 | Status register                                                                     |
-| bkdr_loader.[`CONTROL`](#control)                                     | 0x4      |        4 | Control register                                                                    |
-| bkdr_loader.[`NUM_BKDR_TARGETS`](#num_bkdr_targets)                   | 0x8      |        4 | Number of bkdr targets available.                                                   |
-| bkdr_loader.[`MISSION_MODE_SWITCH_DELAY`](#mission_mode_switch_delay) | 0xc      |        4 | Number of SoC clock cycles to wait before executing switch to mission mode          |
-| bkdr_loader.[`USR_ACCESS_TIMESTAMP`](#usr_access_timestamp)           | 0x10     |        4 | TIMESTAMP value written to the USR_ACCESS register during bitstream generation.     |
-| bkdr_loader.[`TARGET_INFO_0`](#target_info)                           | 0x100    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_1`](#target_info)                           | 0x104    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_2`](#target_info)                           | 0x108    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_3`](#target_info)                           | 0x10c    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_4`](#target_info)                           | 0x110    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_5`](#target_info)                           | 0x114    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`TARGET_INFO_6`](#target_info)                           | 0x118    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.   |
-| bkdr_loader.[`WIDTH_INFO_0`](#width_info)                             | 0x200    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_1`](#width_info)                             | 0x204    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_2`](#width_info)                             | 0x208    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_3`](#width_info)                             | 0x20c    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_4`](#width_info)                             | 0x210    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_5`](#width_info)                             | 0x214    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`WIDTH_INFO_6`](#width_info)                             | 0x218    |        4 | The SRAM word width of a given bkdr target memory.                                  |
-| bkdr_loader.[`DEPTH_INFO_0`](#depth_info)                             | 0x300    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_1`](#depth_info)                             | 0x304    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_2`](#depth_info)                             | 0x308    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_3`](#depth_info)                             | 0x30c    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_4`](#depth_info)                             | 0x310    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_5`](#depth_info)                             | 0x314    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`DEPTH_INFO_6`](#depth_info)                             | 0x318    |        4 | The number of SRAM words of a given bkdr target memory.                             |
-| bkdr_loader.[`READ_DATA_0`](#read_data)                               | 0x400    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_1`](#read_data)                               | 0x404    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_2`](#read_data)                               | 0x408    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_3`](#read_data)                               | 0x40c    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_4`](#read_data)                               | 0x410    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_5`](#read_data)                               | 0x414    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_6`](#read_data)                               | 0x418    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`READ_DATA_7`](#read_data)                               | 0x41c    |        4 | Value to be read from the target memory at the current `INDEX`. If                  |
-| bkdr_loader.[`WRITE_DATA_0`](#write_data)                             | 0x500    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_1`](#write_data)                             | 0x504    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_2`](#write_data)                             | 0x508    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_3`](#write_data)                             | 0x50c    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_4`](#write_data)                             | 0x510    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_5`](#write_data)                             | 0x514    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_6`](#write_data)                             | 0x518    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`WRITE_DATA_7`](#write_data)                             | 0x51c    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
-| bkdr_loader.[`INDEX`](#index)                                         | 0x600    |        4 | Index address of the SRAM word to be accessed. When `CONTROL.WRITE_ENA` is asserted |
-| bkdr_loader.[`HASH_LAST_LOADED_0`](#hash_last_loaded)                 | 0x700    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_1`](#hash_last_loaded)                 | 0x704    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_2`](#hash_last_loaded)                 | 0x708    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_3`](#hash_last_loaded)                 | 0x70c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_4`](#hash_last_loaded)                 | 0x710    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_5`](#hash_last_loaded)                 | 0x714    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
-| bkdr_loader.[`HASH_LAST_LOADED_6`](#hash_last_loaded)                 | 0x718    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| Name                                                                  | Offset   |   Length | Description                                                                             |
+|:----------------------------------------------------------------------|:---------|---------:|:----------------------------------------------------------------------------------------|
+| bkdr_loader.[`STATUS`](#status)                                       | 0x0      |        4 | Status register                                                                         |
+| bkdr_loader.[`CONTROL`](#control)                                     | 0x4      |        4 | Control register                                                                        |
+| bkdr_loader.[`NUM_BKDR_TARGETS`](#num_bkdr_targets)                   | 0x8      |        4 | Number of bkdr targets available.                                                       |
+| bkdr_loader.[`MISSION_MODE_SWITCH_DELAY`](#mission_mode_switch_delay) | 0xc      |        4 | Number of SoC clock cycles to wait before executing switch to mission mode              |
+| bkdr_loader.[`CLEAR_INDEX_START`](#clear_index_start)                 | 0x10     |        4 | Word index at which the segment cleared by `CLEAR_SEGMENT_START` begins. Inclusive.     |
+| bkdr_loader.[`CLEAR_INDEX_END`](#clear_index_end)                     | 0x14     |        4 | Word index at which the segment cleared by `CLEAR_SEGMENT_START` ends. Exclusive. Reset |
+| bkdr_loader.[`USR_ACCESS_TIMESTAMP`](#usr_access_timestamp)           | 0x18     |        4 | TIMESTAMP value written to the USR_ACCESS register during bitstream generation.         |
+| bkdr_loader.[`TARGET_INFO_0`](#target_info)                           | 0x100    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_1`](#target_info)                           | 0x104    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_2`](#target_info)                           | 0x108    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_3`](#target_info)                           | 0x10c    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_4`](#target_info)                           | 0x110    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_5`](#target_info)                           | 0x114    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`TARGET_INFO_6`](#target_info)                           | 0x118    |        4 | ASCII 4-character string values (big endian) identifying each bkdr target memory.       |
+| bkdr_loader.[`WIDTH_INFO_0`](#width_info)                             | 0x200    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_1`](#width_info)                             | 0x204    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_2`](#width_info)                             | 0x208    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_3`](#width_info)                             | 0x20c    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_4`](#width_info)                             | 0x210    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_5`](#width_info)                             | 0x214    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`WIDTH_INFO_6`](#width_info)                             | 0x218    |        4 | The SRAM word width of a given bkdr target memory.                                      |
+| bkdr_loader.[`DEPTH_INFO_0`](#depth_info)                             | 0x300    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_1`](#depth_info)                             | 0x304    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_2`](#depth_info)                             | 0x308    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_3`](#depth_info)                             | 0x30c    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_4`](#depth_info)                             | 0x310    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_5`](#depth_info)                             | 0x314    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`DEPTH_INFO_6`](#depth_info)                             | 0x318    |        4 | The number of SRAM words of a given bkdr target memory.                                 |
+| bkdr_loader.[`READ_DATA_0`](#read_data)                               | 0x400    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_1`](#read_data)                               | 0x404    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_2`](#read_data)                               | 0x408    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_3`](#read_data)                               | 0x40c    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_4`](#read_data)                               | 0x410    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_5`](#read_data)                               | 0x414    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_6`](#read_data)                               | 0x418    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`READ_DATA_7`](#read_data)                               | 0x41c    |        4 | Value to be read from the target memory at the current `INDEX`. If                      |
+| bkdr_loader.[`WRITE_DATA_0`](#write_data)                             | 0x500    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_1`](#write_data)                             | 0x504    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_2`](#write_data)                             | 0x508    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_3`](#write_data)                             | 0x50c    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_4`](#write_data)                             | 0x510    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_5`](#write_data)                             | 0x514    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_6`](#write_data)                             | 0x518    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`WRITE_DATA_7`](#write_data)                             | 0x51c    |        4 | Value to be written to the target memory at the current `INDEX`. If                     |
+| bkdr_loader.[`INDEX`](#index)                                         | 0x600    |        4 | Index address of the SRAM word to be accessed. When `CONTROL.WRITE_ENA` is asserted     |
+| bkdr_loader.[`HASH_LAST_LOADED_0`](#hash_last_loaded)                 | 0x700    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_1`](#hash_last_loaded)                 | 0x704    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_2`](#hash_last_loaded)                 | 0x708    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_3`](#hash_last_loaded)                 | 0x70c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_4`](#hash_last_loaded)                 | 0x710    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_5`](#hash_last_loaded)                 | 0x714    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
+| bkdr_loader.[`HASH_LAST_LOADED_6`](#hash_last_loaded)                 | 0x718    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.      |
 
 ## STATUS
 Status register
@@ -78,23 +80,24 @@ Status register
 Control register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xff0f`
+- Reset mask: `0xff1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DONE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "AUTO_INCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TARGET_IDX", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "DONE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_SEGMENT_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "AUTO_INCR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "TARGET_IDX", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                 |
-|:------:|:------:|:-------:|:-------------------------------------|
-| 31:16  |        |         | Reserved                             |
-|  15:8  |   rw   |   0x0   | [TARGET_IDX](#control--target_idx)   |
-|  7:4   |        |         | Reserved                             |
-|   3    |   rw   |   0x0   | [AUTO_INCR](#control--auto_incr)     |
-|   2    |   rw   |   0x0   | [CLEAR_START](#control--clear_start) |
-|   1    |   rw   |   0x0   | [WRITE_ENA](#control--write_ena)     |
-|   0    |   rw   |   0x0   | [DONE](#control--done)               |
+|  Bits  |  Type  |  Reset  | Name                                                 |
+|:------:|:------:|:-------:|:-----------------------------------------------------|
+| 31:16  |        |         | Reserved                                             |
+|  15:8  |   rw   |   0x0   | [TARGET_IDX](#control--target_idx)                   |
+|  7:5   |        |         | Reserved                                             |
+|   4    |   rw   |   0x0   | [AUTO_INCR](#control--auto_incr)                     |
+|   3    |   rw   |   0x0   | [CLEAR_SEGMENT_START](#control--clear_segment_start) |
+|   2    |   rw   |   0x0   | [CLEAR_START](#control--clear_start)                 |
+|   1    |   rw   |   0x0   | [WRITE_ENA](#control--write_ena)                     |
+|   0    |   rw   |   0x0   | [DONE](#control--done)                               |
 
 ### CONTROL . TARGET_IDX
 The bkdr memory index to access.
@@ -113,12 +116,25 @@ increment. Writing to `WRITE_DATA[0]` and `WRITE_DATA[1]` can be repeated until
 the memory block has been written. Deasserting `AUTO_INCR` returns to the manual
 mode.
 
+### CONTROL . CLEAR_SEGMENT_START
+Write 1 to trigger the bkdr_loader to clear a memory segment defined by
+[`CLEAR_INDEX_START`, `CLEAR_INDEX_END`) in the target, which is currently
+selected by `TARGET_IDX`. Register self-clears and always reads
+back 0. The word that is cleared with is selected by `WRITE_DATA`.
+Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
+bkdr writes will not have any effects during an active clear operation.
+A write setting both this field and `CLEAR_START` clears the entire target;
+`CLEAR_START` takes precedence.
+`TARGET_IDX` and `CLEAR_INDEX_START`/`CLEAR_INDEX_END` must be left stable until
+`STATUS.CLEAR_IDLE` becomes 1 again, see `CLEAR_START`.
+
 ### CONTROL . CLEAR_START
 Write 1 to trigger the bkdr_loader to clear the entire target memory
 that is currently selected by `TARGET_IDX`. Register self-clears and always reads
 back 0. The word that is cleared with is selected by `WRITE_DATA`.
 Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
 bkdr writes will not have any effects during an active clear operation.
+`TARGET_IDX` must not be changed until `STATUS.CLEAR_IDLE` becomes 1 again.
 
 ### CONTROL . WRITE_ENA
 While `AUTO_INCR` is deasserted, setting this launches a bkdr write when
@@ -166,9 +182,48 @@ after writing CONTROL.DONE register.
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:0  |   rw   | 0x61a8  | VAL    |               |
 
+## CLEAR_INDEX_START
+Word index at which the segment cleared by `CLEAR_SEGMENT_START` begins. Inclusive.
+
+A segment clear covers the index range [`CLEAR_INDEX_START`, `CLEAR_INDEX_END`), which
+is expected to satisfy `CLEAR_INDEX_START` < `CLEAR_INDEX_END` <= `DEPTH_INFO_<n>` of
+the target selected by `CONTROL.TARGET_IDX`. A range violating this is made harmless in
+hardware: `CLEAR_INDEX_END` is clamped to the depth of the target. An empty or inverted
+range clears nothing at all.
+- Offset: `0x10`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | VAL    |               |
+
+## CLEAR_INDEX_END
+Word index at which the segment cleared by `CLEAR_SEGMENT_START` ends. Exclusive. Reset
+value is set to 0x1 to describe the default range of [0, 1).
+- Offset: `0x14`
+- Reset default: `0x1`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x1   | VAL    |               |
+
 ## USR_ACCESS_TIMESTAMP
 TIMESTAMP value written to the USR_ACCESS register during bitstream generation.
-- Offset: `0x10`
+- Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

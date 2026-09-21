@@ -125,9 +125,27 @@
                   back 0. The word that is cleared with is selected by `WRITE_DATA`.
                   Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
                   bkdr writes will not have any effects during an active clear operation.
+                  `TARGET_IDX` must not be changed until `STATUS.CLEAR_IDLE` becomes 1 again.
                   ''',
           },
           { bits: "3"
+            name: "CLEAR_SEGMENT_START"
+            swaccess: "rw",
+            hwaccess: "hrw"
+            desc: '''
+                  Write 1 to trigger the bkdr_loader to clear a memory segment defined by
+                  [`CLEAR_INDEX_START`, `CLEAR_INDEX_END`) in the target, which is currently
+                  selected by `TARGET_IDX`. Register self-clears and always reads
+                  back 0. The word that is cleared with is selected by `WRITE_DATA`.
+                  Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
+                  bkdr writes will not have any effects during an active clear operation.
+                  A write setting both this field and `CLEAR_START` clears the entire target;
+                  `CLEAR_START` takes precedence.
+                  `TARGET_IDX` and `CLEAR_INDEX_START`/`CLEAR_INDEX_END` must be left stable until
+                  `STATUS.CLEAR_IDLE` becomes 1 again, see `CLEAR_START`.
+                  ''',
+          },
+          { bits: "4"
             name: "AUTO_INCR"
             swaccess: "rw",
             hwaccess: "hro"
@@ -182,6 +200,47 @@
           { bits: "31:0"
             name: "VAL"
             resval: "25000"
+            swaccess: "rw",
+            hwaccess: "hro",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "CLEAR_INDEX_START",
+        desc: '''
+          Word index at which the segment cleared by `CLEAR_SEGMENT_START` begins. Inclusive.
+
+          A segment clear covers the index range [`CLEAR_INDEX_START`, `CLEAR_INDEX_END`), which
+          is expected to satisfy `CLEAR_INDEX_START` < `CLEAR_INDEX_END` <= `DEPTH_INFO_<n>` of
+          the target selected by `CONTROL.TARGET_IDX`. A range violating this is made harmless in
+          hardware: `CLEAR_INDEX_END` is clamped to the depth of the target. An empty or inverted
+          range clears nothing at all.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            resval: "0"
+            swaccess: "rw",
+            hwaccess: "hro",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "CLEAR_INDEX_END",
+        desc: '''
+          Word index at which the segment cleared by `CLEAR_SEGMENT_START` ends. Exclusive. Reset
+          value is set to 0x1 to describe the default range of [0, 1).
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            resval: "1"
             swaccess: "rw",
             hwaccess: "hro",
             desc: '''
