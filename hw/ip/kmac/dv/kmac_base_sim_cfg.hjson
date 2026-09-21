@@ -33,8 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["kmac_bind",
@@ -63,18 +62,23 @@
   build_modes: [
     {
       name: enable_mask_mode
-      build_opts: ["+define+EN_MASKING=1", "+define+SW_KEY_MASKED=0"]
-      run_opts: ["+enable_masking=1", "+sw_key_masked=0"]
+      build_opts: ["+define+EN_MASKING=1", "+define+EN_FULL_KMAC=1", "+define+SW_KEY_MASKED=0"]
+      run_opts: ["+enable_masking=1", "+enable_full_kmac=1", "+sw_key_masked=0"]
     }
     {
       name: disable_mask_mode
-      build_opts: ["+define+EN_MASKING=0", "+define+SW_KEY_MASKED=0"]
-      run_opts: ["+enable_masking=0", "+sw_key_masked=0"]
+      build_opts: ["+define+EN_MASKING=0", "+define+EN_FULL_KMAC=1", "+define+SW_KEY_MASKED=0"]
+      run_opts: ["+enable_masking=0", "+enable_full_kmac=1", "+sw_key_masked=0"]
     }
     {
       name: disable_mask_mode_with_masked_sw_keys
-      build_opts: ["+define+EN_MASKING=0", "+define+SW_KEY_MASKED=1"]
-      run_opts: ["+enable_masking=0", "+sw_key_masked=1"]
+      build_opts: ["+define+EN_MASKING=0", "+define+EN_FULL_KMAC=1", "+define+SW_KEY_MASKED=1"]
+      run_opts: ["+enable_masking=0", "+enable_full_kmac=1", "+sw_key_masked=1"]
+    }
+    {
+      name: stripped_down_kmac
+      build_opts: ["+define+EN_MASKING=0", "+define+EN_FULL_KMAC=0", "+define+SW_KEY_MASKED=0"]
+      run_opts: ["+enable_masking=0", "+enable_full_kmac=0", "+sw_key_masked=0"]
     }
   ]
 
@@ -85,7 +89,8 @@
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
-  // List of test specifications.
+  // List of test specifications common to the full and the stripped KMAC. Tests that require the
+  // keyed MAC (sideload, KMAC test vectors, entropy, ...) are in kmac_full_sim_cfg.hjson.
   tests: [
     {
       name: "{name}_smoke"
@@ -96,17 +101,6 @@
       uvm_test_seq: kmac_long_msg_and_output_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
       run_timeout_mins: 120
-    }
-    {
-      name: "{name}_sideload"
-      uvm_test_seq: kmac_sideload_vseq
-      run_opts: ["+test_timeout_ns=1_000_000_000"]
-    }
-    {
-      name: "{name}_sideload_invalid"
-      uvm_test_seq: kmac_sideload_invalid_vseq
-      run_opts: ["+test_timeout_ns=1_000_000_000"]
-      reseed: 50
     }
     {
       name: "{name}_burst_write"
@@ -166,18 +160,6 @@
       reseed: 5
     }
     {
-      name: "{name}_test_vectors_kmac"
-      uvm_test_seq: kmac_test_vectors_kmac_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
-      reseed: 5
-    }
-    {
-      name: "{name}_test_vectors_kmac_xof"
-      uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
-      reseed: 5
-    }
-    {
       name: "{name}_app"
       uvm_test_seq: kmac_app_vseq
       run_opts: ["+test_timeout_ns=500_000_000"]
@@ -190,11 +172,6 @@
       reseed: 10
     }
     {
-      name: "{name}_entropy_refresh"
-      uvm_test_seq: kmac_entropy_refresh_vseq
-      run_opts: ["+test_timeout_ns=500_000_000"]
-    }
-    {
       name: "{name}_mubi"
       uvm_test_seq: kmac_mubi_vseq
       reseed: 10
@@ -204,40 +181,9 @@
       uvm_test_seq: kmac_error_vseq
     }
     {
-      name: "{name}_key_error"
-      uvm_test_seq: kmac_key_error_vseq
-    }
-    {
-      name: "{name}_edn_timeout_error"
-      uvm_test_seq: kmac_edn_timeout_error_vseq
-      run_opts: ["+en_scb=0"]
-      reseed: 20
-    }
-    {
-      name: "{name}_entropy_mode_error"
-      uvm_test_seq: kmac_entropy_mode_error_vseq
-      run_opts: ["+en_scb=0"]
-      reseed: 20
-    }
-    {
-      name: "{name}_entropy_ready_error"
-      uvm_test_seq: kmac_entropy_ready_error_vseq
-      reseed: 10
-    }
-    {
       name: "{name}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
       reseed: 50
-    }
-    {
-      name: kmac_stress_all
-      run_opts: ["+test_timeout_ns=10_000_000_000",
-                 "+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
-    }
-    {
-      name: kmac_stress_all_with_rand_reset
-      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
-      reseed: 10
     }
   ]
 

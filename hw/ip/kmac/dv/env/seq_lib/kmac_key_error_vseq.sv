@@ -12,6 +12,11 @@ class kmac_key_error_vseq extends kmac_app_vseq;
     num_trans inside {[1:20]};
   }
 
+  virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
+    super.pre_start();
+  endtask
+
   virtual task body();
     kmac_pkg::err_t kmac_err;
     cfg.en_scb = 0;

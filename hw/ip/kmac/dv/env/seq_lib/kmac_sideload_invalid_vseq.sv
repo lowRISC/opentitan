@@ -155,6 +155,7 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
   endtask
 
   virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
     do_kmac_init = 0;
     super.pre_start();
   endtask

@@ -16,4 +16,9 @@ class kmac_entropy_refresh_vseq extends kmac_app_with_partial_data_vseq;
     entropy_req  dist {0 :/ 19, 1 :/ 1};
   }
 
+  virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
+    super.pre_start();
+  endtask
+
 endclass
