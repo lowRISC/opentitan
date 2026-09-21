@@ -71,6 +71,41 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 }
 ```
 
+## Using a sideloaded key
+
+Instead of programming the secret key into [`KEY_0-KEY_31`](registers.md#key), software can let HMAC take the key directly from the key manager by setting [`CFG.sideload`](registers.md#cfg--sideload).
+The key is then never exposed to software.
+This only applies to keyed HMAC operation; it is ignored when only SHA-2 is computed.
+
+When the sideloaded key is used, the [`KEY_0-KEY_31`](registers.md#key) registers and [`CFG.key_swap`](registers.md#cfg--key_swap) are ignored, and the key length is given by the sideload interface rather than by [`CFG.key_length`](registers.md#cfg--key_length).
+Software can determine the length in use by reading [`CFG.key_length`](registers.md#cfg--key_length) back after configuring HMAC.
+
+```c
+void hmac_init_sideload(void) {
+  HMAC_CFG(0) = HMAC_CFG_SHA_EN
+              | HMAC_CFG_HMAC_EN
+              | HMAC_CFG_SIDELOAD
+              | (HMAC_CFG_DIGEST_SIZE_FIELD << HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+
+  // No need to write KEY_0..KEY_31, they are ignored.
+  // CFG.key_length reads back the length provided by the key manager.
+}
+```
+
+The operation is then triggered as usual, by writing the message to [`MSG_FIFO`](registers.md#msg_fifo) and setting `CMD.hash_start` and `CMD.hash_process`.
+
+Two restrictions apply, both because the intermediate hash state would allow software to compute HMAC under the sideloaded key on its own:
+
+- Reads from [`DIGEST_0-DIGEST_15`](registers.md#digest) return zero while the operation is in progress.
+  Only the final digest can be read back.
+- Saving and restoring the context is not available: `CMD.hash_stop` and `CMD.hash_continue` are rejected and reported as `SwInvalidConfig`.
+  A message hashed with a sideloaded key has to be run to completion in one go.
+
+The key manager has to provide a valid key for the entire operation.
+Starting while the key is invalid is blocked and reported as `SwInvalidConfig`.
+If the key manager revokes the key while an operation is running, that operation is aborted, the digest is cleared, and the same error is reported.
+An aborted operation does not raise the `hmac_done` interrupt, so software waiting for a result should also react to `INTR_STATE.hmac_err`.
+
 ## Updating the configurations
 
 The HMAC IP prevents [`CFG`](registers.md#cfg) and [`KEY`](registers.md#key) registers from getting updating while the engine is processing messages.
@@ -82,6 +117,8 @@ The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 ## Saving and restoring the context
 
 Software can let the HMAC IP process multiple message streams in a time-interleaved fashion by saving and restoring the context (i.e., parts of the hardware-internal state).
+
+This feature is not available when the key is sideloaded from the key manager, see [Using a sideloaded key](#using-a-sideloaded-key).
 
 Such context switches are possible only at the boundary of complete message blocks (512-bit for SHA-2 256 or 1024-bit for SHA-2 384/512).
 When SW doesn't know each instant at which a full message block is available, it can buffer data in memory until a block is full and only write HMAC's FIFOs once the buffer in memory contains a full message block.
@@ -125,7 +162,7 @@ Error                        | Value | Description
 `SwPushMsgWhenDisallowed`    | `0x5` | After CMD.process is received, the MSG_FIFO should not by updated by SW. This error is reported in that case.
 `SwInvalidConfig`            | `0x6` | SW has configured HMAC incorrectly.
 `SwPushMsgWhenDisallowed`    | `0x5` | The error is reported when MSG_FIFO is being updated by SW with more message words when it is disallowed: either when the SHA-2 engine is disabled or the engine has not been triggered to start yet or it has been already triggered to finalize computation.
-`SwInvalidConfig`            | `0x6` | The error is reported when HMAC has been configured incorrectly by SW, i.e. invalid digest size for SHA-2/HMAC modes or invalid key length for HMAC mode.
+`SwInvalidConfig`            | `0x6` | The error is reported when HMAC has been configured incorrectly by SW, i.e. invalid digest size for SHA-2/HMAC modes or invalid key length for HMAC mode. It is also reported for the sideloaded key: when an operation is started while the key manager does not provide a valid key, when the key becomes invalid while an operation is in progress, and when a context switch is attempted with a sideloaded key.
 
 ## FIFO Depth and Empty status
 

@@ -33,15 +33,21 @@ module hmac
   output prim_mubi_pkg::mubi4_t idle_o
 );
 
-  // TODO(#31026): Consume the key from the keymgr_dpe
-  localparam int NumInBufBits = $bits(keymgr_pkg::hw_key_req_t);
-  keymgr_pkg::hw_key_req_t unused_key;
-  prim_buf #(
-    .Width  (NumInBufBits)
-  ) u_anchor_buf (
-    .in_i   (keymgr_key_i),
-    .out_o  (unused_key)
-  );
+  /////////////////
+  // Definitions //
+  /////////////////
+
+  localparam int KeyMgrKeyW = $bits(keymgr_key_i.key[0]);
+
+  localparam key_length_e KeyLengths [5] = '{Key_128, Key_256, Key_384, Key_512, Key_1024};
+
+  localparam int SelKeySize = (KeyMgrKeyW == 128)  ? 0 :
+                              (KeyMgrKeyW == 256)  ? 1 :
+                              (KeyMgrKeyW == 384)  ? 2 :
+                              (KeyMgrKeyW == 512)  ? 3 :
+                              (KeyMgrKeyW == 1024) ? 4 : 0 ;
+  // The key length is always given by the width of the sideload interface.
+  localparam key_length_e SideloadedKey = KeyLengths[SelKeySize];
 
   /////////////////////////
   // Signal declarations //
@@ -53,6 +59,17 @@ module hmac
   tlul_pkg::tl_d2h_t  tl_win_d2h;
 
   logic [1023:0] secret_key, secret_key_d;
+
+  // Key used in the HMAC core. Either use the sideload or the SW key.
+  logic [1023:0] core_secret_key;
+
+  // Unmasked sideload key received from the keymanager.
+  logic [KeyMgrKeyW-1:0] keymgr_key;
+
+  // Sideload interface handling
+  logic        sideload_en;
+  logic        sideload_key_invalid;
+  logic        abort;
 
   // Logic will support key length <= block size
   // Will default to key length = block size, if key length > block size or unsupported value
@@ -96,6 +113,7 @@ module hmac
   logic         shaf_rready;
 
   logic        sha_en;
+  logic        sha_en_engine;
   logic        hmac_en;
   logic        endian_swap;
   logic        digest_swap;
@@ -108,6 +126,7 @@ module hmac
   logic        sha_hash_continue;
   logic        hash_start;     // hash_start is reg_hash_start gated with extra checks
   logic        hash_continue;  // hash_continue is reg_hash_continue gated with extra checks
+  logic        hash_stop;      // hash_stop is reg_hash_stop gated with extra checks
   logic        hash_process;   // hash_process is reg_hash_process gated with extra checks
   logic        hash_start_or_continue;
   logic        hash_done_event;
@@ -125,6 +144,7 @@ module hmac
   logic       err_valid;
   logic       invalid_config; // HMAC/SHA-2 is configured with invalid digest size/key length
   logic       invalid_config_atstart;
+  logic       invalid_sideload_ctx; // context switching attempted with a sideloaded key
 
   sha_word64_t [7:0] digest, digest_sw;
   logic [7:0]        digest_sw_we;
@@ -168,7 +188,7 @@ module hmac
         if (sha_hash_process) begin
           // SHA has been told to process the message, so signal *done* when the hash is done.
           done_state_d = DoneAwaitHashDone;
-        end else if (reg_hash_stop) begin
+        end else if (hash_stop) begin
           // SHA has been told to stop, so first wait for the current message block to be complete.
           done_state_d = DoneAwaitMessageComplete;
         end
@@ -236,6 +256,36 @@ module hmac
     assign hw2reg.key[31-i].d      = '0;
   end
 
+  //////////////////
+  // Key handling //
+  //////////////////
+
+  // Secret Key Mux
+  // Unmask the key shares as HMAC does not have masking implemented.
+  // SEC_CM: KEY.SIDELOAD
+  always_comb begin
+    keymgr_key = '0;
+    for (int i = 0; i < keymgr_pkg::Shares; i++) begin
+      keymgr_key ^= keymgr_key_i.key[i];
+    end
+  end
+
+  // Only use the sideload key for keyed HMAC operations.
+  assign sideload_en = cfg_reg.sideload.q & hmac_en;
+
+  // Check if the keymgr key is valid. Always high when sideload is requested but the keymgr key
+  // is invalid.
+  assign sideload_key_invalid = sideload_en & ~keymgr_key_i.valid;
+
+  // Abort an operation that is in progress. Only high when an operation is in-flight. Used to
+  // clear the message FIFO, reset the HMAC FSM, and flush the packer.
+  assign abort = cfg_block & sideload_key_invalid;
+
+  // Mux the key instead of explicitly storing it in the HMAC module - this models the behavior in
+  // KMAC.
+  assign core_secret_key = (sideload_en & ~sideload_key_invalid)
+                           ? {keymgr_key, {(1024-KeyMgrKeyW){1'b0}}} : secret_key;
+
   // Retain the previous digest in CSRs until HMAC is actually started with a valid configuration
   always_comb begin : assign_digest_reg
     // default
@@ -283,16 +333,25 @@ module hmac
         hw2reg.digest[i+8].d = conv_endian32(digest[i][31:0], digest_swap);
       end
     end
+
+    // Set the intermediate digest to 0 when a sideloaded key is used to prevent attacks on the
+    // hash state.
+    if (sideload_en && cfg_block) begin
+      hw2reg.digest = '0;
+    end
   end
 
   logic unused_cfg_qe;
   assign unused_cfg_qe = ^{cfg_reg.sha_en.qe,      cfg_reg.hmac_en.qe,
                            cfg_reg.endian_swap.qe, cfg_reg.digest_swap.qe,
                            cfg_reg.key_swap.qe,    cfg_reg.digest_size.qe,
-                           cfg_reg.key_length.qe };
+                           cfg_reg.key_length.qe,  cfg_reg.sideload.qe };
 
   assign sha_en               = cfg_reg.sha_en.q;
   assign hmac_en              = cfg_reg.hmac_en.q;
+
+  // Abort the operation when the keymgr key gets invalid.
+  assign sha_en_engine        = sha_en & ~sideload_key_invalid;
 
   assign digest_size_supplied = digest_mode_e'(cfg_reg.digest_size.q);
   always_comb begin : cast_digest_size
@@ -317,7 +376,7 @@ module hmac
     else         digest_size_started_q <= digest_size_started_d;
   end
 
-  assign key_length_supplied  = key_length_e'(cfg_reg.key_length.q);
+  assign key_length_supplied  = sideload_en ? SideloadedKey : key_length_e'(cfg_reg.key_length.q);
   always_comb begin : cast_key_length
     key_length = Key_None;
 
@@ -345,6 +404,7 @@ module hmac
   assign hw2reg.cfg.endian_swap.d = cfg_reg.endian_swap.q;
   assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
   assign hw2reg.cfg.key_swap.d    = cfg_reg.key_swap.q;
+  assign hw2reg.cfg.sideload.d    = cfg_reg.sideload.q;
 
   assign reg_hash_start    = reg2hw.cmd.hash_start.qe & reg2hw.cmd.hash_start.q;
   assign reg_hash_stop     = reg2hw.cmd.hash_stop.qe & reg2hw.cmd.hash_stop.q;
@@ -358,8 +418,16 @@ module hmac
   /////////////////////
   // Control signals //
   /////////////////////
+
+  // Saving and restoring the context is not allowed while the key is sideloaded as leaking
+  // the SHA2 state over (key ^ ipad) is equivalent to the key, i.e., it allows computing
+  // the inner hash.
+  assign invalid_sideload_ctx   = sideload_en & (reg_hash_stop | reg_hash_continue);
+
   assign hash_start             = reg_hash_start    & sha_en & ~cfg_block & ~invalid_config;
-  assign hash_continue          = reg_hash_continue & sha_en & ~cfg_block & ~invalid_config;
+  assign hash_continue          = reg_hash_continue & sha_en & ~cfg_block & ~invalid_config
+                                & ~sideload_en;
+  assign hash_stop              = reg_hash_stop     & ~sideload_en;
   assign hash_process           = reg_hash_process  & sha_en & cfg_block &  ~invalid_config;
   assign hash_start_or_continue = hash_start | hash_continue;
 
@@ -368,7 +436,7 @@ module hmac
       cfg_block <= '0;
     end else if (hash_start_or_continue) begin
       cfg_block <= 1'b 1;
-    end else if (reg_hash_done || reg_hash_stop) begin
+    end else if (reg_hash_done || hash_stop || sideload_key_invalid) begin
       cfg_block <= 1'b 0;
     end
   end
@@ -404,6 +472,10 @@ module hmac
           q: HMAC_CFG_KEY_LENGTH_RESVAL,
           qe: 1'b0
         },
+        sideload: '{
+          q: HMAC_CFG_SIDELOAD_RESVAL,
+          qe: 1'b0
+        },
         default:'0
       };
     end else if (!cfg_block && reg2hw.cfg.hmac_en.qe) begin
@@ -417,7 +489,7 @@ module hmac
       msg_allowed <= '0;
     end else if (hash_start_or_continue) begin
       msg_allowed <= 1'b 1;
-    end else if (packer_flush_done) begin
+    end else if (packer_flush_done || sideload_key_invalid) begin
       msg_allowed <= 1'b 0;
     end
   end
@@ -571,13 +643,13 @@ module hmac
     .Width       ($bits(sha_fifo32_t)),
     .Pass        (1'b1),
     .Depth       (MsgFifoDepth),
-    .NeverClears (1'b1)
+    .NeverClears (1'b0)
   ) u_msg_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (1'b0),
+    .clr_i   (abort),
 
-    .wvalid_i(fifo_wvalid & sha_en),
+    .wvalid_i(fifo_wvalid & sha_en_engine),
     .wready_o(fifo_wready),
     .wdata_i (fifo_wdata),
 
@@ -656,7 +728,7 @@ module hmac
 
     if (hash_start) begin
       message_length_d = '0;
-    end else if (msg_write && sha_en && packer_ready) begin
+    end else if (msg_write && sha_en_engine && packer_ready) begin
       message_length_d = message_length + 64'(wmask_ones);
     end
   end
@@ -680,7 +752,7 @@ module hmac
     .clk_i,
     .rst_ni,
 
-    .valid_i      (msg_write & sha_en),
+    .valid_i      (msg_write & sha_en_engine),
     .data_i       (msg_fifo_wdata_endian),
     .mask_i       (msg_fifo_wmask_endian),
     .ready_o      (packer_ready),
@@ -690,7 +762,7 @@ module hmac
     .mask_o       (reg_fifo_wmask),
     .ready_i      (fifo_wready & ~hmac_fifo_wsel),
 
-    .flush_i      (hash_process),
+    .flush_i      (hash_process | abort),
     .flush_done_o (packer_flush_done), // ignore at this moment
 
     .err_o  () // Not used
@@ -699,15 +771,16 @@ module hmac
   hmac_core u_hmac (
     .clk_i,
     .rst_ni,
-    .secret_key_i  (secret_key),
+    .secret_key_i  (core_secret_key),
     .hmac_en_i     (hmac_en),
     .digest_size_i (digest_size),
     .key_length_i  (key_length),
 
     .reg_hash_start_i    (hash_start),
-    .reg_hash_stop_i     (reg_hash_stop),
+    .reg_hash_stop_i     (hash_stop),
     .reg_hash_continue_i (hash_continue),
     .reg_hash_process_i  (packer_flush_done), // Trigger after all msg written
+    .abort_i             (abort),
     .hash_done_o         (reg_hash_done),
     .sha_hash_start_o    (sha_hash_start),
     .sha_hash_continue_o (sha_hash_continue),
@@ -744,9 +817,9 @@ module hmac
     .fifo_rvalid_i        (shaf_rvalid),
     .fifo_rdata_i         (shaf_rdata),
     .fifo_rready_o        (shaf_rready),
-    .sha_en_i             (sha_en),
+    .sha_en_i             (sha_en_engine),
     .hash_start_i         (sha_hash_start),
-    .hash_stop_i          (reg_hash_stop),
+    .hash_stop_i          (hash_stop),
     .hash_continue_i      (sha_hash_continue),
     .digest_mode_i        (digest_size),
     .hash_process_i       (sha_hash_process),
@@ -816,10 +889,12 @@ module hmac
 
   // Invalid/unconfigured HMAC/SHA-2: not configured/invalid digest size or
   // not configured/invalid key length for HMAC mode or
-  // key_length = 1024-bit for digest_size = SHA2_256 (max 512-bit is supported for SHA-2 256)
+  // key_length = 1024-bit for digest_size = SHA2_256 (max 512-bit is supported for SHA-2 256) or
+  // the key is sideloaded but the key manager does not provide a valid key
   assign invalid_config = ((digest_size == SHA2_None)            |
                            ((key_length == Key_None) && hmac_en) |
-                           ((key_length == Key_1024) && (digest_size == SHA2_256) && hmac_en));
+                           ((key_length == Key_1024) && (digest_size == SHA2_256) && hmac_en) |
+                           sideload_key_invalid);
 
   // invalid_config at reg_hash_start or reg_hash_continue will signal an error to the SW
   assign invalid_config_atstart = (reg_hash_start || reg_hash_continue) & invalid_config;
@@ -843,7 +918,8 @@ module hmac
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
                    ( hash_start_sha_disabled | update_seckey_inprocess
-                   | hash_start_active | msg_push_not_allowed | invalid_config_atstart);
+                   | hash_start_active | msg_push_not_allowed | invalid_config_atstart
+                   | abort | invalid_sideload_ctx);
 
   always_comb begin
     // default
@@ -851,7 +927,7 @@ module hmac
 
     priority case (1'b1)
       // SwInvalidConfig has the highest priority: SW configures HMAC incorrectly
-      invalid_config_atstart: begin
+      invalid_config_atstart || abort || invalid_sideload_ctx: begin
         err_code = SwInvalidConfig;
       end
 
@@ -925,15 +1001,17 @@ module hmac
   logic in_process;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                              in_process <= 1'b0;
-    else if (hash_process || reg_hash_stop)   in_process <= 1'b1;
+    else if (sideload_key_invalid)            in_process <= 1'b0;
+    else if (hash_process || hash_stop)       in_process <= 1'b1;
     else if (reg_hash_done)                   in_process <= 1'b0;
   end
 
   logic initiated;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                              initiated <= 1'b0;
+    else if (sideload_key_invalid)            initiated <= 1'b0;
     else if (hash_start_or_continue)          initiated <= 1'b1;
-    else if (hash_process || reg_hash_stop)   initiated <= 1'b0;
+    else if (hash_process || hash_stop)       initiated <= 1'b0;
   end
 
   // the host doesn't write data after hash_process until hash_start_or_continue.
@@ -941,8 +1019,8 @@ module hmac
 
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
-  // `hash_process` or `reg_hash_stop` should be toggled and paired with `hash_start_or_continue`
-  `ASSERT(ValidHashProcessAssert, (hash_process || reg_hash_stop) |-> initiated)
+  // `hash_process` or `hash_stop` should be toggled and paired with `hash_start_or_continue`
+  `ASSERT(ValidHashProcessAssert, (hash_process || hash_stop) |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,
@@ -952,6 +1030,23 @@ module hmac
   // value specifed in the register
   `ASSERT(WipeSecretKeyAssert,
           wipe_secret |=> (secret_key == {($bits(secret_key)/$bits(wipe_v)){$past(wipe_v)}}))
+
+  // Check if the keymgr key width is valid.
+  `ASSERT_INIT(ValidKeyMgrKeyW_A, KeyMgrKeyW inside {128, 256, 384, 512, 1024})
+
+  // An invalid sideloaded key blocks starting and aborts an ongoing operation
+  `ASSERT(SideloadKeyInvalidBlocksStart_A, sideload_key_invalid |-> !hash_start_or_continue)
+  `ASSERT(SideloadKeyInvalidAborts_A, sideload_key_invalid |-> !sha_en_engine)
+
+  // Keymgr needs to keep the key stable when it is marked valid.
+  `ASSUME(SideloadKeyStableWhenValid_M,
+          keymgr_key_i.valid && !$rose(keymgr_key_i.valid) |-> $stable(keymgr_key_i.key))
+
+  // Never allow saving or restoring the context when a sideload key is used.
+  `ASSERT(SideloadNoContextSwitch_A, sideload_en |-> !hash_stop && !hash_continue)
+
+  // The intermediate hash is never visible to SW while a sideloaded operation is in progress.
+  `ASSERT(SideloadHidesIntermediateDigest_A, sideload_en && cfg_block |-> hw2reg.digest == '0)
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
