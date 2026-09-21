@@ -612,6 +612,11 @@ rom_error_t sc_keymgr_dpe_disable(void) {
   // Check if we are in the available state (Stalls until all ops are done)
   HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
 
+  // According to the documentation for the SIDELOAD_CLEAR register, an invalid
+  // destination will enable continuous clearing of all destinations.
+  abs_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
+                   UINT32_MAX);
+
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
       kScKeymgrDPEUseExclusiveSwBinding,
@@ -621,12 +626,7 @@ rom_error_t sc_keymgr_dpe_disable(void) {
   // Start the advance operation
   sc_keymgr_dpe_start_operation();
   // Wait until keymgr_dpe is finished and verify if state if disabled
-  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateDisabled));
-  // According to the documentation for the SIDELOAD_CLEAR register, an invalid
-  // destination will enable continuous clearing of all destinations.
-  abs_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
-                   UINT32_MAX);
-  return kErrorOk;
+  return expected_state_check(kScKeymgrDPEStateDisabled);
 }
 
 /**
