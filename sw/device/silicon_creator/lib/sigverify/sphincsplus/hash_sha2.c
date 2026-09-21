@@ -48,6 +48,8 @@ static_assert(
 static_assert(
     kSpxLeafBits <= 32,
     "For the given height, 32 bits is not large enough for a leaf index.");
+static_assert(kSpxDigestWords <= kHmacDigestNumWords,
+              "SPHINCS+ digest size exceeds a single SHA-256 block");
 
 inline rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
   hmac_sha256_configure(/*big_endian_digest=*/true);
