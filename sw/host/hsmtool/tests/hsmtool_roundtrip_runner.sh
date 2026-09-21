@@ -16,4 +16,4 @@ run ${HSMTOOL} \
     "$1" sign --label "$2" --output "$SIGNATURE" "$3"
 
 run ${HSMTOOL} \
-    "$1" verify --label "$2" "$SIGNATURE" "$3"
+    "$1" verify --label "$2" "$3" "$SIGNATURE"
