@@ -576,6 +576,8 @@ countermeasures: [
           resval: "0"
           desc: '''
             Only apply software binding as a message input to the advance operation.
+
+            See !!ENFORCE_SW_BINDING to make this mandatory for all advance calls until the next reset.
           '''
         }
       ],
@@ -1187,6 +1189,34 @@ countermeasures: [
 
             Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
             Once locked, the LOAD_KEY command is disabled.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "ENFORCE_SW_BINDING",
+      desc: "Enforce the software binding value as the only advance input message until the next reset",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "3:0",
+          name: "ENFORCE",
+          mubi: true,
+          resval: false
+          desc: '''
+          Enforce using only sw binding value for context derivation.
+
+          Once set no hw binding value can be consumed until the next reset.
+          An advance operation from a parent whose boot stage consumes hw binding values
+          (`boot_stage` 0 to 2, i.e. Creator, OwnerInt or Owner) without
+          `CONTROL_SHADOWED.SW_BINDING_ONLY` set will fail with an `invalid_op` error without
+          updating the destination slot.
+          Advance operations from later boot stages are not affected.
+
+          Every encoding except `kMultiBitBool4False` will be treated as locked.
           '''
         },
       ]
