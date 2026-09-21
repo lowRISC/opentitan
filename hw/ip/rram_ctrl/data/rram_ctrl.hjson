@@ -22,9 +22,9 @@
   sw_checklist:       "/sw/device/lib/dif/dif_rram_ctrl",
   revisions: [
       {
-          version:            "0.1.0",
+          version:            "1.0.0",
           life_stage:         "L1",
-          design_stage:       "D0",
+          design_stage:       "D1",
           verification_stage: "V0",
       },
   ]
