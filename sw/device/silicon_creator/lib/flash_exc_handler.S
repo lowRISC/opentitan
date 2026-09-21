@@ -177,6 +177,7 @@ flash_exception_handler:
   //
 
   COVERAGE_ASM_AUTOGEN_MARK(t6,9)
+  li   t0, -1
   csrr a0, mepc
   lh   a2, 0(a0)
   addi a0, a0, OT_HALF_WORD_SIZE
@@ -190,8 +191,32 @@ flash_exception_handler:
   srli a3, a2, 2
   andi a3, a3, 0x1f
   bnez a3, .L_not_a_flash_error
-  // Get the register number into a3 by masking off the rd field.
+  // Mask t0 (0xFFFFFFFF) for zero-extended loads:
+  //   funct3 == 0b100 (LBU): shift right by 24 -> 0x000000FF
+  //   funct3 == 0b101 (LHU): shift right by 16 -> 0x0000FFFF
+  //   funct3 == 0b0xx (LB/LH/LW): shift right by 0 -> 0xFFFFFFFF
+  // Shift for funct3.
   COVERAGE_ASM_AUTOGEN_MARK(t6,11)
+  srli t1, a2, 12
+  // Get high bit of funct3.
+  andi t2, t1, 4
+  // Instruction is sign-extending so keep the full mask.
+  beqz t2, .L_mask_computed
+  // We are now handling an LBU/LHU instruction; shift the mask to its correct
+  // value.
+  // Get low two bits of funct3:
+  //   LBU -> t1 = 0 -> 8 * t1 = 0
+  //   LHU -> t1 = 1 -> 8 * t1 = 8
+  COVERAGE_ASM_AUTOGEN_MARK(t6,12)
+  andi t1, t1, 3
+  slli t1, t1, 3
+  // Shift t0 right by 24 - 8 * t1 (24 for LBU, 16 for LHU).
+  li   t2, 24
+  sub  t2, t2, t1
+  srl  t0, t0, t2
+.L_mask_computed:
+  // Get the register number into a3 by masking off the rd field.
+  COVERAGE_ASM_AUTOGEN_MARK(t6,13)
   srli a3, a2, 7
   andi a3, a3, 0x1f
   // We already added one half word, so for a 32-bit instruction, add another.
@@ -200,10 +225,10 @@ flash_exception_handler:
 
 .L_compressed_trap_instr:
   // Check if its a compressed load instruction.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,12)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,14)
   bnez a3, .L_not_a_flash_error
   // Get the register number into a3 by masking off the rd' field and adding 8.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,13)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,15)
   srli a3, a2, 2
   andi a3, a3, 7
   addi a3, a3, 8
@@ -211,7 +236,7 @@ flash_exception_handler:
 .L_hardened_mepc_check:
   // Hardening: double-check that the retval calculation is 4 bytes or fewer
   // from the original value of MEPC.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,14)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,16)
   addi a1, a1, 1
   csrr a2, mepc
   sub  a2, a0, a2
@@ -221,20 +246,20 @@ flash_exception_handler:
   // that register.
   // RISCV register x0, aka zero.  This register is always const 0, so there
   // is nothing to do.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,15)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,17)
   beqz a3, .L_flash_fault_done
 
-  // All other registers load the value 0xFFFFFFFF as the faulting value.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,16)
-  li   a2, -1
+  // All other registers load the faulting value (0xFFFFFFFF for LB/LH/LW/C.LW,
+  // 0x000000FF for LBU, or 0x0000FFFF for LHU).
+  COVERAGE_ASM_AUTOGEN_MARK(t6,18)
   slli a3, a3, 2
   add  a3, a3, sp
-  sw   a2, 0(a3)
+  sw   t0, 0(a3)
 
 .L_flash_fault_done:
   // Exception handler exit and return to C:
   // Load the correct MEPC for the next instruction in the current task.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,17)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,19)
   csrw mepc, a0
 
   // Restore all registers from the stack and restore SP to its former value.
@@ -273,7 +298,7 @@ flash_exception_handler:
   mret
 
 .L_no_flash_exceptions:
-  COVERAGE_ASM_MANUAL_MARK(sp,18)
+  COVERAGE_ASM_MANUAL_MARK(sp,20)
   csrr sp, mscratch
 .L_not_a_flash_error:
   // Since we aren't dealing with a flash error, we'll jump to the normal
@@ -284,7 +309,7 @@ flash_exception_handler:
   // Note: we _also_ do not restore SP - we'll restart the stack at
   // `ram_end - 128`.  This allows us to report exceptions after jumping
   // to the next stage if the next stage has trashed its SP register.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,19)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,21)
   j INTERRUPT_HANDLER
   unimp
   .size flash_exception_handler, .-flash_exception_handler
