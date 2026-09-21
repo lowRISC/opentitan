@@ -718,12 +718,14 @@ static rom_error_t rom_verify_immutable_section(
     hmac_digest_t immutable_rom_ext_hash;
     otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
              immutable_rom_ext_hash.digest, kHmacDigestNumWords);
-    for (size_t i = 0; i < kHmacDigestNumWords; ++i) {
+    size_t i = 0;
+    for (; launder32(i) < kHmacDigestNumWords; ++i) {
       if (immutable_rom_ext_hash.digest[i] !=
           actual_immutable_section_digest.digest[i]) {
-        verify_result = kErrorRomImmSection;
+        return kErrorRomImmSection;
       }
     }
+    HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
     // If address translation is enabled, adjust the entry_point.
     if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
