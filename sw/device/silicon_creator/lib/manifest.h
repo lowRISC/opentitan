@@ -603,10 +603,15 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
     return kErrorManifestBadEntryPoint;
   }
 
-  // Manifest extension offset must be word aligned.
+  // Manifest extension offset must be word aligned and within the image.
   for (size_t i = 0; i < CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT; ++i) {
-    if ((manifest->extensions.entries[i].offset & 0x3) != 0) {
-      return kErrorManifestBadExtension;
+    uint32_t offset = manifest->extensions.entries[i].offset;
+    if (offset != 0) {
+      if ((offset & 0x3) != 0 || offset < sizeof(manifest_t) ||
+          manifest->length < sizeof(manifest_ext_header_t) ||
+          offset > manifest->length - sizeof(manifest_ext_header_t)) {
+        return kErrorManifestBadExtension;
+      }
     }
   }
 
@@ -682,9 +687,12 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
     uint32_t offset = entry->offset;                                           \
     if (launder32(table_id) == id_) {                                          \
       HARDENED_CHECK_EQ(table_id, id_);                                        \
-      if (launder32(offset) >= kMinSize && launder32(offset) < kMaxSize) {     \
+      if (launder32(offset) >= kMinSize && launder32(offset) < kMaxSize &&     \
+          launder32(manifest->length) >= sizeof(type_) &&                      \
+          launder32(offset) <= launder32(manifest->length) - sizeof(type_)) {  \
         HARDENED_CHECK_GE(offset, kMinSize);                                   \
         HARDENED_CHECK_LT(offset, kMaxSize);                                   \
+        HARDENED_CHECK_LE(offset, manifest->length - sizeof(type_));           \
         uintptr_t ext_address = (uintptr_t)((char *)manifest + entry->offset); \
         uint32_t header_id =                                                   \
             ((manifest_ext_header_t *)ext_address)->identifier;                \

@@ -94,6 +94,22 @@ TEST_F(ManifestTest, ExtensionOffsetUnaligned) {
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
 }
 
+TEST_F(ManifestTest, ExtensionOffsetInsideManifest) {
+  manifest_.extensions.entries[1].offset = sizeof(manifest_t) - 4;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
+}
+
+TEST_F(ManifestTest, ExtensionOffsetPastImageEnd) {
+  manifest_.extensions.entries[1].offset = manifest_.length;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
+}
+
+TEST_F(ManifestTest, ExtensionOffsetTooCloseToImageEnd) {
+  manifest_.extensions.entries[1].offset =
+      manifest_.length - sizeof(manifest_ext_header_t) + 4;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadExtension);
+}
+
 TEST_F(ManifestTest, EntryPointBeforeCodeStart) {
   manifest_.entry_point = manifest_.code_start - 1;
   EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadEntryPoint);
@@ -135,6 +151,51 @@ TEST_F(ManifestTest, ExtSpxKeyGet) {
   const manifest_ext_spx_key_t *result = nullptr;
   EXPECT_EQ(manifest_ext_get_spx_key(manifest, &result), kErrorOk);
   EXPECT_EQ(&result->header, header);
+}
+
+TEST_F(ManifestTest, ExtSpxKeyGetBeyondImageLength) {
+  char flash[CHIP_ROM_EXT_RESIZABLE_SIZE_MAX];
+  memset(flash, 0, sizeof(flash));
+  size_t ext_offset = CHIP_ROM_EXT_SIZE_MAX;
+
+  manifest_t *manifest = reinterpret_cast<manifest_t *>(&flash[0]);
+  memcpy(manifest, &manifest_, sizeof(manifest_));
+  // Image length is smaller than the extension offset.
+  manifest->length = ext_offset - 4;
+
+  manifest_ext_table_entry_t *entry = &manifest->extensions.entries[0];
+  entry->identifier = kManifestExtIdSpxKey;
+  entry->offset = ext_offset;
+
+  manifest_ext_header_t *header =
+      reinterpret_cast<manifest_ext_header_t *>(&flash[ext_offset]);
+  header->identifier = kManifestExtIdSpxKey;
+  header->name = kManifestExtNameSpxKey;
+
+  const manifest_ext_spx_key_t *result = nullptr;
+  EXPECT_EQ(manifest_ext_get_spx_key(manifest, &result),
+            kErrorManifestBadExtension);
+  EXPECT_EQ(result, nullptr);
+}
+
+TEST_F(ManifestTest, ExtSpxKeyGetBeyondSlotEnd) {
+  char flash[CHIP_ROM_EXT_RESIZABLE_SIZE_MAX];
+  memset(flash, 0, sizeof(flash));
+  // Set offset beyond BL0 slot size.
+  size_t ext_offset = CHIP_BL0_SIZE_MAX + 4;
+
+  manifest_t *manifest = reinterpret_cast<manifest_t *>(&flash[0]);
+  memcpy(manifest, &manifest_, sizeof(manifest_));
+  manifest->length = CHIP_BL0_SIZE_MAX;
+
+  manifest_ext_table_entry_t *entry = &manifest->extensions.entries[0];
+  entry->identifier = kManifestExtIdSpxKey;
+  entry->offset = ext_offset;
+
+  const manifest_ext_spx_key_t *result = nullptr;
+  EXPECT_EQ(manifest_ext_get_spx_key(manifest, &result),
+            kErrorManifestBadExtension);
+  EXPECT_EQ(result, nullptr);
 }
 
 }  // namespace
