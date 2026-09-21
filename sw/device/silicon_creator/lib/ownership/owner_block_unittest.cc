@@ -853,6 +853,18 @@ const owner_isfb_config_t isfb_config_bad_page = {
     .product_words = 4,
 };
 
+const owner_isfb_config_t isfb_config_bad_bank = {
+    .header =
+        {
+            .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+            .length = sizeof(owner_isfb_config_t),
+        },
+    // Invalid bank. Only banks 0 and 1 exist.
+    .bank = 2,
+    .page = 5,
+    .product_words = 4,
+};
+
 const owner_isfb_config_t isfb_config_bad_product_word_count = {
     .header =
         {
@@ -882,6 +894,7 @@ TEST_P(OwnerBlockBadIsfbTest, ParseBlockBadIsfb) {
 INSTANTIATE_TEST_SUITE_P(
     AllCases, OwnerBlockBadIsfbTest,
     testing::Values(IsfbError{isfb_config_bad_page, kErrorOwnershipISFBPage},
+                    IsfbError{isfb_config_bad_bank, kErrorOwnershipISFBPage},
                     IsfbError{isfb_config_bad_length,
                               kErrorOwnershipInvalidTagLength},
                     IsfbError{isfb_config_bad_product_word_count,
@@ -1575,7 +1588,14 @@ testing::Values(
     std::make_tuple(1, 6, kErrorOk),
     std::make_tuple(1, 7, kErrorOk),
     std::make_tuple(1, 8, kErrorOk),
-    std::make_tuple(1, 9, kErrorOwnershipBadInfoPage)
+    std::make_tuple(1, 9, kErrorOwnershipBadInfoPage),
+
+    // Invalid bank (>= 2) INFO pages:
+    std::make_tuple(2, 5, kErrorOwnershipBadInfoPage),
+    std::make_tuple(2, 6, kErrorOwnershipBadInfoPage),
+    std::make_tuple(2, 7, kErrorOwnershipBadInfoPage),
+    std::make_tuple(2, 8, kErrorOwnershipBadInfoPage),
+    std::make_tuple(255, 5, kErrorOwnershipBadInfoPage)
 ));
 // clang-format on
 
