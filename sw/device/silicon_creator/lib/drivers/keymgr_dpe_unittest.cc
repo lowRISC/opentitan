@@ -437,6 +437,14 @@ TEST_F(KeymgrDpeTest, LockUds) {
   sc_keymgr_dpe_lock_uds();
 }
 
+TEST_F(KeymgrDpeTest, EnforceSwBinding) {
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+                     {
+                         {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_BIT, true},
+                     });
+  sc_keymgr_dpe_enforce_sw_binding();
+}
+
 TEST_F(KeymgrDpeTest, LoadUds) {
   ExpectLoadUds(/*dst_slot=*/1);
   EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorOk);
