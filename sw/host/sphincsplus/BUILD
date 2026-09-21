@@ -78,4 +78,7 @@ rust_test(
     name = "sphincsplus_test",
     crate = ":sphincsplus",
     edition = "2024",
+    deps = [
+        "@crate_index//:hex",
+    ],
 )
