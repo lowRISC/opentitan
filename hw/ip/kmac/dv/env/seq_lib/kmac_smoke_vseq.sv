@@ -41,8 +41,13 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         fname_arr[1] == 77; // "M"
         fname_arr[2] == 65; // "A"
         fname_arr[3] == 67; // "C"
-      } else {
+      } else if (cfg.enable_full_kmac) {
         fname_len == 0;
+      } else {
+        // Without the keyed MAC, SW can select cSHAKE with kmac_en == 0, so these values end up
+        // in the prefix. An empty function name and customization string makes the reference
+        // model fall back to SHAKE while the DUT still does cSHAKE, so keep one of them non-empty.
+        fname_len + custom_str_len > 0;
       }
     }
   }
@@ -168,7 +173,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // Only send a KMAC_APP request when in KMAC mode
       if (en_app) begin
-        bit process_key_err_before_app_done = $urandom_range(0, 1);
+        // Handle an injected error while the app operation is still running, or let it finish
+        // first. Mainly targets the KeyNotValid error, which cannot occur without the keyed MAC.
+        bit process_key_err_before_app_done = cfg.enable_full_kmac ? $urandom_range(0, 1) : 0;
         // Inject error might be disabled by the `send_kmac_req` thread.
         bit error_injected = 0;
 

@@ -137,12 +137,20 @@ class kmac_base_vseq extends cip_base_vseq #(
     (!kmac_en) -> (xof_en == 1'b0);
   }
 
-  // KMAC HWIP only uses CSHAKE mode for KMAC hashing
+  // The keyed MAC is only available if the full KMAC is enabled.
+  constraint kmac_en_c {
+    kmac_en -> cfg.enable_full_kmac;
+  }
+
+  // KMAC HWIP only uses CSHAKE mode for KMAC hashing. Without the keyed MAC, cSHAKE is just
+  // another hash mode and can be selected freely.
   constraint hash_mode_c {
-    if (kmac_en) {
-      hash_mode == sha3_pkg::CShake;
-    } else {
-      hash_mode != sha3_pkg::CShake;
+    if (cfg.enable_full_kmac) {
+      if (kmac_en) {
+        hash_mode == sha3_pkg::CShake;
+      } else {
+        hash_mode != sha3_pkg::CShake;
+      }
     }
   }
 
