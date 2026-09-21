@@ -1,12 +1,5 @@
----
-title: "RRAM_CTRL Checklist"
----
+# RRAM Controller Checklist
 
-<!--
-NOTE: This is a template checklist document that is required to be copied over to the 'doc'
-directory for a new design that transitions from L0 (Specification) to L1 (Development)
-stage, and updated as needed. Once done, please remove this comment before checking it in.
--->
 This checklist is for [Hardware Stage](../../../../doc/project_governance/development_stages.md) transitions for the [RRAM_CTRL peripheral.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../doc/project_governance/checklist/README.md)
 
