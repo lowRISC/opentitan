@@ -369,7 +369,9 @@ Software can set this bit to 1 to manually clear [`ENTROPY_REFRESH_HASH_CNT.`](#
 Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN mode.
 This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt)
 
-Note that the hardware may miss the trigger pulse if the module is not idle, or if the module is currently performing a reseed operation.
+After setting this bit, the [`STATUS.entropy_ready`](#status) bit should read as 0 and the [`STATUS.entropy_reseeding`](#status) bit as 1 indicating that a reseed operation is ongoing.
+
+If masking is disabled, this bit is ignored.
 
 ### CMD . cmd
 Issue a command to the KMAC/SHA3 IP. The command is sparse
@@ -389,12 +391,12 @@ Other values are reserved.
 KMAC/SHA3 Status register.
 - Offset: `0x1c`
 - Reset default: `0x4001`
-- Reset mask: `0x3df07`
+- Reset mask: `0x3df37`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 5}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "entropy_ready", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "entropy_reseeding", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                |
@@ -406,7 +408,10 @@ KMAC/SHA3 Status register.
 |   14   |   ro   |   0x1   | [fifo_empty](#status--fifo_empty)                                   |
 |   13   |        |         | Reserved                                                            |
 |  12:8  |   ro   |    x    | [fifo_depth](#status--fifo_depth)                                   |
-|  7:3   |        |         | Reserved                                                            |
+|  7:6   |        |         | Reserved                                                            |
+|   5    |   ro   |   0x0   | [entropy_reseeding](#status--entropy_reseeding)                     |
+|   4    |   ro   |   0x0   | [entropy_ready](#status--entropy_ready)                             |
+|   3    |        |         | Reserved                                                            |
 |   2    |   ro   |    x    | [sha3_squeeze](#status--sha3_squeeze)                               |
 |   1    |   ro   |    x    | [sha3_absorb](#status--sha3_absorb)                                 |
 |   0    |   ro   |   0x1   | [sha3_idle](#status--sha3_idle)                                     |
@@ -443,6 +448,17 @@ See the "Message FIFO" section in the spec for the reason.
 
 ### STATUS . fifo_depth
 Count of occupied entries in the message FIFO.
+
+### STATUS . entropy_reseeding
+If 1, the internal PRNG is currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+If masking is disabled, this bit always reads as 0.
+
+### STATUS . entropy_ready
+If 1, the internal PRNG is ready.
+If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+If masking is disabled, this bit mirrors the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit.
 
 ### STATUS . sha3_squeeze
 If 1, SHA3 completes sponge absorbing stage.
