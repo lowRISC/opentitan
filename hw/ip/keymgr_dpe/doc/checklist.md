@@ -9,16 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | WIP         | [KEYMGR_DPE Design Spec](../README.md)
+Documentation | [SPEC_COMPLETE][]              | Done        | [KEYMGR_DPE Design Spec](../README.md)
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
-RTL           | [IP_INSTANTIABLE][]            | WIP         |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | WIP         |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
-Security      | [SEC_CM_SCOPED][]              | Not Started |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        | No physical macro inside `keymgr_dpe`
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        |
 
 [SPEC_COMPLETE]:              /doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                /doc/project_governance/checklist/README.md#csr_defined
@@ -127,14 +127,14 @@ Review        | Signoff date            | Not Started |
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
 Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
 Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
