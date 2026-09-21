@@ -123,10 +123,15 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
-# Downstream targets may need access to SPX public key for e2e tests
+# Hsmtool testing & downstream targets may need access to SPHINCS+/SLH-DSA public keys for e2e test flows.
 filegroup(
     name = "app_prod_spx_pub",
     srcs = ["app_prod_spx.pub.pem"],
+)
+
+filegroup(
+    name = "app_prod_slh_dsa_pub",
+    srcs = ["app_prod_slh_dsa.pub.pem"],
 )
 
 pkg_files(
