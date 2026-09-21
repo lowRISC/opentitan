@@ -22,11 +22,11 @@ __DYNAMIC = 0;
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
+ASSERT((_rom_ext_virtual_size <= (LENGTH(nvm) / 2)),
   "Error: rom ext flash is bigger than slot.");
 _owner_virtual_start_address = ORIGIN(owner_virtual);
 _owner_virtual_size = LENGTH(owner_virtual);
-ASSERT((_owner_virtual_size <= (LENGTH(eflash) / 2)),
+ASSERT((_owner_virtual_size <= (LENGTH(nvm) / 2)),
   "Error: owner flash is bigger than slot.");
 
 /**
