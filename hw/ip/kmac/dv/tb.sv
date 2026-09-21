@@ -98,6 +98,7 @@ module tb;
 
   kmac #(
     .EnMasking(`EN_MASKING),
+    .EnFullKmac(`EN_FULL_KMAC),
     .SwKeyMasked(`SW_KEY_MASKED),
     .NumAppIntf(NUM_APP_INTF)
   ) dut (
