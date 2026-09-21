@@ -211,7 +211,7 @@ impl EncodeKey for SpxSecretKey {
 }
 
 impl SpxPublicKey {
-    const OID_SHA2_128S_SPX_PUBLIC_KEY: ObjectIdentifier =
+    const OID_SHA2_128S_WITH_SHA_256_SPX_PUBLIC_KEY: ObjectIdentifier =
         asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 35);
 
     /// Creates a SPHINCS+ public key from raw bytes.
@@ -241,6 +241,19 @@ impl SpxPublicKey {
         self.algorithm.verify(&self.key, signature, &msg)
     }
 
+    /// Attempt to parse the given PEM block as an ASN.1 SPKI with the OID for
+    /// Pre-hashed SHA2-128-S-SPX with SHA-256. Note that this is the only SPKI
+    /// OID variant that is supported for this fallback case -- there is no
+    /// support for the Pure SHA2-128-S OID nor either of the SHAKE2-128S OIDs.
+    ///
+    /// IMPORTANT CAVEAT: this implementation is a legacy workaround to accept
+    /// PEM encoded ASN.1 objects commonly distributed by HSMs as public keys.
+    /// In its implementation, it mixes the key object (the [`SpxPublicKey`])
+    /// with its external PEM / SPKI representation. Thus, decoding and encoding
+    /// such a key is lossy - it will be converted to a `RAW` PEM key, and will
+    /// lose its OID. Although the [`SphincsPlus`] algorithm is encoded
+    /// out-of-band in the label, this does not distinguish between the Pure
+    /// and pre-hash OID. As such, this mode info in the SPKI is lost.
     fn parse_asn1_public_key(key: &[u8], label: &str) -> Result<Self, SpxError> {
         // The PEM block is not a raw key, maybe it is an ASN.1 object.
         let r: ParseResult<(ObjectIdentifier, &[u8])> = asn1::parse(key, |d| {
@@ -258,7 +271,7 @@ impl SpxPublicKey {
             Err(_) => return Err(SpxError::ParseError(format!("Not a RAW key {label:?}"))),
         };
 
-        if oid == Self::OID_SHA2_128S_SPX_PUBLIC_KEY && key.len() == 32 {
+        if oid == Self::OID_SHA2_128S_WITH_SHA_256_SPX_PUBLIC_KEY && key.len() == 32 {
             Ok(SpxPublicKey {
                 algorithm: SphincsPlus::Sha2128sSimple,
                 key: key.to_vec(),
@@ -407,6 +420,23 @@ mod test {
         ];
         let msg = [domain_sep.as_slice(), &sha256_oid, &digest].concat();
         assert!(pk.verify(SpxDomain::None, &sig, &msg).is_ok());
+        Ok(())
+    }
+
+    // Some HSMs that we want to support hand out ASN.1 `SubjectPublicKeyInfo`
+    // objects with the OID SLH-DSA-SHA2-128S-WITH-SHA-256. Check that the
+    // workaround that is implemented specifically for such keys is working.
+    const ASN1_SPKI_PUBLIC_KEY_PEM: &str = "-----BEGIN PUBLIC KEY-----\n\
+        MDAwCwYJYIZIAWUDBAMjAyEA2kmlVjTnzcl0g3PaKSnodnTVSJTEyoQFgmFJy4Wd\n\
+        ILM=\n\
+        -----END PUBLIC KEY-----\n";
+    const PK_HEX: &str = "da49a55634e7cdc9748373da2929e87674d54894c4ca8405826149cb859d20b3";
+
+    #[test]
+    fn asn1_spki_public_key() -> Result<(), SpxError> {
+        let pk = SpxPublicKey::from_pem(ASN1_SPKI_PUBLIC_KEY_PEM)?;
+        assert_eq!(pk.algorithm(), SphincsPlus::Sha2128sSimple);
+        assert_eq!(hex::encode(pk.as_bytes()), PK_HEX);
         Ok(())
     }
 }
