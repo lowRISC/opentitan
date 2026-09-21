@@ -39,7 +39,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_EDN             = 1;
 
   parameter uint DIGEST_SIZE         = 8;
-  parameter uint SW_WINDOW_BASE_ADDR = 'h800;
+  parameter uint SW_WINDOW_BASE_ADDR = 'h1000;
   parameter uint SW_WINDOW_SIZE      = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
@@ -109,9 +109,9 @@ package otp_ctrl_env_pkg;
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1 // This partition has no zeroized field.
+    Secret0ZerOffset >> 2,
+    Secret1ZerOffset >> 2,
+    Secret2ZerOffset >> 2
   };
 
   // types

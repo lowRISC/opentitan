@@ -11,10 +11,10 @@
       otp:
       {
         width: 2
-        depth: 1024
-        size: 2048
-        addr_width: 10
-        byte_addr_width: 11
+        depth: 2048
+        size: 4096
+        addr_width: 11
+        byte_addr_width: 12
       }
       scrambling:
       {
@@ -76,6 +76,7 @@
           integrity: false
           bkout_type: false
           skip_sw_header: true
+          zeroizable: false
           items:
           [
             {
@@ -113,7 +114,6 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 64
           offset: 0
@@ -130,6 +130,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -790,7 +791,7 @@
             {
               name: CREATOR_SW_CFG_DIGEST
               size: 8
-              offset: 456
+              offset: 1472
               ismubi: false
               isdigest: true
               iszer: false
@@ -807,9 +808,8 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 400
+          size: 1416
           offset: 64
         }
         {
@@ -824,6 +824,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -842,7 +843,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 464
+              offset: 1480
             }
             {
               name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
@@ -863,7 +864,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 468
+              offset: 1484
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
@@ -883,7 +884,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 472
+              offset: 1488
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
@@ -903,7 +904,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 476
+              offset: 1492
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
@@ -927,7 +928,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 480
+              offset: 1496
             }
             {
               name: OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION
@@ -945,7 +946,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 800
+              offset: 1816
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
@@ -965,7 +966,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 864
+              offset: 1880
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
@@ -982,7 +983,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 880
+              offset: 1896
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
@@ -1010,7 +1011,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 896
+              offset: 1912
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
@@ -1033,7 +1034,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 960
+              offset: 1976
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
@@ -1050,7 +1051,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 964
+              offset: 1980
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
@@ -1067,7 +1068,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 968
+              offset: 1984
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
@@ -1084,7 +1085,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 972
+              offset: 1988
             }
             {
               name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
@@ -1096,7 +1097,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 976
+              offset: 1992
             }
             {
               name: OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN
@@ -1117,7 +1118,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 980
+              offset: 1996
             }
             {
               name: OWNER_SW_CFG_MANUF_STATE
@@ -1134,7 +1135,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 984
+              offset: 2000
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
@@ -1159,7 +1160,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 988
+              offset: 2004
             }
             {
               name: OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN
@@ -1171,7 +1172,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 992
+              offset: 2008
             }
             {
               name: OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG
@@ -1196,7 +1197,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 996
+              offset: 2012
             }
             {
               name: OWNER_SW_CFG_ROM_SRAM_READBACK_EN
@@ -1217,7 +1218,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1008
+              offset: 2024
             }
             {
               name: OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN
@@ -1236,7 +1237,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1012
+              offset: 2028
             }
             {
               name: OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE
@@ -1258,7 +1259,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1016
+              offset: 2032
             }
             {
               name: OWNER_SW_CFG_ROM_BANNER_EN
@@ -1276,7 +1277,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1020
+              offset: 2036
             }
             {
               name: OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN
@@ -1300,7 +1301,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1024
+              offset: 2040
             }
             {
               name: OWNER_SW_CFG_RESERVED
@@ -1316,12 +1317,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1028
+              offset: 2044
             }
             {
               name: OWNER_SW_CFG_DIGEST
               size: 8
-              offset: 1136
+              offset: 3160
               ismubi: false
               isdigest: true
               iszer: false
@@ -1339,10 +1340,9 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 680
-          offset: 464
+          size: 1688
+          offset: 1480
         }
         {
           name: ROT_CREATOR_AUTH_CODESIGN
@@ -1356,6 +1356,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1367,7 +1368,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1144
+              offset: 3168
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0
@@ -1378,7 +1379,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1148
+              offset: 3172
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1
@@ -1389,7 +1390,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1212
+              offset: 3236
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1
@@ -1400,7 +1401,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1216
+              offset: 3240
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2
@@ -1411,7 +1412,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1280
+              offset: 3304
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2
@@ -1422,7 +1423,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1284
+              offset: 3308
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3
@@ -1433,7 +1434,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1348
+              offset: 3372
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3
@@ -1444,7 +1445,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1352
+              offset: 3376
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0
@@ -1455,7 +1456,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1416
+              offset: 3440
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0
@@ -1466,7 +1467,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1420
+              offset: 3444
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0
@@ -1477,7 +1478,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1452
+              offset: 3476
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1
@@ -1488,7 +1489,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1456
+              offset: 3480
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1
@@ -1499,7 +1500,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1460
+              offset: 3484
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1
@@ -1510,7 +1511,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1492
+              offset: 3516
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2
@@ -1521,7 +1522,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1496
+              offset: 3520
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2
@@ -1532,7 +1533,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1500
+              offset: 3524
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2
@@ -1543,7 +1544,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1532
+              offset: 3556
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3
@@ -1554,7 +1555,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1536
+              offset: 3560
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3
@@ -1565,7 +1566,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1540
+              offset: 3564
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3
@@ -1576,7 +1577,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1572
+              offset: 3596
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH
@@ -1587,12 +1588,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1576
+              offset: 3600
             }
             {
               name: ROT_CREATOR_AUTH_CODESIGN_DIGEST
               size: 8
-              offset: 1608
+              offset: 3632
               ismubi: false
               isdigest: true
               iszer: false
@@ -1611,10 +1612,9 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 472
-          offset: 1144
+          offset: 3168
         }
         {
           name: ROT_CREATOR_AUTH_STATE
@@ -1628,6 +1628,7 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
+          zeroizable: false
           items:
           [
             {
@@ -1639,7 +1640,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1616
+              offset: 3640
             }
             {
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY1
@@ -1650,7 +1651,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1620
+              offset: 3644
             }
             {
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY2
@@ -1661,7 +1662,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1624
+              offset: 3648
             }
             {
               name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY3
@@ -1672,7 +1673,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1628
+              offset: 3652
             }
             {
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY0
@@ -1683,7 +1684,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1632
+              offset: 3656
             }
             {
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY1
@@ -1694,7 +1695,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1636
+              offset: 3660
             }
             {
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY2
@@ -1705,7 +1706,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1640
+              offset: 3664
             }
             {
               name: ROT_CREATOR_AUTH_STATE_SPX_KEY3
@@ -1716,12 +1717,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1644
+              offset: 3668
             }
             {
               name: ROT_CREATOR_AUTH_STATE_DIGEST
               size: 8
-              offset: 1648
+              offset: 3672
               ismubi: false
               isdigest: true
               iszer: false
@@ -1748,10 +1749,9 @@
             '''
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 40
-          offset: 1616
+          offset: 3640
         }
         {
           name: HW_CFG0
@@ -1765,6 +1765,7 @@
           integrity: true
           bkout_type: true
           skip_sw_header: true
+          zeroizable: false
           items:
           [
             {
@@ -1782,7 +1783,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1656
+              offset: 3680
             }
             {
               name: MANUF_STATE
@@ -1798,12 +1799,12 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1688
+              offset: 3712
             }
             {
               name: HW_CFG0_DIGEST
               size: 8
-              offset: 1720
+              offset: 3744
               ismubi: false
               isdigest: true
               iszer: false
@@ -1820,10 +1821,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 72
-          offset: 1656
+          offset: 3680
         }
         {
           name: HW_CFG1
@@ -1837,6 +1837,7 @@
           integrity: true
           bkout_type: true
           skip_sw_header: true
+          zeroizable: false
           items:
           [
             {
@@ -1854,7 +1855,7 @@
               iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1728
+              offset: 3752
             }
             {
               name: EN_CSRNG_SW_APP_READ
@@ -1872,7 +1873,7 @@
               iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1729
+              offset: 3753
             }
             {
               name: DIS_RV_DM_LATE_DEBUG
@@ -1891,12 +1892,12 @@
               iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1730
+              offset: 3754
             }
             {
               name: HW_CFG1_DIGEST
               size: 8
-              offset: 1736
+              offset: 3760
               ismubi: false
               isdigest: true
               iszer: false
@@ -1913,10 +1914,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 16
-          offset: 1728
+          offset: 3752
         }
         {
           name: SECRET0
@@ -1931,6 +1931,7 @@
           integrity: true
           bkout_type: false
           skip_sw_header: true
+          zeroizable: true
           items:
           [
             {
@@ -1942,7 +1943,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1744
+              offset: 3768
             }
             {
               name: TEST_EXIT_TOKEN
@@ -1953,16 +1954,27 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1760
+              offset: 3784
             }
             {
               name: SECRET0_DIGEST
               size: 8
-              offset: 1776
+              offset: 3800
               ismubi: false
               isdigest: true
               iszer: false
               inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET0_ZER
+              size: 8
+              offset: 3808
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1975,9 +1987,8 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
-          size: 40
-          offset: 1744
+          size: 48
+          offset: 3768
         }
         {
           name: SECRET1
@@ -1992,6 +2003,7 @@
           integrity: true
           bkout_type: false
           skip_sw_header: true
+          zeroizable: true
           items:
           [
             {
@@ -2003,7 +2015,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1784
+              offset: 3816
             }
             {
               name: NVM_DATA_KEY_SEED
@@ -2014,7 +2026,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1816
+              offset: 3848
             }
             {
               name: SRAM_DATA_KEY_SEED
@@ -2025,16 +2037,27 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1848
+              offset: 3880
             }
             {
               name: SECRET1_DIGEST
               size: 8
-              offset: 1864
+              offset: 3896
               ismubi: false
               isdigest: true
               iszer: false
               inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET1_ZER
+              size: 8
+              offset: 3904
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -2047,9 +2070,8 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
-          size: 88
-          offset: 1784
+          size: 96
+          offset: 3816
         }
         {
           name: SECRET2
@@ -2064,6 +2086,7 @@
           integrity: true
           bkout_type: false
           skip_sw_header: true
+          zeroizable: true
           items:
           [
             {
@@ -2075,7 +2098,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1872
+              offset: 3912
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
@@ -2086,7 +2109,7 @@
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 1888
+              offset: 3928
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
@@ -2097,16 +2120,27 @@
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 1920
+              offset: 3960
             }
             {
               name: SECRET2_DIGEST
               size: 8
-              offset: 1952
+              offset: 3992
               ismubi: false
               isdigest: true
               iszer: false
               inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET2_ZER
+              size: 8
+              offset: 4000
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -2119,9 +2153,8 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
-          zeroizable: false
-          size: 88
-          offset: 1872
+          size: 96
+          offset: 3912
         }
         {
           name: LIFE_CYCLE
@@ -2135,6 +2168,7 @@
           integrity: true
           bkout_type: false
           skip_sw_header: true
+          zeroizable: false
           items:
           [
             {
@@ -2146,7 +2180,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1960
+              offset: 4008
             }
             {
               name: LC_STATE
@@ -2157,7 +2191,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 2008
+              offset: 4056
             }
           ]
           desc:
@@ -2175,10 +2209,9 @@
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          zeroizable: false
           ignore_read_lock_in_rma: false
           size: 88
-          offset: 1960
+          offset: 4008
         }
       ]
     }

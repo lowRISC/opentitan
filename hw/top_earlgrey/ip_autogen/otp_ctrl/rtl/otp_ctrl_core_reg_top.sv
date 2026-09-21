@@ -26,7 +26,7 @@ module otp_ctrl_core_reg_top (
 
   import otp_ctrl_reg_pkg::* ;
 
-  localparam int AW = 12;
+  localparam int AW = 13;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -128,7 +128,7 @@ module otp_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[2048:4095]} ? 1'd0 :
+        tl_i.a_address[AW-1:0] inside {[4096:8191]} ? 1'd0 :
         // Default set to register
         1'd1;
 
@@ -248,8 +248,8 @@ module otp_ctrl_core_reg_top (
   logic direct_access_cmd_digest_wd;
   logic direct_access_cmd_zeroize_wd;
   logic direct_access_address_we;
-  logic [10:0] direct_access_address_qs;
-  logic [10:0] direct_access_address_wd;
+  logic [11:0] direct_access_address_qs;
+  logic [11:0] direct_access_address_wd;
   logic direct_access_wdata_0_we;
   logic [31:0] direct_access_wdata_0_qs;
   logic [31:0] direct_access_wdata_0_wd;
@@ -1206,9 +1206,9 @@ module otp_ctrl_core_reg_top (
   logic direct_access_address_gated_we;
   assign direct_access_address_gated_we = direct_access_address_we & direct_access_regwen_qs;
   prim_subreg #(
-    .DW      (11),
+    .DW      (12),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0),
+    .RESVAL  (12'h0),
     .Mubi    (1'b0)
   ) u_direct_access_address (
     .clk_i   (clk_i),
@@ -2199,7 +2199,7 @@ module otp_ctrl_core_reg_top (
   assign direct_access_cmd_zeroize_wd = reg_wdata[3];
   assign direct_access_address_we = addr_hit[21] & reg_we & !reg_error;
 
-  assign direct_access_address_wd = reg_wdata[10:0];
+  assign direct_access_address_wd = reg_wdata[11:0];
   assign direct_access_wdata_0_we = addr_hit[22] & reg_we & !reg_error;
 
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
@@ -2443,7 +2443,7 @@ module otp_ctrl_core_reg_top (
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[10:0] = direct_access_address_qs;
+        reg_rdata_next[11:0] = direct_access_address_qs;
       end
 
       addr_hit[22]: begin

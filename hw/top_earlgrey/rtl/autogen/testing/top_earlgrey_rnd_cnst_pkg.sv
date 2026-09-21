@@ -88,24 +88,27 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   // OTP invalid partition default for buffered partitions
-  parameter logic [16383:0] RndCnstOtpCtrlPartInvDefault = {
+  parameter logic [32767:0] RndCnstOtpCtrlPartInvDefault = {
     704'({
       320'h67BAA00A00025E7FC9BD14102DC30C29978A4C70C8DA26CB202F5F59A412A3392B9403C190120BB3,
       384'h6619E1BBA8167005EE5B59B17EF420135EB6A7B2688A16B1C05693E7E037958183C9545358D14AAED1FCF0E1EDCB0316
     }),
-    704'({
+    768'({
+      64'h0,
       64'h6FD5443C2CB8B75A,
       256'h85CE6F2736649780ACF49BFADF4C4CEF4A487A070E2D41C244CB7240CEE69DF7,
       256'h628838F651B4B5E1188FD88EB8AEB542CC2B9D5A79CA02E338758DD6DE796804,
       128'hFBC75FA47FD1EE356B0EE77C01530CB2
     }),
-    704'({
+    768'({
+      64'h0,
       64'h495CA878EB297504,
       128'h66316FA6C7A2CFE54B57B94CCDB5B701,
       256'h5E895532DB9EF56A3F39ACCE8428CD2F10A9BD8A9D3ADE48339BAB0E6739719D,
       256'hFC60FDA3EC7167EDF9CE31192D35CFE634069D6201333F656283E5A7BD289D1E
     }),
-    320'({
+    384'({
+      64'h0,
       64'h8A8E59E8CC6315D2,
       128'hAD9874386DBD4C92E0F24A7DB2A9D1F7,
       128'hAF22D4755CDDD7CB28EF0FF7219351C5
@@ -157,9 +160,9 @@ package top_earlgrey_rnd_cnst_pkg;
       512'h0,
       32'h0
     }),
-    5440'({
+    13504'({
       64'hA1832965B9E9EB47,
-      96'h0, // unallocated space
+      8160'h0, // unallocated space
       768'h0,
       32'h0,
       32'h0,
@@ -186,9 +189,9 @@ package top_earlgrey_rnd_cnst_pkg;
       32'h0,
       32'h0
     }),
-    3200'({
+    11328'({
       64'hE7DAA2EA63EA3209,
-      64'h0, // unallocated space
+      8192'h0, // unallocated space
       256'h0,
       32'h0,
       32'h0,
