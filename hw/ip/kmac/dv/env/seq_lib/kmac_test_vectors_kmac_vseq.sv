@@ -10,6 +10,7 @@ class kmac_test_vectors_kmac_vseq extends kmac_test_vectors_base_vseq;
   bit is_xof_test_vectors = 0;
 
   virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
     test_list = (is_xof_test_vectors) ? test_vectors_pkg::kmac_xof_file_list :
                                         test_vectors_pkg::kmac_file_list;
     custom_str_len_c.constraint_mode(0);

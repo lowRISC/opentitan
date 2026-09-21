@@ -22,6 +22,7 @@ class kmac_stress_all_vseq extends kmac_base_vseq;
   };
 
   virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
     do_kmac_init = 0;
     // If a random reset is expected, limit the maximum message size to avoid timeouts.
     // The reset waits until all message writes complete.

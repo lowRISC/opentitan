@@ -1,0 +1,76 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Common sim cfg file for the full KMAC (EnFullKmac == 1), shared by the masked and unmasked
+// variants. Adds the tests that require the keyed MAC, the keymgr sideload key or the entropy
+// interface, none of which exist in the stripped KMAC.
+{
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/ip/kmac/dv/kmac_base_sim_cfg.hjson",
+                // The KMAC stress_all vseq runs vseqs that require the full KMAC.
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+
+  // List of test specifications only applicable to the full KMAC.
+  tests: [
+    {
+      name: "{name}_sideload"
+      uvm_test_seq: kmac_sideload_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
+    }
+    {
+      name: "{name}_sideload_invalid"
+      uvm_test_seq: kmac_sideload_invalid_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
+      reseed: 50
+    }
+    {
+      name: "{name}_test_vectors_kmac"
+      uvm_test_seq: kmac_test_vectors_kmac_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
+      reseed: 5
+    }
+    {
+      name: "{name}_test_vectors_kmac_xof"
+      uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
+      reseed: 5
+    }
+    {
+      name: "{name}_entropy_refresh"
+      uvm_test_seq: kmac_entropy_refresh_vseq
+      run_opts: ["+test_timeout_ns=500_000_000"]
+    }
+    {
+      name: "{name}_key_error"
+      uvm_test_seq: kmac_key_error_vseq
+    }
+    {
+      name: "{name}_edn_timeout_error"
+      uvm_test_seq: kmac_edn_timeout_error_vseq
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
+    {
+      name: "{name}_entropy_mode_error"
+      uvm_test_seq: kmac_entropy_mode_error_vseq
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
+    {
+      name: "{name}_entropy_ready_error"
+      uvm_test_seq: kmac_entropy_ready_error_vseq
+      reseed: 10
+    }
+    {
+      name: kmac_stress_all
+      run_opts: ["+test_timeout_ns=10_000_000_000",
+                 "+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: kmac_stress_all_with_rand_reset
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
+      reseed: 10
+    }
+  ]
+}
