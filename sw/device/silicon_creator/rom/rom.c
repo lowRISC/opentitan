@@ -893,7 +893,7 @@ static rom_error_t rom_verify_immutable_section(
     for (; launder32(i) < kHmacDigestNumWords; ++i) {
       if (immutable_rom_ext_hash.digest[i] !=
           actual_immutable_section_digest.digest[i]) {
-        verify_result = kErrorRomImmSection;
+        return kErrorRomImmSection;
       }
     }
     HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
