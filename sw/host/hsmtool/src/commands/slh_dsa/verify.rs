@@ -28,8 +28,8 @@ pub struct Verify {
     format: SignData,
     #[arg(short = 'd', long, default_value = "pure")]
     domain: SpxSignatureMode,
-    signature: PathBuf,
     input: PathBuf,
+    signature: PathBuf,
 }
 
 #[typetag::serde(name = "slh-dsa-verify")]
