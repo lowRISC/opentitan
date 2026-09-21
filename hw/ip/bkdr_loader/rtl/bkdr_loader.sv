@@ -40,9 +40,10 @@ module bkdr_loader
     MISSION   = 2'h2
   } bkdr_state_t;
 
-  typedef enum logic {
-    IDLE  = 1'b0,
-    CLEAR = 1'b1
+  typedef enum logic [1:0] {
+    IDLE          = 2'h0,
+    CLEAR         = 2'h1,
+    CLEAR_SEGMENT = 2'h2
   } bkdr_clear_state_t;
 
 
@@ -78,6 +79,8 @@ module bkdr_loader
 
   // Clear FSM signals
   addr_t clear_addr_d, clear_addr_q;
+  addr_t clear_idx_end;
+  logic  clear_trigger, clear_seg_trigger;
   logic  clear_idle;
 
   // Data reorganization
@@ -162,6 +165,16 @@ module bkdr_loader
   // Clear FSM //
   ///////////////
 
+  // Clamp the end index of a segment clear to the depth of the selected target.
+  assign clear_idx_end = (reg2hw.clear_index_end.q > bkdr_rsp_i[tgt_idx_sel].param_depth) ?
+                         bkdr_rsp_i[tgt_idx_sel].param_depth : reg2hw.clear_index_end.q;
+
+  // A start bit triggers on the write that sets it, and only for a valid target.
+  assign clear_trigger     = reg2hw.control.clear_start.q && reg2hw.control.clear_start.qe &&
+                             !tgt_idx_err;
+  assign clear_seg_trigger = reg2hw.control.clear_segment_start.q &&
+                             reg2hw.control.clear_segment_start.qe && !tgt_idx_err;
+
   always_comb begin : gen_clear_fsm
 
     clear_idle = 1'b1;
@@ -170,25 +183,44 @@ module bkdr_loader
     clear_state_d = clear_state_q;
 
 
-    // Don't clear the start bit
-    hw2reg.control.clear_start.d  = 1'b0;
-    hw2reg.control.clear_start.de = 1'b0;
+    // Don't clear the start bits
+    hw2reg.control.clear_start.d          = 1'b0;
+    hw2reg.control.clear_start.de         = 1'b0;
+    hw2reg.control.clear_segment_start.d  = 1'b0;
+    hw2reg.control.clear_segment_start.de = 1'b0;
 
     unique case (clear_state_q)
       IDLE : begin
-        // Clear operation starts
-        if (reg2hw.control.clear_start.q && reg2hw.control.clear_start.qe && !tgt_idx_err) begin
-          // Clear start bit
-          hw2reg.control.clear_start.de = 1'b1;
+        // Clear any start bits
+        hw2reg.control.clear_start.de         = clear_trigger;
+        hw2reg.control.clear_segment_start.de = clear_seg_trigger;
+
+        // Clear operation starts, it takes precedence over a segment clear
+        if (clear_trigger) begin
           clear_state_d = CLEAR;
           clear_addr_d  = '0;
+        // Clear segment operation starts
+        end else if (clear_seg_trigger) begin
+          clear_addr_d = reg2hw.clear_index_start.q;
+          // An empty or inverted index range clears nothing
+          if (reg2hw.clear_index_start.q < clear_idx_end) begin
+            clear_state_d = CLEAR_SEGMENT;
+          end
         end
       end
 
       CLEAR : begin
         clear_idle   = 1'b0;
         clear_addr_d = clear_addr_q + 'd1;
-        if (bkdr_rsp_i[tgt_idx_sel].param_depth - 'd1 == clear_addr_q) begin
+        if (clear_addr_q + 'd1 >= bkdr_rsp_i[tgt_idx_sel].param_depth) begin
+          clear_state_d = IDLE;
+        end
+      end
+
+      CLEAR_SEGMENT : begin
+        clear_idle   = 1'b0;
+        clear_addr_d = clear_addr_q + 'd1;
+        if (clear_addr_q + 'd1 >= clear_idx_end) begin
           clear_state_d = IDLE;
         end
       end
