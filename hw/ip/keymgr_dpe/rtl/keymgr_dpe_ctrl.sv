@@ -40,6 +40,7 @@ module keymgr_dpe_ctrl
   input [NumInstHwSlotWidth-1:0] slot_src_sel_i,
   input [NumInstHwSlotWidth-1:0] slot_dst_sel_i,
   input keymgr_dpe_policy_t slot_policy_i,
+  input logic enforce_sw_binding_err_i,
    // `max_key_version_i` is stored during advance to be compared with `key_version_i` during
    // generate calls
   input [KeyVersionWidth-1:0] max_key_version_i,
@@ -687,9 +688,10 @@ module keymgr_dpe_ctrl
                            (slot_src_sel_i == slot_dst_sel_i | destination_slot_valid) :
                            (slot_src_sel_i != slot_dst_sel_i);
 
-  assign invalid_advance = adv_req & (invalid_allow_child |
-                                      invalid_src_slot    |
-                                      invalid_retain_parent);
+  assign invalid_advance = adv_req & (invalid_allow_child   |
+                                      invalid_src_slot      |
+                                      invalid_retain_parent |
+                                      enforce_sw_binding_err_i);
 
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
@@ -703,7 +705,10 @@ module keymgr_dpe_ctrl
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance
   // operation is not valid. It is better be loose here and ask to invalidate even when there is no
   // advance request.
-  assign invalid_advance_o = invalid_allow_child | invalid_src_slot | invalid_retain_parent;
+  assign invalid_advance_o = invalid_allow_child   |
+                             invalid_src_slot      |
+                             invalid_retain_parent |
+                             enforce_sw_binding_err_i;
 
   // Exportable DPE is not yet implemented, so mark it unused for lint.
   logic unused_exportable_bit;

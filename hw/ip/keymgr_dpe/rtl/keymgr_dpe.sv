@@ -312,6 +312,7 @@ module keymgr_dpe
   logic op_start;
   assign op_start = reg2hw.start.q;
   logic invalid_advance;
+  logic enforce_sw_binding_err;
 
   // TODO(#30682): Remove this assertion
   // Raise an assertion if the source / destination field provided by the
@@ -361,6 +362,7 @@ module keymgr_dpe
     .slot_src_sel_i(slot_src_sel_trunc),
     .slot_dst_sel_i(slot_dst_sel_trunc),
     .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
+    .enforce_sw_binding_err_i(enforce_sw_binding_err),
     .max_key_version_i(reg2hw.max_key_ver_shadowed),
     .key_version_i(reg2hw.key_version),
     .key_version_vld_o(key_version_vld),
@@ -559,7 +561,8 @@ module keymgr_dpe
     adv_matrix = {(2 ** DpeBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
     adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
 
-    if (reg2hw.control_shadowed.sw_binding_only.q == 1'b0) begin
+    if ((reg2hw.control_shadowed.sw_binding_only.q == 1'b0) &&
+        (reg2hw.enforce_sw_binding.q == 1'b0)) begin
       // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
       adv_matrix[BootStageCreator] = adv_data_creator;
       adv_dvalid[BootStageCreator] = adv_data_creator_valid;
@@ -569,6 +572,12 @@ module keymgr_dpe
       adv_dvalid[BootStageOwner] = owner_seed_vld;
     end
   end
+
+  // raise a `invalid_op` error if `enforce_sw_binding` is active but the option
+  // is not set in the control register.
+  // SEC_CM: ENFORCE_SW_BINDING.CTRL.CONSISTENCY
+  assign enforce_sw_binding_err = !(reg2hw.control_shadowed.sw_binding_only.q) &
+                                  reg2hw.enforce_sw_binding.q;
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;

@@ -60,6 +60,12 @@
       tests: []
     }
     {
+      name: sec_cm_enforce_sw_binding_ctrl_consistency
+      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
       stage: V2S

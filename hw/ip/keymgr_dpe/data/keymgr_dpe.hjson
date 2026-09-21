@@ -296,6 +296,14 @@ countermeasures: [
         Max key version is software lockable.
       '''
     }
+    { name: "ENFORCE_SW_BINDING.CTRL.CONSISTENCY",
+      desc: '''
+        Once ENFORCE_SW_BINDING is set, hardware checks that
+        CONTROL_SHADOWED.SW_BINDING_ONLY is consistently set on every subsequent advance
+        operation. In case the SW_BINDING_ONLY is not set, an error is raised and the operation
+        is rejected.
+      '''
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
         Life cycle control signal is multibit
