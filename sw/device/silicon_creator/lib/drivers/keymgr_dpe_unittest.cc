@@ -658,6 +658,9 @@ TEST_F(KeymgrDpeTest, Disable) {
   ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
                     /*err_code=*/0u);
+  // An invalid destination enables continuous clearing of all destinations.
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
+                     std::numeric_limits<uint32_t>::max());
   ExpectControlRegSet(/*sw_binding_only=*/true,
                       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
                       KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
@@ -670,9 +673,6 @@ TEST_F(KeymgrDpeTest, Disable) {
   ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
                     /*err_code=*/0u);
-  // An invalid destination enables continuous clearing of all destinations.
-  EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
-                     std::numeric_limits<uint32_t>::max());
 
   EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
 }
