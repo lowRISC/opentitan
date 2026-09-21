@@ -15,7 +15,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kX509Cdi1DebugOffset = 585,
+  kX509Cdi1DebugOffset = 579,
   kCwtCdi1DebugOffset = 266,
 };
 

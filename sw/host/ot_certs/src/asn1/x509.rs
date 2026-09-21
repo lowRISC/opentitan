@@ -386,9 +386,14 @@ impl X509 {
         //                     -- corresponding to the extension type identified
         //                     -- by extnID
         //         }
+        // Per ITU-T X.690 section 11.5, the encoding of a sequence value shall
+        // not include an encoding for any component value which is equal to its
+        // default value (FALSE for critical).
         builder.push_seq(concat_suffix(&Some(oid.to_string()), "ext"), |builder| {
             builder.push_oid(oid)?;
-            builder.push_boolean(&Tag::Boolean, &Value::Literal(critical))?;
+            if critical {
+                builder.push_boolean(&Tag::Boolean, &Value::Literal(true))?;
+            }
             builder.push_octet_string(concat_suffix(&Some(oid.to_string()), "ext_value"), build)
         })
     }
@@ -575,5 +580,84 @@ impl X509 {
             builder.push_integer(Some("sig_ecdsa_r".into()), &Tag::Integer, &sig.r)?;
             builder.push_integer(Some("sig_ecdsa_s".into()), &Tag::Integer, &sig.s)
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::asn1::der::Der;
+
+    #[derive(asn1::Asn1Read)]
+    struct StrictX509Extension<'a> {
+        extn_id: asn1::ObjectIdentifier,
+        #[default(false)]
+        critical: bool,
+        extn_value: &'a [u8],
+    }
+
+    #[test]
+    fn test_non_critical_key_id_extensions_omit_boolean_false() -> Result<()> {
+        let key_id = Value::Literal(vec![0x11u8; 20]);
+
+        let aki_der = Der::generate(|builder| X509::push_auth_key_id_ext(builder, &key_id))?;
+        // 30 1f (SEQUENCE, 31 bytes)
+        //   06 03 55 1d 23 (OID 2.5.29.35 AuthorityKeyIdentifier)
+        //   [critical BOOLEAN DEFAULT FALSE omitted!]
+        //   04 18 (OCTET STRING, 24 bytes)
+        //     30 16 (SEQUENCE, 22 bytes)
+        //       80 14 (Context [0] IMPLICIT, 20 bytes) + 20 bytes of 0x11
+        let mut expected_aki = vec![
+            0x30, 0x1f, 0x06, 0x03, 0x55, 0x1d, 0x23, 0x04, 0x18, 0x30, 0x16, 0x80, 0x14,
+        ];
+        expected_aki.extend_from_slice(&[0x11u8; 20]);
+        assert_eq!(aki_der, expected_aki);
+        assert!(!aki_der.windows(3).any(|w| w == [0x01, 0x01, 0x00]));
+
+        let parsed_aki = asn1::parse_single::<StrictX509Extension>(&aki_der)
+            .expect("strict DER parser must accept AuthorityKeyIdentifier extension");
+        assert_eq!(
+            parsed_aki.extn_id,
+            asn1::ObjectIdentifier::from_string("2.5.29.35").unwrap()
+        );
+        assert!(!parsed_aki.critical);
+        assert_eq!(parsed_aki.extn_value.len(), 24);
+
+        let ski_der = Der::generate(|builder| X509::push_subject_key_id_ext(builder, &key_id))?;
+        // 30 1d (SEQUENCE, 29 bytes)
+        //   06 03 55 1d 0e (OID 2.5.29.14 SubjectKeyIdentifier)
+        //   [critical BOOLEAN DEFAULT FALSE omitted!]
+        //   04 16 (OCTET STRING, 22 bytes)
+        //     04 14 (OCTET STRING, 20 bytes) + 20 bytes of 0x11
+        let mut expected_ski = vec![
+            0x30, 0x1d, 0x06, 0x03, 0x55, 0x1d, 0x0e, 0x04, 0x16, 0x04, 0x14,
+        ];
+        expected_ski.extend_from_slice(&[0x11u8; 20]);
+        assert_eq!(ski_der, expected_ski);
+        assert!(!ski_der.windows(3).any(|w| w == [0x01, 0x01, 0x00]));
+
+        let parsed_ski = asn1::parse_single::<StrictX509Extension>(&ski_der)
+            .expect("strict DER parser must accept SubjectKeyIdentifier extension");
+        assert_eq!(
+            parsed_ski.extn_id,
+            asn1::ObjectIdentifier::from_string("2.5.29.14").unwrap()
+        );
+        assert!(!parsed_ski.critical);
+        assert_eq!(parsed_ski.extn_value.len(), 22);
+
+        // Also verify that critical extensions still encode 01 01 ff (BOOLEAN TRUE).
+        let bc_der = Der::generate(|builder| {
+            X509::push_basic_constraints_ext(
+                builder,
+                &BasicConstraints {
+                    ca: Value::Literal(true),
+                },
+            )
+        })?;
+        let parsed_bc = asn1::parse_single::<StrictX509Extension>(&bc_der)
+            .expect("strict DER parser must accept critical BasicConstraints extension");
+        assert!(parsed_bc.critical);
+
+        Ok(())
     }
 }
