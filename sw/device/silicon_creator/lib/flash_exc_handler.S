@@ -103,9 +103,9 @@ nvm_exception_handler:
   csrr a1, mtval
 
   // Physical eflash
-  li   t0, TOP_EARLGREY_EFLASH_BASE_ADDR
+  li   t0, TOP_NVM_BASE_ADDR
   sub  a2, a1, t0
-  li   t0, TOP_EARLGREY_EFLASH_SIZE_BYTES
+  li   t0, TOP_NVM_SIZE_BYTES
   bltu a2, t0, .L_is_valid_flash_addr
 
   // ROM_EXT virtual window
@@ -161,6 +161,7 @@ nvm_exception_handler:
   // Where rd' and rs1' are (register_num - 8, ie: rd' of 0 means reg x8).
   //
 
+  li   t0, -1
   csrr a0, mepc
   lh   a2, 0(a0)
   addi a0, a0, OT_HALF_WORD_SIZE
@@ -173,6 +174,28 @@ nvm_exception_handler:
   srli a3, a2, 2
   andi a3, a3, 0x1f
   bnez a3, .L_not_a_flash_error
+  // Mask t0 (0xFFFFFFFF) for zero-extended loads:
+  //   funct3 == 0b100 (LBU): shift right by 24 -> 0x000000FF
+  //   funct3 == 0b101 (LHU): shift right by 16 -> 0x0000FFFF
+  //   funct3 == 0b0xx (LB/LH/LW): shift right by 0 -> 0xFFFFFFFF
+  // Shift for funct3.
+  srli t1, a2, 12
+  // Get high bit of funct3.
+  andi t2, t1, 4
+  // Instruction is sign-extending so keep the full mask.
+  beqz t2, .L_mask_computed
+  // We are now handling an LBU/LHU instruction; shift the mask to its correct
+  // value.
+  // Get low two bits of funct3:
+  //   LBU -> t1 = 0 -> 8 * t1 = 0
+  //   LHU -> t1 = 1 -> 8 * t1 = 8
+  andi t1, t1, 3
+  slli t1, t1, 3
+  // Shift t0 right by 24 - 8 * t1 (24 for LBU, 16 for LHU).
+  li   t2, 24
+  sub  t2, t2, t1
+  srl  t0, t0, t2
+.L_mask_computed:
   // Get the register number into a3 by masking off the rd field.
   srli a3, a2, 7
   andi a3, a3, 0x1f
@@ -202,11 +225,11 @@ nvm_exception_handler:
   // is nothing to do.
   beqz a3, .L_flash_fault_done
 
-  // All other registers load the value 0xFFFFFFFF as the faulting value.
-  li   a2, -1
+  // All other registers load the faulting value (0xFFFFFFFF for LB/LH/LW/C.LW,
+  // 0x000000FF for LBU, or 0x0000FFFF for LHU).
   slli a3, a3, 2
   add  a3, a3, sp
-  sw   a2, 0(a3)
+  sw   t0, 0(a3)
 
 .L_flash_fault_done:
   // Exception handler exit and return to C:
