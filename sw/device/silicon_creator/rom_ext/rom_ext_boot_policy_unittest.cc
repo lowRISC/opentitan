@@ -112,6 +112,83 @@ TEST_F(RomExtBootPolicyTest, ManifestCheckBadEntryPoint) {
             kErrorManifestBadEntryPoint);
 }
 
+TEST_F(RomExtBootPolicyTest, ManifestCheckExtensionOffsetUnaligned) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = sizeof(manifest_t) + 0x1000;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest.code_start = sizeof(manifest_t);
+  manifest.code_end = sizeof(manifest_t) + 0x800;
+  manifest.entry_point = manifest.code_start;
+  manifest.extensions.entries[0].offset = 1;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadExtension);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckExtensionOffsetInsideManifest) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = sizeof(manifest_t) + 0x1000;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest.code_start = sizeof(manifest_t);
+  manifest.code_end = sizeof(manifest_t) + 0x800;
+  manifest.entry_point = manifest.code_start;
+  manifest.extensions.entries[0].offset = sizeof(manifest_t) - 4;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadExtension);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckExtensionOffsetPastImageEnd) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = sizeof(manifest_t) + 0x1000;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest.code_start = sizeof(manifest_t);
+  manifest.code_end = sizeof(manifest_t) + 0x800;
+  manifest.entry_point = manifest.code_start;
+  manifest.extensions.entries[0].offset = manifest.length;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadExtension);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckExtensionOffsetTooCloseToImageEnd) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = sizeof(manifest_t) + 0x1000;
+  manifest.security_version = 1;
+  manifest.manifest_version.major = kManifestVersionMajor2;
+  manifest.signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest.code_start = sizeof(manifest_t);
+  manifest.code_end = sizeof(manifest_t) + 0x800;
+  manifest.entry_point = manifest.code_start;
+  manifest.extensions.entries[0].offset =
+      manifest.length - sizeof(manifest_ext_header_t) + 4;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorManifestBadExtension);
+}
+
 struct ManifestOrderTestCase {
   uint32_t primary;
 };
