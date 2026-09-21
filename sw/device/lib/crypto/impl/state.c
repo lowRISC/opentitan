@@ -88,11 +88,11 @@ otcrypto_status_t locked_state_check(void) {
   }
 
   // If we are in a locked state, return a fatal error
-  if (state->locked_state == kHardenedBoolTrue) {
+  if (state->locked_state == kHardenedByteBoolTrue) {
     return OTCRYPTO_FATAL_ERR;
   }
 
-  if (state->self_check_state == kHardenedBoolFalse) {
+  if (state->self_check_state == kHardenedByteBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
 
