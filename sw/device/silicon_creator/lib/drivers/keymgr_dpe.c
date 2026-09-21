@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
@@ -453,6 +454,27 @@ void sc_keymgr_dpe_lock_uds(void) {
   // Issue the start command.
   abs_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_LOAD_KEY_LOCK_REG_OFFSET,
                    1 << KEYMGR_DPE_LOAD_KEY_LOCK_LOCK_BIT);
+}
+
+/**
+ * Set `ENFORCE_SW_BINDING` to enforce sw-binding-only DPE context derivation.
+ */
+rom_error_t sc_keymgr_dpe_enforce_sw_binding(void) {
+  abs_mmio_write32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      kMultiBitBool4True << KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET);
+
+  // Writing `kMultiBitBool4True` must always read back as `kMultiBitBool4True`,
+  // anything else is a fault.
+  uint32_t enforce = bitfield_field32_read(
+      abs_mmio_read32(sc_keymgr_dpe_base() +
+                      KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET),
+      KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_FIELD);
+  if (launder32(enforce) == kMultiBitBool4True) {
+    HARDENED_CHECK_EQ(enforce, kMultiBitBool4True);
+    return kErrorOk;
+  }
+  return kErrorKeymgrInternal;
 }
 
 /**

@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -459,6 +460,49 @@ TEST_F(KeymgrDpeTest, LockUds) {
                          {KEYMGR_DPE_LOAD_KEY_LOCK_LOCK_BIT, true},
                      });
   sc_keymgr_dpe_lock_uds();
+}
+
+TEST_F(KeymgrDpeTest, EnforceSwBinding) {
+  EXPECT_ABS_WRITE32(
+      base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      {
+          {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, kMultiBitBool4True},
+      });
+  EXPECT_ABS_READ32(
+      base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      {
+          {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, kMultiBitBool4True},
+      });
+  EXPECT_EQ(sc_keymgr_dpe_enforce_sw_binding(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, EnforceSwBindingInvalidEncoding) {
+  EXPECT_ABS_WRITE32(
+      base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      {
+          {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, kMultiBitBool4True},
+      });
+  // Writing True must always read back as True, anything else is a fault.
+  EXPECT_ABS_READ32(base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+                    {
+                        {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, 0x1},
+                    });
+  EXPECT_EQ(sc_keymgr_dpe_enforce_sw_binding(), kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrDpeTest, EnforceSwBindingReadbackMismatch) {
+  EXPECT_ABS_WRITE32(
+      base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      {
+          {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, kMultiBitBool4True},
+      });
+  // The write did not take effect and the lock is still open.
+  EXPECT_ABS_READ32(
+      base_ + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      {
+          {KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET, kMultiBitBool4False},
+      });
+  EXPECT_EQ(sc_keymgr_dpe_enforce_sw_binding(), kErrorKeymgrInternal);
 }
 
 TEST_F(KeymgrDpeTest, LoadUds) {
