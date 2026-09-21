@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/keymgr_dpe/data/keymgr_dpe.hjson --top darjeeling -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`keymgr_dpe`](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/dashboard.html) | 2.0.0 | D0, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/code.svg) |
+ [`keymgr_dpe`](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/dashboard.html) | 2.0.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/darjeeling/badge/keymgr_dpe/code.svg) |
 
 <!-- END CMDGEN -->
 
