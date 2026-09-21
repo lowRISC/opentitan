@@ -18,7 +18,7 @@ package keymgr_dpe_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 54;
+  parameter int NumRegs = 55;
 
   // Alert indices
   typedef enum int {
@@ -175,6 +175,10 @@ package keymgr_dpe_reg_pkg;
   typedef struct packed {
     logic        q;
   } keymgr_dpe_reg2hw_load_key_lock_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } keymgr_dpe_reg2hw_enforce_sw_binding_reg_t;
 
   typedef struct packed {
     logic        d;
@@ -337,24 +341,25 @@ package keymgr_dpe_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [639:639]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [638:638]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [637:636]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [635:632]
-    keymgr_dpe_reg2hw_start_reg_t start; // [631:631]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [630:619]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [618:616]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [615:600]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [599:598]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [597:595]
-    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [594:593]
-    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [592:337]
-    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [336:81]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [80:49]
-    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [48:47]
-    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [46:15]
-    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [14:1]
-    keymgr_dpe_reg2hw_load_key_lock_reg_t load_key_lock; // [0:0]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [640:640]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [639:639]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [638:637]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [636:633]
+    keymgr_dpe_reg2hw_start_reg_t start; // [632:632]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [631:620]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [619:617]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [616:601]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [600:599]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [598:596]
+    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [595:594]
+    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [593:338]
+    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [337:82]
+    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [81:50]
+    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [49:48]
+    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [47:16]
+    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [15:2]
+    keymgr_dpe_reg2hw_load_key_lock_reg_t load_key_lock; // [1:1]
+    keymgr_dpe_reg2hw_enforce_sw_binding_reg_t enforce_sw_binding; // [0:0]
   } keymgr_dpe_reg2hw_t;
 
   // HW -> register type
@@ -429,6 +434,7 @@ package keymgr_dpe_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_FAULT_STATUS_OFFSET = 8'h cc;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_DEBUG_OFFSET = 8'h d0;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET = 8'h d4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET = 8'h d8;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_RESVAL = 1'h 0;
@@ -500,11 +506,12 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_ERR_CODE,
     KEYMGR_DPE_FAULT_STATUS,
     KEYMGR_DPE_DEBUG,
-    KEYMGR_DPE_LOAD_KEY_LOCK
+    KEYMGR_DPE_LOAD_KEY_LOCK,
+    KEYMGR_DPE_ENFORCE_SW_BINDING
   } keymgr_dpe_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_DPE_PERMIT [54] = '{
+  parameter logic [3:0] KEYMGR_DPE_PERMIT [55] = '{
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_DPE_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_DPE_INTR_TEST
@@ -558,7 +565,8 @@ package keymgr_dpe_reg_pkg;
     4'b 0001, // index[50] KEYMGR_DPE_ERR_CODE
     4'b 0011, // index[51] KEYMGR_DPE_FAULT_STATUS
     4'b 0011, // index[52] KEYMGR_DPE_DEBUG
-    4'b 0001  // index[53] KEYMGR_DPE_LOAD_KEY_LOCK
+    4'b 0001, // index[53] KEYMGR_DPE_LOAD_KEY_LOCK
+    4'b 0001  // index[54] KEYMGR_DPE_ENFORCE_SW_BINDING
   };
 
 endpackage

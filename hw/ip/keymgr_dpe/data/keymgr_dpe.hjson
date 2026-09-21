@@ -576,6 +576,8 @@ countermeasures: [
           resval: "0"
           desc: '''
             Only apply software binding as a message input to the advance operation.
+
+            See !!ENFORCE_SW_BINDING to make this mandatory for all advance calls until the next reset.
           '''
         }
       ],
@@ -1187,6 +1189,26 @@ countermeasures: [
 
             Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
             Once locked, the LOAD_KEY command is disabled.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "ENFORCE_SW_BINDING",
+      desc: "Register write lock to enforce using only sw binding value for all future advance calls",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "ENFORCE",
+          resval: "0"
+          desc: '''
+          Enforce using only sw binding value for context derivation.
+
+          Once set no hw binding value can be consumed until the next reset.
           '''
         },
       ]
