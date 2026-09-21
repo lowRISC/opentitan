@@ -888,17 +888,28 @@ dif_result_t dif_rram_ctrl_get_ecc_errors(
   }
 
   uint32_t reg = mmio_region_read32(handle->dev.base_addr,
-                                    RRAM_CTRL_CORR_ERR_CNT_REG_OFFSET);
-  errors_out->corr_error_count =
-      bitfield_field32_read(reg, RRAM_CTRL_CORR_ERR_CNT_VAL_FIELD);
+                                    RRAM_CTRL_CORR1_ERR_CNT_REG_OFFSET);
+  errors_out->corr1_error_count =
+      bitfield_field32_read(reg, RRAM_CTRL_CORR1_ERR_CNT_VAL_FIELD);
 
   reg = mmio_region_read32(handle->dev.base_addr,
-                           RRAM_CTRL_CORR_ERR_LOC_REG_OFFSET);
+                           RRAM_CTRL_CORR1_ERR_LOC_REG_OFFSET);
+  errors_out->last_corr1_error_address =
+      bitfield_field32_read(reg, RRAM_CTRL_CORR1_ERR_LOC_ADDR_FIELD);
+  errors_out->last_corr1_error_partition =
+      bitfield_bit32_read(reg, RRAM_CTRL_CORR1_ERR_LOC_PART_BIT);
 
-  errors_out->last_error_address =
-      bitfield_field32_read(reg, RRAM_CTRL_CORR_ERR_LOC_ADDR_FIELD);
-  errors_out->last_error_partition =
-      bitfield_bit32_read(reg, RRAM_CTRL_CORR_ERR_LOC_PART_BIT);
+  reg = mmio_region_read32(handle->dev.base_addr,
+                           RRAM_CTRL_CORR2_ERR_CNT_REG_OFFSET);
+  errors_out->corr2_error_count =
+      bitfield_field32_read(reg, RRAM_CTRL_CORR2_ERR_CNT_VAL_FIELD);
+
+  reg = mmio_region_read32(handle->dev.base_addr,
+                           RRAM_CTRL_CORR2_ERR_LOC_REG_OFFSET);
+  errors_out->last_corr2_error_address =
+      bitfield_field32_read(reg, RRAM_CTRL_CORR2_ERR_LOC_ADDR_FIELD);
+  errors_out->last_corr2_error_partition =
+      bitfield_bit32_read(reg, RRAM_CTRL_CORR2_ERR_LOC_PART_BIT);
   return kDifOk;
 }
 

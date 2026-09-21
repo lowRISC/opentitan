@@ -882,12 +882,18 @@ dif_result_t dif_rram_ctrl_get_faults(const dif_rram_ctrl_state_t *handle,
                                       dif_rram_ctrl_faults_t *faults_out);
 
 typedef struct dif_rram_ctrl_ecc_errors {
-  /** Count of the number of correctable ECC errors. */
-  uint32_t corr_error_count;
-  /** The last address that produced a correctable ECC error. */
-  uint32_t last_error_address;
-  /** The last partition that produced a correctable ECC error. */
-  dif_rram_ctrl_partition_type_t last_error_partition;
+  /** Count of the number of correctable single-bit ECC errors. */
+  uint32_t corr1_error_count;
+  /** The last address that produced a correctable single-bit ECC error. */
+  uint32_t last_corr1_error_address;
+  /** The last partition that produced a correctable single-bit ECC error. */
+  dif_rram_ctrl_partition_type_t last_corr1_error_partition;
+  /** Count of the number of correctable double-bit ECC errors. */
+  uint32_t corr2_error_count;
+  /** The last address that produced a correctable double-bit ECC error. */
+  uint32_t last_corr2_error_address;
+  /** The last partition that produced a correctable double-bit ECC error. */
+  dif_rram_ctrl_partition_type_t last_corr2_error_partition;
 } dif_rram_ctrl_ecc_errors_t;
 
 /**
