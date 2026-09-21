@@ -20,8 +20,9 @@ void mgf1_sha256(const uint32_t *in, size_t in_len, size_t out_len,
     hmac_sha256_process();
     // If the remaining output needed is less than the full digest size,
     // truncate.
+    size_t remaining = out_len - (ctr * kHmacDigestNumWords);
     size_t digest_words =
-        (out_len <= kHmacDigestNumWords) ? out_len : kHmacDigestNumWords;
+        (remaining <= kHmacDigestNumWords) ? remaining : kHmacDigestNumWords;
     hmac_sha256_final_truncated(out, digest_words);
     out += digest_words;
   }
