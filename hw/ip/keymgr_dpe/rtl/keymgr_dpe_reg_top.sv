@@ -56,9 +56,9 @@ module keymgr_dpe_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [69:0] reg_we_check;
+  logic [70:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(70)
+    .OneHotWidth(71)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -412,6 +412,9 @@ module keymgr_dpe_reg_top (
   logic load_key_lock_we;
   logic load_key_lock_qs;
   logic load_key_lock_wd;
+  logic enforce_sw_binding_we;
+  logic [3:0] enforce_sw_binding_qs;
+  logic [3:0] enforce_sw_binding_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -3706,8 +3709,37 @@ module keymgr_dpe_reg_top (
   );
 
 
+  // R[enforce_sw_binding]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_enforce_sw_binding (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
-  logic [69:0] addr_hit;
+    // from register interface
+    .we     (enforce_sw_binding_we),
+    .wd     (enforce_sw_binding_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.enforce_sw_binding.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (enforce_sw_binding_qs)
+  );
+
+
+
+  logic [70:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == KEYMGR_DPE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KEYMGR_DPE_INTR_ENABLE_OFFSET);
@@ -3779,6 +3811,7 @@ module keymgr_dpe_reg_top (
     addr_hit[67] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
     addr_hit[68] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
     addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET);
+    addr_hit[70] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3855,7 +3888,8 @@ module keymgr_dpe_reg_top (
                (addr_hit[66] & (|(KEYMGR_DPE_PERMIT[66] & ~reg_be))) |
                (addr_hit[67] & (|(KEYMGR_DPE_PERMIT[67] & ~reg_be))) |
                (addr_hit[68] & (|(KEYMGR_DPE_PERMIT[68] & ~reg_be))) |
-               (addr_hit[69] & (|(KEYMGR_DPE_PERMIT[69] & ~reg_be)))));
+               (addr_hit[69] & (|(KEYMGR_DPE_PERMIT[69] & ~reg_be))) |
+               (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -4071,6 +4105,9 @@ module keymgr_dpe_reg_top (
   assign load_key_lock_we = addr_hit[69] & reg_we & !reg_error;
 
   assign load_key_lock_wd = reg_wdata[0];
+  assign enforce_sw_binding_we = addr_hit[70] & reg_we & !reg_error;
+
+  assign enforce_sw_binding_wd = reg_wdata[3:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -4144,6 +4181,7 @@ module keymgr_dpe_reg_top (
     reg_we_check[67] = 1'b0;
     reg_we_check[68] = debug_we;
     reg_we_check[69] = load_key_lock_we;
+    reg_we_check[70] = enforce_sw_binding_we;
   end
 
   // Read data return
@@ -4491,6 +4529,10 @@ module keymgr_dpe_reg_top (
 
       addr_hit[69]: begin
         reg_rdata_next[0] = load_key_lock_qs;
+      end
+
+      addr_hit[70]: begin
+        reg_rdata_next[3:0] = enforce_sw_binding_qs;
       end
 
       default: begin

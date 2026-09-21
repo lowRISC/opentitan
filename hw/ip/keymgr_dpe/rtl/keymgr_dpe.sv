@@ -149,6 +149,10 @@ module keymgr_dpe
   keymgr_dpe_reg2hw_t reg2hw;
   keymgr_dpe_hw2reg_t hw2reg;
 
+  // TODO: Read register to avoid linter error
+  logic unused_signal;
+  assign unused_signal = ^reg2hw.enforce_sw_binding.q;
+
   logic regfile_intg_err;
   logic shadowed_storage_err;
   logic shadowed_update_err;
