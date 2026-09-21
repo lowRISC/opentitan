@@ -177,6 +177,7 @@ flash_exception_handler:
   //
 
   COVERAGE_ASM_AUTOGEN_MARK(t6,9)
+  li   t0, -1
   csrr a0, mepc
   lh   a2, 0(a0)
   addi a0, a0, OT_HALF_WORD_SIZE
@@ -190,8 +191,20 @@ flash_exception_handler:
   srli a3, a2, 2
   andi a3, a3, 0x1f
   bnez a3, .L_not_a_flash_error
-  // Get the register number into a3 by masking off the rd field.
+  // Mask t0 (0xFFFFFFFF) for zero-extended loads:
+  //   funct3 == 0b100 (LBU): shift right by 16 + 8 = 24 -> 0x000000FF
+  //   funct3 == 0b101 (LHU): shift right by 16 + 0 = 16 -> 0x0000FFFF
+  //   funct3 == 0b0xx (LB/LH/LW): shift right by 0      -> 0xFFFFFFFF
   COVERAGE_ASM_AUTOGEN_MARK(t6,11)
+  srli t1, a2, 10
+  andi t1, t1, 16
+  srl  t0, t0, t1
+  srli t1, t1, 1
+  srli t2, a2, 9
+  xori t2, t2, 8
+  and  t1, t1, t2
+  srl  t0, t0, t1
+  // Get the register number into a3 by masking off the rd field.
   srli a3, a2, 7
   andi a3, a3, 0x1f
   // We already added one half word, so for a 32-bit instruction, add another.
@@ -224,12 +237,12 @@ flash_exception_handler:
   COVERAGE_ASM_AUTOGEN_MARK(t6,15)
   beqz a3, .L_flash_fault_done
 
-  // All other registers load the value 0xFFFFFFFF as the faulting value.
+  // All other registers load the faulting value (0xFFFFFFFF for LB/LH/LW/C.LW,
+  // 0x000000FF for LBU, or 0x0000FFFF for LHU).
   COVERAGE_ASM_AUTOGEN_MARK(t6,16)
-  li   a2, -1
   slli a3, a3, 2
   add  a3, a3, sp
-  sw   a2, 0(a3)
+  sw   t0, 0(a3)
 
 .L_flash_fault_done:
   // Exception handler exit and return to C:
