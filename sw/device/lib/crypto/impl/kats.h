@@ -37,7 +37,7 @@ typedef enum {
   kTestEd25519VerifyBit,
   // Last entry used for mask calculation
   kTestLastBit,
-} otcrypto_kat_bits_t;
+} kat_bits_t;
 
 #define _FLAG(flag) (1UL << kTest##flag##Bit)
 
@@ -69,9 +69,9 @@ typedef enum {
 
 typedef struct {
   uint64_t flags;
-} otcrypto_kat_id_t;
+} kat_id_t;
 
-#define OTCRYPTO_KAT_FLAGS(_flags) ((otcrypto_kat_id_t){.flags = _flags})
+#define OTCRYPTO_KAT_FLAGS(_flags) ((kat_id_t){.flags = _flags})
 
 #define OTCRYPTO_KAT_ALL_TESTS OTCRYPTO_KAT_FLAGS(((1UL << kTestLastBit) - 1))
 
@@ -81,7 +81,7 @@ typedef struct {
  * @param tests_to_run bit mask with tests to run
  * @return OK if the requested KATs passed.
  */
-otcrypto_status_t run_kats(otcrypto_kat_id_t tests_to_run);
+otcrypto_status_t run_kats(kat_id_t tests_to_run);
 
 #ifdef __cplusplus
 }  // extern "C"

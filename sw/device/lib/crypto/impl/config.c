@@ -11,7 +11,9 @@
 #include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
+#include "sw/device/lib/crypto/include/self_integrity.h"
 
 #include "hw/top/clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -79,6 +81,9 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 
   HARDENED_TRY(init_alert_registers());
 
+  // Instantiate the state in the OTBN scratch registers.
+  HARDENED_TRY(init_state(security_level));
+
   // Instantiate the RNG.
   HARDENED_TRY(otcrypto_entropy_init());
 
@@ -88,7 +93,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(keymgr_dpe_sideload_clear_otbn());
   HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
 
-#ifdef HASH_SELF_CHECK_ENABLE
+#ifdef FIPS_MODE
   HARDENED_TRY(otcrypto_integrity_check());
 #endif
 
@@ -96,12 +101,17 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 }
 
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
-  if (read_alert_registers()) {
-    return OTCRYPTO_FATAL_ERR;
-  }
+  crypto_state_t state;
+  HARDENED_TRY(read_state(&state));
 
-  // Verify the entropy source before leaving.
-  HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+  if (state.security_level != kOtcryptoKeySecurityLevelLow) {
+    if (read_alert_registers()) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+
+    // Verify the entropy source before leaving.
+    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+  }
 
   return status;
 }
