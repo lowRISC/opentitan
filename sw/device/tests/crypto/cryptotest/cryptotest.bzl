@@ -9,6 +9,7 @@ load(
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "silicon_params",
 )
 
@@ -21,6 +22,8 @@ load(
 CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
+    "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:sim_qemu_sival_rom_ext": None,
 } | EARLGREY_SILICON_OWNER_ROM_EXT_ENVS
 
 FIRMWARE_DEPS = [
@@ -95,6 +98,13 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, u
             test_cmd = """
                 --bootstrap={firmware}
             """ + test_args,
+            test_harness = test_harness,
+        ),
+        qemu = qemu_params(
+            timeout = "eternal",
+            data = test_vectors,
+            tags = tags,
+            test_cmd = test_args,
             test_harness = test_harness,
         ),
         exec_env = CRYPTOTEST_EXEC_ENVS,
