@@ -19,6 +19,7 @@ module hmac_core import prim_sha2_pkg::*; (
   input        reg_hash_stop_i,
   input        reg_hash_continue_i,
   input        reg_hash_process_i,
+  input        abort_i,
   output logic hash_done_o,
   output logic sha_hash_start_o,
   output logic sha_hash_continue_o,
@@ -277,13 +278,20 @@ module hmac_core import prim_sha2_pkg::*; (
     else         txcount <= txcount_d;
   end
 
-  // reg_hash_process_i trigger logic
+  // reg_hash_process_i trigger logic. The priority order is:
+  // (1) reg_hash_start_i/reg_hash_continue_i: Clear the flag such that all new operations begin
+  //     with a clean flag. Needed because the abort that triggers when the sideload key gets
+  //     invalided, flushes the prim_packer, which triggers reg_hash_process_i.
+  // (2) reg_hash_process_i: Set the flag once all message words are done.
+  // (3) hmac_hash_done: Clear the flag at the end of the operation.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       reg_hash_process_flag <= 1'b0;
+    end else if (reg_hash_start_i || reg_hash_continue_i) begin
+      reg_hash_process_flag <= 1'b0;
     end else if (reg_hash_process_i) begin
       reg_hash_process_flag <= 1'b1;
-    end else if (hmac_hash_done || reg_hash_start_i || reg_hash_continue_i) begin
+    end else if (hmac_hash_done) begin
       reg_hash_process_flag <= 1'b0;
     end
   end
@@ -456,11 +464,17 @@ module hmac_core import prim_sha2_pkg::*; (
       end
 
     endcase
+
+    if (abort_i) begin
+      hmac_hash_done = 1'b0;
+      st_d           = StIdle;
+    end
   end
 
   // raise reg_hash_stop_d flag at reg_hash_stop_i and keep it until sha_hash_done_i is asserted
   // to indicate the hashing operation on current block has completed
-  assign reg_hash_stop_d = (reg_hash_stop_i == 1'b1)                            ? 1'b1 :
+  assign reg_hash_stop_d = (abort_i == 1'b1)                                    ? 1'b0 :
+                           (reg_hash_stop_i == 1'b1)                            ? 1'b1 :
                            (sha_hash_done_i == 1'b1 && reg_hash_stop_q == 1'b1) ? 1'b0 :
                                                                                   reg_hash_stop_q;
 

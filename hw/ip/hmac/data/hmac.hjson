@@ -166,6 +166,11 @@
             '''
     }
     {
+      name: "HMAC.KEY.SIDELOAD",
+      desc: '''Key can be loaded directly from the keymgr.
+            '''
+    }
+    {
       name: "HMAC.ENDIANNESS.MESSAGE",
       desc: "Configurable input message endianness."
     }
@@ -181,6 +186,9 @@
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
+    }
+    { name: "KEY.SIDELOAD"
+      desc: "Key from KeyMgr is sideloaded."
     }
   ]
   regwidth: "32",
@@ -304,7 +312,8 @@
                 For example, for an 80-bit key, HMAC should be configured with an 128-bit key length, fed with the 80-bit key and with 48 zero-bits.
 
                 Note that the key length cannot be greater than the block size: up to 1024-bit for SHA-2 384/512 and up to 512-bit for SHA-2 256.
-                The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+                The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured, and when the key is sideloaded from the key manager (see [`CFG.sideload`](registers.md#cfg--sideload)).
+                In the latter case, the key length is forced to the width of the sideload interface and reading this register returns that forced value.
                 However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while !!KEY_LENGTH holds `Key_None` or !!KEY_LENGTH holds `Key_1024` for !!DIGEST_SIZE = `SHA2_256`, starting is blocked and an error is signalled to SW.
                 '''
           enum: [
@@ -349,6 +358,14 @@
           ]
           tags: [// Exclude fields with non-zero reset value from write-read checks.
                  "excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+        { bits: "15",
+          name: "sideload",
+          resval: "0",
+          desc: '''Sideloaded Key.
+
+                If 1, HMAC uses the key provided by the key manager over the sideload interface.
+                '''
         }
       ],
     }
@@ -463,6 +480,8 @@
 
               The registers are allowed to be updated only when the engine is in Idle state.
               If the engine computes the hash, it discards any attempts to update the secret keys and report an error.
+
+              These registers are ignored when the key is sideloaded from the key manager, see [`CFG.sideload`](registers.md#cfg--sideload).
               ''',
         count: "NumKeyWords",
         cname: "HMAC",

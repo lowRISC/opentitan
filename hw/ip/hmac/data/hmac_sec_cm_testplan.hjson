@@ -29,5 +29,11 @@
       stage: V2S
       tests: ["hmac_tl_intg_err"]
     }
+    {
+      name: sec_cm_key_sideload
+      desc: "Verify the key from KeyMgr is sideloaded."
+      stage: V2S
+      tests: ["N/A"]
+    }
   ]
 }
