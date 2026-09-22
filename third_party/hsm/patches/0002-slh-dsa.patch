@@ -1,3 +1,12 @@
+From 4172f0ba4a49a5040a0a2ab8c99e2c1da1074c11 Mon Sep 17 00:00:00 2001
+Date: Wed, 24 Jun 2026 22:54:18 +0300
+Subject: [PATCH] feat: implement SLH-DSA signing and verification using
+	OpenSSL
+
+This patch mirrors https://github.com/softhsm/SoftHSMv2/pull/862 while that
+is not yet upstreamed. It adds Pure SLH-DSA signing & verification support
+to SoftHSMv2.
+
 diff --git a/.gitignore b/.gitignore
 index 2859ec1..f894780 100644
 --- a/.gitignore
