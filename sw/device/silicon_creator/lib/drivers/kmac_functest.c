@@ -207,6 +207,12 @@ KMAC_KMAC256_KAT(
     "0033aea585f1a2708510c32d07880801bd182898fe476876fc8965")
 
 bool test_main(void) {
+  // Perform initial KMAC configuration while EDN0 is active so that KMAC
+  // completes its mandatory initial EDN seed handshake (StRandReset ->
+  // StRandReady). Once seeded, SHAKE-256 operations must not request or block
+  // on further EDN entropy.
+  CHECK(kmac_shake256_configure() == kErrorOk);
+
   // Disable all entropy. The test should also succeed with entropy enabled,
   // but KMAC blocking on entropy for SHAKE-256 would be unexpected and
   // potentially dangerous behavior for ROM. We disable it here so that if
