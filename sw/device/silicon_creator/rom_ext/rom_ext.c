@@ -203,6 +203,11 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
   lc_state = lifecycle_state_get();
+
+  // Check that secret OTP partitions that are expected to be provisioned have
+  // a non-zero digest.
+  HARDENED_RETURN_IF_ERROR(otp_secret_partitions_check(lc_state));
+
   flash_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
   pinmux_init();
