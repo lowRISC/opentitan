@@ -524,11 +524,29 @@ filegroup(
     if not disqualified_for_signing(sku, data)
 ]
 
+[
+    offline_presigning_artifacts(
+        name = "scrambling_{}".format(sku),
+        testonly = True,
+        srcs = [":ft_flash_scramble_{}".format(sku)],
+        ecdsa_key = data["ecdsa_key"],
+        manifest = ":manifest_perso",
+        spx_key = data["spx_key"],
+        tags = ["manual"],
+    )
+    for sku, data in EARLGREY_SKUS.items()
+    if not disqualified_for_signing(sku, data)
+]
+
 pkg_tar(
     name = "digests",
     testonly = True,
     srcs = [
         ":provisioning_{}".format(sku)
+        for sku, data in EARLGREY_SKUS.items()
+        if not disqualified_for_signing(sku, data)
+    ] + [
+        ":scrambling_{}".format(sku)
         for sku, data in EARLGREY_SKUS.items()
         if not disqualified_for_signing(sku, data)
     ],
@@ -541,6 +559,10 @@ offline_signature_attach(
     testonly = True,
     srcs = [
         ":provisioning_{}".format(sku)
+        for sku, data in EARLGREY_SKUS.items()
+        if not disqualified_for_signing(sku, data)
+    ] + [
+        ":scrambling_{}".format(sku)
         for sku, data in EARLGREY_SKUS.items()
         if not disqualified_for_signing(sku, data)
     ],
