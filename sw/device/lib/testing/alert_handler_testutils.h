@@ -30,16 +30,40 @@ typedef enum alert_handler_class_state {
 } alert_handler_class_state_t;
 
 /**
+ * Alert crash dump layout, LSB first: the escalation states of all classes,
+ * then their escalation counts, then their accumulator counts, then the local
+ * alert and alert cause bits. See
+ * https://opentitan.org/book/hw/top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.html#crashdump-output
+ * for Earlgrey as an example.
+ */
+enum {
+  kAlertHandlerClassEscStateBits = 3,
+  kAlertHandlerClassEscCntBits = ALERT_HANDLER_PARAM_ESC_CNT_DW,
+  kAlertHandlerClassAccumCntBits = ALERT_HANDLER_PARAM_ACCU_CNT_DW,
+  kAlertHandlerCrashdumpBits =
+      ALERT_HANDLER_PARAM_N_CLASSES *
+          (kAlertHandlerClassEscStateBits + kAlertHandlerClassEscCntBits +
+           kAlertHandlerClassAccumCntBits) +
+      ALERT_HANDLER_PARAM_N_LOC_ALERT + ALERT_HANDLER_PARAM_N_ALERTS,
+  kAlertHandlerCrashdumpWords = (kAlertHandlerCrashdumpBits + 31) / 32,
+};
+static_assert(kAlertHandlerCrashdumpWords <= DIF_RSTMGR_ALERT_INFO_MAX_SIZE,
+              "Alert crash dump does not fit the rstmgr alert info buffer");
+
+/**
  * Represents the hardware alert crash dump in a more software-friendly manner.
  */
 typedef struct alert_info_testutils_info {
   bool alert_cause[ALERT_HANDLER_PARAM_N_ALERTS];
-  uint8_t loc_alert_cause;                                  // 7bit
-  uint16_t class_accum_cnt[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x16bit
-  uint32_t class_esc_cnt[ALERT_HANDLER_PARAM_N_CLASSES];    // 4x32bit
-  alert_handler_class_state_t
-      class_esc_state[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x3bit
+  uint8_t loc_alert_cause;
+  uint16_t class_accum_cnt[ALERT_HANDLER_PARAM_N_CLASSES];
+  uint32_t class_esc_cnt[ALERT_HANDLER_PARAM_N_CLASSES];
+  alert_handler_class_state_t class_esc_state[ALERT_HANDLER_PARAM_N_CLASSES];
 } alert_handler_testutils_info_t;
+static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT <= 8 &&
+                  kAlertHandlerClassAccumCntBits <= 16 &&
+                  kAlertHandlerClassEscCntBits <= 32,
+              "Crash dump fields do not fit alert_handler_testutils_info_t");
 
 /**
  * Converts the hardware alert crash dump into an
