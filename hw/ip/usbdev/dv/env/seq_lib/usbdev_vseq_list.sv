@@ -39,6 +39,7 @@
 `include "usbdev_phy_config_pinflip_vseq.sv"
 `include "usbdev_phy_config_rand_bus_type_vseq.sv"
 `include "usbdev_phy_config_tx_osc_test_mode_vseq.sv"
+`include "usbdev_phy_config_tx_pkt_test_mode_vseq.sv"
 `include "usbdev_phy_config_usb_ref_disable_vseq.sv"
 `include "usbdev_phy_pins_sense_vseq.sv"
 `include "usbdev_pkt_buffer_vseq.sv"
