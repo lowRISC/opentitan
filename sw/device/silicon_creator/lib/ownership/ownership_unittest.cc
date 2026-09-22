@@ -114,4 +114,45 @@ TEST_P(OwnershipInitInvalidPagesTest, InitWithInfoPageCorrupted) {
 INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipInitInvalidPagesTest,
                          testing::Values(kOwnershipStateLockedOwner,
                                          kOwnershipStateUnlockedSelf));
+
+TEST_F(OwnershipInitTest, LockedOwnerSelfHealingMinSecVerBl0) {
+  boot_data_t bootdata = {
+      .min_security_version_bl0 = 1,
+      .ownership_state = kOwnershipStateLockedOwner,
+  };
+  owner_config_t config = {};
+  owner_application_keyring_t keyring = {};
+
+  owner_page[0].min_security_version_bl0 = 5;
+  owner_page[1].min_security_version_bl0 = 5;
+
+  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot0, _, _, _))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+  EXPECT_CALL(ownership_key_, seal_check(0)).WillOnce(Return(kErrorOk));
+
+  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot1, _, _, _))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+  EXPECT_CALL(ownership_key_, seal_check(1)).WillOnce(Return(kErrorOk));
+
+  EXPECT_EQ(ownership_init(&bootdata, &config, &keyring),
+            kErrorWriteBootdataThenReboot);
+  EXPECT_EQ(bootdata.min_security_version_bl0, 5u);
+}
+
+TEST_F(OwnershipInitTest, UnlockedAnyWithInvalidInfoPages) {
+  boot_data_t bootdata = {.ownership_state = kOwnershipStateUnlockedAny};
+  owner_config_t config = {};
+  owner_application_keyring_t keyring = {};
+
+  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot0, _, _, _))
+      .WillOnce(Return(kErrorUnknown));
+  EXPECT_CALL(flash_ctrl_, InfoRead(&kFlashCtrlInfoPageOwnerSlot1, _, _, _))
+      .WillOnce(Return(kErrorUnknown));
+
+  EXPECT_EQ(ownership_init(&bootdata, &config, &keyring), kErrorOk);
+}
 }  // namespace
