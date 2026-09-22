@@ -60,8 +60,10 @@ fn _save_private_key(path: &Path, key: &SlhDsaPrivateKey, enc: KeyEncoding) -> R
 
 fn _save_public_key(path: &Path, key: &SlhDsaPublicKey, enc: KeyEncoding) -> Result<()> {
     match enc {
-        KeyEncoding::Der => key.write_public_key_der_file(path)?,
-        KeyEncoding::Pem => key.write_public_key_pem_file(path, LineEnding::LF)?,
+        KeyEncoding::Der | KeyEncoding::Pkcs8Der => key.write_public_key_der_file(path)?,
+        KeyEncoding::Pem | KeyEncoding::Pkcs8 | KeyEncoding::Pkcs8Pem => {
+            key.write_public_key_pem_file(path, LineEnding::LF)?
+        }
         _ => Err(HsmError::Unsupported("Unsupported output format".into()))?,
     };
     Ok(())
