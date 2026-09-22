@@ -45,6 +45,19 @@ If desired, the masking can be disabled and the internal state width can be redu
 
 ## Design Details
 
+### Stripped-Down Configuration
+
+By default, the KMAC HWIP supports SHA3, SHAKE, cSHAKE, and the keyed MAC (KMAC).
+If the `EnFullKmac` compile-time Verilog parameter is not set, the keyed MAC is removed and only SHA3, SHAKE, and cSHAKE remain.
+Masking must be disabled in this configuration, i.e., `EnMasking` must not be set either.
+
+Without the keyed MAC, the block never uses a secret key.
+The key registers, the sideloaded key from the key manager, and the entropy generator are unused.
+The key manager application interface runs a cSHAKE operation instead of a keyed MAC.
+
+Software can still read and write the registers belonging to the removed functionality, but they do not affect the operation of the block.
+This applies to [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed), the `KEY_SHARE0_*` and `KEY_SHARE1_*` registers, and the entropy registers such as [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed).
+
 ### Keccak Round
 
 In the KMAC HWIP the Keccak round module is instantiated with a 1600 bit internal state.
