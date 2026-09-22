@@ -15,7 +15,9 @@ cc_library(
     name = "otcrypto_api",
     defines =
         select({
-            "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//sw/device/lib/crypto/configs:hashed": [
+                "FIPS_MODE",
+            ],
             "//conditions:default": [],
         }),
     deps = [
@@ -32,6 +34,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:kats",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
@@ -42,6 +45,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:self_integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
+        "//sw/device/lib/crypto/impl:state",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -138,4 +142,5 @@ pkg_tar(
 filegroup(
     name = "otcrypto_binary_blob_inspection",
     srcs = [":otcrypto_binary_blob_api"],
+    tags = ["manual"],
 )
