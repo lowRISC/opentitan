@@ -98,6 +98,11 @@ interface kmac_app_if
     output rsp_ready = rsp_ready_driven;
 
     input  req_ready;
+    input  rsp_valid;
+    input  rsp_digest_s0;
+    input  rsp_digest_s1;
+    input  rsp_error;
+    input  rsp_finish;
   endclocking
 
   clocking device_cb @(posedge clk_i);

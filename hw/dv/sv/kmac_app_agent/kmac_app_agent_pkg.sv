@@ -28,6 +28,11 @@ package kmac_app_agent_pkg;
   `include "kmac_app_rsp_item.sv"
   `include "kmac_app_mon_item.sv"
 
+  `include "kmac_app_rsp_ready_policy.sv"
+  `include "kmac_app_rsp_ready_always_policy.sv"
+  `include "kmac_app_rsp_ready_always_with_dip_policy.sv"
+  `include "kmac_app_rsp_ready_when_valid_policy.sv"
+  `include "kmac_app_rsp_ready_random_policy.sv"
   `include "kmac_app_agent_cfg.sv"
   typedef dv_base_agent_cov #(.CFG_T (kmac_app_agent_cfg)) kmac_app_agent_cov;
   `include "kmac_app_monitor.sv"
@@ -35,9 +40,8 @@ package kmac_app_agent_pkg;
   `include "kmac_app_device_driver.sv"
   `include "kmac_app_device_sequencer.sv"
 
+  `include "kmac_app_host_sequencer.sv"
   `include "kmac_app_host_driver.sv"
-  typedef dv_base_sequencer #(.ITEM_T (kmac_app_req_item),
-                              .CFG_T (kmac_app_agent_cfg)) kmac_app_host_sequencer;
 
   `include "seq_lib/kmac_app_device_seq.sv"
   `include "seq_lib/kmac_app_host_seq.sv"

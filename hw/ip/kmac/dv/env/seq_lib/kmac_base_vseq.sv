@@ -581,7 +581,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     end
 
     kmac_app_seq.msg_size_bytes           = msg.size();
-    kmac_app_seq.m_using_masked_interface = cfg.m_kmac_app_agent_cfg[mode].has_masking;
+    kmac_app_seq.m_using_masked_interface = APP_CFG[mode].masked;
 
     kmac_app_seq.start(p_sequencer.kmac_app_sequencer_h[mode]);
   endtask

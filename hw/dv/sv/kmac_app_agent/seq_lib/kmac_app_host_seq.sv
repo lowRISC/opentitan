@@ -70,6 +70,8 @@ task kmac_app_host_seq::body();
     bytes_remaining -= num_bytes;
 
     // If req.m_last was true then we just sent the last item and should stop.
-    if (req.m_last) break;
+    if (req.m_last) begin
+      break;
+    end
   end
 endtask

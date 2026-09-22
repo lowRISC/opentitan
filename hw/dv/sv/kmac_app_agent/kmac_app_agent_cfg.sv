@@ -42,6 +42,13 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
   // True if this app interface is capable of masking
   bit has_masking = 1;
 
+  // Percentage chance that a response-ready policy accepts a valid response on each cycle.
+  rand int unsigned rsp_ready_pct;
+
+  // Maximum number of consecutive cycles that a response-ready policy may withhold rsp_ready.
+  int unsigned max_rsp_ready_delay = 8;
+  kmac_app_rsp_ready_policy rsp_ready_policy;
+
   // A queue of digest responses. If the agent is in Device mode, this can be filled by calling
   // add_user_digest. Once that has been done, the automatic device-mode sequence will respond with
   // the data in this queue.
@@ -66,6 +73,9 @@ class kmac_app_agent_cfg extends dv_base_agent_cfg;
 
   // Bias randomization in favor of enabling zero delays less often.
   extern constraint zero_delays_c;
+
+  // Pick rsp_ready_pct from 5 weighted buckets to vary how often the device stalls responses.
+  extern constraint rsp_ready_pct_c;
 endclass
 
 function kmac_app_agent_cfg::new (string name = "");
@@ -85,6 +95,8 @@ function void kmac_app_agent_cfg::do_print(uvm_printer printer);
   printer.print_field_int("constant_share_means_error", constant_share_means_error, 1, UVM_NORADIX);
   printer.print_field_int("inject_zero_in_host_strb", inject_zero_in_host_strb, 1, UVM_NORADIX);
   printer.print_field_int("has_masking", has_masking, 1, UVM_NORADIX);
+  printer.print_field_int("rsp_ready_pct", rsp_ready_pct, 32, UVM_NORADIX);
+  printer.print_field_int("max_rsp_ready_delay", max_rsp_ready_delay, 32, UVM_NORADIX);
   printer.print_array_header("rsp_digest_hs", rsp_digest_hs.size(), "queue of rsp_digest_t");
   foreach(rsp_digest_hs[i]) begin
     printer.print_field($sformatf("[%0d].digest_share0", i),
@@ -127,4 +139,14 @@ endfunction
 
 constraint kmac_app_agent_cfg::zero_delays_c {
   zero_delays dist { 0 := 8, 1 := 2 };
+}
+
+constraint kmac_app_agent_cfg::rsp_ready_pct_c {
+  rsp_ready_pct dist {
+    1   := 1,
+    25  := 2,
+    50  := 3,
+    75  := 2,
+    100 := 2
+  };
 }

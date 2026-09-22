@@ -219,7 +219,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
             `uvm_info(`gfn, "raised sha3_absorb and dropped sha3_idle when issued start cmd",
                       UVM_HIGH)
           end
-          if (checked_kmac_cmd == CmdDone) sha3_idle = 1;
+          if (checked_kmac_cmd == CmdDone) begin
+            sha3_idle = 1;
+          end
           // If CmdDone is written, we know that a hash has completed.
           // So, we can set this to CmdNone one cycle later.
           cfg.clk_rst_vif.wait_clks(1);
@@ -331,11 +333,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
                  (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
                   `KMAC_APP_VALID_TRANS(AppLc) ||
                   `KMAC_APP_VALID_TRANS(AppRom)));
-            in_kmac_app = 1;
             sha3_idle = 0;
             sha3_absorb = 1;
-
-            `uvm_info(`gfn, "Raised in_kmac_app and sha3_absorb. Dropped sha3_idle.", UVM_HIGH)
 
             // we need to choose the correct application interface
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
@@ -352,6 +351,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
               `uvm_fatal(get_full_name(),
                          "Cannot start KMAC app for OTBN (no support for dynamic apps yet)")
             end
+            in_kmac_app = 1;
+            `uvm_info(`gfn, "Raised in_kmac_app and sha3_absorb. Dropped sha3_idle.", UVM_HIGH)
 
             // sample sideload-related coverage
             if (cfg.en_cov) begin
@@ -415,7 +416,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
                 end
               end
               StAppCfg: begin
-                if (app_mode == AppKeymgr &&
+                if (!in_kmac_app) begin
+                end else if (app_mode == AppKeymgr &&
                     !cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
                   app_st = StErrorKeyNotValid;
                 end else begin
@@ -440,8 +442,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
                 app_st = StAppWait;
               end
               StAppWait: begin
+                // No internal SHA3 completion signal is bound into the testbench; the app
+                // response becoming valid is the earliest observable completion proxy.
+                keccak_complete_cycle = cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_valid;
                 if (keccak_complete_cycle) begin
                   app_st = StAppPushDigest;
+                  sha3_absorb = 0;
                 end
               end
               StAppPushDigest: begin
@@ -492,7 +498,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
                 app_fsm_active = 0;
               end
             endcase
-            if (cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off) app_st = StError;
+            if (cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+              app_st = StError;
+            end
             cfg.clk_rst_vif.wait_clks(1);
             #0;
           end
@@ -518,14 +526,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
       //
       // As a stop-gap solution, we have a tiny delay here to ensure that detect_kmac_app_start has
       // run.
-      #1ps;
-
+      wait(in_kmac_app);
       if (! (in_kmac_app && (app_mode == app_index))) begin
         `uvm_error(get_full_name(),
                    $sformatf("Saw request be handled for app %0d when that app was not selected.",
                              app_index))
       end
-
       m_part_way_through_req = !item.m_last;
     end
   endtask
@@ -562,7 +568,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
             kmac_app_fifo[app_mode].get(item);
 
-            cg_wrapper = cov.app_cg_wrappers[app_mode];
+            if (cfg.en_cov) begin
+              cg_wrapper = cov.app_cg_wrappers[app_mode];
+            end
 
             foreach (item.m_req.m_reqs[i]) begin
               bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb;
