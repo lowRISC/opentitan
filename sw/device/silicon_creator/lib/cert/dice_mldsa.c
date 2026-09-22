@@ -40,6 +40,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
@@ -311,9 +312,11 @@ static rom_error_t dice_cdi_hybrid_cert_build(
     HARDENED_CHECK_EQ(
         hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
         kHardenedBoolTrue);
+    watchdog_pet();
     mldsa44_tiny_sign_with_stack(curr_mldsa_sig, signer_mldsa_seed,
                                  (const uint8_t *)randomizer, tbs_buffer,
                                  tbs_size, stack_top);
+    watchdog_pet();
     HARDENED_CHECK_EQ(
         hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
         kHardenedBoolTrue);
@@ -392,6 +395,10 @@ OT_WARN_UNUSED_RESULT static rom_error_t dice_mldsa_derive_seed(
  */
 static bool dice_cert_needs_regenerate(bool cache_valid) {
   retention_sram_t *retram = retention_sram_get();
+  if (bitfield_bit32_read(retram->creator.reset_reasons,
+                          kRstmgrReasonWatchdog)) {
+    return false;
+  }
   bool requested =
       retram->creator.dice_cert_gen.hdr.type == kDiceCertGenRequest;
   if (rom_ext_manifest()->on_demand_dice == kHardenedBoolTrue) {
@@ -441,6 +448,7 @@ static rom_error_t dice_attest_next_cdi(
     const attest_params_t *params,
     const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
     cdi_hybrid_tbs_values_t *tbs_values) {
+  watchdog_pet();
   *params->ecdsa_cert_size_out = 0;
   *params->mldsa_cert_size_out = 0;
 
@@ -576,6 +584,7 @@ static rom_error_t dice_attest_next_cdi(
       kHardenedBoolTrue);
 
   sc_keymgr_sw_binding_unlock_wait();
+  watchdog_pet();
   return kErrorOk;
 }
 /**
