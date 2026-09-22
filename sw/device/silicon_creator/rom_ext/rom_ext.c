@@ -301,8 +301,20 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // and the OTP direct access interface until the next reset.
   flash_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
+  // Explicitly disable the OTP digest check CSRs because hardware consistency
+  // checks can cause a race condition with concurrent software OTP read
+  // requests.
+  sec_mmio_write32(
+      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CHECK_TIMEOUT_REG_OFFSET,
+      0);
+  sec_mmio_write32(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                       OTP_CTRL_INTEGRITY_CHECK_PERIOD_REG_OFFSET,
+                   0);
+  sec_mmio_write32(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                       OTP_CTRL_CONSISTENCY_CHECK_PERIOD_REG_OFFSET,
+                   0);
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
-                           kOtpSecMmioCreatorSwCfgLockDown);
+                           kOtpSecMmioCreatorSwCfgLockDown + 3);
 
   epmp_clear_lock_bits();
 
