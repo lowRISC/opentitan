@@ -231,7 +231,8 @@ static test_alert_info_t expected_info[kRoundTotal] = {
             .test_name = "Single class(ClassA)",
             .alert_info =
                 {
-                    .class_accum_cnt = {3, 0, 0, 0},
+                    // One alert per I2C instance.
+                    .class_accum_cnt = {kDtI2cCount, 0, 0, 0},
                     .class_esc_state = {kCstatePhase0, kCstateIdle, kCstateIdle,
                                         kCstateIdle},
                 },
@@ -241,7 +242,8 @@ static test_alert_info_t expected_info[kRoundTotal] = {
             .test_name = "Multi classes(ClassB,C)",
             .alert_info =
                 {
-                    .class_accum_cnt = {0, 0, 4, 0},
+                    // One alert per UART instance.
+                    .class_accum_cnt = {0, 0, kDtUartCount, 0},
                     .class_esc_state = {kCstateIdle, kCstateIdle, kCstateIdle,
                                         kCstateIdle},
                 },

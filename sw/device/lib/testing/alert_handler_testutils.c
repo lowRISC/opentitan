@@ -58,24 +58,26 @@ status_t alert_handler_testutils_info_parse(
     alert_handler_testutils_info_t *info) {
   uint32_t word_index = 0;
   uint32_t bit_index = 0;
+  TRY_CHECK(dump_size >= kAlertHandlerCrashdumpWords,
+            "alert crash dump too short: %d words, expected %d", dump_size,
+            kAlertHandlerCrashdumpWords);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info->class_esc_state[i] =
-        get_next_n_bits(3, dump, &word_index, &bit_index);
+    info->class_esc_state[i] = get_next_n_bits(kAlertHandlerClassEscStateBits,
+                                               dump, &word_index, &bit_index);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info->class_esc_cnt[i] = get_next_n_bits(32, dump, &word_index, &bit_index);
+    info->class_esc_cnt[i] = get_next_n_bits(kAlertHandlerClassEscCntBits, dump,
+                                             &word_index, &bit_index);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info->class_accum_cnt[i] =
-        (uint16_t)get_next_n_bits(16, dump, &word_index, &bit_index);
+    info->class_accum_cnt[i] = (uint16_t)get_next_n_bits(
+        kAlertHandlerClassAccumCntBits, dump, &word_index, &bit_index);
   }
-  info->loc_alert_cause =
-      (uint8_t)get_next_n_bits(7, dump, &word_index, &bit_index);
-  TRY_CHECK(word_index < dump_size);
+  info->loc_alert_cause = (uint8_t)get_next_n_bits(
+      ALERT_HANDLER_PARAM_N_LOC_ALERT, dump, &word_index, &bit_index);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     info->alert_cause[i] = get_next_n_bits(1, dump, &word_index, &bit_index);
   }
-  TRY_CHECK(word_index < dump_size);
   return OK_STATUS();
 }
 
