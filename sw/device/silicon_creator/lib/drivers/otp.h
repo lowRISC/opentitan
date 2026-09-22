@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
@@ -71,7 +72,10 @@ typedef enum otp_partition {
   kOtpPartitionRotCreatorAuthState = 3,
   kOtpPartitionHwCfg0 = 4,
   kOtpPartitionHwCfg1 = 5,
-  kOtpPartitionNumPartitions = 6,
+  kOtpPartitionSecret0 = 6,
+  kOtpPartitionSecret1 = 7,
+  kOtpPartitionSecret2 = 8,
+  kOtpPartitionNumPartitions = 9,
 } otp_partition_t;
 
 /**
@@ -116,6 +120,24 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words);
  * @return The 64-bit digest value.
  */
 uint64_t otp_partition_digest_read(otp_partition_t partition);
+
+/**
+ * Check that the secret OTP partitions that are expected to be provisioned
+ * have a non-zero digest.
+ *
+ * The SECRET0 partition is provisioned during the TEST_UNLOCKED life-cycle
+ * stages, so its digest must be non-zero in every other life-cycle state.
+ *
+ * The SECRET1 and SECRET2 partitions are provisioned and locked before the
+ * CREATOR_SW_CFG partition is locked at the end of personalization, so a
+ * non-zero CREATOR_SW_CFG digest implies that both must have a non-zero
+ * digest.
+ *
+ * @param lc_state Life cycle state of the device.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otp_secret_partitions_check(lifecycle_state_t lc_state);
 
 /**
  * Perform a blocking 32-bit read from the Direct Access Interface (DAI).

@@ -59,6 +59,24 @@ const otp_partition_info_t kOtpPartitions[] = {
                 OTP_CTRL_PARAM_HW_CFG1_DIGEST_SIZE,
         .digest_reg_addr = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
         .align_mask = 0x3},
+    [kOtpPartitionSecret0] = {
+        .start_addr = OTP_CTRL_PARAM_SECRET0_OFFSET,
+        .size = OTP_CTRL_PARAM_SECRET0_SIZE -
+                OTP_CTRL_PARAM_SECRET0_DIGEST_SIZE,
+        .digest_reg_addr = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET,
+        .align_mask = 0x7},
+    [kOtpPartitionSecret1] = {
+        .start_addr = OTP_CTRL_PARAM_SECRET1_OFFSET,
+        .size = OTP_CTRL_PARAM_SECRET1_SIZE -
+                OTP_CTRL_PARAM_SECRET1_DIGEST_SIZE,
+        .digest_reg_addr = OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET,
+        .align_mask = 0x7},
+    [kOtpPartitionSecret2] = {
+        .start_addr = OTP_CTRL_PARAM_SECRET2_OFFSET,
+        .size = OTP_CTRL_PARAM_SECRET2_SIZE -
+                OTP_CTRL_PARAM_SECRET2_DIGEST_SIZE,
+        .digest_reg_addr = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET,
+        .align_mask = 0x7},
 };
 // clang-format on
 
@@ -91,6 +109,49 @@ uint64_t otp_partition_digest_read(otp_partition_t partition) {
   value <<= 32;
   value |= sec_mmio_read32(reg_offset);
   return value;
+}
+
+OT_ALWAYS_INLINE uint32_t otp_fold_digest(uint64_t digest) {
+  return (uint32_t)digest | (uint32_t)(digest >> 32);
+}
+
+rom_error_t otp_secret_partitions_check(lifecycle_state_t lc_state) {
+  // SECRET0 is provisioned during the TEST_UNLOCKED life-cycle stages, so its
+  // digest must be non-zero in every other life-cycle state.
+  if (launder32(lc_state) != kLcStateTest) {
+    HARDENED_CHECK_NE(lc_state, kLcStateTest);
+    uint32_t secret0_digest =
+        otp_fold_digest(otp_partition_digest_read(kOtpPartitionSecret0));
+    if (launder32(secret0_digest) == 0) {
+      return kErrorOtpSecretNotProvisioned;
+    }
+    HARDENED_CHECK_NE(secret0_digest, 0);
+  } else {
+    HARDENED_CHECK_EQ(launder32(lc_state), kLcStateTest);
+  }
+
+  // SECRET1 and SECRET2 are provisioned and locked before the CREATOR_SW_CFG
+  // partition is locked at the end of the device personalization, so a
+  // non-zero CREATOR_SW_CFG digest implies that both must have a non-zero
+  // digest.
+  uint32_t creator_sw_cfg_digest =
+      otp_fold_digest(otp_partition_digest_read(kOtpPartitionCreatorSwCfg));
+  if (launder32(creator_sw_cfg_digest) != 0) {
+    HARDENED_CHECK_NE(creator_sw_cfg_digest, 0);
+    uint32_t secret1_digest =
+        otp_fold_digest(otp_partition_digest_read(kOtpPartitionSecret1));
+    uint32_t secret2_digest =
+        otp_fold_digest(otp_partition_digest_read(kOtpPartitionSecret2));
+    if (launder32(secret1_digest) == 0 || launder32(secret2_digest) == 0) {
+      return kErrorOtpSecretNotProvisioned;
+    }
+    HARDENED_CHECK_NE(launder32(secret1_digest), 0);
+    HARDENED_CHECK_NE(launder32(secret2_digest), 0);
+  } else {
+    HARDENED_CHECK_EQ(launder32(creator_sw_cfg_digest), 0);
+  }
+
+  return kErrorOk;
 }
 
 void wait_for_dai_idle(void) {
