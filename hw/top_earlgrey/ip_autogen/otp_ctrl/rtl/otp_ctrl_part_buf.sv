@@ -205,6 +205,10 @@ module otp_ctrl_part_buf
   logic [ScrmblBlockWidth-1:0] zer_mrk;
   otp_ctrl_macro_pkg::cmd_e cmd_d;
 
+  // Indicates whether the digest of this partition was non-zero when it was
+  // read out from OTP during initialization.
+  mubi8_t digest_nonzero_d, digest_nonzero_q;
+
   // Output partition error state.
   assign error_o = error_q;
 
@@ -301,6 +305,9 @@ module otp_ctrl_part_buf
 
     // Redundantly encoded lock signal for buffer regs.
     dout_locked_d = dout_locked_q;
+
+    // Redundantly encoded indicator for a non-zero digest.
+    digest_nonzero_d = digest_nonzero_q;
 
     // OTP signals
     otp_req_o = 1'b0;
@@ -411,6 +418,10 @@ module otp_ctrl_part_buf
             // verification. Note that the last block is the digest value, which does not
             // have to be descrambled.
             if (cnt == LastScrmblBlock) begin
+              // Register whether the digest read out from OTP is non-zero. The integrity
+              // and consistency checks verify that the digest buffer register still
+              // corresponds to this indicator.
+              digest_nonzero_d = (data_mux != '0) ? MuBi8True : MuBi8False;
               if (mubi8_test_true_strict(is_zeroized)) begin
                 state_d = IdleSt;
                 // Unlock the partition here if the partition is zeroized since no
@@ -519,8 +530,12 @@ module otp_ctrl_part_buf
             // Check whether we need to compare the digest or the full partition
             // contents here.
             if (Info.hw_digest) begin
-              // Note that we ignore this check if the digest is still blank.
-              if (digest_o == data_mux || digest_o == '0) begin
+              // A blank digest buffer is only accepted if the digest was also
+              // blank when it was read out from OTP during initialization.
+              if ((digest_o == data_mux &&
+                   mubi8_test_true_strict(digest_nonzero_q)) ||
+                  (digest_o == '0 &&
+                   mubi8_test_false_strict(digest_nonzero_q))) begin
                 state_d = IdleSt;
                 cnsty_chk_ack_o = 1'b1;
               // Error out and lock the partition if this check fails.
@@ -698,8 +713,12 @@ module otp_ctrl_part_buf
         data_sel = ScrmblData;
         if (scrmbl_valid_i) begin
           // This is the only way the buffer regs can get unlocked.
-          // Note that we ignore this check if the digest is still blank.
-          if (digest_o == data_mux || digest_o == '0) begin
+          // A blank digest buffer is only accepted if the digest was also
+          // blank when it was read out from OTP during initialization.
+          if ((digest_o == data_mux &&
+               mubi8_test_true_strict(digest_nonzero_q)) ||
+              (digest_o == '0 &&
+               mubi8_test_false_strict(digest_nonzero_q))) begin
             state_d = IdleSt;
             // If the partition is still locked, this is the first integrity check after
             // initialization. This is the only way the buffer regs can get unlocked.
@@ -926,12 +945,14 @@ module otp_ctrl_part_buf
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q       <= NoError;
+      error_q          <= NoError;
       // data output is locked by default
-      dout_locked_q <= MuBi8True;
+      dout_locked_q    <= MuBi8True;
+      digest_nonzero_q <= MuBi8False;
     end else begin
-      error_q       <= error_d;
-      dout_locked_q <= dout_locked_d;
+      error_q          <= error_d;
+      dout_locked_q    <= dout_locked_d;
+      digest_nonzero_q <= digest_nonzero_d;
     end
   end
 
