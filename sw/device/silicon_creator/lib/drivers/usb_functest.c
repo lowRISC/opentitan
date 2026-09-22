@@ -91,6 +91,7 @@ usb_control_ctx_t ep0 = {
 
 uint32_t work_buffer[16384];
 uint32_t test_exit;
+bool queue_pending_in_ep0;
 
 typedef enum test_req {
   kTestReqRandomize = 1,
@@ -187,7 +188,10 @@ rom_error_t my_control(usb_setup_data_t *setup) {
     case kTestReqEpConfig: {
       uint8_t ep = (uint8_t)setup->index;
       bool use_handler = (setup->value != 0);
-      usb_ep_init(ep, kUsbEpTypeBulk, 64, use_handler ? handler : NULL, NULL);
+      if (usb_ep_init(ep, kUsbEpTypeBulk, 64, use_handler ? handler : NULL,
+                      NULL) != kErrorOk) {
+        queue_pending_in_ep0 = true;
+      }
       usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
       break;
     }
@@ -236,6 +240,14 @@ void handler(void *ctx, uint8_t ep, usb_transfer_flags_t flags, void *data) {
       LOG_INFO("set_addr %u", ep0.device_address);
     }
 
+    if (queue_pending_in_ep0) {
+      // Queue an uncollected IN packet on EP0 after the status stage so that
+      // the next SETUP packet cancels it in hardware (setting CONFIGIN_0.PEND)
+      // and exercises the cancelled transaction error path in `handle_in`.
+      queue_pending_in_ep0 = false;
+      usb_ep_transfer(kUsbDirIn | 0, NULL, 0, 0);
+    }
+
     if (test_exit == 1) {
       test_exit = 2;
     }
@@ -245,6 +257,25 @@ void handler(void *ctx, uint8_t ep, usb_transfer_flags_t flags, void *data) {
     base_printf("Event on EP0x%02x: flags=%08x length=%d\r\n", ep, flags,
                 length);
   }
+}
+
+rom_error_t usb_invalid_ep_test(void) {
+  const uint8_t kInvalidEp = kEpNumMask;
+  bool stalled = false;
+  if (usb_ep_init(kInvalidEp, kUsbEpTypeBulk, 64, NULL, NULL) !=
+      kErrorUsbBadEndpointNumber) {
+    return kErrorUnknown;
+  }
+  if (usb_ep_stall(kInvalidEp, true) != kErrorUsbBadEndpointNumber) {
+    return kErrorUnknown;
+  }
+  if (usb_ep_stalled(kInvalidEp, &stalled) != kErrorUsbBadEndpointNumber) {
+    return kErrorUnknown;
+  }
+  if (usb_ep_transfer(kInvalidEp, NULL, 0, 0) != kErrorUsbBadEndpointNumber) {
+    return kErrorUnknown;
+  }
+  return kErrorOk;
 }
 
 rom_error_t usb_test(void) {
@@ -264,6 +295,7 @@ rom_error_t usb_test(void) {
 bool test_main(void) {
   pinmux_init_usb();
   status_t result = OK_STATUS();
+  EXECUTE_TEST(result, usb_invalid_ep_test);
   EXECUTE_TEST(result, usb_test);
   return status_ok(result);
 }
