@@ -71,8 +71,8 @@ module ast_part_secondary (
 
   // adc interface
   input adc_pd_i,                             // ADC Power Down
-  input ast_pkg::awire_t adc_a0_ai,           // ADC A0 Analog Input
-  input ast_pkg::awire_t adc_a1_ai,           // ADC A1 Analog Input
+  input ast_pkg::awire_t adc_a0_a_i           // ADC A0 Analog Input
+  input ast_pkg::awire_t adc_a1_a_i           // ADC A1 Analog Input
   input [ast_pkg::AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
   output [ast_pkg::AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
@@ -95,13 +95,8 @@ module ast_part_secondary (
   output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_a_o,     // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_a_o,     // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks (clock bypass acks moved to ast_part_primary)
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
@@ -414,10 +409,10 @@ adc #(
   .AdcChannels ( ast_pkg::AdcChannels ),
   .AdcDataWidth ( ast_pkg::AdcDataWidth )
 ) u_adc (
-  .adc_a0_ai ( adc_a0_ai ),
-  .adc_a1_ai ( adc_a1_ai ),
+  .adc_a0_ai ( adc_a0_a_i ),
+  .adc_a1_ai ( adc_a1_a_i ),
   .adc_chnsel_i ( adc_chnsel_i[ast_pkg::AdcChannels-1:0] ),
-  .adc_pd_i ( adc_pd_i ),
+  .adc_pd_i ( adc_pd_i.pd ),
   .clk_adc_i ( clk_ast_adc_i ),
   .rst_adc_ni ( rst_ast_adc_ni ),
   .adc_d_o ( adc_d_o[ast_pkg::AdcDataWidth-1:0] ),
@@ -625,11 +620,11 @@ ast_dft u_ast_dft (
 // DFT Misc Logic
 ////////////////////////////////////////
 `ifdef ANALOGSIM
-assign ast2pad_t0_ao = 0.0;
-assign ast2pad_t1_ao = 0.1;
+assign ast2pad_t0_a_o = 0.0;
+assign ast2pad_t1_a_o = 0.1;
 `else
-assign ast2pad_t0_ao = 1'bz;
-assign ast2pad_t1_ao = 1'bz;
+assign ast2pad_t0_a_o = 1'bz;
+assign ast2pad_t1_a_o = 1'bz;
 `endif
 
 ////////////////////////////////////////
