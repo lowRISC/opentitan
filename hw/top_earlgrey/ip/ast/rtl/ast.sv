@@ -155,11 +155,6 @@ localparam int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth;
 ast_intraip_pkg::s2p_t intraip_s2p;
 ast_intraip_pkg::p2s_t intraip_p2s;
 
-// Read-write margins generated in the AON domain (ast_dft, inside ast_part_secondary)
-ast_pkg::tpm_rm_t tpram_rm;
-ast_pkg::spm_rm_t spram_rm;
-ast_pkg::rom_rm_t sprom_rm;
-
 // Clock bypass for OS FPGA
 ast_pkg::clks_osc_byp_t clk_osc_byp;
 `ifdef AST_BYPASS_CLK
@@ -194,6 +189,50 @@ assign obs = '{
   otp_obs: otp_obs_i,
   otm_obs: otm_obs_i,
   usb_obs: usb_obs_i
+};
+
+ast_pkg::ast_mem_cfg_primary_req_t mem_cfg_primary_req;
+ast_pkg::ast_mem_cfg_primary_rsp_t mem_cfg_primary_rsp;
+ast_pkg::ast_mem_cfg_secondary_req_t mem_cfg_secondary_req;
+ast_pkg::ast_mem_cfg_secondary_rsp_t mem_cfg_secondary_rsp;
+
+assign mem_cfg_req_o = '{
+  otbn_imem:                mem_cfg_primary_req.otbn_imem,
+  otbn_dmem:                mem_cfg_primary_req.otbn_dmem,
+  i2c0:                     mem_cfg_primary_req.i2c0,
+  i2c1:                     mem_cfg_primary_req.i2c1,
+  i2c2:                     mem_cfg_primary_req.i2c2,
+  usbdev_ram:               mem_cfg_primary_req.usbdev_ram,
+  rv_core_ibex_icache_tag:  mem_cfg_primary_req.rv_core_ibex_icache_tag,
+  rv_core_ibex_icache_data: mem_cfg_primary_req.rv_core_ibex_icache_data,
+  sram_ctrl_main:           mem_cfg_primary_req.sram_ctrl_main,
+  sram_ctrl_sec:            mem_cfg_primary_req.sram_ctrl_sec,
+  sram_ctrl_ret:            mem_cfg_secondary_req.sram_ctrl_ret,
+  sram_ctrl_meta:           mem_cfg_primary_req.sram_ctrl_meta,
+  spi_device_sys2spi:       mem_cfg_primary_req.spi_device_sys2spi,
+  spi_device_spi2sys:       mem_cfg_primary_req.spi_device_spi2sys,
+  rom_ctrl_rom:             mem_cfg_primary_req.rom_ctrl_rom
+};
+
+assign mem_cfg_primary_rsp = '{
+  otbn_imem: mem_cfg_rsp_i.otbn_imem,
+  otbn_dmem: mem_cfg_rsp_i.otbn_dmem,
+  i2c0: mem_cfg_rsp_i.i2c0,
+  i2c1: mem_cfg_rsp_i.i2c1,
+  i2c2: mem_cfg_rsp_i.i2c2,
+  usbdev_ram: mem_cfg_rsp_i.usbdev_ram,
+  rv_core_ibex_icache_tag: mem_cfg_rsp_i.rv_core_ibex_icache_tag,
+  rv_core_ibex_icache_data: mem_cfg_rsp_i.rv_core_ibex_icache_data,
+  sram_ctrl_main: mem_cfg_rsp_i.sram_ctrl_main,
+  sram_ctrl_sec: mem_cfg_rsp_i.sram_ctrl_sec,
+  sram_ctrl_meta: mem_cfg_rsp_i.sram_ctrl_meta,
+  spi_device_sys2spi: mem_cfg_rsp_i.spi_device_sys2spi,
+  spi_device_spi2sys: mem_cfg_rsp_i.spi_device_spi2sys,
+  rom_ctrl_rom: mem_cfg_rsp_i.rom_ctrl_rom
+};
+
+assign mem_cfg_secondary_rsp = '{
+  sram_ctrl_ret: mem_cfg_rsp_i.sram_ctrl_ret
 };
 
 // AON Domain instantiation
@@ -255,9 +294,8 @@ ast_part_secondary #(
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
   .clk_osc_byp_i           ( clk_osc_byp ),
   .flash_bist_en_o         ( flash_bist_en_o ),
-  .tpram_rm_o              ( tpram_rm ),
-  .spram_rm_o              ( spram_rm ),
-  .sprom_rm_o              ( sprom_rm ),
+  .mem_cfg_o               ( mem_cfg_secondary_req ),
+  .mem_cfg_i               ( mem_cfg_secondary_rsp ),
   .dft_scan_md_o           ( dft_scan_md_o ),
   .scan_shift_en_o         ( scan_shift_en_o ),
   .scan_reset_n_o          ( scan_reset_no ),
@@ -304,41 +342,9 @@ ast_part_primary #(
   .clk_src_usb_o           ( clk_src_usb_o ),
   .clk_src_usb_val_o       ( clk_src_usb_val_o ),
   .io_clk_byp_ack_o        ( io_clk_byp_ack_o ),
-  .all_clk_byp_ack_o       ( all_clk_byp_ack_o )
+  .all_clk_byp_ack_o       ( all_clk_byp_ack_o ),
+  .mem_cfg_o               ( mem_cfg_primary_req ),
+  .mem_cfg_i               ( mem_cfg_primary_rsp )
 );
-
-///////////////////////////////////////
-// Memory configuration distribution
-///////////////////////////////////////
-assign mem_cfg_req_o.otbn_imem                = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.otbn_dmem                = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c0                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c1                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c2                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.usbdev_ram               = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.rv_core_ibex_icache_tag  =
-    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.rv_core_ibex_icache_data =
-    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_main           =
-    {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_sec            =
-    {ast_pkg::SramCtrlSecNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_ret            =
-    {ast_pkg::SramCtrlRetNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_meta           =
-    {ast_pkg::SramCtrlMetaNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};
-assign mem_cfg_req_o.spi_device_spi2sys       = '{req: tpram_rm.cfg};
-assign mem_cfg_req_o.rom_ctrl_rom             = '{req: sprom_rm.cfg};
-
-logic unused_mem_cfg;
-assign unused_mem_cfg = ^mem_cfg_rsp_i;
-
-///////////////////////////////////////
-// Assertions
-///////////////////////////////////////
-// Memory configuration requests
-`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_req_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 endmodule : ast

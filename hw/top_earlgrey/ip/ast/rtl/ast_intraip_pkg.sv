@@ -72,6 +72,9 @@ package ast_intraip_pkg;
     // Calibration signals
     logic sys_io_osc_cal;
     logic usb_osc_cal;
+
+    // Memory configuration
+    ast_mem_cfg_primary_req_t mem_cfg_req;
   } s2p_t;
 
   // Primary to secondary partition Communication Structure (OS simplified)
@@ -83,6 +86,9 @@ package ast_intraip_pkg;
     ast_dif_t ot0_alert_src;
 
     logic regal_we;
+
+    // Memory configuration
+    ast_mem_cfg_primary_rsp_t mem_cfg_rsp;
   } p2s_t;
 
 endpackage

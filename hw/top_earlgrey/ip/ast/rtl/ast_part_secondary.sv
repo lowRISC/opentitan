@@ -100,10 +100,9 @@ module ast_part_secondary #(
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request
   output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
-  // memories read-write margins
-  output ast_pkg::tpm_rm_t tpram_rm_o,        // Two Port RAM Read-write Margin
-  output ast_pkg::spm_rm_t spram_rm_o,        // Single Port RAM Read-write Margin
-  output ast_pkg::rom_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
+  // memory configurations
+  output ast_pkg::ast_mem_cfg_secondary_req_t mem_cfg_o,
+  input ast_pkg::ast_mem_cfg_secondary_rsp_t mem_cfg_i,
 
   // Scan interface
   output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
@@ -606,13 +605,56 @@ assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
 ///////////////////////////////////////
 // DFT (Main | Always ON)
 ///////////////////////////////////////
+// Memories read-write margins
+ast_pkg::tpm_rm_t tpram_rm; // Two Port RAM Read-write Margin
+ast_pkg::spm_rm_t spram_rm; // Single Port RAM Read-write Margin
+ast_pkg::rom_rm_t sprom_rm; // Single Port ROM Read-write Margin
+
 ast_dft u_ast_dft (
   .obs_ctrl_o ( obs_ctrl_o ),
   .ast2padmux_o ( ast2padmux_o[Ast2PadOutWidth-1:0] ),
-  .tpram_rm_o ( tpram_rm_o ),
-  .spram_rm_o ( spram_rm_o ),
-  .sprom_rm_o ( sprom_rm_o )
+  .tpram_rm_o ( tpram_rm ),
+  .spram_rm_o ( spram_rm ),
+  .sprom_rm_o ( sprom_rm )
 );
+
+// Same PD memories
+assign mem_cfg_o.sram_ctrl_ret =
+    {ast_pkg::SramCtrlRetNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+
+// Memories in other PD
+ast_pkg::ast_mem_cfg_primary_req_t primary_mem_cfg_req;
+assign intraip_s2p_o.mem_cfg_req = primary_mem_cfg_req;
+
+assign primary_mem_cfg_req.otbn_imem                = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.otbn_dmem                = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i2c0                     = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i2c1                     = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i2c2                     = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.usbdev_ram               = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.rv_core_ibex_icache_tag  =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign primary_mem_cfg_req.rv_core_ibex_icache_data =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign primary_mem_cfg_req.sram_ctrl_main           =
+    {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign primary_mem_cfg_req.sram_ctrl_sec            =
+    {ast_pkg::SramCtrlSecNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+
+assign primary_mem_cfg_req.sram_ctrl_meta           =
+    {ast_pkg::SramCtrlMetaNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign primary_mem_cfg_req.spi_device_sys2spi       = '{req: tpram_rm.cfg};
+assign primary_mem_cfg_req.spi_device_spi2sys       = '{req: tpram_rm.cfg};
+assign primary_mem_cfg_req.rom_ctrl_rom             = '{req: sprom_rm.cfg};
+
+// Responses are unused in open-source AST
+logic unused_mem_rsps;
+assign unused_mem_rsps = ^{
+  mem_cfg_i,
+  intraip_p2s_i.mem_cfg_rsp
+};
+
+`ASSERT_KNOWN(MemCfgKnown_A, mem_cfg_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 ////////////////////////////////////////
 // DFT Misc Logic
@@ -693,10 +735,6 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst.main_pok)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_o, clk_ast_alert_i, rst_ast_alert_ni)
-// Read-write margins
-`ASSERT_KNOWN(TpramRmKnownO_A, tpram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SpramRmKnownO_A, spram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SpromRmKnownO_A, sprom_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // DFT
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 // SCAN
@@ -704,6 +742,9 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_n_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
+
+// Memory configuration
+`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 
 // Ensure parameters defined in the hjson always match the pkg.
 `ASSERT_INIT(UsbCalibWidthMatchesAstPkg_A, UsbCalibWidth == ast_pkg::UsbCalibWidth)
