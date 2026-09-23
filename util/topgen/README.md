@@ -242,3 +242,38 @@ To be on the safe side and prevent the accidental use of testing files for the t
   - `hw/top_earlgrey/rtl/autogen/testing/*`
 
 Note that the `hw/top_earlgrey/data/top_earlgrey_seed.testing.hjson` file is still required by the `ralgen` generator (but the actual seed values don't matter for `ralgen`).
+
+## Split IPs
+
+An IP marked `is_split_ip` in its reggen configuration is split into a `primary` and a `secondary` partition, see [reggen](../reggen/README.md#split-ips).
+topgen emits such an IP as two instances where each partition can be placed in a different power domain.
+The partitions are instantiated as `u_<ip>_part_<partition>`.
+
+The power domains of the partitions are specified with the `domain` and `domain_secondary` key, respectively.
+The two may name the same domain, in which case both partitions are placed into the same domain.
+Any referenced domain must exist in the top configuration file.
+
+The clock sources, the clock group and the reset connections are given per partition.
+For a split instance these keys are dicts with a `primary` and a `secondary` entry:
+
+```hjson
+{ name: "my_ip",
+  type: "my_ip",
+  domain: "Main",
+  domain_secondary: "Aon",
+  clock_srcs: {
+    primary:   { clk_i: "main" }
+    secondary: { clk_aon_i: "aon" }
+  }
+  clock_group: {
+    primary:   "secure"
+    secondary: "secure"
+  }
+  reset_connections: {
+    primary:   { rst_ni: "lc" }
+    secondary: { rst_aon_ni: "lc_aon" }
+  }
+}
+```
+All three keys must provide a non-empty entry for both partitions of a split instance.
+A split IP's secondary partition is always clocked, so an empty or omitted `secondary` entry is rejected.
