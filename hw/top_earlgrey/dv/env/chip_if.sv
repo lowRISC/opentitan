@@ -622,16 +622,16 @@ interface chip_if;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
 `endif
-  wire adc_data_valid = `AST_HIER.u_ast_part_secondary.u_adc.adc_d_val_o;
+  wire adc_data_valid = `AST_HIER.u_ast_part_secondary.adc_o.data_valid;
   wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
                            (|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_wip));
 
   task static force_adc_d_o(input bit [9:0] channel_val);
-    force `AST_HIER.u_ast_part_secondary.adc_d_o = channel_val;
+    force `AST_HIER.u_ast_part_secondary.adc_o.data = channel_val;
   endtask
 
   task static release_adc_d_o();
-    release `AST_HIER.u_ast_part_secondary.adc_d_o;
+    release `AST_HIER.u_ast_part_secondary.adc_o.data;
   endtask
 
   // This task triggers a wakeup by forcing an incoming alert from AST to sensor_ctrl.

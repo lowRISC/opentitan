@@ -148,8 +148,6 @@ module ast (
 
 localparam int unsigned EntropyStreams  = ast_pkg::EntropyStreams;
 localparam int unsigned UsbCalibWidth   = ast_pkg::UsbCalibWidth;
-localparam int unsigned AdcChannels     = ast_pkg::AdcChannels;
-localparam int unsigned AdcDataWidth    = ast_pkg::AdcDataWidth;
 localparam int unsigned Pad2AstInWidth  = ast_pkg::Pad2AstInWidth;
 localparam int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth;
 
@@ -170,11 +168,20 @@ ast_pkg::clks_osc_byp_t clk_osc_byp;
   assign clk_osc_byp = '0;
 `endif
 
+// Convert ADC signals to/from req/rsp
+ast_pkg::adc_ast_req_t adc_req;
+assign adc_req = '{
+  pd:          adc_pd_i,
+  channel_sel: adc_chnsel_i
+};
+
+ast_pkg::adc_ast_rsp_t adc_rsp;
+assign adc_d_o = adc_rsp.data;
+assign adc_d_val_o = adc_rsp.data_valid;
+
 // AON Domain instantiation
 ast_part_secondary #(
   .UsbCalibWidth   ( UsbCalibWidth ),
-  .AdcChannels     ( AdcChannels ),
-  .AdcDataWidth    ( AdcDataWidth ),
   .Pad2AstInWidth  ( Pad2AstInWidth ),
   .Ast2PadOutWidth ( Ast2PadOutWidth )
 ) u_ast_part_secondary (
@@ -215,12 +222,10 @@ ast_part_secondary #(
   .rst_ast_usb_ni          ( rst_ast_usb_ni ),
   .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .usb_io_pu_cal_o         ( usb_io_pu_cal_o ),
-  .adc_pd_i                ( adc_pd_i ),
+  .adc_i                   ( adc_req ),
+  .adc_o                   ( adc_rsp ),
   .adc_a0_a_i              ( adc_a0_ai ),
   .adc_a1_a_i              ( adc_a1_ai ),
-  .adc_chnsel_i            ( adc_chnsel_i ),
-  .adc_d_o                 ( adc_d_o ),
-  .adc_d_val_o             ( adc_d_val_o ),
   .alert_i                 ( alert_rsp_i ),
   .alert_o                 ( alert_req_o ),
   .dft_strap_test_i        ( dft_strap_test_i ),

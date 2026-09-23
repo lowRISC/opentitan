@@ -14,8 +14,6 @@
 
 module ast_part_secondary #(
   parameter int unsigned UsbCalibWidth   = ast_pkg::UsbCalibWidth,
-  parameter int unsigned AdcChannels     = ast_pkg::AdcChannels,
-  parameter int unsigned AdcDataWidth    = ast_pkg::AdcDataWidth,
   parameter int unsigned Pad2AstInWidth  = ast_pkg::Pad2AstInWidth,
   parameter int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth
 ) (
@@ -77,12 +75,10 @@ module ast_part_secondary #(
   output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
 
   // adc interface
-  input adc_pd_i,                             // ADC Power Down
+  input ast_pkg::adc_ast_req_t adc_i,         // ADC Power Down and Channel Select
+  output ast_pkg::adc_ast_rsp_t adc_o,        // ADC Digital Valid and value (per channel)
   input ast_pkg::awire_t adc_a0_a_i,          // ADC A0 Analog Input
   input ast_pkg::awire_t adc_a1_a_i,          // ADC A1 Analog Input
-  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
-  output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
-  output adc_d_val_o,                         // ADC Digital Valid
 
   // alerts
   input ast_pkg::ast_alert_rsp_t alert_i,  // Alerts Trigger & Acknowledge Inputs
@@ -415,17 +411,17 @@ prim_clock_buf #(
 ///////////////////////////////////////
 adc #(
   .AdcCnvtClks ( AdcCnvtClks ),
-  .AdcChannels ( AdcChannels ),
-  .AdcDataWidth ( AdcDataWidth )
+  .AdcChannels ( ast_pkg::AdcChannels ),
+  .AdcDataWidth ( ast_pkg::AdcDataWidth )
 ) u_adc (
   .adc_a0_ai ( adc_a0_a_i ),
   .adc_a1_ai ( adc_a1_a_i ),
-  .adc_chnsel_i ( adc_chnsel_i[AdcChannels-1:0] ),
-  .adc_pd_i ( adc_pd_i ),
+  .adc_chnsel_i ( adc_i.channel_sel[ast_pkg::AdcChannels-1:0] ),
+  .adc_pd_i ( adc_i.pd ),
   .clk_adc_i ( clk_ast_adc_i ),
   .rst_adc_ni ( rst_ast_adc_ni ),
-  .adc_d_o ( adc_d_o[AdcDataWidth-1:0] ),
-  .adc_d_val_o ( adc_d_val_o )
+  .adc_d_o ( adc_o.data[ast_pkg::AdcDataWidth-1:0] ),
+  .adc_d_val_o ( adc_o.data_valid )
 );
 
 ///////////////////////////////////////
@@ -686,8 +682,7 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 //
 `ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 // ADC
-`ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
-`ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
+`ASSERT_KNOWN(AdcDKnownO_A, adc_o, clk_ast_adc_i, rst_ast_adc_ni)
 // Note: RNG assertions moved to ast_part_primary.sv
 // TLUL and InitDone asserts are now in ast_part_primary.sv
 // POs
@@ -719,8 +714,6 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 
 // Ensure parameters defined in the hjson always match the pkg.
 `ASSERT_INIT(UsbCalibWidthMatchesAstPkg_A, UsbCalibWidth == ast_pkg::UsbCalibWidth)
-`ASSERT_INIT(AdcChannelsMatchesAstPkg_A, AdcChannels == ast_pkg::AdcChannels)
-`ASSERT_INIT(AdcDataWidthMatchesAstPkg_A, AdcDataWidth == ast_pkg::AdcDataWidth)
 `ASSERT_INIT(Pad2AstInWidthMatchesAstPkg_A, Pad2AstInWidth == ast_pkg::Pad2AstInWidth)
 `ASSERT_INIT(Ast2PadOutWidthMatchesAstPkg_A, Ast2PadOutWidth == ast_pkg::Ast2PadOutWidth)
 
