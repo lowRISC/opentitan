@@ -23,7 +23,15 @@ module rram_ctrl_mp
   // Interface selection
   input rram_sel_e                if_sel_i,
   // Configuration from sw
+  // region_cfgs_i already has the OTP exclusion, the emulated info subregions and their
+  // per-window deny entries, the configurable regions, and the default region, in that
+  // priority order.
+  // This is entirely register-value based, so no patching is needed here.
   input mp_region_cfg_t           region_cfgs_i[TotalMpRegions],
+  // Host requests always deny a whole emulated info region, regardless of subregion
+  // configuration.
+  // A much shorter priority chain than region_cfgs_i.
+  input mp_region_cfg_t           host_region_cfgs_i[HostMpRegions],
   input mp_info_cfg_t             info_page_cfgs_i[TotalInfoPages],
   // Hardware interface override
   input  mubi4_t                  hw_info_scr_dis_i,
@@ -112,6 +120,9 @@ module rram_ctrl_mp
   assign otp_req   = ctrl_req & (if_sel_i == HwOtpSel);
   assign lcmgr_req = ctrl_req & (if_sel_i == HwLcMgrSel);
 
+  // region_cfgs_i holds the OTP exclusion, the emulated info subregions and their per-window
+  // deny entries, the configurable regions, and the default region, in that priority order.
+  // See rram_ctrl_region_cfg.
   rram_ctrl_mp_region_sel #(
     .Regions(TotalMpRegions)
   ) u_mp_sw_sel (
@@ -304,12 +315,12 @@ module rram_ctrl_mp
   assign host_page_addr = host_addr_i[BusAddrW-1 -: PageW];
 
   rram_ctrl_mp_region_sel #(
-    .Regions(TotalMpRegions)
+    .Regions(HostMpRegions)
   ) u_mp_host_sel (
     .req_i       (host_req_i),
     .phase_i     (PhaseInvalid),
     .addr_i      (host_page_addr),
-    .region_cfg_i(region_cfgs_i),
+    .region_cfg_i(host_region_cfgs_i),
     .page_cfg_o  (host_sel_cfg)
   );
 
