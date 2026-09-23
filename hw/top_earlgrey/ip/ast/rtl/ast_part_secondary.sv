@@ -51,7 +51,7 @@ module ast_part_secondary #(
   output logic [1:0] rstmgr_por_n_o,          // Per-power-domain POR towards rstmgr
 
   // Power and IO pin connections
-  input main_pd_ni,                           // MAIN Regulator Power Down
+  input main_pd_n_i,                          // MAIN Regulator Power Down
   input main_env_iso_en_i,                    // Enveloped ISOlation ENable for MAIN
 
   // power down monitor logic - flash/otp related
@@ -267,7 +267,7 @@ assign mux_iob_sel_o = 4'h0;
 logic deep_sleep;
 logic main_pd, por_sync;
 
-assign main_pd = !main_pd_ni;
+assign main_pd = !main_pd_n_i;
 assign por_sync = !por_sync_n;
 
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
