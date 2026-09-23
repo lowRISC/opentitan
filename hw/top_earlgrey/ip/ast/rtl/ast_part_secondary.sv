@@ -53,7 +53,7 @@ module ast_part_secondary #(
   input vioa_supp_i,                          // VIOA Rail Supply Test for OS FPGA
   input viob_supp_i,                          // VIOB Rail Supply Test for OS FPGA
   output ast_pkg::ast_pwst_t ast_pwst_o,      // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @1.1V
-  output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-9 Rail, IO-1 Rail Power OK @3.3V
+  output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @3.3V
 
   // Power and IO pin connections
   input main_pd_ni,                           // MAIN Regulator Power Down
