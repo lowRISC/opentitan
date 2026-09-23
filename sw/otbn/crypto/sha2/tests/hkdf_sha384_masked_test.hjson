@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Expected values for HKDF-SHA384 (RFC 5869 Test Case 1 inputs):
+{
+  "entrypoint": "main",
+  "output": {
+    "regs": {
+      "w2": "0xdee880ef0b6864c5acf739fb13dd7035309fc37d2c0548c51dce790799394b70",
+      "w3": "0x00000000000000000000000000000000de5a2a07ebec68ef93e2f3e1a7e90ec7",
+      "w4": "0xf78536b4fa4c399f36bfdc16b5253e06389f3a4ba476903005b83860a897509b",
+      "w5": "0xa6f19dfea231b66bab0f3d94b82eb28725e6a31d5dd9c54f20f0e4637745b648",
+      "w6": "0x2c1bbf0268d90ef225efd3446ccd1f25b7398bb822f1b30520a51661d5e56c8c"
+    }
+  }
+}
