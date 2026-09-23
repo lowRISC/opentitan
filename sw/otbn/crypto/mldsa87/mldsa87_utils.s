@@ -5,6 +5,7 @@
 .globl zeroize
 .globl unmask_boolean
 .globl unmask_arithmetic
+.globl fatal_error
 
 .text
 
@@ -60,3 +61,9 @@ unmask_arithmetic:
     bn.sid x23, 0(x20++)
     /* End of loop */
   ret
+
+/** Fatal error sink. */
+fatal_error:
+  unimp
+  unimp
+  unimp
