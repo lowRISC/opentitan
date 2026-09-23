@@ -9,7 +9,7 @@
 <% continue %>
   % endif
 <%
-    localparams = [p for p in m["param_list"] if p.get("local") == "true" and p.get("expose") == "true"]
+    localparams = lib.exposed_params_for_domain(m, domain, local="true")
     if not len(localparams):
         continue
 %>\

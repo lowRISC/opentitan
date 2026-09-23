@@ -4,7 +4,7 @@
 '''Parsing support code for reggen'''
 
 import re
-from typing import Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Sequence, cast
 
 # Names that are prohibited (used as reserved keywords in systemverilog)
 _VERILOG_KEYWORDS = {
@@ -197,6 +197,16 @@ def check_partition_order(raw_list: List[object], what: str) -> None:
                 f'entries before secondary ones so each partition occupies a '
                 f'contiguous bit range.')
         seen_rank = max(seen_rank, rank)
+
+
+def filter_by_partition(items: Sequence[Any], partition: Optional[str]) -> List[Any]:
+    '''Filter items by the partition they were declared in.
+
+    A partition of None returns every item.
+    '''
+    if partition is None:
+        return list(items)
+    return [item for item in items if item.partition == partition]
 
 
 def check_list(obj: object, what: str) -> List[object]:
