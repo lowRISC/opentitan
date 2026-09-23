@@ -14,6 +14,7 @@ from reggen.params import Parameter
 from reggen.lib import PART_PRIMARY
 from reggen.validate import check_int
 from topgen import lib
+from topgen.clocks import ModuleClockRef
 
 IM_TYPES = ['uni', 'req_rsp', 'io']
 IM_ACTS = ['req', 'rsp', 'rcv', 'none']
@@ -631,6 +632,96 @@ def handle_multi_pd_intersig(topcfg, definitions, package,
             # Connect to port
             rhs_struct["external"] = True
             rhs_struct["conn_type"] = False
+
+
+def _cross_domain_clock_port(topcfg: OrderedDict, producer_sig: Dict, consumer_domain: str) -> str:
+    """Create a top-level crossing for a single clock signal.
+
+    This creates an inter-pd connection to distribute a clock generated in one partition to a
+    consumer in another partition.
+    """
+    producer_sig.setdefault("package", "")
+    producer_sig.setdefault("default", "")
+    package = producer_sig["package"]
+    producer_sig["top_signame"] = intersignal_format(producer_sig)
+    producer_sig["index"] = -1
+    producer_sig["conn_type"] = False
+    producer_sig["external"] = True
+
+    topcfg.setdefault("inter_pd", {}).setdefault("definitions", []).append(
+        OrderedDict([('package', package), ('struct', producer_sig["struct"]), ('domain', "chip"),
+                     ('signame', producer_sig["top_signame"]), ('width', producer_sig["width"]),
+                     ('type', producer_sig["type"]), ('end_idx', -1),
+                     ('default', _get_default_name(producer_sig, ""))]))
+
+    external = topcfg["inter_signal"].setdefault("external", [])
+
+    out_port, _ = get_signame_chip(topcfg, producer_sig, "", "req", inter_pd=True)
+    external.append(out_port)
+
+    consumer_sig = producer_sig.copy()
+    consumer_sig["act"] = lib.invert_signal_act(producer_sig)
+    in_port, _ = get_signame_chip(topcfg, consumer_sig, "", "req", inter_pd=True)
+    in_port["width"] = 1
+    in_port["domain"] = consumer_domain
+    external.append(in_port)
+
+    return in_port["signame"]
+
+
+def _resolve_module_clock(topcfg: OrderedDict, list_of_intersignals: List[Dict],
+                          ref: ModuleClockRef) -> str:
+    """Resolve a deferred module-sourced clock to a real net name.
+
+    If the producer lives in the same power domain as the consumer, elab_intermodule() will resolve
+    it. Thus the name listed in the producing module's inter-signal list is returned.
+
+    If the producer lives in a different power domain than the consumer, a dedicated top-level
+    connection is created.
+    """
+    sig = find_intermodule_signal(list_of_intersignals, ref.module, ref.signal,
+                                  ref.partition)
+    producer_module = lib.get_module_by_name(topcfg, sig['inst_name'])
+    if producer_module is None:
+        raise ValueError(f"The module {sig['inst_name']} is defined to produce a clock but it does "
+                         "not exist.")
+    producer_domain = lib.get_domain_of_signal(producer_module, sig)
+
+    if producer_domain == ref.consumer_domain:
+        if "top_signame" not in sig:
+            raise ValueError(
+                f"Clock source {ref.module}.{ref.signal} is consumed within its own power domain "
+                f"({producer_domain}) but is not listed in inter_module.top - add "
+                f"'{ref.module}.{ref.signal}' there so it gets a local net.")
+        return sig["top_signame"]
+
+    return _cross_domain_clock_port(topcfg, sig, ref.consumer_domain)
+
+
+def resolve_module_clocks(topcfg: OrderedDict) -> None:
+    """Resolve deferred IP-sourced clock_connections placeholders.
+
+    Must run after `elab_intermodule()`, since it needs the producing
+    module's inter-signal list to be known.
+    """
+    list_of_intersignals = topcfg["inter_signal"]["signals"]
+
+    resolved: Dict[Tuple, str] = {}
+
+    for endpoint in topcfg["module"] + topcfg["xbar"]:
+        for key in ("clock_connections", lib.secondary_key("clock_connections")):
+            conns = endpoint.get(key)
+            if not conns:
+                continue
+            for port, val in conns.items():
+                if not isinstance(val, ModuleClockRef):
+                    continue
+                cache_key = (val.module, val.signal, val.partition, val.consumer_domain)
+                if cache_key not in resolved:
+                    resolved[cache_key] = _resolve_module_clock(topcfg, list_of_intersignals, val)
+                # Update the endpoint's clock_connections with the resolved net name (conns is a
+                # reference)
+                conns[port] = resolved[cache_key]
 
 
 def elab_intermodule(topcfg: OrderedDict):
