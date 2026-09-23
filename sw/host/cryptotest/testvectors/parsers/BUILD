@@ -135,6 +135,15 @@ py_binary(
 )
 
 py_binary(
+    name = "wycheproof_hkdf_parser",
+    srcs = ["wycheproof_hkdf_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_cavp_ecdh_parser",
     srcs = ["nist_cavp_ecdh_parser.py"],
     deps = [

@@ -269,6 +269,41 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "hkdf",
+    srcs = ["hkdf.c"],
+    hdrs = ["hkdf.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hkdf_commands",
+    ],
+)
+
+cc_library(
+    name = "hkdf_otbn",
+    srcs = ["hkdf_otbn.c"],
+    hdrs = ["hkdf.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl/sha2:hkdf",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hkdf_commands",
+    ],
+)
+
 FIRMWARE_DEPS = [
     ":aes",
     ":aes_gcm",
@@ -277,6 +312,7 @@ FIRMWARE_DEPS = [
     ":ecdsa",
     ":ed25519",
     ":hash",
+    ":hkdf",
     ":hmac",
     ":kmac",
     ":mldsa",
