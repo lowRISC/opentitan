@@ -50,7 +50,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SPI_HOST0            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SPI_HOST1            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RRAM_CTRL__CORE      = 32'h 000001ff;
+  localparam logic [31:0] ADDR_MASK_RRAM_CTRL__CORE      = 32'h 000003ff;
   localparam logic [31:0] ADDR_MASK_RRAM_MACRO__PRIM     = 32'h 0000000f;
   localparam logic [31:0] ADDR_MASK_RRAM_CTRL__HOST      = 32'h 001fffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00001fff;

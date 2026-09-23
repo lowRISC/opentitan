@@ -277,7 +277,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for core device on rram_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES = 32'h200;
+  parameter int unsigned TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES = 32'h400;
 
   /**
    * Peripheral base address for prim device on rram_macro in top earlgrey.
