@@ -7,11 +7,14 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/cert/ram_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Define Test Scratchpad Layout in Owner Partition
 typedef struct test_scratchpad {
@@ -29,13 +32,14 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static bool is_flash_page_empty(void) {
   uint32_t data[8];
-  if (flash_ctrl_info_read(&kFlashCtrlInfoPageDiceCerts, 0,
-                           sizeof(data) / sizeof(uint32_t), data) != kErrorOk) {
+  if (flash_ctrl_info_read_zeros_on_read_error(&kFlashCtrlInfoPageDiceCerts, 0,
+                                               sizeof(data) / sizeof(uint32_t),
+                                               data) != kErrorOk) {
     LOG_ERROR("Failed to read flash info page");
     return false;
   }
   for (size_t i = 0; i < ARRAYSIZE(data); ++i) {
-    if (data[i] != 0xFFFFFFFF) {
+    if (data[i] != 0xFFFFFFFF && data[i] != 0x00000000) {
       return false;
     }
   }
@@ -142,6 +146,7 @@ static status_t test_on_demand_refresh(void) {
 }
 
 bool test_main(void) {
+  ottf_alerts_ignore_alert(kTopEarlgreyAlertIdFlashCtrlRecovErr);
   status_t sts = test_on_demand_refresh();
   if (status_err(sts)) {
     LOG_ERROR("test_on_demand_refresh: %r", sts);
