@@ -557,6 +557,15 @@ cryptotest(
     test_vectors = SHA256_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "sha256_otbn_kat",
+    slow_test = True,
+    test_args = SHA256_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA256_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
 SHA384_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha384_{}_json".format(
         msg_type.lower(),
@@ -580,6 +589,15 @@ cryptotest(
     test_vectors = SHA384_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "sha384_otbn_kat",
+    slow_test = True,
+    test_args = SHA384_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA384_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
+)
+
 SHA512_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha512_{}_json".format(
         msg_type.lower(),
@@ -601,6 +619,15 @@ cryptotest(
     test_args = SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA512_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "sha512_otbn_kat",
+    slow_test = True,
+    test_args = SHA512_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA512_TESTVECTOR_TARGETS,
+    use_otbn_hash = True,
 )
 
 SHA3_224_TESTVECTOR_TARGETS = [

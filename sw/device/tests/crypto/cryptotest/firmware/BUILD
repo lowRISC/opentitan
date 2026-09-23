@@ -139,6 +139,25 @@ cc_library(
 )
 
 cc_library(
+    name = "hash_otbn",
+    srcs = ["hash_otbn.c"],
+    hdrs = ["hash.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha384",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
+    ],
+)
+
+cc_library(
     name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
