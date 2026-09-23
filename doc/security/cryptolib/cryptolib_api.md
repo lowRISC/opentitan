@@ -34,7 +34,7 @@ For more details, see later sections (links in the "category" column).
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
-| [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
+| [**Key derivation**](#key-derivation) | HKDF-SHA{256,384,512}<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
 ## Cryptolib Initialization
 
@@ -455,6 +455,15 @@ Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), be
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
 
+### Masked SHA-2 on OTBN
+
+In addition to the hardware HMAC/SHA-2 block, the cryptolib provides 1st-order Boolean-masked SHA-256, SHA-384, and SHA-512 implementations on [OTBN][otbn] (`sw/device/lib/crypto/impl/sha2/{sha256,sha384,sha512}.h`) backed by OTBN's Masking Accelerator Interface (MAI).
+These routines maintain both the message blocks and intermediate hash states in two independent Boolean shares (`share0 ^ share1`) across execution and support both one-shot (`sha256`, `sha384`, `sha512`) and streaming (`sha{256,384,512}_init`, `sha{256,384,512}_update`, `sha{256,384,512}_final`) modes.
+
+{{#header-snippet sw/device/lib/crypto/impl/sha2/sha256.h sha256 }}
+{{#header-snippet sw/device/lib/crypto/impl/sha2/sha384.h sha384 }}
+{{#header-snippet sw/device/lib/crypto/impl/sha2/sha512.h sha512 }}
+
 ## Message Authentication
 
 OpenTitan supports two kinds of message authentication codes (MACs):
@@ -764,6 +773,16 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 {{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf }}
 {{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_extract }}
 {{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_expand }}
+
+#### Masked HKDF on OTBN
+
+For side-channel-hardened key derivation over Boolean-shared keys (`otcrypto_blinded_key_t`), the cryptolib also provides a 1st-order Boolean-masked HKDF-SHA{256,384,512} implementation on [OTBN][otbn] (`sw/device/lib/crypto/impl/sha2/hkdf.h`).
+All secret inputs and intermediates (the input keying material `ikm`, extracted pseudorandom key `prk`, intermediate HMAC digests, and output keying material `okm`) remain Boolean-shared inside OTBN DMEM and wide registers throughout execution.
+Single-shot OTBN execution natively handles `ikm_len <= 96` bytes (SHA-256) or `<= 111` bytes (SHA-384/512), `info_len <= 86` bytes, and `okm_len <= 256` bytes (`288` bytes for SHA-384), and automatically falls back to multi-block masked SHA-2 on OTBN for larger inputs.
+
+{{#header-snippet sw/device/lib/crypto/impl/sha2/hkdf.h otbn_hkdf }}
+{{#header-snippet sw/device/lib/crypto/impl/sha2/hkdf.h otbn_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/impl/sha2/hkdf.h otbn_hkdf_expand }}
 
 #### KDF-CTR
 
