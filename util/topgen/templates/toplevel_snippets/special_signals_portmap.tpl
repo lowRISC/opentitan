@@ -25,6 +25,15 @@
     .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en_o),
 % endif
 
+% if len(top['unmanaged_clocks']._asdict().values()) > 0:
+    // Unmanaged external clocks
+% for clk in top['unmanaged_clocks']._asdict().values():
+    .${clk.signal_name},
+    .${clk.cg_en_signal},
+% endfor
+
+% endif\
+
 % if domain_rstmgr != domain:
     // Resets and reset assert info from ${rstmgr['name']}
     .${rstmgr['name']}_resets_i(${rstmgr['name']}_resets_o),
