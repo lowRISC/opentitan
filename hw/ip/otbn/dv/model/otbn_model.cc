@@ -374,15 +374,15 @@ int OtbnModel::otp_key_cdc_done() {
   return 0;
 }
 
-int OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [383:0] */,
-                                svLogicVecVal *key1 /* logic [383:0] */,
+int OtbnModel::set_keymgr_value(svLogicVecVal *key0 /* logic [511:0] */,
+                                svLogicVecVal *key1 /* logic [511:0] */,
                                 unsigned char valid) {
   ISSWrapper *iss = ensure_wrapper();
 
-  std::array<uint32_t, 12> key0_arr;
-  std::array<uint32_t, 12> key1_arr;
+  std::array<uint32_t, 16> key0_arr;
+  std::array<uint32_t, 16> key1_arr;
   assert(valid == 0 || valid == 1);
-  for (int i = 0; i < 12; i++) {
+  for (int i = 0; i < 16; i++) {
     key0_arr[i] = key0[i].aval;
     key1_arr[i] = key1[i].aval;
   }

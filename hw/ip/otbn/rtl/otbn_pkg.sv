@@ -47,7 +47,7 @@ package otbn_pkg;
   // Width of entropy input
   parameter int EdnDataWidth = 256;
 
-  parameter int SideloadKeyWidth = 384;
+  parameter int SideloadKeyWidth = 512;
 
   parameter int unsigned LoopStackDepth = 8;
 
