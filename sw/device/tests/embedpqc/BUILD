@@ -66,3 +66,20 @@ opentitan_test(
         "//third_party/embedpqc/ports:mldsa87_tiny_caller",
     ],
 )
+
+cc_test(
+    name = "mldsa_tiny_common_unittest",
+    srcs = ["mldsa_tiny_common_unittest.cc"],
+    linkopts = [
+        "-Wl,--wrap=SHAKE256_init",
+        "-Wl,--wrap=SHAKE256_absorb",
+        "-Wl,--wrap=SHAKE256_squeeze",
+        "-Wl,--wrap=SHAKE256_free",
+    ],
+    linkstatic = True,
+    deps = [
+        "//third_party/embedpqc:mldsa_tiny_common",
+        "//third_party/embedpqc/ports:shake",
+        "@googletest//:gtest_main",
+    ],
+)
