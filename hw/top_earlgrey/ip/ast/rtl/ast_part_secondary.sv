@@ -134,7 +134,11 @@ import ast_bhv_pkg::* ;
 // Inter-domain Interface Unpacking (OS simplified)
 ///////////////////////////////////////
 ast_intraip_pkg::clks_byp_p2s_t clks_byp_p2s;
+ast_intraip_pkg::clks_byp_s2p_t clks_byp_s2p;
 assign clks_byp_p2s = intraip_p2s_i.clks_byp;
+
+ast_pkg::ast_pwst_t ast_pwst;
+ast_pkg::ast_pwst_t ast_pwst_h;
 
 logic scan_mode, shift_en, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
@@ -159,6 +163,17 @@ assign scan_reset_no    = 1'b1;
 assign scan_mode        = 1'b0;
 assign shift_en         = 1'b0;
 assign scan_reset_n     = 1'b1;
+
+///////////////////////////////////////
+// Power status
+///////////////////////////////////////
+// Power status is assigned to local nets which can be targeted by DV even if ast_pwst_o signals
+// are unused in open-source model as part of this information is exposed via rstmgr_por_n_o,
+// io_pwr_st_o, and pwrmgr_o to the relevant modules.
+// TODO: Completely remove ast_pwst and adapt ast_pwst_h so only the relevant signals for the chip
+//       are exposed (for Earlgrey this is aon_pok for USB).
+assign ast_pwst_o   = ast_pwst;
+assign ast_pwst_h_o = ast_pwst_h;
 
 ///////////////////////////////////////
 // VCC POK (Always ON)
@@ -217,7 +232,7 @@ prim_flop #(
 // Replace Latch for the OS code
 assign vcaon_pok_por_lat = rglssm_brout || por_sync_n;
 assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
-assign ast_pwst_o.aon_pok = vcaon_pok_por;
+assign ast_pwst.aon_pok = vcaon_pok_por;
 
 ////////////////////////////////////////
 // VCMAIN POK POR (Always ON)
@@ -226,7 +241,7 @@ logic rglssm_vmppr, vcmain_pok_por_src;
 
 assign vcmain_pok_por_src = vcaon_pok_por_lat && vcmain_pok_h && !rglssm_vmppr;
 assign vcmain_pok_por = scan_mode ? scan_reset_n : vcmain_pok_por_src;
-assign ast_pwst_o.main_pok = vcmain_pok_por;
+assign ast_pwst.main_pok = vcmain_pok_por;
 
 ///////////////////////////////////////
 // VIOA POK (Always ON)
@@ -239,7 +254,7 @@ vio_pgd u_vioa_pok (
 );
 
 assign vioa_pok = vioa_pok_int && vioa_supp_i;
-assign ast_pwst_o.io_pok[0] = vcaon_pok && vioa_pok;
+assign ast_pwst.io_pok[0] = vcaon_pok && vioa_pok;
 
 ///////////////////////////////////////
 // VIOB POK (Always ON)
@@ -252,7 +267,7 @@ vio_pgd u_viob_pok (
 );
 
 assign viob_pok = viob_pok_int && viob_supp_i;
-assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
+assign ast_pwst.io_pok[1] = vcaon_pok && viob_pok;
 assign mux_iob_sel_o = 4'h0;
 
 ///////////////////////////////////////
@@ -268,7 +283,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_h_i ( vcc_pok_h ),
   .vcaon_pok_por_h_i ( vcaon_pok_por_src ),
   .vcmain_pok_por_h_i ( vcmain_pok_por_src ),
-  .vio_pok_h_i ( ast_pwst_o.io_pok[1:0] ),
+  .vio_pok_h_i ( ast_pwst.io_pok[1:0] ),
   .clk_src_aon_h_i ( clk_aon ),
   .main_pd_h_i ( main_pd ),
   .por_sync_h_i ( por_sync ),
@@ -280,12 +295,12 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .rglssm_vcmon_h_o ( rglssm_vcmon ),
   .rglssm_brout_h_o ( rglssm_brout ),
   .vcmain_pok_h_o ( vcmain_pok_h ),
-  .vcmain_pok_por_h_o ( ast_pwst_h_o.main_pok ),
+  .vcmain_pok_por_h_o ( ast_pwst_h.main_pok ),
   .vcaon_pok_h_o ( vcaon_pok_h ),
   .vcaon_pok_1p1_h_o ( vcaon_pok ),
-  .vcaon_pok_por_h_o ( ast_pwst_h_o.aon_pok ),
-  .vio_pok_h_o ( ast_pwst_h_o.io_pok[2-1:0] ),
-  .vcc_pok_str_h_o ( ast_pwst_h_o.vcc_pok ),
+  .vcaon_pok_por_h_o ( ast_pwst_h.aon_pok ),
+  .vio_pok_h_o ( ast_pwst_h.io_pok[2-1:0] ),
+  .vcc_pok_str_h_o ( ast_pwst_h.vcc_pok ),
   .vcc_pok_str_1p1_h_o ( vcc_pok_str ),
   .deep_sleep_h_o ( deep_sleep ),
   .flash_power_down_h_o ( flash_power_down_h_o ),
@@ -293,7 +308,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .otp_power_seq_h_o ( otp_power_seq_h_o[2-1:0] )
 );
 
-assign ast_pwst_o.vcc_pok = vcc_pok_str;
+assign ast_pwst.vcc_pok = vcc_pok_str;
 
 ///////////////////////////////////////
 ///////////////////////////////////////
@@ -361,9 +376,6 @@ assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 ///////////////////////////////////////
 // AON clock only in ast_part_secondary, SYS/IO/USB handled by ast_part_primary
 logic clk_src_aon;
-
-// Inter-domain interface signal for clock bypass (clks_byp_p2s declared earlier)
-ast_intraip_pkg::clks_byp_s2p_t clks_byp_s2p;
 
 // AON clock bypass - simplified for OS domain-split
 ast_clks_byp_secondary u_ast_clks_byp_secondary (
@@ -659,10 +671,10 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 ////////////////
 
 // Clocks
-`ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, ast_pwst.aon_pok)
 `ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
 //
-`ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 // ADC
 `ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
 `ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
@@ -678,9 +690,9 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_ni)
 `ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_ni)
 // FLASH/OTP
-`ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)
-`ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)
-`ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
+`ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst.main_pok)
+`ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst.main_pok)
+`ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst.main_pok)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 // Read-write margins
@@ -688,12 +700,12 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(SpramRmKnownO_A, spram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(SpromRmKnownO_A, sprom_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // DFT
-`ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 // SCAN
-`ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst.aon_pok)
+`ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
+`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst.aon_pok)
+`ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 
 // Note: reg_we onehot assertion moved to ast_part_primary.sv along with u_reg
 /////////////////////
