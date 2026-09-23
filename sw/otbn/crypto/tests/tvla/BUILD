@@ -411,3 +411,118 @@ otbn_tvla_sim_test(
         "mldsa87_keygen_var_rho_prime_share0,mldsa87_keygen_var_rho_prime_share1": "boolean:66:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
     },
 )
+
+genrule(
+    name = "sha256_masked_short_s",
+    srcs = ["//sw/otbn/crypto/sha2:sha256_masked.s"],
+    outs = ["sha256_masked_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+otbn_library(
+    name = "sha256_masked_short",
+    srcs = [":sha256_masked_short_s"],
+    tags = ["manual"],
+)
+
+genrule(
+    name = "sha384_masked_short_s",
+    srcs = ["//sw/otbn/crypto/sha2:sha384_masked.s"],
+    outs = ["sha384_masked_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+otbn_library(
+    name = "sha384_masked_short",
+    srcs = [":sha384_masked_short_s"],
+    tags = ["manual"],
+)
+
+genrule(
+    name = "sha512_masked_short_s",
+    srcs = ["//sw/otbn/crypto/sha2:sha512_masked.s"],
+    outs = ["sha512_masked_short.s"],
+    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
+    tags = ["manual"],
+)
+
+otbn_library(
+    name = "sha512_masked_short",
+    srcs = [":sha512_masked_short_s"],
+    tags = ["manual"],
+)
+
+otbn_sim_test(
+    name = "run_sha256_masked",
+    srcs = ["run_sha256_masked.s"],
+    tags = ["manual"],
+    deps = [
+        ":sha256_masked_short",
+    ],
+)
+
+otbn_tvla_sim_test(
+    name = "sha256_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "state_s0,state_s1": "boolean:32:0x6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19",
+    },
+    num_experiments = 5000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_sha256_masked",
+    tvla_secrets = {
+        "msg_s0,msg_s1": "boolean:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+otbn_sim_test(
+    name = "run_sha384_masked",
+    srcs = ["run_sha384_masked.s"],
+    tags = ["manual"],
+    deps = [
+        ":sha384_masked_short",
+    ],
+)
+
+otbn_tvla_sim_test(
+    name = "sha384_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "state_s0,state_s1": "boolean:64:0xcbbb9d5dc1059ed8629a292a367cd5079159015a3070dd17152fecd8f70e593967332667ffc00b318eb44a8768581511db0c2e0d64f98fa747b5481dbefa4fa4",
+    },
+    num_experiments = 5000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_sha384_masked",
+    tvla_secrets = {
+        "msg_s0,msg_s1": "boolean:128:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+otbn_sim_test(
+    name = "run_sha512_masked",
+    srcs = ["run_sha512_masked.s"],
+    tags = ["manual"],
+    deps = [
+        ":sha512_masked_short",
+    ],
+)
+
+otbn_tvla_sim_test(
+    name = "sha512_tvla_test",
+    timeout = "eternal",
+    fixed_background_secrets = {
+        "state_s0,state_s1": "boolean:64:0x6a09e667f3bcc908bb67ae8584caa73b3c6ef372fe94f82ba54ff53a5f1d36f1510e527fade682d19b05688c2b3e6c1f1f83d9abfb41bd6b5be0cd19137e2179",
+    },
+    num_experiments = 5000,
+    t_threshold = "7.0",
+    tags = ["manual"],
+    target = ":run_sha512_masked",
+    tvla_secrets = {
+        "msg_s0,msg_s1": "boolean:128:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
