@@ -461,6 +461,8 @@
           { bits: "0",
             name: "enable",
             resval: "0",
+            tags: [// HW clears this field when a measurement completes
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"],
             desc: '''Enable this input period counter.
                   After enabling, this counter waits for the next relevant edge (see `polarity` field) of the input to start counting.
                   After that, it counts clock cycles until the next relevant edge.
@@ -524,6 +526,8 @@
         count: "${num_inp_period_counters}",
         swaccess: "rc",
         hwaccess: "hwo",
+        tags: [// HW writes the measured period to this register
+               "excl:CsrNonInitTests:CsrExclWriteCheck"],
         fields: [
           { bits: "31:0",
             name: "value",
