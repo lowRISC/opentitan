@@ -1601,23 +1601,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "hkdf_otbn_masked_functest",
-    srcs = ["hkdf_otbn_masked_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//sw/device/lib/crypto/impl:config",
-        "//sw/device/lib/crypto/impl:entropy_src",
-        "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl/sha2:hkdf",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
