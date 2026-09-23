@@ -97,6 +97,16 @@ status_t otbn_basic_test(void) {
 }
 
 /**
+ * Test generating a single sideloaded HMAC key.
+ *
+ * This test just checks that the key generation process finished without
+ * errors, without actually attempting to use the key.
+ */
+status_t hmac_basic_test(void) {
+  return keymgr_dpe_generate_key_hmac(kTestDiversification);
+}
+
+/**
  * Check whether two key manager dpe output values are equivalent.
  *
  * Unmasks both keys and compares their unmasked values; masking should not
@@ -207,6 +217,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, aes_basic_test);
   EXECUTE_TEST(result, kmac_basic_test);
   EXECUTE_TEST(result, otbn_basic_test);
+  EXECUTE_TEST(result, hmac_basic_test);
 
   return status_ok(result);
 }

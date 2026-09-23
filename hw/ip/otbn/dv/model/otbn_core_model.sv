@@ -14,7 +14,7 @@
 module otbn_core_model
   import otbn_pkg::*;
   import edn_pkg::*;
-  import keymgr_dpe_pkg::otbn_key_req_t;
+  import keymgr_dpe_pkg::wide_hw_key_req_t;
 #(
   // The scope that contains the instruction and data memory (for DPI)
   parameter string MemScope = "",
@@ -55,7 +55,7 @@ module otbn_core_model
   output bit [7:0]       status_o,   // STATUS register
   output bit [31:0]      insn_cnt_o, // INSN_CNT register
 
-  input keymgr_dpe_pkg::otbn_key_req_t keymgr_key_i,
+  input keymgr_dpe_pkg::wide_hw_key_req_t keymgr_key_i,
 
   output bit             done_rr_o,
 

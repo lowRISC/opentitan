@@ -32,8 +32,8 @@ import "DPI-C" function int otbn_model_urnd_cdc_done(chandle model);
 import "DPI-C" function int otbn_model_otp_key_cdc_done(chandle model);
 
 import "DPI-C" function
-  int otbn_model_set_keymgr_value(chandle model, logic [383:0] key0,
-                                  logic [383:0] key1, bit valid);
+  int otbn_model_set_keymgr_value(chandle model, logic [511:0] key0,
+                                  logic [511:0] key1, bit valid);
 
 import "DPI-C" context function
   int unsigned otbn_model_step(chandle          model,
