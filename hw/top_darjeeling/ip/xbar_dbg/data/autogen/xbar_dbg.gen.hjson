@@ -28,12 +28,12 @@
       domain: Main
     }
   }
+  domain: Main
   clock_connections:
   {
     clk_dbg_i: clkmgr_clocks_i.clk_main_infra
     clk_peri_i: clkmgr_clocks_i.clk_io_infra
   }
-  domain: Main
   connections:
   {
     dbg:

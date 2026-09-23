@@ -34,13 +34,13 @@
       domain: Main
     }
   }
+  domain: Main
   clock_connections:
   {
     clk_peri_i: clkmgr_clocks_i.clk_io_div4_infra
     clk_spi_host0_i: clkmgr_clocks_i.clk_io_infra
     clk_usb_i: clkmgr_clocks_i.clk_usb_infra
   }
-  domain: Main
   connections:
   {
     main:
