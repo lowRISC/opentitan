@@ -16,7 +16,7 @@
 {
     otp: {
         width: "2", // bytes
-        depth: "1024"
+        depth: "1032"
     }
 
     // Definition of scrambling and digest constants and keys.
