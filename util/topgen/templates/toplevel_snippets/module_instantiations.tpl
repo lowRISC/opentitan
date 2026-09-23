@@ -5,7 +5,7 @@
 <%from collections import defaultdict%>\
 <%from topgen.merge import is_unmanaged_reset%>\
 <%from topgen.merge import alert_handler_signals%>\
-<%page args="top, domain"/>\
+<%page args="top, feature_info, domain"/>\
 <%
 if lib.find_module(top["module"], "pinmux").get("domain") == domain:
   cio_suffix_o, cio_suffix_i = ("", "")
@@ -45,6 +45,7 @@ has_params, param_items = lib.get_params(top, m, partition)
 
 ## Scan / DFT ports are emitted only for the primary partition of a split IP.
 has_scan = (block.scan or block.scan_reset or block.scan_en) and partition == lib.PART_PRIMARY
+scan_src_is_local = feature_info["dft_source_in_domain"][domain]
 has_interrupts = len(interrupts) > 0
 has_cio_inputs = len(inputs + inouts) > 0
 has_cio_outputs = len(outputs + inouts) > 0
@@ -98,13 +99,13 @@ else:
 % if has_scan:
     // DFT/scan connections
   % if block.scan:
-    .scanmode_i,
+    ${".scanmode_i(scanmode_o)," if scan_src_is_local else ".scanmode_i,"}
   % endif
   % if block.scan_reset:
-    .scan_rst_ni,
+    ${".scan_rst_ni(scan_rst_n_o)," if scan_src_is_local else ".scan_rst_ni,"}
   % endif
   % if block.scan_en:
-    .scan_en_i,
+    ${".scan_en_i(scan_en_o)," if scan_src_is_local else ".scan_en_i,"}
   % endif
 
 % endif\

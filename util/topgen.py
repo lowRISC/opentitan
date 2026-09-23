@@ -1898,6 +1898,11 @@ def main():
     # Generic Inter-module connection
     im.elab_intermodule(completecfg)
 
+    # Resolve clock_connections entries sourced by a clock source inside the
+    # top. This must happen after elab_intermodule as it requires having loaded
+    # all modules and their inter-signal lists.
+    im.resolve_module_clocks(completecfg)
+
     # Check countermeasures for all blocks.
     #
     # This is a check, not a generation step, so it must not touch the source

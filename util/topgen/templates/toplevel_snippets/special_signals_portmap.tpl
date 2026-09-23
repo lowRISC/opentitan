@@ -10,19 +10,40 @@
   domain_clkmgr = clkmgr.get('domain')
   ## The reset tree is driven by the rstmgr's primary partition.
   domain_rstmgr = rstmgr.get('domain')
+  ## Clocks sourced from another IP module's own generated clock (e.g. AST
+  ## feeding clkmgr) are wired as internal nets/inter-module ports instead -
+  ## see intermodule.resolve_module_clocks().
+  clk_srcs = top['clocks'].srcs
+  has_ext_clks = ((clk_srcs['main'].module is None)                            or
+                  (clk_srcs['io'].module is None)                              or
+                  (feature_info["has_usb"] and clk_srcs['usb'].module is None) or 
+                  (clk_srcs['aon'].module is None))
 %>\
 % if domain_clkmgr == domain:
+  % if has_ext_clks:
     // All externally supplied clocks
+    % if clk_srcs['main'].module is None:
     .clk_main_i(ast_base_clks_i.clk_sys),
+    % endif
+    % if clk_srcs['io'].module is None:
     .clk_io_i  (ast_base_clks_i.clk_io ),
-% if feature_info["has_usb"]:
+    % endif
+    % if feature_info["has_usb"] and clk_srcs['usb'].module is None:
     .clk_usb_i (ast_base_clks_i.clk_usb),
-% endif
+    % endif
+    % if clk_srcs['aon'].module is None:
     .clk_aon_i (ast_base_clks_i.clk_aon),
+    % endif
+  % endif
+  % if feature_info["ast_is_internal"]:
+    // Clocks and clock gating control from ${clkmgr['name']}
+    .${clkmgr['name']}_clocks_o(${clkmgr['name']}_clocks),
+    .${clkmgr['name']}_cg_en_o (${clkmgr['name']}_cg_en),
+  % endif
 % else:
     // Clocks and clock gating control from ${clkmgr['name']}
-    .${clkmgr['name']}_clocks_i(${clkmgr['name']}_clocks_o),
-    .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en_o),
+    .${clkmgr['name']}_clocks_i(${clkmgr['name']}_clocks${"_o" if not feature_info["ast_is_internal"] else ""}),
+    .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en${"_o" if not feature_info["ast_is_internal"] else ""}),
 % endif
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
@@ -34,19 +55,36 @@
 
 % endif\
 
-% if domain_rstmgr != domain:
+% if domain_rstmgr == domain:
+  % if feature_info["ast_is_internal"]:
     // Resets and reset assert info from ${rstmgr['name']}
-    .${rstmgr['name']}_resets_i(${rstmgr['name']}_resets_o),
-    .${rstmgr['name']}_rst_en_i(${rstmgr['name']}_rst_en_o),
+    .${rstmgr['name']}_resets_o(${rstmgr['name']}_resets${"_o" if not feature_info["ast_is_internal"] else ""}),
+    .${rstmgr['name']}_rst_en_o(${rstmgr['name']}_rst_en${"_o" if not feature_info["ast_is_internal"] else ""}),
+  % endif
+% else:
+    // Resets and reset assert info from ${rstmgr['name']}
+    .${rstmgr['name']}_resets_i(${rstmgr['name']}_resets${"_o" if not feature_info["ast_is_internal"] else ""}),
+    .${rstmgr['name']}_rst_en_i(${rstmgr['name']}_rst_en${"_o" if not feature_info["ast_is_internal"] else ""}),
 
 % endif\
 
+% if not feature_info["ast_is_internal"]:
     // Manual DFT signals
     .scan_rst_ni,
-% if feature_info["has_scan_en"][domain]:
+  % if feature_info["has_scan_en"][domain]:
     .scan_en_i,
-% endif
+  % endif
     .scanmode_i,
+% else:
+  % if not feature_info["dft_source_in_domain"][domain]:
+    // Manual DFT signals
+    .scan_rst_ni(scan_rst_n_o),
+    % if feature_info["has_scan_en"][domain]:
+    .scan_en_i  (scan_en_o),
+    % endif
+    .scanmode_i (scanmode_o),
+  % endif
+% endif
 
 % if feature_info["has_pinmux"]:
 % if lib.find_module(top["module"], "pinmux").get("domain") == domain:

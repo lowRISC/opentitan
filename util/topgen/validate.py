@@ -978,10 +978,55 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
     return error
 
 
+def check_module_sourced_clocks(top: ConfigT, ip_name_to_block: IpBlocksT) -> int:
+    '''Check that top-internally sourced clocks resolve to a real inter-signal.'''
+    error = 0
+    for src in top['clocks'].all_srcs.values():
+        if src.module is None:
+            # This is a clock sourced from external, so no need to check it.
+            continue
+
+        prefix = f"Clock source {src.name!r}"
+        module = find_module(top['module'], src.module)
+        if module is None:
+            log.error(f"{prefix} references unknown module {src.module!r}.")
+            error += 1
+            continue
+
+        block = ip_name_to_block.get(module['type'])
+        if block is None:
+            log.error(f"{prefix} references module {src.module!r}, which does not exist in the "
+                      "configuration.")
+            error += 1
+            continue
+
+        partition = src.partition if src.partition is not None else PART_PRIMARY
+        matches = [
+            sig for sig in block.inter_signals if sig.name == src.signal and
+            (sig.partition if sig.partition is not None else PART_PRIMARY) == partition
+        ]
+        if len(matches) != 1:
+            log.error(f"{prefix} references {src.module}.{src.signal} (partition {partition}), "
+                      "which does not resolve to exactly one inter-signal.")
+            error += 1
+            continue
+
+        sig = matches[0]
+        if sig.signal_type != 'uni' or sig.act != 'req' or sig.struct != 'logic':
+            log.error(f"{prefix}'s referenced signal {src.module}.{src.signal} must be a "
+                      "uni/req/logic inter-signal, but is "
+                      f"{sig.signal_type}/{sig.act}/{sig.struct}.")
+            error += 1
+
+    return error
+
+
 def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
                         xbar_name_to_block: IpBlocksT) -> int:
 
     error = 0
+
+    error += check_module_sourced_clocks(top, ip_name_to_block)
 
     clock_srcs = list(top['clocks'].all_srcs.keys())
     unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())

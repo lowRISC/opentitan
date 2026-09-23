@@ -113,45 +113,78 @@
   domain_clkmgr = clkmgr.get('domain')
   ## The reset tree is driven by the rstmgr's primary partition.
   domain_rstmgr = rstmgr.get('domain')
+
+  has_clkmgr = domain_clkmgr == domain
+  has_rstmgr_section = domain_rstmgr != domain
+  has_ext_clks = len(top['unmanaged_clocks']._asdict().values()) > 0
+  has_ext_rsts = len(top['unmanaged_resets']._asdict().values()) > 0
+  has_dft_section = not feature_info["dft_source_in_domain"][domain]
+
+  ## Clocks sourced from an IP inside the top are wired as inter-module connections. Do not expose
+  ## them as external clocks.
+  ext_clk_ports = [clk for clk, sig in top['clocks'].typed_clocks().ast_clks.items()
+                   if sig.src.module is None]
+
+  ## Find out which section is the last one to properly terminate the port list with no comma.
+  ## The rstmgr has always a section, so the clkmgr does not care.
+  rstmgr_last = not (has_ext_clks or has_ext_rsts or has_dft_section)
+  ext_clks_last = has_ext_clks and not (has_ext_rsts or has_dft_section)
+  ext_rsts_last = has_ext_rsts and not has_dft_section
 %>\
-% if domain_clkmgr == domain:
+% if has_clkmgr:
+  % if ext_clk_ports:
   // Externally supplied clocks
-  % for clk in top['clocks'].typed_clocks().ast_clks:
+  % for clk in ext_clk_ports:
   input ${clk},
   % endfor
+  % endif\
+
+  % if feature_info["ast_is_internal"]:
+  // Clocks from clkmgr to other domains
+  output clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_o,
+  output clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_o,
+  % endif
 % else:
   // Clocks from clkmgr in power domain ${domain_clkmgr}
   input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
   input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
 % endif
 
-% if domain_rstmgr != domain:
+% if has_rstmgr_section:
   // Resets from rstmgr in power domain ${domain_rstmgr}
   input rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_i,
-  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i,
+  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i${"" if rstmgr_last else ","}
+% elif feature_info["ast_is_internal"]:
+  // Resets from rstmgr to other domains
+  output rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_o,
+  output rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_o${"" if rstmgr_last else ","}
 % endif
 
-% if len(top['unmanaged_clocks']._asdict().values()) > 0:
+% if has_ext_clks:
   // Unmanaged external clocks
 % for clk in top['unmanaged_clocks']._asdict().values():
   input                        ${clk.signal_name},
-  input prim_mubi_pkg::mubi4_t ${clk.cg_en_signal},
+  input prim_mubi_pkg::mubi4_t ${clk.cg_en_signal}${"" if loop.last and ext_clks_last else ","}
 % endfor
 
 % endif\
 
-% if len(top['unmanaged_resets']._asdict().values()) > 0:
+% if has_ext_rsts:
   // Unmanaged external resets
   % for rst in top['unmanaged_resets']._asdict().values():
   input                        ${rst.signal_name},
-  input prim_mubi_pkg::mubi4_t ${rst.rst_en_signal_name},
+  ## TODO: handle trailing comma properly
+  input prim_mubi_pkg::mubi4_t ${rst.rst_en_signal_name}${"" if loop.last and ext_rsts_last else ","}
   % endfor
-
 % endif\
 
+## TODO: should we always expose scandmode_o and manually wire it up in the corresponding domain?
+% if has_dft_section:
   // Manual DFT signals
+  ## If the scansource is internal, we expose it via an external connection in the top.hjson file.
   input                        scan_rst_ni, // reset used for test mode
-% if feature_info["has_scan_en"][domain]:
+  % if feature_info["has_scan_en"][domain]:
   input                        scan_en_i,
-% endif
+  % endif
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
+% endif\
