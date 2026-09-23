@@ -195,7 +195,7 @@ The data partition contains a protected OTP region at the top of its address spa
 <img src="doc/rram_organization.svg" width="800"/>
 
 The data partition holds general-purpose non-volatile storage.
-Its top 5 pages form the OTP region, which is transparent to software and acts as NVM backing storage for the OTP controller.
+Its top 6 pages form the OTP region, which is transparent to software and acts as NVM backing storage for the OTP controller.
 The info partition holds design-specific data, including the two secret seed pages (creator/owner) and an isolated page for manufacturing authentication.
 
 #### Address Map
@@ -216,11 +216,11 @@ Software selects between them via `CONTROL.PARTITION`, and each address range be
 | Data | 0 | 31 | `0x0001F0` | Host, SW, lcmgr-hw-if |
 | Data | 1 | 0 | `0x000200` | Host, SW, lcmgr-hw-if |
 | Data | ... | ... | ... | ... |
-| Data | 4090 | 31 | `0x1FF5F0` | Host, SW, lcmgr-hw-if |
-| Data (OTP integrity) | 4091 | 0 | `0x1FF600`<br>(`OtpIntgStartAddr`) | otp-hw-if |
+| Data | 4089 | 31 | `0x1FF3F0` | Host, SW, lcmgr-hw-if |
+| Data (OTP integrity) | 4090 | 0 | `0x1FF400`<br>(`OtpIntgStartAddr`) | otp-hw-if |
 | Data (OTP integrity) | ... | ... | ... | ... |
-| Data (OTP integrity) | 4091 | 31 | `0x1FF7F0` | otp-hw-if |
-| Data (OTP) | 4092 | 0 | `0x1FF800`<br>(`OtpStartAddr`) | otp-hw-if |
+| Data (OTP integrity) | 4090 | 31 | `0x1FF5F0` | otp-hw-if |
+| Data (OTP) | 4091 | 0 | `0x1FF600`<br>(`OtpStartAddr`) | otp-hw-if |
 | Data (OTP) | ... | ... | ... | ... |
 | Data (OTP) | 4095 (last page) | 31 (last word) | `0x1FFFF0` | otp-hw-if |
 | Info | 0 | 0 | `0x000000` | SW, lcmgr-hw-if |
