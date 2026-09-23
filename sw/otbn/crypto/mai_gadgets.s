@@ -7,8 +7,6 @@
 .globl sec_a2b_8x32
 .globl sec_b2a_8x32
 .globl sec_add_8x32
-.globl sec_and_8x32
-.globl isw_and
 .globl sec_unmask_8x32
 .globl sec_leq_8x32
 .globl sec_unmask
@@ -141,53 +139,6 @@ sec_add_8x32:
   bn.xor w31, w31, w31 /* dummy */
   bn.wsrr w1, MAI_RES_S1
 
-  ret
-
-/**
- * 1st-order Ishai-Sahai-Wagner (ISW) masked Boolean AND gadget.
- *
- * Computes the bitwise AND of two 256-bit Boolean-shared values x = (x0 ^ x1)
- * and y = (y0 ^ y1) using fresh 256-bit randomness r <- URND:
- *   z0 = (x0 & y0) ^ (r ^ (x0 & y1))
- *   z1 = (x1 & y1) ^ (r ^ (x1 & y0))
- *
- * Security notes:
- * - Cross-share products (x0 & y1) and (x1 & y0) are blinded with the fresh
- *   mask r before being XORed with the same-share products (x0 & y0) and
- *   (x1 & y1), ensuring 1st-order probing and transition security.
- * - Share 0 operations target flag group FG0 (default) while Share 1 operations
- *   explicitly target flag group FG1 so that Share 1's status flags (M, L, Z)
- *   never overwrite Share 0's status flags in the same hardware flag register.
- * - Intermediate registers (w4, w5, w6) and inputs (w0, w1) are overwritten
- *   with URND before writing the new shares to prevent register-file HD leakage.
- *
- * @param[in]  w0: x0, first Boolean share of x.
- * @param[in]  w1: x1, second Boolean share of x.
- * @param[in]  w2: y0, first Boolean share of y.
- * @param[in]  w3: y1, second Boolean share of y.
- * @param[out] w0: z0, first Boolean share of z = x & y.
- * @param[out] w1: z1, second Boolean share of z = x & y.
- *
- * Clobbered registers: w0, w1, w4, w5, w6, w7
- * Clobbered flag groups: FG0, FG1
- */
-sec_and_8x32:
-isw_and:
-  bn.wsrr  w7, URND
-  bn.and   w4, w0, w2
-  bn.xor   w4, w4, w7
-  bn.and   w6, w0, w3
-  bn.wsrr  w0, URND
-  bn.xor   w0, w4, w6
-  bn.wsrr  w6, URND
-  bn.and   w5, w1, w3, FG1
-  bn.xor   w5, w5, w7, FG1
-  bn.and   w6, w1, w2, FG1
-  bn.wsrr  w1, URND
-  bn.xor   w1, w5, w6, FG1
-  bn.wsrr  w4, URND
-  bn.wsrr  w5, URND
-  bn.wsrr  w6, URND
   ret
 
 /**
