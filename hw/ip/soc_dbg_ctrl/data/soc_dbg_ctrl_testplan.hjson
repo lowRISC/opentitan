@@ -28,6 +28,35 @@
       stage: V1
       tests: []
     }
+    {
+      name: trace_regs
+      desc: '''
+            Verify the registers that hardware updates after reset, which the generic CSR tests
+            exclude: TRACE_DEBUG_POLICY_CATEGORY and TRACE_DEBUG_POLICY_VALID_RELOCKED on the core
+            interface, and JTAG_TRACE_DEBUG_POLICY_CATEGORY, JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED,
+            JTAG_BOOT_STATUS and JTAG_TRACE_SOC_DBG_STATE on the JTAG interface.
+
+            **Stimulus**:
+            - Randomize soc_dbg_state_i (Blank, PreProd, Prod, invalid), lc_dft_en_i,
+              lc_hw_debug_en_i, lc_cpu_en_i and lc_rma_state_i (On, Off, invalid encodings)
+              and boot_status_i.
+            - In SocDbgStProd with lc_rma_state_i Off and lc_cpu_en_i On, program
+              DEBUG_POLICY_CATEGORY_SHADOWED, DEBUG_POLICY_RELOCKED and
+              DEBUG_POLICY_VALID_SHADOWED.
+            - Walk the halt FSM through boot_status_i.lc_done, lc_raw_test_rma_i, lc_dft_en_i,
+              halt_cpu_boot_i and JTAG_CONTROL.boot_continue.
+            - After each change, read each register above through the interface it belongs to.
+
+            **Checks**:
+            - The four trace registers match the debug policy driven on soc_dbg_policy_bus_o and
+              the policy predicted from the inputs.
+            - While lc_dft_en_i is On, JTAG_BOOT_STATUS reflects boot_status_i (its lc_tx and MuBi
+              fields through their strict true tests) and the halt FSM state, and
+              JTAG_TRACE_SOC_DBG_STATE reflects soc_dbg_state_i; otherwise both read zero.
+            '''
+      stage: V2
+      tests: []
+    }
   ]
 
   covergroups: [
