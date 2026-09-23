@@ -17,12 +17,12 @@
 
 enum {
   /**
-   * Maximum number of message chunks that the OTBN app can accept per run.
+   * Maximum number of message chunks that the OTBN app can accept.
    *
-   * This number is based on the DMEM size limit and usage by the masked SHA-256
-   * app itself; see `run_sha256.s` for the detailed calculation.
+   * This number is based on the DMEM size limit and usage by the SHA-256 app
+   * itself; see `run_sha256.s` for the detailed calculation.
    */
-  kSha256MaxMessageChunksPerOtbnRun = 16,
+  kSha256MaxMessageChunksPerOtbnRun = 41,
 };
 
 /**
@@ -52,11 +52,9 @@ static const uint32_t kSha256InitialState[kSha256StateWords] = {
 static_assert(sizeof(kSha256InitialState) == kSha256StateBytes,
               "Initial state for SHA-256 has an unexpected size.");
 
-OTBN_DECLARE_APP_SYMBOLS(run_sha256);            // The OTBN SHA-256 app.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, state_s0);  // Hash state share 0.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, state_s1);  // Hash state share 1.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, msg_s0);    // Input message share 0.
-OTBN_DECLARE_SYMBOL_ADDR(run_sha256, msg_s1);    // Input message share 1.
+OTBN_DECLARE_APP_SYMBOLS(run_sha256);         // The OTBN SHA-256 app.
+OTBN_DECLARE_SYMBOL_ADDR(run_sha256, state);  // Hash state.
+OTBN_DECLARE_SYMBOL_ADDR(run_sha256, msg);    // Input message.
 OTBN_DECLARE_SYMBOL_ADDR(run_sha256,
                          num_msg_chunks);  // Message length in blocks.
 
@@ -97,9 +95,7 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
 /**
  * Add a single message block to the processing buffer.
  *
- * Splits the block into two boolean shares using fresh Ibex randomness and
- * writes them to OTBN DMEM. Runs OTBN if the maximum number of message blocks
- * has been reached.
+ * Runs OTBN if the maximum number of message blocks has been reached.
  *
  * @param ctx OTBN message buffer context information (updated in place).
  * @param block Block to write.
@@ -107,28 +103,19 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
  */
 static status_t process_block(sha256_otbn_ctx_t *ctx,
                               const sha256_message_block_t *block) {
-  // Calculate the offset within the message buffers.
+  // Calculate the offset within the message buffer.
   size_t offset = ctx->num_blocks * kSha256MessageBlockBytes;
-  const otbn_addr_t kOtbnVarSha256MsgS0 = OTBN_ADDR_T_INIT(run_sha256, msg_s0);
-  const otbn_addr_t kOtbnVarSha256MsgS1 = OTBN_ADDR_T_INIT(run_sha256, msg_s1);
+  const otbn_addr_t kOtbnVarSha256Msg = OTBN_ADDR_T_INIT(run_sha256, msg);
+  otbn_addr_t dst = kOtbnVarSha256Msg + offset;
 
-  // Split the message block into two boolean shares.
-  uint32_t block_s0[kSha256MessageBlockWords];
-  uint32_t block_s1[kSha256MessageBlockWords];
-  for (size_t i = 0; i < kSha256MessageBlockWords; i++) {
-    block_s1[i] = ibex_rnd32_read();
-    block_s0[i] = block->data[i] ^ block_s1[i];
-  }
-
-  // Copy the boolean-shared message block into DMEM.
-  HARDENED_TRY(otbn_dmem_write(kSha256MessageBlockWords, block_s0,
-                               kOtbnVarSha256MsgS0 + offset));
-  HARDENED_TRY(otbn_dmem_write(kSha256MessageBlockWords, block_s1,
-                               kOtbnVarSha256MsgS1 + offset));
+  // Copy the message block into DMEM.
+  otbn_dmem_write(kSha256MessageBlockWords, block->data, dst);
   ctx->num_blocks += 1;
 
   // If we've reached the maximum number of message chunks for a single run,
-  // then run the OTBN program to update the state shares in-place in DMEM.
+  // then run the OTBN program to update the state in-place. Note that there
+  // is no need to read back and then re-write the state; it'll stay updated
+  // in DMEM for the next run.
   if (ctx->num_blocks == kSha256MaxMessageChunksPerOtbnRun) {
     HARDENED_TRY(process_message_buffer(ctx));
   }
@@ -214,22 +201,12 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
   sha256_state_t new_state;
   new_state.total_len = state->total_len + msg_bits;
 
-  // Split the current hash state into two fresh boolean shares and write them
-  // to OTBN DMEM.
-  const otbn_addr_t kOtbnVarSha256StateS0 =
-      OTBN_ADDR_T_INIT(run_sha256, state_s0);
-  const otbn_addr_t kOtbnVarSha256StateS1 =
-      OTBN_ADDR_T_INIT(run_sha256, state_s1);
-  uint32_t state_s0[kSha256StateWords];
-  uint32_t state_s1[kSha256StateWords];
-  for (size_t i = 0; i < kSha256StateWords; i++) {
-    state_s1[i] = ibex_rnd32_read();
-    state_s0[i] = state->H[i] ^ state_s1[i];
+  // Set the initial state if at least one block has been received before now.
+  const otbn_addr_t kOtbnVarSha256State = OTBN_ADDR_T_INIT(run_sha256, state);
+  if (state->total_len >= kSha256MessageBlockBytes) {
+    HARDENED_TRY(
+        otbn_dmem_write(kSha256StateWords, state->H, kOtbnVarSha256State));
   }
-  HARDENED_TRY(
-      otbn_dmem_write(kSha256StateWords, state_s0, kOtbnVarSha256StateS0));
-  HARDENED_TRY(
-      otbn_dmem_write(kSha256StateWords, state_s1, kOtbnVarSha256StateS1));
 
   // Start computing the first block for the hash computation by simply copying
   // the partial block. We won't use the partial block directly to avoid
@@ -268,14 +245,9 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
     HARDENED_TRY(process_message_buffer(&ctx));
   }
 
-  // Read the final state shares from OTBN dmem and unmask.
+  // Read the final state from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kSha256StateWords, kOtbnVarSha256StateS0, state_s0));
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(kSha256StateWords, kOtbnVarSha256StateS1, state_s1));
-  for (size_t i = 0; i < kSha256StateWords; i++) {
-    new_state.H[i] = state_s0[i] ^ state_s1[i];
-  }
+      otbn_dmem_read(kSha256StateWords, kOtbnVarSha256State, new_state.H));
 
   // Clear OTBN's memory.
   HARDENED_TRY(otbn_dmem_sec_wipe());

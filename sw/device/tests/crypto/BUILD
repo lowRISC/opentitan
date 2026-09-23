@@ -1704,28 +1704,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "sha2_otbn_masked_functest",
-    srcs = ["sha2_otbn_masked_functest.c"],
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    kind = "flash",
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/crypto/impl/sha2:sha256",
-        "//sw/device/lib/crypto/impl/sha2:sha384",
-        "//sw/device/lib/crypto/impl/sha2:sha512",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
