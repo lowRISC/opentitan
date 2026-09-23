@@ -292,6 +292,22 @@ rust_bindgen_library(
     ],
 )
 
+rust_bindgen_library(
+    name = "ownership_datatypes",
+    bindgen_flags = [
+        "--allowlist-type=ownership_update_mode",
+        "--rustified-enum=ownership_update_mode",
+    ],
+    cc_lib = "//sw/device/silicon_creator/lib/ownership:datatypes",
+    edition = "2024",
+    header = "//sw/device/silicon_creator/lib/ownership:datatypes.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
 rust_library(
     name = "bindgen",
     srcs = [
@@ -305,6 +321,7 @@ rust_library(
         ":earlgrey",
         ":hardened",
         ":multibits",
+        ":ownership_datatypes",
         ":sram_program",
         ":status",
         ":test_status",
