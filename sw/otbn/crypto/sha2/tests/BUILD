@@ -38,3 +38,39 @@ otbn_sim_test(
         "//sw/otbn/crypto/sha2:sha512_masked",
     ],
 )
+
+otbn_sim_test(
+    name = "hkdf_sha256_masked_test",
+    srcs = [
+        "hkdf_sha256_masked_test.s",
+    ],
+    testcase = "hkdf_sha256_masked_test.hjson",
+    deps = [
+        "//sw/otbn/crypto/sha2:hkdf_sha256_masked",
+        "//sw/otbn/crypto/sha2:sha256_masked",
+    ],
+)
+
+otbn_sim_test(
+    name = "hkdf_sha384_masked_test",
+    srcs = [
+        "hkdf_sha384_masked_test.s",
+    ],
+    testcase = "hkdf_sha384_masked_test.hjson",
+    deps = [
+        "//sw/otbn/crypto/sha2:hkdf_sha384_masked",
+        "//sw/otbn/crypto/sha2:sha384_masked",
+    ],
+)
+
+otbn_sim_test(
+    name = "hkdf_sha512_masked_test",
+    srcs = [
+        "hkdf_sha512_masked_test.s",
+    ],
+    testcase = "hkdf_sha512_masked_test.hjson",
+    deps = [
+        "//sw/otbn/crypto/sha2:hkdf_sha512_masked",
+        "//sw/otbn/crypto/sha2:sha512_masked",
+    ],
+)
