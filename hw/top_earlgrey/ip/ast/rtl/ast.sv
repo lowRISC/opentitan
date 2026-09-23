@@ -146,6 +146,12 @@ module ast (
   output scan_reset_no                          // Scan Reset output
 );
 
+localparam int unsigned EntropyStreams  = ast_pkg::EntropyStreams;
+localparam int unsigned UsbCalibWidth   = ast_pkg::UsbCalibWidth;
+localparam int unsigned AdcChannels     = ast_pkg::AdcChannels;
+localparam int unsigned AdcDataWidth    = ast_pkg::AdcDataWidth;
+localparam int unsigned Pad2AstInWidth  = ast_pkg::Pad2AstInWidth;
+localparam int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth;
 
 // Intra-IP communication signals
 ast_intraip_pkg::s2p_t intraip_s2p;
@@ -165,7 +171,13 @@ ast_pkg::clks_osc_byp_t clk_osc_byp;
 `endif
 
 // AON Domain instantiation
-ast_part_secondary u_ast_part_secondary (
+ast_part_secondary #(
+  .UsbCalibWidth   ( UsbCalibWidth ),
+  .AdcChannels     ( AdcChannels ),
+  .AdcDataWidth    ( AdcDataWidth ),
+  .Pad2AstInWidth  ( Pad2AstInWidth ),
+  .Ast2PadOutWidth ( Ast2PadOutWidth )
+) u_ast_part_secondary (
   .clk_ast_adc_i           ( clk_ast_adc_i ),
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
@@ -238,7 +250,9 @@ ast_part_secondary u_ast_part_secondary (
 );
 
 // Main Domain instantiation
-ast_part_primary u_ast_part_primary (
+ast_part_primary #(
+  .EntropyStreams ( EntropyStreams )
+) u_ast_part_primary (
   .tl_i                    ( tl_i ),
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
