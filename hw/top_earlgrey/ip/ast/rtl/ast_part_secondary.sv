@@ -54,6 +54,7 @@ module ast_part_secondary #(
   input viob_supp_i,                          // VIOB Rail Supply Test for OS FPGA
   output ast_pkg::ast_pwst_t ast_pwst_o,      // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @1.1V
   output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @3.3V
+  output logic [1:0] rstmgr_por_n_o,          // Per-power-domain POR towards rstmgr
 
   // Power and IO pin connections
   input main_pd_ni,                           // MAIN Regulator Power Down
@@ -173,6 +174,8 @@ assign scan_reset_n     = 1'b1;
 //       are exposed (for Earlgrey this is aon_pok for USB).
 assign ast_pwst_o   = ast_pwst;
 assign ast_pwst_h_o = ast_pwst_h;
+
+assign rstmgr_por_n_o = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
 ///////////////////////////////////////
 // VCC POK (Always ON)

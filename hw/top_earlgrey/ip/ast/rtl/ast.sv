@@ -200,6 +200,7 @@ ast_part_secondary #(
   .viob_supp_i             ( viob_supp_i ),
   .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
+  .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst
   .main_pd_ni              ( main_pd_ni ),
   .main_env_iso_en_i       ( main_env_iso_en_i ),
   .flash_power_down_h_o    ( flash_power_down_h_o ),
