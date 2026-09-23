@@ -28,7 +28,7 @@ module rv_core_ibex
   parameter pmp_mseccfg_t                   PMPRstMsecCfg               = PmpMseccfgRst,
   parameter bit                             RV32E                       = 0,
   parameter rv32m_e                         RV32M                       = RV32MSingleCycle,
-  parameter rv32b_e                         RV32B                       = RV32BOTEarlGrey,
+  parameter rv32b_e                         RV32B                       = RV32BFull,
   parameter rv32zc_e                        RV32ZC                      = RV32ZcaZcbZcmp,
   parameter regfile_e                       RegFile                     = RegFileFF,
   parameter bit                             BranchTargetALU             = 1'b1,

@@ -175,11 +175,10 @@ module ibex_cs_registers import ibex_pkg::*, ibex_cheriot_pkg::*; #(
     return value;
   endfunction
 
-  // All bitmanip configs enable non-ratified sub-extensions
-  localparam int unsigned RV32BExtra   = (RV32B != RV32BNone) ? 1 : 0;
+  localparam int unsigned RV32BEnabled = (RV32B != RV32BNone) ? 1 : 0;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
-  // X bit: non-standard extensions present (B extra sub-extensions or CHERIoT configured)
-  localparam int unsigned MisaXBit     = RV32BExtra | 32'(BaseIsa == BaseIsaRV32IorCHERIoT);
+  // X bit: non-standard extensions present (CHERIoT configured)
+  localparam int unsigned MisaXBit     = 32'(BaseIsa == BaseIsaRV32IorCHERIoT);
   localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? PMP_ADDR_MSB - PMPGranularity : 32;
   // Base index of the first HPM counter (0=cycle, 1=time, 2=instret)
   localparam int unsigned MHPMCOUNTER_BASE = 3;
@@ -187,7 +186,7 @@ module ibex_cs_registers import ibex_pkg::*, ibex_cheriot_pkg::*; #(
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                 <<  0)  // A - Atomic Instructions extension
-    | (0                 <<  1)  // B - Bit-Manipulation extension
+    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
     | (1                 <<  2)  // C - Compressed extension
     | (0                 <<  3)  // D - Double precision floating-point extension
     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
@@ -377,8 +376,7 @@ module ibex_cs_registers import ibex_pkg::*, ibex_cheriot_pkg::*; #(
   assign misa_value_masked = {MISA_VALUE[31:24],
                               // X
                               (BaseIsa == BaseIsaRV32IorCHERIoT)
-                                ? ((cheriot_enable_i == IbexMuBiOn) || (RV32BExtra != 0)) :
-                                  MISA_VALUE[23],
+                                ? (cheriot_enable_i == IbexMuBiOn) : MISA_VALUE[23],
                               MISA_VALUE[22:9],
                               // I
                               (BaseIsa == BaseIsaRV32IorCHERIoT)

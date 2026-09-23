@@ -74,11 +74,9 @@ class core_ibex_base_test extends uvm_test;
       RV32BNone:
         ;
       RV32BBalanced:
-        isa = {isa, "_Zba_Zbb_Zbs_XZbf_XZbt"};
-      RV32BOTEarlGrey:
-        isa = {isa, "_Zba_Zbb_Zbc_Zbs_XZbf_XZbp_XZbr_XZbt"};
+        isa = {isa, "_Zba_Zbb_Zbs"};
       RV32BFull:
-        isa = {isa, "_Zba_Zbb_Zbc_Zbs_XZbe_XZbf_XZbp_XZbr_XZbt"};
+        isa = {isa, "_Zba_Zbb_Zbc_Zbs_Zbkb_Zbkx"};
     endcase
 
     return isa;

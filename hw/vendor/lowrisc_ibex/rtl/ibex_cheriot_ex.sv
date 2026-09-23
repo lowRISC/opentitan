@@ -112,9 +112,6 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
   output logic                   csr_mshwm_set_o,
   output logic [31:0]            csr_mshwm_new_o,
 
-  input  logic [31:0]            ztop_rdata_i,
-  input  cap_t                   ztop_rcap_i,
-
   // debug feature
   input  logic                   csr_dbg_tclr_fault_i
 );
@@ -181,7 +178,7 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
   perms_t             pmask;
   logic               clr_sealed;
   logic               instr_fault;
-  logic               is_write, is_ztop;
+  logic               is_write;
   cap_t               trcap;
   logic [2:0]         seal_type;
   logic [31:0]        tmp32a, tmp32b;
@@ -461,13 +458,12 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
         end
       cheriot_operator_i.CCSR_RW:           // cd <-- scr; scr <-- cs1 if cs1 != C0
         begin
-          is_ztop       = (cheriot_cs2_dec_i == CHERIOT_SCR_ZTOPC);
           is_write      = (rf_raddr_a_i != 0);
           instr_fault   = perm_vio | illegal_scr_addr;
 
           csr_access_o  = ~instr_fault;
           csr_op_o      = CHERIOT_CSR_RW;
-          csr_op_en_raw = ~instr_fault && is_write && ~is_ztop;
+          csr_op_en_raw = ~instr_fault && is_write;
           csr_addr_o    = cheriot_cs2_dec_i;
 
           if (cheriot_cs2_dec_i == CHERIOT_SCR_MTCC) begin
@@ -504,13 +500,8 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
             csr_wcap_o       = rf_rcap_a;
           end
 
-          if (is_ztop) begin
-            result_data_o = ztop_rdata_i;
-            result_cap_o  = ztop_rcap_i;
-          end else begin
-            result_data_o = csr_rdata_i;
-            result_cap_o  = csr_rcap_i;
-          end
+          result_data_o = csr_rdata_i;
+          result_cap_o  = csr_rcap_i;
           cheriot_rf_we_raw    = ~instr_fault;
           cheriot_ex_valid_raw = 1'b1;
           cheriot_wb_err_raw   = instr_fault;

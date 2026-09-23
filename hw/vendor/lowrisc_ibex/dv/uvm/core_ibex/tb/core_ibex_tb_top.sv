@@ -40,8 +40,8 @@ module core_ibex_tb_top;
   // `define is used that can be set from the command line. If no value has been specified, this
   // gives a default. Other simulators don't take the detour via `define and can override the
   // corresponding parameters directly.
-  `ifndef IBEX_CFG_BASE_ISA
-    `define IBEX_CFG_BASE_ISA ibex_pkg::BaseIsaRV32IorCHERIoT
+  `ifndef IBEX_CFG_BaseIsa
+    `define IBEX_CFG_BaseIsa ibex_pkg::BaseIsaRV32I
   `endif
 
   `ifndef IBEX_CFG_RV32M
@@ -52,12 +52,12 @@ module core_ibex_tb_top;
     `define IBEX_CFG_RV32B ibex_pkg::RV32BNone
   `endif
 
-  `ifndef IBEX_CFG_REG_FILE
-    `define IBEX_CFG_REG_FILE ibex_pkg::RegFileFF
+  `ifndef IBEX_CFG_RegFile
+    `define IBEX_CFG_RegFile ibex_pkg::RegFileFF
   `endif
 
   // Ibex Parameters
-  parameter ibex_pkg::base_isa_e BaseIsa  = `IBEX_CFG_BASE_ISA;
+  parameter ibex_pkg::base_isa_e BaseIsa  = `IBEX_CFG_BaseIsa;
   parameter bit          PMPEnable        = 1'b0;
   parameter int unsigned PMPGranularity   = 0;
   parameter int unsigned PMPNumRegions    = 4;
@@ -66,7 +66,7 @@ module core_ibex_tb_top;
   parameter bit RV32E                     = 1'b0;
   parameter ibex_pkg::rv32m_e RV32M       = `IBEX_CFG_RV32M;
   parameter ibex_pkg::rv32b_e RV32B       = `IBEX_CFG_RV32B;
-  parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_REG_FILE;
+  parameter ibex_pkg::regfile_e RegFile   = `IBEX_CFG_RegFile;
   parameter bit BranchTargetALU           = 1'b0;
   parameter bit WritebackStage            = 1'b0;
   parameter bit ICache                    = 1'b0;

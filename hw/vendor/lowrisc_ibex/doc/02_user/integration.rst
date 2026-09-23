@@ -313,9 +313,8 @@ Parameters
 +----------------------------------+---------------------+-------------------------+----------------------------------------------------------------------------------------------+
 | ``RV32B``                        | ibex_pkg::rv32b_e   | RV32BNone               | B(itmanipulation) extension select:                                                          |
 |                                  |                     |                         |  - "ibex_pkg::RV32BNone": No B-extension                                                     |
-|                                  |                     |                         |  - "ibex_pkg::RV32BBalanced": Sub-extensions Zba, Zbb, Zbs, Zbf and Zbt                      |
-|                                  |                     |                         |  - "ibex_pkg::RV32BOTEarlGrey": All sub-extensions except Zbe                                |
-|                                  |                     |                         |  - "ibex_pkg::RV32BFull": All sub-extensions                                                 |
+|                                  |                     |                         |  - "ibex_pkg::RV32BBalanced": Sub-extensions Zba, Zbb, Zbs                                   |
+|                                  |                     |                         |  - "ibex_pkg::RV32BFull": Balanced plus Zbc, Zbkb, Zbkx                                      |
 +----------------------------------+---------------------+-------------------------+----------------------------------------------------------------------------------------------+
 | ``RV32ZC``                       | ibex_pkg::rv32zc_e  | RV32ZcaZcbZcmp          | Zc code-size saving extension select:                                                        |
 |                                  |                     |                         |  - "ibex_pkg::RV32Zca": The Zca extension                                                    |

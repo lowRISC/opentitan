@@ -40,7 +40,7 @@ The following table provides a more detailed summary of the supported features:
         <li>RV32IMCB RISC-V "Ibex" core:
           <ul>
             <li>3-stage pipeline, single-cycle multiplier</li>
-            <li>Support for the full ratified bit manipulation extension and some unratified subsets</li>
+            <li>Ratified bit manipulation extensions Zba, Zbb, Zbc, Zbs, Zbkb and Zbkx</li>
             <li>4 KiB instruction cache with 2 ways</li>
             <li>RISC-V compliant JTAG DM (debug module)</li>
             <li>PLIC (platform level interrupt controller)</li>

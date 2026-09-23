@@ -304,8 +304,6 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
   alu_op_e     alu_operator;
   op_a_sel_e   alu_op_a_mux_sel, alu_op_a_mux_sel_dec;
   op_b_sel_e   alu_op_b_mux_sel, alu_op_b_mux_sel_dec;
-  logic        alu_multicycle_dec;
-  logic        stall_alu;
 
   logic [33:0] imd_val_q[2];
 
@@ -482,10 +480,8 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
     .BranchTargetALU(BranchTargetALU),
     .BaseIsa        (BaseIsa)
   ) decoder_i (
-    .clk_i (clk_i),
-    .rst_ni(rst_ni),
+    .cheriot_enable_i(cheriot_enable_i),
 
-    .cheriot_enable_i (cheriot_enable_i),
     // controller
     .illegal_insn_o(illegal_insn_dec),
     .ebrk_insn_o   (ebrk_insn),
@@ -531,7 +527,6 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
     .alu_operator_o    (alu_operator),
     .alu_op_a_mux_sel_o(alu_op_a_mux_sel_dec),
     .alu_op_b_mux_sel_o(alu_op_b_mux_sel_dec),
-    .alu_multicycle_o  (alu_multicycle_dec),
 
     // MULT & DIV
     .mult_en_o            (mult_en_dec),
@@ -880,7 +875,6 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
     stall_multdiv           = 1'b0;
     stall_jump              = 1'b0;
     stall_branch            = 1'b0;
-    stall_alu               = 1'b0;
     branch_set_raw_d        = 1'b0;
     branch_not_set          = 1'b0;
     jump_set_raw            = 1'b0;
@@ -940,11 +934,6 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
               stall_jump    = ~BranchTargetALU;
               jump_set_raw  = jump_set_dec;
             end
-            alu_multicycle_dec: begin
-              stall_alu     = 1'b1;
-              id_fsm_d      = MULTI_CYCLE;
-              rf_we_raw     = 1'b0;
-            end
             default: begin
               id_fsm_d      = FIRST_CYCLE;
             end
@@ -980,13 +969,13 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
 
   // Stall ID/EX stage for reason that relates to instruction in ID/EX, update assertion below if
   // modifying this.
-  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch | stall_alu;
+  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch;
 
   // Generally illegal instructions have no reason to stall, however they must still stall waiting
   // for outstanding memory requests so exceptions related to them take priority over the illegal
   // instruction exception.
   `ASSERT(IllegalInsnStallMustBeMemStall, illegal_insn_o & stall_id |-> stall_mem &
-    ~(stall_ld_hz | stall_multdiv | stall_jump | stall_branch | stall_alu))
+    ~(stall_ld_hz | stall_multdiv | stall_jump | stall_branch))
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
 
@@ -1098,7 +1087,7 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
     // If we stall a load in ID for any reason, it must not make an LSU request
     // (otherwise we might issue two requests for the same instruction)
     `ASSERT(IbexStallMemNoRequest,
-      instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
+      instr_valid_i & (lsu_req_dec | cheriot_lsu_req_dec) & ~instr_done |-> ~lsu_req_done_i)
 
     assign rf_rd_a_wb_match = (rf_waddr_wb_i == rf_raddr_a_o) & |rf_raddr_a_o;
     assign rf_rd_b_wb_match = (rf_waddr_wb_i == rf_raddr_b_o) & |rf_raddr_b_o;
@@ -1242,6 +1231,8 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
   ////////////////
 
   // Selectors must be known/valid.
+  `ASSERT(IbexRegImmAluOpKnown, (opcode_e'(instr_rdata_i[6:0]) == OPCODE_OP_IMM) |->
+      !$isunknown(instr_rdata_i[14:12]))
   `ASSERT_KNOWN_IF(IbexAluOpMuxSelKnown, alu_op_a_mux_sel, instr_valid_i)
   `ASSERT(IbexAluAOpMuxSelValid, instr_valid_i |-> alu_op_a_mux_sel inside {
       OP_A_REG_A,
@@ -1277,7 +1268,7 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
 
   // Multicycle enable signals must be unique.
   `ASSERT(IbexMulticycleEnableUnique,
-      $onehot0({lsu_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
+      $onehot0({lsu_req_dec, cheriot_lsu_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
 
   // Duplicated instruction flops must match
   // === as DV environment can produce instructions with Xs in, so must use precise match that

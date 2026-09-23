@@ -41,6 +41,14 @@ CHERIoT support requires two conditions to be met:
    This constraint is **not enforced by hardware** but is checked by the ``CheriotEnableOneWaySwitch`` assertion in ``ibex_core``.
    The integrator is responsible for ensuring the signal is driven by a one-way latch or equivalent logic outside the core.
 
+**Parameter requirements and unsupported combinations:**
+
+* ``WritebackStage`` must be ``1``.
+  The no-writeback path is not implemented for CHERIoT capability accesses.
+
+* Zcmp instructions (``RV32Zcmp``) are not supported in CHERIoT mode.
+  They may be included at elaboration time when Ibex runs in Rv32I mode ()``cheriot_enable_i``==0), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
+
 When CHERIoT is enabled, ``misa`` reflects the CHERIoT base ISA (bits X=1, I=0, E=1), and ``marchid`` reads as 0xCE1 instead of the standard Ibex value of 0x16 (22).
 CHERIoT mode implies RV32E and uses only 16 registers (x0–x15).
 

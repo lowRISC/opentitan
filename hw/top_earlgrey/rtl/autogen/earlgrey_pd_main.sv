@@ -110,7 +110,7 @@ module earlgrey_pd_main #(
   parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr = 32'h1000_0000,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
+  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BFull,
   parameter ibex_pkg::rv32zc_e RvCoreIbexRV32ZC = ibex_pkg::RV32ZcaZcbZcmp,
   parameter ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
   parameter bit RvCoreIbexBranchTargetALU = 1,

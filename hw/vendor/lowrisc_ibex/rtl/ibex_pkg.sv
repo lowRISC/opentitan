@@ -52,10 +52,9 @@ package ibex_pkg;
   } rv32m_e;
 
   typedef enum integer {
-    RV32BNone       = 0,
-    RV32BBalanced   = 1,
-    RV32BOTEarlGrey = 2,
-    RV32BFull       = 3
+    RV32BNone     = 0,
+    RV32BBalanced = 1,
+    RV32BFull     = 2
   } rv32b_e;
 
   typedef enum integer {
@@ -109,17 +108,15 @@ package ibex_pkg;
     ALU_SRL,
     ALU_SLL,
     // RV32B
-    ALU_SRO,
-    ALU_SLO,
     ALU_ROR,
     ALU_ROL,
-    ALU_GREV,
-    ALU_GORC,
-    ALU_SHFL,
-    ALU_UNSHFL,
-    ALU_XPERM_N,
-    ALU_XPERM_B,
-    ALU_XPERM_H,
+    ALU_REV8,
+    ALU_BREV8,
+    ALU_ORCB,
+    ALU_ZIP,
+    ALU_UNZIP,
+    ALU_XPERM4,
+    ALU_XPERM8,
 
     // Address Calculations
     // RV32B
@@ -143,7 +140,6 @@ package ibex_pkg;
     // Pack
     // RV32B
     ALU_PACK,
-    ALU_PACKU,
     ALU_PACKH,
 
     // Sign-Extend
@@ -161,13 +157,6 @@ package ibex_pkg;
     ALU_SLT,
     ALU_SLTU,
 
-    // Ternary Bitmanip Operations
-    // RV32B
-    ALU_CMOV,
-    ALU_CMIX,
-    ALU_FSL,
-    ALU_FSR,
-
     // Single-Bit Operations
     // RV32B
     ALU_BSET,
@@ -175,28 +164,11 @@ package ibex_pkg;
     ALU_BINV,
     ALU_BEXT,
 
-    // Bit Compress / Decompress
-    // RV32B
-    ALU_BCOMPRESS,
-    ALU_BDECOMPRESS,
-
-    // Bit Field Place
-    // RV32B
-    ALU_BFP,
-
     // Carry-less Multiply
     // RV32B
     ALU_CLMUL,
     ALU_CLMULR,
-    ALU_CLMULH,
-
-    // Cyclic Redundancy Check
-    ALU_CRC32_B,
-    ALU_CRC32C_B,
-    ALU_CRC32_H,
-    ALU_CRC32C_H,
-    ALU_CRC32_W,
-    ALU_CRC32C_W
+    ALU_CLMULH
   } alu_op_e;
 
   typedef enum logic [1:0] {
