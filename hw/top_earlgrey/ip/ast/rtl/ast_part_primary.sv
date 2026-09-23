@@ -26,8 +26,8 @@ module ast_part_primary #(
   output logic rng_val_o,
   output logic [EntropyStreams-1:0] rng_b_o,
   // Entropy interface
-  input edn_pkg::edn_rsp_t entropy_rsp_i,
-  output edn_pkg::edn_req_t entropy_req_o,
+  input edn_pkg::edn_rsp_t edn_i,
+  output edn_pkg::edn_req_t edn_o,
   // Entropy source clock/reset
   input logic clk_ast_es_i,
   input logic rst_ast_es_ni,
@@ -343,7 +343,7 @@ assign entropy_rate = EntropyRateWidth'(5);
 `endif
 
 ast_entropy u_entropy (
-  .entropy_rsp_i ( entropy_rsp_i ),
+  .entropy_rsp_i ( edn_i ),
   .entropy_rate_i ( entropy_rate ),
   .clk_ast_es_i ( clk_ast_es_i ),
   .rst_ast_es_ni ( rst_ast_es_ni ),
@@ -351,7 +351,7 @@ ast_entropy u_entropy (
   .rst_src_sys_ni ( rst_src_sys_n ),
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
   .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
-  .entropy_req_o ( entropy_req_o )
+  .entropy_req_o ( edn_o )
 );
 
 ///////////////////////////////////////
@@ -397,7 +397,7 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 `ASSERT_KNOWN(RngValKnownO_A, rng_val_o, intraip_s2p_i.clk_rst.clk_ast_rng,
               intraip_s2p_i.clk_rst.rst_ast_rng_n)
 // ES
-`ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)
+`ASSERT_KNOWN(EntropyReeqKnownO_A, edn_o, clk_ast_es_i,rst_ast_es_ni)
 //
 `ASSERT_KNOWN(LcClkBypAckEnKnownO_A, io_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(AllClkBypAckEnKnownO_A, all_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)
