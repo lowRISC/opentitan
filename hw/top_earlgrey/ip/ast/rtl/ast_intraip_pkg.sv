@@ -51,6 +51,18 @@ package ast_intraip_pkg;
     logic usb_ref_val;
   } clk_osc_s2p_t;
 
+  typedef struct packed {
+    logic clk_src_io_val;
+    logic clk_src_usb_val;
+    logic clk_src_sys_val;
+  } pwrmgr_p2s_t;
+
+  typedef struct packed {
+    logic clk_src_sys_en;
+    logic clk_src_io_en;
+    logic clk_src_usb_en;
+  } pwrmgr_s2p_t;
+
   // Secondary to primary partition Communication Structure (OS simplified)
   typedef struct packed {
     // Clock bypass interface
@@ -75,6 +87,9 @@ package ast_intraip_pkg;
 
     // Memory configuration
     ast_mem_cfg_primary_req_t mem_cfg_req;
+
+    // pwrmgr signals
+    pwrmgr_s2p_t pwrmgr_req;
   } s2p_t;
 
   // Primary to secondary partition Communication Structure (OS simplified)
@@ -89,6 +104,9 @@ package ast_intraip_pkg;
 
     // Memory configuration
     ast_mem_cfg_primary_rsp_t mem_cfg_rsp;
+
+    // pwrmgr signals
+    pwrmgr_p2s_t pwrmgr_rsp;
   } p2s_t;
 
 endpackage
