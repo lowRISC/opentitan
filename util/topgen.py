@@ -55,7 +55,7 @@ from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
 from topgen.typing import IpBlocksT
-from topgen.validate import validate_seed_cfg
+from topgen.validate import validate_seed_cfg, check_power_domains
 
 # Common header for generated files
 warnhdr = """//
@@ -1772,6 +1772,13 @@ def main():
     cfg_path = Path(args.topcfg).parents[1]
 
     topcfg = load_cfg(args.topcfg)
+
+    # Flatten a split instance's per-partition connections into the canonical
+    # and '_secondary' keys.
+    normalize_partition_connections(topcfg)
+
+    # Validate the power domain definitions
+    check_power_domains(topcfg)
 
     # Load the seed config from the separate configuration file
     seed_cfg = load_cfg(args.seedcfg)
