@@ -313,6 +313,7 @@ otbn_sim_test(
         "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_mem.s",
         "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_sample.s",
     ],
+    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
     tags = ["manual"],
 )
 
@@ -390,6 +391,7 @@ otbn_sim_test(
         "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_rounding.s",
         "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_sample.s",
     ],
+    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
     tags = ["manual"],
 )
 

@@ -40,6 +40,7 @@ unit_tests = [
         srcs = srcs + [
             test + ".s",
         ],
+        includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
         testcase = test + ".hjson",
     )
     for test in unit_tests
@@ -64,6 +65,7 @@ mldsa87_nist_tests = [
             "//sw/otbn/crypto/mldsa87/verify:mldsa87_verify_mem.s",
             "mldsa87_verify_test.s",
         ],
+        includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
         testcase = test + ".hjson",
     )
     for test in mldsa87_nist_tests
