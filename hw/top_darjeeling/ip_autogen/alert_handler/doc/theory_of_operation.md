@@ -92,12 +92,13 @@ The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits
 ```systemverilog
   typedef struct packed {
     // alerts
-    logic    [NAlerts-1:0] alert_cause;     // alert cause bits
-    logic    [6:0]         loc_alert_cause; // local alert cause bits
+    logic    [NAlerts-1:0]           alert_cause;     // alert cause bits
+    logic    [6:0]                   loc_alert_cause; // local alert cause bits
     // class state
-    logic    [3:0][15:0]   class_accum_cnt; // current accumulator value
-    logic    [3:0][31:0]   class_esc_cnt;   // current escalation counter value
-    cstate_e [3:0]         class_esc_state; // current escalation protocol state
+    logic    [3:0][AccuCntWidth-1:0] class_accum_cnt; // current accumulator value, per class.
+    logic    [3:0][EscCntWidth-1:0]  class_esc_cnt;   // current escalation counter value, per class.
+    cstate_e [3:0]                   class_esc_state; // current escalation protocol state, per class,
+                                                      // where each `cstate_e` is 3 bits.
   } alert_crashdump_t;
 ```
 
