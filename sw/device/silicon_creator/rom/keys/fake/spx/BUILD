@@ -15,6 +15,7 @@ keyset(
         "prod_key_0_spx.pem": "prod_key_0",
         "prod_key_1_spx.pem": "prod_key_1:domain=PreHashedSha256",
     },
+    keytype = "spx",
     profile = "local",
     tool = "//signing/tokens:local",
 )

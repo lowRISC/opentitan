@@ -870,6 +870,8 @@ def _keyset(ctx):
         if len(keyfile) != 1:
             fail("keyset key labels must resolve to exactly one file.")
         keys[param["name"]] = keyfile[0]
+        if "keytype" not in param and ctx.attr.keytype:
+            param["keytype"] = ctx.attr.keytype
         config[param["name"]] = param
 
     tool = ctx.attr.tool[SigningToolInfo]
@@ -903,6 +905,9 @@ keyset = rule(
         "profile": attr.string(
             mandatory = True,
             doc = "The hsmtool profile entry (in $XDG_CONFIG_HOME/hsmtool/profiles.json) associated with these keys or the value `local` for on-disk private keys.",
+        ),
+        "keytype": attr.string(
+            doc = "The default `keytype` for keys in this keyset if not directly specified.",
         ),
         "tool": attr.label(
             mandatory = True,

@@ -159,6 +159,7 @@ keyset(
         "app_test_ecdsa_p256.der": "app_test_0",
         "app_unauthorized_ecdsa_p256.der": "app_unauthorized_0",
     },
+    keytype = "ecdsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )
@@ -170,6 +171,7 @@ keyset(
         "app_prod_spx.pem": "app_prod_0",
         "app_dev_spx.pem": "app_dev_0:domain=PreHashedSha256",
     },
+    keytype = "spx",
     profile = "local",
     tool = "//signing/tokens:local",
 )
@@ -181,6 +183,7 @@ keyset(
         "app_prod_slh_dsa.pem": "app_prod_0",
         "app_dev_slh_dsa.pem": "app_dev_0",
     },
+    keytype = "slh-dsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )
