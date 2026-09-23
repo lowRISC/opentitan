@@ -19,7 +19,7 @@ module ast_part_primary #(
   output tlul_pkg::tl_d2h_t tl_o,
   input clk_ast_tlul_i,
   input rst_ast_tlul_ni,
-  output prim_mubi_pkg::mubi4_t ast_init_done_o,
+  output prim_mubi_pkg::mubi4_t init_done_o,
   // RNG interface
   input rng_en_i,
   input rng_fips_i,
@@ -156,11 +156,11 @@ assign hw2reg.regal.d = regal;
 // REGAL & AST init done indication
 always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
   if ( !regal_rst_n ) begin
-    regal           <= ast_reg_pkg::AST_REGAL_RESVAL;
-    ast_init_done_o <= prim_mubi_pkg::MuBi4False;
+    regal       <= ast_reg_pkg::AST_REGAL_RESVAL;
+    init_done_o <= prim_mubi_pkg::MuBi4False;
   end else if ( intraip_p2s_o.regal_we ) begin
-    regal           <= regal_di;
-    ast_init_done_o <= prim_mubi_pkg::MuBi4True;
+    regal       <= regal_di;
+    init_done_o <= prim_mubi_pkg::MuBi4True;
   end
 end
 
@@ -405,7 +405,7 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_ast_tlul_i, rst_ast_tlul_ni)
 //
-`ASSERT_KNOWN(InitDoneKnownO_A, ast_init_done_o, clk_ast_tlul_i, rst_ast_tlul_ni)
+`ASSERT_KNOWN(InitDoneKnownO_A, init_done_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 
 // Intra-IP
 // TODO: This assertion must be split up so it considers each part of the intra-IP with its related
