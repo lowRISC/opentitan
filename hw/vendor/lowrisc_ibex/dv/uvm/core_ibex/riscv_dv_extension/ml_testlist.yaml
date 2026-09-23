@@ -80,7 +80,7 @@
     +disable_compressed_instr=0
     +randomize_csr=0
     +enable_b_extension=1
-    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +enable_bitmanip_groups=zbb,zbs,zbp,zbc
     +boot_mode=u
     +stream_name_0=riscv_load_store_rand_instr_stream
     +stream_freq_0=4
@@ -175,7 +175,7 @@
     +disable_compressed_instr=0
     +randomize_csr=0
     +enable_b_extension=1
-    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +enable_bitmanip_groups=zbb,zbs,zbp,zbc
     +boot_mode=u
     +stream_name_0=riscv_load_store_rand_instr_stream
     +stream_freq_0=4
@@ -264,7 +264,7 @@
     +disable_compressed_instr=0
     +randomize_csr=1
     +enable_b_extension=1
-    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +enable_bitmanip_groups=zbb,zbs,zbp,zbc
     +boot_mode=u
     +stream_name_0=riscv_load_store_rand_instr_stream
     +stream_freq_0=4
@@ -349,7 +349,7 @@
     +disable_compressed_instr=0
     +randomize_csr=0
     +enable_b_extension=1
-    +enable_bitmanip_groups=zbb,zb_tmp,zbt,zbs,zbp,zbf,zbe,zbc,zbr
+    +enable_bitmanip_groups=zbb,zbs,zbp,zbc
     +boot_mode=u
     +stream_name_0=riscv_load_store_rand_instr_stream
     +stream_freq_0=4

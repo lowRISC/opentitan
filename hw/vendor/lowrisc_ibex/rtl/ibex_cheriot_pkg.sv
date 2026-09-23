@@ -915,7 +915,6 @@ package ibex_cheriot_pkg;
   parameter logic [4:0] CHERIOT_SCR_MSCRATCHC  = 5'h1e;
   parameter logic [4:0] CHERIOT_SCR_MTDC       = 5'h1d;
   parameter logic [4:0] CHERIOT_SCR_MTCC       = 5'h1c;
-  parameter logic [4:0] CHERIOT_SCR_ZTOPC      = 5'h1b;
   parameter logic [4:0] CHERIOT_SCR_DSCRATCHC1 = 5'h1a;
   parameter logic [4:0] CHERIOT_SCR_DSCRATCHC0 = 5'h19;
   parameter logic [4:0] CHERIOT_SCR_DEPCC      = 5'h18;

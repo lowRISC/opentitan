@@ -101,11 +101,8 @@ def get_isas_for_config(cfg: Config) -> Tuple[str, str]:
 
     bitmanip_mapping = {
         'ibex_pkg::RV32BNone': [],
-        'ibex_pkg::RV32BBalanced': ['Zba', 'Zbb', 'Zbs', 'XZbf', 'XZbt'],
-        'ibex_pkg::RV32BOTEarlGrey': ['Zba', 'Zbb', 'Zbc', 'Zbs',
-                                      'XZbf', 'XZbp', 'XZbr', 'XZbt'],
-        'ibex_pkg::RV32BFull': ['Zba', 'Zbb', 'Zbc', 'Zbs',
-                                'XZbe', 'XZbf', 'XZbp', 'XZbr', 'XZbt']
+        'ibex_pkg::RV32BBalanced': ['Zba', 'Zbb', 'Zbs'],
+        'ibex_pkg::RV32BFull': ['Zba', 'Zbb', 'Zbc', 'Zbs', 'Zbkb', 'Zbkx']
     }
 
     bitmanip_isa = bitmanip_mapping.get(cfg.rv32b)

@@ -91,7 +91,7 @@ class SpikeCosim : public simif_t, public Cosim {
   void handle_cpuctrl_exception_entry();
 
   void initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
-                          uint32_t mhpm_counter_num);
+                          uint32_t mhpm_counter_num, bool rv32b_enabled);
 
   void early_interrupt_handle();
 

@@ -201,7 +201,7 @@ sram_start:
    * but does not require a valid stack pointer, thread pointer or global
    * pointer.
    *
-   * Clobbers a0, t0 and t1.
+   * Clobbers a0, a2, a3, t0 and t1.
    *
    * @param a0 pointer to start of section to clear (inclusive).
    * @param a1 pointer to end of section to clear (exclusive).
@@ -219,14 +219,18 @@ compute_crc32:
   bnez t0, .L_crc_error
   // Initialize CRC digest.
   li   t0, 0xffffffff
+  // Barrett reduction constants for clmul/clmulr.
+  li   a2, 0xf7011641
+  li   a3, 0xedb88320
 
 .L_crc_loop:
   // Compute the CRC word-by-word.
   lw      t1, 0(a0)
   xor     t0, t0, t1
   .option push
-  .option arch, +zbr0p93
-  crc32.w t0, t0
+  .option arch, +zbc
+  clmul   t0, t0, a2
+  clmulr  t0, t0, a3
   .option pop
   addi    a0, a0, 4
   bltu    a0, a1, .L_crc_loop
