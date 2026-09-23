@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -26,5 +27,8 @@ py_binary(
     name = "gen_test_exit_token",
     srcs = [
         "gen_test_exit_token.py",
+    ],
+    deps = [
+        requirement("pycryptodome"),
     ],
 )
