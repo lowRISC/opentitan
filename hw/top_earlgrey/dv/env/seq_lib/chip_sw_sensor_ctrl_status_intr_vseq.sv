@@ -12,8 +12,8 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
     localparam string VIOA_POK_PATH = "`AST_TOP.u_ast_part_secondary.ast_pwst_io_pok_0_";
     localparam string VIOB_POK_PATH = "`AST_TOP.u_ast_part_secondary.ast_pwst_io_pok_1_";
   `else
-    localparam string VIOA_POK_PATH = "tb.dut.u_ast.u_ast_part_secondary.ast_pwst.io_pok[0]";
-    localparam string VIOB_POK_PATH = "tb.dut.u_ast.u_ast_part_secondary.ast_pwst.io_pok[1]";
+    localparam string VIOA_POK_PATH = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.ast_pwst.io_pok[0]";
+    localparam string VIOB_POK_PATH = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.ast_pwst.io_pok[1]";
   `endif
 
   localparam string SLEEPING_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.u_rv_core_ibex.u_core_sleeping_buf.out_o";
