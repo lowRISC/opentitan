@@ -25,8 +25,19 @@ infrastructure, and example code, in place to demonstrate how one can define:
 
 Defining both start by defining an additional Bazel repo location on your system
 that resembles the directory this README.md is located in, and pointing Bazel
-at it via the `PROV_EXTS_DIR` envar. This tells Bazel to instantiate a local
-repo called `@provisioning_exts`.
+at it via using the following module override on the command line of Bazel:
+```shell
+# Here we capture the repeated override arg in an environment variable.
+# You might want to consider using this in a .bazelrc file instead.
+export BAZEL_OVERRIDE_ARGS=--override_module=ot_provisioning_exts=/path/to/repo
+
+# Run some tests using the SKUs in the custom repository.
+bazelisk test ${BAZEL_OVERRIDE_ARGS} --test_output=streamed //sw/host/provisioning/orchestrator/tests/...
+```
+This override tells Bazel to override the module called repo called `ot_provisioning_exts`.
+This module provides two repositories `@provisioning_exts` and `@provisioning_exts_extra`.
+See [`MODULE.bazel`](/MODULE.bazel) for more details.
+See https://github.com/lowRISC/ot-sku for a non-trivial example.
 
 ## OTP Image Definitions
 

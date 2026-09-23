@@ -359,8 +359,7 @@ use_repo(
 )
 
 # Provisioning extension module, use --override_module to point to the non-dummy implementation.
-# Note: downstream infrastructure searches for this bazel_dep by regex to determine if we're
-# using the legacy PROV_EXTS_DIR environment variable or the new override commandline flag.
+# See sw/device/silicon_creator/manuf/extensions/README.md#customizing-ft-provisioning-flows
 bazel_dep(name = "ot_provisioning_exts", version = "1.0.1")
 
 # Dummy repository, can be overriden on the command-line to point to ot-sku
