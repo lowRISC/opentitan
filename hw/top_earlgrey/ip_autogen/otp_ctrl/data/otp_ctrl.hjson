@@ -187,8 +187,8 @@
 
     { name:      "RndCnstPartInvDefault",
       desc:      "OTP invalid partition default for buffered partitions",
-      type:      "logic [16383:0]"
-      randcount: "16384",
+      type:      "logic [16511:0]"
+      randcount: "16512",
       randtype:  "extdata",
     }
     // Normal parameters
@@ -202,7 +202,7 @@
     {
       name: "OtpDepth",
       desc: "Number of native words.",
-      default: "1024",
+      default: "1032",
       local: "true"
     },
     {
@@ -220,7 +220,7 @@
     { name: "OtpByteAddrWidth",
       desc: "Width of the OTP byte address.",
       type: "int",
-      default: "11",
+      default: "12",
       local: "true"
     },
     { name: "NumErrorEntries",
@@ -244,7 +244,7 @@
     { name: "NumSwCfgWindowWords",
       desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "512",
+      default: "1024",
       local: "true"
     }
 
@@ -312,7 +312,7 @@
     { name: "CreatorSwCfgSize",
       desc: "Size of the CREATOR_SW_CFG partition",
       type: "int",
-      default: "400",
+      default: "408",
       local: "true"
     },
     { name: "CreatorSwCfgAstCfgOffset",
@@ -750,7 +750,7 @@
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
-      default: "456",
+      default: "464",
       local: "true"
     },
     { name: "CreatorSwCfgDigestSize",
@@ -762,19 +762,19 @@
     { name: "OwnerSwCfgOffset",
       desc: "Offset of the OWNER_SW_CFG partition",
       type: "int",
-      default: "464",
+      default: "472",
       local: "true"
     },
     { name: "OwnerSwCfgSize",
       desc: "Size of the OWNER_SW_CFG partition",
       type: "int",
-      default: "680",
+      default: "688",
       local: "true"
     },
     { name: "OwnerSwCfgRomErrorReportingOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ERROR_REPORTING",
       type: "int",
-      default: "464",
+      default: "472",
       local: "true"
     },
     { name: "OwnerSwCfgRomErrorReportingSize",
@@ -786,7 +786,7 @@
     { name: "OwnerSwCfgRomBootstrapDisOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_BOOTSTRAP_DIS",
       type: "int",
-      default: "468",
+      default: "476",
       local: "true"
     },
     { name: "OwnerSwCfgRomBootstrapDisSize",
@@ -798,7 +798,7 @@
     { name: "OwnerSwCfgRomAlertClassEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_CLASS_EN",
       type: "int",
-      default: "472",
+      default: "480",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertClassEnSize",
@@ -810,7 +810,7 @@
     { name: "OwnerSwCfgRomAlertEscalationOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_ESCALATION",
       type: "int",
-      default: "476",
+      default: "484",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertEscalationSize",
@@ -822,7 +822,7 @@
     { name: "OwnerSwCfgRomAlertClassificationOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
       type: "int",
-      default: "480",
+      default: "488",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertClassificationSize",
@@ -834,7 +834,7 @@
     { name: "OwnerSwCfgRomLocalAlertClassificationOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
       type: "int",
-      default: "800",
+      default: "808",
       local: "true"
     },
     { name: "OwnerSwCfgRomLocalAlertClassificationSize",
@@ -846,7 +846,7 @@
     { name: "OwnerSwCfgRomAlertAccumThreshOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH",
       type: "int",
-      default: "864",
+      default: "872",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertAccumThreshSize",
@@ -858,7 +858,7 @@
     { name: "OwnerSwCfgRomAlertTimeoutCyclesOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES",
       type: "int",
-      default: "880",
+      default: "888",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertTimeoutCyclesSize",
@@ -870,7 +870,7 @@
     { name: "OwnerSwCfgRomAlertPhaseCyclesOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES",
       type: "int",
-      default: "896",
+      default: "904",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertPhaseCyclesSize",
@@ -882,7 +882,7 @@
     { name: "OwnerSwCfgRomAlertDigestProdOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
       type: "int",
-      default: "960",
+      default: "968",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestProdSize",
@@ -894,7 +894,7 @@
     { name: "OwnerSwCfgRomAlertDigestProdEndOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
       type: "int",
-      default: "964",
+      default: "972",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestProdEndSize",
@@ -906,7 +906,7 @@
     { name: "OwnerSwCfgRomAlertDigestDevOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
       type: "int",
-      default: "968",
+      default: "976",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestDevSize",
@@ -918,7 +918,7 @@
     { name: "OwnerSwCfgRomAlertDigestRmaOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
       type: "int",
-      default: "972",
+      default: "980",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestRmaSize",
@@ -930,7 +930,7 @@
     { name: "OwnerSwCfgRomWatchdogBiteThresholdCyclesOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
       type: "int",
-      default: "976",
+      default: "984",
       local: "true"
     },
     { name: "OwnerSwCfgRomWatchdogBiteThresholdCyclesSize",
@@ -942,7 +942,7 @@
     { name: "OwnerSwCfgRomKeymgrOtpMeasEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
       type: "int",
-      default: "980",
+      default: "988",
       local: "true"
     },
     { name: "OwnerSwCfgRomKeymgrOtpMeasEnSize",
@@ -954,7 +954,7 @@
     { name: "OwnerSwCfgManufStateOffset",
       desc: "Offset of OWNER_SW_CFG_MANUF_STATE",
       type: "int",
-      default: "984",
+      default: "992",
       local: "true"
     },
     { name: "OwnerSwCfgManufStateSize",
@@ -966,7 +966,7 @@
     { name: "OwnerSwCfgRomRstmgrInfoEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_RSTMGR_INFO_EN",
       type: "int",
-      default: "988",
+      default: "996",
       local: "true"
     },
     { name: "OwnerSwCfgRomRstmgrInfoEnSize",
@@ -978,7 +978,7 @@
     { name: "OwnerSwCfgRomExtBootstrapEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN",
       type: "int",
-      default: "992",
+      default: "1000",
       local: "true"
     },
     { name: "OwnerSwCfgRomExtBootstrapEnSize",
@@ -990,7 +990,7 @@
     { name: "OwnerSwCfgRomSensorCtrlAlertCfgOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG",
       type: "int",
-      default: "996",
+      default: "1004",
       local: "true"
     },
     { name: "OwnerSwCfgRomSensorCtrlAlertCfgSize",
@@ -1002,7 +1002,7 @@
     { name: "OwnerSwCfgRomSramReadbackEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
       type: "int",
-      default: "1008",
+      default: "1016",
       local: "true"
     },
     { name: "OwnerSwCfgRomSramReadbackEnSize",
@@ -1014,7 +1014,7 @@
     { name: "OwnerSwCfgRomPreserveResetReasonEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN",
       type: "int",
-      default: "1012",
+      default: "1020",
       local: "true"
     },
     { name: "OwnerSwCfgRomPreserveResetReasonEnSize",
@@ -1026,7 +1026,7 @@
     { name: "OwnerSwCfgRomResetReasonCheckValueOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE",
       type: "int",
-      default: "1016",
+      default: "1024",
       local: "true"
     },
     { name: "OwnerSwCfgRomResetReasonCheckValueSize",
@@ -1038,7 +1038,7 @@
     { name: "OwnerSwCfgRomBannerEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_BANNER_EN",
       type: "int",
-      default: "1020",
+      default: "1028",
       local: "true"
     },
     { name: "OwnerSwCfgRomBannerEnSize",
@@ -1050,7 +1050,7 @@
     { name: "OwnerSwCfgRomNvmEccExcHandlerEnOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN",
       type: "int",
-      default: "1024",
+      default: "1032",
       local: "true"
     },
     { name: "OwnerSwCfgRomNvmEccExcHandlerEnSize",
@@ -1062,7 +1062,7 @@
     { name: "OwnerSwCfgReservedOffset",
       desc: "Offset of OWNER_SW_CFG_RESERVED",
       type: "int",
-      default: "1028",
+      default: "1036",
       local: "true"
     },
     { name: "OwnerSwCfgReservedSize",
@@ -1074,7 +1074,7 @@
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",
-      default: "1136",
+      default: "1152",
       local: "true"
     },
     { name: "OwnerSwCfgDigestSize",
@@ -1086,7 +1086,7 @@
     { name: "RotCreatorAuthCodesignOffset",
       desc: "Offset of the ROT_CREATOR_AUTH_CODESIGN partition",
       type: "int",
-      default: "1144",
+      default: "1160",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSize",
@@ -1098,7 +1098,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKeyType0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0",
       type: "int",
-      default: "1144",
+      default: "1160",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKeyType0Size",
@@ -1110,7 +1110,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKey0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0",
       type: "int",
-      default: "1148",
+      default: "1164",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKey0Size",
@@ -1122,7 +1122,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKeyType1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1",
       type: "int",
-      default: "1212",
+      default: "1228",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKeyType1Size",
@@ -1134,7 +1134,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKey1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1",
       type: "int",
-      default: "1216",
+      default: "1232",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKey1Size",
@@ -1146,7 +1146,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKeyType2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2",
       type: "int",
-      default: "1280",
+      default: "1296",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKeyType2Size",
@@ -1158,7 +1158,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKey2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2",
       type: "int",
-      default: "1284",
+      default: "1300",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKey2Size",
@@ -1170,7 +1170,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKeyType3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3",
       type: "int",
-      default: "1348",
+      default: "1364",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKeyType3Size",
@@ -1182,7 +1182,7 @@
     { name: "RotCreatorAuthCodesignEcdsaKey3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3",
       type: "int",
-      default: "1352",
+      default: "1368",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignEcdsaKey3Size",
@@ -1194,7 +1194,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyType0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0",
       type: "int",
-      default: "1416",
+      default: "1432",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyType0Size",
@@ -1206,7 +1206,7 @@
     { name: "RotCreatorAuthCodesignSpxKey0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0",
       type: "int",
-      default: "1420",
+      default: "1436",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKey0Size",
@@ -1218,7 +1218,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyConfig0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0",
       type: "int",
-      default: "1452",
+      default: "1468",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyConfig0Size",
@@ -1230,7 +1230,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyType1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1",
       type: "int",
-      default: "1456",
+      default: "1472",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyType1Size",
@@ -1242,7 +1242,7 @@
     { name: "RotCreatorAuthCodesignSpxKey1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1",
       type: "int",
-      default: "1460",
+      default: "1476",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKey1Size",
@@ -1254,7 +1254,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyConfig1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1",
       type: "int",
-      default: "1492",
+      default: "1508",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyConfig1Size",
@@ -1266,7 +1266,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyType2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2",
       type: "int",
-      default: "1496",
+      default: "1512",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyType2Size",
@@ -1278,7 +1278,7 @@
     { name: "RotCreatorAuthCodesignSpxKey2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2",
       type: "int",
-      default: "1500",
+      default: "1516",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKey2Size",
@@ -1290,7 +1290,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyConfig2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2",
       type: "int",
-      default: "1532",
+      default: "1548",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyConfig2Size",
@@ -1302,7 +1302,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyType3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3",
       type: "int",
-      default: "1536",
+      default: "1552",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyType3Size",
@@ -1314,7 +1314,7 @@
     { name: "RotCreatorAuthCodesignSpxKey3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3",
       type: "int",
-      default: "1540",
+      default: "1556",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKey3Size",
@@ -1326,7 +1326,7 @@
     { name: "RotCreatorAuthCodesignSpxKeyConfig3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3",
       type: "int",
-      default: "1572",
+      default: "1588",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignSpxKeyConfig3Size",
@@ -1338,7 +1338,7 @@
     { name: "RotCreatorAuthCodesignBlockSha2_256HashOffset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH",
       type: "int",
-      default: "1576",
+      default: "1592",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignBlockSha2_256HashSize",
@@ -1350,7 +1350,7 @@
     { name: "RotCreatorAuthCodesignDigestOffset",
       desc: "Offset of ROT_CREATOR_AUTH_CODESIGN_DIGEST",
       type: "int",
-      default: "1608",
+      default: "1624",
       local: "true"
     },
     { name: "RotCreatorAuthCodesignDigestSize",
@@ -1362,7 +1362,7 @@
     { name: "RotCreatorAuthStateOffset",
       desc: "Offset of the ROT_CREATOR_AUTH_STATE partition",
       type: "int",
-      default: "1616",
+      default: "1632",
       local: "true"
     },
     { name: "RotCreatorAuthStateSize",
@@ -1374,7 +1374,7 @@
     { name: "RotCreatorAuthStateEcdsaKey0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_ECDSA_KEY0",
       type: "int",
-      default: "1616",
+      default: "1632",
       local: "true"
     },
     { name: "RotCreatorAuthStateEcdsaKey0Size",
@@ -1386,7 +1386,7 @@
     { name: "RotCreatorAuthStateEcdsaKey1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_ECDSA_KEY1",
       type: "int",
-      default: "1620",
+      default: "1636",
       local: "true"
     },
     { name: "RotCreatorAuthStateEcdsaKey1Size",
@@ -1398,7 +1398,7 @@
     { name: "RotCreatorAuthStateEcdsaKey2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_ECDSA_KEY2",
       type: "int",
-      default: "1624",
+      default: "1640",
       local: "true"
     },
     { name: "RotCreatorAuthStateEcdsaKey2Size",
@@ -1410,7 +1410,7 @@
     { name: "RotCreatorAuthStateEcdsaKey3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_ECDSA_KEY3",
       type: "int",
-      default: "1628",
+      default: "1644",
       local: "true"
     },
     { name: "RotCreatorAuthStateEcdsaKey3Size",
@@ -1422,7 +1422,7 @@
     { name: "RotCreatorAuthStateSpxKey0Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_SPX_KEY0",
       type: "int",
-      default: "1632",
+      default: "1648",
       local: "true"
     },
     { name: "RotCreatorAuthStateSpxKey0Size",
@@ -1434,7 +1434,7 @@
     { name: "RotCreatorAuthStateSpxKey1Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_SPX_KEY1",
       type: "int",
-      default: "1636",
+      default: "1652",
       local: "true"
     },
     { name: "RotCreatorAuthStateSpxKey1Size",
@@ -1446,7 +1446,7 @@
     { name: "RotCreatorAuthStateSpxKey2Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_SPX_KEY2",
       type: "int",
-      default: "1640",
+      default: "1656",
       local: "true"
     },
     { name: "RotCreatorAuthStateSpxKey2Size",
@@ -1458,7 +1458,7 @@
     { name: "RotCreatorAuthStateSpxKey3Offset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_SPX_KEY3",
       type: "int",
-      default: "1644",
+      default: "1660",
       local: "true"
     },
     { name: "RotCreatorAuthStateSpxKey3Size",
@@ -1470,7 +1470,7 @@
     { name: "RotCreatorAuthStateDigestOffset",
       desc: "Offset of ROT_CREATOR_AUTH_STATE_DIGEST",
       type: "int",
-      default: "1648",
+      default: "1664",
       local: "true"
     },
     { name: "RotCreatorAuthStateDigestSize",
@@ -1482,7 +1482,7 @@
     { name: "HwCfg0Offset",
       desc: "Offset of the HW_CFG0 partition",
       type: "int",
-      default: "1656",
+      default: "1672",
       local: "true"
     },
     { name: "HwCfg0Size",
@@ -1494,7 +1494,7 @@
     { name: "DeviceIdOffset",
       desc: "Offset of DEVICE_ID",
       type: "int",
-      default: "1656",
+      default: "1672",
       local: "true"
     },
     { name: "DeviceIdSize",
@@ -1506,7 +1506,7 @@
     { name: "ManufStateOffset",
       desc: "Offset of MANUF_STATE",
       type: "int",
-      default: "1688",
+      default: "1704",
       local: "true"
     },
     { name: "ManufStateSize",
@@ -1518,7 +1518,7 @@
     { name: "HwCfg0DigestOffset",
       desc: "Offset of HW_CFG0_DIGEST",
       type: "int",
-      default: "1720",
+      default: "1736",
       local: "true"
     },
     { name: "HwCfg0DigestSize",
@@ -1530,7 +1530,7 @@
     { name: "HwCfg1Offset",
       desc: "Offset of the HW_CFG1 partition",
       type: "int",
-      default: "1728",
+      default: "1744",
       local: "true"
     },
     { name: "HwCfg1Size",
@@ -1542,7 +1542,7 @@
     { name: "EnSramIfetchOffset",
       desc: "Offset of EN_SRAM_IFETCH",
       type: "int",
-      default: "1728",
+      default: "1744",
       local: "true"
     },
     { name: "EnSramIfetchSize",
@@ -1554,7 +1554,7 @@
     { name: "EnCsrngSwAppReadOffset",
       desc: "Offset of EN_CSRNG_SW_APP_READ",
       type: "int",
-      default: "1729",
+      default: "1745",
       local: "true"
     },
     { name: "EnCsrngSwAppReadSize",
@@ -1566,7 +1566,7 @@
     { name: "DisRvDmLateDebugOffset",
       desc: "Offset of DIS_RV_DM_LATE_DEBUG",
       type: "int",
-      default: "1730",
+      default: "1746",
       local: "true"
     },
     { name: "DisRvDmLateDebugSize",
@@ -1578,7 +1578,7 @@
     { name: "HwCfg1DigestOffset",
       desc: "Offset of HW_CFG1_DIGEST",
       type: "int",
-      default: "1736",
+      default: "1752",
       local: "true"
     },
     { name: "HwCfg1DigestSize",
@@ -1590,7 +1590,7 @@
     { name: "Secret0Offset",
       desc: "Offset of the SECRET0 partition",
       type: "int",
-      default: "1744",
+      default: "1760",
       local: "true"
     },
     { name: "Secret0Size",
@@ -1602,7 +1602,7 @@
     { name: "TestUnlockTokenOffset",
       desc: "Offset of TEST_UNLOCK_TOKEN",
       type: "int",
-      default: "1744",
+      default: "1760",
       local: "true"
     },
     { name: "TestUnlockTokenSize",
@@ -1614,7 +1614,7 @@
     { name: "TestExitTokenOffset",
       desc: "Offset of TEST_EXIT_TOKEN",
       type: "int",
-      default: "1760",
+      default: "1776",
       local: "true"
     },
     { name: "TestExitTokenSize",
@@ -1626,7 +1626,7 @@
     { name: "Secret0DigestOffset",
       desc: "Offset of SECRET0_DIGEST",
       type: "int",
-      default: "1776",
+      default: "1792",
       local: "true"
     },
     { name: "Secret0DigestSize",
@@ -1638,7 +1638,7 @@
     { name: "Secret1Offset",
       desc: "Offset of the SECRET1 partition",
       type: "int",
-      default: "1784",
+      default: "1800",
       local: "true"
     },
     { name: "Secret1Size",
@@ -1650,7 +1650,7 @@
     { name: "NvmAddrKeySeedOffset",
       desc: "Offset of NVM_ADDR_KEY_SEED",
       type: "int",
-      default: "1784",
+      default: "1800",
       local: "true"
     },
     { name: "NvmAddrKeySeedSize",
@@ -1662,7 +1662,7 @@
     { name: "NvmDataKeySeedOffset",
       desc: "Offset of NVM_DATA_KEY_SEED",
       type: "int",
-      default: "1816",
+      default: "1832",
       local: "true"
     },
     { name: "NvmDataKeySeedSize",
@@ -1674,7 +1674,7 @@
     { name: "SramDataKeySeedOffset",
       desc: "Offset of SRAM_DATA_KEY_SEED",
       type: "int",
-      default: "1848",
+      default: "1864",
       local: "true"
     },
     { name: "SramDataKeySeedSize",
@@ -1686,7 +1686,7 @@
     { name: "Secret1DigestOffset",
       desc: "Offset of SECRET1_DIGEST",
       type: "int",
-      default: "1864",
+      default: "1880",
       local: "true"
     },
     { name: "Secret1DigestSize",
@@ -1698,7 +1698,7 @@
     { name: "Secret2Offset",
       desc: "Offset of the SECRET2 partition",
       type: "int",
-      default: "1872",
+      default: "1888",
       local: "true"
     },
     { name: "Secret2Size",
@@ -1710,7 +1710,7 @@
     { name: "RmaTokenOffset",
       desc: "Offset of RMA_TOKEN",
       type: "int",
-      default: "1872",
+      default: "1888",
       local: "true"
     },
     { name: "RmaTokenSize",
@@ -1722,7 +1722,7 @@
     { name: "CreatorRootKeyShare0Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE0",
       type: "int",
-      default: "1888",
+      default: "1904",
       local: "true"
     },
     { name: "CreatorRootKeyShare0Size",
@@ -1734,7 +1734,7 @@
     { name: "CreatorRootKeyShare1Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "1920",
+      default: "1936",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Size",
@@ -1746,7 +1746,7 @@
     { name: "Secret2DigestOffset",
       desc: "Offset of SECRET2_DIGEST",
       type: "int",
-      default: "1952",
+      default: "1968",
       local: "true"
     },
     { name: "Secret2DigestSize",
@@ -1758,7 +1758,7 @@
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "1960",
+      default: "1976",
       local: "true"
     },
     { name: "LifeCycleSize",
@@ -1770,7 +1770,7 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "1960",
+      default: "1976",
       local: "true"
     },
     { name: "LcTransitionCntSize",
@@ -1782,7 +1782,7 @@
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "2008",
+      default: "2024",
       local: "true"
     },
     { name: "LcStateSize",
@@ -3081,7 +3081,7 @@
       ////////////////////////////////
       // Software Config Partitions //
       ////////////////////////////////
-      { skipto: "0x800" }
+      { skipto: "0x1000" }
 
       { window: {
           name: "SW_CFG_WINDOW"

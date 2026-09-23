@@ -62,7 +62,7 @@
 | otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                                         | 0xd8     |        4 | Integrity digest for the SECRET1 partition.                                                                                                |
 | otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                                         | 0xdc     |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
 | otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                                         | 0xe0     |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
-| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                             | 0x800    |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software                                        |
+| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                             | 0x1000   |     4096 | Any read to this window directly maps to the corresponding offset in the creator and owner software                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -297,19 +297,19 @@ Command register for direct accesses.
 Address register for direct accesses.
 - Offset: `0x54`
 - Reset default: `0x0`
-- Reset mask: `0x7ff`
+- Reset mask: `0xfff`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_ADDRESS", "bits": 11, "attr": ["rw"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "DIRECT_ACCESS_ADDRESS", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                   |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------|
-| 31:11  |        |         | Reserved                                                               |
-|  10:0  |   rw   |   0x0   | [DIRECT_ACCESS_ADDRESS](#direct_access_address--direct_access_address) |
+| 31:12  |        |         | Reserved                                                               |
+|  11:0  |   rw   |   0x0   | [DIRECT_ACCESS_ADDRESS](#direct_access_address--direct_access_address) |
 
 ### DIRECT_ACCESS_ADDRESS . DIRECT_ACCESS_ADDRESS
 This is the address for the OTP word to be read or written through
@@ -866,8 +866,8 @@ Any read to this window directly maps to the corresponding offset in the creator
 config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
 will block until OTP readout has completed.
 
-- Word Aligned Offset Range: `0x800`to`0xffc`
-- Size (words): `512`
+- Word Aligned Offset Range: `0x1000`to`0x1ffc`
+- Size (words): `1024`
 - Access: `ro`
 - Byte writes are *not* supported.
 
