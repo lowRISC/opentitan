@@ -40,7 +40,7 @@ The main address space, shared between the CPU and DM
 | ast            | default     | `0x40480000`   | `0x400`        | `0x100`        | ast                           |
 | sensor_ctrl    | default     | `0x40490000`   | `0x80`         | `0x20`         | sensor_ctrl                   |
 | sram_ctrl_ret  | regs        | `0x40500000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_ret  |
-| rram_ctrl      | core        | `0x41010000`   | `0x200`        | `0x80`         | core device on rram_ctrl      |
+| rram_ctrl      | core        | `0x41010000`   | `0x400`        | `0x100`        | core device on rram_ctrl      |
 | rram_macro     | prim        | `0x41018000`   | `0x10`         | `0x4`          | prim device on rram_macro     |
 | rv_dm          | regs        | `0x41200000`   | `0x10`         | `0x4`          | regs device on rv_dm          |
 | rv_dm          | mem         | `0x10000`      | `0x1000`       | `0x400`        | mem device on rv_dm           |
