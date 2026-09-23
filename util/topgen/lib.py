@@ -16,7 +16,7 @@ from basegen.lib import Name
 from basegen.typing import ConfigT, ParamsT
 from mako.template import Template
 from reggen.ip_block import IpBlock
-from reggen.lib import check_bool
+from reggen.lib import PART_PRIMARY, PART_SECONDARY, check_bool
 from version_file import VersionInformation
 
 # Ignore flake8 warning as the function is used in the template
@@ -601,6 +601,19 @@ def get_all_modules(top: ConfigT, domain: str = ""):
         return [m for m in top["module"] if m.get("domain") == domain]
     else:
         return top["module"]
+
+
+def get_domain_of_partition(module: ConfigT, partition: str = PART_PRIMARY,
+                            default: Optional[str] = None) -> Optional[str]:
+    '''Return the power domain of the given partition of a module instance.'''
+    if partition == PART_SECONDARY:
+        return module.get(secondary_key('domain'), default)
+    return module.get('domain', default)
+
+
+def get_domain_of_signal(module: Dict, sig: OrderedDict):
+    '''Power domain of a inter-module signal endpoint.'''
+    return get_domain_of_partition(module, sig.get('partition', PART_PRIMARY))
 
 
 # Template functions
