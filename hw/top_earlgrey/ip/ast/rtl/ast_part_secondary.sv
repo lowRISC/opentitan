@@ -115,7 +115,7 @@ module ast_part_secondary #(
   // Scan interface
   output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
   output scan_shift_en_o,                       // Scan Shift Enable output
-  output scan_reset_no,                          // Scan Reset output
+  output scan_reset_n_o,                        // Scan Reset output
 
   // Inter-domain communication
   output ast_intraip_pkg::s2p_t intraip_s2p_o,
@@ -155,7 +155,7 @@ prim_clock_buf #(
 assign flash_bist_en_o  = prim_mubi_pkg::MuBi4False;
 assign dft_scan_md_o    = prim_mubi_pkg::MuBi4False;
 assign scan_shift_en_o  = 1'b0;
-assign scan_reset_no    = 1'b1;
+assign scan_reset_n_o   = 1'b1;
 assign scan_mode        = 1'b0;
 assign shift_en         = 1'b0;
 assign scan_reset_n     = 1'b1;
@@ -709,7 +709,7 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 // SCAN
 `ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 `ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
-`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst.aon_pok)
+`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_n_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst.aon_pok)
 
 // Ensure parameters defined in the hjson always match the pkg.
