@@ -16,7 +16,7 @@ from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
 from reggen.lib import (PART_BOTH, PARTITIONS, PART_PRIMARY, PART_SECONDARY, check_bool,
-                        check_int, check_keys, check_list, check_name)
+                        check_int, check_keys, check_list, check_name, filter_by_partition)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
@@ -170,16 +170,6 @@ OPTIONAL_REVISIONS_FIELDS = {
     'commit_id': ['s', "commit ID of last stage sign-off"],
     'notes': ['s', "random notes"],
 }
-
-
-def _for_partition(items: Sequence[Any], partition: Optional[str]) -> list[Any]:
-    '''Filter items by the partition they were declared in.
-
-    A partition of None returns every item.
-    '''
-    if partition is None:
-        return list(items)
-    return [item for item in items if item.partition == partition]
 
 
 def _declared_partitions(clocking: Clocking,
@@ -763,7 +753,19 @@ class IpBlock:
         return self.clocking.get_primary_clock(partition)
 
     def alerts_for(self, partition: Optional[str] = PART_PRIMARY) -> list[Alert]:
-        return _for_partition(self.alerts, partition)
+        return filter_by_partition(self.alerts, partition)
+
+    def interrupts_for(self,
+                       partition: Optional[str] = PART_PRIMARY) -> list[Interrupt]:
+        return filter_by_partition(self.interrupts, partition)
+
+    def xputs_for(
+        self, partition: Optional[str] = PART_PRIMARY
+    ) -> tuple[list[Signal], list[Signal], list[Signal]]:
+        inouts, inputs, outputs = self.xputs
+        return (filter_by_partition(inouts, partition),
+                filter_by_partition(inputs, partition),
+                filter_by_partition(outputs, partition))
 
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:
