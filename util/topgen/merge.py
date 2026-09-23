@@ -758,6 +758,17 @@ def extract_clocks(top: ConfigT):
     top['exported_clks'] = exported_clks
 
 
+def _partition_qualify(ref: str, partition: str, is_split: bool) -> str:
+    """Qualify an auto-generated inter-module reference with its partition.
+
+    Wakeups, reset requests and idle hints are connected to pwrmgr/clkmgr by an
+    auto-generated `<module>.<signal>` reference. A split IP's inter-module
+    names are only unique per partition, so its references must carry the
+    partition.
+    """
+    return f"{ref}.{partition}" if is_split else ref
+
+
 def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)
@@ -805,6 +816,7 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
         # Walk through the clocking items for the block to find the one that
         # defines each of the ports.
         idle_signal = None
+        idle_partition = None
         for ep_name, ep_port in sig.endpoints:
             ep_idle = None
             for item in ip_block.clocking.items:
@@ -824,6 +836,7 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
                                      f'this clocking item has an idle signal '
                                      f'called {item.idle}.')
                 ep_idle = item.idle
+                idle_partition = item.partition
                 break
             if ep_idle is None:
                 raise ValueError(f'Cannot connect the {sig.name} clock to '
@@ -841,7 +854,8 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
                              f'"_o" suffix.')
         idle_signal = idle_signal[:-2]
 
-        clkmgr_idle.append(ep_name + '.' + idle_signal)
+        clkmgr_idle.append(_partition_qualify(
+            ep_name + '.' + idle_signal, idle_partition, ip_block.is_split_ip))
 
     top['inter_module']['connect']['{}.idle'.format(clkmgr["name"])] = clkmgr_idle
 
@@ -1576,6 +1590,7 @@ def amend_wkup(topcfg: ConfigT,
 
     # create list of wakeup signals
     wakeups = []
+    signal_names = []
     for m in topcfg["module"]:
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
@@ -1588,15 +1603,16 @@ def amend_wkup(topcfg: ConfigT,
                 'width': str(signal.bits.width()),
                 'module': m["name"]
             })
+            # Reference the wakeup's inter-module signal, qualified by partition
+            # for a split IP.
+            signal_names.append(_partition_qualify(
+                f"{m['name'].lower()}.{signal.name.lower()}",
+                signal.partition, block.is_split_ip))
     topcfg["wakeups"] = wakeups
 
     pwrmgr = lib.find_module(topcfg['module'], 'pwrmgr')
     if pwrmgr:
         # add wakeup signals to pwrmgr connections if there is one
-        signal_names = [
-            f"{s['module'].lower()}.{s['name'].lower()}"
-            for s in topcfg["wakeups"]
-        ]
         topcfg["inter_module"]["connect"][f"{pwrmgr['name']}.wakeups"] = (
             signal_names)
         log.info("Intermodule signals: {}".format(
@@ -1613,6 +1629,7 @@ def amend_reset_request(topcfg: ConfigT,
 
     # create list of reset signals
     reset_signals = []
+    signal_names = []
     for m in topcfg["module"]:
         log.info("Adding reset requests from module %s" % m["name"])
         block = name_to_block.get(m['type'])
@@ -1627,15 +1644,16 @@ def amend_reset_request(topcfg: ConfigT,
                 'desc': signal.desc,
                 'enabled_after_reset': signal.enabled_after_reset
             })
+            # Reference the reset request's inter-module signal, qualified by
+            # partition for a split IP.
+            signal_names.append(_partition_qualify(
+                "{}.{}".format(m["name"].lower(), signal.name.lower()),
+                signal.partition, block.is_split_ip))
     topcfg["reset_requests"]["peripheral"] = reset_signals
 
     pwrmgr = lib.find_module(topcfg['module'], 'pwrmgr')
     if pwrmgr:
         # add reset requests to pwrmgr connections if there is one
-        signal_names = [
-            "{}.{}".format(s["module"].lower(), s["name"].lower())
-            for s in topcfg["reset_requests"]["peripheral"]
-        ]
         topcfg["inter_module"]["connect"][f"{pwrmgr['name']}.rstreqs"] = (
             signal_names)
     log.info("Intermodule signals: {}".format(
