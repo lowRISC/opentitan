@@ -39,17 +39,17 @@ def escape_if_name(qual_if_name):
 %>\
 
 ## Need to use a variable assignment for "\" to bypass the newline filter.
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain) ${"\\"}
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain, clk_port) ${"\\"}
      force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_i; ${"\\"}
      force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
-     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.clk_i = 0; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``clk_port`` = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain) ${"\\"}
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain, clk_port) ${"\\"}
      force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_i; ${"\\"}
      force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
-     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.clk_i = 0; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``clk_port`` = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
@@ -112,15 +112,18 @@ sig_name = inst_sig_list[0][2]
 ## primary partition instance (u_<name>_part_primary).
 module = lib.find_module_by_name(top["module"] + top["xbar"], inst_name)
 power_domain = module.get("domain").lower()
-if module.get("is_split_ip"):
-  inst_name += lib.PARTITION_INFIX + lib.PART_PRIMARY
+## Extract the port name of the clock driving the xbar of the module. This is not available for
+## xbar nodes. These nodes also never reach the DRIVE_CHIP_TL_{HOST,DEVICE}_IF branches below.
+if not node["xbar"]:
+  clk_port = lib.get_primary_clock_port(name_to_block, module)
+inst_name = lib.instance_name_for_partition(inst_name, module, lib.PART_PRIMARY)
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain})
+    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain}, ${clk_port})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain})
+    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain}, ${clk_port})
     % endif
   % endfor
 % endfor

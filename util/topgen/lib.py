@@ -671,6 +671,13 @@ def partition_key(key: str, partition: str = PART_PRIMARY) -> str:
     return secondary_key(key) if partition == PART_SECONDARY else key
 
 
+def get_primary_clock_port(name_to_block: IpBlocksT, module: ConfigT,
+                           partition: str = PART_PRIMARY) -> str:
+    '''Return the RTL port name of a module partition's primary clock.'''
+    block = name_to_block[module['type']]
+    return block.get_primary_clock(partition).clock
+
+
 def alert_conn_key(module_name: str, partition: str = PART_PRIMARY) -> str:
     '''Key of a module's entry in top['alert_connections'].'''
     return partition_key('module_' + module_name, partition)

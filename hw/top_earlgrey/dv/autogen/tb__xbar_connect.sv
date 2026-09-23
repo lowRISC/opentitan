@@ -6,17 +6,17 @@
 
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain) \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain, clk_port) \
      force ``tl_name``_tl_if.d2h = dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.clk_i = 0; \
+     force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``clk_port`` = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain) \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain, clk_port) \
      force ``tl_name``_tl_if.h2d = dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.clk_i = 0; \
+     force dut.top_earlgrey.earlgrey_pd_``power_domain``.u_``inst_name``.``clk_port`` = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -122,60 +122,60 @@ initial begin
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_peri.rst_peri_ni = rst_n;
 
 `ifndef GATE_LEVEL
-    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h, main)
-    `DRIVE_CHIP_TL_HOST_IF(cheriot__cored, cheriot, cored_tl_h, main)
-    `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__mem, rv_dm, mem_tl_d, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__core, rram_ctrl, core_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rram_macro__prim, rram_macro, prim_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__host, rram_ctrl, host_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(entropy_src, entropy_src, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(csrng, csrng, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(edn0, edn0, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(edn1, edn1, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(keymgr_dpe, keymgr_dpe, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex__cfg, rv_core_ibex, cfg_tl_d, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__regs, sram_ctrl_sec, regs_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_meta__regs, sram_ctrl_meta, regs_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__ram, sram_ctrl_sec, ram_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__regs, cheriot, regs_tl_d, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__revbm, cheriot, revbm_tl_d, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart3, uart3, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__regs, sram_ctrl_ret, regs_tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__ram, sram_ctrl_ret, ram_tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer, aon_timer, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl, sysrst_ctrl, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl, adc_ctrl, tl, aon)
+    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h, main, clk_i)
+    `DRIVE_CHIP_TL_HOST_IF(cheriot__cored, cheriot, cored_tl_h, main, clk_i)
+    `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__mem, rv_dm, mem_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__core, rram_ctrl, core_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rram_macro__prim, rram_macro, prim_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__host, rram_ctrl, host_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(entropy_src, entropy_src, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(csrng, csrng, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(edn0, edn0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(edn1, edn1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(keymgr_dpe, keymgr_dpe, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex__cfg, rv_core_ibex, cfg_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__regs, sram_ctrl_sec, regs_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_meta__regs, sram_ctrl_meta, regs_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__ram, sram_ctrl_sec, ram_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__regs, cheriot, regs_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__revbm, cheriot, revbm_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart3, uart3, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__regs, sram_ctrl_ret, regs_tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__ram, sram_ctrl_ret, ram_tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer, aon_timer, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl, sysrst_ctrl, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl, adc_ctrl, tl, aon, clk_i)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif
 
