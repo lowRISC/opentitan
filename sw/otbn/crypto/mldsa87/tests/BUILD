@@ -45,6 +45,7 @@ unit_tests = [
         srcs = srcs + [
             test + ".s",
         ],
+        includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
         testcase = test + ".hjson",
     )
     for test in unit_tests
@@ -71,6 +72,7 @@ otbn_sim_testgen(
         "mldsa87_ntt_test.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
     ],
+    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
     number = 10,
     testgen = ":mldsa87_ntt_testgen",
     type = "testcase",

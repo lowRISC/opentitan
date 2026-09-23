@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+.include "mldsa87.inc"
+
 /* Polynomial arithmetic over Z_q[X] / (X^256 + 1). */
 
 .globl poly_mul

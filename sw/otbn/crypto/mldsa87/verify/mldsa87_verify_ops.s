@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+.include "../mldsa87.inc"
+
 /* High-level operations for the ML-DSA-87 verify function. */
 
 .globl sig_decode
