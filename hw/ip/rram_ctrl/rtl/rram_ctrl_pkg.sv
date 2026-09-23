@@ -13,14 +13,14 @@ package rram_ctrl_pkg;
 
   parameter int unsigned TotalBytes      = 2*1024*1024; // 2 MiB
   parameter int unsigned TotalInfoBytes  = 4*1024; // 4 KiB
-  parameter int unsigned TotalOtpBytes   = 2*1024 + 512; // (2 KiB + 0.5 KiB integrity)
+  parameter int unsigned TotalOtpBytes   = 2*1024 + 512 + 512; // (2.5 KiB data + 0.5 KiB integrity)
   parameter int unsigned DataWidth       = 128; // 1 RRAM word in bits
   parameter int unsigned WordsPerPage    = 32; // Number of RRAM words per page
   parameter int unsigned TotalDataPages  = TotalBytes / (DataWidth / 8) / WordsPerPage; // 4096
   parameter int unsigned TotalInfoPages  = TotalInfoBytes / (DataWidth / 8) / WordsPerPage; // 8
   parameter int unsigned MaxWrWords      = 32; // max. number of words that can be written at once
-  parameter int unsigned OtpPages        = TotalOtpBytes / (DataWidth / 8) / WordsPerPage; // 5
-  parameter int unsigned OtpStartPage    = TotalDataPages - OtpPages; // 4091
+  parameter int unsigned OtpPages        = TotalOtpBytes / (DataWidth / 8) / WordsPerPage; // 6
+  parameter int unsigned OtpStartPage    = TotalDataPages - OtpPages; // 4090
 
   parameter int unsigned BusWidth        = top_pkg::TL_DW;
   parameter int unsigned BusIntgWidth    = tlul_pkg::DataIntgWidth;

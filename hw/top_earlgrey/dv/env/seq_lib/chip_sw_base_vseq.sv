@@ -1305,7 +1305,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endtask : push_button
 
   // This task can be called, when rma is requested by lc_ctrl.
-  // Before rma wipe for the data partition starts (4091 pages -- see the last entry of
+  // Before rma wipe for the data partition starts (4090 pages -- see the last entry of
   // rram_ctrl_pkg::RmaWipeEntries), this task forces the wipe's end_page down to 2 pages, so the
   // rma process completes faster.
   virtual task enable_small_rma();
