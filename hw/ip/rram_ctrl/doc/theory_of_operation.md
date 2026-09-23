@@ -252,7 +252,7 @@ That table is supplied by a global parameter defined in `rram_ctrl_pkg` with the
 | Info | 5 | `CreatorInfoPage` |
 | Info | 6 | `OwnerInfoPage` |
 | Info | 7 | `IsolatedInfoPage` |
-| Data | 0-4090 | All non-OTP data pages |
+| Data | 0-4089 | All non-OTP data pages |
 
 Info pages other than the creator/owner/isolated pages, and the OTP region (the top `OtpPages` data pages), are not wiped by this table.
 See [Address Map](../README.md#address-map) for the full page layout.
