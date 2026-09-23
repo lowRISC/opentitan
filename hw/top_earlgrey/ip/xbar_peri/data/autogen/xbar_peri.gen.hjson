@@ -573,7 +573,7 @@
         }
       ]
       xbar: false
-      stub: true
+      stub: false
       req_fifo_pass: true
     }
   ]
@@ -924,10 +924,9 @@
       inst_name: peri
       width: 1
       default: ""
-      external: true
-      conn_type: false
-      index: -1
+      domain: Main
       top_signame: ast_tl
+      index: -1
     }
   ]
 }

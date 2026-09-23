@@ -319,6 +319,18 @@ module chip_earlgrey_cw340 #(
   pad_attr_t manual_attr_io_clkout;
   pad_attr_t manual_attr_io_trigger;
 
+  // Power state from AST to USB
+  ast_pkg::ast_pwst_t ast_pwst_h;
+
+  // AST ADC analog inputs and direct analog pad-short outputs.
+  ast_pkg::awire_t ast_adc_a0_a, ast_adc_a1_a;
+  ast_pkg::awire_t ast2pad_t0_a, ast2pad_t1_a;
+  // Tie-off ADC inputs. Leave the direct pad-short outputs unused.
+  assign ast_adc_a0_a = '0;
+  assign ast_adc_a1_a = '0;
+  logic unused_ast_analog;
+  assign unused_ast_analog = ^{ast2pad_t0_a, ast2pad_t1_a};
+
   /////////////////////////
   // Stubbed pad tie-off //
   /////////////////////////
@@ -330,7 +342,7 @@ module chip_earlgrey_cw340 #(
   //////////////////////
 
   // AST signals needed in padring - must be decleared here
-  ast_pkg::ast_clks_t    ast_base_clks;
+  logic padring_scan_clk;
   prim_mubi_pkg::mubi4_t scanmode;
 
   padring #(
@@ -418,7 +430,7 @@ module chip_earlgrey_cw340 #(
     })
   ) u_padring (
     // This is only used for scan and DFT purposes
-    .clk_scan_i(ast_base_clks.clk_sys),
+    .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
     .mux_iob_sel_i(mux_iob_sel),
@@ -691,334 +703,6 @@ module chip_earlgrey_cw340 #(
     dio_attr[DioUsbdevUsbDn]
   };
 
-  //////////////////////////////////
-  // AST - Common for all targets //
-  //////////////////////////////////
-
-  // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t pwrmgr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
-
-  // assorted ast status
-  ast_pkg::ast_pwst_t    ast_pwst;
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
-  // TLUL interface
-  tlul_pkg::tl_h2d_t ast_tl_req;
-  tlul_pkg::tl_d2h_t ast_tl_rsp;
-
-  // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
-
-  // external clock
-  logic ext_clk;
-
-  // monitored clock
-  logic sck_monitor;
-
-  // POR signal for top
-  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
-
-  // observe interface
-  logic [7:0] flash_obs;
-  ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  logic usb_ref_pulse;
-  logic usb_ref_val;
-
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
-
-  // entropy source interface
-  logic es_rng_enable, es_rng_valid;
-  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
-  logic es_rng_fips;
-
-  // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_rsp;
-
-  // alerts interface
-  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
-  ast_pkg::ast_alert_req_t ast_alert_req;
-
-  // Flash connections (only for englishbreakfast).
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
-  assign flash_obs = '0;
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
-
-  // DFT connections
-  logic scan_en;
-  logic scan_rst_n;
-  lc_ctrl_pkg::lc_tx_t lc_dft_en;
-  pinmux_pkg::dft_strap_test_req_t dft_strap_test;
-
-  // Debug connections
-  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
-
-  // Jitter enable for main clock
-  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
-
-  // Memory configuration connections
-  prim_ram_1p_pkg::ram_1p_cfg_req_t otbn_imem_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t otbn_imem_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t otbn_dmem_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t otbn_dmem_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t i2c0_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t i2c0_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t i2c1_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t i2c1_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t i2c2_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t i2c2_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t usbdev_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t usbdev_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]
-      rv_core_ibex_icache_tag_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]
-      rv_core_ibex_icache_tag_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]
-      rv_core_ibex_icache_data_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]
-      rv_core_ibex_icache_data_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlMainNumRamInst-1:0]
-      sram_ctrl_main_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlMainNumRamInst-1:0]
-      sram_ctrl_main_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlSecNumRamInst-1:0]
-      sram_ctrl_sec_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlSecNumRamInst-1:0]
-      sram_ctrl_sec_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
-      sram_ctrl_ret_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
-      sram_ctrl_ret_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlMetaNumRamInst-1:0]
-      sram_ctrl_meta_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlMetaNumRamInst-1:0]
-      sram_ctrl_meta_ram_cfg_rsp;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_sys2spi_ram_cfg_req;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t spi_device_sys2spi_ram_cfg_rsp;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_spi2sys_ram_cfg_req;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t spi_device_spi2sys_ram_cfg_rsp;
-  prim_rom_pkg::rom_cfg_req_t rom_ctrl_rom_cfg_req;
-  prim_rom_pkg::rom_cfg_rsp_t rom_ctrl_rom_cfg_rsp;
-
-  ast_pkg::ast_mem_cfg_req_t chip_mem_cfg_req;
-  ast_pkg::ast_mem_cfg_rsp_t chip_mem_cfg_rsp;
-  assign otbn_imem_ram_cfg_req                     = chip_mem_cfg_req.otbn_imem;
-  assign chip_mem_cfg_rsp.otbn_imem                = otbn_imem_ram_cfg_rsp;
-  assign otbn_dmem_ram_cfg_req                     = chip_mem_cfg_req.otbn_dmem;
-  assign chip_mem_cfg_rsp.otbn_dmem                = otbn_dmem_ram_cfg_rsp;
-  assign i2c0_ram_cfg_req                          = chip_mem_cfg_req.i2c0;
-  assign chip_mem_cfg_rsp.i2c0                     = i2c0_ram_cfg_rsp;
-  assign i2c1_ram_cfg_req                          = chip_mem_cfg_req.i2c1;
-  assign chip_mem_cfg_rsp.i2c1                     = i2c1_ram_cfg_rsp;
-  assign i2c2_ram_cfg_req                          = chip_mem_cfg_req.i2c2;
-  assign chip_mem_cfg_rsp.i2c2                     = i2c2_ram_cfg_rsp;
-  assign usbdev_ram_cfg_req                        = chip_mem_cfg_req.usbdev_ram;
-  assign chip_mem_cfg_rsp.usbdev_ram               = usbdev_ram_cfg_rsp;
-  assign rv_core_ibex_icache_tag_ram_cfg_req       = chip_mem_cfg_req.rv_core_ibex_icache_tag;
-  assign chip_mem_cfg_rsp.rv_core_ibex_icache_tag  = rv_core_ibex_icache_tag_ram_cfg_rsp;
-  assign rv_core_ibex_icache_data_ram_cfg_req      = chip_mem_cfg_req.rv_core_ibex_icache_data;
-  assign chip_mem_cfg_rsp.rv_core_ibex_icache_data = rv_core_ibex_icache_data_ram_cfg_rsp;
-  assign sram_ctrl_main_ram_cfg_req                = chip_mem_cfg_req.sram_ctrl_main;
-  assign chip_mem_cfg_rsp.sram_ctrl_main           = sram_ctrl_main_ram_cfg_rsp;
-  assign sram_ctrl_sec_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_sec;
-  assign chip_mem_cfg_rsp.sram_ctrl_sec            = sram_ctrl_sec_ram_cfg_rsp;
-  assign sram_ctrl_ret_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_ret;
-  assign chip_mem_cfg_rsp.sram_ctrl_ret            = sram_ctrl_ret_ram_cfg_rsp;
-  assign sram_ctrl_meta_ram_cfg_req                = chip_mem_cfg_req.sram_ctrl_meta;
-  assign chip_mem_cfg_rsp.sram_ctrl_meta           = sram_ctrl_meta_ram_cfg_rsp;
-  assign spi_device_sys2spi_ram_cfg_req            = chip_mem_cfg_req.spi_device_sys2spi;
-  assign chip_mem_cfg_rsp.spi_device_sys2spi       = spi_device_sys2spi_ram_cfg_rsp;
-  assign spi_device_spi2sys_ram_cfg_req            = chip_mem_cfg_req.spi_device_spi2sys;
-  assign chip_mem_cfg_rsp.spi_device_spi2sys       = spi_device_spi2sys_ram_cfg_rsp;
-  assign rom_ctrl_rom_cfg_req                      = chip_mem_cfg_req.rom_ctrl_rom;
-  assign chip_mem_cfg_rsp.rom_ctrl_rom             = rom_ctrl_rom_cfg_rsp;
-
-  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
-  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
-
-  //////////////////////////////////
-  // AST - Custom for targets     //
-  //////////////////////////////////
-
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
-  assign pad2ast = '0;
-
-  logic bkdr_rst_n;
-  logic clk_main, clk_io, clk_usb_48mhz, clk_aon;
-  clkgen_xil_ultrascale # (
-    .AddClkBuf(0)
-  ) clkgen (
-    .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
-    .clk_main_o(clk_main),
-    .clk_io_o(clk_io),
-    .clk_48MHz_o(clk_usb_48mhz),
-    .clk_aon_o(clk_aon),
-    .rst_no(bkdr_rst_n)
-  );
-
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
-  assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
-    sys: clk_main,
-    io:  clk_io,
-    aon: clk_aon
-  };
-
-
-  ast u_ast (
-    // external POR
-    .por_ni                ( rst_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
-    // clocks' oscillator bypass for FPGA
-    .clk_osc_byp_i         ( clks_osc_byp ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
-
-    // Direct short to PAD
-    .ast2pad_t0_ao         (  ),
-    .ast2pad_t1_ao         (  ),
-
-    // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_clocks ),
-    .sns_rsts_i            ( rstmgr_resets ),
-    .sns_spi_ext_clk_i     ( sck_monitor   ),
-    // tlul
-    .tl_i                  ( ast_tl_req ),
-    .tl_o                  ( ast_tl_rsp ),
-    // init done indication
-    .ast_init_done_o       ( ast_init_done ),
-    // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_infra),
-    .clk_ast_adc_i (clkmgr_clocks.clk_aon_peri),
-    .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
-    .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
-    .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
-    .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
-    .clk_ast_ext_i         ( ext_clk ),
-
-    // pok test for FPGA
-    .vcc_supp_i            ( 1'b1 ),
-    .vcaon_supp_i          ( 1'b1 ),
-    .vcmain_supp_i         ( 1'b1 ),
-    .vioa_supp_i           ( 1'b1 ),
-    .viob_supp_i           ( 1'b1 ),
-    // pok
-    .ast_pwst_o            ( ast_pwst ),
-    .ast_pwst_h_o          (  ),
-    // main regulator
-    .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
-    .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)
-    .flash_power_down_h_o  ( flash_power_down_h  ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( '0 ),
-    .otp_power_seq_h_o     (    ),
-    // system source clock
-    .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
-    // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
-    .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
-    .clk_src_sys_val_o     ( pwrmgr_ast_rsp.core_clk_val ),
-    // aon source clock
-    .clk_src_aon_o         ( ast_base_clks.clk_aon ),
-    .clk_src_aon_val_o     ( pwrmgr_ast_rsp.slow_clk_val ),
-    // io source clock
-    .clk_src_io_en_i       ( pwrmgr_ast_req.io_clk_en ),
-    .clk_src_io_o          ( ast_base_clks.clk_io ),
-    .clk_src_io_val_o      ( pwrmgr_ast_rsp.io_clk_val ),
-    .clk_src_io_48m_o      ( div_step_down_req ),
-    // usb source clock
-    .usb_ref_pulse_i       ( usb_ref_pulse ),
-    .usb_ref_val_i         ( usb_ref_val ),
-    .clk_src_usb_en_i      ( pwrmgr_ast_req.usb_clk_en ),
-    .clk_src_usb_o         ( ast_base_clks.clk_usb ),
-    .clk_src_usb_val_o     ( pwrmgr_ast_rsp.usb_clk_val ),
-    // adc
-    .adc_pd_i              ( adc_req.pd ),
-    .adc_chnsel_i          ( adc_req.channel_sel ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
-    // rng
-    .rng_en_i              ( es_rng_enable ),
-    .rng_fips_i            ( es_rng_fips ),
-    .rng_val_o             ( es_rng_valid ),
-    .rng_b_o               ( es_rng_bit ),
-    // entropy
-    .entropy_rsp_i         ( ast_edn_rsp ),
-    .entropy_req_o         ( ast_edn_req ),
-    // alerts
-    .alert_rsp_i           ( ast_alert_rsp  ),
-    .alert_req_o           ( ast_alert_req  ),
-    // dft
-    .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( flash_obs ),
-    .otp_obs_i             ( '0 ),
-    .otm_obs_i             ( '0 ),
-    .usb_obs_i             ( '0 ),
-    .obs_ctrl_o            ( obs_ctrl ),
-    // pinmux related
-    .padmux2ast_i          ( pad2ast    ),
-    .ast2padmux_o          ( ast2pinmux ),
-    .mux_iob_sel_o         ( mux_iob_sel ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    // bist enable (flash)
-    .flash_bist_en_o       ( flash_bist_enable ),
-    // Memory configuration connections
-    // Single aggregated request/response struct, driven from the AST's internal
-    // SRAM configuration and fanned out to the individual cut signals above.
-    .mem_cfg_req_o         ( chip_mem_cfg_req ),
-    .mem_cfg_rsp_i         ( chip_mem_cfg_rsp ),
-    // scan
-    .dft_scan_md_o         ( scanmode   ),
-    .scan_shift_en_o       ( scan_en    ),
-    .scan_reset_no         ( scan_rst_n )
-  );
-
-  logic unused_flash_ast_sigs;
-  assign unused_flash_ast_sigs = ^{
-    flash_bist_enable,
-    flash_power_down_h,
-    flash_power_ready_h
-  };
-
   /////////////////////
   // Memory Backdoor //
   /////////////////////
@@ -1035,6 +719,7 @@ module chip_earlgrey_cw340 #(
     logic tap_strap0;
     logic tap_strap1;
     logic bkdr_ena;
+    logic rst_n;
 
     // Main JTAG port
     jtag_pkg::jtag_req_t jtag_req_i;
@@ -1124,9 +809,87 @@ module chip_earlgrey_cw340 #(
   // for verilator purposes, make these two the same.
   prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 
-  /////////////////////////////////////////////
-  // top_earlgrey: power domains + AST //
-  /////////////////////////////////////////////
+  ////////////////////////
+  // AST related wiring //
+  ////////////////////////
+  logic clk_ast_ext;
+  prim_mubi_pkg::mubi4_t cg_en_ast_ext;
+  // This clock gate is never used inside the top. It is a topgen artifact of an external clock.
+  assign cg_en_ast_ext = prim_mubi_pkg::MuBi4False;
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+
+  // Debug connections
+  logic [ast_pkg::Pad2AstInWidth-1:0] padmux2ast;
+
+  // TODO: Hook this up when FPGA pads are updated
+  assign clk_ast_ext = '0;
+  assign padmux2ast = '0;
+
+  logic bkdr_rst_n;
+  logic clk_main, clk_io, clk_usb_48mhz, clk_aon;
+  clkgen_xil_ultrascale # (
+    .AddClkBuf(0)
+  ) clkgen (
+    .clk_i(manual_in_io_clk),
+    .rst_ni(manual_in_por_n),
+    .clk_main_o(clk_main),
+    .clk_io_o(clk_io),
+    .clk_48MHz_o(clk_usb_48mhz),
+    .clk_aon_o(clk_aon),
+    .rst_no(bkdr_rst_n)
+  );
+
+  logic [31:0] fpga_info;
+  usr_access_xil7series u_info (
+    .info_o(fpga_info)
+  );
+
+  assign clks_osc_byp = '{
+    usb: clk_usb_48mhz,
+    sys: clk_main,
+    io:  clk_io,
+    aon: clk_aon
+  };
+
+  // Tie-off supply voltage test signals
+  ast_pkg::ast_vx_supp_t ast_vx_supp;
+  assign ast_vx_supp = '{
+    vcc:    1'b1,
+    vcaon:  1'b1,
+    vcmain: 1'b1,
+    vioa:   1'b1,
+    viob:   1'b1
+  };
+
+  // flash observation (only for englishbreakfast)
+  logic [7:0] flash_obs;
+  assign flash_obs = '0;
+
+  // Tie-off observation signals
+  ast_pkg::ast_obs_bus_t ast_obs;
+  assign ast_obs = '{
+    fla_obs: flash_obs,
+    otp_obs: '0,
+    otm_obs: '0,
+    usb_obs: '0
+  };
+
+  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
+  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
+  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
+  // as topgen does not support conditional port generation.
+  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
+  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
+  assign clk_osc_byp_pd_main = clks_osc_byp;
+  assign clk_osc_byp_pd_aon  = clks_osc_byp;
+
+  // AST power states are unused
+  logic unused_ast_pwst_h;
+  assign unused_ast_pwst_h = ^ast_pwst_h;
+  ///////////////////////////////////////
+  // top_earlgrey: power domains //
+  ///////////////////////////////////////
   top_earlgrey #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -1147,13 +910,12 @@ module chip_earlgrey_cw340 #(
     .SramCtrlMainInstrExec(1),
     .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    // Base clocks from AST
-    .ast_base_clks_i(ast_base_clks),
+    // Unmanaged external clocks
+    .clk_ast_ext_i  (clk_ast_ext),
+    .cg_en_ast_ext_i(cg_en_ast_ext),
 
     // Manual DFT signals
-    .scan_rst_ni(scan_rst_n),
-    .scan_en_i  (scan_en   ),
-    .scanmode_i (scanmode  ),
+    .padring_scan_clk_o(padring_scan_clk),
 
     // Multiplexed I/O to backdoor
     .mio_in_i (mio_bkdr_in ),
@@ -1170,83 +932,33 @@ module chip_earlgrey_cw340 #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .adc_req_o                             (adc_req                  ),
-    .adc_rsp_i                             (adc_rsp                  ),
-    .ast_edn_req_i                         (ast_edn_req              ),
-    .ast_edn_rsp_o                         (ast_edn_rsp              ),
-    .ast_lc_dft_en_o                       (                         ),
-    .obs_ctrl_i                            (obs_ctrl                 ),
-    .otbn_imem_ram_cfg_req_i               (otbn_imem_ram_cfg_req    ),
-    .otbn_imem_ram_cfg_rsp_o               (otbn_imem_ram_cfg_rsp    ),
-    .otbn_dmem_ram_cfg_req_i               (otbn_dmem_ram_cfg_req    ),
-    .otbn_dmem_ram_cfg_rsp_o               (otbn_dmem_ram_cfg_rsp    ),
-    .i2c0_ram_cfg_req_i                    (i2c0_ram_cfg_req         ),
-    .i2c0_ram_cfg_rsp_o                    (i2c0_ram_cfg_rsp         ),
-    .i2c1_ram_cfg_req_i                    (i2c1_ram_cfg_req         ),
-    .i2c1_ram_cfg_rsp_o                    (i2c1_ram_cfg_rsp         ),
-    .i2c2_ram_cfg_req_i                    (i2c2_ram_cfg_req         ),
-    .i2c2_ram_cfg_rsp_o                    (i2c2_ram_cfg_rsp         ),
-    .usbdev_ram_cfg_req_i                  (usbdev_ram_cfg_req       ),
-    .usbdev_ram_cfg_rsp_o                  (usbdev_ram_cfg_rsp       ),
-    .rv_core_ibex_icache_tag_ram_cfg_req_i (rv_core_ibex_icache_tag_ram_cfg_req),
-    .rv_core_ibex_icache_tag_ram_cfg_rsp_o (rv_core_ibex_icache_tag_ram_cfg_rsp),
-    .rv_core_ibex_icache_data_ram_cfg_req_i(rv_core_ibex_icache_data_ram_cfg_req),
-    .rv_core_ibex_icache_data_ram_cfg_rsp_o(rv_core_ibex_icache_data_ram_cfg_rsp),
-    .spi_device_sys2spi_ram_cfg_req_i      (spi_device_sys2spi_ram_cfg_req),
-    .spi_device_sys2spi_ram_cfg_rsp_o      (spi_device_sys2spi_ram_cfg_rsp),
-    .spi_device_spi2sys_ram_cfg_req_i      (spi_device_spi2sys_ram_cfg_req),
-    .spi_device_spi2sys_ram_cfg_rsp_o      (spi_device_spi2sys_ram_cfg_rsp),
-    .rom_ctrl_rom_cfg_req_i                (rom_ctrl_rom_cfg_req     ),
-    .rom_ctrl_rom_cfg_rsp_o                (rom_ctrl_rom_cfg_rsp     ),
-    .sram_ctrl_main_ram_cfg_req_i          (sram_ctrl_main_ram_cfg_req),
-    .sram_ctrl_main_ram_cfg_rsp_o          (sram_ctrl_main_ram_cfg_rsp),
-    .sram_ctrl_sec_ram_cfg_req_i           (sram_ctrl_sec_ram_cfg_req),
-    .sram_ctrl_sec_ram_cfg_rsp_o           (sram_ctrl_sec_ram_cfg_rsp),
-    .sram_ctrl_ret_ram_cfg_req_i           (sram_ctrl_ret_ram_cfg_req),
-    .sram_ctrl_ret_ram_cfg_rsp_o           (sram_ctrl_ret_ram_cfg_rsp),
-    .sram_ctrl_meta_ram_cfg_req_i          (sram_ctrl_meta_ram_cfg_req),
-    .sram_ctrl_meta_ram_cfg_rsp_o          (sram_ctrl_meta_ram_cfg_rsp),
-    .clkmgr_clocks_o                       (clkmgr_clocks            ),
-    .clkmgr_cg_en_o                        (                         ),
-    .clk_main_jitter_en_o                  (clk_main_jitter_en       ),
-    .io_clk_byp_req_o                      (io_clk_byp_req           ),
-    .io_clk_byp_ack_i                      (io_clk_byp_ack           ),
-    .all_clk_byp_req_o                     (all_clk_byp_req          ),
-    .all_clk_byp_ack_i                     (all_clk_byp_ack          ),
-    .hi_speed_sel_o                        (hi_speed_sel             ),
-    .div_step_down_req_i                   (div_step_down_req        ),
-    .calib_rdy_i                           (ast_init_done            ),
-    .es_rng_enable_o                       (es_rng_enable            ),
-    .es_rng_valid_i                        (es_rng_valid             ),
-    .es_rng_bit_i                          (es_rng_bit               ),
-    .es_rng_fips_o                         (                         ),
-    .ast_tl_req_o                          (ast_tl_req               ),
-    .ast_tl_rsp_i                          (ast_tl_rsp               ),
-    .dft_strap_test_o                      (                         ),
-    .dft_hold_tap_sel_i                    ('0                       ),
-    .usb_dp_pullup_en_o                    (usb_dp_pullup_en         ),
-    .usb_dn_pullup_en_o                    (                         ),
-    .pwrmgr_ast_req_o                      (pwrmgr_ast_req           ),
-    .pwrmgr_ast_rsp_i                      (pwrmgr_ast_rsp           ),
-    .rram_test_analog_io                   ('0                       ),
-    .por_n_i                               (por_n                    ),
-    .rstmgr_resets_o                       (rstmgr_resets            ),
-    .rstmgr_rst_en_o                       (                         ),
-    .fpga_info_i                           (fpga_info                ),
-    .sensor_ctrl_ast_alert_req_i           (ast_alert_req            ),
-    .sensor_ctrl_ast_alert_rsp_o           (ast_alert_rsp            ),
-    .sensor_ctrl_ast_status_i              (ast_pwst.io_pok          ),
-    .ast2pinmux_i                          (ast2pinmux               ),
-    .ast_init_done_i                       (ast_init_done            ),
-    .sensor_ctrl_manual_pad_attr_o         (                         ),
-    .sck_monitor_o                         (sck_monitor              ),
-    .usbdev_usb_rx_d_i                     (usb_rx_d                 ),
-    .usbdev_usb_tx_d_o                     (                         ),
-    .usbdev_usb_tx_se0_o                   (                         ),
-    .usbdev_usb_tx_use_d_se0_o             (                         ),
-    .usbdev_usb_rx_enable_o                (usb_rx_enable            ),
-    .usbdev_usb_ref_val_o                  (usb_ref_val              ),
-    .usbdev_usb_ref_pulse_o                (usb_ref_pulse            )
+    .manual_in_por_n_i            (rst_n              ),
+    .scanmode_o                   (scanmode           ),
+    .scan_en_o                    (                   ),
+    .scan_rst_n_o                 (                   ),
+    .usb_io_pu_cal_o              (                   ),
+    .padmux2ast_i                 (padmux2ast         ),
+    .mux_iob_sel_o                (mux_iob_sel        ),
+    .ast_vx_supp_i                (ast_vx_supp        ),
+    .ast_obs_i                    (ast_obs            ),
+    .ast_adc_a0_a_i               (ast_adc_a0_a       ),
+    .ast_adc_a1_a_i               (ast_adc_a1_a       ),
+    .ast2pad_t0_a_o               (ast2pad_t0_a       ),
+    .ast2pad_t1_a_o               (ast2pad_t1_a       ),
+    .clk_osc_byp_pd_main_i        (clk_osc_byp_pd_main),
+    .clk_osc_byp_pd_aon_i         (clk_osc_byp_pd_aon ),
+    .ast_pwst_h_o                 (ast_pwst_h         ),
+    .dft_hold_tap_sel_i           ('0                 ),
+    .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
+    .usb_dn_pullup_en_o           (                   ),
+    .rram_test_analog_io          ('0                 ),
+    .fpga_info_i                  (fpga_info          ),
+    .sensor_ctrl_manual_pad_attr_o(                   ),
+    .usbdev_usb_rx_d_i            (usb_rx_d           ),
+    .usbdev_usb_tx_d_o            (                   ),
+    .usbdev_usb_tx_se0_o          (                   ),
+    .usbdev_usb_tx_use_d_se0_o    (                   ),
+    .usbdev_usb_rx_enable_o       (usb_rx_enable      )
   );
 
 
