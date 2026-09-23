@@ -83,10 +83,7 @@ module ast_part_secondary #(
   // dft interface
   input pinmux_pkg::dft_strap_test_req_t dft_strap_test_i,  // DFT Straps
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable (secure bus)
-  input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
-  input [8-1:0] otp_obs_i,                    // OTP Observe Bus
-  input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
-  input usb_obs_i,                            // USB DIFF RX Observe
+  input ast_pkg::ast_obs_bus_t obs_i,         // Observe bus for diverse parts
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -731,10 +728,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],
-                        fla_obs_i[8-1:0],
-                        otp_obs_i[8-1:0],
-                        otm_obs_i[8-1:0],
-                        usb_obs_i,
+                        obs_i,
                         clk_ast_ext_i,
                         clk_src_usb_en_i,
                         ext_freq_is_96m_i,

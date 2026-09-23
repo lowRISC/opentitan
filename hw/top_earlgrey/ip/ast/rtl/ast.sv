@@ -188,6 +188,14 @@ assign vx_supp = '{
   viob:   viob_supp_i
 };
 
+ast_pkg::ast_obs_bus_t obs;
+assign obs = '{
+  fla_obs: fla_obs_i,
+  otp_obs: otp_obs_i,
+  otm_obs: otm_obs_i,
+  usb_obs: usb_obs_i
+};
+
 // AON Domain instantiation
 ast_part_secondary #(
   .UsbCalibWidth   ( UsbCalibWidth ),
@@ -235,10 +243,7 @@ ast_part_secondary #(
   .alert_o                 ( alert_req_o ),
   .dft_strap_test_i        ( dft_strap_test_i ),
   .lc_dft_en_i             ( lc_dft_en_i ),
-  .fla_obs_i               ( fla_obs_i ),
-  .otp_obs_i               ( otp_obs_i ),
-  .otm_obs_i               ( otm_obs_i ),
-  .usb_obs_i               ( usb_obs_i ),
+  .obs_i                   ( obs ),
   .obs_ctrl_o              ( obs_ctrl_o ),
   .padmux2ast_i            ( padmux2ast_i ),
   .ast2padmux_o            ( ast2padmux_o ),
