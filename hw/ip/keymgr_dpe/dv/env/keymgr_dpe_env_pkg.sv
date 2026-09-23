@@ -61,7 +61,7 @@ package keymgr_dpe_env_pkg;
 
   typedef virtual keymgr_dpe_if keymgr_dpe_vif;
   typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::KeyWidth-1:0] key_shares_t;
-  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::OtbnKeyWidth-1:0] otbn_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::WideHwKeyWidth-1:0] wide_key_shares_t;
   typedef bit [keymgr_dpe_pkg::Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_digests_t;
   typedef enum {
     IntrOpDone,
