@@ -2,6 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Limit CI builds with an explicit heap size based on resources that we would expect to be available
+startup --host_jvm_args=-Xmx12g
+
 # These options disable the Bazel progress UI, resulting in output closer
 # to ninja and similar tools.
 common --curses=no

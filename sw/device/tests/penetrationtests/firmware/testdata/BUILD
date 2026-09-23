@@ -4,7 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@opentitan_signing_infra//signing:defs.bzl", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load(
