@@ -179,6 +179,15 @@ ast_pkg::adc_ast_rsp_t adc_rsp;
 assign adc_d_o = adc_rsp.data;
 assign adc_d_val_o = adc_rsp.data_valid;
 
+ast_pkg::ast_vx_supp_t vx_supp;
+assign vx_supp = '{
+  vcc:    vcc_supp_i,
+  vcaon:  vcaon_supp_i,
+  vcmain: vcmain_supp_i,
+  vioa:   vioa_supp_i,
+  viob:   viob_supp_i
+};
+
 // AON Domain instantiation
 ast_part_secondary #(
   .UsbCalibWidth   ( UsbCalibWidth ),
@@ -200,11 +209,7 @@ ast_part_secondary #(
   .sns_clks_i              ( sns_clks_i ),
   .sns_rsts_i              ( sns_rsts_i ),
   .sns_spi_ext_clk_i       ( sns_spi_ext_clk_i ),
-  .vcc_supp_i              ( vcc_supp_i ),
-  .vcaon_supp_i            ( vcaon_supp_i ),
-  .vcmain_supp_i           ( vcmain_supp_i ),
-  .vioa_supp_i             ( vioa_supp_i ),
-  .viob_supp_i             ( viob_supp_i ),
+  .vx_supp_i               ( vx_supp ),
   .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
   .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst

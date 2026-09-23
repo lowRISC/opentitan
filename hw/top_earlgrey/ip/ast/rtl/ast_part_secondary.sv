@@ -45,11 +45,7 @@ module ast_part_secondary #(
   // In non-power aware DV environment, the <>_supp_i is for debug only!
   // POK signal follow this input.
   // In a power aware environment this signal should be connected to constant '1'
-  input vcc_supp_i,                           // VCC Supply Test for OS FPGA
-  input vcaon_supp_i,                         // VCAON Supply Test for OS FPGA
-  input vcmain_supp_i,                        // VCMAIN Supply Test for OS FPGA
-  input vioa_supp_i,                          // VIOA Rail Supply Test for OS FPGA
-  input viob_supp_i,                          // VIOB Rail Supply Test for OS FPGA
+  input ast_pkg::ast_vx_supp_t vx_supp_i,
   output ast_pkg::ast_pwst_t ast_pwst_o,      // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @1.1V
   output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @3.3V
   output logic [1:0] rstmgr_por_n_o,          // Per-power-domain POR towards rstmgr
@@ -182,7 +178,7 @@ vcc_pgd u_vcc_pok (
   .vcc_pok_o ( vcc_pok_int )
 );
 
-assign vcc_pok = vcc_pok_int && vcc_supp_i;
+assign vcc_pok = vcc_pok_int && vx_supp_i.vcc;
 assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 
 
@@ -251,7 +247,7 @@ vio_pgd u_vioa_pok (
   .vio_pok_o ( vioa_pok_int )
 );
 
-assign vioa_pok = vioa_pok_int && vioa_supp_i;
+assign vioa_pok = vioa_pok_int && vx_supp_i.vioa;
 assign ast_pwst.io_pok[0] = vcaon_pok && vioa_pok;
 
 ///////////////////////////////////////
@@ -264,7 +260,7 @@ vio_pgd u_viob_pok (
   .vio_pok_o ( viob_pok_int )
 );
 
-assign viob_pok = viob_pok_int && viob_supp_i;
+assign viob_pok = viob_pok_int && vx_supp_i.viob;
 assign ast_pwst.io_pok[1] = vcaon_pok && viob_pok;
 assign mux_iob_sel_o = 4'h0;
 
@@ -287,8 +283,8 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .por_sync_h_i ( por_sync ),
   .scan_mode_h_i ( scan_mode ),
   .otp_power_seq_h_i ( otp_power_seq_i[2-1:0] ),
-  .vcaon_supp_i ( vcaon_supp_i ),
-  .vcmain_supp_i ( vcmain_supp_i ),
+  .vcaon_supp_i ( vx_supp_i.vcaon ),
+  .vcmain_supp_i ( vx_supp_i.vcmain ),
   .rglssm_vmppr_h_o ( rglssm_vmppr ),
   .rglssm_vcmon_h_o ( rglssm_vcmon ),
   .rglssm_brout_h_o ( rglssm_brout ),

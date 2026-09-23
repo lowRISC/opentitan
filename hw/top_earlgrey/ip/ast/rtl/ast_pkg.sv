@@ -153,6 +153,14 @@ typedef struct packed {
   logic [NumIoRails-1:0] io_pok;
 } ast_pwst_t;
 
+typedef struct packed {
+  logic vcc;    // VCC Supply Test for OS FPGA
+  logic vcaon;  // VCAON Supply Test for OS FPGA
+  logic vcmain; // VCMAIN Supply Test for OS FPGA
+  logic vioa;   // VIOA Rail Supply Test for OS FPGA
+  logic viob;   // VIOB Rail Supply Test for OS FPGA
+} ast_vx_supp_t;
+
 // Alerts Interface
 typedef struct packed {
   logic        p;
