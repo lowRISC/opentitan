@@ -136,14 +136,6 @@ _ottf_start:
   la   sp, _stack_end
 
   /**
-   * Set well-defined interrupt/exception handlers.
-   *
-   * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
-   */
-  la   t0, (_ottf_interrupt_vector + 1)
-  csrw mtvec, t0
-
-  /**
    * Setup C Runtime
    */
 

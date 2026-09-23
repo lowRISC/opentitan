@@ -88,7 +88,7 @@ extern char _rom_ext_immutable_size[];
 lifecycle_state_t lc_state;
 
 // A ram copy of the OTP word controlling how to handle flash ECC errors.
-uint32_t flash_ecc_exc_handler_en;
+extern uint32_t flash_ecc_exc_handler_en;
 
 // Owner configuration details parsed from the onwer info pages.
 owner_config_t owner_config;

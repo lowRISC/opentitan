@@ -135,6 +135,13 @@ typedef struct ottf_test_config {
    * by the test.
    */
   bool ignore_alerts;
+
+  /**
+   * If true, OTTF will not overwrite `mtvec` during initialization, preserving
+   * the interrupt/exception vector configured by the prior boot stage (e.g.,
+   * ROM or ROM_EXT).
+   */
+  bool preserve_mtvec;
 } ottf_test_config_t;
 
 /**
