@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/coverage/api.h"
@@ -283,6 +284,7 @@ void _ottf_main(void) {
         bad_data_index, (uint32_t)data_init[bad_data_index]);
 
   // Unit test CRT utility functions.
+  CSR_WRITE(CSR_REG_MTVEC, ((uintptr_t)_ottf_interrupt_vector) | 1u);
   test_crt_section_clear();
   test_crt_section_copy();
 

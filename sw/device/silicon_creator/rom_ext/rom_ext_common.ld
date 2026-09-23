@@ -23,6 +23,13 @@ _owner_virtual_start_address = ORIGIN(owner_virtual);
 _owner_virtual_size = LENGTH(owner_virtual);
 
 /**
+ * Symbol for the RAM copy of the OTP word controlling flash ECC exception
+ * handling. Placed at the first word of `_exception_frame_start` (the unused
+ * `x0` slot) so it is not overwritten by subsequent boot stages.
+ */
+flash_ecc_exc_handler_en = _exception_frame_start;
+
+/**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
  * then be used by `rom_boot` to handover execution to ROM_EXT.

@@ -97,7 +97,7 @@ static hardened_bool_t waking_from_low_power = 0;
 // First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
 static sigverify_otp_key_ctx_t sigverify_ctx;
 // A ram copy of the OTP word controlling how to handle flash ECC errors.
-uint32_t flash_ecc_exc_handler_en;
+extern uint32_t flash_ecc_exc_handler_en;
 // A check value for the reset reason.
 uint32_t reset_reason_check;
 

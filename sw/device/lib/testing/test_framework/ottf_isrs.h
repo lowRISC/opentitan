@@ -11,6 +11,11 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
+ * OTTF interrupt vector function defined in `ottf_start.S`.
+ */
+extern void _ottf_interrupt_vector(void);
+
+/**
  * OTTF global PLIC interface.
  */
 extern dif_rv_plic_t ottf_plic;

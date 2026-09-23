@@ -1096,6 +1096,7 @@ opentitan_test(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/coverage:api",

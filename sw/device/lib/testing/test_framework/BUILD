@@ -257,6 +257,7 @@ cc_library(
         ":ottf_test_config",
         ":status",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",

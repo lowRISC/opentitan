@@ -31,6 +31,13 @@ _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
   "Error: rom ext flash is bigger than slot.");
 
+/**
+ * Symbol for the RAM copy of the OTP word controlling flash ECC exception
+ * handling. Placed at the first word of `_exception_frame_start` (the unused
+ * `x0` slot) so it is not overwritten by subsequent boot stages.
+ */
+flash_ecc_exc_handler_en = _exception_frame_start;
+
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
 

@@ -11,6 +11,7 @@
 #include "external/freertos/include/queue.h"
 #include "external/freertos/include/task.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/coverage/api.h"
@@ -158,6 +159,13 @@ static void test_wrapper(void *task_parameters) {
 }
 
 void _ottf_main(void) {
+  if (!kOttfTestConfig.preserve_mtvec) {
+    // Set well-defined interrupt/exception handlers.
+    // The lowest two bits should be `0b01` to ensure we use vectored
+    // interrupts.
+    CSR_WRITE(CSR_REG_MTVEC, ((uintptr_t)_ottf_interrupt_vector) | 1u);
+  }
+
   test_status_set(kTestStatusInTest);
 
   // Clear reset reason register.
@@ -182,7 +190,7 @@ void _ottf_main(void) {
   }
 
 #if !OT_IS_ENGLISH_BREAKFAST
-  if (!kOttfTestConfig.ignore_alerts) {
+  if (!kOttfTestConfig.ignore_alerts && !kOttfTestConfig.preserve_mtvec) {
     if (!kOttfTestConfig.silence_console_prints) {
       LOG_INFO("Enabling OTTF alert catcher");
     }
