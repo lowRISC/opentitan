@@ -19,7 +19,6 @@ extern "C" {
     value(_, Ecdh) \
     value(_, Ed25519) \
     value(_, Hash) \
-    value(_, Hkdf) \
     value(_, Hmac) \
     value(_, Kmac) \
     value(_, Mldsa) \
