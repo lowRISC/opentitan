@@ -680,6 +680,47 @@ countermeasures: [
       ]
     },
 
+    { name: "KDF_ENGINE_REGWEN",
+      desc: "Register write enable for KDF_ENGINE",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Configuration enable for KDF_ENGINE.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "KDF_ENGINE_SHADOWED",
+      desc: "Selects the engine used to perform key derivation",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
+      regwen: "KDF_ENGINE_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "3:0",
+          name: "SEL",
+          mubi: true,
+          resval: false
+          desc: '''
+            Selects the engine used for key derivation.
+
+            kMultiBitBool4True selects OTBN using HKDF.
+            kMultiBitBool4False selects KMAC.
+          '''
+        },
+      ]
+    },
+
     { name: "SLOT_POLICY_REGWEN",
       desc: "Register write enable for SLOT_POLICY",
       swaccess: "rw0c",
