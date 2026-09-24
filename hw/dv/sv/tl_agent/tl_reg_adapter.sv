@@ -82,8 +82,8 @@ function void tl_reg_adapter::bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bu
   rw.data    = (rw.kind == UVM_WRITE) ? bus_rsp.a_data : bus_rsp.d_data;
   rw.byte_en = bus_rsp.a_mask;
   `DV_CHECK_EQ(bus_rsp.d_source, bus_rsp.a_source)
-  // indicate if the item is completed successfully for upper level to update predict value
-  rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
+  // Indicate whether the item completed successfully for the upper level to update its prediction.
+  rw.status = (!bus_rsp.req_completed || bus_rsp.d_error) ? UVM_NOT_OK : UVM_IS_OK;
   `uvm_info(`gfn, {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
 endfunction
 
