@@ -407,7 +407,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for csrng in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for entropy_src in top earlgrey.

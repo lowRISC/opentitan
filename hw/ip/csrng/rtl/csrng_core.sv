@@ -66,6 +66,9 @@ module csrng_core import csrng_pkg::*; #(
   logic                        read_int_state;
   logic                        read_int_state_pfe;
   logic                        read_int_state_pfa;
+  logic                        write_int_state;
+  logic                        write_int_state_pfe;
+  logic                        write_int_state_pfa;
   logic                        fips_force_enable;
   logic                        fips_force_enable_pfe;
   logic                        fips_force_enable_pfa;
@@ -397,6 +400,7 @@ module csrng_core import csrng_pkg::*; #(
   assign recov_alert_event = cs_enable_pfa ||
          sw_app_enable_pfa ||
          read_int_state_pfa ||
+         write_int_state_pfa ||
          acmd_flag0_pfa ||
          |reseed_cnt_alert ||
          |invalid_cmd_seq_alert ||
@@ -483,6 +487,25 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // SEC_CM: CONFIG.MUBI
+  mubi4_t mubi_write_int_state;
+  mubi4_t [1:0] mubi_write_int_state_fanout;
+  assign mubi_write_int_state = mubi4_t'(reg2hw.ctrl.write_int_state.q);
+  assign write_int_state_pfe = mubi4_test_true_strict(mubi_write_int_state_fanout[0]);
+  assign write_int_state_pfa = mubi4_test_invalid(mubi_write_int_state_fanout[1]);
+  assign hw2reg.recov_alert_sts.write_int_state_field_alert.de = write_int_state_pfa;
+  assign hw2reg.recov_alert_sts.write_int_state_field_alert.d  = write_int_state_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_write_int_state (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_write_int_state),
+    .mubi_o(mubi_write_int_state_fanout)
+  );
+
+  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_fips_force_enable;
   mubi4_t [1:0] mubi_fips_force_enable_fanout;
   assign mubi_fips_force_enable = mubi4_t'(reg2hw.ctrl.fips_force_enable.q);
@@ -504,6 +527,7 @@ module csrng_core import csrng_pkg::*; #(
   // master module enable
   assign sw_app_enable = sw_app_enable_pfe;
   assign read_int_state = read_int_state_pfe;
+  assign write_int_state = write_int_state_pfe;
   assign fips_force_enable = fips_force_enable_pfe;
 
   //------------------------------------------
@@ -1058,11 +1082,20 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  //------------------------------------------
+  // Internal-state save/restore: registers
+  //------------------------------------------
+  // TODO: Wire up the registers to context save/restore control logic.
+
+  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.de = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.d  = 1'b0;
+
   // unused signals
   logic               unused_err_code_test_bit;
   logic               unused_enable_fo;
   logic               unused_reg2hw_genbits;
   logic               unused_int_state_val;
+  logic               unused_int_state_write;
   logic               unused_reseed_interval;
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
@@ -1073,7 +1106,8 @@ module csrng_core import csrng_pkg::*; #(
   assign unused_enable_fo = |cs_enable_fo[18:5] || (|cs_enable_fo[35:33]) ||
                             (|cs_enable_fo[47:46]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
-  assign unused_int_state_val = (|reg2hw.int_state_val.q);
+  assign unused_int_state_val = (|reg2hw.int_state_val.q) | reg2hw.int_state_val.qe;
+  assign unused_int_state_write = write_int_state | (|reg2hw.int_state_write_enable.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
   assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;

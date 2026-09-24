@@ -637,6 +637,8 @@ OT_USED static void csrng_configure(void) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_WRITE_INT_STATE_FIELD,
+                               kMultiBitBool4False);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, reg);
@@ -652,6 +654,8 @@ static void csrng_verify(void) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_WRITE_INT_STATE_FIELD,
+                               kMultiBitBool4False);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
   HARDENED_CHECK_EQ(abs_mmio_read32(csrng_base() + CSRNG_CTRL_REG_OFFSET), reg);
