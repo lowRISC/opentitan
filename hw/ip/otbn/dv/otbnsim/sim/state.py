@@ -83,6 +83,8 @@ class OTBNState:
         self.wdrs = RegFile('w', 256, 32)
 
         self.ext_regs = OTBNExtRegs()
+        # Inside the WSRFile, the URND WSR models the urnd_ctrl_enabled CTRL bit. This bit is
+        # persistent across secure wipes. Ensure that the WSRFile is not recreated in these cases.
         self.wsrs = WSRFile(self.ext_regs)
         self.csrs = CSRFile(self.wsrs, self.ext_regs)
         self.kmac = Kmac(self.csrs, self.wsrs)
@@ -225,6 +227,14 @@ class OTBNState:
         self.mac_rnd_offset = 0
         self.mac_rnd_offset_predec = 0
 
+    @property
+    def urnd_ctrl_enabled(self) -> bool:
+        return self.wsrs.URND.urnd_ctrl_enabled
+
+    @urnd_ctrl_enabled.setter
+    def urnd_ctrl_enabled(self, value: bool) -> None:
+        self.wsrs.URND.urnd_ctrl_enabled = value
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -343,6 +353,11 @@ class OTBNState:
             self.cycles_in_this_state = 0
 
         self.ext_regs.commit()
+
+        # A busy MAI forces the URND PRNG to advance even if software stopped it. Must come before
+        # the pulled out URND commit below that it is considered in the update.
+        if self.mai.is_busy():
+            self.wsrs.URND.mark_consumed()
 
         # Pull URND out separately because we also want to commit this in some
         # "idle-ish" states
