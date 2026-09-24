@@ -7544,7 +7544,7 @@
           index: -1
         }
         {
-          name: kmac_data
+          name: kmac_app
           struct: app
           package: kmac_pkg
           type: req_rsp
@@ -10898,7 +10898,7 @@
         keymgr_dpe.kmac_app
         lc_ctrl.kmac_data
         rom_ctrl.kmac_data
-        otbn.kmac_data
+        otbn.kmac_app
       ]
       kmac.en_masking:
       [
@@ -25626,7 +25626,7 @@
         index: -1
       }
       {
-        name: kmac_data
+        name: kmac_app
         struct: app
         package: kmac_pkg
         type: req_rsp
