@@ -269,6 +269,14 @@
       act:     "req"
       package: "kmac_pkg"
     },
+
+    // Keymgr interface
+    { struct:  "app"
+      type:    "req_rsp"
+      name:    "keymgr_app"
+      act:     "rsp"
+      package: "kmac_pkg"
+    },
   ],
   features: [
     {
