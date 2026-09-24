@@ -30,6 +30,15 @@ runs:
           echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
         fi
 
+    # Tests might output non-UTF-8 data. It's best if they don't, but it could happen.
+    # This can especially cause problems if tests emitting this data pass and are cached.
+    # `merge-junit` can handle this, but `xmlstarlet` seems to not be able to.
+    # As a fallback, we replace any invalid bytes and remove any XML-invalid characters
+    - name: Sanitize non-UTF-8 report data
+      id: sanitize_reports
+      shell: bash
+      run: ./ci/scripts/sanitize-xml.py "${{ inputs.merged-results }}"
+
     - name: Add hostname to testsuites
       shell: bash
       run: |
