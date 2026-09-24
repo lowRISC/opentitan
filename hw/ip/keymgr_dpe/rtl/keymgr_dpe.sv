@@ -57,6 +57,7 @@ module keymgr_dpe
   // Application interface when OTBN is used as hashing engine
   output kmac_pkg::app_req_t otbn_app_o,
   input  kmac_pkg::app_rsp_t otbn_app_i,
+  output mubi4_t             sensitive_key_o,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -131,6 +132,17 @@ module keymgr_dpe
     .in_i   (otbn_app_i),
     .out_o  (unused_rsp)
   );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
+  localparam int NumOutBufBitsSensKey = $bits(mubi4_t);
+  logic [NumOutBufBitsSensKey-1:0] sensitive_key_buf;
+  prim_buf #(
+    .Width  (NumOutBufBitsSensKey)
+  ) u_anchor_buf_sens_key (
+    .in_i   (MuBi4False),
+    .out_o  (sensitive_key_buf)
+  );
+  assign sensitive_key_o = mubi4_t'(sensitive_key_buf);
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -966,6 +978,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
   `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
+  `ASSERT_KNOWN(SensitiveKeyKnownO_A, sensitive_key_o)
 
 
   // kmac parameter consistency
