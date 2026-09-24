@@ -1237,7 +1237,7 @@
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
-      'kmac.app'                : ['keymgr_dpe.kmac_data',     // Keymgr needs to be at index 0
+      'kmac.app'                : ['keymgr_dpe.kmac_app',  // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',    // LC needs to be at index 1
                                    'rom_ctrl0.kmac_data',  // ROM needs to be at index 2 or 3
                                    'rom_ctrl1.kmac_data'], // ROM needs to be at index 2 or 3
