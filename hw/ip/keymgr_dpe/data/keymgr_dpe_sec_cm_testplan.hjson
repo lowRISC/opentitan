@@ -48,6 +48,12 @@
       tests: []
     }
     {
+      name: sec_cm_kdf_engine_config_regwen
+      desc: "Verify the countermeasure(s) KDF_ENGINE.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_sw_binding_config_regwen
       desc: "Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN."
       stage: V2S
@@ -56,6 +62,12 @@
     {
       name: sec_cm_max_key_ver_config_regwen
       desc: "Verify the countermeasure(s) MAX_KEY_VER.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kdf_engine_ctrl_mubi
+      desc: "Verify the countermeasure(s) KDF_ENGINE.CTRL.MUBI."
       stage: V2S
       tests: []
     }
