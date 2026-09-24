@@ -2,17 +2,67 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-export SHELL  := /bin/bash
+# Common dvsim 'flow_makefile' for OpenTitan simulation flows
+#
+# The special phony targets 'build' and 'run' in this makefile are invoked by the dvsim
+# tool to execute the build and run phases respectively. Arbitrary other targets/rules
+# can be created in support of running the two overarching simulation phases, and
+# any project constituent sim_cfg .hjson files can be used to define new variables which
+# are then substituted into the rules defined here.
+#
+# Aside from the (hopefully-obvious) pre_ and post_ targets used here, OpenTitan defines
+# the following targets
+# - gen_sv_flist
+#     Generates the filelists (.f) used by EDA tools to build the testbench / simulation
+#     environment using FuseSoC. FuseSoC is a package manager and a build system for HDL,
+#     but in this configuration it is being used primarily as a package manager.
+# - sw_build
+#     Build any binary images to be loaded into simulation memory models, typically by
+#     compiling application software using the Bazel build system.
+
 .DEFAULT_GOAL := all
+
+.PHONY: all build run
+all: build run
+build: build_result
+run: run_result
+
+.PHONY: \
+	###############
+	# Build-Phase #
+	###############
+	pre_build \
+	gen_sv_flist \         # Generate filelist using FuseSoC
+	do_build \             # Build the testbench / testbench executable
+	post_build \
+	build_result \
+	#############
+	# Run-Phase #
+	#############
+	pre_run \
+	sw_build \             # Build simulation software / binary images using Bazel
+	simulate \             # Run the simulation
+	post_run \
+	run_result \
+	############
+	# Coverage #
+	############
+	cov_unr_build \
+	cov_unr_vcs \
+	cov_unr_xcelium \
+	cov_unr_merge \
+	cov_unr \
+	cov_merge \            # Merge coverage if there are multiple builds
+	cov_analyze \          # Open coverage tool to review and create report or exclusion file
+	cov_report             # Generate coverage reports
+
+export SHELL  := /bin/bash
 
 LOCK_ROOT_DIR ?= flock --timeout 3600 ${proj_root} --command
 
-all: build run
-
-###############################
-## sim build and run targets ##
-###############################
-build: build_result
+###############
+# Build-Phase #
+################################################################################
 
 pre_build:
 	@echo -e "\n[make]: pre_build"
@@ -44,7 +94,9 @@ endif
 build_result: post_build
 	@echo -e "\n[make]: build_result"
 
-run: run_result
+#############
+# Run-Phase #
+################################################################################
 
 pre_run:
 	@echo -e "\n[make]: pre_run"
@@ -72,15 +124,10 @@ endif
 run_result: post_run
 	@echo -e "\n[make]: run_result"
 
-#######################
-## Load waves target ##
-#######################
-debug_waves:
-	${debug_waves_cmd} ${debug_waves_opts}
+############
+# Coverage #
+################################################################################
 
-############################
-## coverage rated targets ##
-############################
 cov_unr_build: gen_sv_flist
 	@echo -e "\n[make]: cov_unr_build"
 	cd ${sv_flist_gen_dir} && ${cov_unr_build_cmd} ${cov_unr_build_opts}
@@ -104,34 +151,14 @@ else
   cov_unr: cov_unr_vcs
 endif
 
-# Merge coverage if there are multiple builds.
 cov_merge:
 	@echo -e "\n[make]: cov_merge"
 	${job_prefix} ${cov_merge_cmd} ${cov_merge_opts}
 
-# Generate coverage reports.
 cov_report:
 	@echo -e "\n[make]: cov_report"
 	${cov_report_cmd} ${cov_report_opts}
 
-# Open coverage tool to review and create report or exclusion file.
 cov_analyze:
 	@echo -e "\n[make]: cov_analyze"
 	${cov_analyze_cmd} ${cov_analyze_opts}
-
-.PHONY: build \
-	pre_build \
-	gen_sv_flist \
-	do_build \
-	post_build \
-	build_result \
-	run \
-	pre_run \
-	sw_build \
-	simulate \
-	post_run \
-	run_result \
-	debug_waves \
-	cov_merge \
-	cov_analyze \
-	cov_report
