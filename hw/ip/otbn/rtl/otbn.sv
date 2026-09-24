@@ -91,8 +91,8 @@ module otbn
   input keymgr_dpe_pkg::wide_hw_key_req_t keymgr_key_i,
 
   // KMAC application interface.
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i
 );
 
   import prim_mubi_pkg::*;
@@ -1243,10 +1243,8 @@ module otbn
     .sideload_key_shares_i       (keymgr_key_i.key),
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
 
-    // The naming kmac_data is just to be consistent with other IPs connecting to KMAC. From here
-    // on use more sensible name.
-    .kmac_app_req_o(kmac_data_o),
-    .kmac_app_rsp_i(kmac_data_i)
+    .kmac_app_req_o              (kmac_app_o),
+    .kmac_app_rsp_i              (kmac_app_i)
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -1480,10 +1478,10 @@ module otbn
   // The data part of the request directly originates from WSRs. These are non resettable flops.
   // When a simulation starts, these are still X as only a secure wipe will set a value. We thus
   // only check whether the data is known when the valid is set.
-  `ASSERT_KNOWN(KmacReqKnown_A, {kmac_data_o.req_last, kmac_data_o.req_valid,
-                                 kmac_data_o.rsp_ready, kmac_data_o.strb})
-  `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_data_o.data_s0, kmac_data_o.data_s1},
-                   kmac_data_o.req_valid)
+  `ASSERT_KNOWN(KmacReqKnown_A, {kmac_app_o.req_last, kmac_app_o.req_valid,
+                                 kmac_app_o.rsp_ready, kmac_app_o.strb})
+  `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_app_o.data_s0, kmac_app_o.data_s1},
+                   kmac_app_o.req_valid)
 
   // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
   `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
