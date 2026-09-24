@@ -18,11 +18,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_usbdev",
-  version:            "2.0.0",
-  life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "5967df933a814f72d5212bd43d13a0041a3aaf9d",
+    },
+    {
+      version:            "2.1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
   clocking: [
     // clk_i must be 48 MHz
     {clock: "clk_i", reset: "rst_ni", primary: true},
