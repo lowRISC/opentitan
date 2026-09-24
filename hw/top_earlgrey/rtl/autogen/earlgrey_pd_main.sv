@@ -454,7 +454,7 @@ module earlgrey_pd_main #(
   // sram_ctrl_meta
 
 
-  logic [183:0] intr_vector;
+  logic [184:0] intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -593,6 +593,7 @@ module earlgrey_pd_main #(
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
   logic intr_csrng_cs_fatal_err;
+  logic intr_csrng_cs_int_state_stopped;
   logic intr_entropy_src_es_entropy_valid;
   logic intr_entropy_src_es_health_test_failed;
   logic intr_entropy_src_es_observe_fifo_ready;
@@ -2294,10 +2295,11 @@ module earlgrey_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_cs_cmd_req_done_o(intr_csrng_cs_cmd_req_done),
-    .intr_cs_entropy_req_o (intr_csrng_cs_entropy_req),
-    .intr_cs_hw_inst_exc_o (intr_csrng_cs_hw_inst_exc),
-    .intr_cs_fatal_err_o   (intr_csrng_cs_fatal_err),
+    .intr_cs_cmd_req_done_o     (intr_csrng_cs_cmd_req_done),
+    .intr_cs_entropy_req_o      (intr_csrng_cs_entropy_req),
+    .intr_cs_hw_inst_exc_o      (intr_csrng_cs_hw_inst_exc),
+    .intr_cs_fatal_err_o        (intr_csrng_cs_fatal_err),
+    .intr_cs_int_state_stopped_o(intr_csrng_cs_int_state_stopped),
 
     // alert_handler[49]: recov_alert
     // alert_handler[50]: fatal_alert
@@ -2724,14 +2726,15 @@ module earlgrey_pd_main #(
 
   // Interrupt assignments
   assign intr_vector = {
-    intr_edn1_edn_fatal_err,                  // ID 183
-    intr_edn1_edn_cmd_req_done,               // ID 182
-    intr_edn0_edn_fatal_err,                  // ID 181
-    intr_edn0_edn_cmd_req_done,               // ID 180
-    intr_entropy_src_es_fatal_err,            // ID 179
-    intr_entropy_src_es_observe_fifo_ready,   // ID 178
-    intr_entropy_src_es_health_test_failed,   // ID 177
-    intr_entropy_src_es_entropy_valid,        // ID 176
+    intr_edn1_edn_fatal_err,                  // ID 184
+    intr_edn1_edn_cmd_req_done,               // ID 183
+    intr_edn0_edn_fatal_err,                  // ID 182
+    intr_edn0_edn_cmd_req_done,               // ID 181
+    intr_entropy_src_es_fatal_err,            // ID 180
+    intr_entropy_src_es_observe_fifo_ready,   // ID 179
+    intr_entropy_src_es_health_test_failed,   // ID 178
+    intr_entropy_src_es_entropy_valid,        // ID 177
+    intr_csrng_cs_int_state_stopped,          // ID 176
     intr_csrng_cs_fatal_err,                  // ID 175
     intr_csrng_cs_hw_inst_exc,                // ID 174
     intr_csrng_cs_entropy_req,                // ID 173

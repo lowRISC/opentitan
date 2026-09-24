@@ -20,12 +20,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                                                                                                                         |
-|:-----------------|:-------|:------------------------------------------------------------------------------------------------------------------------------------|
-| cs_cmd_req_done  | Event  | Asserted when a command request is completed.                                                                                       |
-| cs_entropy_req   | Event  | Asserted when a request for entropy has been made.                                                                                  |
-| cs_hw_inst_exc   | Event  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                                     |
-| cs_fatal_err     | Event  | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](registers.md#err_code) register to get more information. |
+| Interrupt Name       | Type   | Description                                                                                                                              |
+|:---------------------|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| cs_cmd_req_done      | Event  | Asserted when a command request is completed.                                                                                            |
+| cs_entropy_req       | Event  | Asserted when a request for entropy has been made.                                                                                       |
+| cs_hw_inst_exc       | Event  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                                          |
+| cs_fatal_err         | Event  | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](registers.md#err_code) register to get more information.      |
+| cs_int_state_stopped | Event  | Asserted when a CSRNG instance targeted by an internal-state EXPORT or IMPORT command has quiesced and is ready for state export/import. |
 
 ## Security Alerts
 

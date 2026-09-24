@@ -42,7 +42,8 @@ module csrng_core import csrng_pkg::*; #(
   output logic                                    intr_cs_cmd_req_done_o,
   output logic                                    intr_cs_entropy_req_o,
   output logic                                    intr_cs_hw_inst_exc_o,
-  output logic                                    intr_cs_fatal_err_o
+  output logic                                    intr_cs_fatal_err_o,
+  output logic                                    intr_cs_int_state_stopped_o
 );
 
   import csrng_reg_pkg::*;
@@ -463,11 +464,11 @@ module csrng_core import csrng_pkg::*; #(
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_read_int_state;
   mubi4_t [1:0] mubi_read_int_state_fanout;
-  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
+  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.int_state_enable.q);
   assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state_fanout[0]);
   assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state_fanout[1]);
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.d  = read_int_state_pfa;
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.de = read_int_state_pfa;
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.d  = read_int_state_pfa;
 
   prim_mubi4_sync #(
     .NumCopies(2),
@@ -895,7 +896,8 @@ module csrng_core import csrng_pkg::*; #(
     .wr_data_i  (ctr_drbg_rsp_data),
 
     .reg_rd_otp_en_i    (state_db_reg_read_en),
-    .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
+    // TODO: per-instance IMPORT/EXPORT gating
+    .reg_rd_regfile_en_i({NumApps{1'b1}}),
 
     .reg_rd_id_vld_i(reg2hw.int_state_num.qe),
     .reg_rd_id_i    (reg2hw.int_state_num.q),
@@ -1048,6 +1050,56 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  //------------------------------------------
+  // Internal-state save/restore: registers
+  //------------------------------------------
+  // TODO: Wire up the registers to context import/export control logic.
+
+  assign hw2reg.int_state_cmd.export_req.de = 1'b0;
+  assign hw2reg.int_state_cmd.export_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.import_req.de = 1'b0;
+  assign hw2reg.int_state_cmd.import_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.resume.de = 1'b0;
+  assign hw2reg.int_state_cmd.resume.d  = prim_mubi_pkg::MuBi4False;
+
+  assign hw2reg.int_state_cmd_adata_val.d = '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_cnt.d = '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_flag.d = 1'b0;
+  assign hw2reg.int_state_cmd_gen_val.generate_adata_vld.d = 1'b0;
+
+  assign hw2reg.intr_state.cs_int_state_stopped.de = 1'b0;
+  assign hw2reg.intr_state.cs_int_state_stopped.d  = 1'b0;
+  // TODO: Connect the state stopped interrupt.
+  assign intr_cs_int_state_stopped_o = 1'b0;
+
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.de = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.d  = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.de = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.d  = 1'b0;
+
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_int_state_cmd_sts_stub
+    assign hw2reg.int_state_cmd_sts[ai].de = 1'b0;
+    assign hw2reg.int_state_cmd_sts[ai].d  = 1'b0;
+  end : gen_int_state_cmd_sts_stub
+
+  logic unused_int_state_cmd_regs;
+  assign unused_int_state_cmd_regs =
+      (|reg2hw.int_state_cmd.export_req.q) | reg2hw.int_state_cmd.export_req.qe |
+      (|reg2hw.int_state_cmd.import_req.q) | reg2hw.int_state_cmd.import_req.qe |
+      (|reg2hw.int_state_cmd.resume.q)     | reg2hw.int_state_cmd.resume.qe     |
+      (|reg2hw.int_state_cmd_adata_val.q)  | reg2hw.int_state_cmd_adata_val.qe  |
+      reg2hw.int_state_cmd_adata_val.re    |
+      (|reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.q) |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.qe   |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_flag.q   |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_flag.qe  |
+      reg2hw.int_state_cmd_gen_val.generate_adata_vld.q  |
+      reg2hw.int_state_cmd_gen_val.generate_adata_vld.qe |
+      reg2hw.intr_enable.cs_int_state_stopped.q |
+      reg2hw.intr_state.cs_int_state_stopped.q  |
+      reg2hw.intr_test.cs_int_state_stopped.q   |
+      reg2hw.intr_test.cs_int_state_stopped.qe;
+
   // unused signals
   logic               unused_err_code_test_bit;
   logic               unused_enable_fo;
@@ -1061,7 +1113,7 @@ module csrng_core import csrng_pkg::*; #(
                                     (|err_code_test_bit[19:2]);
   assign unused_enable_fo = (|cs_enable_fo[47:46]) || cs_enable_fo[42] || (|cs_enable_fo[18:4]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
-  assign unused_int_state_val = (|reg2hw.int_state_val.q);
+  assign unused_int_state_val = (|reg2hw.int_state_val.q) | reg2hw.int_state_val.qe;
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
   assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;

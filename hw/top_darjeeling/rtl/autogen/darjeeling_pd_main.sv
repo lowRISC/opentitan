@@ -427,7 +427,7 @@ module darjeeling_pd_main #(
   // rv_core_ibex
 
 
-  logic [131:0] intr_vector;
+  logic [132:0] intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -483,6 +483,7 @@ module darjeeling_pd_main #(
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
   logic intr_csrng_cs_fatal_err;
+  logic intr_csrng_cs_int_state_stopped;
   logic intr_entropy_src_es_entropy_valid;
   logic intr_entropy_src_es_health_test_failed;
   logic intr_entropy_src_es_observe_fifo_ready;
@@ -1746,10 +1747,11 @@ module darjeeling_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_cs_cmd_req_done_o(intr_csrng_cs_cmd_req_done),
-    .intr_cs_entropy_req_o (intr_csrng_cs_entropy_req),
-    .intr_cs_hw_inst_exc_o (intr_csrng_cs_hw_inst_exc),
-    .intr_cs_fatal_err_o   (intr_csrng_cs_fatal_err),
+    .intr_cs_cmd_req_done_o     (intr_csrng_cs_cmd_req_done),
+    .intr_cs_entropy_req_o      (intr_csrng_cs_entropy_req),
+    .intr_cs_hw_inst_exc_o      (intr_csrng_cs_hw_inst_exc),
+    .intr_cs_fatal_err_o        (intr_csrng_cs_fatal_err),
+    .intr_cs_int_state_stopped_o(intr_csrng_cs_int_state_stopped),
 
     // alert_handler[34]: recov_alert
     // alert_handler[35]: fatal_alert
@@ -2628,49 +2630,50 @@ module darjeeling_pd_main #(
 
   // Interrupt assignments
   assign intr_vector = {
-    intr_ac_range_check_deny_cnt_reached,     // ID 131
-    intr_racl_ctrl_racl_error,                // ID 130
-    intr_mbx_pcie1_mbx_error,                 // ID 129
-    intr_mbx_pcie1_mbx_abort,                 // ID 128
-    intr_mbx_pcie1_mbx_ready,                 // ID 127
-    intr_mbx_pcie0_mbx_error,                 // ID 126
-    intr_mbx_pcie0_mbx_abort,                 // ID 125
-    intr_mbx_pcie0_mbx_ready,                 // ID 124
-    intr_mbx_jtag_mbx_error,                  // ID 123
-    intr_mbx_jtag_mbx_abort,                  // ID 122
-    intr_mbx_jtag_mbx_ready,                  // ID 121
-    intr_mbx6_mbx_error,                      // ID 120
-    intr_mbx6_mbx_abort,                      // ID 119
-    intr_mbx6_mbx_ready,                      // ID 118
-    intr_mbx5_mbx_error,                      // ID 117
-    intr_mbx5_mbx_abort,                      // ID 116
-    intr_mbx5_mbx_ready,                      // ID 115
-    intr_mbx4_mbx_error,                      // ID 114
-    intr_mbx4_mbx_abort,                      // ID 113
-    intr_mbx4_mbx_ready,                      // ID 112
-    intr_mbx3_mbx_error,                      // ID 111
-    intr_mbx3_mbx_abort,                      // ID 110
-    intr_mbx3_mbx_ready,                      // ID 109
-    intr_mbx2_mbx_error,                      // ID 108
-    intr_mbx2_mbx_abort,                      // ID 107
-    intr_mbx2_mbx_ready,                      // ID 106
-    intr_mbx1_mbx_error,                      // ID 105
-    intr_mbx1_mbx_abort,                      // ID 104
-    intr_mbx1_mbx_ready,                      // ID 103
-    intr_mbx0_mbx_error,                      // ID 102
-    intr_mbx0_mbx_abort,                      // ID 101
-    intr_mbx0_mbx_ready,                      // ID 100
-    intr_dma_dma_error,                       // ID 99
-    intr_dma_dma_chunk_done,                  // ID 98
-    intr_dma_dma_done,                        // ID 97
-    intr_edn1_edn_fatal_err,                  // ID 96
-    intr_edn1_edn_cmd_req_done,               // ID 95
-    intr_edn0_edn_fatal_err,                  // ID 94
-    intr_edn0_edn_cmd_req_done,               // ID 93
-    intr_entropy_src_es_fatal_err,            // ID 92
-    intr_entropy_src_es_observe_fifo_ready,   // ID 91
-    intr_entropy_src_es_health_test_failed,   // ID 90
-    intr_entropy_src_es_entropy_valid,        // ID 89
+    intr_ac_range_check_deny_cnt_reached,     // ID 132
+    intr_racl_ctrl_racl_error,                // ID 131
+    intr_mbx_pcie1_mbx_error,                 // ID 130
+    intr_mbx_pcie1_mbx_abort,                 // ID 129
+    intr_mbx_pcie1_mbx_ready,                 // ID 128
+    intr_mbx_pcie0_mbx_error,                 // ID 127
+    intr_mbx_pcie0_mbx_abort,                 // ID 126
+    intr_mbx_pcie0_mbx_ready,                 // ID 125
+    intr_mbx_jtag_mbx_error,                  // ID 124
+    intr_mbx_jtag_mbx_abort,                  // ID 123
+    intr_mbx_jtag_mbx_ready,                  // ID 122
+    intr_mbx6_mbx_error,                      // ID 121
+    intr_mbx6_mbx_abort,                      // ID 120
+    intr_mbx6_mbx_ready,                      // ID 119
+    intr_mbx5_mbx_error,                      // ID 118
+    intr_mbx5_mbx_abort,                      // ID 117
+    intr_mbx5_mbx_ready,                      // ID 116
+    intr_mbx4_mbx_error,                      // ID 115
+    intr_mbx4_mbx_abort,                      // ID 114
+    intr_mbx4_mbx_ready,                      // ID 113
+    intr_mbx3_mbx_error,                      // ID 112
+    intr_mbx3_mbx_abort,                      // ID 111
+    intr_mbx3_mbx_ready,                      // ID 110
+    intr_mbx2_mbx_error,                      // ID 109
+    intr_mbx2_mbx_abort,                      // ID 108
+    intr_mbx2_mbx_ready,                      // ID 107
+    intr_mbx1_mbx_error,                      // ID 106
+    intr_mbx1_mbx_abort,                      // ID 105
+    intr_mbx1_mbx_ready,                      // ID 104
+    intr_mbx0_mbx_error,                      // ID 103
+    intr_mbx0_mbx_abort,                      // ID 102
+    intr_mbx0_mbx_ready,                      // ID 101
+    intr_dma_dma_error,                       // ID 100
+    intr_dma_dma_chunk_done,                  // ID 99
+    intr_dma_dma_done,                        // ID 98
+    intr_edn1_edn_fatal_err,                  // ID 97
+    intr_edn1_edn_cmd_req_done,               // ID 96
+    intr_edn0_edn_fatal_err,                  // ID 95
+    intr_edn0_edn_cmd_req_done,               // ID 94
+    intr_entropy_src_es_fatal_err,            // ID 93
+    intr_entropy_src_es_observe_fifo_ready,   // ID 92
+    intr_entropy_src_es_health_test_failed,   // ID 91
+    intr_entropy_src_es_entropy_valid,        // ID 90
+    intr_csrng_cs_int_state_stopped,          // ID 89
     intr_csrng_cs_fatal_err,                  // ID 88
     intr_csrng_cs_hw_inst_exc,                // ID 87
     intr_csrng_cs_entropy_req,                // ID 86

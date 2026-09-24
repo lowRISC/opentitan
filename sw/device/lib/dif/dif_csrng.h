@@ -300,11 +300,11 @@ typedef enum dif_csrng_recoverable_alert {
   kDifCsrngRecoverableAlertBadSwAppEnable =
       1U << CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT,
   /**
-   * Indicates a bad value was written to the READ_INT_STATE field of the
+   * Indicates a bad value was written to the INT_STATE_ENABLE field of the
    * control register.
    */
   kDifCsrngRecoverableAlertBadIntState =
-      1U << CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
+      1U << CSRNG_RECOV_ALERT_STS_INT_STATE_ENABLE_FIELD_ALERT_BIT,
   /**
    * Indicates the FLAG0 field in the Application Command is set to a value
    * other than kMultiBitBool4True or kMultiBitBool4False.
