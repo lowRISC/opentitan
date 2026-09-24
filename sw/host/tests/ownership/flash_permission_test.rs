@@ -77,6 +77,12 @@ struct Opts {
     unlock_mode: UnlockMode,
     #[arg(long, help = "Expected error condition")]
     expected_error: Option<String>,
+    #[arg(
+        long,
+        default_value_t = OWNER_FLASH_ROM_EXT_SIZE,
+        help = "Size of the ROM_EXT region in flash pages"
+    )]
+    rom_ext_pages: u16,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -199,6 +205,10 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     log::info!("###### Get Boot Log (2/2) ######");
     let (data, _) = transfer_lib::get_device_info(transport, &rescue)?;
 
+    let rom_ext_size = opts.rom_ext_pages;
+    let owner_start = OWNER_FLASH_ROM_EXT_START + rom_ext_size;
+    let owner_size = OWNER_FLASH_FILE_START - owner_start;
+
     log::info!("###### Upload Owner Block ######");
     transfer_lib::create_owner(
         transport,
@@ -210,7 +220,15 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         HybridPair::load(opts.next_unlock_key.as_deref(), None)?,
         &opts.next_application_key,
         opts.config_kind,
-        /*customize=*/ |_| {},
+        /*customize=*/
+        |owner| {
+            for item in &mut owner.data {
+                if let opentitanlib::ownership::OwnerConfigItem::RescueConfig(rc) = item {
+                    rc.start = owner_start;
+                    rc.size = owner_size;
+                }
+            }
+        },
     )?;
 
     // The expected_rom_ext_slot is where we expect the ROM_EXT to execute.
@@ -256,7 +274,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
                 "data",
                 0,
                 romext_region[0] + OWNER_FLASH_ROM_EXT_START as u32,
-                OWNER_FLASH_ROM_EXT_SIZE as u32,
+                rom_ext_size as u32,
                 "RD-xx-xx-uu-uu-uu",
                 "LK"
             )
@@ -267,7 +285,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
                 "data",
                 1,
                 romext_region[1] + OWNER_FLASH_ROM_EXT_START as u32,
-                OWNER_FLASH_ROM_EXT_SIZE as u32,
+                rom_ext_size as u32,
                 "RD-WR-ER-uu-uu-uu",
                 "LK"
             )
@@ -449,7 +467,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             "data",
             0,
             romext_region[0] + OWNER_FLASH_ROM_EXT_START as u32,
-            OWNER_FLASH_ROM_EXT_SIZE as u32,
+            rom_ext_size as u32,
             "RD-xx-xx-uu-uu-uu",
             "LK"
         )
@@ -460,7 +478,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             "data",
             1,
             romext_region[1] + OWNER_FLASH_ROM_EXT_START as u32,
-            OWNER_FLASH_ROM_EXT_SIZE as u32,
+            rom_ext_size as u32,
             "RD-WR-ER-uu-uu-uu",
             "LK"
         )
