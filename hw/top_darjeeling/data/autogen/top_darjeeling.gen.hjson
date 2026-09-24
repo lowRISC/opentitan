@@ -5734,7 +5734,7 @@
           index: -1
         }
         {
-          name: kmac_data
+          name: kmac_app
           struct: app
           package: kmac_pkg
           type: req_rsp
@@ -25753,7 +25753,7 @@
         index: -1
       }
       {
-        name: kmac_data
+        name: kmac_app
         struct: app
         package: kmac_pkg
         type: req_rsp
