@@ -102,7 +102,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
   csrng_cmd_sts_e cmd_ack_sts_q, cmd_ack_sts_d;
   logic     [3:0] cmd_len_q, cmd_len_d;
   logic           cmd_gen_flag_q, cmd_gen_flag_d;
-  logic    [11:0] cmd_gen_cmd_q, cmd_gen_cmd_d;
   logic           instantiated_d, instantiated_q;
   logic           gen_ongoing_q, gen_ongoing_d;
   logic           gen_abort_pending_q, gen_abort_pending_d;
@@ -114,7 +113,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
       cmd_ack_sts_q        <= CMD_STS_SUCCESS;
       cmd_len_q            <= '0;
       cmd_gen_flag_q       <= '0;
-      cmd_gen_cmd_q        <= '0;
       instantiated_q       <= '0;
       gen_ongoing_q        <= '0;
       gen_abort_pending_q  <= '0;
@@ -124,7 +122,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
       cmd_ack_sts_q        <= cmd_ack_sts_d;
       cmd_len_q            <= cmd_len_d;
       cmd_gen_flag_q       <= cmd_gen_flag_d;
-      cmd_gen_cmd_q        <= cmd_gen_cmd_d;
       instantiated_q       <= instantiated_d;
       gen_ongoing_q        <= gen_ongoing_d;
       gen_abort_pending_q  <= gen_abort_pending_d;
@@ -168,7 +165,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign cmd_arb_bus_o =
         // pad,glast,id,f,clen,cmd
         cmd_gen_abort_req ? {15'b0,1'b0,cmd_stage_shid_i,12'(UNI)} :
-        cmd_gen_inc_req   ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,cmd_gen_cmd_q} :
+        cmd_gen_inc_req   ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,12'(GEN)} :
         cmd_gen_1st_req   ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :
         cmd_arb_mop_o     ? sfifo_cmd_rdata :
         '0;
@@ -200,11 +197,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
          (!cs_enable_i) ? '0 :
          cmd_gen_1st_req ? (acmd == GEN) :
          cmd_gen_flag_q;
-
-  assign cmd_gen_cmd_d =
-         (!cs_enable_i) ? '0 :
-         cmd_gen_1st_req ? {sfifo_cmd_rdata[11:0]} :
-         cmd_gen_cmd_q;
 
   // SEC_CM: GEN_CMD.CTR.REDUN
   prim_count #(
