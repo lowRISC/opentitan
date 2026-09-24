@@ -34,9 +34,12 @@ class chip_env extends cip_base_env #(
     // Set tl_agent's is_active bit based on the stub_cpu value.
     cfg.m_tl_agent_cfg.is_active = cfg.chip_vif.stub_cpu;
 
-    // Set DMI tl_agent's is_active bit only when in stub_cpu mode *and* the
-    // JTAG DMI agent is not in use.
-    use_tl_agent_dmi = cfg.chip_vif.stub_cpu && !cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi;
+    // Set DMI tl_agent's is_active bit only when in stub_cpu mode *and* neither the JTAG DMI
+    // agent nor the JTAG RISC-V agent (jtag_riscv_map) is in use: both drive the chip through the
+    // JTAG DTM, which must stay connected to the debug TL port.
+    use_tl_agent_dmi = cfg.chip_vif.stub_cpu &&
+                       !cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi &&
+                       cfg.jtag_riscv_map == null;
 
     cfg.m_tl_agent_cfgs["chip_soc_dbg_reg_block"].is_active = use_tl_agent_dmi;
     cfg.chip_vif.configure_jtag_dmi(!use_tl_agent_dmi);
