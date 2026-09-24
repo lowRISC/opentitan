@@ -54,6 +54,10 @@ module keymgr_dpe
   output kmac_pkg::app_req_t kmac_app_o,
   input  kmac_pkg::app_rsp_t kmac_app_i,
 
+  // Application interface when OTBN is used as hashing engine
+  output kmac_pkg::app_req_t otbn_app_o,
+  input  kmac_pkg::app_rsp_t otbn_app_i,
+
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
   // as part of assertions.  This is done because if boundary optimization were
@@ -108,6 +112,25 @@ module keymgr_dpe
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
+  localparam int NumOutBufBitsOtbnApp = $bits(kmac_pkg::app_req_t);
+  prim_buf #(
+    .Width  (NumOutBufBitsOtbnApp)
+  ) u_anchor_buf_app_req (
+    .in_i   ('0),
+    .out_o  (otbn_app_o)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
+  localparam int NumInBufBitsOtbnApp = $bits(kmac_pkg::app_rsp_t);
+  kmac_pkg::app_rsp_t unused_rsp;
+  prim_buf #(
+    .Width  (NumInBufBitsOtbnApp)
+  ) u_anchor_buf_app_rsp (
+    .in_i   (otbn_app_i),
+    .out_o  (unused_rsp)
+  );
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -942,6 +965,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
+  `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
 
 
   // kmac parameter consistency
