@@ -580,6 +580,7 @@ module darjeeling_pd_main #(
   logic       kmac_en_masking;
   kmac_pkg::app_req_t       otbn_keymgr_app_req;
   kmac_pkg::app_rsp_t       otbn_keymgr_app_rsp;
+  prim_mubi_pkg::mubi4_t       otbn_keymgr_sensitive_key;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -1680,6 +1681,7 @@ module darjeeling_pd_main #(
     .kmac_app_i(kmac_pkg::APP_RSP_DEFAULT),
     .keymgr_app_i(otbn_keymgr_app_req),
     .keymgr_app_o(otbn_keymgr_app_rsp),
+    .keymgr_sensitive_key_i(otbn_keymgr_sensitive_key),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
@@ -1728,6 +1730,7 @@ module darjeeling_pd_main #(
     .kmac_app_i(kmac_app_rsp[0]),
     .otbn_app_o(otbn_keymgr_app_req),
     .otbn_app_i(otbn_keymgr_app_rsp),
+    .sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
     .creator_seed_i(otp_ctrl_keymgr_creator_seed),
     .owner_seed_i(otp_ctrl_keymgr_owner_seed),

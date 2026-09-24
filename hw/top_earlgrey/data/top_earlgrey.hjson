@@ -1261,7 +1261,8 @@
       'kmac.en_masking'         : ['keymgr_dpe.kmac_en_masking'],
 
       // OTBN Application Interface
-      'otbn.keymgr_app'         : ['keymgr_dpe.otbn_app'],
+      'otbn.keymgr_app'           : ['keymgr_dpe.otbn_app'],
+      'otbn.keymgr_sensitive_key' : ['keymgr_dpe.sensitive_key'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
