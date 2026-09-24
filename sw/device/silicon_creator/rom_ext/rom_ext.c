@@ -388,6 +388,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
                                           boot_log_t *boot_log) {
+  rom_ext_boot_policy_manifest_search(boot_data);
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
@@ -562,9 +563,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Protect the flash pages where the ROM_EXT is located.
   rom_ext_flash_protect_self(boot_log->rom_ext_slot);
 
-  // Initialize the owner sw manifest pointers.
-  rom_ext_boot_policy_manifest_search(boot_data);
-
   // Initialize the chip ownership state.
   rom_error_t error;
   error = ownership_init(boot_data, &owner_config, &keyring);
@@ -603,6 +601,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   if (want_boot_svc == kHardenedBoolTrue) {
     boot_svc_msg_t *boot_svc_msg = &retention_sram_get()->creator.boot_svc_msg;
+    if (boot_svc_msg->header.type == kBootSvcMinBl0SecVerReqType) {
+      rom_ext_boot_policy_manifest_search(boot_data);
+    }
     error =
         boot_svc_handler(boot_svc_msg, boot_data, boot_log, lc_state, &keyring,
                          &verify_key, &owner_config, &isfb_check_count);

@@ -16,6 +16,7 @@ load(
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules:ownership.bzl", "owner_block_binary", "ownership_detached_signature")
+load("//sw/device/silicon_creator/rom_ext:defs.bzl", "ROM_EXT_VARIATIONS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -672,6 +673,77 @@ _FLASH_PERMISSION_TESTS = {
             """,
             "test_harness": "//sw/host/tests/ownership:flash_permission_test",
         },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        ],
+    )
+    for name, param in _FLASH_PERMISSION_TESTS.items()
+]
+
+opentitan_binary(
+    name = "flash_regions_88k",
+    testonly = True,
+    srcs = ["flash_regions.c"],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+[
+    ownership_transfer_test(
+        name = "flash_permission_88k_test_slot_{}".format(name),
+        srcs = ["flash_regions.c"],
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        qemu = {
+            "timeout": "moderate",
+        },
+        shared_params = {
+            "assemble": "{rom_ext}@{rom_ext_offset} {firmware}@{owner_slot_a}",
+            "binaries": {
+                ":flash_regions_88k": "flash_regions",
+            },
+            "owner_slot": param["owner_slot"],
+            "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_virtual",
+            "rom_ext_offset": param["rom_ext_offset"],
+            "rom_ext_slot": param["rom_ext_slot"],
+            "test_cmd": """
+                --unlock-mode=Any
+                --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+                --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+                --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+                --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+                --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+                --config-kind=with-flash-locked
+                --rescue-after-activate={flash_regions}
+                --rescue-slot={owner_slot}
+                --expected-rom-ext-slot={rom_ext_slot}
+                --rom-ext-pages=44
+            """,
+            "test_harness": "//sw/host/tests/ownership:flash_permission_test",
+        },
+        slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:status",
