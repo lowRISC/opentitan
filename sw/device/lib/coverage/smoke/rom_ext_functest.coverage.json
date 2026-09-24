@@ -1,0 +1,23 @@
+{
+  "tests": [
+    "//sw/device/lib/coverage/smoke:ottf_functest_sim_qemu_sival_rom_ext"
+  ],
+  "coverage": {
+    "sw/device/silicon_creator/rom_ext/imm_section/imm_section.c": {
+      "funcs": {
+        "imm_section_main": "hit"
+      },
+      "lines": {
+        "imm_section_main(void) {": "hit"
+      }
+    },
+    "sw/device/silicon_creator/rom_ext/rom_ext.c": {
+      "funcs": {
+        "rom_ext_main": "hit"
+      },
+      "lines": {
+        "rom_ext_main(void) {": "hit"
+      }
+    }
+  }
+}
