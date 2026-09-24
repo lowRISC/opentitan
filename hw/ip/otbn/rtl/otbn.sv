@@ -95,8 +95,9 @@ module otbn
   input  kmac_pkg::app_rsp_t kmac_app_i,
 
   // Application interface from keymgr when OTBN is used as hashing engine
-  input  kmac_pkg::app_req_t keymgr_app_i,
-  output kmac_pkg::app_rsp_t keymgr_app_o
+  input  kmac_pkg::app_req_t    keymgr_app_i,
+  output kmac_pkg::app_rsp_t    keymgr_app_o,
+  input  prim_mubi_pkg::mubi4_t keymgr_sensitive_key_i
 );
 
   // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
@@ -116,6 +117,16 @@ module otbn
   ) u_anchor_buf_app_req (
     .in_i   (keymgr_app_i),
     .out_o  (unused_req)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
+  localparam int NumInBufBitsSensKey = $bits(prim_mubi_pkg::mubi4_t);
+  logic [NumInBufBitsSensKey-1:0] unused_key;
+  prim_buf #(
+    .Width  (NumInBufBitsSensKey)
+  ) u_anchor_buf_sens_key (
+    .in_i   (NumInBufBitsSensKey'(keymgr_sensitive_key_i)),
+    .out_o  (unused_key)
   );
 
   import prim_mubi_pkg::*;

@@ -129,7 +129,8 @@ module tb;
 
     .keymgr_key_i(sideload_key),
     .keymgr_app_i(kmac_pkg::APP_REQ_DEFAULT),
-    .keymgr_app_o()
+    .keymgr_app_o(),
+    .keymgr_sensitive_key_i(prim_mubi_pkg::MuBi4False)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(

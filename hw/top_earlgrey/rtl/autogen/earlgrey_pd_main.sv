@@ -670,6 +670,7 @@ module earlgrey_pd_main #(
   logic       kmac_en_masking;
   kmac_pkg::app_req_t       otbn_keymgr_app_req;
   kmac_pkg::app_rsp_t       otbn_keymgr_app_rsp;
+  prim_mubi_pkg::mubi4_t       otbn_keymgr_sensitive_key;
   jtag_pkg::jtag_req_t       pinmux_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_rv_jtag_req;
@@ -2228,6 +2229,7 @@ module earlgrey_pd_main #(
     .kmac_app_i(kmac_app_rsp[3]),
     .keymgr_app_i(otbn_keymgr_app_req),
     .keymgr_app_o(otbn_keymgr_app_rsp),
+    .keymgr_sensitive_key_i(otbn_keymgr_sensitive_key),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
@@ -2276,6 +2278,7 @@ module earlgrey_pd_main #(
     .kmac_app_i(kmac_app_rsp[0]),
     .otbn_app_o(otbn_keymgr_app_req),
     .otbn_app_i(otbn_keymgr_app_rsp),
+    .sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
     .creator_seed_i(keymgr_dpe_creator_seed),
     .owner_seed_i(keymgr_dpe_owner_seed),

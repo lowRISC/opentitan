@@ -5732,6 +5732,20 @@
           index: -1
         }
         {
+          name: keymgr_sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: otbn
+          end_idx: -1
+          top_type: broadcast
+          top_signame: otbn_keymgr_sensitive_key
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5924,6 +5938,19 @@
           default: ""
           domain: Main
           top_signame: otbn_keymgr_app
+          index: -1
+        }
+        {
+          name: sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: keymgr_dpe
+          domain: Main
+          top_signame: otbn_keymgr_sensitive_key
           index: -1
         }
         {
@@ -11439,6 +11466,10 @@
       otbn.keymgr_app:
       [
         keymgr_dpe.otbn_app
+      ]
+      otbn.keymgr_sensitive_key:
+      [
+        keymgr_dpe.sensitive_key
       ]
       clkmgr.idle:
       [
@@ -25809,6 +25840,20 @@
         index: -1
       }
       {
+        name: keymgr_sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: otbn
+        end_idx: -1
+        top_type: broadcast
+        top_signame: otbn_keymgr_sensitive_key
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -25915,6 +25960,19 @@
         default: ""
         domain: Main
         top_signame: otbn_keymgr_app
+        index: -1
+      }
+      {
+        name: sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: keymgr_dpe
+        domain: Main
+        top_signame: otbn_keymgr_sensitive_key
         index: -1
       }
       {
@@ -34872,6 +34930,18 @@
         act: rsp
         suffix: rsp
         default: ""
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: otbn_keymgr_sensitive_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
       }
       {
         package: otp_ctrl_pkg
