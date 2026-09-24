@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_test")
+load("//rules/opentitan:providers.bzl", "OpenTitanTestInfo")
 
 def _fips_transition_impl(settings, attr):
     return {
@@ -43,10 +43,16 @@ def _fips_test_wrapper_impl(ctx):
             runfiles = runfiles.merge(d[DefaultInfo].default_runfiles)
             runfiles = runfiles.merge(ctx.runfiles(files = d.files.to_list()))
 
-    return [DefaultInfo(
-        executable = executable,
-        runfiles = runfiles,
-    )]
+    return [
+        DefaultInfo(
+            executable = executable,
+            runfiles = runfiles,
+        ),
+        OpenTitanTestInfo(
+            test_suite = str(ctx.label),
+            tags = ctx.attr.tags,
+        ),
+    ]
 
 # Create a wrapper for a test to run with the --config=crypto_fips_all flag
 fips_transition_test = rule(
@@ -65,9 +71,15 @@ fips_transition_test = rule(
 def fips_wrap_opentitan_test(name, exec_env):
     for env_label in exec_env.keys():
         env_suffix = env_label.split(":")[-1]
+        actual_test_name = "{}_{}".format(name, env_suffix)
+        base_rule = native.existing_rule(actual_test_name)
+        if base_rule == None:
+            fail("Base test target :{} does not exist".format(actual_test_name))
 
         # The new name of the test is {name}_fips_{exec_env}
         fips_transition_test(
             name = "{}_fips_{}".format(name, env_suffix),
-            actual_test = ":{}_{}".format(name, env_suffix),
+            actual_test = ":" + actual_test_name,
+            tags = base_rule["tags"],
+            timeout = base_rule["timeout"],
         )
