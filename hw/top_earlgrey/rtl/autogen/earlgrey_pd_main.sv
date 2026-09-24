@@ -2222,8 +2222,8 @@ module earlgrey_pd_main #(
     .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .lc_rma_ack_o(lc_ctrl_lc_nvm_rma_ack[1]),
     .keymgr_key_i(keymgr_dpe_otbn_key),
-    .kmac_data_o(kmac_app_req[3]),
-    .kmac_data_i(kmac_app_rsp[3]),
+    .kmac_app_o(kmac_app_req[3]),
+    .kmac_app_i(kmac_app_rsp[3]),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );

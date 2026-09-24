@@ -1674,8 +1674,8 @@ module darjeeling_pd_main #(
     .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .lc_rma_ack_o(otbn_lc_rma_ack),
     .keymgr_key_i(keymgr_dpe_otbn_key),
-    .kmac_data_o(),
-    .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),
+    .kmac_app_o(),
+    .kmac_app_i(kmac_pkg::APP_RSP_DEFAULT),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
