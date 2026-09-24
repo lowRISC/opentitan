@@ -209,6 +209,10 @@ module keymgr_dpe
     .intg_err_o             (regfile_intg_err)
   );
 
+  // TODO: read unassigned register to avoid linter error
+  logic unused_register;
+  assign unused_register = (^reg2hw.kdf_engine_shadowed.q);
+
   /////////////////////////////////////
   //  Synchronize lc_ctrl control inputs
   //  Data inputs are not synchronized and assumed quasi-static
