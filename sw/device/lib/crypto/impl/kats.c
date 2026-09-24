@@ -964,6 +964,51 @@ static status_t kat_aes_gcm_256_encrypt(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t kat_aes_gcm_256_decrypt(void) {
+  const otcrypto_key_config_t kAesGcm256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kAesGcm256Config)];
+  HARDENED_TRY(keyblob_from_key_and_mask((uint32_t *)aes_gcm_256_key, kTestMask,
+                                         kAesGcm256Config, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kAesGcm256Config,
+      .keyblob = keyblob,
+      .keyblob_length = sizeof(keyblob),
+      .checksum = 0,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  otcrypto_const_byte_buf_t ct_buf =
+      otcrypto_make_const_byte_buf(aes_gcm_256_ct, sizeof(aes_gcm_256_ct));
+  otcrypto_const_byte_buf_t aad_buf =
+      otcrypto_make_const_byte_buf(aes_gcm_256_aad, sizeof(aes_gcm_256_aad));
+  otcrypto_const_word32_buf_t iv_buf =
+      otcrypto_make_const_word32_buf((uint32_t *)aes_gcm_256_iv, 3);
+  otcrypto_const_word32_buf_t tag_buf =
+      otcrypto_make_const_word32_buf((uint32_t *)aes_gcm_256_tag, 4);
+
+  uint8_t pt_act[51];
+  otcrypto_byte_buf_t pt_buf = otcrypto_make_byte_buf(pt_act, 51);
+
+  hardened_bool_t success;
+  HARDENED_TRY(otcrypto_aes_gcm_decrypt(&key, &ct_buf, &iv_buf, &aad_buf,
+                                        kOtcryptoAesGcmTagLen128, &tag_buf,
+                                        &pt_buf, &success));
+  HARDENED_CHECK_EQ(success, kHardenedBoolTrue);
+
+  if (memcmp(pt_act, aes_gcm_256_pt, sizeof(aes_gcm_256_pt))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 static status_t kat_aes_ecb_256_decrypt(void) {
   const otcrypto_key_config_t kAes256Config = {
 
@@ -1235,6 +1280,9 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   }
   if ((tests.flags & OTCRYPTO_KAT_AES_GCM_256_ENCRYPT) != 0) {
     HARDENED_TRY(kat_aes_gcm_256_encrypt());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_AES_GCM_256_DECRYPT) != 0) {
+    HARDENED_TRY(kat_aes_gcm_256_decrypt());
   }
   if ((tests.flags & OTCRYPTO_KAT_AES_ECB_256_DECRYPT) != 0) {
     HARDENED_TRY(kat_aes_ecb_256_decrypt());

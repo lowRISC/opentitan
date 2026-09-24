@@ -28,6 +28,7 @@ typedef enum {
   kTestP384BasePointMulBit,
   kTestP384PointOnCurveBit,
   kTestAesGcm256EncryptBit,
+  kTestAesGcm256DecryptBit,
   kTestAesEcb256DecryptBit,
   kTestRsa4096VerifyBit,
   kTestRsa4096SignBit,
@@ -61,6 +62,7 @@ typedef enum {
 #define OTCRYPTO_KAT_P384_SIGN _FLAG(P384Sign)
 #define OTCRYPTO_KAT_P384_VERIFY _FLAG(P384Verify)
 #define OTCRYPTO_KAT_AES_GCM_256_ENCRYPT _FLAG(AesGcm256Encrypt)
+#define OTCRYPTO_KAT_AES_GCM_256_DECRYPT _FLAG(AesGcm256Decrypt)
 #define OTCRYPTO_KAT_AES_ECB_256_DECRYPT _FLAG(AesEcb256Decrypt)
 #define OTCRYPTO_KAT_SHAKE_256 _FLAG(Shake256)
 #define OTCRYPTO_KAT_KMAC_256 _FLAG(Kmac256)
