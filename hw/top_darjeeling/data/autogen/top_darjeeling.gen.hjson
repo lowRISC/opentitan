@@ -5897,7 +5897,7 @@
           index: -1
         }
         {
-          name: kmac_data
+          name: kmac_app
           struct: app
           package: kmac_pkg
           type: req_rsp
@@ -11427,7 +11427,7 @@
       ]
       kmac.app:
       [
-        keymgr_dpe.kmac_data
+        keymgr_dpe.kmac_app
         lc_ctrl.kmac_data
         rom_ctrl0.kmac_data
         rom_ctrl1.kmac_data
@@ -25874,7 +25874,7 @@
         index: -1
       }
       {
-        name: kmac_data
+        name: kmac_app
         struct: app
         package: kmac_pkg
         type: req_rsp
