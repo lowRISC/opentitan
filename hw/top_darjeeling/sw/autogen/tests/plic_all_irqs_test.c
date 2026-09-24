@@ -1627,7 +1627,7 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopDarjeelingPlicPeripheralCsrng;
-  for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone; irq <= kDifCsrngIrqCsFatalErr;
+  for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone; irq <= kDifCsrngIrqCsIntStateStopped;
        ++irq) {
     csrng_irq_expected = irq;
     LOG_INFO("Triggering csrng IRQ %d.", irq);

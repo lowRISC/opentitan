@@ -624,7 +624,7 @@ static void csrng_configure(void) {
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
                                kMultiBitBool4True);
-  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_INT_STATE_ENABLE_FIELD,
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
@@ -639,7 +639,7 @@ static void csrng_verify(void) {
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
                                kMultiBitBool4True);
-  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_INT_STATE_ENABLE_FIELD,
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);

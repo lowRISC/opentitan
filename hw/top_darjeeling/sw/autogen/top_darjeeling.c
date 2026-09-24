@@ -103,7 +103,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[132] = {
+    top_darjeeling_plic_interrupt_for_peripheral[133] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -193,6 +193,7 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdCsrngCsEntropyReq] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsHwInstExc] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsFatalErr] = kTopDarjeelingPlicPeripheralCsrng,
+  [kTopDarjeelingPlicIrqIdCsrngCsIntStateStopped] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid] = kTopDarjeelingPlicPeripheralEntropySrc,
   [kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed] = kTopDarjeelingPlicPeripheralEntropySrc,
   [kTopDarjeelingPlicIrqIdEntropySrcEsObserveFifoReady] = kTopDarjeelingPlicPeripheralEntropySrc,

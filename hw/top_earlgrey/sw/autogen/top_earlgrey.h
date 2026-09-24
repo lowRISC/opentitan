@@ -694,7 +694,7 @@ extern "C" {
  * address between #TOP_EARLGREY_CSRNG_BASE_ADDR and
  * `TOP_EARLGREY_CSRNG_BASE_ADDR + TOP_EARLGREY_CSRNG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x80u
+#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for entropy_src in top earlgrey.
@@ -1153,15 +1153,16 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 173, /**< csrng_cs_entropy_req */
   kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 174, /**< csrng_cs_hw_inst_exc */
   kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 175, /**< csrng_cs_fatal_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 176, /**< entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 177, /**< entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 178, /**< entropy_src_es_observe_fifo_ready */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 179, /**< entropy_src_es_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 180, /**< edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 181, /**< edn0_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 182, /**< edn1_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 183, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdLast = 183, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdCsrngCsIntStateStopped = 176, /**< csrng_cs_int_state_stopped */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 177, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 178, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 179, /**< entropy_src_es_observe_fifo_ready */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 180, /**< entropy_src_es_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 181, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182, /**< edn0_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184, /**< edn1_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdLast = 184, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -1171,7 +1172,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[184];
+    top_earlgrey_plic_interrupt_for_peripheral[185];
 
 /**
  * PLIC Interrupt Target.
