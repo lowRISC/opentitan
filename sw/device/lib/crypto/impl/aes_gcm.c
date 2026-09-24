@@ -283,7 +283,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *ciphertext,
     otcrypto_word32_buf_t *auth_tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -342,6 +344,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const otcrypto_const_word32_buf_t *auth_tag, otcrypto_byte_buf_t *plaintext,
     hardened_bool_t *success) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
@@ -394,7 +398,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_INIT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       ctx == NULL) {
@@ -430,6 +436,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_INIT);
+  OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||

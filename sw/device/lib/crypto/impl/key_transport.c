@@ -275,6 +275,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     otcrypto_word32_buf_t *wrapped_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_WRAP);
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key == NULL ||
       wrapped_key->data == NULL) {
@@ -340,6 +342,8 @@ otcrypto_status_t otcrypto_key_unwrap(
     otcrypto_blinded_key_t *unwrapped_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_UNWRAP);
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
   if (wrapped_key == NULL || wrapped_key->data == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {

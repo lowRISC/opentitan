@@ -620,6 +620,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_byte_buf_t *cipher_output) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES);
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || key->keyblob == NULL ||
