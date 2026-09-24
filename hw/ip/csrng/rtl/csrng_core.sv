@@ -80,7 +80,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        acmd_eop;
 
   logic                        state_db_wr_vld;
-  csrng_state_t                state_db_rd_data;
+  csrng_state_db_t             state_db_rd_data;
 
   logic [CmdBusWidth-1:0]      acmd_bus;
   acmd_e                       acmd_hold;
@@ -897,16 +897,22 @@ module csrng_core import csrng_pkg::*; #(
     .wr_vld_i   (state_db_wr_vld),
     .wr_data_i  (ctr_drbg_rsp_data),
 
-    .reg_rd_otp_en_i    (state_db_reg_read_en),
-    // TODO: per-instance IMPORT/EXPORT gating
-    .reg_rd_regfile_en_i({NumApps{1'b1}}),
+    .reg_inst_id_i(reg2hw.int_state_num.q[NumAppsLg-1:0]),
 
-    .reg_rd_id_vld_i(reg2hw.int_state_num.qe),
-    .reg_rd_id_i    (reg2hw.int_state_num.q),
-    .reg_rd_strb_i  (reg2hw.int_state_val.re),
-    .reg_rd_val_o   (hw2reg.int_state_val.d),
+    .reg_ptr_incr_i(state_db_reg_read_en && reg2hw.int_state_val.re),
+    .reg_ptr_clr_i (reg2hw.int_state_num.qe),
 
-    .reseed_counter_o(reseed_counter)
+    .reg_rd_val_o(hw2reg.int_state_val.d),
+    // TODO: Import writes aren't wired up yet.
+    .reg_wr_vld_i (1'b0),
+    .reg_wr_data_i('0),
+
+    .wr_inst_state_o    (),
+    .wr_inst_state_vld_o(),
+
+    .reseed_counter_o(reseed_counter),
+
+    .reg_rd_ptr_err_o()
   );
 
   // Forward the reseed counter values to the register interface.

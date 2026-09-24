@@ -164,6 +164,10 @@ module csrng
     u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(StateDbRegRdPtrAlertCheck_A,
+    u_csrng_core.u_csrng_state_db.u_prim_count_reg_rd_ptr,
+    alert_tx_o[1])
+
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
