@@ -338,6 +338,19 @@
                     '''
                 }
                 {
+                    name: "CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS",
+                    size: "4",
+                    desc: '''
+                    The adaptive proportion symbol health test thresholds to
+                    enable entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
                     size: "4",
                     desc: '''

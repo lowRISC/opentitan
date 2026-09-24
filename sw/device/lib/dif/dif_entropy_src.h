@@ -142,9 +142,9 @@ typedef struct dif_entropy_src_config {
   /**
    * Controls the scope (either by-line or by-sum) of the health tests.
    *
-   * If true, the Adaptive Proportion and Markov Tests will accumulate all RNG
-   * input lines into a single score, and thresholds will be applied to the sum
-   * of all the entropy input lines.
+   * If true, the Adaptive Proportion (non-Symbol variant) and Markov Tests will
+   * accumulate all RNG input lines into a single score, and thresholds will be
+   * applied to the sum of all the entropy input lines.
    *
    * If false, the RNG input lines are all scored individually. A statistical
    * deviation in any one input line, be it due to coincidence or failure, will
@@ -191,27 +191,34 @@ typedef enum dif_entropy_src_test {
    */
   kDifEntropySrcTestAdaptiveProportion = 2,
   /**
+   * An SP 800-90B adaptive proportion symbol test.
+   *
+   * This is similar to the above, test but is performed on a symbol, instead of
+   * bit, basis.
+   */
+  kDifEntropySrcTestAdaptiveProportionSymbol = 3,
+  /**
    * A bucket test.
    *
    * This test looks for correlations between individual noise channels.
    */
-  kDifEntropySrcTestBucket = 3,
+  kDifEntropySrcTestBucket = 4,
   /**
    * A "Markov" test.
    *
    * This test looks for unexpected first-order temporal correlations
    * between individual noise channels.
    */
-  kDifEntropySrcTestMarkov = 4,
+  kDifEntropySrcTestMarkov = 5,
   /**
    * A firmware-driven "mailbox" test.
    *
    * This test allows firmware to inspect 2kbit blocks of entropy, and signal
    * potential concerns to the hardware.
    */
-  kDifEntropySrcTestMailbox = 5,
+  kDifEntropySrcTestMailbox = 6,
   /** \internal */
-  kDifEntropySrcTestNumVariants = 6,
+  kDifEntropySrcTestNumVariants = 7,
 } dif_entropy_src_test_t;
 
 /**
@@ -245,11 +252,12 @@ typedef enum dif_entropy_src_watermark_num {
   kDifEntropySrcWatermarkNumRepcntsHi = 1,
   kDifEntropySrcWatermarkNumAdaptpHi = 2,
   kDifEntropySrcWatermarkNumAdaptpLo = 3,
-  kDifEntropySrcWatermarkNumBucketHi = 4,
-  kDifEntropySrcWatermarkNumMarkovHi = 5,
-  kDifEntropySrcWatermarkNumMarkovLo = 6,
-  kDifEntropySrcWatermarkNumExthtHi = 7,
-  kDifEntropySrcWatermarkNumExthtLo = 8,
+  kDifEntropySrcWatermarkNumAdaptpsHi = 4,
+  kDifEntropySrcWatermarkNumBucketHi = 5,
+  kDifEntropySrcWatermarkNumMarkovHi = 6,
+  kDifEntropySrcWatermarkNumMarkovLo = 7,
+  kDifEntropySrcWatermarkNumExthtHi = 8,
+  kDifEntropySrcWatermarkNumExthtLo = 9,
 } dif_entropy_src_watermark_num_t;
 
 /**

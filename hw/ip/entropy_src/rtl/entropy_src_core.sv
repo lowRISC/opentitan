@@ -266,6 +266,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     adaptp_hi_alert_cntr_err;
   logic                     adaptp_lo_alert_cntr_err;
 
+  logic [HalfRegWidth-1:0] adaptps_threshold;
+  logic [HalfRegWidth-1:0] adaptps_threshold_oneway;
+  logic                    adaptps_threshold_wr;
+  logic [HalfRegWidth-1:0] adaptps_event_cnt;
+  logic [FullRegWidth-1:0] adaptps_total_fails;
+  logic [EighthRegWidth-1:0] adaptps_fail_count;
+  logic                     adaptps_fail_pulse;
+  logic                     adaptps_fails_cntr_err;
+  logic                     adaptps_alert_cntr_err;
+
   logic [HalfRegWidth-1:0] bucket_threshold;
   logic [HalfRegWidth-1:0] bucket_threshold_oneway;
   logic                    bucket_threshold_wr;
@@ -417,6 +427,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    repcnt_cntr_err;
   logic                    repcnts_cntr_err;
   logic                    adaptp_cntr_err;
+  logic                    adaptps_cntr_err;
   logic [NumBucketHtInst-1:0] bucket_cntr_err;
   logic                    markov_cntr_err;
   logic                    es_cntr_err;
@@ -1208,6 +1219,27 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   //------------------------------
+  // adaptps one-way thresholds
+  //------------------------------
+  assign adaptps_threshold = reg2hw.adaptps_threshold.q;
+  assign adaptps_threshold_wr = reg2hw.adaptps_threshold.qe;
+  assign hw2reg.adaptps_threshold.d = adaptps_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .ResVal({HalfRegWidth{1'b1}})
+  ) u_entropy_src_watermark_reg_adaptps_thresh (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .high_i              (1'b0),
+    .clear_i             (1'b0),
+    .oneway_i            (threshold_oneway_pfe),
+    .event_i             (adaptps_threshold_wr),
+    .value_i             (adaptps_threshold),
+    .value_o             (adaptps_threshold_oneway)
+  );
+
+  //------------------------------
   // bucket one-way threshold
   //------------------------------
   assign bucket_threshold = reg2hw.bucket_threshold.q;
@@ -1442,6 +1474,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
           repcnt_cntr_err ||
           repcnts_cntr_err ||
           adaptp_cntr_err ||
+          adaptps_cntr_err ||
           (|bucket_cntr_err) ||
           markov_cntr_err ||
           repcnt_fails_cntr_err ||
@@ -1452,6 +1485,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
           adaptp_lo_fails_cntr_err ||
           adaptp_hi_alert_cntr_err ||
           adaptp_lo_alert_cntr_err ||
+          adaptps_fails_cntr_err ||
+          adaptps_alert_cntr_err ||
           bucket_fails_cntr_err ||
           bucket_alert_cntr_err ||
           markov_hi_fails_cntr_err ||
@@ -1467,7 +1502,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
           sha3_count_error);
 
   //--------------------------------------------
-  // repetitive count test
+  // Repetition Count Test
   //--------------------------------------------
 
   // SEC_CM: RNG.BKGN_CHK
@@ -1506,7 +1541,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.repcnt_total_fails.d = repcnt_total_fails;
 
   //--------------------------------------------
-  // repetitive count symbol test
+  // Repetition Count Symbol Test
   //--------------------------------------------
 
   // SEC_CM: RNG.BKGN_CHK
@@ -1599,6 +1634,42 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   assign hw2reg.adaptp_lo_total_fails.d = adaptp_lo_total_fails;
+
+  //--------------------------------------------
+  // Adaptive Proportion Symbol Test
+  //--------------------------------------------
+
+  // SEC_CM: RNG.BKGN_CHK
+  entropy_src_adaptps_ht #(
+    .RegWidth(HalfRegWidth),
+    .RngBusWidth(RngBusWidth)
+  ) u_entropy_src_adaptps_ht (
+    .clk_i              (clk_i),
+    .rst_ni             (rst_ni),
+    .entropy_bit_i      (health_test_esbus),
+    .entropy_bit_vld_i  (health_test_esbus_vld),
+    .clear_i            (health_test_clr),
+    .thresh_i           (adaptps_threshold_oneway),
+    .window_wrap_pulse_i(health_test_done_pulse),
+    .test_cnt_o         (adaptps_event_cnt),
+    .test_fail_pulse_o  (adaptps_fail_pulse),
+    .count_err_o        (adaptps_cntr_err)
+  );
+
+  // SEC_CM: CTR.REDUN
+  entropy_src_cntr_reg #(
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_adaptps (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .clear_i(health_test_clr),
+    .event_i(adaptps_fail_pulse),
+    .step_i (FullRegWidth'(1)),
+    .value_o(adaptps_total_fails),
+    .err_o  (adaptps_fails_cntr_err)
+  );
+
+  assign hw2reg.adaptps_total_fails.d = adaptps_total_fails;
 
   //--------------------------------------------
   // bucket test
@@ -1790,6 +1861,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       REPCNTS_HI,
       ADAPTP_HI,
       ADAPTP_LO,
+      ADAPTPS_HI,
       BUCKET_HI,
       MARKOV_HI,
       MARKOV_LO,
@@ -1832,6 +1904,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
         ht_watermark_high      = 1'b0;
         ht_watermark_event_pre = health_test_done_pulse;
         ht_watermark_cnt       = adaptp_lo_event_cnt;
+      end
+      ADAPTPS_HI: begin
+        ht_watermark_high      = 1'b1;
+        ht_watermark_event_pre = health_test_done_pulse;
+        ht_watermark_cnt       = adaptps_event_cnt;
       end
       BUCKET_HI: begin
         ht_watermark_high      = 1'b1;
@@ -1914,6 +1991,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          repcnt_fail_pulse ||
          repcnts_fail_pulse ||
          adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
+         adaptps_fail_pulse ||
          (|bucket_fail_pulse) ||
          markov_hi_fail_pulse || markov_lo_fail_pulse ||
          extht_hi_fail_pulse || extht_lo_fail_pulse;
@@ -2061,6 +2139,22 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   assign hw2reg.alert_fail_counts.adaptp_lo_fail_count.d = adaptp_lo_fail_count;
+
+  // adaptps fail counter
+  // SEC_CM: CTR.REDUN
+  entropy_src_cntr_reg #(
+    .RegWidth(EighthRegWidth)
+  ) u_entropy_src_cntr_reg_adaptps_alert_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .event_i             (adaptps_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
+    .value_o             (adaptps_fail_count),
+    .err_o               (adaptps_alert_cntr_err)
+  );
+
+  assign hw2reg.alert_fail_counts.adaptps_fail_count.d = adaptps_fail_count;
 
   // bucket fail counter
   // SEC_CM: CTR.REDUN

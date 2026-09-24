@@ -231,6 +231,13 @@ dif_result_t dif_entropy_src_health_test_configure(
       high_threshold_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET;
       low_threshold_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET;
       break;
+    case kDifEntropySrcTestAdaptiveProportionSymbol:
+      high_threshold_reg_offset = ENTROPY_SRC_ADAPTPS_THRESHOLD_REG_OFFSET;
+      // Ensure low threshold is zero. There is no low threshold for this test.
+      if (config.low_threshold) {
+        return kDifBadArg;
+      }
+      break;
     case kDifEntropySrcTestBucket:
       high_threshold_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
@@ -381,6 +388,10 @@ dif_result_t dif_entropy_src_get_health_test_stats(
         high_fails_reg_offset = ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_REG_OFFSET;
         break;
+      case kDifEntropySrcTestAdaptiveProportionSymbol:
+        high_fails_reg_offset = ENTROPY_SRC_ADAPTPS_TOTAL_FAILS_REG_OFFSET;
+        low_fails_reg_offset = -1;
+        break;
       case kDifEntropySrcTestBucket:
         high_fails_reg_offset = ENTROPY_SRC_BUCKET_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
@@ -436,6 +447,10 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
       (uint8_t)bitfield_field32_read(
           alert_fail_counts,
           ENTROPY_SRC_ALERT_FAIL_COUNTS_ADAPTP_HI_FAIL_COUNT_FIELD);
+  counts->high_fails[kDifEntropySrcTestAdaptiveProportionSymbol] =
+      (uint8_t)bitfield_field32_read(
+          alert_fail_counts,
+          ENTROPY_SRC_ALERT_FAIL_COUNTS_ADAPTPS_FAIL_COUNT_FIELD);
   counts->high_fails[kDifEntropySrcTestBucket] = (uint8_t)bitfield_field32_read(
       alert_fail_counts, ENTROPY_SRC_ALERT_FAIL_COUNTS_BUCKET_FAIL_COUNT_FIELD);
   counts->high_fails[kDifEntropySrcTestMarkov] = (uint8_t)bitfield_field32_read(
@@ -453,6 +468,7 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
       (uint8_t)bitfield_field32_read(
           alert_fail_counts,
           ENTROPY_SRC_ALERT_FAIL_COUNTS_ADAPTP_LO_FAIL_COUNT_FIELD);
+  counts->low_fails[kDifEntropySrcTestAdaptiveProportionSymbol] = 0;
   counts->low_fails[kDifEntropySrcTestBucket] = 0;
   counts->low_fails[kDifEntropySrcTestMarkov] = (uint8_t)bitfield_field32_read(
       alert_fail_counts,

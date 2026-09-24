@@ -36,6 +36,8 @@ interface entropy_src_path_if ();
       "adaptp_ht": return {core_path, ".u_entropy_src_adaptp_ht",
                            $sformatf(".gen_cntrs[%0d]", which_cntr),
                            ".u_prim_count_test_cnt.cnt_q[1]"};
+      "adaptps_ht": return {core_path,
+                            ".u_entropy_src_adaptps_ht.u_prim_count_test_cnt.cnt_q[1]"};
       "bucket_ht": return {core_path, $sformatf(".gen_health_test[%0d]", which_ht_inst),
                            ".u_entropy_src_bucket_ht",
                            $sformatf(".gen_symbol_match[%0d]", which_cntr),

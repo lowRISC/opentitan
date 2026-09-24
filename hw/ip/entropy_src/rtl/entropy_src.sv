@@ -447,6 +447,18 @@ module entropy_src
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck27_A,
+    u_entropy_src_core.u_entropy_src_adaptps_ht.u_prim_count_test_cnt,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck28_A,
+    u_entropy_src_core.u_entropy_src_cntr_reg_adaptps.u_prim_count_cntr_reg,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck29_A,
+    u_entropy_src_core.u_entropy_src_cntr_reg_adaptps_alert_fails.u_prim_count_cntr_reg,
+    alert_tx_o[1])
+
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esrng.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
