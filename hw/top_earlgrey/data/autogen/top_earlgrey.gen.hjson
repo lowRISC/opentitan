@@ -7532,6 +7532,20 @@
           index: 3
         }
         {
+          name: keymgr_app
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: otbn
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: otbn_keymgr_app
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -7712,6 +7726,19 @@
           domain: Main
           top_signame: kmac_app
           index: 0
+        }
+        {
+          name: otbn_app
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: keymgr_dpe
+          default: ""
+          domain: Main
+          top_signame: otbn_keymgr_app
+          index: -1
         }
         {
           name: creator_root_key
@@ -10841,6 +10868,10 @@
       kmac.en_masking:
       [
         keymgr_dpe.kmac_en_masking
+      ]
+      otbn.keymgr_app:
+      [
+        keymgr_dpe.otbn_app
       ]
       clkmgr.idle:
       [
@@ -25566,6 +25597,20 @@
         index: 3
       }
       {
+        name: keymgr_app
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: otbn
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: otbn_keymgr_app
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -25660,6 +25705,19 @@
         domain: Main
         top_signame: kmac_app
         index: 0
+      }
+      {
+        name: otbn_app
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: keymgr_dpe
+        default: ""
+        domain: Main
+        top_signame: otbn_keymgr_app
+        index: -1
       }
       {
         name: creator_root_key
@@ -33021,6 +33079,30 @@
         act: req
         suffix: ""
         default: 1'b0
+      }
+      {
+        package: kmac_pkg
+        struct: app_req
+        domain: Main
+        signame: otbn_keymgr_app_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: kmac_pkg::APP_REQ_DEFAULT
+      }
+      {
+        package: kmac_pkg
+        struct: app_rsp
+        domain: Main
+        signame: otbn_keymgr_app_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
       }
       {
         package: jtag_pkg

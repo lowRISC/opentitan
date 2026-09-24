@@ -578,6 +578,8 @@ module darjeeling_pd_main #(
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
+  kmac_pkg::app_req_t       otbn_keymgr_app_req;
+  kmac_pkg::app_rsp_t       otbn_keymgr_app_rsp;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -1676,6 +1678,8 @@ module darjeeling_pd_main #(
     .keymgr_key_i(keymgr_dpe_otbn_key),
     .kmac_app_o(),
     .kmac_app_i(kmac_pkg::APP_RSP_DEFAULT),
+    .keymgr_app_i(otbn_keymgr_app_req),
+    .keymgr_app_o(otbn_keymgr_app_rsp),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
@@ -1722,6 +1726,8 @@ module darjeeling_pd_main #(
     .otbn_key_o(keymgr_dpe_otbn_key),
     .kmac_app_o(kmac_app_req[0]),
     .kmac_app_i(kmac_app_rsp[0]),
+    .otbn_app_o(otbn_keymgr_app_req),
+    .otbn_app_i(otbn_keymgr_app_rsp),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
     .creator_seed_i(otp_ctrl_keymgr_creator_seed),
     .owner_seed_i(otp_ctrl_keymgr_owner_seed),

@@ -92,8 +92,31 @@ module otbn
 
   // KMAC application interface.
   output kmac_pkg::app_req_t kmac_app_o,
-  input  kmac_pkg::app_rsp_t kmac_app_i
+  input  kmac_pkg::app_rsp_t kmac_app_i,
+
+  // Application interface from keymgr when OTBN is used as hashing engine
+  input  kmac_pkg::app_req_t keymgr_app_i,
+  output kmac_pkg::app_rsp_t keymgr_app_o
 );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
+  localparam int NumOutBufBitsKeymgrApp = $bits(kmac_pkg::app_rsp_t);
+  prim_buf #(
+    .Width  (NumOutBufBitsKeymgrApp)
+  ) u_anchor_buf_app_rsp (
+    .in_i   ('0),
+    .out_o  (keymgr_app_o)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
+  localparam int NumInBufBitsKeymgrApp = $bits(kmac_pkg::app_req_t);
+  kmac_pkg::app_req_t unused_req;
+  prim_buf #(
+    .Width  (NumInBufBitsKeymgrApp)
+  ) u_anchor_buf_app_req (
+    .in_i   (keymgr_app_i),
+    .out_o  (unused_req)
+  );
 
   import prim_mubi_pkg::*;
   import prim_util_pkg::vbits;
@@ -1475,6 +1498,7 @@ module otbn
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
+  `ASSERT_KNOWN(KeymgrAppRspKnownO_A, keymgr_app_o)
   // The data part of the request directly originates from WSRs. These are non resettable flops.
   // When a simulation starts, these are still X as only a secure wipe will set a value. We thus
   // only check whether the data is known when the valid is set.
