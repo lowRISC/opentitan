@@ -89,6 +89,13 @@
       act:     "req",
       package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "sensitive_key",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+    },
     { struct:  "keymgr_dpe_creator_root_key",
       type:    "uni",
       name:    "creator_root_key",
