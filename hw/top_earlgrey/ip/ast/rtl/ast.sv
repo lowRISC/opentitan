@@ -151,20 +151,26 @@ module ast (
   output scan_reset_no                          // Scan Reset output
 );
 
-import ast_aon_main_pkg::*;
 
-// Inter-domain communication signals
-ast_aon_main_pkg::aon_to_main_t aon_to_main;
-ast_aon_main_pkg::main_to_aon_t main_to_aon;
+// Intra-IP communication signals
+ast_intraip_pkg::s2p_t intraip_s2p;
+ast_intraip_pkg::p2s_t intraip_p2s;
 
-// Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
+// Read-write margins generated in the AON domain (ast_dft, inside ast_part_secondary)
 ast_pkg::tpm_rm_t tpram_rm;
 ast_pkg::spm_rm_t spram_rm;
 ast_pkg::rom_rm_t sprom_rm;
 
+// Clock bypass for OS FPGA
+ast_pkg::clks_osc_byp_t clk_osc_byp;
+`ifdef AST_BYPASS_CLK
+  assign clk_osc_byp = clk_osc_byp_i;
+`else
+  assign clk_osc_byp = '0;
+`endif
 
 // AON Domain instantiation
-ast_aon u_ast_aon (
+ast_part_secondary u_ast_part_secondary (
   .clk_ast_adc_i           ( clk_ast_adc_i ),
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
@@ -234,12 +240,12 @@ ast_aon u_ast_aon (
   .dft_scan_md_o           ( dft_scan_md_o ),
   .scan_shift_en_o         ( scan_shift_en_o ),
   .scan_reset_no           ( scan_reset_no ),
-  .aon_to_main_o           ( aon_to_main ),
-  .main_to_aon_i           ( main_to_aon )
+  .intraip_s2p_o           ( intraip_s2p ),
+  .intraip_p2s_i           ( intraip_p2s )
 );
 
 // Main Domain instantiation
-ast_main u_ast_main (
+ast_part_primary u_ast_part_primary (
   .tl_i                    ( tl_i ),
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
@@ -254,8 +260,8 @@ ast_main u_ast_main (
   .clk_src_sys_jen_i       ( clk_src_sys_jen_i ),
   .clk_ast_es_i            ( clk_ast_es_i ),
   .rst_ast_es_ni           ( rst_ast_es_ni ),
-  .aon_to_main_i           ( aon_to_main ),
-  .main_to_aon_o           ( main_to_aon ),
+  .intraip_s2p_i           ( intraip_s2p ),
+  .intraip_p2s_o           ( intraip_p2s ),
   // Clock bypass interface
   .clk_ast_ext_i           ( clk_ast_ext_i ),
   .clk_src_sys_en_i        ( clk_src_sys_en_i ),

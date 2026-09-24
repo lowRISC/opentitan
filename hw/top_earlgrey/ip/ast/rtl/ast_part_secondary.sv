@@ -12,7 +12,7 @@
 
 `include "prim_assert.sv"
 
-module ast_aon (
+module ast_part_secondary (
   // clocks / resets
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
   input rst_ast_adc_ni,                       // Buffered AST ADC Reset
@@ -65,7 +65,7 @@ module ast_aon (
   output logic clk_src_aon_o,                 // AON Source Clock
   output logic clk_src_aon_val_o,             // AON Source Clock Valid
 
-  // USB reference and calibration (clock outputs moved to ast_main)
+  // USB reference and calibration (clock outputs moved to ast_part_primary)
   input usb_ref_pulse_i,                      // USB Reference Pulse
   input usb_ref_val_i,                        // USB Reference Valid
   input clk_src_usb_en_i,                     // USB Source Clock Enable
@@ -105,7 +105,7 @@ module ast_aon (
   output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 `endif
 
-  // flash and external clocks (clock bypass acks moved to ast_main)
+  // flash and external clocks (clock bypass acks moved to ast_part_primary)
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // All clocks bypass request
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request
@@ -122,20 +122,19 @@ module ast_aon (
   output scan_reset_no,                          // Scan Reset output
 
   // Inter-domain communication
-  output ast_aon_main_pkg::aon_to_main_t aon_to_main_o,
-  input ast_aon_main_pkg::main_to_aon_t main_to_aon_i
+  output ast_intraip_pkg::s2p_t intraip_s2p_o,
+  input ast_intraip_pkg::p2s_t intraip_p2s_i
 );
 
 import ast_pkg::* ;
 import ast_reg_pkg::* ;
-import ast_aon_main_pkg::* ;
 import ast_bhv_pkg::* ;
 
 ///////////////////////////////////////
 // Inter-domain Interface Unpacking (OS simplified)
 ///////////////////////////////////////
-ast_aon_main_pkg::clks_byp_main_to_aon_t clks_byp_main_to_aon;
-assign clks_byp_main_to_aon = main_to_aon_i.clks_byp;
+ast_intraip_pkg::clks_byp_p2s_t clks_byp_p2s;
+assign clks_byp_p2s = intraip_p2s_i.clks_byp;
 
 logic scan_mode, shift_en, scan_reset_n;
 logic vcc_pok, vcc_pok_h, vcc_pok_str;
@@ -302,7 +301,7 @@ assign ast_pwst_o.vcc_pok = vcc_pok_str;
 ///////////////////////////////////////
 ///////////////////////////////////////
 
-// System Clock, USB Clock, IO Clock moved to ast_main.sv
+// System Clock, USB Clock, IO Clock moved to ast_part_primary.sv
 // Keep reset signals for inter-domain communication
 logic rst_sys_clk_n, rst_io_clk_n, rst_usb_clk_n;
 assign rst_sys_clk_n = vcmain_pok_por && vcc_pok;
@@ -355,31 +354,30 @@ prim_flop_2sync #(
 );
 
 assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
-// IO Clock moved to ast_main.sv
+// IO Clock moved to ast_part_primary.sv
 
 ///////////////////////////////////////
 // AST Clocks Bypass
 ///////////////////////////////////////
-// AON clock only in ast_aon, SYS/IO/USB handled by ast_main
+// AON clock only in ast_part_secondary, SYS/IO/USB handled by ast_part_primary
 logic clk_src_aon;
 
-// Inter-domain interface signal for clock bypass (clks_byp_main_to_aon declared earlier)
-ast_aon_main_pkg::clks_byp_aon_to_main_t clks_byp_aon_to_main;
+// Inter-domain interface signal for clock bypass (clks_byp_p2s declared earlier)
+ast_intraip_pkg::clks_byp_s2p_t clks_byp_s2p;
 
 // AON clock bypass - simplified for OS domain-split
-ast_clks_byp_aon u_ast_clks_byp_aon (
+ast_clks_byp_secondary u_ast_clks_byp_secondary (
   .vcaon_pok_i ( vcaon_pok ),
   .vcmain_pok_i ( vcmain_pok_h ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
   .clk_osc_aon_i ( clk_osc_aon ),
   .clk_osc_aon_val_i ( clk_osc_aon_val ),
-  .main_to_aon_i ( clks_byp_main_to_aon ),
-  .aon_to_main_o ( clks_byp_aon_to_main )
+  .p2s_i ( clks_byp_p2s ),
+  .s2p_o ( clks_byp_s2p )
 );
 
-assign clk_src_aon = clks_byp_aon_to_main.clk_src_aon_o;
-assign clk_src_aon_val_o = clks_byp_aon_to_main.clk_src_aon_val_o;
+assign clk_src_aon = clks_byp_s2p.clk_src_aon_o;
 
 // AON source clock buffer
 ////////////////////////////////////////
@@ -562,15 +560,15 @@ assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
 // AST Registers (Always ON)
 ///////////////////////////////////////
 
-// TLUL Integrity Error (from main domain)
-assign ot0_alert_src = main_to_aon_i.ot0_alert_src;
+// TLUL Integrity Error (from primary partition)
+assign ot0_alert_src = intraip_p2s_i.ot0_alert_src;
 
 // Calibration signals - simple initialization for OS
-// (REGAL register and ast_init_done_o are now in ast_main.sv)
+// (REGAL register and ast_init_done_o are now in ast_part_primary.sv)
 always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
   if ( !rst_ast_tlul_ni ) begin
     sys_io_osc_cal <= 1'b0;
-  end else if (main_to_aon_i.regal_we) begin
+  end else if (intraip_p2s_i.regal_we) begin
     sys_io_osc_cal <= 1'b1;
   end
 end
@@ -578,7 +576,7 @@ end
 always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok_por ) begin
   if ( !vcaon_pok_por ) begin
     usb_osc_cal <= 1'b0;
-  end else if (main_to_aon_i.regal_we) begin
+  end else if (intraip_p2s_i.regal_we) begin
     usb_osc_cal <= 1'b1;
   end
 end
@@ -586,7 +584,7 @@ end
 always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok ) begin
   if ( !vcaon_pok ) begin
     aon_osc_cal <= 1'b0;
-  end else if (main_to_aon_i.regal_we) begin
+  end else if (intraip_p2s_i.regal_we) begin
     aon_osc_cal <= 1'b1;
   end
 end
@@ -620,41 +618,41 @@ assign ast2pad_t1_ao = 1'bz;
 // Inter-domain communication (OS simplified)
 ////////////////////////////////////////
 // Power signals
-assign aon_to_main_o.pwr.vcc_pok = vcc_pok;
-assign aon_to_main_o.pwr.vcaon_pok = vcaon_pok;
-assign aon_to_main_o.pwr.vcmain_pok_h = vcmain_pok_h;
-assign aon_to_main_o.pwr.vcmain_pok_por = vcmain_pok_por;
-assign aon_to_main_o.pwr.vcc_pok_str = vcc_pok_str;
+assign intraip_s2p_o.pwr.vcc_pok = vcc_pok;
+assign intraip_s2p_o.pwr.vcaon_pok = vcaon_pok;
+assign intraip_s2p_o.pwr.vcmain_pok_h = vcmain_pok_h;
+assign intraip_s2p_o.pwr.vcmain_pok_por = vcmain_pok_por;
+assign intraip_s2p_o.pwr.vcc_pok_str = vcc_pok_str;
 
 // Clock and reset signals
-assign aon_to_main_o.clk_rst.clk_aon = clk_aon;
-assign aon_to_main_o.clk_rst.clk_ast_tlul = clk_ast_tlul_i;
-assign aon_to_main_o.clk_rst.rst_ast_tlul_n = rst_ast_tlul_ni;
-assign aon_to_main_o.clk_rst.clk_ast_rng = clk_ast_rng_i;
-assign aon_to_main_o.clk_rst.rst_ast_rng_n = rst_ast_rng_ni;
-assign aon_to_main_o.clk_rst.clk_ast_es = clk_ast_es_i;
-assign aon_to_main_o.clk_rst.rst_ast_es_n = rst_ast_es_ni;
-assign aon_to_main_o.clk_rst.rst_sys_clk_n = rst_sys_clk_n;
-assign aon_to_main_o.clk_rst.rst_io_clk_n = rst_io_clk_n;
-assign aon_to_main_o.clk_rst.rst_usb_clk_n = rst_usb_clk_n;
+assign intraip_s2p_o.clk_rst.clk_aon = clk_aon;
+assign intraip_s2p_o.clk_rst.clk_ast_tlul = clk_ast_tlul_i;
+assign intraip_s2p_o.clk_rst.rst_ast_tlul_n = rst_ast_tlul_ni;
+assign intraip_s2p_o.clk_rst.clk_ast_rng = clk_ast_rng_i;
+assign intraip_s2p_o.clk_rst.rst_ast_rng_n = rst_ast_rng_ni;
+assign intraip_s2p_o.clk_rst.clk_ast_es = clk_ast_es_i;
+assign intraip_s2p_o.clk_rst.rst_ast_es_n = rst_ast_es_ni;
+assign intraip_s2p_o.clk_rst.rst_sys_clk_n = rst_sys_clk_n;
+assign intraip_s2p_o.clk_rst.rst_io_clk_n = rst_io_clk_n;
+assign intraip_s2p_o.clk_rst.rst_usb_clk_n = rst_usb_clk_n;
 
 // Clock bypass interface (OS uses monolithic ast_clks_byp, provide defaults)
-assign aon_to_main_o.clks_byp = clks_byp_aon_to_main;
+assign intraip_s2p_o.clks_byp = clks_byp_s2p;
 
 // Oscillator control interface
-assign aon_to_main_o.clk_osc.deep_sleep = deep_sleep;
-assign aon_to_main_o.clk_osc.usb_ref_pulse = usb_ref_pulse_i;
-assign aon_to_main_o.clk_osc.usb_ref_val = usb_ref_val_i;
+assign intraip_s2p_o.clk_osc.deep_sleep = deep_sleep;
+assign intraip_s2p_o.clk_osc.usb_ref_pulse = usb_ref_pulse_i;
+assign intraip_s2p_o.clk_osc.usb_ref_val = usb_ref_val_i;
 
 // Scan signals
-assign aon_to_main_o.scan_mode = scan_mode;
-assign aon_to_main_o.scan_reset_n = scan_reset_n;
+assign intraip_s2p_o.scan_mode = scan_mode;
+assign intraip_s2p_o.scan_reset_n = scan_reset_n;
 
 // Calibration signals
-assign aon_to_main_o.sys_io_osc_cal = sys_io_osc_cal;
-assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
+assign intraip_s2p_o.sys_io_osc_cal = sys_io_osc_cal;
+assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 
-// Clock outputs and bypass acks now directly output from ast_main
+// Clock outputs and bypass acks now directly output from ast_part_primary
 
 ////////////////
 // Assertions //
@@ -668,8 +666,8 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 // ADC
 `ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
 `ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
-// Note: RNG assertions moved to ast_main.sv
-// TLUL and InitDone asserts are now in ast_main.sv
+// Note: RNG assertions moved to ast_part_primary.sv
+// TLUL and InitDone asserts are now in ast_part_primary.sv
 // POs
 `ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_ni)
 `ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_ni)
@@ -697,7 +695,7 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
-// Note: reg_we onehot assertion moved to ast_main.sv along with u_reg
+// Note: reg_we onehot assertion moved to ast_part_primary.sv along with u_reg
 /////////////////////
 // Unused Signals  //
 /////////////////////
@@ -726,4 +724,4 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         io_clk_byp_req_i
                       };
 
-endmodule : ast_aon
+endmodule : ast_part_secondary
