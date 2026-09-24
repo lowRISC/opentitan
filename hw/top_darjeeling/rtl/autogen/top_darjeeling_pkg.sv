@@ -277,7 +277,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for csrng in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CSRNG_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_CSRNG_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for entropy_src in top darjeeling.
