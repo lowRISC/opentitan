@@ -62,7 +62,7 @@
   ],
   interrupt_list: [
     { name: "cs_cmd_req_done"
-      desc: "Asserted when a command request is completed."}
+      desc: "Asserted when a command request is completed, or when a CSRNG instance halted via INT_STATE_HALT has quiesced."}
     { name: "cs_entropy_req"
       desc: "Asserted when a request for entropy has been made."}
     { name: "cs_hw_inst_exc"
@@ -523,6 +523,7 @@
                   pointer for the !!INT_STATE_VAL register.
                   Note: This register should be read back after being written to ensure
                   that the !!INT_STATE_VAL read back is accurate.
+                  This field also selects the instance targeted by !!INT_STATE_HALT and !!INT_STATE_STS.
                   '''
         },
       ]
@@ -544,6 +545,7 @@
                 pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
+                To get a consistent snapshot, halt the instance via !!INT_STATE_HALT first.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
                 Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                 Otherwise, the register reads as 0.
@@ -709,6 +711,14 @@
           name: "GEN_ABORT_FIELD_ALERT",
           desc: '''
                 This bit is set when a field of the !!GEN_ABORT register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "7",
+          name: "INT_STATE_HALT_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!INT_STATE_HALT register is set to a value other than
+                kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -890,6 +900,82 @@
                 See the RTL file `csrng_main_sm` for the meaning of the values.
                 '''
           resval: 0x37
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_HALT_ENABLE_REGWEN",
+      desc: "Internal state halt enable REGWEN register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                INT_STATE_HALT_ENABLE register configuration enable bit.
+                If this is cleared to 0, the INT_STATE_HALT_ENABLE register cannot be written anymore.
+                '''
+          resval: 1,
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_HALT_ENABLE",
+      desc: "Internal state halt enable register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "INT_STATE_HALT_ENABLE_REGWEN",
+      fields: [
+        { bits: "2:0",
+          name: "INT_STATE_HALT_ENABLE",
+          desc: '''
+                Per-instance internal state halt enable.
+                Defines whether the corresponding instance can be halted via !!INT_STATE_HALT.
+                Setting !!INT_STATE_HALT has no effect on an instance whose bit is cleared.
+                '''
+          resval: 0x7
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_HALT",
+      desc: "Internal state halt register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      tags: [// A write can halt an instance and affect RECOV_ALERT_STS.
+             "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "3:0",
+          name: "INT_STATE_HALT",
+          mubi: true,
+          resval: false,
+          desc: '''
+                While this field is set to kMultiBitBool4True, the instance selected by !!INT_STATE_NUM halts.
+                The instance first completes the command in progress and any commands already queued for it.
+                A Generate command is instead halted as soon as the block currently being generated is complete.
+                If this is the final block, the command is acknowledged after resuming, once the block has been read out.
+                While halted, the instance accepts no new commands: EDN requests are back-pressured and !!SW_CMD_STS.CMD_RDY is low for the software instance.
+                This requires the bit of the selected instance in !!INT_STATE_HALT_ENABLE to be set, otherwise the instance is not halted.
+                Poll !!INT_STATE_STS.HALTED, or wait for !!INTR_STATE.CS_CMD_REQ_DONE, to know when the instance has halted.
+                Setting this field to kMultiBitBool4False resumes the command processing of the instance.
+                '''
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_STS",
+      desc: "Internal state halt status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "0",
+          name: "HALTED",
+          desc: '''
+                Reflects whether the instance selected by !!INT_STATE_NUM has quiesced following !!INT_STATE_HALT, such that its internal state stays constant while it is read via !!INT_STATE_VAL.
+                Reads as 0 if !!INT_STATE_NUM selects a reserved instance.
+                Also see !!INTR_STATE.CS_CMD_REQ_DONE, which fires when an instance has halted.
+                '''
+          resval: 0
         }
       ]
     },

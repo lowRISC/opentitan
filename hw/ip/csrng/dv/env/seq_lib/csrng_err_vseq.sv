@@ -65,7 +65,6 @@ class csrng_err_vseq extends csrng_base_vseq;
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_off();
-    `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
     cs_item = csrng_item::type_id::create("cs_item");
 

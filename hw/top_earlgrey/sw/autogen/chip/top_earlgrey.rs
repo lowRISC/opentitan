@@ -565,7 +565,7 @@ pub const CSRNG_BASE_ADDR: usize = 0x41150000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CSRNG_BASE_ADDR and
 /// `CSRNG_BASE_ADDR + CSRNG_SIZE_BYTES`.
-pub const CSRNG_SIZE_BYTES: usize = 0x80;
+pub const CSRNG_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for entropy_src in top earlgrey.
 ///
