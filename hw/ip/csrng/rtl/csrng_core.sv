@@ -552,6 +552,8 @@ module csrng_core import csrng_pkg::*; #(
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
       .gen_abort_req_i              (gen_abort_req[ai]),
       .gen_abort_invalid_o          (gen_abort_invalid_alert[ai]),
+      .stop_i                       (1'b0),
+      .stopped_o                    (),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
