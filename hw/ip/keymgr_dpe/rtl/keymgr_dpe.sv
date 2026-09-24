@@ -48,9 +48,9 @@ module keymgr_dpe
   output hw_key_req_t hmac_key_o,
   output wide_hw_key_req_t otbn_key_o,
 
-  // data interface to/from crypto modules
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i,
+  // Application interface when KMAC is used as hashing engine
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -702,8 +702,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o,
-    .kmac_data_i,
+    .kmac_data_o(kmac_app_o),
+    .kmac_data_i(kmac_app_i),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -908,7 +908,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
 
 
   // kmac parameter consistency
