@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
@@ -18,6 +19,14 @@
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'k', 'd')
+
+/**
+ * KMAC cleanup guard.
+ */
+static void kmac_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)kmac_fifo_flush();
+}
 
 /**
  * Sideload cleanup guard.
@@ -55,6 +64,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
 
   // Because of KMAC HWIPs prefix limitation, `label` should not exceed
   // `kKmacCustStrMaxSize` bytes.

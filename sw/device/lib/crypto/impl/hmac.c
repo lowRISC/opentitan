@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/hmac.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -16,6 +17,14 @@
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'm', 'c')
+
+/**
+ * HMAC cleanup guard.
+ */
+static void hmac_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)hmac_fifo_flush();
+}
 
 /**
  * Ensure that the HMAC context is large enough. For FI hardening, two redundant
@@ -212,6 +221,9 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
+
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
 
@@ -337,6 +349,9 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
+
   OTCRYPTO_HEALTH_CHECK(key->config.key_mode == kOtcryptoKeyModeHmacSha256
                             ? kTestHmacSha256Bit
                             : kTestHmacSha512Bit);
@@ -435,6 +450,9 @@ otcrypto_status_t otcrypto_hmac_update(
   }
 #endif
 
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
+
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
@@ -483,6 +501,9 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
