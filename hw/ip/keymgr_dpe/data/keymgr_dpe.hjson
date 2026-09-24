@@ -331,7 +331,7 @@
     { name: "CONFIG.SHADOW",
       desc: '''
         Various critical registers are shadowed: including operation control, reseed interval,
-        and key max version (creator, owner intermediate, owner).
+        kdf_engine and key max version (creator, owner intermediate, owner).
       '''
     }
     { name: "OP.CONFIG.REGWEN",
@@ -343,6 +343,11 @@
     { name: "RESEED.CONFIG.REGWEN",
       desc: '''
         Reseed interval is software lockable.
+      '''
+    }
+    { name: "KDF_ENGINE.CONFIG.REGWEN",
+      desc: '''
+        Kdf engine selection is software lockable.
       '''
     }
     { name: "SW_BINDING.CONFIG.REGWEN",
@@ -368,6 +373,11 @@
     { name: "ENFORCE_SW_BINDING.CTRL.MUBI",
       desc: '''
         Enforce sw binding register is multibit encoded.
+      '''
+    }
+    { name: "KDF_ENGINE.CTRL.MUBI",
+      desc: '''
+        Kdf engine selection register is multibit encoded.
       '''
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
