@@ -1416,3 +1416,48 @@ hardened_bool_t kmac_key_integrity_checksum_check(
   }
   return kHardenedBoolFalse;
 }
+
+status_t kmac_fifo_flush(void) {
+  // This variable guarantees kmac_wipe_guard() (`CMD.DONE`) is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
+
+  // Configure unkeyed SHAKE-128 so the hardware skips both the cSHAKE prefix
+  // block and the KMAC key block, jumping directly to message absorption.
+  HARDENED_TRY(kmac_init(kKmacOperationShake, kKmacSecurityStrength128,
+                         /*hw_backed=*/kHardenedBoolFalse));
+
+  // Wipe the software key share registers while the engine is idle.
+  uint32_t wipe = ibex_rnd32_read();
+  for (size_t i = 0; i < KMAC_PARAM_NUM_WORDS_KEY; i++) {
+    abs_mmio_write32(kKmacKeyShare0Addr + i * sizeof(uint32_t), wipe);
+    abs_mmio_write32(kKmacKeyShare1Addr + i * sizeof(uint32_t), wipe);
+  }
+
+  // Issue the start command so writes to MSG_FIFO are accepted.
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_START);
+  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_ABSORB_BIT, 1));
+
+  // Overwrite all entries in the message FIFO (10 x 64-bit = 20 x 32-bit
+  // words).
+  enum {
+    kKmacMsgFifoWords = KMAC_PARAM_NUM_ENTRIES_MSG_FIFO *
+                        KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY / sizeof(uint32_t),
+  };
+  for (size_t i = 0; i < kKmacMsgFifoWords; i++) {
+    HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
+    abs_mmio_write32(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, wipe);
+  }
+
+  // Issue the process command and wait for the single permutation to reach the
+  // squeeze state; `kmac_wipe_guard` will then issue `CMD.DONE` to zeroize the
+  // Keccak state and reset the FIFO pointers.
+  cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_PROCESS);
+  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+  return wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1);
+}

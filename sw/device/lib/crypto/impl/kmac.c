@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/kmac.h"
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
@@ -33,6 +34,14 @@ enum {
   // Slots 2+: driver-level context (kmac_ctx_t).
   kCtxDriverOffset = 2,
 };
+
+/**
+ * KMAC cleanup guard.
+ */
+static void kmac_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)kmac_fifo_flush();
+}
 
 /**
  * Sideload cleanup guard.
@@ -137,6 +146,8 @@ otcrypto_status_t otcrypto_kmac(
   if (key->config.hw_backed == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {

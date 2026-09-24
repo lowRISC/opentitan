@@ -440,6 +440,14 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data);
 OT_WARN_UNUSED_RESULT
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest);
 
+/**
+ * Flush the HMAC message FIFO with dummy data and wipe internal state.
+ *
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_fifo_flush(void);
+
 #ifdef __cplusplus
 }
 #endif

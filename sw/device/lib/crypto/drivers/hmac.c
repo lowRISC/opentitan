@@ -884,3 +884,34 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
 
   return OTCRYPTO_OK;
 }
+
+status_t hmac_fifo_flush(void) {
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  barrier32(hw_cleanup_guard);
+
+  // Check that the block is idle.
+  HARDENED_TRY(ensure_idle());
+
+  // Configure the HMAC block for unkeyed SHA-512 so that all 32 words of the
+  // message FIFO (`kHmacMaxBlockWords`) fit into a single message block.
+  uint32_t cfg =
+      cfg_get(/*hmac_en=*/false, kDigestLengthSha512, kKeyLengthNone);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Send the START command.
+  uint32_t cmd =
+      bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_START_BIT, 1);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
+
+  // Overwrite all 32 words of the message FIFO with a random word.
+  uint32_t wipe = ibex_rnd32_read();
+  for (size_t i = 0; i < kHmacMaxBlockWords; i++) {
+    abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, wipe);
+  }
+
+  // Send the PROCESS command and wait for completion; `hmac_wipe_guard` will
+  // then clear `sha_en` and trigger `HMAC_WIPE_SECRET`.
+  cmd = bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
+  return hmac_idle_wait();
+}
