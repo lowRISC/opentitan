@@ -24,11 +24,27 @@ class chip_jtag_csr_rw_vseq extends chip_common_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  // A wrapper around dv_base_vseq::run_csr_vseq_wrapper that narrows models down to the main chip
+  // register block. The JTAG agent reaches registers through the rv_dm system bus, which is a host
+  // on the main crossbar only. The soc_dbg and soc_mbx register blocks sit on crossbars that only
+  // the JTAG DTM and the SoC side can reach.
+  virtual task run_csr_vseq_wrapper(int num_times = 1, dv_base_reg_block models[$] = {});
+    if (models.size() > 0 && !(cfg.ral inside {models})) begin
+      `uvm_fatal(`gfn, "Cannot run CSR vseq: models doesn't contain the main RAL.")
+    end
+    super.run_csr_vseq_wrapper(num_times, {cfg.ral});
+  endtask
+
   virtual task run_csr_vseq(string csr_test_type,
                             int    num_test_csrs = 0,
                             bit    do_rand_wr_and_reset = 1,
                             dv_base_reg_block models[$] = {},
                             string ral_name = "");
+    if (!(models.size() == 1 && models[0] == cfg.ral) &&
+        !(models.size() == 0 && ral_name == "chip_reg_block")) begin
+      `uvm_fatal(`gfn, "JTAG access only works for the main register block.")
+    end
+
     // JTAG cannot process outstanding access, so JTAG protocol will process one request at a time.
     // However, still set this variable to 1 to avoid spinwait timeout when sequence sends all csrs
     // transaction requests at .
