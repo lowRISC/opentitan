@@ -11,19 +11,8 @@ load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
 package(default_visibility = ["//visibility:public"])
 
-# The readmem directives in the fusesoc-ized build tree will be in the subdir
-# ${build_root}/${core}/${target}-${tool}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
-# and ${build_root} will be a subdirectory called `build.fpga_cw*` inside of
-# bazel-out/k8-{configname}/bin/hw/bitstream/vivado.
-# Therefore, the relative path between prim_util_memload.svh and the project-root
-# relative $(location ...) resolved labels is up 10 subdirectories.
-_PREFIX = "../../../../../../../../../../.."
-
-_CW340_STUBROM = "//sw/device/lib/testing/stub_rom:stub_rom_fpga_cw340_scr_vmem"
-
-_CW340_STUBROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_STUBROM)
-
-_FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
+# File name under the work directory of the boot ROM file
+_CW340_BOOT_ROM_FILE = "rom_fpga_cw340.39.scr.vmem"
 
 # CW340 bitstream
 fusesoc_hash_and_build(
@@ -31,18 +20,19 @@ fusesoc_hash_and_build(
     testonly = True,
     srcs = [
         "//hw:rtl_files",
-        _CW340_STUBROM,
     ],
+    copy_files = {
+        _CW340_BOOT_ROM_FILE: "//sw/device/lib/testing/stub_rom:stub_rom_fpga_cw340_scr_vmem",
+    },
     cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
-        "--BootRomInitFile=" + _CW340_STUBROM_PATH,
+        "--BootRomInitFile=" + _CW340_BOOT_ROM_FILE,
     ],
     output_groups = {
-        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
-        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
-        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
-        "files_to_hash": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "src/")],
+        "bitstream": ["lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
+        "mmi": ["memories.mmi"],
+        "logs": ["lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],
