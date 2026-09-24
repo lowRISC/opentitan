@@ -50,8 +50,12 @@ class chip_jtag_csr_rw_vseq extends chip_common_vseq;
     // transaction requests at .
     max_outstanding_accesses = 1;
 
-    // Run 500 csrs at one sequence to avoid simulation timeout.
-    super.run_csr_vseq(csr_test_type, 500, do_rand_wr_and_reset, models, ral_name);
+    // JTAG accesses are slow (~11 us each), so test at most 100 csrs to avoid a simulation timeout.
+    if (num_test_csrs == 0 || num_test_csrs > 100) begin
+      num_test_csrs = 100;
+    end
+
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
   endtask
 
 endclass

@@ -53,8 +53,12 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
     `uvm_info(`gfn, $sformatf("Number of Test Mems : %0d",test_mems.size()), UVM_MEDIUM)
     test_mems.shuffle();
 
+    // JTAG accesses are slow (~11 us each). There are 5 memories in test_mems (otbn imem and dmem,
+    // and the main, mailbox and retention SRAMs), so we pick max_access=32. This yields at most
+    // 5 * 32 writes and as many reads, or 320 JTAG accesses in total, which take about 3.5 ms of
+    // simulated time.
     for (int i = 0;i < test_mems.size(); ++i) begin
-      test_mem_rw(.mem(test_mems[i]), .max_access(128));
+      test_mem_rw(.mem(test_mems[i]), .max_access(32));
     end
   endtask : body
 
