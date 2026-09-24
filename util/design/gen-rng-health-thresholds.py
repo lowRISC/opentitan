@@ -53,6 +53,7 @@ _BUCKET_HT_DATA_MAX_WIDTH = 4
 # List of test windows supported by this script.
 class _Test(enum.Enum):
     ADAPTP = 'ADAPTP'
+    ADAPTPS = 'ADAPTPS'
     BUCKET = 'BUCKET'
     MARKOV = 'MARKOV'
 
@@ -87,6 +88,9 @@ def threshold_calc(test: str, window_size: int, rng_bus_width: int,
     if test == _Test.ADAPTP:
         n = window_size if (not per_line or
                             rng_bit_enable) else window_size / rng_bus_width
+    elif test == _Test.ADAPTPS:
+        n = window_size / rng_bus_width
+        p = 1.0 / float(2**rng_bus_width)
     elif test == _Test.BUCKET:
         n = window_size / bucket_ht_data_width / num_bucket_ht_inst
         p = 1.0 / float(num_buckets)
@@ -101,7 +105,8 @@ def threshold_calc(test: str, window_size: int, rng_bus_width: int,
     mean = p * n
     stddev = math.sqrt(p * (1 - p) * n)
 
-    low = 0 if test == _Test.BUCKET else math.floor(mean - sigma * stddev)
+    low = 0 \
+        if (test == _Test.BUCKET or test == _Test.ADAPTPS) else math.floor(mean - sigma * stddev)
     high = math.ceil(mean + sigma * stddev)
 
     # For large values of sigman, the gaussian approximation can recommend

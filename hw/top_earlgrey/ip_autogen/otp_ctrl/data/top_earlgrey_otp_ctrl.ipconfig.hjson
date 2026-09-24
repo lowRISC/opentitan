@@ -535,6 +535,27 @@
               offset: 360
             }
             {
+              name: CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS
+              size: 4
+              desc:
+                '''
+                The adaptive proportion symbol health test thresholds to
+                enable entropy_src with during ROM execution.
+                This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                The LSBs contain the boot-time / bypass mode threshold
+                value.
+                The MSBs contain the value for the FIPS / CC compliant mode.
+                See entropy_src documentation for more details.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 364
+            }
+            {
               name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
               size: 4
               desc:
@@ -553,7 +574,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 364
+              offset: 368
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
@@ -574,7 +595,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 368
+              offset: 372
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
@@ -595,7 +616,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 372
+              offset: 376
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
@@ -616,7 +637,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 376
+              offset: 380
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
@@ -637,7 +658,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 380
+              offset: 384
             }
             {
               name: CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD
@@ -655,7 +676,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 384
+              offset: 388
             }
             {
               name: CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD
@@ -673,7 +694,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 388
+              offset: 392
             }
             {
               name: CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST
@@ -691,7 +712,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 392
+              offset: 396
             }
             {
               name: CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST
@@ -709,7 +730,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 396
+              offset: 400
             }
             {
               name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
@@ -728,7 +749,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 400
+              offset: 404
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN
@@ -745,7 +766,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 404
+              offset: 408
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET
@@ -761,7 +782,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 408
+              offset: 412
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH
@@ -773,7 +794,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 412
+              offset: 416
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH
@@ -785,12 +806,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 416
+              offset: 420
             }
             {
               name: CREATOR_SW_CFG_DIGEST
               size: 8
-              offset: 456
+              offset: 464
               ismubi: false
               isdigest: true
               iszer: false
@@ -809,7 +830,7 @@
           iskeymgr_owner: false
           zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 400
+          size: 408
           offset: 64
         }
         {
@@ -842,7 +863,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 464
+              offset: 472
             }
             {
               name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
@@ -863,7 +884,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 468
+              offset: 476
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
@@ -883,7 +904,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 472
+              offset: 480
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
@@ -903,7 +924,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 476
+              offset: 484
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
@@ -927,7 +948,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 480
+              offset: 488
             }
             {
               name: OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION
@@ -945,7 +966,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 800
+              offset: 808
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
@@ -965,7 +986,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 864
+              offset: 872
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
@@ -982,7 +1003,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 880
+              offset: 888
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
@@ -1010,7 +1031,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 896
+              offset: 904
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
@@ -1033,7 +1054,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 960
+              offset: 968
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
@@ -1050,7 +1071,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 964
+              offset: 972
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
@@ -1067,7 +1088,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 968
+              offset: 976
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
@@ -1084,7 +1105,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 972
+              offset: 980
             }
             {
               name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
@@ -1096,7 +1117,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 976
+              offset: 984
             }
             {
               name: OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN
@@ -1117,7 +1138,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 980
+              offset: 988
             }
             {
               name: OWNER_SW_CFG_MANUF_STATE
@@ -1134,7 +1155,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 984
+              offset: 992
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
@@ -1159,7 +1180,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 988
+              offset: 996
             }
             {
               name: OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN
@@ -1171,7 +1192,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 992
+              offset: 1000
             }
             {
               name: OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG
@@ -1196,7 +1217,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 996
+              offset: 1004
             }
             {
               name: OWNER_SW_CFG_ROM_SRAM_READBACK_EN
@@ -1217,7 +1238,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1008
+              offset: 1016
             }
             {
               name: OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN
@@ -1236,7 +1257,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1012
+              offset: 1020
             }
             {
               name: OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE
@@ -1258,7 +1279,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1016
+              offset: 1024
             }
             {
               name: OWNER_SW_CFG_ROM_BANNER_EN
@@ -1276,7 +1297,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1020
+              offset: 1028
             }
             {
               name: OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN
@@ -1300,7 +1321,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1024
+              offset: 1032
             }
             {
               name: OWNER_SW_CFG_RESERVED
@@ -1316,7 +1337,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1028
+              offset: 1036
             }
             {
               name: OWNER_SW_CFG_DIGEST
@@ -1341,8 +1362,8 @@
           iskeymgr_owner: false
           zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 680
-          offset: 464
+          size: 672
+          offset: 472
         }
         {
           name: ROT_CREATOR_AUTH_CODESIGN

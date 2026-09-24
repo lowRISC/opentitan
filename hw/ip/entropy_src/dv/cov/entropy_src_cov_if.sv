@@ -87,7 +87,7 @@ interface entropy_src_cov_if
 
     // coverpoint for counters with only one instance
     cp_which_cntr: coverpoint which_cntr {
-       bins single_cntrs[] = {window_cntr, repcnts_ht_cntr};
+       bins single_cntrs[] = {window_cntr, repcnts_ht_cntr, adaptps_ht_cntr};
     }
 
     cp_which_repcnt_line: coverpoint which_line iff(which_cntr == repcnt_ht_cntr) {
@@ -553,6 +553,7 @@ interface entropy_src_cov_if
           entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTPS_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET,
@@ -683,7 +684,7 @@ interface entropy_src_cov_if
     }
 
     cp_type : coverpoint test_type {
-      bins types[] = {adaptp_ht, bucket_ht, markov_ht};
+      bins types[] = {adaptp_ht, adaptps_ht, bucket_ht, markov_ht};
     }
 
     cp_hi_lo : coverpoint hi_lo;

@@ -97,16 +97,18 @@ package entropy_src_env_pkg;
     repcnt_ht_cntr  = 1,
     repcnts_ht_cntr = 2,
     adaptp_ht_cntr  = 3,
-    bucket_ht_cntr  = 4,
-    markov_ht_cntr  = 5
+    adaptps_ht_cntr = 4,
+    bucket_ht_cntr  = 5,
+    markov_ht_cntr  = 6
   } cntr_e;
 
   typedef enum int {
     repcnt_ht  = 0,
     repcnts_ht = 1,
     adaptp_ht  = 2,
-    bucket_ht  = 3,
-    markov_ht  = 4
+    adaptps_ht = 3,
+    bucket_ht  = 4,
+    markov_ht  = 5
   } health_test_e;
 
   typedef enum int {
@@ -115,10 +117,11 @@ package entropy_src_env_pkg;
   } health_test_mode_e;
 
   typedef enum int {
-    repcnt_ht_fail = 0,
-    adaptp_ht_fail = 1,
-    bucket_ht_fail = 2,
-    markov_ht_fail = 3
+    repcnt_ht_fail  = 0,
+    adaptp_ht_fail  = 1,
+    adaptps_ht_fail = 2,
+    bucket_ht_fail  = 3,
+    markov_ht_fail  = 4
   } ht_fail_e;
 
   typedef enum int {
@@ -276,6 +279,11 @@ package entropy_src_env_pkg;
         n = rng_bit_enable || !per_line ? window_size : window_size / `RNG_BUS_WIDTH;
         p = 0.5;
       end
+      adaptps_ht: begin
+        // The Adapative Proportion Symbol Test always tests entire symbols.
+        n = window_size / `RNG_BUS_WIDTH;
+        p = 1.0/real'(2**`RNG_BUS_WIDTH);
+      end
       bucket_ht: begin
         // The bucket health test is performed group wise. But the scoring is done at the group
         // level, i.e., every group does n trials and we don't average across groups.
@@ -285,7 +293,7 @@ package entropy_src_env_pkg;
       markov_ht: begin
         // When running in single-channel mode, a single channel observes all the sample pairs.
         // When accumulating all channels into a single score, the number of pairs adds up.
-        // In contrast, we effectively reduce teh number of pairs when performing the test on a
+        // In contrast, we effectively reduce the number of pairs when performing the test on a
         // per-line basis.
         n = rng_bit_enable || !per_line ? window_size / 2 : window_size / 2 / `RNG_BUS_WIDTH;
         p = 0.5;
@@ -296,7 +304,7 @@ package entropy_src_env_pkg;
     endcase
 
     // The RNG sequence is assumed to be uniformly distributed at random. According to the central
-    // limit theorem (CLT), the distributions of the inidividual health tests converge to normal or
+    // limit theorem (CLT), the distributions of the individual health tests converge to normal or
     // rather binomial distributions (as we're dealing with discrete variables) under appropriate
     // conditions (such as the health test window being sufficiently large).
     //
@@ -312,8 +320,8 @@ package entropy_src_env_pkg;
   // Helper function: ideal_threshold_recommendation
   //
   // Purpose:
-  // For use when choosing appropriate health test thresholds (specifically for the three
-  // windowed health tests: adaptp, markov and bucket) based on the desired failure rate.
+  // For use when choosing appropriate health test thresholds (specifically for the four
+  // windowed health tests: adaptp, adaptps, markov and bucket) based on the desired failure rate.
   //
   // The function assumes an ideal noise input, and estimates appropriate upper or lower
   // thresholds based on a desired sigma-level (number of standard deviations to exceed
@@ -321,7 +329,7 @@ package entropy_src_env_pkg;
   //
   // Inputs:
   // int    window_size: the number of bits to consider for the test (combining all RNG bus lines)
-  // health_test_e test: the test to consider (adaptp_ht, bucket_ht, or markov_ht)
+  // health_test_e test: the test to consider (adaptp_ht, adaptps_ht, bucket_ht, or markov_ht)
   // bit       per_line: set to 1 if the test is being evaluated on a per_line basis
   //                     (if 0, the range applies if the results are summed over all RNG lines)
   // bit rng_bit_enable: set to 1 if single-channel mode is enabled
@@ -363,9 +371,9 @@ package entropy_src_env_pkg;
   //               4.9    1e-6
   //
   // The table above can be used to estimate the likelihood of failure for the AdaptP and Markov
-  // tests, which have both high and low thresholds.  Since the bucket test has only a single
-  // threshold, the likelihood of chance bucket-test failure is 1/2 the above value for the same
-  // sigma value.
+  // tests, which have both high and low thresholds. Since the AdaptP Symbol and bucket test have
+  // only a single threshold, the likelihood of failure is 1/2 the above value for the same
+  // sigma value for these tests.
   //
   // The table above does not account for rounding error. Furthermore, since the approximation to a
   // normal distribution ignores any skew or other higher moments, this leads additional deviations
@@ -381,7 +389,8 @@ package entropy_src_env_pkg;
 
     approximate_distribution(window_size, test, per_line, rng_bit_enable, n, p, mean, stddev);
 
-    lower_threshold = (test == bucket_ht) ? 0 : $floor(mean - desired_sigma * stddev);
+    lower_threshold =
+        test inside {adaptps_ht, bucket_ht} ? 0 : $floor(mean - desired_sigma * stddev);
     upper_threshold = $ceil(mean + desired_sigma * stddev);
     // For large values of sigma, the gaussian approximation can recommend thresholds larger than
     // the total number of trials.   In such cases we cap the threshold at the total number of
@@ -429,8 +438,8 @@ package entropy_src_env_pkg;
 
     // Low thresholds should always below the mean.
     // Invert to make offset a positive number (assuming the threshold is on the correct side).
-    // NOTE: The bucket test only has a high threshold.
-    if ( (hi_low != high_test) && (test != bucket_ht) ) begin
+    // NOTE: The adaptps and bucket tests only have a high threshold.
+    if ( (hi_low != high_test) && (test != bucket_ht) && (test != adaptps_ht) ) begin
       offset = offset * -1;
     end
 
