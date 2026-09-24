@@ -122,8 +122,6 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
   uint32_t mask = (1UL << kat_bit);
 
   if ((state->kat_state & mask) == 0) {
-    state->kat_state |= mask;  // Re-entrance lock
-
     kat_id_t test_id = {.flags = mask};
     status_t result = run_kats(test_id);
 

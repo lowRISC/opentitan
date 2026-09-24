@@ -282,6 +282,7 @@ cc_library(
         ":rsa",
         ":sha2",
         ":sha3",
+        ":state",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy_kat",
