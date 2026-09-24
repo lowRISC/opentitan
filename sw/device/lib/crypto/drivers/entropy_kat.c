@@ -7,12 +7,20 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/csrng_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'k')
+
+enum {
+  /**
+   * Number of iterations to poll for an INT_STATE_CMD IMPORT request.
+   */
+  kEntropyKatPollCmdDoneTimeout = 1000000,
+};
 
 static const dt_csrng_t kCsrngDt = kDtCsrng;
 
@@ -66,15 +74,50 @@ typedef struct entropy_csrng_internal_state {
   bool fips_compliance;
 } entropy_csrng_internal_state_t;
 
-static void entropy_csrng_internal_state_get(
+static status_t entropy_csrng_internal_state_get(
     entropy_csrng_internal_state_id_t instance_id,
     entropy_csrng_internal_state_t *state) {
   const uint32_t kBase = csrng_base();
-  // Select the instance id to read the internal state from, request a state
-  // machine halt, and wait for the internal registers to be ready to be read.
+
+  // Select the instance id to read the internal state from.
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
   abs_mmio_write32(kBase + CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
+
+  // Look up the selected instance's INT_STATE_CMD_STS register and STOPPED
+  // bit, so the request below can be polled for completion.
+  uint32_t sts_reg_offset;
+  bitfield_bit32_index_t stopped_bit;
+  switch (instance_id) {
+    case kCsrngInternalStateIdEdn0:
+      sts_reg_offset = CSRNG_INT_STATE_CMD_STS_0_REG_OFFSET;
+      stopped_bit = CSRNG_INT_STATE_CMD_STS_0_STOPPED_0_BIT;
+      break;
+    case kCsrngInternalStateIdEdn1:
+      sts_reg_offset = CSRNG_INT_STATE_CMD_STS_1_REG_OFFSET;
+      stopped_bit = CSRNG_INT_STATE_CMD_STS_1_STOPPED_1_BIT;
+      break;
+    case kCsrngInternalStateIdSw:
+      sts_reg_offset = CSRNG_INT_STATE_CMD_STS_2_REG_OFFSET;
+      stopped_bit = CSRNG_INT_STATE_CMD_STS_2_STOPPED_2_BIT;
+      break;
+    default:
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Request that the instance stop, and wait for it to do so, so
+  // that its state can be exported via INT_STATE_VAL.
+  reg = bitfield_field32_write(0, CSRNG_INT_STATE_CMD_EXPORT_REQ_FIELD,
+                               kMultiBitBool4True);
+  abs_mmio_write32(kBase + CSRNG_INT_STATE_CMD_REG_OFFSET, reg);
+
+  uint32_t timeout = kEntropyKatPollCmdDoneTimeout;
+  do {
+    reg = abs_mmio_read32(kBase + sts_reg_offset);
+  } while (!bitfield_bit32_read(reg, stopped_bit) && --timeout);
+  if (timeout == 0) {
+    return OTCRYPTO_RECOV_ERR;
+  }
 
   // Read the internal state.
   state->reseed_counter =
@@ -94,6 +137,13 @@ static void entropy_csrng_internal_state_get(
   // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
+
+  // Resume normal command processing for this instance.
+  reg = bitfield_field32_write(0, CSRNG_INT_STATE_CMD_RESUME_FIELD,
+                               kMultiBitBool4True);
+  abs_mmio_write32(kBase + CSRNG_INT_STATE_CMD_REG_OFFSET, reg);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -105,7 +155,8 @@ static void entropy_csrng_internal_state_get(
 static status_t check_internal_state(
     const entropy_csrng_internal_state_t *expected) {
   entropy_csrng_internal_state_t got = {0};
-  entropy_csrng_internal_state_get(kCsrngInternalStateIdSw, &got);
+  HARDENED_TRY(
+      entropy_csrng_internal_state_get(kCsrngInternalStateIdSw, &got));
   if (memcmp(&got, expected, sizeof(entropy_csrng_internal_state_t)) == 0) {
     return OTCRYPTO_OK;
   }
@@ -165,10 +216,8 @@ status_t entropy_csrng_kat(void) {
       0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
   };
 
-  // Disable CSRNG internal state reading and lock the register.
-  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET, 0);
-  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_READ_ENABLE_REGWEN_REG_OFFSET,
-                   0);
+  // Lock out further internal state import/export commands until reset.
+  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_CMD_REGWEN_REG_OFFSET, 0);
 
   if (!memcmp(got, kExpectedOutput, sizeof(kExpectedOutput))) {
     return OTCRYPTO_OK;

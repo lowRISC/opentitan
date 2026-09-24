@@ -23,9 +23,16 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Generate abort request signals.
   input logic                        gen_abort_req_i,
   output logic                       gen_abort_invalid_o,
-  // Safe-pause-point control.
+  // Context import/export interface.
   input logic                        stop_i,
   output logic                       stopped_o,
+  input logic                        import_req_i,
+  input logic                        import_inst_state_vld_i,
+  input logic                        import_inst_state_i,
+  input logic                        import_cmd_gen_flag_i,
+  input logic [GenBitsCtrWidth-1:0]  import_cmd_gen_cnt_i,
+  output logic                       cmd_gen_flag_o,
+  output logic [GenBitsCtrWidth-1:0] cmd_gen_cnt_o,
   // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
@@ -197,9 +204,13 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   // For gen commands, capture information from the original command for use later.
   assign cmd_gen_flag_d =
-         (!cs_enable_i) ? '0 :
-         cmd_gen_1st_req ? (acmd == GEN) :
+         (!cs_enable_i)     ? '0 :
+         import_req_i       ? import_cmd_gen_flag_i :
+         cmd_gen_1st_req    ? (acmd == GEN) :
          cmd_gen_flag_q;
+
+  assign cmd_gen_flag_o = cmd_gen_flag_q;
+  assign cmd_gen_cnt_o  = cmd_gen_cnt;
 
   // SEC_CM: GEN_CMD.CTR.REDUN
   prim_count #(
@@ -209,8 +220,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
     .clk_i,
     .rst_ni,
     .clr_i(!cs_enable_i),
-    .set_i(cmd_gen_1st_req),
-    .set_cnt_i(sfifo_cmd_rdata[12 +: GenBitsCtrWidth]),
+    .set_i(cmd_gen_1st_req || import_req_i),
+    .set_cnt_i(cmd_gen_1st_req ? sfifo_cmd_rdata[12 +: GenBitsCtrWidth] : import_cmd_gen_cnt_i),
     .incr_en_i(1'b0),
     .decr_en_i(cmd_gen_cnt_dec), // Count down.
     .step_i(GenBitsCtrWidth'(1)),
@@ -270,6 +281,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // While gen_ongoing_d is high GEN commands can be aborted, otherwise they are invalid.
   assign gen_ongoing_d =
          (!cs_enable_i)   ? 1'b0 :
+         import_req_i ? (import_cmd_gen_flag_i && (import_cmd_gen_cnt_i != '0)) :
          (state_q == GenSOP && cmd_gen_abort_req) ? 1'b0 :
          (cmd_gen_1st_req && (acmd == GEN)) ? 1'b1 :
          cmd_gen_cnt_last ? 1'b0 :
@@ -279,6 +291,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // To avoid race conditions we latch the abort request until it is safe to send an UNI command.
   assign gen_abort_pending_d =
          (!cs_enable_i) ? 1'b0 :
+         import_req_i ? 1'b0 :
          (state_q == GenSOP && cmd_gen_abort_req) ? 1'b0 :
          (gen_abort_req_i && gen_ongoing_d) ? 1'b1 :
          gen_abort_pending_q;
@@ -286,6 +299,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Mark the request that carries the abort, from dispatch until its ack is consumed.
   assign gen_abort_inflight_d =
          (!cs_enable_i) ? 1'b0 :
+         import_req_i ? 1'b0 :
          (state_q == CmdAck && cmd_ack_i && gen_abort_inflight_q) ? 1'b0 :
          (state_q == GenSOP && cmd_gen_abort_req) ? 1'b1 :
          gen_abort_inflight_q;
@@ -318,6 +332,11 @@ module csrng_cmd_stage import csrng_pkg::*; (
     invalid_cmd_seq = 1'b0;
     invalid_acmd = 1'b0;
     instantiated_d = instantiated_q;
+
+    // Importing the instantiated state bit happens separately from the cmd gen state import.
+    if (import_inst_state_vld_i) begin
+      instantiated_d = import_inst_state_i;
+    end
 
     if (state_q == Error) begin
       // In case we are in the Error state we must ignore the local escalate and enable signals.
@@ -620,15 +639,21 @@ module csrng_cmd_stage import csrng_pkg::*; (
   `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
 
   //---------------------------------------------------------
-  // Safe-pause-point assertions.
+  // Internal-state EXPORT/IMPORT/RESUME assertions.
   //---------------------------------------------------------
 
   // stopped_o only ever reflects the single safe-pause-point state.
   `ASSERT(CsrngCmdStageStoppedState_A, stopped_o |-> state_q == Idle)
   // Whenever stopped, there must be no outstanding request against the shared arbiter.
   `ASSERT(CsrngCmdStageStoppedNoArbReq_A, stopped_o |-> !cmd_arb_req_o)
+  // Nothing drifts while genuinely parked, except on a deliberate import commit.
+  `ASSERT(CsrngCmdStageStoppedStable_A,
+      (stopped_o && stop_i && !import_req_i && !import_inst_state_vld_i) |=>
+      $stable(cmd_gen_cnt) && $stable(cmd_gen_flag_q) && $stable(instantiated_q))
   // gen_ongoing_q must always be consistent with the flag/count it is derived from.
   `ASSERT(CsrngCmdStageGenOngoingConsistent_A,
       stopped_o |-> (gen_ongoing_q == (cmd_gen_flag_q && (cmd_gen_cnt != '0))))
+  // The shared prim_count set port is only ever driven by one of its two sources at a time.
+  `ASSERT(CsrngCmdStageImportSetMutex_A, !(cmd_gen_1st_req && import_req_i))
 
 endmodule

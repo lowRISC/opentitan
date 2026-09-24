@@ -125,6 +125,18 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // All counter errors are reported in ERR_CODE.CTR_ERR.
+      name: sec_cm_adata_ptr_ctr_redun
+      desc: '''
+            Verify the countermeasure(s) ADATA_PTR.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the INT_STATE_CMD_ADATA_VAL word pointer 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
+      stage: V2S
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
+    }
+    {
       name: sec_cm_ctrl_mubi
       desc: '''
             Verify the countermeasure(s) CTRL.MUBI.
