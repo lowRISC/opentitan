@@ -309,6 +309,15 @@ uint32_t kmac_key_integrity_checksum(const kmac_blinded_key_t *key);
 hardened_bool_t kmac_key_integrity_checksum_check(
     const kmac_blinded_key_t *key);
 
+/**
+ * Flush the KMAC message FIFO and key registers with dummy data and wipe
+ * internal state.
+ *
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_fifo_flush(void);
+
 #ifdef __cplusplus
 }
 #endif
