@@ -186,6 +186,9 @@
     { name: "STATE_DB.CTR.REDUN"
       desc: "The !!INT_STATE_VAL word pointer uses a counter that is protected by a second counter that counts in the opposite direction."
     }
+    { name: "ADATA_PTR.CTR.REDUN"
+      desc: "The !!INT_STATE_CMD_ADATA_VAL word pointer uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
     }
@@ -594,9 +597,11 @@
           name: "INT_STATE_VAL",
           desc: '''
                 Reading this register will dump out the contents of the selected instance's CTR_DRBG
-                state. Since this field is 448 bits wide, it will require 14 reads from this register
-                to gather the entire field. Once 14 reads have been done, the internal read/write
-                pointer (selects 32 bits of the 448 bit field) will reset to zero.
+                state. Reads return 0 unless the selected instance is stopped following an EXPORT or
+                IMPORT command, see !!INT_STATE_CMD_STS. Since this field is 448 bits wide, it will
+                require 14 reads from this register to gather the entire field. Once 14 reads have
+                been done, the internal read/write pointer (selects 32 bits of the 448 bit field)
+                will reset to zero.
 
                 Writing this register is only meaningful while an IMPORT command is active for the
                 currently stopped and targeted instance (see !!INT_STATE_CMD). Writes overwrite the state
@@ -617,7 +622,11 @@
     },
     {
       name: "INT_STATE_CMD_GEN_VAL",
-      desc: "Internal state Generate-resume bookkeeping read/write access register",
+      desc: '''
+            Internal state Generate-resume bookkeeping read/write access register.
+            Reads return 0 unless the selected instance is stopped following an EXPORT or IMPORT
+            command, see !!INT_STATE_CMD_STS.
+            ''',
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -663,10 +672,12 @@
           name: "INT_STATE_CMD_ADATA_VAL",
           desc: '''
                 Reading this register will dump out the additional data supplied to the Generate
-                command that was paused mid-sequence for the selected instance. Since this field is
-                384 bits wide, it will require 12 reads from this register to gather the entire
-                field. Once 12 reads have been done, the internal read/write pointer (selects 32
-                bits of the 384 bit field) will reset to zero.
+                command that was paused mid-sequence for the selected instance. Reads return 0
+                unless the selected instance is stopped following an EXPORT or IMPORT command, see
+                !!INT_STATE_CMD_STS. Since this field is 384 bits wide, it will require 12 reads
+                from this register to gather the entire field. Once 12 reads have been done, the
+                internal read/write pointer (selects 32 bits of the 384 bit field) will reset to
+                zero.
 
                 Writing this register is only meaningful while an IMPORT command is active for the
                 currently stopped and targeted instance (see !!INT_STATE_CMD). Writes overwrite the

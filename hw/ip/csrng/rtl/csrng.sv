@@ -164,6 +164,10 @@ module csrng
     u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgAdataPtrAlertCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg.u_prim_count_int_state_adata_ptr,
+    alert_tx_o[1])
+
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(StateDbRegRdPtrAlertCheck_A,
     u_csrng_core.u_csrng_state_db.u_prim_count_reg_rd_ptr,
     alert_tx_o[1])

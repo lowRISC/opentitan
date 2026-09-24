@@ -42,6 +42,24 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   output logic               block_encrypt_rsp_rdy_o,
   input  logic  [BlkLen-1:0] block_encrypt_rsp_data_i,
 
+  // Context import/export interface.
+  input  logic [NumAppsLg-1:0]              int_state_inst_id_i,
+
+  // generate_adata_vld import/export interface.
+  input  logic [csrng_reg_pkg::NumApps-1:0] generate_adata_vld_wr_vld_i,
+  input  logic                              generate_adata_vld_wr_data_i,
+  output logic [csrng_reg_pkg::NumApps-1:0] generate_adata_vld_o,
+
+  // generate_adata clear signal.
+  input  logic [csrng_reg_pkg::NumApps-1:0] int_state_gen_val_reset_i,
+
+  // generate_adata_vld import/export interface.
+  input  logic                              int_state_adata_ptr_incr_i,
+  input  logic                              int_state_adata_ptr_clr_i,
+  input  logic                              int_state_adata_wr_vld_i,
+  input  logic [CmdBusWidth-1:0]            int_state_adata_wr_data_i,
+  output logic [CmdBusWidth-1:0]            int_state_adata_rd_data_o,
+
   // Error status outputs
   output logic               ctr_err_o,
   output logic               sm_err_o
@@ -197,12 +215,64 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   end
 
   //--------------------------------------------
+  // Internal-state Generate resume logic
+  //--------------------------------------------
+
+  // Determine the max value for the adata word pointer.
+  localparam bit [AdataNumWordsLg-1:0] AdataLastWord = AdataNumWordsLg'(AdataNumWords - 1);
+
+  // Adata word pointer signals.
+  logic [AdataNumWordsLg-1:0] int_state_adata_ptr_q;
+  logic                       int_state_adata_ptr_clr;
+  logic                       int_state_adata_ptr_incr_en;
+  logic                       int_state_adata_ptr_err;
+
+  assign int_state_adata_ptr_clr = int_state_adata_ptr_clr_i || !enable_i ||
+      (int_state_adata_ptr_incr_i && (int_state_adata_ptr_q == AdataLastWord));
+  assign int_state_adata_ptr_incr_en =
+      int_state_adata_ptr_incr_i && (int_state_adata_ptr_q != AdataLastWord);
+
+  logic int_state_adata_ptr_in_range;
+  assign int_state_adata_ptr_in_range = int_state_adata_ptr_q <= AdataLastWord;
+
+  // SEC_CM: ADATA_PTR.CTR.REDUN
+  prim_count #(
+    .Width(AdataNumWordsLg),
+    .PossibleActions(prim_count_pkg::Clr | prim_count_pkg::Incr)
+  ) u_prim_count_int_state_adata_ptr (
+    .clk_i,
+    .rst_ni,
+
+    .clr_i    (int_state_adata_ptr_clr),
+    .set_i    (1'b0),
+    .set_cnt_i('0),
+
+    .incr_en_i(int_state_adata_ptr_incr_en),
+    .decr_en_i(1'b0),
+    .step_i   (AdataNumWordsLg'(1)),
+    .commit_i (1'b1),
+
+    .cnt_o             (int_state_adata_ptr_q),
+    .cnt_after_commit_o(),
+    .err_o             (int_state_adata_ptr_err)
+  );
+
+  // Output '0 for out of bound pointers.
+  logic [SeedLen-1:0] int_state_adata_readout;
+  assign int_state_adata_readout =
+      (int_state_inst_id_i < NumApps) ? generate_adata_q[int_state_inst_id_i] : '0;
+
+  assign int_state_adata_rd_data_o = int_state_adata_ptr_in_range ?
+      int_state_adata_readout[int_state_adata_ptr_q * CmdBusWidth +: CmdBusWidth] : '0;
+
+  //--------------------------------------------
   // Handling of generate_adata(_vld)
   //--------------------------------------------
 
   for (genvar i = 0; i < NumApps; i++) begin : g_assign_gen_adata
     logic capt_adata;
     logic clear_adata_vld;
+    logic import_adata_word_inst;
     // 1) Write adata to local buffer upon a GENerate command and _vld not being set
     // 2) Clear _vld and zeroize the buffer when the last GENerate beat appears on the cmd_rsp
     //    port, or on any Uninstantiate
@@ -210,6 +280,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
                         !generate_adata_vld_q[i];
     assign clear_adata_vld = rsp_vld_o && (req_glast_i || (core_data.cmd == UNI)) &&
                              (core_data.inst_id == i);
+    assign import_adata_word_inst = int_state_adata_wr_vld_i && (int_state_inst_id_i == i);
 
     always_comb begin
       generate_adata_vld_d[i] = generate_adata_vld_q[i];
@@ -218,19 +289,42 @@ module csrng_ctr_drbg import csrng_pkg::*; (
       if (!enable_i) begin
         generate_adata_vld_d[i] = 1'b0;
         generate_adata_d[i]     = '0;
-      end else if (capt_adata) begin
-        generate_adata_vld_d[i] = 1'b1;
-        generate_adata_d[i]     = core_data.pdata;
-      end else if (clear_adata_vld) begin
-        generate_adata_vld_d[i] = 1'b0;
-        generate_adata_d[i]     = '0;
+      end else begin
+        if (generate_adata_vld_wr_vld_i[i]) begin
+          generate_adata_vld_d[i] = generate_adata_vld_wr_data_i;
+        end else if (capt_adata) begin
+          generate_adata_vld_d[i] = 1'b1;
+        end else if (clear_adata_vld) begin
+          generate_adata_vld_d[i] = 1'b0;
+        end
+
+        if (int_state_gen_val_reset_i[i]) begin
+          // Set adata to the default value at the start of a context import.
+          generate_adata_d[i] = '0;
+        end else if (import_adata_word_inst) begin
+          if (int_state_adata_ptr_in_range) begin
+            logic [SeedLen-1:0] adata_word;
+            adata_word = generate_adata_d[i];
+            adata_word[int_state_adata_ptr_q * CmdBusWidth +: CmdBusWidth] =
+                int_state_adata_wr_data_i;
+            generate_adata_d[i] = csrng_key_v_t'(adata_word);
+          end
+        end else if (capt_adata) begin
+          generate_adata_d[i] = core_data.pdata;
+        end else if (clear_adata_vld) begin
+          generate_adata_d[i] = '0;
+        end
       end
     end
   end
 
+  assign generate_adata_vld_o = generate_adata_vld_q;
+
   //--------------------------------------------
   // Counter logic for v
   //--------------------------------------------
+
+  logic v_ctr_err;
 
   // SEC_CM: CTR_DRBG.CTR.REDUN
   prim_count #(
@@ -253,8 +347,10 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
     .cnt_o             (v_ctr),
     .cnt_after_commit_o(),
-    .err_o             (ctr_err_o)
+    .err_o             (v_ctr_err)
   );
+
+  assign ctr_err_o = v_ctr_err || int_state_adata_ptr_err;
 
   // Combine the MSBs of the initial v from the state db with the current counter value as LSBs
   assign v_ctr_sized = {core_data.v[BlkLen-1:CtrLen], v_ctr};

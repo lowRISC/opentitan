@@ -136,6 +136,11 @@ package csrng_pkg;
   // above key/v/rs_ctr, which are the struct's least-significant, lowest-numbered-word fields.
   parameter int unsigned InstStateRegIdx = (RsCtrWidth + BlkLen + KeyLen) / CmdBusWidth;
 
+  // Number of 32b words the Generate-resume additional-data field (backing
+  // !!INT_STATE_CMD_ADATA_VAL) occupies: exact, since SeedLen is a multiple of CmdBusWidth.
+  parameter int unsigned AdataNumWords   = SeedLen / CmdBusWidth;
+  parameter int unsigned AdataNumWordsLg = $clog2(AdataNumWords);
+
   parameter int unsigned MainSmStateWidth = 6;
 
   // Encoding generated with:

@@ -35,6 +35,20 @@ static void spin_until_ready(const dif_csrng_t *csrng) {
   } while (!status.valid_data);
 }
 
+/**
+ * Returns an INT_STATE_CMD register value that issues the command selected by
+ * `field`.
+ */
+static uint32_t int_state_cmd_reg(bitfield_field32_t field) {
+  uint32_t reg = bitfield_field32_write(0, CSRNG_INT_STATE_CMD_EXPORT_REQ_FIELD,
+                                        kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, CSRNG_INT_STATE_CMD_IMPORT_REQ_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, CSRNG_INT_STATE_CMD_RESUME_FIELD,
+                               kMultiBitBool4False);
+  return bitfield_field32_write(reg, field, kMultiBitBool4True);
+}
+
 static dif_result_t check_locked(const dif_csrng_t *csrng) {
   if (mmio_region_read32(csrng->base_addr, CSRNG_REGWEN_REG_OFFSET) == 0) {
     return kDifLocked;
@@ -282,8 +296,7 @@ dif_result_t dif_csrng_get_internal_state(
     return kDifBadArg;
   }
 
-  // Select the instance id to read the internal state from, request a state
-  // machine halt, and wait for the internal registers to be ready to be read.
+  // Select the instance id to read the internal state from.
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
   mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
@@ -291,6 +304,22 @@ dif_result_t dif_csrng_get_internal_state(
       mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET);
   if (reg != actual_reg) {
     return kDifError;
+  }
+
+  // Confirm that CSRNG_INT_STATE_CMD is write enabled.
+  if (!mmio_region_read32(csrng->base_addr,
+                          CSRNG_INT_STATE_CMD_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Request that the instance stops, and wait for it to do so.
+  mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_CMD_REG_OFFSET,
+                      int_state_cmd_reg(CSRNG_INT_STATE_CMD_EXPORT_REQ_FIELD));
+  ptrdiff_t sts_reg_offset =
+      CSRNG_INT_STATE_CMD_STS_0_REG_OFFSET +
+      (ptrdiff_t)instance_id * (ptrdiff_t)sizeof(uint32_t);
+  while (!mmio_region_get_bit32(csrng->base_addr, sts_reg_offset,
+                                CSRNG_INT_STATE_CMD_STS_0_STOPPED_0_BIT)) {
   }
 
   // Read the internal state.
@@ -314,6 +343,10 @@ dif_result_t dif_csrng_get_internal_state(
   // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
+
+  // Resume normal command processing for this instance.
+  mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_CMD_REG_OFFSET,
+                      int_state_cmd_reg(CSRNG_INT_STATE_CMD_RESUME_FIELD));
 
   return kDifOk;
 }

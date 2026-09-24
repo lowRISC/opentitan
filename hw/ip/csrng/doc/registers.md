@@ -23,7 +23,7 @@
 | csrng.[`INT_STATE_CMD`](#int_state_cmd)                     | 0x3c     |        4 | Internal state EXPORT/IMPORT/RESUME command register                       |
 | csrng.[`INT_STATE_NUM`](#int_state_num)                     | 0x40     |        4 | Internal state number register                                             |
 | csrng.[`INT_STATE_VAL`](#int_state_val)                     | 0x44     |        4 | Internal state read/write access register                                  |
-| csrng.[`INT_STATE_CMD_GEN_VAL`](#int_state_cmd_gen_val)     | 0x48     |        4 | Internal state Generate-resume bookkeeping read/write access register      |
+| csrng.[`INT_STATE_CMD_GEN_VAL`](#int_state_cmd_gen_val)     | 0x48     |        4 | Internal state Generate-resume bookkeeping read/write access register.     |
 | csrng.[`INT_STATE_CMD_ADATA_VAL`](#int_state_cmd_adata_val) | 0x4c     |        4 | Internal state Generate-resume additional data read/write access register  |
 | csrng.[`INT_STATE_CMD_STS_0`](#int_state_cmd_sts)           | 0x50     |        4 | Internal state command status register                                     |
 | csrng.[`INT_STATE_CMD_STS_1`](#int_state_cmd_sts)           | 0x54     |        4 | Internal state command status register                                     |
@@ -446,9 +446,11 @@ Internal state read/write access register
 
 ### INT_STATE_VAL . INT_STATE_VAL
 Reading this register will dump out the contents of the selected instance's CTR_DRBG
-state. Since this field is 448 bits wide, it will require 14 reads from this register
-to gather the entire field. Once 14 reads have been done, the internal read/write
-pointer (selects 32 bits of the 448 bit field) will reset to zero.
+state. Reads return 0 unless the selected instance is stopped following an EXPORT or
+IMPORT command, see [`INT_STATE_CMD_STS.`](#int_state_cmd_sts) Since this field is 448 bits wide, it will
+require 14 reads from this register to gather the entire field. Once 14 reads have
+been done, the internal read/write pointer (selects 32 bits of the 448 bit field)
+will reset to zero.
 
 Writing this register is only meaningful while an IMPORT command is active for the
 currently stopped and targeted instance (see [`INT_STATE_CMD`](#int_state_cmd)). Writes overwrite the state
@@ -465,7 +467,9 @@ In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBoo
 Otherwise, the register reads as 0 and writes are dropped.
 
 ## INT_STATE_CMD_GEN_VAL
-Internal state Generate-resume bookkeeping read/write access register
+Internal state Generate-resume bookkeeping read/write access register.
+Reads return 0 unless the selected instance is stopped following an EXPORT or IMPORT
+command, see [`INT_STATE_CMD_STS.`](#int_state_cmd_sts)
 - Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
@@ -501,10 +505,12 @@ Internal state Generate-resume additional data read/write access register
 
 ### INT_STATE_CMD_ADATA_VAL . INT_STATE_CMD_ADATA_VAL
 Reading this register will dump out the additional data supplied to the Generate
-command that was paused mid-sequence for the selected instance. Since this field is
-384 bits wide, it will require 12 reads from this register to gather the entire
-field. Once 12 reads have been done, the internal read/write pointer (selects 32
-bits of the 384 bit field) will reset to zero.
+command that was paused mid-sequence for the selected instance. Reads return 0
+unless the selected instance is stopped following an EXPORT or IMPORT command, see
+[`INT_STATE_CMD_STS.`](#int_state_cmd_sts) Since this field is 384 bits wide, it will require 12 reads
+from this register to gather the entire field. Once 12 reads have been done, the
+internal read/write pointer (selects 32 bits of the 384 bit field) will reset to
+zero.
 
 Writing this register is only meaningful while an IMPORT command is active for the
 currently stopped and targeted instance (see [`INT_STATE_CMD`](#int_state_cmd)). Writes overwrite the
