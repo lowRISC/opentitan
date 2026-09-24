@@ -183,6 +183,9 @@
     { name: "CTR_DRBG.CTR.REDUN"
       desc: "The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }
+    { name: "STATE_DB.CTR.REDUN"
+      desc: "The !!INT_STATE_VAL word pointer uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
     }
