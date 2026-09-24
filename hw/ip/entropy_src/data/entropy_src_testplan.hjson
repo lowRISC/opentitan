@@ -63,7 +63,7 @@
     {
       name: health_checks
       desc: '''
-            Verify AdaptProp, RepCnt, RepCntSym, Bucket, Markov health check results
+            Verify RepCnt, RepCntSym, AdaptProp, AdaptPropSym, Bucket, Markov health check results
             match predicted.
             - Generate passing and failing raw entropy streams
             - Random window sizes
@@ -292,7 +292,7 @@
       name: win_ht_cg
       desc: '''
             Covers a range of window sizes for each windowed health test.  For each test we need:
-            - Test: ADAPTB, BUCKET, MARKOV.
+            - Test: ADAPTP, ADAPTPS, BUCKET, and MARKOV.
               No cross between tests. EXT HT, though windowed, is not used or covered at this time
             - window_size: {384, 512, 1024, 2048, 4096, plus other non-powers of two}
             - Result: HT Pass and Failure
@@ -307,7 +307,7 @@
       desc: '''
             Covers a range of thresholds values for a focused set of window sizes.  For each test we
             need:
-            - Test: ADAPTB, BUCKET, MARKOV, REPCNT, and REPTCNTS.
+            - Test: REPCNT, REPTCNTS, ADAPTP, ADAPTPS, BUCKET, and MARKOV.
               No cross between tests. EXT HT, though it is a windowed test, is not covered at this
               time.
             - Window Size: Covers only the most common window sizes of 384, 1024 and 2048

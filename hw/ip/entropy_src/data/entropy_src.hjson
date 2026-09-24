@@ -660,7 +660,7 @@
       ]
     },
     { name: "ADAPTP_HI_THRESHOLD",
-      desc: "Adaptive proportion test high threshold register",
+      desc: "Adaptive Proportion Test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -680,7 +680,7 @@
       ]
     },
     { name: "ADAPTP_LO_THRESHOLD",
-      desc: "Adaptive proportion test low threshold register",
+      desc: "Adaptive Proportion Test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -696,6 +696,26 @@
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
+        }
+      ]
+    },
+    { name: "ADAPTPS_THRESHOLD",
+      desc: "Adaptive Proportion Symbol Test threshold register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
+      regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrNonInitTests:CsrExclWrite"]
+      fields: [
+        { bits: "15:0",
+          desc: '''This is the threshold for the Adaptive Proportion Symbol Test.
+                   This register must be written before the module is enabled.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
+                '''
+          resval: "0xFFFF"
         }
       ]
     },
@@ -814,7 +834,7 @@
           resval: "0",
           desc: '''
                 The value of this field defines the health test for which the HT_WATERMARK register records the watermark.
-                Invalid input values, i.e., values greater than 8 are mapped to 0.
+                Invalid input values, i.e., values greater than 9 are mapped to 0.
 
                 This register must be written before the module is enabled.
                 '''
@@ -834,40 +854,46 @@
             { value: "2",
               name: "ADAPTP_HI",
               desc: '''
-                    Adaptive proportion test high watermark.
+                    Adaptive Proportion Test high watermark.
                     '''
             },
             { value: "3",
               name: "ADAPTP_LO",
               desc: '''
-                    Adaptive proportion test low watermark.
+                    Adaptive Proportion Test low watermark.
                     '''
             },
             { value: "4",
+              name: "ADAPTPS_HI",
+              desc: '''
+                    Adaptive Proportion Symbol Test watermark.
+                    '''
+            },
+            { value: "5",
               name: "BUCKET_HI",
               desc: '''
                     Bucket test high watermark.
                     '''
             },
-            { value: "5",
+            { value: "6",
               name: "MARKOV_HI",
               desc: '''
                     Markov test high watermark.
                     '''
             },
-            { value: "6",
+            { value: "7",
               name: "MARKOV_LO",
               desc: '''
                     Markov test low watermark.
               '''
             },
-            { value: "7",
+            { value: "8",
               name: "EXTHT_HI",
               desc: '''
                     External health test high watermark.
                     '''
             },
-            { value: "8",
+            { value: "9",
               name: "EXTHT_LO",
               desc: '''
                     External health test low watermark.
@@ -925,7 +951,7 @@
       ]
     },
     { name:     "ADAPTP_HI_TOTAL_FAILS",
-      desc:     "Adaptive proportion high test failure counter register",
+      desc:     "Adaptive Proportion high test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -939,7 +965,7 @@
       ]
     },
     { name:     "ADAPTP_LO_TOTAL_FAILS",
-      desc:     "Adaptive proportion low test failure counter register",
+      desc:     "Adaptive Proportion low test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -948,6 +974,20 @@
           name: "ADAPTP_LO_TOTAL_FAILS",
           desc: '''This register will hold a running count of test failures observed
                    during normal operation. It will persist until cleared.
+                '''
+        }
+      ]
+    },
+    { name:     "ADAPTPS_TOTAL_FAILS",
+      desc:     "Adaptive Proportion Symbol Test failure counter register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "ADAPTPS_TOTAL_FAILS",
+          desc: '''This register will hold a running count of test failures observed during normal operation.
+                   It will persist until cleared.
                 '''
         }
       ]
@@ -1099,8 +1139,14 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "7:4",
+        { bits: "3:0",
           name: "REPCNT_FAIL_COUNT",
+          desc: '''
+                The number of symbols during which this test failed since the last passing health test window.
+                '''
+        }
+        { bits: "7:4",
+          name: "REPCNTS_FAIL_COUNT",
           desc: '''
                 The number of symbols during which this test failed since the last passing health test window.
                 '''
@@ -1118,27 +1164,27 @@
                 '''
         }
         { bits: "19:16",
-          name: "BUCKET_FAIL_COUNT",
+          name: "ADAPTPS_FAIL_COUNT",
           desc: '''
                 The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "23:20",
-          name: "MARKOV_HI_FAIL_COUNT",
+          name: "BUCKET_FAIL_COUNT",
           desc: '''
                 The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "27:24",
-          name: "MARKOV_LO_FAIL_COUNT",
+          name: "MARKOV_HI_FAIL_COUNT",
           desc: '''
                 The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "31:28",
-          name: "REPCNTS_FAIL_COUNT",
+          name: "MARKOV_LO_FAIL_COUNT",
           desc: '''
-                The number of symbols during which this test failed since the last passing health test window.
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
       ]

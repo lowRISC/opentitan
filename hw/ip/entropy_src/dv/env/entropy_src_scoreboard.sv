@@ -365,6 +365,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endfunction
 
+  function int calc_adaptps_test(queue_of_rng_val_t window);
+    rng_val_t cur_symbol = window[0];
+    int result = 1;
+    for (int i = 1; i < window.size(); i++) begin
+      if (window[i] == cur_symbol) begin
+        result++;
+      end
+    end
+    // Saturation
+    if (result > {HALF_REG_WIDTH{1'b1}}) begin
+      result = {HALF_REG_WIDTH{1'b1}};
+    end
+    return result;
+  endfunction
+
   function bucket_test_result calc_bucket_test(queue_of_rng_val_t window);
     parameter int BucketHtDataWidth = entropy_src_pkg::bucket_ht_data_width(`RNG_BUS_WIDTH);
     parameter int NumBuckets = 2**BucketHtDataWidth;
@@ -454,6 +469,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit is_valid;
     is_valid = (name == "adaptp_hi") ||
                (name == "adaptp_lo") ||
+               (name == "adaptps"  ) ||
                (name == "bucket"   ) ||
                (name == "markov_hi") ||
                (name == "markov_lo") ||
@@ -483,15 +499,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Is the test continuous or windowed? For windowed tests, we may need to update the watermark
     // now. For continuous tests, this has already been done in case the ENTROPY_SRC is getting
     // disabled.
-    if (test inside {"adaptp_hi", "adaptp_lo", "bucket", "markov_hi", "markov_lo"}) begin
+    if (test inside {"adaptp_hi", "adaptp_lo", "adaptps", "bucket", "markov_hi", "markov_lo"}) begin
       windowed_test = 1;
     end else begin
       windowed_test = 0;
     end
-    // The watermark registers for repcnt, repcnts and bucket tests deviate from the
+    // The watermark registers for repcnt, repcnts, adaptps and bucket tests deviate from the
     // general convention of suppressing the "_hi" suffix for tests that do not have a low
     // threshold.
-    if (test inside {"repcnt", "repcnts", "bucket"}) begin
+    if (test inside {"repcnt", "repcnts", "adaptps", "bucket"}) begin
       test = {test, "_hi"};
     end
 
@@ -723,6 +739,40 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return (fail_hi || fail_lo);
   endfunction
 
+  function bit evaluate_adaptps_test(queue_of_rng_val_t window, bit fips_mode);
+    int value;
+    bit fail;
+    int window_size;
+    int threshold;
+    real sigma;
+
+    value = calc_adaptps_test(window);
+    update_watermark("adaptps", value);
+
+    fail = check_threshold("adaptps", value);
+    if (fail) predict_failure_logs("adaptps");
+
+    if (ht_is_active()) begin
+      // The ideal_threshold_to_sigma() function expects the health test window size in bits. The
+      // bypass window is specified in bits. In contrast, the FIPS window is specified in symbols
+      // and the `rng_bit_enable` setting effectively manipulates the symbol size.
+      window_size = fips_mode ?
+          `gmv(ral.health_test_windows.fips_window) *
+              (`gmv(ral.conf.rng_bit_enable) == MuBi4True ? 1 : `RNG_BUS_WIDTH) :
+          `gmv(ral.health_test_windows.bypass_window);
+
+      threshold = `gmv(ral.adaptps_threshold);
+
+      sigma = ideal_threshold_to_sigma(window_size, adaptps_ht, 0, 0, high_test, threshold);
+
+      cov_vif.cg_win_ht_sample(adaptps_ht, high_test, window_size, fail);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptps_ht, high_test, window_size,
+                                              1'b0, sigma, fail);
+    end
+
+    return fail;
+  endfunction
+
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
     bucket_test_result test_result;
     int test_result_max [$];
@@ -897,6 +947,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string        fmt;
 
     windowed_fail_count = evaluate_adaptp_test(window, fips_mode) +
+                          evaluate_adaptps_test(window, fips_mode) +
                           evaluate_bucket_test(window, fips_mode) +
                           evaluate_markov_test(window, fips_mode);
 
@@ -1136,9 +1187,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string stat_regs [] = '{
         "ht_watermark",
         "repcnt_total_fails", "repcnts_total_fails", "adaptp_hi_total_fails",
-        "adaptp_lo_total_fails", "bucket_total_fails", "markov_hi_total_fails",
-        "markov_lo_total_fails", "extht_hi_total_fails", "extht_lo_total_fails",
-        "alert_summary_fail_counts", "alert_fail_counts", "extht_fail_counts"
+        "adaptp_lo_total_fails", "adaptps_total_fails", "bucket_total_fails",
+        "markov_hi_total_fails", "markov_lo_total_fails", "extht_hi_total_fails",
+        "extht_lo_total_fails", "alert_summary_fail_counts", "alert_fail_counts",
+        "extht_fail_counts"
     };
     foreach (stat_regs[i]) begin
       uvm_reg csr = ral.get_reg_by_name(stat_regs[i]);
@@ -1197,8 +1249,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         begin
           // Clear watermark register to all-0 or all-1 depending on the config.
           ht_watermark_num_e ht_watermark_num = ht_watermark_num_e'(`gmv(ral.ht_watermark_num));
-          bit ht_watermark_high = (ht_watermark_num inside {REPCNT_HI, REPCNTS_HI, ADAPTP_HI,
-                                                            BUCKET_HI, MARKOV_HI, EXTHT_HI});
+          bit ht_watermark_high =
+              (ht_watermark_num inside {REPCNT_HI, REPCNTS_HI, ADAPTP_HI, ADAPTPS_HI,
+                                        BUCKET_HI, MARKOV_HI, EXTHT_HI});
           `DV_CHECK_FATAL(ral.ht_watermark.predict({16{~ht_watermark_high}}))
           repcnt_event_cnt = 16'd1;
           repcnts_event_cnt = 16'd1;
@@ -1535,6 +1588,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
       end
+      "adaptps_threshold": begin
+        locked_reg_access = dut_reg_locked;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
+        threshold_increases = 0;
+      end
       "bucket_threshold": begin
         locked_reg_access = dut_reg_locked;
         one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
@@ -1562,6 +1620,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "adaptp_hi_total_fails": begin
       end
       "adaptp_lo_total_fails": begin
+      end
+      "adaptps_total_fails": begin
       end
       "bucket_total_fails": begin
       end
@@ -1840,6 +1900,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 REPCNTS_HI,
                 ADAPTP_HI,
                 ADAPTP_LO,
+                ADAPTPS_HI,
                 BUCKET_HI,
                 MARKOV_HI,
                 MARKOV_LO,

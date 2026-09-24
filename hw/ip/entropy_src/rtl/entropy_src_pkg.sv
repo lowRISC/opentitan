@@ -70,11 +70,12 @@ package entropy_src_pkg;
     REPCNTS_HI = 1,
     ADAPTP_HI  = 2,
     ADAPTP_LO  = 3,
-    BUCKET_HI  = 4,
-    MARKOV_HI  = 5,
-    MARKOV_LO  = 6,
-    EXTHT_HI   = 7,
-    EXTHT_LO   = 8
+    ADAPTPS_HI = 4,
+    BUCKET_HI  = 5,
+    MARKOV_HI  = 6,
+    MARKOV_LO  = 7,
+    EXTHT_HI   = 8,
+    EXTHT_LO   = 9
   } ht_watermark_num_e;
 
 endpackage : entropy_src_pkg

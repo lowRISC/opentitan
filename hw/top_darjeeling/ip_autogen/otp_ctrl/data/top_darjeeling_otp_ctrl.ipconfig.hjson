@@ -413,7 +413,7 @@
               offset: 320
             }
             {
-              name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
+              name: CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -424,7 +424,7 @@
               offset: 324
             }
             {
-              name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
+              name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -435,7 +435,7 @@
               offset: 328
             }
             {
-              name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
+              name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -446,7 +446,7 @@
               offset: 332
             }
             {
-              name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
+              name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -457,7 +457,7 @@
               offset: 336
             }
             {
-              name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
+              name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -468,7 +468,7 @@
               offset: 340
             }
             {
-              name: CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD
+              name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
               size: 4
               isdigest: false
               iszer: false
@@ -479,7 +479,7 @@
               offset: 344
             }
             {
-              name: CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD
+              name: CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD
               size: 4
               isdigest: false
               iszer: false
@@ -490,7 +490,7 @@
               offset: 348
             }
             {
-              name: CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST
+              name: CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD
               size: 4
               isdigest: false
               iszer: false
@@ -501,7 +501,7 @@
               offset: 352
             }
             {
-              name: CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST
+              name: CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST
               size: 4
               isdigest: false
               iszer: false
@@ -512,7 +512,7 @@
               offset: 356
             }
             {
-              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
+              name: CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST
               size: 4
               isdigest: false
               iszer: false
@@ -521,6 +521,17 @@
               iskeymgr_owner: false
               inv_default: 0
               offset: 360
+            }
+            {
+              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 364
             }
             {
               name: CREATOR_SW_CFG_DIGEST

@@ -35,6 +35,7 @@ filesets:
       - rtl/entropy_src_repcnt_ht.sv
       - rtl/entropy_src_repcnts_ht.sv
       - rtl/entropy_src_adaptp_ht.sv
+      - rtl/entropy_src_adaptps_ht.sv
       - rtl/entropy_src_bucket_ht.sv
       - rtl/entropy_src_markov_ht.sv
       - rtl/entropy_src_enable_delay.sv
