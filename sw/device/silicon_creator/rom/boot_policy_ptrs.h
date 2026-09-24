@@ -25,7 +25,7 @@ static_assert((NVM_DATA_SIZE_BYTES % 2) == 0,
  * @return Pointer to the manifest of the ROM_EXT image in slot A.
  */
 OT_WARN_UNUSED_RESULT
-inline const manifest_t *boot_policy_manifest_a_get(void) {
+inline const manifest_t *boot_policy_manifest_a_load(void) {
   return (const manifest_t *)NVM_DATA_BASE_ADDR;
 }
 
@@ -36,16 +36,23 @@ inline const manifest_t *boot_policy_manifest_a_get(void) {
  * @return Pointer to the manifest of the ROM_EXT image in slot B.
  */
 OT_WARN_UNUSED_RESULT
-inline const manifest_t *boot_policy_manifest_b_get(void) {
+inline const manifest_t *boot_policy_manifest_b_load(void) {
   return (const manifest_t *)(NVM_DATA_BASE_ADDR + NVM_BYTES_PER_SLOT);
 }
+
+inline void boot_policy_manifest_a_unload(void) {}
+
+inline void boot_policy_manifest_b_unload(void) {}
+
 #else
 /**
  * Declarations for the functions above that should be defined in tests.
  */
-const manifest_t *boot_policy_manifest_a_get(void);
-const manifest_t *boot_policy_manifest_b_get(void);
-#endif
+const manifest_t *boot_policy_manifest_a_load(void);
+const manifest_t *boot_policy_manifest_b_load(void);
+void boot_policy_manifest_a_unload(void);
+void boot_policy_manifest_b_unload(void);
+#endif  // OT_PLATFORM_RV32
 
 #ifdef __cplusplus
 }  // extern "C"
