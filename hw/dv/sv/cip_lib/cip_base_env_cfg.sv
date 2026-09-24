@@ -200,7 +200,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     // initialization.
     bit create_jtag_riscv_map;
     void'($value$plusargs("create_jtag_riscv_map=%0b", create_jtag_riscv_map));
-    if (create_jtag_riscv_map) begin
+
+    // The +create_jtag_riscv_map flag tells the environment to take a clone of the uvm_reg_map for
+    // its default register model (which is visible as cfg.ral) and store it in the jtag_riscv_map
+    // class variable.
+    if (create_jtag_riscv_map && ral.get_name() == ral_type_name) begin
       jtag_riscv_map = clone_reg_map("jtag_riscv_map", ral.default_map);
       `uvm_info(`gfn, "Cloned default_map to jtag_riscv_map.", UVM_HIGH)
     end
