@@ -7,6 +7,7 @@ use clap::{Args, Subcommand};
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -23,6 +24,17 @@ use opentitanlib::crypto::sha256::Sha256Digest;
 /// the path to a private key, extracts the public key from the private
 /// key and returns the public key.
 fn load_pub_or_priv_key(path: &Path) -> Result<EcdsaPublicKey> {
+    if path.extension() == Some(OsStr::new("bin")) {
+        let mut f = File::open(path)?;
+        let k = EcdsaRawPublicKey::read(&mut f)?;
+        return Ok(EcdsaPublicKey::try_from(&k)?);
+    }
+    if path.extension() == Some(OsStr::new("hex")) {
+        let data = std::fs::read_to_string(path)?;
+        let mut data = std::io::Cursor::new(hex::decode(data.trim())?);
+        let k = EcdsaRawPublicKey::read(&mut data)?;
+        return Ok(EcdsaPublicKey::try_from(&k)?);
+    }
     if let Ok(key) = EcdsaPublicKey::load(path) {
         return Ok(key);
     }
@@ -33,7 +45,8 @@ fn load_pub_or_priv_key(path: &Path) -> Result<EcdsaPublicKey> {
 /// Show public information of a private or public ECDSA key
 #[derive(Debug, Args)]
 pub struct EcdsaKeyShowCommand {
-    /// ECDSA public or private key file in DER format.
+    /// ECDSA public key file in DER format or a raw little-endian key in binary (.bin)
+    /// or hexadecimal (.hex) form..
     der_file: PathBuf,
 }
 
@@ -112,7 +125,8 @@ impl CommandDispatch for EcdsaKeyGenerateCommand {
 /// to a C header that can be used in the ROM or ROM_EXT
 #[derive(Debug, Args)]
 pub struct EcdsaKeyExportCommand {
-    /// ECDSA public or private key file in DER format.
+    /// ECDSA public or private key file in DER format or a raw little-endian key in binary (.bin)
+    /// or hexadecimal (.hex) form..
     der_file: PathBuf,
     /// output header file to generate.
     output_file: Option<PathBuf>,
@@ -255,7 +269,8 @@ pub struct EcdsaVerifyCommand {
     /// Digest to be verified (binary file)
     #[arg(long, short, conflicts_with = "signature")]
     digest_file: Option<PathBuf>,
-    /// Key file in DER format.
+    /// ECDSA public key file in DER format or a raw little-endian key in binary (.bin)
+    /// or hexadecimal (.hex) form..
     #[arg(value_name = "KEY")]
     der_file: PathBuf,
     /// SHA256 digest of the message as a hex string.
