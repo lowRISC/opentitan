@@ -345,6 +345,8 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC);
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
@@ -443,6 +445,8 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_INIT);
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
+  OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
