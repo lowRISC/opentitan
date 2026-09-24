@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "opentitan_test")
+load("@bazel_skylib//lib:sets.bzl", "sets")
+load("//rules/opentitan:ci.bzl", "ci_orchestrator")
 
 def _fips_transition_impl(settings, attr):
     return {
@@ -62,12 +63,37 @@ fips_transition_test = rule(
 )
 
 # Generates a wrapper for an opentitan_test to run with the --config=crypto_fips_all flag
-def fips_wrap_opentitan_test(name, exec_env):
-    for env_label in exec_env.keys():
-        env_suffix = env_label.split(":")[-1]
+def fips_wrap_opentitan_test(name, exec_env, run_in_ci = None):
+    base_rules = {}
+    non_broken_exec_env = []
+    for env in exec_env.keys():
+        env_suffix = env.split(":")[-1]
+        actual_test_name = "{}_{}".format(name, env_suffix)
+        base_rule = native.existing_rule(actual_test_name)
+        if base_rule == None:
+            fail("Base test target :{} does not exist".format(actual_test_name))
+
+        # Inherit all tags from the base test except its CI skip decision,
+        # which must be re-evaluated for the FIPS exec_env subset.
+        tags = [t for t in base_rule["tags"] if t != "skip_in_ci"]
+        base_rules[env] = (env_suffix, actual_test_name, tags, base_rule["timeout"])
+        if "broken" not in tags:
+            non_broken_exec_env.append(env)
+
+    if run_in_ci == None:
+        skip_in_ci = sets.make(ci_orchestrator(name, non_broken_exec_env))
+        all_envs = sets.make(base_rules.keys())
+        run_in_ci = sets.difference(all_envs, skip_in_ci)
+    else:
+        run_in_ci = sets.make(run_in_ci)
+
+    for env, (env_suffix, actual_test_name, tags, timeout) in base_rules.items():
+        skip_tag = [] if sets.contains(run_in_ci, env) else ["skip_in_ci"]
 
         # The new name of the test is {name}_fips_{exec_env}
         fips_transition_test(
             name = "{}_fips_{}".format(name, env_suffix),
-            actual_test = ":{}_{}".format(name, env_suffix),
+            actual_test = ":" + actual_test_name,
+            tags = tags + skip_tag,
+            timeout = timeout,
         )
