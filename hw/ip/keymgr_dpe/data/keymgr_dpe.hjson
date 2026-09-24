@@ -83,6 +83,12 @@
       act:     "req",
       package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
+      type:    "req_rsp",
+      name:    "otbn_app",   // otbn_app_o (req), otbn_app_i (rsp)
+      act:     "req",
+      package: "kmac_pkg",  // Origin package (only needs for the requester)
+    },
     { struct:  "keymgr_dpe_creator_root_key",
       type:    "uni",
       name:    "creator_root_key",

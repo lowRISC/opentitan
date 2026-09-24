@@ -63,6 +63,8 @@ module tb;
     .kmac_key_o           (keymgr_dpe_if.kmac_key),
     .kmac_app_o           (kmac_req),
     .kmac_app_i           (kmac_rsp),
+    .otbn_app_o           (),
+    .otbn_app_i           (kmac_pkg::APP_RSP_DEFAULT),
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
