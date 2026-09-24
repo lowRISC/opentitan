@@ -23,6 +23,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Generate abort request signals.
   input logic                        gen_abort_req_i,
   output logic                       gen_abort_invalid_o,
+  // Safe-pause-point control.
+  input logic                        stop_i,
+  output logic                       stopped_o,
   // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
@@ -268,8 +271,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign gen_ongoing_d =
          (!cs_enable_i)   ? 1'b0 :
          (state_q == GenSOP && cmd_gen_abort_req) ? 1'b0 :
+         cmd_final_ack ? 1'b0 :
          (cmd_gen_1st_req && (acmd == GEN)) ? 1'b1 :
-         cmd_gen_cnt_last ? 1'b0 :
          gen_ongoing_q;
 
   // Latch an accepted GEN abort request until it is dispatched.
@@ -290,6 +293,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // An abort request is only meaningful while a GEN command is ongoing for this app,
   // otherwise trigger an alert.
   assign gen_abort_invalid_o = cs_enable_i && gen_abort_req_i && !gen_ongoing_d;
+
+  // The command stage doesn't issue any arbitration requests if stopped_o is high.
+  assign stopped_o = stop_i && (state_q == Idle);
 
   always_comb begin
     state_d = state_q;
@@ -329,7 +335,10 @@ module csrng_cmd_stage import csrng_pkg::*; (
       unique case (state_q)
         Idle: begin
           // Because of the if statement above we won't leave idle if enable is low.
-          if (!cmd_fifo_zero) begin
+          if (!stop_i && gen_ongoing_q) begin
+            // Resume a Generate command that was paused mid-sequence.
+            state_d = GenReq;
+          end else if (!stop_i && !cmd_fifo_zero) begin
             if (acmd == INS) begin
               if (!instantiated_q) begin
                 state_d = ArbGnt;
@@ -463,15 +472,21 @@ module csrng_cmd_stage import csrng_pkg::*; (
             if (gen_abort_pending_q) begin
               // GEN abort doesn't produce genbits so no need to wait for sfifo_genbits_wrdy.
               state_d = GenArbGnt;
-            end else if (sfifo_genbits_wrdy) begin
-              // Must stall if genbits fifo is not clear.
-              if (cmd_gen_cnt == '0) begin
+            end else if (cmd_gen_cnt == '0) begin
+              if (sfifo_genbits_wrdy) begin
+                // Final genbits block has been read out. Ack the completed command.
                 cmd_final_ack = 1'b1;
                 state_d = Idle;
-              end else begin
-                // Issue a subsequent gen request.
-                state_d = GenArbGnt;
+              end else if (stop_i) begin
+                // The final block is already sitting in sfifo_genbits. Leave without acking.
+                state_d = Idle;
               end
+            end else if (stop_i) begin
+              // More genbit blocks remain. This is a safe point to honor a stop request.
+              state_d = Idle;
+            end else if (sfifo_genbits_wrdy) begin
+              // Issue a subsequent gen request.
+              state_d = GenArbGnt;
             end
           end else begin
             // Ack for the non-gen request case.
@@ -603,5 +618,17 @@ module csrng_cmd_stage import csrng_pkg::*; (
   `ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
   // If in error state, the error output must be high.
   `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
+
+  //---------------------------------------------------------
+  // Safe-pause-point assertions.
+  //---------------------------------------------------------
+
+  // stopped_o only ever reflects the single safe-pause-point state.
+  `ASSERT(CsrngCmdStageStoppedState_A, stopped_o |-> state_q == Idle)
+  // Whenever stopped, there must be no outstanding request against the shared arbiter.
+  `ASSERT(CsrngCmdStageStoppedNoArbReq_A, stopped_o |-> !cmd_arb_req_o)
+  // gen_ongoing_q must always be consistent with the flag/count it is derived from.
+  `ASSERT(CsrngCmdStageGenOngoingConsistent_A,
+      stopped_o |-> (gen_ongoing_q == (cmd_gen_flag_q && (cmd_gen_cnt != '0))))
 
 endmodule
