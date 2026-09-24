@@ -126,6 +126,9 @@ struct ISSWrapper {
   // Set wfi_enabled bit in ISS model.
   void set_wfi_enabled(bool new_val);
 
+  // Set urnd_ctrl_enabled bit in ISS model.
+  void set_urnd_ctrl_enabled(bool new_val);
+
   // Resume a paused wfi instruction (host issued the RESUME command).
   void wfi_resume();
 

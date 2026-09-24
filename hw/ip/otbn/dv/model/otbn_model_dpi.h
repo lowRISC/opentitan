@@ -117,6 +117,11 @@ int otbn_model_set_software_errs_fatal(OtbnModel *model, unsigned char new_val);
 // failure.
 int otbn_model_set_wfi_enabled(OtbnModel *model, unsigned char new_val);
 
+// Tell the model to set the urnd_ctrl_enabled bit in the ctrl register. When
+// the bit is set, the URND control interface is active. Returns 0 on success
+// or -1 on failure.
+int otbn_model_set_urnd_ctrl_enabled(OtbnModel *model, unsigned char new_val);
+
 // Tell the trace checker to tolerate one mismatch between RTL and ISS trace
 // entries during the next num_checks checks. A value of 0 means indefinitely
 // many checks will tolerate a mismatch. In both cases the checker no longer

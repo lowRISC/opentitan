@@ -39,6 +39,10 @@ class StandaloneSim(OTBNSim):
         self.state.wfi_enabled = True
         self.state.wfi_auto_resume = True
 
+        # There is no host to enable the URND control interface in standalone
+        # mode, so enable it here so tests can exercise it.
+        self.state.urnd_ctrl_enabled = True
+
         while True:
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):
