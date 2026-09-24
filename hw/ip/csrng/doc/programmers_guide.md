@@ -65,7 +65,7 @@ Providing this sequence as additional data to CSRNG requires software to write t
   </tr>
 </table>
 
-When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command paused mid-sequence, and finally the status and Generate command state, in the following order:
+When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command halted mid-sequence, and finally the status and Generate command state, in the following order:
 <table>
 <caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
 <thead>
@@ -135,7 +135,7 @@ CSRNG supports pausing a single instance via [`INT_STATE_HALT`](registers.md#int
 1. Wait for the instance to quiesce, either by polling [`INT_STATE_STS`](registers.md#int_state_sts) or by waiting for the `cs_cmd_req_done` interrupt.
 1. Read all 26 words of the internal state through [`INT_STATE_VAL`](registers.md#int_state_val) to save it, or write all 26 words to restore it.
    Reserved bits are ignored on writes and read as 0.
-   The internal state includes the state of a Generate command paused mid-sequence, which continues once the instance is resumed.
+   The internal state includes the state of a Generate command halted mid-sequence, which continues once the instance is resumed.
    Every read and every write advances the word pointer.
    Switching from reads to writes, or from writes to reads, restarts the sequence at the first word.
    Writing [`INT_STATE_NUM`](registers.md#int_state_num) also resets the word pointer to the first word.
@@ -155,10 +155,10 @@ Otherwise, setting [`INT_STATE_HALT`](registers.md#int_state_halt) has no effect
 After reset, reading, writing and halting are enabled for all instances.
 Each of these settings can be locked via [`INT_STATE_READ_ENABLE_REGWEN`](registers.md#int_state_read_enable_regwen), [`INT_STATE_WRITE_ENABLE_REGWEN`](registers.md#int_state_write_enable_regwen) and [`INT_STATE_HALT_ENABLE_REGWEN`](registers.md#int_state_halt_enable_regwen), respectively.
 
-If [`INT_STATE_HALT`](registers.md#int_state_halt) is set while the instance is processing a Generate command, the instance halts as soon as the block currently being generated is complete, provided that further blocks of the command remain to be generated.
+If [`INT_STATE_HALT`](registers.md#int_state_halt) is set while the instance is processing a Generate command, the instance halts as soon as the block currently being generated is complete.
 The application does not need to read out the generated block first.
 The remaining blocks are generated after the instance is resumed.
-If the generation of the final block of the command has already started, the instance only halts after the application has read out the final block and the command has been acknowledged.
+If the final block of the command has already been generated, the internal state already reflects the completed Generate command, but the command is only acknowledged after the instance has been resumed and the application has read out the final block.
 Any other command in progress completes before the instance halts.
 Commands that have been received for the instance but not yet started are also processed before it halts.
 
