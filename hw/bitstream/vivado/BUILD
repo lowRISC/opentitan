@@ -23,8 +23,6 @@ _CW340_STUBROM = "//sw/device/lib/testing/stub_rom:stub_rom_fpga_cw340_scr_vmem"
 
 _CW340_STUBROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_STUBROM)
 
-_FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
-
 # CW340 bitstream
 fusesoc_hash_and_build(
     name = "fpga_cw340",
@@ -39,10 +37,9 @@ fusesoc_hash_and_build(
         "--BootRomInitFile=" + _CW340_STUBROM_PATH,
     ],
     output_groups = {
-        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
-        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
-        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
-        "files_to_hash": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "src/")],
+        "bitstream": ["lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
+        "mmi": ["memories.mmi"],
+        "logs": ["lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],
