@@ -396,6 +396,13 @@ rom_error_t dice_chain_attestation_owner_int(
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
 
+  // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with boot
+  // stage set to BootStageOwner (2).
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+      kKeymgrDPESealSlot, kScKeymgrDPEBootStageOwner));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+      kKeymgrDPEAttestSlot, kScKeymgrDPEBootStageOwner));
+
   // Generate an ECC P256 keypair
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
@@ -572,6 +579,13 @@ rom_error_t dice_chain_attestation_owner(
                                 kScKeymgrDPESecMmioSlotPolicy));
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_dpe_advance_owner(adv_sealing_data, adv_attestation_data));
+
+  // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with boot
+  // stage set to BootStageRuntime (3).
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+      kKeymgrDPESealSlot, kScKeymgrDPEBootStageRuntime));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+      kKeymgrDPEAttestSlot, kScKeymgrDPEBootStageRuntime));
 
   // Generate an ECC P256 keypair
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(

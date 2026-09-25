@@ -313,3 +313,28 @@ status_t keymgr_dpe_sideload_clear_kmac(void) {
 status_t keymgr_dpe_sideload_clear_otbn(void) {
   return keymgr_dpe_sideload_clear(KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_OTBN);
 }
+
+status_t keymgr_dpe_get_metadata(uint32_t slot,
+                                 keymgr_dpe_metadata_t *metadata) {
+  const uint32_t kBase = keymgr_dpe_base();
+  metadata->max_key_version = abs_mmio_read32(
+      kBase + KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + slot * sizeof(uint32_t));
+
+  uint32_t reg_high = abs_mmio_read32(
+      kBase + KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET + slot * sizeof(uint32_t));
+  metadata->valid =
+      bitfield_bit32_read(reg_high, KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT);
+  metadata->boot_stage = (keymgr_dpe_boot_stage_t)bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_FIELD);
+
+  uint32_t policy_bits = bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_POLICY_0_FIELD);
+  metadata->slot_policy.allow_child =
+      bitfield_bit32_read(policy_bits, KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT);
+  metadata->slot_policy.exportable =
+      bitfield_bit32_read(policy_bits, KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT);
+  metadata->slot_policy.retain_parent = bitfield_bit32_read(
+      policy_bits, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT);
+
+  return OTCRYPTO_OK;
+}

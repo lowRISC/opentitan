@@ -664,8 +664,10 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       HARDENED_RETURN_IF_ERROR(
           sc_keymgr_dpe_advance_initial(kKeymgrDPESealSlot));
 
-      // TODO(#30759): Verify the kKeymgrDPESealSlot hold the UDS with boot
-      // stage set to BootStageCreator (0). (Note: Current bootstage + 1)
+      // Verify the kKeymgrDPESealSlot holds the UDS with boot stage set to
+      // BootStageCreator (0).
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+          kKeymgrDPESealSlot, kScKeymgrDPEBootStageCreator));
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
       // TODO(#30830): Gracefully handle if secret2 is not locked. This option
@@ -733,9 +735,12 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
           adv_sealing_data, adv_attestation_data));
 
-      // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
-      // Current bootstage + 1)
+      // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with
+      // boot stage set to BootStageOwnerInt (1).
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+          kKeymgrDPESealSlot, kScKeymgrDPEBootStageOwnerInt));
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_boot_stage_check(
+          kKeymgrDPEAttestSlot, kScKeymgrDPEBootStageOwnerInt));
 
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);

@@ -110,10 +110,6 @@ static rom_error_t imm_section_start(void) {
       // inside the designated slots
       HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner_int(
           &boot_measurements.rom_ext, rom_ext));
-
-      // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwner (2). (Note: Current
-      // bootstage + 1)
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
       // TODO(#30830): Gracefully handle if secret2 is not locked. This option

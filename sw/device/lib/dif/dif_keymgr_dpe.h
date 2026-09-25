@@ -104,6 +104,31 @@ typedef struct dif_keymgr_dpe_advance_params {
 } dif_keymgr_dpe_advance_params_t;
 
 /**
+ * Output metadata from one HW slot
+ */
+typedef struct dif_keymgr_dpe_metadata {
+  /**
+   * Maximum allowed version for keys to be generated from this DPE context
+   */
+  uint32_t max_key_version;
+
+  /**
+   * The current boot_stage of this DPE context.
+   */
+  uint32_t boot_stage;
+
+  /**
+   * The current slot policy bits for this DPE context.
+   */
+  uint32_t slot_policy;
+
+  /**
+   * Validity of this DPE context.
+   */
+  uint32_t valid;
+} dif_keymgr_dpe_metadata_t;
+
+/**
  * Key destination of a versioned key generation operation.
  *
  * Regardless of whether the generated key is SW or sideload key, HW uses a
@@ -278,6 +303,19 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_dpe_erase_slot(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_erase_params_t *params);
+
+/**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ *
+ * @param keymgr_dpe A key manager handle.
+ * @param slot Index of the HW slot to read metadata from.
+ * @param[out] metadata Out-param for the slot's metadata.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_dpe_get_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
+                                         uint32_t slot,
+                                         dif_keymgr_dpe_metadata_t *metadata);
 
 /**
  * Disables key manager dpe.
