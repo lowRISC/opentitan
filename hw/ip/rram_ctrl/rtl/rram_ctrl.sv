@@ -66,7 +66,8 @@ module rram_ctrl
   output pwrmgr_pkg::pwr_nvm_t                    pwrmgr_o,
 
   // Interrupts
-  output logic intr_corr_err_o, // Correctable errors encountered
+  output logic intr_corr1_err_o, // Correctable single-bit error encountered
+  output logic intr_corr2_err_o, // Correctable double-bit error encountered
   output logic intr_wr_empty_o, // Write fifo is empty
   output logic intr_wr_lvl_o,   // Write FIFO drained to level
   output logic intr_rd_full_o,  // Read fifo is full
@@ -261,7 +262,8 @@ module rram_ctrl
   logic phy_relbl_err;
 
   // ECC error information
-  logic             phy_ecc_corr_err;
+  logic             phy_ecc_corr1_err;
+  logic             phy_ecc_corr2_err;
   logic [AddrW-1:0] phy_ecc_corr_addr;
   rram_part_e       phy_ecc_corr_part;
 
@@ -402,16 +404,25 @@ module rram_ctrl
   assign hw2reg.std_fault_status.ctrl_fifo_err.d    = 1'b1;
   assign hw2reg.std_fault_status.ctrl_fifo_err.de   = wr_fifo_err;
 
-  // Location of the last correctable error
+  // Location of the last correctable error, tracked separately for single- and double-bit errors
   // SEC_CM: MEM.INTEGRITY
-  assign hw2reg.corr_err_loc.addr.d = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
-  assign hw2reg.corr_err_loc.addr.de = phy_ecc_corr_err;
-  assign hw2reg.corr_err_loc.part.d  = logic'(phy_ecc_corr_part);
-  assign hw2reg.corr_err_loc.part.de = phy_ecc_corr_err;
-  // corr_err_cnt is saturating
-  assign hw2reg.corr_err_cnt.d       = &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
-                                                                reg2hw.corr_err_cnt.q + 1'b1;
-  assign hw2reg.corr_err_cnt.de = phy_ecc_corr_err;
+  assign hw2reg.corr1_err_loc.addr.d  = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
+  assign hw2reg.corr1_err_loc.addr.de = phy_ecc_corr1_err;
+  assign hw2reg.corr1_err_loc.part.d  = logic'(phy_ecc_corr_part);
+  assign hw2reg.corr1_err_loc.part.de = phy_ecc_corr1_err;
+  // corr1_err_cnt is saturating
+  assign hw2reg.corr1_err_cnt.d  = &reg2hw.corr1_err_cnt.q ? reg2hw.corr1_err_cnt.q :
+                                                              reg2hw.corr1_err_cnt.q + 1'b1;
+  assign hw2reg.corr1_err_cnt.de = phy_ecc_corr1_err;
+
+  assign hw2reg.corr2_err_loc.addr.d  = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
+  assign hw2reg.corr2_err_loc.addr.de = phy_ecc_corr2_err;
+  assign hw2reg.corr2_err_loc.part.d  = logic'(phy_ecc_corr_part);
+  assign hw2reg.corr2_err_loc.part.de = phy_ecc_corr2_err;
+  // corr2_err_cnt is saturating
+  assign hw2reg.corr2_err_cnt.d  = &reg2hw.corr2_err_cnt.q ? reg2hw.corr2_err_cnt.q :
+                                                              reg2hw.corr2_err_cnt.q + 1'b1;
+  assign hw2reg.corr2_err_cnt.de = phy_ecc_corr2_err;
 
   // Phy status
   assign hw2reg.phy_status.init_done.d  = phy_init_done;
@@ -1039,7 +1050,8 @@ module rram_ctrl
     .arb_err_o         (phy_arb_err),
     .fifo_err_o        (phy_fifo_err),
     .ecc_fatal_err_o   (phy_relbl_err),
-    .ecc_corr_err_o    (phy_ecc_corr_err),
+    .ecc_corr1_err_o   (phy_ecc_corr1_err),
+    .ecc_corr2_err_o   (phy_ecc_corr2_err),
     .ecc_corr_addr_o   (phy_ecc_corr_addr),
     .ecc_corr_part_o   (phy_ecc_corr_part),
     // RRAM macro interface
@@ -1187,8 +1199,9 @@ module rram_ctrl
   // Check whether this FIFO has been filled to a certain level.
   assign intr_event[RdLvl]   = reg2hw.fifo_lvl.rd.q <= MaxFifoWidth'(rd_fifo_depth);
   // Event types
-  assign intr_event[OpDone]  = sw_ctrl_done;
-  assign intr_event[CorrErr] = phy_ecc_corr_err;
+  assign intr_event[OpDone]   = sw_ctrl_done;
+  assign intr_event[Corr1Err] = phy_ecc_corr1_err;
+  assign intr_event[Corr2Err] = phy_ecc_corr2_err;
 
   prim_intr_hw #(
     .Width(1),
@@ -1273,17 +1286,33 @@ module rram_ctrl
   prim_intr_hw #(
     .Width(1),
     .IntrT ("Event")
-  ) u_intr_corr_err (
+  ) u_intr_corr1_err (
     .clk_i,
     .rst_ni,
-    .event_intr_i          (intr_event[CorrErr]),
-    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.corr_err.q),
-    .reg2hw_intr_test_q_i  (reg2hw.intr_test.corr_err.q),
-    .reg2hw_intr_test_qe_i (reg2hw.intr_test.corr_err.qe),
-    .reg2hw_intr_state_q_i (reg2hw.intr_state.corr_err.q),
-    .hw2reg_intr_state_de_o(hw2reg.intr_state.corr_err.de),
-    .hw2reg_intr_state_d_o (hw2reg.intr_state.corr_err.d),
-    .intr_o                (intr_corr_err_o)
+    .event_intr_i          (intr_event[Corr1Err]),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.corr1_err.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.corr1_err.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.corr1_err.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.corr1_err.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.corr1_err.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.corr1_err.d),
+    .intr_o                (intr_corr1_err_o)
+  );
+
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT ("Event")
+  ) u_intr_corr2_err (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i          (intr_event[Corr2Err]),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.corr2_err.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.corr2_err.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.corr2_err.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.corr2_err.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.corr2_err.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.corr2_err.d),
+    .intr_o                (intr_corr2_err_o)
   );
 
   ////////////////
@@ -1300,7 +1329,8 @@ module rram_ctrl
   `ASSERT_KNOWN(RmaAckOKnown_A, rma_ack_o)
   `ASSERT_KNOWN(KeymgrOKnown_A, keymgr_o)
   `ASSERT_KNOWN(PwrmgrOKnown_A, pwrmgr_o)
-  `ASSERT_KNOWN(IntrCorrErrOKnown_A, intr_corr_err_o)
+  `ASSERT_KNOWN(IntrCorr1ErrOKnown_A, intr_corr1_err_o)
+  `ASSERT_KNOWN(IntrCorr2ErrOKnown_A, intr_corr2_err_o)
   `ASSERT_KNOWN(IntrWrEmptyOKnown_A, intr_wr_empty_o)
   `ASSERT_KNOWN(IntrWrLvlOKnown_A, intr_wr_lvl_o)
   `ASSERT_KNOWN(IntrRdFullOKnown_A, intr_rd_full_o)

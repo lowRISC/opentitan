@@ -89,14 +89,15 @@ module tb;
     .pwrmgr_o(),
 
     // alerts and interrupts
-    .intr_wr_empty_o(interrupts[WrEmpty]),
-    .intr_wr_lvl_o  (interrupts[WrLvl]),
-    .intr_rd_full_o (interrupts[RdFull]),
-    .intr_rd_lvl_o  (interrupts[RdLvl]),
-    .intr_op_done_o (interrupts[OpDone]),
-    .intr_corr_err_o(interrupts[CorrErr]),
-    .alert_rx_i     (alert_rx),
-    .alert_tx_o     (alert_tx),
+    .intr_wr_empty_o (interrupts[WrEmpty]),
+    .intr_wr_lvl_o   (interrupts[WrLvl]),
+    .intr_rd_full_o  (interrupts[RdFull]),
+    .intr_rd_lvl_o   (interrupts[RdLvl]),
+    .intr_op_done_o  (interrupts[OpDone]),
+    .intr_corr1_err_o(interrupts[Corr1Err]),
+    .intr_corr2_err_o(interrupts[Corr2Err]),
+    .alert_rx_i      (alert_rx),
+    .alert_tx_o      (alert_tx),
 
     .rram_macro_o(rram_req),
     .rram_macro_i(rram_rsp)

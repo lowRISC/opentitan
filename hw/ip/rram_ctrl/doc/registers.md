@@ -6,147 +6,152 @@ It is implemented this way because the access window supports transaction back-p
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rram_ctrl/data/rram_ctrl.hjson -->
 ## Summary
 
-| Name                                                      | Offset   |   Length | Description                                                         |
-|:----------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------|
-| rram_ctrl.[`INTR_STATE`](#intr_state)                     | 0x0      |        4 | Interrupt State Register                                            |
-| rram_ctrl.[`INTR_ENABLE`](#intr_enable)                   | 0x4      |        4 | Interrupt Enable Register                                           |
-| rram_ctrl.[`INTR_TEST`](#intr_test)                       | 0x8      |        4 | Interrupt Test Register                                             |
-| rram_ctrl.[`ALERT_TEST`](#alert_test)                     | 0xc      |        4 | Alert Test Register                                                 |
-| rram_ctrl.[`DIS`](#dis)                                   | 0x10     |        4 | Disable RRAM functionality                                          |
-| rram_ctrl.[`EXEC`](#exec)                                 | 0x14     |        4 | Controls whether RRAM can be used for code execution fetches        |
-| rram_ctrl.[`INIT`](#init)                                 | 0x18     |        4 | Controller init register                                            |
-| rram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                   | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register. |
-| rram_ctrl.[`CONTROL`](#control)                           | 0x20     |        4 | Control register                                                    |
-| rram_ctrl.[`ADDR`](#addr)                                 | 0x24     |        4 | Address for RRAM operation                                          |
-| rram_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)     | 0x28     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)     | 0x2c     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)     | 0x30     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)     | 0x34     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)     | 0x38     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)     | 0x3c     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)     | 0x40     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)     | 0x44     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_8`](#region_cfg_regwen)     | 0x48     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_9`](#region_cfg_regwen)     | 0x4c     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)             | 0x50     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)             | 0x54     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)             | 0x58     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)             | 0x5c     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)             | 0x60     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)             | 0x64     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)             | 0x68     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)             | 0x6c     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_8`](#mp_region_cfg)             | 0x70     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_CFG_9`](#mp_region_cfg)             | 0x74     |        4 | Memory property configuration for data partition                    |
-| rram_ctrl.[`MP_REGION_0`](#mp_region)                     | 0x78     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_1`](#mp_region)                     | 0x7c     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_2`](#mp_region)                     | 0x80     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_3`](#mp_region)                     | 0x84     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_4`](#mp_region)                     | 0x88     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_5`](#mp_region)                     | 0x8c     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_6`](#mp_region)                     | 0x90     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_7`](#mp_region)                     | 0x94     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_8`](#mp_region)                     | 0x98     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`MP_REGION_9`](#mp_region)                     | 0x9c     |        4 | Memory base and size configuration for data partition               |
-| rram_ctrl.[`DEFAULT_REGION`](#default_region)             | 0xa0     |        4 | Default region properties                                           |
-| rram_ctrl.[`INFO_REGWEN_0`](#info_regwen)                 | 0xa4     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_1`](#info_regwen)                 | 0xa8     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_2`](#info_regwen)                 | 0xac     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_3`](#info_regwen)                 | 0xb0     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_4`](#info_regwen)                 | 0xb4     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_5`](#info_regwen)                 | 0xb8     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_6`](#info_regwen)                 | 0xbc     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_7`](#info_regwen)                 | 0xc0     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)             | 0xc4     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)             | 0xc8     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)             | 0xcc     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)             | 0xd0     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)             | 0xd4     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)             | 0xd8     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)             | 0xdc     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_7`](#info_page_cfg)             | 0xe0     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override) | 0xe4     |        4 | HW interface info configuration rule overrides                      |
-| rram_ctrl.[`OP_STATUS`](#op_status)                       | 0xe8     |        4 | RRAM Operation Status                                               |
-| rram_ctrl.[`STATUS`](#status)                             | 0xec     |        4 | RRAM Controller Status                                              |
-| rram_ctrl.[`ERR_CODE`](#err_code)                         | 0xf0     |        4 | RRAM error code register.                                           |
-| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)         | 0xf4     |        4 | This register tabulates standard fault status of the RRAM.          |
-| rram_ctrl.[`FAULT_STATUS`](#fault_status)                 | 0xf8     |        4 | This register tabulates customized fault status of the RRAM.        |
-| rram_ctrl.[`ERR_ADDR`](#err_addr)                         | 0xfc     |        4 | Synchronous error address                                           |
-| rram_ctrl.[`CORR_ERR_CNT`](#corr_err_cnt)                 | 0x100    |        4 | Count of correctable ECC errors                                     |
-| rram_ctrl.[`CORR_ERR_LOC`](#corr_err_loc)                 | 0x104    |        4 | Last address that was successfully corrected                        |
-| rram_ctrl.[`PHY_STATUS`](#phy_status)                     | 0x108    |        4 | RRAM Phy Status                                                     |
-| rram_ctrl.[`SCRATCH`](#scratch)                           | 0x10c    |        4 | RRAM Controller Scratch                                             |
-| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                         | 0x110    |        4 | Programmable depth where FIFOs should generate interrupts           |
-| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                         | 0x114    |        4 | Clears RRAM controller FIFOs                                        |
-| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)               | 0x118    |        4 | Current write and read fifo level                                   |
-| rram_ctrl.[`wr_fifo`](#wr_fifo)                           | 0x11c    |        4 | RRAM write FIFO.                                                    |
-| rram_ctrl.[`rd_fifo`](#rd_fifo)                           | 0x120    |        4 | RRAM read FIFO.                                                     |
+| Name                                                      | Offset   |   Length | Description                                                                |
+|:----------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
+| rram_ctrl.[`INTR_STATE`](#intr_state)                     | 0x0      |        4 | Interrupt State Register                                                   |
+| rram_ctrl.[`INTR_ENABLE`](#intr_enable)                   | 0x4      |        4 | Interrupt Enable Register                                                  |
+| rram_ctrl.[`INTR_TEST`](#intr_test)                       | 0x8      |        4 | Interrupt Test Register                                                    |
+| rram_ctrl.[`ALERT_TEST`](#alert_test)                     | 0xc      |        4 | Alert Test Register                                                        |
+| rram_ctrl.[`DIS`](#dis)                                   | 0x10     |        4 | Disable RRAM functionality                                                 |
+| rram_ctrl.[`EXEC`](#exec)                                 | 0x14     |        4 | Controls whether RRAM can be used for code execution fetches               |
+| rram_ctrl.[`INIT`](#init)                                 | 0x18     |        4 | Controller init register                                                   |
+| rram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                   | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register.        |
+| rram_ctrl.[`CONTROL`](#control)                           | 0x20     |        4 | Control register                                                           |
+| rram_ctrl.[`ADDR`](#addr)                                 | 0x24     |        4 | Address for RRAM operation                                                 |
+| rram_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)     | 0x28     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)     | 0x2c     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)     | 0x30     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)     | 0x34     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)     | 0x38     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)     | 0x3c     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)     | 0x40     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)     | 0x44     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_8`](#region_cfg_regwen)     | 0x48     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`REGION_CFG_REGWEN_9`](#region_cfg_regwen)     | 0x4c     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)             | 0x50     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)             | 0x54     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)             | 0x58     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)             | 0x5c     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)             | 0x60     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)             | 0x64     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)             | 0x68     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)             | 0x6c     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_8`](#mp_region_cfg)             | 0x70     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_CFG_9`](#mp_region_cfg)             | 0x74     |        4 | Memory property configuration for data partition                           |
+| rram_ctrl.[`MP_REGION_0`](#mp_region)                     | 0x78     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_1`](#mp_region)                     | 0x7c     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_2`](#mp_region)                     | 0x80     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_3`](#mp_region)                     | 0x84     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_4`](#mp_region)                     | 0x88     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_5`](#mp_region)                     | 0x8c     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_6`](#mp_region)                     | 0x90     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_7`](#mp_region)                     | 0x94     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_8`](#mp_region)                     | 0x98     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`MP_REGION_9`](#mp_region)                     | 0x9c     |        4 | Memory base and size configuration for data partition                      |
+| rram_ctrl.[`DEFAULT_REGION`](#default_region)             | 0xa0     |        4 | Default region properties                                                  |
+| rram_ctrl.[`INFO_REGWEN_0`](#info_regwen)                 | 0xa4     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_1`](#info_regwen)                 | 0xa8     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_2`](#info_regwen)                 | 0xac     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_3`](#info_regwen)                 | 0xb0     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_4`](#info_regwen)                 | 0xb4     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_5`](#info_regwen)                 | 0xb8     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_6`](#info_regwen)                 | 0xbc     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_REGWEN_7`](#info_regwen)                 | 0xc0     |        4 | Memory region registers configuration enable.                              |
+| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)             | 0xc4     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)             | 0xc8     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)             | 0xcc     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)             | 0xd0     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)             | 0xd4     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)             | 0xd8     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)             | 0xdc     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`INFO_PAGE_CFG_7`](#info_page_cfg)             | 0xe0     |        4 | Memory property configuration for info partition.                          |
+| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override) | 0xe4     |        4 | HW interface info configuration rule overrides                             |
+| rram_ctrl.[`OP_STATUS`](#op_status)                       | 0xe8     |        4 | RRAM Operation Status                                                      |
+| rram_ctrl.[`STATUS`](#status)                             | 0xec     |        4 | RRAM Controller Status                                                     |
+| rram_ctrl.[`ERR_CODE`](#err_code)                         | 0xf0     |        4 | RRAM error code register.                                                  |
+| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)         | 0xf4     |        4 | This register tabulates standard fault status of the RRAM.                 |
+| rram_ctrl.[`FAULT_STATUS`](#fault_status)                 | 0xf8     |        4 | This register tabulates customized fault status of the RRAM.               |
+| rram_ctrl.[`ERR_ADDR`](#err_addr)                         | 0xfc     |        4 | Synchronous error address                                                  |
+| rram_ctrl.[`CORR1_ERR_CNT`](#corr1_err_cnt)               | 0x100    |        4 | Count of correctable single-bit ECC errors                                 |
+| rram_ctrl.[`CORR2_ERR_CNT`](#corr2_err_cnt)               | 0x104    |        4 | Count of correctable double-bit ECC errors                                 |
+| rram_ctrl.[`CORR1_ERR_LOC`](#corr1_err_loc)               | 0x108    |        4 | Last address that was corrected by the ECC decoder with a single-bit error |
+| rram_ctrl.[`CORR2_ERR_LOC`](#corr2_err_loc)               | 0x10c    |        4 | Last address that was corrected by the ECC decoder with a double-bit error |
+| rram_ctrl.[`PHY_STATUS`](#phy_status)                     | 0x110    |        4 | RRAM Phy Status                                                            |
+| rram_ctrl.[`SCRATCH`](#scratch)                           | 0x114    |        4 | RRAM Controller Scratch                                                    |
+| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                         | 0x118    |        4 | Programmable depth where FIFOs should generate interrupts                  |
+| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                         | 0x11c    |        4 | Clears RRAM controller FIFOs                                               |
+| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)               | 0x120    |        4 | Current write and read fifo level                                          |
+| rram_ctrl.[`wr_fifo`](#wr_fifo)                           | 0x124    |        4 | RRAM write FIFO.                                                           |
+| rram_ctrl.[`rd_fifo`](#rd_fifo)                           | 0x128    |        4 | RRAM read FIFO.                                                            |
 
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x3`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr1_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr2_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                   |
-|:------:|:------:|:-------:|:---------|:------------------------------|
-|  31:6  |        |         |          | Reserved                      |
-|   5    |  rw1c  |   0x0   | corr_err | Correctable error encountered |
-|   4    |  rw1c  |   0x0   | op_done  | Operation complete            |
-|   3    |   ro   |   0x0   | rd_lvl   | Read FIFO filled to level     |
-|   2    |   ro   |   0x0   | rd_full  | Read FIFO full                |
-|   1    |   ro   |   0x1   | wr_lvl   | Write FIFO drained to level   |
-|   0    |   ro   |   0x1   | wr_empty | Write FIFO empty              |
+|  Bits  |  Type  |  Reset  | Name      | Description                              |
+|:------:|:------:|:-------:|:----------|:-----------------------------------------|
+|  31:7  |        |         |           | Reserved                                 |
+|   6    |  rw1c  |   0x0   | corr2_err | Correctable double-bit error encountered |
+|   5    |  rw1c  |   0x0   | corr1_err | Correctable single-bit error encountered |
+|   4    |  rw1c  |   0x0   | op_done   | Operation complete                       |
+|   3    |   ro   |   0x0   | rd_lvl    | Read FIFO filled to level                |
+|   2    |   ro   |   0x0   | rd_full   | Read FIFO full                           |
+|   1    |   ro   |   0x1   | wr_lvl    | Write FIFO drained to level              |
+|   0    |   ro   |   0x1   | wr_empty  | Write FIFO empty                         |
 
 ## INTR_ENABLE
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "corr1_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "corr2_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                        |
-|:------:|:------:|:-------:|:---------|:-------------------------------------------------------------------|
-|  31:6  |        |         |          | Reserved                                                           |
-|   5    |   rw   |   0x0   | corr_err | Enable interrupt when [`INTR_STATE.corr_err`](#intr_state) is set. |
-|   4    |   rw   |   0x0   | op_done  | Enable interrupt when [`INTR_STATE.op_done`](#intr_state) is set.  |
-|   3    |   rw   |   0x0   | rd_lvl   | Enable interrupt when [`INTR_STATE.rd_lvl`](#intr_state) is set.   |
-|   2    |   rw   |   0x0   | rd_full  | Enable interrupt when [`INTR_STATE.rd_full`](#intr_state) is set.  |
-|   1    |   rw   |   0x0   | wr_lvl   | Enable interrupt when [`INTR_STATE.wr_lvl`](#intr_state) is set.   |
-|   0    |   rw   |   0x0   | wr_empty | Enable interrupt when [`INTR_STATE.wr_empty`](#intr_state) is set. |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                         |
+|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------|
+|  31:7  |        |         |           | Reserved                                                            |
+|   6    |   rw   |   0x0   | corr2_err | Enable interrupt when [`INTR_STATE.corr2_err`](#intr_state) is set. |
+|   5    |   rw   |   0x0   | corr1_err | Enable interrupt when [`INTR_STATE.corr1_err`](#intr_state) is set. |
+|   4    |   rw   |   0x0   | op_done   | Enable interrupt when [`INTR_STATE.op_done`](#intr_state) is set.   |
+|   3    |   rw   |   0x0   | rd_lvl    | Enable interrupt when [`INTR_STATE.rd_lvl`](#intr_state) is set.    |
+|   2    |   rw   |   0x0   | rd_full   | Enable interrupt when [`INTR_STATE.rd_full`](#intr_state) is set.   |
+|   1    |   rw   |   0x0   | wr_lvl    | Enable interrupt when [`INTR_STATE.wr_lvl`](#intr_state) is set.    |
+|   0    |   rw   |   0x0   | wr_empty  | Enable interrupt when [`INTR_STATE.wr_empty`](#intr_state) is set.  |
 
 ## INTR_TEST
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "wr_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "wr_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "corr1_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "corr2_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                 |
-|:------:|:------:|:-------:|:---------|:------------------------------------------------------------|
-|  31:6  |        |         |          | Reserved                                                    |
-|   5    |   wo   |   0x0   | corr_err | Write 1 to force [`INTR_STATE.corr_err`](#intr_state) to 1. |
-|   4    |   wo   |   0x0   | op_done  | Write 1 to force [`INTR_STATE.op_done`](#intr_state) to 1.  |
-|   3    |   wo   |   0x0   | rd_lvl   | Write 1 to force [`INTR_STATE.rd_lvl`](#intr_state) to 1.   |
-|   2    |   wo   |   0x0   | rd_full  | Write 1 to force [`INTR_STATE.rd_full`](#intr_state) to 1.  |
-|   1    |   wo   |   0x0   | wr_lvl   | Write 1 to force [`INTR_STATE.wr_lvl`](#intr_state) to 1.   |
-|   0    |   wo   |   0x0   | wr_empty | Write 1 to force [`INTR_STATE.wr_empty`](#intr_state) to 1. |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                  |
+|:------:|:------:|:-------:|:----------|:-------------------------------------------------------------|
+|  31:7  |        |         |           | Reserved                                                     |
+|   6    |   wo   |   0x0   | corr2_err | Write 1 to force [`INTR_STATE.corr2_err`](#intr_state) to 1. |
+|   5    |   wo   |   0x0   | corr1_err | Write 1 to force [`INTR_STATE.corr1_err`](#intr_state) to 1. |
+|   4    |   wo   |   0x0   | op_done   | Write 1 to force [`INTR_STATE.op_done`](#intr_state) to 1.   |
+|   3    |   wo   |   0x0   | rd_lvl    | Write 1 to force [`INTR_STATE.rd_lvl`](#intr_state) to 1.    |
+|   2    |   wo   |   0x0   | rd_full   | Write 1 to force [`INTR_STATE.rd_full`](#intr_state) to 1.   |
+|   1    |   wo   |   0x0   | wr_lvl    | Write 1 to force [`INTR_STATE.wr_lvl`](#intr_state) to 1.    |
+|   0    |   wo   |   0x0   | wr_empty  | Write 1 to force [`INTR_STATE.wr_empty`](#intr_state) to 1.  |
 
 ## ALERT_TEST
 Alert Test Register
@@ -758,8 +763,8 @@ Synchronous error address
 | 31:21  |        |         |          | Reserved      |
 |  20:0  |   ro   |   0x0   | ERR_ADDR |               |
 
-## CORR_ERR_CNT
-Count of correctable ECC errors
+## CORR1_ERR_CNT
+Count of correctable single-bit ECC errors
 - Offset: `0x100`
 - Reset default: `0x0`
 - Reset mask: `0xff`
@@ -775,9 +780,26 @@ Count of correctable ECC errors
 |  31:8  |        |         |        | Reserved                                |
 |  7:0   |   rw   |   0x0   | val    | This count will not wrap when saturated |
 
-## CORR_ERR_LOC
-Last address that was successfully corrected
+## CORR2_ERR_CNT
+Count of correctable double-bit ECC errors
 - Offset: `0x104`
+- Reset default: `0x0`
+- Reset mask: `0xff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "val", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                             |
+|:------:|:------:|:-------:|:-------|:----------------------------------------|
+|  31:8  |        |         |        | Reserved                                |
+|  7:0   |   rw   |   0x0   | val    | This count will not wrap when saturated |
+
+## CORR1_ERR_LOC
+Last address that was corrected by the ECC decoder with a single-bit error
+- Offset: `0x108`
 - Reset default: `0x0`
 - Reset mask: `0x11fffff`
 
@@ -787,16 +809,35 @@ Last address that was successfully corrected
 {"reg": [{"name": "addr", "bits": 21, "attr": ["ro"], "rotate": 0}, {"bits": 3}, {"name": "part", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                           |
-|:------:|:------:|:-------:|:-------|:--------------------------------------|
-| 31:25  |        |         |        | Reserved                              |
-|   24   |   ro   |   0x0   | part   | Last successfully corrected partition |
-| 23:21  |        |         |        | Reserved                              |
-|  20:0  |   ro   |   0x0   | addr   | Last successfully corrected address   |
+|  Bits  |  Type  |  Reset  | Name   | Description              |
+|:------:|:------:|:-------:|:-------|:-------------------------|
+| 31:25  |        |         |        | Reserved                 |
+|   24   |   ro   |   0x0   | part   | Last corrected partition |
+| 23:21  |        |         |        | Reserved                 |
+|  20:0  |   ro   |   0x0   | addr   | Last corrected address   |
+
+## CORR2_ERR_LOC
+Last address that was corrected by the ECC decoder with a double-bit error
+- Offset: `0x10c`
+- Reset default: `0x0`
+- Reset mask: `0x11fffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "addr", "bits": 21, "attr": ["ro"], "rotate": 0}, {"bits": 3}, {"name": "part", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description              |
+|:------:|:------:|:-------:|:-------|:-------------------------|
+| 31:25  |        |         |        | Reserved                 |
+|   24   |   ro   |   0x0   | part   | Last corrected partition |
+| 23:21  |        |         |        | Reserved                 |
+|  20:0  |   ro   |   0x0   | addr   | Last corrected address   |
 
 ## PHY_STATUS
 RRAM Phy Status
-- Offset: `0x108`
+- Offset: `0x110`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -814,7 +855,7 @@ RRAM Phy Status
 
 ## SCRATCH
 RRAM Controller Scratch
-- Offset: `0x10c`
+- Offset: `0x114`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -830,7 +871,7 @@ RRAM Controller Scratch
 
 ## FIFO_LVL
 Programmable depth where FIFOs should generate interrupts
-- Offset: `0x110`
+- Offset: `0x118`
 - Reset default: `0xf0f`
 - Reset mask: `0x1f1f`
 
@@ -849,7 +890,7 @@ Programmable depth where FIFOs should generate interrupts
 
 ## FIFO_CLR
 Clears RRAM controller FIFOs
-- Offset: `0x114`
+- Offset: `0x11c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -867,7 +908,7 @@ Clears RRAM controller FIFOs
 
 ## CURR_FIFO_LVL
 Current write and read fifo level
-- Offset: `0x118`
+- Offset: `0x120`
 - Reset default: `0x0`
 - Reset mask: `0x1f1f`
 
@@ -890,7 +931,7 @@ RRAM write FIFO.
 The FIFO is 4 entries of 4B words. This FIFO can only be programmed by software after a write operation has been initiated via the [`CONTROL`](#control) register.
 This ensures accidental programming of the write FIFO cannot lock up the system.
 
-- Word Aligned Offset Range: `0x11c`to`0x11c`
+- Word Aligned Offset Range: `0x124`to`0x124`
 - Size (words): `1`
 - Access: `wo`
 - Byte writes are *not* supported.
@@ -900,7 +941,7 @@ RRAM read FIFO.
 
 The FIFO is 16 entries of 4B words.
 
-- Word Aligned Offset Range: `0x120`to`0x120`
+- Word Aligned Offset Range: `0x128`to`0x128`
 - Size (words): `1`
 - Access: `ro`
 - Byte writes are *not* supported.

@@ -378,15 +378,18 @@ def scramble_rram(ctx, **kwargs):
 
 def rram_otp_image(ctx, exec_env, otp_attr):
     """Reformats an exec_env's `otp` attribute into the RRAM-native layout that backdoor-loading
-    OTP into the RRAM data array expects (OTP lives in the tail pages of the RRAM data array now,
-    see rram_ctrl_pkg.sv - there's no standalone OTP array to backdoor-load into any more).
+    OTP into the RRAM data array expects.
+    OTP lives in the tail pages of the RRAM data array now, see rram_ctrl_pkg.sv.
+    There is no standalone OTP array to backdoor-load into any more.
 
     If `otp_attr` is an otp_image() target, it already carries this reformatted output in its
-    `rram_otp` output group (see rules/otp.bzl) - reuse that instead of reformatting again, so
-    this is a single gen-rram-img.py invocation per otp_image() target rather than one per
-    consumer, and backdoor loading uses the exact same OTP content the rest of this exec_env is
-    configured for (e.g. for scrambling-key derivation). Falls back to reformatting `otp_attr`
-    itself only if it isn't an otp_image() output (e.g. some other override).
+    `rram_otp` output group (see rules/otp.bzl).
+    Reuse that instead of reformatting again.
+    This keeps it to a single gen-rram-img.py invocation per otp_image() target rather than one
+    per consumer, and backdoor loading uses the exact same OTP content the rest of this exec_env
+    is configured for (e.g. for scrambling-key derivation).
+    Falls back to reformatting `otp_attr` itself only if it isn't an otp_image() output (e.g. some
+    other override).
 
     Args:
       ctx: The rule context.

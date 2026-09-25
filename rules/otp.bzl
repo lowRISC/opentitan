@@ -223,6 +223,31 @@ otp_alert_digest = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
+def _gen_rram_otp_vmem(ctx, otp_output):
+    """Reformats an otp_image()'s native-format output into the RRAM-native layout, via
+    gen-rram-img.py.
+
+    Args:
+      ctx: The rule context.
+      otp_output: The otp_image()'s own native-format output file.
+    Returns:
+      File: the reformatted output.
+    """
+    rram_output = ctx.actions.declare_file(ctx.attr.name + ".128.vmem")
+    rram_args = ctx.actions.args()
+    rram_args.add("--in-otp-vmem", otp_output)
+    rram_args.add("--out-otp-vmem", rram_output)
+    rram_args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
+    if ctx.attr.data_perm:
+        rram_args.add("--otp-data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
+    ctx.actions.run(
+        outputs = [rram_output],
+        inputs = [otp_output, ctx.file.top_secret_cfg],
+        arguments = [rram_args],
+        executable = ctx.executable._rram_tool,
+    )
+    return rram_output
+
 def _otp_image(ctx):
     output = ctx.actions.declare_file(ctx.attr.name + ".24.vmem")
     args = ctx.actions.args()
@@ -250,29 +275,20 @@ def _otp_image(ctx):
         executable = ctx.executable._tool,
     )
 
-    # Also emit this image reformatted into the RRAM-native layout (128b data rows plus the
-    # Hamming(72,64) integrity page): backdoor-loading OTP into a top that stores it inside the
-    # RRAM data array (see rram_ctrl_pkg.sv) - DV's OtpTypeCustom sw_images mechanism (see
-    # build_sw_collateral_for_sim.py), FPGA, Verilator - needs that layout instead of this
-    # rule's native output above; other consumers (e.g. an exec_env's `otp` attr, used for
-    # firmware scrambling-key derivation) keep using the single native-format DefaultInfo file
-    # untouched. Kept out of DefaultInfo and in this output group instead so this action only
-    # runs for the specific images something actually requests it for (e.g. via
-    # rram_otp_image() in transform.bzl) - tops that don't use RRAM for OTP (e.g. darjeeling)
-    # never trigger it.
-    rram_output = ctx.actions.declare_file(ctx.attr.name + ".128.vmem")
-    rram_args = ctx.actions.args()
-    rram_args.add("--in-otp-vmem", output)
-    rram_args.add("--out-otp-vmem", rram_output)
-    rram_args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
-    if ctx.attr.data_perm:
-        rram_args.add("--otp-data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
-    ctx.actions.run(
-        outputs = [rram_output],
-        inputs = [output, ctx.file.top_secret_cfg],
-        arguments = [rram_args],
-        executable = ctx.executable._rram_tool,
-    )
+    # Also emit this image reformatted into the RRAM-native layout: 128b data rows plus the
+    # Hamming(72,64) integrity page, each carrying the open-source rram_macro's own physical
+    # ECC (see gen-rram-img.py's _rram_ecc()), for a full 144-bit physical codeword per row.
+    # Backdoor-loading OTP into a top that stores it inside the RRAM data array needs that
+    # layout instead of this rule's native output above (see rram_ctrl_pkg.sv).
+    # DV's OtpTypeCustom sw_images mechanism (see build_sw_collateral_for_sim.py), FPGA, and
+    # Verilator are the consumers.
+    # Other consumers (e.g. an exec_env's `otp` attr, used for firmware scrambling-key
+    # derivation) keep using the single native-format DefaultInfo file untouched.
+    # Kept out of DefaultInfo and in this output group instead, so this action only runs for
+    # the specific images something actually requests it for (e.g. via rram_otp_image() in
+    # transform.bzl).
+    # Tops that don't use RRAM for OTP (e.g. darjeeling) never trigger it.
+    rram_output = _gen_rram_otp_vmem(ctx, output)
 
     return [
         DefaultInfo(files = depset([output]), runfiles = ctx.runfiles(files = [output])),

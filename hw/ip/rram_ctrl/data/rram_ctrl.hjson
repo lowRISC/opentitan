@@ -44,7 +44,8 @@
     { name: "rd_full",    type: "status", desc: "Read FIFO full",                            },
     { name: "rd_lvl",     type: "status", desc: "Read FIFO filled to level",                 },
     { name: "op_done",    type: "event",  desc: "Operation complete",                        },
-    { name: "corr_err",   type: "event",  desc: "Correctable error encountered",             },
+    { name: "corr1_err",  type: "event",  desc: "Correctable single-bit error encountered",  },
+    { name: "corr2_err",  type: "event",  desc: "Correctable double-bit error encountered",  },
   ],
 
   alert_list: [
@@ -318,7 +319,7 @@
     { name: "MEM.INTEGRITY",
       desc: '''
             The RRAM macro computes ECC for every stored word.
-            rram_ctrl controls whether ECC is enabled per region or info page (ecc_en), and captures the location and count of correctable errors in CORR_ERR_LOC/CORR_ERR_CNT.
+            rram_ctrl controls whether ECC is enabled per region or info page (ecc_en), and captures the location and count of correctable errors in [`CORR1_ERR_LOC`](registers.md#corr1_err_loc)/[`CORR1_ERR_CNT`](registers.md#corr1_err_cnt) (single-bit) and [`CORR2_ERR_LOC`](registers.md#corr2_err_loc)/[`CORR2_ERR_CNT`](registers.md#corr2_err_cnt) (double-bit).
             '''
     }
     { name: "OTP.MEM.INTEGRITY",
@@ -1292,8 +1293,8 @@
         ]
       },
 
-      { name: "CORR_ERR_CNT",
-        desc: "Count of correctable ECC errors",
+      { name: "CORR1_ERR_CNT",
+        desc: "Count of correctable single-bit ECC errors",
         swaccess: "rw",
         hwaccess: "hrw",
         fields: [
@@ -1305,19 +1306,50 @@
         ]
       },
 
-      { name: "CORR_ERR_LOC",
-        desc: "Last address that was successfully corrected",
+      { name: "CORR2_ERR_CNT",
+        desc: "Count of correctable double-bit ECC errors",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "7:0",
+            name: "val",
+            desc: "This count will not wrap when saturated",
+            resval: 0,
+          },
+        ]
+      },
+
+      { name: "CORR1_ERR_LOC",
+        desc: "Last address that was corrected by the ECC decoder with a single-bit error",
         swaccess: "ro",
         hwaccess: "hwo",
         fields: [
           { bits: "20:0",
             name: "addr",
-            desc: "Last successfully corrected address",
+            desc: "Last corrected address",
             resval: 0,
           },
           { bits: "24",
             name: "part"
-            desc: "Last successfully corrected partition",
+            desc: "Last corrected partition",
+            resval: 0,
+          },
+        ]
+      }
+
+      { name: "CORR2_ERR_LOC",
+        desc: "Last address that was corrected by the ECC decoder with a double-bit error",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "20:0",
+            name: "addr",
+            desc: "Last corrected address",
+            resval: 0,
+          },
+          { bits: "24",
+            name: "part"
+            desc: "Last corrected partition",
             resval: 0,
           },
         ]
