@@ -233,6 +233,26 @@
         12: secAddMod
     31-6: Reserved. Any write is ignored. Always reads as 0.
 
+- name: keymgr_ctrl
+  address: 0x7e2
+  doc: |
+    The keymgr interface control register.
+    Always reads as 0.
+  bits:
+    0: |
+      SEND: Writing 1 to this bit starts sending a response on the interface.
+      The response contains the current message in the message WSRs.
+      This command is ignored if KEYMGR_STATUS.MSG_COMPLETE is not 1.
+    1: |
+      Reserved for future use (SEND_LAST).
+      Any write is ignored.
+    2: |
+      SEND_ERROR: Writing 1 to this bit starts sending an error response on the interface.
+      The response contains the current message in the message WSRs and has the error flag set.
+      This command is ignored if KEYMGR_STATUS.MSG_COMPLETE is not 1.
+      This command has priority over the SEND command in case both commands are at the same time.
+    31-3: Reserved. Any write is ignored.
+
 - name: rnd
   address: 0xfc0
   read-only: true
@@ -303,3 +323,25 @@
     1: |
       INPUT_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
     31-2: Reserved. Always reads as 0.
+
+- name: keymgr_status
+  address: 0xfcc
+  read-only: true
+  doc: |
+    The keymgr interface status register.
+  bits:
+    0: |
+      RECEIVING is 1 once a message beat has been received until a request with `req_last` set to 1 is received.
+    1: |
+      SENDING is 1 once a send command has been issued until the response is accepted.
+    2: |
+      MSG_VALID is 1 when KEYMGR_MSG_S0_L and STRB contain a valid message beat.
+    3: |
+      MSG_COMPLETE goes to 1 once any received message beat has the `req_last` flag set to 1.
+      It stays 1 until a response is sent back.
+      As long as it is 1, the interface does not accept any message beats.
+    15-4: Reserved. Always reads as 0.
+    23-16: |
+      STRB indicates which bytes of KEYMGR_MSG_S0_L are valid if it carries valid data.
+      Each bit corresponds to one byte in KEYMGR_MSG_S0_L, with bit 0 corresponding to the least significant byte.
+    31-24: Reserved. Always reads as 0.

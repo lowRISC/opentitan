@@ -1077,6 +1077,72 @@ Letting the MAI end the execution is fine because the highest execution latency 
 The secure wipe however only clears the WSRs and CSRs after at least 32 cycles (after URND reseeding and clearing GPRs / WDRs).
 Therefore it is ensured that any ongoing execution has a constant configuration and input data.
 
+### Keymgr interface
+The keymgr can use OTBN for HKDFs (HMAC based key derivation function) as an alternative to the KMAC based KDF running on the KMAC HWIP.
+For this OTBN exposes an app interface which is identical to a [static app interface](../../kmac/doc/theory_of_operation.md#application-interfaces) of KMAC HWIP.
+Once OTBN is loaded and started with a HKDF application, the keymgr can send the binding values over this interface.
+OTBN SW then accepts the data, computes the hash and sends it back to the keymgr.
+See the app interface documentation about for more details about the protocol.
+
+The secret key required by the HKDF is not part of this interface.
+It must be provided through OTBN's existing key sideload mechanism.
+Note that HKDFs for advancing the keymgr state involve sensitive keys.
+Thus, the sideloading interface imposes special secure wipe behaviour if a sensitive key is provided.
+See [XXXXXXXXXXXXXXXXXXXXX](../README.md#key-sideloading) for more details about this.
+> TODO: Document this behaviour, probably with a new section in this document instead of in the README.
+
+On the OTBN SW side, this interface is controlled via the following CSRs / WSRs, see also [here](../README.md#Control-and-Status-Registers-(CSRs)).
+- `KEYMGR_STATUS`
+- `KEYMGR_CTRL`
+- The message WSRs `KEYMGR_MSG_S0_L` / `KEYMGR_MSG_S0_H` and `KEYMGR_MSG_S1_L` / `KEYMGR_MSG_S1_H`.
+
+#### Receiving a message
+
+An OTBN SW can receive the HKDF message by:
+- Checking once at the start that any previous session is terminated properly by checking that `KEYMGR_STATUS.RECEIVING` and `KEYMGR_STATUS.SENDING` are 0.
+- Poll until `KEYMGR_STATUS.MSG_VALID = 1`.
+- Check if `KEYMGR_STATUS.MSG_COMPLETE` is 1. If so:
+  - The message is completely received and no more requests are expected.
+  - Read `KEYMGR_STATUS.STRB` to determine which bytes of the last beat are valid.
+  - The protocol defines that all message beats must carry a full message except the last one.
+    The last one can be partial where `STRB` is contiguous and LSB-aligned.
+  - A strobe of zero on the last word represents an empty message.
+    TODO: check if a static interface is allowed to send this at all.
+  - SW can now compute the response.
+- Read the current message beat from `KEYMGR_MSG_S0_L`.
+  - This clears `KEYMGR_STATUS.MSG_VALID` and the interface will accept the next beat if message isn't completely received yet.
+  - This must come after checking `KEYMGR_STATUS.MSG_COMPLETE` as it also invalidates `KEYMGR_STATUS.STRB`.
+- Repeat these steps until `KEYMGR_STATUS.MSG_COMPLETE` is 1.
+
+#### Sending a response
+
+A response can be sent once `KEYMGR_STATUS.MSG_COMPLETE = 1`.
+For this, OTBN SW should:
+- Write the response into `KEYMGR_MSG_S0_L` / `KEYMGR_MSG_S0_H` and `KEYMGR_MSG_S1_L` / `KEYMGR_MSG_S1_H`.
+- Issue either `KEYMGR_CTRL.SEND` or `KEYMGR_CTRL.SEND_ERROR`.
+- Wait until `KEYMGR_STATUS.SENDING = 0`.
+
+#### Handling errors and secure wipe behaviour
+
+In case an error occurs during the processing or receiving of the message, it is important that OTBN still terminates the session gracefully.
+This means the full must be received and an error response must be sent back.
+
+If an error happens which does not crash SW, SW must therefore:
+- If `KEYMGR_STATUS.RECEIVING = 1`, fully receive the message by continuously reading `KEYMGR_STATUS.MSG_VALID` until `KEYMGR_STATUS.MSG_COMPLETE = 1`.
+- If / once `KEYMGR_STATUS.MSG_COMPLETE = 1`, send an error response back by issuing `KEYMGR_CTRL.SEND_ERROR`.
+- Wait until `KEYMGR_STATUS.SENDING = 0`
+
+In case OTBN crashes, a secure wipe will initiate the same process.
+The message WSRs are overwritten with randomness twice like any other WSR.
+Due to this, a wipe that coincides with a pending response can change the response data while its `valid` is asserted.
+This would violate the valid locked-in principle.
+However, this is a rare corner case and is deliberately accepted because in this case the response is anyway discarded.
+
+Terminating the session requires the keymgr to accept the response.
+Thus this termination process could take arbitrarily long and a secure wipe can therefore finish before the session is terminated.
+It would then be possible for system SW to start another OTBN program before the session has been terminated.
+Therefore, any OTBN program must check that no session is ongoing before using the interface.
+
 ## References
 
 <a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: <a href="https://arxiv.org/abs/0803.1217">https://arxiv.org/abs/0803.1217</a>
