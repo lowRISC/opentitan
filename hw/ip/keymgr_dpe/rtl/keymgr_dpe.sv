@@ -209,10 +209,6 @@ module keymgr_dpe
     .intg_err_o             (regfile_intg_err)
   );
 
-  // TODO: read unassigned register to avoid linter error
-  logic unused_register;
-  assign unused_register = (^reg2hw.kdf_engine_shadowed.q);
-
   /////////////////////////////////////
   //  Synchronize lc_ctrl control inputs
   //  Data inputs are not synchronized and assumed quasi-static
@@ -326,7 +322,10 @@ module keymgr_dpe
   logic sideload_fsm_err;
   logic sideload_sel_err;
   logic key_version_vld;
+  logic kdf_engine_mubi_err;
 
+  // Verify mubi signal is correctly encoded
+  assign kdf_engine_mubi_err = mubi4_test_invalid(mubi4_t'(reg2hw.kdf_engine_shadowed.q));
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
@@ -387,6 +386,7 @@ module keymgr_dpe
     .reseed_cnt_err_i(reseed_cnt_err),
     .sideload_sel_err_i(sideload_sel_err),
     .sideload_fsm_err_i(sideload_fsm_err),
+    .kdf_engine_mubi_err_i(kdf_engine_mubi_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_reseed_done_i(reseed_done),
