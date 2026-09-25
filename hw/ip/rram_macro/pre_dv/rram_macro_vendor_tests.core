@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:dv:rram_macro_vendor_tests:0.1
+description: "No-op run_vendor_tests() for the open-source rram_macro pre_dv testbench"
+virtual:
+  - lowrisc:virtual_dv:rram_macro_vendor_tests
+
+filesets:
+  files_dv:
+    files:
+      - rram_macro_vendor_tests.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+mapping:
+  "lowrisc:virtual_dv:rram_macro_vendor_tests": "lowrisc:dv:rram_macro_vendor_tests"
+
+targets:
+  default:
+    filesets:
+      - files_dv

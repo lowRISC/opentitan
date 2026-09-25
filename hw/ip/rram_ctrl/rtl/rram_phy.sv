@@ -52,7 +52,8 @@ module rram_phy
   // Status signals
   output logic                    phy_wr_busy_o,
   output logic                    phy_init_done_o,
-  output logic                    ecc_corr_err_o, // correctable, connected to an interrupt
+  output logic                    ecc_corr1_err_o, // correctable single-bit, connected to an intr
+  output logic                    ecc_corr2_err_o, // correctable double-bit, connected to an intr
   output logic [AddrW-1:0]        ecc_corr_addr_o, // address of the last ECC error
   output rram_part_e              ecc_corr_part_o, // partition of the last ECC error
   // Error signals
@@ -303,13 +304,13 @@ module rram_phy
     // Error Signals
     .intg_err_o     (rd_intg_err_o),
     .ctrl_err_o     (rd_ctrl_err_o),
+    .ecc_corr1_err_o(ecc_corr1_err_o),
+    .ecc_corr2_err_o(ecc_corr2_err_o),
+    .ecc_corr_addr_o(ecc_corr_addr_o),
+    .ecc_corr_part_o(ecc_corr_part_o),
     .ecc_fatal_err_o(ecc_fatal_err_o),
     .fifo_err_o     (rd_fifo_err)
   );
-
-  assign ecc_corr_err_o  = 1'b0;
-  assign ecc_corr_addr_o = '0;
-  assign ecc_corr_part_o = RramPartData;
 
   assign ctrl_rd_done_o = ctrl_rd_rsp & data_valid;
   assign ctrl_rd_data_o = ctrl_rd_rsp ? rd_data : '0;

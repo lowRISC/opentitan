@@ -57,9 +57,9 @@ module rram_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [70:0] reg_we_check;
+  logic [72:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(71)
+    .OneHotWidth(73)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -130,8 +130,8 @@ module rram_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[284:287]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[288:291]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[292:295]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[296:299]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -180,8 +180,10 @@ module rram_ctrl_core_reg_top (
   logic intr_state_rd_lvl_qs;
   logic intr_state_op_done_qs;
   logic intr_state_op_done_wd;
-  logic intr_state_corr_err_qs;
-  logic intr_state_corr_err_wd;
+  logic intr_state_corr1_err_qs;
+  logic intr_state_corr1_err_wd;
+  logic intr_state_corr2_err_qs;
+  logic intr_state_corr2_err_wd;
   logic intr_enable_we;
   logic intr_enable_wr_empty_qs;
   logic intr_enable_wr_empty_wd;
@@ -193,15 +195,18 @@ module rram_ctrl_core_reg_top (
   logic intr_enable_rd_lvl_wd;
   logic intr_enable_op_done_qs;
   logic intr_enable_op_done_wd;
-  logic intr_enable_corr_err_qs;
-  logic intr_enable_corr_err_wd;
+  logic intr_enable_corr1_err_qs;
+  logic intr_enable_corr1_err_wd;
+  logic intr_enable_corr2_err_qs;
+  logic intr_enable_corr2_err_wd;
   logic intr_test_we;
   logic intr_test_wr_empty_wd;
   logic intr_test_wr_lvl_wd;
   logic intr_test_rd_full_wd;
   logic intr_test_rd_lvl_wd;
   logic intr_test_op_done_wd;
-  logic intr_test_corr_err_wd;
+  logic intr_test_corr1_err_wd;
+  logic intr_test_corr2_err_wd;
   logic alert_test_we;
   logic alert_test_recov_err_wd;
   logic alert_test_fatal_std_err_wd;
@@ -599,11 +604,16 @@ module rram_ctrl_core_reg_top (
   logic fault_status_spurious_done_qs;
   logic fault_status_host_gnt_err_qs;
   logic [20:0] err_addr_qs;
-  logic corr_err_cnt_we;
-  logic [7:0] corr_err_cnt_qs;
-  logic [7:0] corr_err_cnt_wd;
-  logic [20:0] corr_err_loc_addr_qs;
-  logic corr_err_loc_part_qs;
+  logic corr1_err_cnt_we;
+  logic [7:0] corr1_err_cnt_qs;
+  logic [7:0] corr1_err_cnt_wd;
+  logic corr2_err_cnt_we;
+  logic [7:0] corr2_err_cnt_qs;
+  logic [7:0] corr2_err_cnt_wd;
+  logic [20:0] corr1_err_loc_addr_qs;
+  logic corr1_err_loc_part_qs;
+  logic [20:0] corr2_err_loc_addr_qs;
+  logic corr2_err_loc_part_qs;
   logic phy_status_wr_busy_qs;
   logic phy_status_init_done_qs;
   logic scratch_we;
@@ -758,31 +768,58 @@ module rram_ctrl_core_reg_top (
     .qs     (intr_state_op_done_qs)
   );
 
-  //   F[corr_err]: 5:5
+  //   F[corr1_err]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_intr_state_corr_err (
+  ) u_intr_state_corr1_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_corr_err_wd),
+    .wd     (intr_state_corr1_err_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.corr_err.de),
-    .d      (hw2reg.intr_state.corr_err.d),
+    .de     (hw2reg.intr_state.corr1_err.de),
+    .d      (hw2reg.intr_state.corr1_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.corr_err.q),
+    .q      (reg2hw.intr_state.corr1_err.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_corr_err_qs)
+    .qs     (intr_state_corr1_err_qs)
+  );
+
+  //   F[corr2_err]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state_corr2_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_corr2_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.corr2_err.de),
+    .d      (hw2reg.intr_state.corr2_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.corr2_err.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_corr2_err_qs)
   );
 
 
@@ -922,19 +959,19 @@ module rram_ctrl_core_reg_top (
     .qs     (intr_enable_op_done_qs)
   );
 
-  //   F[corr_err]: 5:5
+  //   F[corr1_err]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_intr_enable_corr_err (
+  ) u_intr_enable_corr1_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_corr_err_wd),
+    .wd     (intr_enable_corr1_err_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -942,17 +979,44 @@ module rram_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.corr_err.q),
+    .q      (reg2hw.intr_enable.corr1_err.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_corr_err_qs)
+    .qs     (intr_enable_corr1_err_qs)
+  );
+
+  //   F[corr2_err]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_corr2_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_corr2_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.corr2_err.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_corr2_err_qs)
   );
 
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [5:0] intr_test_flds_we;
+  logic [6:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[wr_empty]: 0:0
   prim_subreg_ext #(
@@ -1034,21 +1098,37 @@ module rram_ctrl_core_reg_top (
   );
   assign reg2hw.intr_test.op_done.qe = intr_test_qe;
 
-  //   F[corr_err]: 5:5
+  //   F[corr1_err]: 5:5
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_corr_err (
+  ) u_intr_test_corr1_err (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_corr_err_wd),
+    .wd     (intr_test_corr1_err_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[5]),
-    .q      (reg2hw.intr_test.corr_err.q),
+    .q      (reg2hw.intr_test.corr1_err.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.corr_err.qe = intr_test_qe;
+  assign reg2hw.intr_test.corr1_err.qe = intr_test_qe;
+
+  //   F[corr2_err]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_corr2_err (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_corr2_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[6]),
+    .q      (reg2hw.intr_test.corr2_err.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.corr2_err.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -6325,42 +6405,70 @@ module rram_ctrl_core_reg_top (
   );
 
 
-  // R[corr_err_cnt]: V(False)
+  // R[corr1_err_cnt]: V(False)
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_corr_err_cnt (
+  ) u_corr1_err_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (corr_err_cnt_we),
-    .wd     (corr_err_cnt_wd),
+    .we     (corr1_err_cnt_we),
+    .wd     (corr1_err_cnt_wd),
 
     // from internal hardware
-    .de     (hw2reg.corr_err_cnt.de),
-    .d      (hw2reg.corr_err_cnt.d),
+    .de     (hw2reg.corr1_err_cnt.de),
+    .d      (hw2reg.corr1_err_cnt.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.corr_err_cnt.q),
+    .q      (reg2hw.corr1_err_cnt.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (corr_err_cnt_qs)
+    .qs     (corr1_err_cnt_qs)
   );
 
 
-  // R[corr_err_loc]: V(False)
+  // R[corr2_err_cnt]: V(False)
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_corr2_err_cnt (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (corr2_err_cnt_we),
+    .wd     (corr2_err_cnt_wd),
+
+    // from internal hardware
+    .de     (hw2reg.corr2_err_cnt.de),
+    .d      (hw2reg.corr2_err_cnt.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.corr2_err_cnt.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (corr2_err_cnt_qs)
+  );
+
+
+  // R[corr1_err_loc]: V(False)
   //   F[addr]: 20:0
   prim_subreg #(
     .DW      (21),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (21'h0),
     .Mubi    (1'b0)
-  ) u_corr_err_loc_addr (
+  ) u_corr1_err_loc_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -6369,8 +6477,8 @@ module rram_ctrl_core_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.corr_err_loc.addr.de),
-    .d      (hw2reg.corr_err_loc.addr.d),
+    .de     (hw2reg.corr1_err_loc.addr.de),
+    .d      (hw2reg.corr1_err_loc.addr.d),
 
     // to internal hardware
     .qe     (),
@@ -6378,7 +6486,7 @@ module rram_ctrl_core_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (corr_err_loc_addr_qs)
+    .qs     (corr1_err_loc_addr_qs)
   );
 
   //   F[part]: 24:24
@@ -6387,7 +6495,7 @@ module rram_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_corr_err_loc_part (
+  ) u_corr1_err_loc_part (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -6396,8 +6504,8 @@ module rram_ctrl_core_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.corr_err_loc.part.de),
-    .d      (hw2reg.corr_err_loc.part.d),
+    .de     (hw2reg.corr1_err_loc.part.de),
+    .d      (hw2reg.corr1_err_loc.part.d),
 
     // to internal hardware
     .qe     (),
@@ -6405,7 +6513,63 @@ module rram_ctrl_core_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (corr_err_loc_part_qs)
+    .qs     (corr1_err_loc_part_qs)
+  );
+
+
+  // R[corr2_err_loc]: V(False)
+  //   F[addr]: 20:0
+  prim_subreg #(
+    .DW      (21),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (21'h0),
+    .Mubi    (1'b0)
+  ) u_corr2_err_loc_addr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.corr2_err_loc.addr.de),
+    .d      (hw2reg.corr2_err_loc.addr.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (corr2_err_loc_addr_qs)
+  );
+
+  //   F[part]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_corr2_err_loc_part (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.corr2_err_loc.part.de),
+    .d      (hw2reg.corr2_err_loc.part.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (corr2_err_loc_part_qs)
   );
 
 
@@ -6619,7 +6783,7 @@ module rram_ctrl_core_reg_top (
 
 
 
-  logic [70:0] addr_hit;
+  logic [72:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
@@ -6685,13 +6849,15 @@ module rram_ctrl_core_reg_top (
     addr_hit[61] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
     addr_hit[62] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
     addr_hit[63] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[64] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
-    addr_hit[65] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
-    addr_hit[66] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[67] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
-    addr_hit[68] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[69] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
-    addr_hit[70] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[64] = (reg_addr == RRAM_CTRL_CORR1_ERR_CNT_OFFSET);
+    addr_hit[65] = (reg_addr == RRAM_CTRL_CORR2_ERR_CNT_OFFSET);
+    addr_hit[66] = (reg_addr == RRAM_CTRL_CORR1_ERR_LOC_OFFSET);
+    addr_hit[67] = (reg_addr == RRAM_CTRL_CORR2_ERR_LOC_OFFSET);
+    addr_hit[68] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[69] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
+    addr_hit[70] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[71] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
+    addr_hit[72] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -6769,7 +6935,9 @@ module rram_ctrl_core_reg_top (
                (addr_hit[67] & (|(RRAM_CTRL_CORE_PERMIT[67] & ~reg_be))) |
                (addr_hit[68] & (|(RRAM_CTRL_CORE_PERMIT[68] & ~reg_be))) |
                (addr_hit[69] & (|(RRAM_CTRL_CORE_PERMIT[69] & ~reg_be))) |
-               (addr_hit[70] & (|(RRAM_CTRL_CORE_PERMIT[70] & ~reg_be)))));
+               (addr_hit[70] & (|(RRAM_CTRL_CORE_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(RRAM_CTRL_CORE_PERMIT[71] & ~reg_be))) |
+               (addr_hit[72] & (|(RRAM_CTRL_CORE_PERMIT[72] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -6777,7 +6945,9 @@ module rram_ctrl_core_reg_top (
 
   assign intr_state_op_done_wd = reg_wdata[4];
 
-  assign intr_state_corr_err_wd = reg_wdata[5];
+  assign intr_state_corr1_err_wd = reg_wdata[5];
+
+  assign intr_state_corr2_err_wd = reg_wdata[6];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_wr_empty_wd = reg_wdata[0];
@@ -6790,7 +6960,9 @@ module rram_ctrl_core_reg_top (
 
   assign intr_enable_op_done_wd = reg_wdata[4];
 
-  assign intr_enable_corr_err_wd = reg_wdata[5];
+  assign intr_enable_corr1_err_wd = reg_wdata[5];
+
+  assign intr_enable_corr2_err_wd = reg_wdata[6];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_wr_empty_wd = reg_wdata[0];
@@ -6803,7 +6975,9 @@ module rram_ctrl_core_reg_top (
 
   assign intr_test_op_done_wd = reg_wdata[4];
 
-  assign intr_test_corr_err_wd = reg_wdata[5];
+  assign intr_test_corr1_err_wd = reg_wdata[5];
+
+  assign intr_test_corr2_err_wd = reg_wdata[6];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_recov_err_wd = reg_wdata[0];
@@ -7172,23 +7346,26 @@ module rram_ctrl_core_reg_top (
   assign fault_status_we = addr_hit[62] & reg_we & !reg_error;
 
   assign fault_status_phy_relbl_err_wd = reg_wdata[9];
-  assign corr_err_cnt_we = addr_hit[64] & reg_we & !reg_error;
+  assign corr1_err_cnt_we = addr_hit[64] & reg_we & !reg_error;
 
-  assign corr_err_cnt_wd = reg_wdata[7:0];
-  assign scratch_we = addr_hit[67] & reg_we & !reg_error;
+  assign corr1_err_cnt_wd = reg_wdata[7:0];
+  assign corr2_err_cnt_we = addr_hit[65] & reg_we & !reg_error;
+
+  assign corr2_err_cnt_wd = reg_wdata[7:0];
+  assign scratch_we = addr_hit[69] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[68] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[70] & reg_we & !reg_error;
 
   assign fifo_lvl_wr_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_clr_we = addr_hit[69] & reg_we & !reg_error;
+  assign fifo_clr_we = addr_hit[71] & reg_we & !reg_error;
 
   assign fifo_clr_wr_wd = reg_wdata[0];
 
   assign fifo_clr_rd_wd = reg_wdata[1];
-  assign curr_fifo_lvl_re = addr_hit[70] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[72] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -7256,13 +7433,15 @@ module rram_ctrl_core_reg_top (
     reg_we_check[61] = 1'b0;
     reg_we_check[62] = fault_status_we;
     reg_we_check[63] = 1'b0;
-    reg_we_check[64] = corr_err_cnt_we;
-    reg_we_check[65] = 1'b0;
+    reg_we_check[64] = corr1_err_cnt_we;
+    reg_we_check[65] = corr2_err_cnt_we;
     reg_we_check[66] = 1'b0;
-    reg_we_check[67] = scratch_we;
-    reg_we_check[68] = fifo_lvl_we;
-    reg_we_check[69] = fifo_clr_we;
-    reg_we_check[70] = 1'b0;
+    reg_we_check[67] = 1'b0;
+    reg_we_check[68] = 1'b0;
+    reg_we_check[69] = scratch_we;
+    reg_we_check[70] = fifo_lvl_we;
+    reg_we_check[71] = fifo_clr_we;
+    reg_we_check[72] = 1'b0;
   end
 
   // Read data return
@@ -7275,7 +7454,8 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[2] = intr_state_rd_full_qs;
         reg_rdata_next[3] = intr_state_rd_lvl_qs;
         reg_rdata_next[4] = intr_state_op_done_qs;
-        reg_rdata_next[5] = intr_state_corr_err_qs;
+        reg_rdata_next[5] = intr_state_corr1_err_qs;
+        reg_rdata_next[6] = intr_state_corr2_err_qs;
       end
 
       addr_hit[1]: begin
@@ -7284,7 +7464,8 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[2] = intr_enable_rd_full_qs;
         reg_rdata_next[3] = intr_enable_rd_lvl_qs;
         reg_rdata_next[4] = intr_enable_op_done_qs;
-        reg_rdata_next[5] = intr_enable_corr_err_qs;
+        reg_rdata_next[5] = intr_enable_corr1_err_qs;
+        reg_rdata_next[6] = intr_enable_corr2_err_qs;
       end
 
       addr_hit[2]: begin
@@ -7294,6 +7475,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[3] = '0;
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
+        reg_rdata_next[6] = '0;
       end
 
       addr_hit[3]: begin
@@ -7669,34 +7851,43 @@ module rram_ctrl_core_reg_top (
       end
 
       addr_hit[64]: begin
-        reg_rdata_next[7:0] = corr_err_cnt_qs;
+        reg_rdata_next[7:0] = corr1_err_cnt_qs;
       end
 
       addr_hit[65]: begin
-        reg_rdata_next[20:0] = corr_err_loc_addr_qs;
-        reg_rdata_next[24] = corr_err_loc_part_qs;
+        reg_rdata_next[7:0] = corr2_err_cnt_qs;
       end
 
       addr_hit[66]: begin
+        reg_rdata_next[20:0] = corr1_err_loc_addr_qs;
+        reg_rdata_next[24] = corr1_err_loc_part_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[20:0] = corr2_err_loc_addr_qs;
+        reg_rdata_next[24] = corr2_err_loc_part_qs;
+      end
+
+      addr_hit[68]: begin
         reg_rdata_next[0] = phy_status_wr_busy_qs;
         reg_rdata_next[1] = phy_status_init_done_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[69]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[70]: begin
         reg_rdata_next[4:0] = fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[71]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[70]: begin
+      addr_hit[72]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

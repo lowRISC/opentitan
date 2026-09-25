@@ -454,7 +454,7 @@ module earlgrey_pd_main #(
   // sram_ctrl_meta
 
 
-  logic [183:0] intr_vector;
+  logic [184:0] intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -580,7 +580,8 @@ module earlgrey_pd_main #(
   logic intr_rram_ctrl_rd_full;
   logic intr_rram_ctrl_rd_lvl;
   logic intr_rram_ctrl_op_done;
-  logic intr_rram_ctrl_corr_err;
+  logic intr_rram_ctrl_corr1_err;
+  logic intr_rram_ctrl_corr2_err;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -1914,12 +1915,13 @@ module earlgrey_pd_main #(
     .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_wr_empty_o(intr_rram_ctrl_wr_empty),
-    .intr_wr_lvl_o  (intr_rram_ctrl_wr_lvl),
-    .intr_rd_full_o (intr_rram_ctrl_rd_full),
-    .intr_rd_lvl_o  (intr_rram_ctrl_rd_lvl),
-    .intr_op_done_o (intr_rram_ctrl_op_done),
-    .intr_corr_err_o(intr_rram_ctrl_corr_err),
+    .intr_wr_empty_o (intr_rram_ctrl_wr_empty),
+    .intr_wr_lvl_o   (intr_rram_ctrl_wr_lvl),
+    .intr_rd_full_o  (intr_rram_ctrl_rd_full),
+    .intr_rd_lvl_o   (intr_rram_ctrl_rd_lvl),
+    .intr_op_done_o  (intr_rram_ctrl_op_done),
+    .intr_corr1_err_o(intr_rram_ctrl_corr1_err),
+    .intr_corr2_err_o(intr_rram_ctrl_corr2_err),
 
     // alert_handler[33]: recov_err
     // alert_handler[34]: fatal_std_err
@@ -2724,27 +2726,28 @@ module earlgrey_pd_main #(
 
   // Interrupt assignments
   assign intr_vector = {
-    intr_edn1_edn_fatal_err,                  // ID 183
-    intr_edn1_edn_cmd_req_done,               // ID 182
-    intr_edn0_edn_fatal_err,                  // ID 181
-    intr_edn0_edn_cmd_req_done,               // ID 180
-    intr_entropy_src_es_fatal_err,            // ID 179
-    intr_entropy_src_es_observe_fifo_ready,   // ID 178
-    intr_entropy_src_es_health_test_failed,   // ID 177
-    intr_entropy_src_es_entropy_valid,        // ID 176
-    intr_csrng_cs_fatal_err,                  // ID 175
-    intr_csrng_cs_hw_inst_exc,                // ID 174
-    intr_csrng_cs_entropy_req,                // ID 173
-    intr_csrng_cs_cmd_req_done,               // ID 172
-    intr_keymgr_dpe_op_done,                  // ID 171
-    intr_otbn_done,                           // ID 170
-    intr_kmac_kmac_err,                       // ID 169
-    intr_kmac_fifo_empty,                     // ID 168
-    intr_kmac_kmac_done,                      // ID 167
-    intr_hmac_hmac_err,                       // ID 166
-    intr_hmac_fifo_empty,                     // ID 165
-    intr_hmac_hmac_done,                      // ID 164
-    intr_rram_ctrl_corr_err,                  // ID 163
+    intr_edn1_edn_fatal_err,                  // ID 184
+    intr_edn1_edn_cmd_req_done,               // ID 183
+    intr_edn0_edn_fatal_err,                  // ID 182
+    intr_edn0_edn_cmd_req_done,               // ID 181
+    intr_entropy_src_es_fatal_err,            // ID 180
+    intr_entropy_src_es_observe_fifo_ready,   // ID 179
+    intr_entropy_src_es_health_test_failed,   // ID 178
+    intr_entropy_src_es_entropy_valid,        // ID 177
+    intr_csrng_cs_fatal_err,                  // ID 176
+    intr_csrng_cs_hw_inst_exc,                // ID 175
+    intr_csrng_cs_entropy_req,                // ID 174
+    intr_csrng_cs_cmd_req_done,               // ID 173
+    intr_keymgr_dpe_op_done,                  // ID 172
+    intr_otbn_done,                           // ID 171
+    intr_kmac_kmac_err,                       // ID 170
+    intr_kmac_fifo_empty,                     // ID 169
+    intr_kmac_kmac_done,                      // ID 168
+    intr_hmac_hmac_err,                       // ID 167
+    intr_hmac_fifo_empty,                     // ID 166
+    intr_hmac_hmac_done,                      // ID 165
+    intr_rram_ctrl_corr2_err,                 // ID 164
+    intr_rram_ctrl_corr1_err,                 // ID 163
     intr_rram_ctrl_op_done,                   // ID 162
     intr_rram_ctrl_rd_lvl,                    // ID 161
     intr_rram_ctrl_rd_full,                   // ID 160

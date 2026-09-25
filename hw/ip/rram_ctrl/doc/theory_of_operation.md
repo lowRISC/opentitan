@@ -55,7 +55,7 @@ The following security measures are applied along both data paths:
 | Integrity read (shadow read) | Every read is issued twice. The first result is returned to the requester. The second is compared in the background when the RRAM is idle. A mismatch raises a fatal alert. |
 | Address infection (XOR) | Each 32-bit bus word is XORed with its bus-word address before packing into the 128-bit RRAM word. A word relocated by a fault attack produces an ECC mismatch and is detected. |
 | Secure counters and FIFOs | `prim_count` (redundant) and `prim_fifo_sync` (with built-in integrity checking) are used throughout the data paths. |
-| Semi-automatic repair | When the ECC decoder corrects a single-bit error the `corr_err` interrupt fires, prompting software to rewrite the affected word and restore full ECC headroom before a triple error becomes uncorrectable. |
+| Semi-automatic repair | When the ECC decoder corrects a single- or double-bit error, `corr1_err`/`corr2_err` fires, prompting software to rewrite the affected word and restore full ECC headroom before it becomes uncorrectable. |
 | ECC-protected read-buffer data | Each read-buffer entry stores four 32-bit bus words with their 7-bit bus integrity already appended (39 bits per word). The path from the read buffer to Ibex is end-to-end protected with no ECC recomputation along the way. |
 
 ### Write Data Path
@@ -85,7 +85,7 @@ Otherwise, a read to the RRAM is triggered, composed of the following steps:
 
 1. The full RRAM word (scrambled data + ECC) is read from the macro.
 2. The RRAM macro decodes the ECC.
-   Correctable single-bit errors are corrected in place.
+   Correctable single-bit errors, and some double-bit errors, are corrected in place.
 3. The 128-bit scrambled word is descrambled by the shared scrambling module.
 4. The descrambled 128-bit word is split into four 32-bit bus words.
 5. The 7-bit bus integrity value is computed for each 32-bit word.
@@ -129,14 +129,20 @@ See [RRAM Scrambling](#rram-scrambling) for details.
 
 Each RRAM word stored in the macro is protected by an ECC and is per-page configurable via the `ecc_en` attribute.
 
+The macro reports the outcome of its ECC decode as a single `ecc_err` field (`rram_ctrl_pkg::rram_macro_rsp_t.ecc_err`): `001` for a corrected single-bit error, `010` for a corrected double-bit error, `100` for an uncorrectable multi-bit error, and `000` for no error.
+
 #### Single-Bit Error (Correctable)
 
-When there is a single-bit error, the macro ECC decoder transparently corrects it, the `corr_err` interrupt fires, and the address of the corrected error is captured in [`CORR_ERR_LOC`](registers.md#corr_err_loc).
-The error counter is incremented in [`CORR_ERR_CNT`](registers.md#corr_err_cnt).
-`corr_err`/`CORR_ERR_LOC`/`CORR_ERR_CNT` are not yet wired up in `rram_phy` (tracked in [earlgrey-internal-tracker#388](https://github.com/lowRISC/earlgrey-internal-tracker/issues/388)).
+When there is a single-bit error, the macro ECC decoder transparently corrects it, the `corr1_err` interrupt fires, and the address of the corrected error is captured in [`CORR1_ERR_LOC`](registers.md#corr1_err_loc).
+The error counter is incremented in [`CORR1_ERR_CNT`](registers.md#corr1_err_cnt).
 A corrected error does not abort the in-progress operation.
 The corrected data is returned normally.
-Software should respond to `corr_err` by issuing a `Rewrite` operation on the affected address to restore full ECC headroom before a double or triple error becomes uncorrectable.
+Software should respond to `corr1_err` by issuing a `Rewrite` operation on the affected address to restore full ECC headroom before a second error makes the word uncorrectable.
+
+#### Double-Bit Error (Correctable)
+
+When the ECC decoder corrects two bits in a single word, `corr2_err` fires instead of `corr1_err`, with its own [`CORR2_ERR_LOC`](registers.md#corr2_err_loc)/[`CORR2_ERR_CNT`](registers.md#corr2_err_cnt) pair.
+As with a single-bit error, the corrected data is returned normally and the operation is not aborted, but software should treat `corr2_err` as more urgent when scheduling a `Rewrite`, since the word is one step closer to becoming uncorrectable.
 
 #### Multi-Bit Error (Uncorrectable)
 
@@ -394,7 +400,7 @@ All OTP region accesses use fixed protection attributes that are not software-co
 | Attribute | Value | Reason |
 |---|---|---|
 | `scramble_en` | `MuBi4False` | The scrambling keys are themselves stored in the OTP region. Scrambling the region would require the keys to read the keys |
-| `ecc_en` | `MuBi4True` | Vendor ECC is used to protect OTP region cells against single-bit errors |
+| `ecc_en` | `MuBi4True` | The RRAM macro's own ECC protects OTP region cells against correctable errors |
 | `addr_xor_en` | `MuBi4False` | After manufacturing the OTP region contains raw zeros. Enabling address-XOR would cause reads to return non-zero values with incorrect bus integrity, producing spurious integrity faults before any write has occurred |
 
 Software has no visibility into the OTP region and cannot modify these protection attributes.

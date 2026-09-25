@@ -18670,11 +18670,24 @@
       outgoing: false
     }
     {
-      name: rram_ctrl_corr_err
+      name: rram_ctrl_corr1_err
       width: 1
       type: interrupt
       module_name: rram_ctrl
-      desc: rram_ctrl corr_err interrupt
+      desc: rram_ctrl corr1_err interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
+      name: rram_ctrl_corr2_err
+      width: 1
+      type: interrupt
+      module_name: rram_ctrl
+      desc: rram_ctrl corr2_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18949,11 +18962,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 184
+      count_tot: 185
       count_pd:
       {
         Aon: 7
-        Main: 176
+        Main: 177
       }
     }
   }

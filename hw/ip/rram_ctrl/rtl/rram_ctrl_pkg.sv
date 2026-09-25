@@ -115,7 +115,8 @@ package rram_ctrl_pkg;
     RdFull,
     RdLvl,
     OpDone,
-    CorrErr,
+    Corr1Err,
+    Corr2Err,
     LastIntrIdx
   } rram_ctrl_intr_e;
 
@@ -187,11 +188,17 @@ package rram_ctrl_pkg;
     logic                 ecc_en;
   } rram_macro_req_t;
 
+  // ecc_err encoding (one-hot0):
+  //   000: no error
+  //   001: single-bit error, corrected
+  //   010: double-bit error, corrected
+  //   100: multi-bit error, uncorrectable (fatal)
+  // All other combinations are illegal.
   typedef struct packed {
     logic                 ack;
     logic                 done;
     logic                 err;
-    logic                 ecc_err;
+    logic [2:0]           ecc_err;
     logic [DataWidth-1:0] rd_data;
     logic                 init_done;
     logic                 fatal_err;

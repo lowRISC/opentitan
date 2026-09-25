@@ -1148,48 +1148,50 @@ pub enum PlicIrqId {
     RramCtrlRdLvl = 161,
     /// rram_ctrl_op_done
     RramCtrlOpDone = 162,
-    /// rram_ctrl_corr_err
-    RramCtrlCorrErr = 163,
+    /// rram_ctrl_corr1_err
+    RramCtrlCorr1Err = 163,
+    /// rram_ctrl_corr2_err
+    RramCtrlCorr2Err = 164,
     /// hmac_hmac_done
-    HmacHmacDone = 164,
+    HmacHmacDone = 165,
     /// hmac_fifo_empty
-    HmacFifoEmpty = 165,
+    HmacFifoEmpty = 166,
     /// hmac_hmac_err
-    HmacHmacErr = 166,
+    HmacHmacErr = 167,
     /// kmac_kmac_done
-    KmacKmacDone = 167,
+    KmacKmacDone = 168,
     /// kmac_fifo_empty
-    KmacFifoEmpty = 168,
+    KmacFifoEmpty = 169,
     /// kmac_kmac_err
-    KmacKmacErr = 169,
+    KmacKmacErr = 170,
     /// otbn_done
-    OtbnDone = 170,
+    OtbnDone = 171,
     /// keymgr_dpe_op_done
-    KeymgrDpeOpDone = 171,
+    KeymgrDpeOpDone = 172,
     /// csrng_cs_cmd_req_done
-    CsrngCsCmdReqDone = 172,
+    CsrngCsCmdReqDone = 173,
     /// csrng_cs_entropy_req
-    CsrngCsEntropyReq = 173,
+    CsrngCsEntropyReq = 174,
     /// csrng_cs_hw_inst_exc
-    CsrngCsHwInstExc = 174,
+    CsrngCsHwInstExc = 175,
     /// csrng_cs_fatal_err
-    CsrngCsFatalErr = 175,
+    CsrngCsFatalErr = 176,
     /// entropy_src_es_entropy_valid
-    EntropySrcEsEntropyValid = 176,
+    EntropySrcEsEntropyValid = 177,
     /// entropy_src_es_health_test_failed
-    EntropySrcEsHealthTestFailed = 177,
+    EntropySrcEsHealthTestFailed = 178,
     /// entropy_src_es_observe_fifo_ready
-    EntropySrcEsObserveFifoReady = 178,
+    EntropySrcEsObserveFifoReady = 179,
     /// entropy_src_es_fatal_err
-    EntropySrcEsFatalErr = 179,
+    EntropySrcEsFatalErr = 180,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 180,
+    Edn0EdnCmdReqDone = 181,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 181,
+    Edn0EdnFatalErr = 182,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 182,
+    Edn1EdnCmdReqDone = 183,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 183,
+    Edn1EdnFatalErr = 184,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1359,27 +1361,28 @@ impl TryFrom<u32> for PlicIrqId {
             160 => Ok(Self::RramCtrlRdFull),
             161 => Ok(Self::RramCtrlRdLvl),
             162 => Ok(Self::RramCtrlOpDone),
-            163 => Ok(Self::RramCtrlCorrErr),
-            164 => Ok(Self::HmacHmacDone),
-            165 => Ok(Self::HmacFifoEmpty),
-            166 => Ok(Self::HmacHmacErr),
-            167 => Ok(Self::KmacKmacDone),
-            168 => Ok(Self::KmacFifoEmpty),
-            169 => Ok(Self::KmacKmacErr),
-            170 => Ok(Self::OtbnDone),
-            171 => Ok(Self::KeymgrDpeOpDone),
-            172 => Ok(Self::CsrngCsCmdReqDone),
-            173 => Ok(Self::CsrngCsEntropyReq),
-            174 => Ok(Self::CsrngCsHwInstExc),
-            175 => Ok(Self::CsrngCsFatalErr),
-            176 => Ok(Self::EntropySrcEsEntropyValid),
-            177 => Ok(Self::EntropySrcEsHealthTestFailed),
-            178 => Ok(Self::EntropySrcEsObserveFifoReady),
-            179 => Ok(Self::EntropySrcEsFatalErr),
-            180 => Ok(Self::Edn0EdnCmdReqDone),
-            181 => Ok(Self::Edn0EdnFatalErr),
-            182 => Ok(Self::Edn1EdnCmdReqDone),
-            183 => Ok(Self::Edn1EdnFatalErr),
+            163 => Ok(Self::RramCtrlCorr1Err),
+            164 => Ok(Self::RramCtrlCorr2Err),
+            165 => Ok(Self::HmacHmacDone),
+            166 => Ok(Self::HmacFifoEmpty),
+            167 => Ok(Self::HmacHmacErr),
+            168 => Ok(Self::KmacKmacDone),
+            169 => Ok(Self::KmacFifoEmpty),
+            170 => Ok(Self::KmacKmacErr),
+            171 => Ok(Self::OtbnDone),
+            172 => Ok(Self::KeymgrDpeOpDone),
+            173 => Ok(Self::CsrngCsCmdReqDone),
+            174 => Ok(Self::CsrngCsEntropyReq),
+            175 => Ok(Self::CsrngCsHwInstExc),
+            176 => Ok(Self::CsrngCsFatalErr),
+            177 => Ok(Self::EntropySrcEsEntropyValid),
+            178 => Ok(Self::EntropySrcEsHealthTestFailed),
+            179 => Ok(Self::EntropySrcEsObserveFifoReady),
+            180 => Ok(Self::EntropySrcEsFatalErr),
+            181 => Ok(Self::Edn0EdnCmdReqDone),
+            182 => Ok(Self::Edn0EdnFatalErr),
+            183 => Ok(Self::Edn1EdnCmdReqDone),
+            184 => Ok(Self::Edn1EdnFatalErr),
             _ => Err(val),
         }
     }
@@ -1400,7 +1403,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 185] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1727,7 +1730,9 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
     PlicPeripheral::RramCtrl,
     // RramCtrlOpDone -> PlicPeripheral::RramCtrl
     PlicPeripheral::RramCtrl,
-    // RramCtrlCorrErr -> PlicPeripheral::RramCtrl
+    // RramCtrlCorr1Err -> PlicPeripheral::RramCtrl
+    PlicPeripheral::RramCtrl,
+    // RramCtrlCorr2Err -> PlicPeripheral::RramCtrl
     PlicPeripheral::RramCtrl,
     // HmacHmacDone -> PlicPeripheral::Hmac
     PlicPeripheral::Hmac,
