@@ -258,7 +258,7 @@ module i3c_target_fsm
   logic virt_targ_det;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) virt_targ_det <= 1'b0;
-    // TODO: Other conditions can modify the programmed Reset Action.
+    // TODO(#31337): Other conditions can modify the programmed Reset Action.
     else if (rstact_de_o && rstact_d_o inside {RstAct_VirtualTargDet, RstAct_NoReset}) begin
       if (rstact_d_o == RstAct_NoReset)             virt_targ_det <= 1'b0; // Clear reset action
       else if (rstact_d_o == RstAct_VirtualTargDet) virt_targ_det <= 1'b1; // Set reset action
@@ -338,9 +338,9 @@ module i3c_target_fsm
     assign tx_desc[t] = i3c_tti_tx_desc_t'(tx_desc_rdata_i[t]);
     // Descriptor is valid if it is a pending read notification or contains data.
     assign tx_desc_valid[t] = |{tx_desc[t].prn.notify, tx_desc[t].tx.data_length};
-    // TODO: Aborting is not yet implemented.
+    // TODO(#31337): Aborting is not yet implemented.
     assign tx_suspended = reg2hw_i.targ_pio_control.suspended.q[t];
-    // TODO: Post response and/or raise error interrupt if not valid.
+    // TODO(#31337): Post response and/or raise error interrupt if not valid.
 
     // Have we enough data available to commence transmission? Fire on either
     // - At least as many DWORDs in buffer as dictated in descriptor, or
@@ -418,7 +418,7 @@ module i3c_target_fsm
         // This ensures that `tx_data_len` returns to zero, even if the requested data length is not
         // a multiple of the transfer unit.
         tx_data_len <= {16{!rlast}} & (tx_data_len - unit_bytes);
-        // TODO: I guess we don't have a verdict until there's a reply from the transceiver,
+        // TODO(#31337): I guess we don't have a verdict until there's a reply from the transceiver,
         // so keep tx_active asserted?
         tx_active   <= !rlast;
       end
@@ -434,9 +434,11 @@ module i3c_target_fsm
 
     // Consume the descriptor only when all data has been presented for transmission and it is no
     // longer required, or if it's invalid.
-    // TODO: We must receive some kind of verdict from the transceiver, not just wait until accepted
+    // TODO(#31337): We must receive some kind of verdict from the transceiver, not just wait until
+    // accepted
     assign tx_desc_consumed = tx_rvalid & (tx_suspended | &{tx_active, rlast, unit_ready});
-    assign tx_desc_rready_o[t] = tx_desc_consumed | (arb_toggle_edge & arb_gnt_q[t+2]);
+    assign tx_desc_rready_o[t] = tx_desc_consumed |                  // Private Read transfer.
+                                (arb_toggle_edge & arb_gnt_q[t+2]);  // Pending Read Notification.
 
     // Suspend transmissions from this Virtual Target in the event of an error.
     assign suspend_tx_o[t] = tx_rvalid & !tx_desc_valid[t];
@@ -461,7 +463,7 @@ module i3c_target_fsm
   always_comb begin : drv_txc_data
     txc_data_o = '0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
-      // TODO: rdata_first is hardcoded to 1'b0, which fails DDR CCC reads
+      // TODO(#31337): rdata_first is hardcoded to 1'b0, which fails DDR CCC reads
       fmt_data_out(txc_data_o.rdata_nq[t], txc_data_o.rdata_pq[t], txc_data_o.rlast[t],
                    {8'b0, ccc_rsp.req_cdata[t]}, 1'b0, {1'b0, ccc_rsp.req_clast});
     end
@@ -470,7 +472,7 @@ module i3c_target_fsm
   // A very simple FSM mediates the handling of Common Command Codes (CCCs).
   typedef enum logic [2:0] {
     Inactive,
-    // TODO: Idle may imply that the VT has become enabled and shall respond to queues?
+    // TODO(#31337): Idle may imply that the VT has become enabled and shall respond to queues?
     Idle,
 
     PrivXfer,
@@ -506,12 +508,12 @@ module i3c_target_fsm
   wire prv_rvalid = trx_rvalid_i & !ccc_rvalid;
 
   // Accept responses immediately.
-  // TODO: we should still be detecting and reporting any data loss here, e.g. unresponsive
+  // TODO(#31333): we should still be detecting and reporting any data loss here, e.g. unresponsive
   // Rx data buffer. Buffer may be full, in particular.
   assign prv_rready = prv_rvalid;
 
-  // TODO: May need to handle buffer full conditions here; async event queue, perhaps rx buffer
-  // for some very specific CCCs with large payloads such as DEFTGTS?
+  // TODO(#31333): May need to handle buffer full conditions here; async event queue, perhaps rx
+  // buffer for some very specific CCCs with large payloads such as DEFTGTS?
   assign ccc_rready = ccc_rvalid;
 
   assign trx_rready_o = ccc_rready | prv_rready;
@@ -527,11 +529,12 @@ module i3c_target_fsm
     proceed = 1'b0;
     case (state_q)
       Inactive: proceed = trx_rvalid_i;
-      PrivXfer: proceed = stop_det_i;  // TODO: Want to define here what happens w.r.t. Sr?
-                                       //       Important e.g., for the legal combination of
-                                       //       S | Addr+W | RegAddr | Sr | Addr+R | ReadData | P
-      CCC:      proceed = ccc_tx_start | stop_det_i;  // TODO: Shall likely want error-handling.
-      CCC_Tx:   proceed = ccc_unit_ready | stop_det_i;  // TODO: Shall likely want error-handling.
+      PrivXfer: proceed = stop_det_i;  // TODO(#31337): Want to define here what happens w.r.t. Sr?
+                                       //  Important e.g., for the legal combination of
+                                       //  S | Addr+W | RegAddr | Sr | Addr+R | ReadData | P
+      // TODO(#31333): Shall likely want error-handling.
+      CCC:      proceed = ccc_tx_start | stop_det_i;
+      CCC_Tx:   proceed = ccc_unit_ready | stop_det_i;
       // All other states are immediately responsive.
       default:  proceed = 1'b1;
     endcase
@@ -548,7 +551,7 @@ module i3c_target_fsm
         end
       PrivXfer: state_d = Inactive;
       CCC:      state_d = stop_det_i ? CCC_P : CCC_Tx;
-      // TODO: ENTDAA perhaps requires a transmission back to CCC?
+      // TODO(#31333): ENTDAA perhaps requires a transmission back to CCC?
       CCC_Tx:   state_d = stop_det_i ? CCC_P : (ccc_rsp.req_clast ? CCC : CCC_Tx);
       CCC_P:    state_d = Inactive;
       default:  state_d = Inactive;
@@ -571,9 +574,9 @@ module i3c_target_fsm
   end
 
   // We must start prefetching the read data before the address has been matched.
-  // TODO: Once basically working, I think we need to re-express this - perhaps with the cooperation
-  // of the _trx logic - as additional states to indicate whether we're in a read-prefetching
-  // segment, a write segment or a setup segment.
+  // TODO(#31337): Once basically working, I think we need to re-express this - perhaps with the
+  // cooperation of the _trx logic - as additional states to indicate whether we're in a
+  // read-prefetching segment, a write segment or a setup segment.
   wire ccc_rd_prefetch = direct_get(reg_state[TargCR_CCC]) &&
                          (trx_rxd_i.ccc_state inside {CCC_SegAddr, CCC_SegData});
 
@@ -582,7 +585,7 @@ module i3c_target_fsm
   // Construction of request to the CCC handling.
   always_comb begin : drv_ccc_req
     ccc_req = '0;
-    // TODO: We could action the P a cycle earlier and drop the additional states?
+    // TODO(#31337): We could action the P a cycle earlier and drop the additional states?
     // Is there potential for the P to leapfrog the final byte, in which case we
     // perhaps use _P to retain that information and treat `trx_rvalid_i` the same in
     // each state?
@@ -594,8 +597,8 @@ module i3c_target_fsm
       default:  ccc_req.en = 1'b0;
     endcase
     // The transceiver logic has already done the CCC phase and index tracking for us.
-    // TODO: Presently the Sr and P processing relies on - for example - the idx being stable,
-    //       we may need to capture it, to be certain of the segment/phase length.
+    // TODO(#31337): Presently the Sr and P processing relies on - for example - the idx being
+    //       stable, we may need to capture it, to be certain of the segment/phase length.
     ccc_req.idx = ccc_rd_prefetch + (trx_rxd_i.ccc_state == CCC_SegData) + trx_rxd_i.ccc_idx[3:0];
     case (state_q)
       Inactive,
@@ -715,18 +718,18 @@ module i3c_target_fsm
 
   // Transmission outcome; for completion signaling and error reporting.
   logic [NumTargetsW-1:0] tx_targ_id;
-  assign tx_targ_id = '0;  // TODO: FSM Tracks target.
+  assign tx_targ_id = '0;  // TODO(#31337): FSM Tracks target.
   i3c_tti_tx_desc_t tx_desc_curr;
   assign tx_desc_curr = i3c_tti_tx_desc_t'(tx_desc_rdata_i[tx_targ_id]);
   i3c_tti_ibi_status_t ibi_desc;
   assign ibi_desc = i3c_tti_ibi_status_t'(ibi_desc_rdata_i);
 
-  // TODO: Status outcomes.
+  // TODO(#31337): Status outcomes.
   i3c_err_status_e txd_status, ibi_status;
   assign txd_status = ErrStatus_OK;
   assign ibi_status = ErrStatus_OK;
 
-  // TODO: Remaining byte count; this is multiplexed from the various transmission paths.
+  // TODO(#31337): Remaining byte count; this is multiplexed from the various transmission paths.
   logic [15:0] tx_bytes_left;
   assign tx_bytes_left = 16'hffff;
 
@@ -761,7 +764,7 @@ module i3c_target_fsm
   end
 
   // Note also that i3c_dword_collector does not store the DWORD presently, so we do that here.
-  // TODO: Adjust the i3c_dword_collector for a better fit.
+  // TODO(#31337): Adjust the i3c_dword_collector for a better fit.
   logic                 buf_wvalid;
   logic                 buf_wvalid_q;
   logic [DataWidth-1:0] buf_wdata;
@@ -783,12 +786,12 @@ module i3c_target_fsm
 
   // Broadcast CCCs received in Standby Controller Mode.
   // - these must be posted into HCI IBI Queue (HCI 8.6.7)
-  assign stby_bcst_wvalid_o = buf_wvalid_q; // TODO: This must be further qualified.
+  assign stby_bcst_wvalid_o = buf_wvalid_q; // TODO(#31308): This must be further qualified.
   assign stby_bcst_wdata_o  = buf_wdata_q;
 
   // Excess Private Write Data from the Active Controller must just be dropped; there is no
   // accept/reject signaling mechanism on I3C SDR.
-  // TODO: Provide up-front indication to the transceiver of max DDR length transmission?
+  // TODO(#31337): Provide up-front indication to the transceiver of max DDR length transmission?
   logic rx_drop, rx_flush;
 
   wire dtype_crc  = (trx_rxd_i.dtype == I3CDType_CRCWord);
@@ -806,8 +809,8 @@ module i3c_target_fsm
   // - zero or more intermediate descriptors are then written, describing the transfer as segments.
   // - the final descriptor for the transfer must include `status` and set `complete.`
   //
-  // TODO: The TTI was extended _after_ this logic was built. It was realized that support for
-  // transfers longer than the allocated space will be required, in which case we must construct
+  // TODO(#31337): The TTI was extended _after_ this logic was built. It was realized that support
+  // for transfers longer than the allocated space will be required, in which case we must construct
   // multiple connected descriptors, see `i3c_tti_pkg`
   i3c_tti_rx_desc_t rx_desc_q, rx_desc_d;
   logic [13:0] next_data_len;
@@ -852,9 +855,9 @@ module i3c_target_fsm
   // Descriptor written to buffer
   assign rx_desc_accepted = rx_desc_wvalid & rx_desc_wready_i;
 
-  // TODO: tx downcounting and rx upcounting could probably be combined if careful, certainly
-  // the adder and perhaps the storage too? We'd have to accommodate the prefetching, probably by
-  // keeping the descriptor available, but we may want that for 'wroc' et al anyway.
+  // TODO(#31337): tx downcounting and rx upcounting could probably be combined if careful,
+  // certainly the adder and perhaps the storage too? We'd have to accommodate the prefetching,
+  // probably by keeping the descriptor available, but we may want that for 'wroc' et al anyway.
   assign next_data_len = rx_data_len + ((trx_rxd_i.dtype == I3CDType_SDRBytes) ? 14'h1 : 14'h2);
 
   // Track the number of bytes of received data and then emit the TTI Rx Descriptor.
@@ -935,7 +938,7 @@ module i3c_target_fsm
 
   // Remove the IBI Status Descriptor from the FIFO once we've been granted the bus.
   assign ibi_desc_rready_o = enable_i & arb_toggle_edge & arb_gnt_q[0];
-  // TODO: Drop the IBI data immediately for now...
+  // TODO(#31337): Drop the IBI data immediately for now...
   assign ibi_rready_o = enable_i & ((ibi_desc_rvalid_i & ibi_rvalid_i) | sink_rready[0]);
 
   wire         ibi_desc_consumed = 1'b0;
@@ -963,7 +966,7 @@ module i3c_target_fsm
     .data_o    (ibi_unit_data)
   );
 
-  // TODO: Splitter it not used because IBI transmission is incomplete.
+  // TODO(#31337): Splitter is not used because IBI transmission is incomplete.
   assign ibi_unit_ready = ibi_unit_valid;
 
   // Is the first Target operating as a Standby Controller that requires attention?
@@ -1053,7 +1056,8 @@ module i3c_target_fsm
   );
 
   // Present the arbitration request of the winning target to the transceiver.
-  // TODO: Consider whether we shall ever need to retract an arbitration request or re-prioritize.
+  // TODO(#31337): Consider whether we shall ever need to retract an arbitration request or
+  // re-prioritize.
   // The Bus Available Condition is 1us.
   always_ff @(posedge clk_i or negedge trx_rst_ni) begin
     if (!trx_rst_ni) begin
@@ -1102,9 +1106,10 @@ module i3c_target_fsm
   // Notification of transmission outcomes.
   // - there can only be a single transmission outcome at a time.
   //
-  // TODO: We want a response from the transceiver to indicate the outcome of the transmission.
-  // TODO: We then have a question what we should do if the transfer did not complete successfully;
-  // leave software to purge the Tx and Tx Desc FIFOs? Does it even have the means to do that yet?
+  // TODO(#31337): We want a response from the transceiver to indicate the outcome of the
+  // transmission. We then have a question what we should do if the transfer did not complete
+  // successfully; leave software to purge the Tx and Tx Desc FIFOs? Does it even have the means to
+  // do that yet?
   logic ibi_result;
   logic txd_result;
   always_comb begin
@@ -1310,7 +1315,7 @@ module i3c_target_fsm
     assign ext_hw2reg_o  = 'b0;
   end
 
-  // TODO: Dummy drivers for now.
+  // TODO(#31333): Dummy drivers for now.
   assign transfer_err_o = 1'b0;
   assign transfer_aborted_o = 1'b0;
 

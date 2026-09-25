@@ -499,9 +499,9 @@ module i3c_target_ccc
 
   // Reset Action.
   // TODO(31128): This only implements a small part of what RSTACT is supposed to do.
-  // Write only on broadcast or if any of our virtual targets has been addressed.
+  // Write only on Broadcast or if any of our Virtual Targets has been addressed.
   // Write only if the defining byte has the MSB cleared, otherwise it is a GET RSTACT.
-  assign rstact_de_o = wr_commit & (ccc inside {RSTACTB, RSTACT}) & ((ccc == RSTACTB) | |targets) &
+  assign rstact_de_o = wr_commit & (ccc inside {RSTACTB, RSTACT}) & |{ccc == RSTACTB, |targets} &
                        !defb[7] & !ccc_req_i.rnw;
   assign rstact_d_o  = i3c_rstact_e'(defb);
 

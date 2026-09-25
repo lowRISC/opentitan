@@ -115,7 +115,7 @@ module i3c_targ_async_events
   // - the aim is to report CCC activity to one or more targets, so that software is notified of any
   //   resultant configuration change.
   logic [NumTargets-1:0] ccc_targets;
-  logic [6:0] ccc_address; // TODO: Currently unused
+  logic [6:0] ccc_address;
 
   struct packed {
     logic [7:0] ccc;
@@ -133,7 +133,7 @@ module i3c_targ_async_events
       // Latch ccc_targets and ccc_info together, once per qualifying CCC.
       if (capture[AsyncEv_CCC] & (!(|ccc_targets) | evt_captured[AsyncEv_CCC])) begin
         ccc_targets <= NumTargets'(r_i[TargCR_Targets]);
-        ccc_address <= '0; // TODO
+        ccc_address <= '0; // TODO(#31337) Reporting of CCC activity incompletely specified.
         ccc_info    <= '{
           ccc:      ccc,
           defb:     r_i[TargCR_DEFB],
@@ -269,7 +269,7 @@ module i3c_targ_async_events
       ccc:      i3c_ccc_e'(ccc_info.ccc),
       defb:     ccc_info.defb,
       has_defb: ccc_info.has_defb,
-      default:  '0 // TODO: Implement `has_length` and `data_length` fields
+      default:  '0 // TODO(#31065): Implement `has_length` and `data_length` fields
     };
 
     async_evt[AsyncEv_NotifyTx].txdr.code       = AsyncEv_NotifyTx;

@@ -15,7 +15,7 @@ package i3c_targ_ccc_pkg;
   typedef enum {
     TargStat_HasDEFB = 0,
     TargStat_IsGroup,
-    // TODO: The following is not yet used...
+    // TODO(#31337): The following is not yet used...
     TargStat_ReadSeg   // Is this a Read Segment rather than Write?
   } i3c_targ_ccc_flags_e;
 
@@ -53,7 +53,8 @@ package i3c_targ_ccc_pkg;
 
   // Requests to the Target CCC handling.
   typedef struct packed {
-    logic               rnw;  // TODO: Possibly becomes a status flag (`i3c_targ_ccc_flags_e`).
+    // TODO(#31337): Possibly becomes a status flag (`i3c_targ_ccc_flags_e`).
+    logic               rnw;
     logic               en;
     i3c_targ_ccc_rsn_e  rsn;
     // Index number within the current CCC handling.

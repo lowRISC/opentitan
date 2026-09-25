@@ -146,7 +146,7 @@ module i3c_core
   localparam int unsigned FIFODepthW = i3c_fifo_pkg::DepthW;
 
   // DFT-related signals.
-  // TODO: sync?
+  // TODO(#31335): sync?
   wire scanmode = prim_mubi_pkg::mubi4_test_true_strict(scanmode_i);
   wire unused_dft_ = ^{mbist_en_i, scan_rst_ni};
 
@@ -264,7 +264,7 @@ module i3c_core
     // Control.
     .enable_i   (targ_enabled),
     .sw_reset_i (targ_sw_reset),
-    // TODO: Error conditions requiring a reset shall be received and handled here.
+    // TODO(#31333): Error conditions requiring a reset shall be received and handled here.
     .te_recov_i (1'b0),
 
     // Bus monitoring.
@@ -311,7 +311,8 @@ module i3c_core
   );
 
   // Enable for the Target Reset Detector.
-  // TODO: When the IP block is in a sleep state, the `enable` assertion will need to be maintained.
+  // TODO(#31337): When the IP block is in a sleep state, the `enable` assertion will need to be
+  // maintained.
   assign rstdet_enable_o = inbuf_enable;
 
   // TTI interrupt signal.
@@ -323,7 +324,7 @@ module i3c_core
 
   // `SDA Read Detector` (4.3.2.3) indicates whether a Private Read operation in SDR mode has
   // stalled, i.e. no SCL activity observed for at least 100us.
-  // TODO: Timing implemented but not yet routed to the core logic.
+  // TODO(#31333): Timing implemented but not yet routed to the core logic.
   logic rst_read_stalled;
   logic read_stalled;
   assign rst_read_stalled = 1'b0;
@@ -348,7 +349,8 @@ module i3c_core
   logic hdr_exit_det;
   // Acknowledge and clear the `HDR Restart detected` condition.
   logic hdr_restart_done;
-  assign hdr_restart_done = hdr_restart_det;  // TODO: Target-side logic does not yet use this.
+  // TODO(#31035): Target-side logic does not yet use this.
+  assign hdr_restart_done = hdr_restart_det;
 
   // High-keeper enables; see section 4.3.3.1.
   assign scl_hk_en_o = reg2hw_i.phy_config.scl_hk_en.q;
@@ -749,7 +751,7 @@ module i3c_core
   assign hw2reg_o.targ_status.rstact.d =
     i3c_rstact_e'(hw2reg_o.stby_cr_ccc_config_rstact_params.rst_action.d);
 
-  // TODO: Recovery from TE0.
+  // TODO(#31333): Recovery from TE0.
   logic te0_recov;
 
   // Target Error counting (TE[6:0], Table 43).
@@ -761,7 +763,7 @@ module i3c_core
   assign async_evt_rst = reg2hw_i.targ_async_evt_control.reset.qe
                        & reg2hw_i.targ_async_evt_control.reset.q;
 
-  // TODO: This driver should be in `i3c_target`.
+  // TODO(#31035): This driver should be in `i3c_target`.
   assign hdr_restart_det_en = targ_ddr_mode;
 
   // Target core.
@@ -785,7 +787,7 @@ module i3c_core
     .stby_cr_enabled_i    (stby_cr_enabled),
     .sw_reset_i           (targ_sw_reset),
     .async_evt_rst_i      (async_evt_rst),
-    // TODO: Target core logic will need to be aware of reset/enable of transceiver logic.
+    // TODO(#31035): Target core logic will need to be aware of reset/enable of transceiver logic.
 
     // HDR pattern detection.
     .hdr_exit_det_i       (hdr_exit_det),
@@ -811,7 +813,7 @@ module i3c_core
 
     // Control outputs.
     .hdr_exit_det_en_o    (hdr_exit_det_en),
-    // TODO:
+    // TODO(#31035):
     // .hdr_restart_det_en_o (hdr_restart_det_en),
 
     // Bus signals, already synchronized to the IP clock domain.
@@ -1683,7 +1685,8 @@ module i3c_core
   );
 
   // General Host Controller interrupts.
-  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .Event('1)) u_hc_intr (  // TODO: Check interrupt types.
+  // TODO(#31334): Check interrupt types.
+  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .Event('1)) u_hc_intr (
     .event_i    (hc_interrupts),
 
     .status_en_i({reg2hw_i.intr_status_enable.sched_cmd_missed_tick_stat_en.q,
@@ -1727,7 +1730,7 @@ module i3c_core
   );
 
   // PIO interrupts.
-  // TODO: Check interrupt types.
+  // TODO(#31334): Check interrupt types.
   i3c_intr #(.Width($bits(i3c_pio_intr_t)), .Event(7'b11_00000)) u_pio_intr (
     .event_i    (pio_interrupts),
 
@@ -1781,7 +1784,7 @@ module i3c_core
   );
 
   // Secondary Controller interrupts.
-  // TODO: Check interrupt types.
+  // TODO(#31334): Check interrupt types.
   i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .Event('1)) u_stby_cr_intr (
     .event_i    (stby_cr_interrupts),
 
@@ -1863,7 +1866,7 @@ module i3c_core
   );
 
   // Target-side interrupts; these are additional to those of the Standby Controller.
-  // TODO: Check interrupt types.
+  // TODO(#31334): Check interrupt types.
   i3c_intr #(.Width($bits(i3c_targ_intr_t)), .Event('0)) u_targ_intr (
     .event_i    (targ_interrupts),
 

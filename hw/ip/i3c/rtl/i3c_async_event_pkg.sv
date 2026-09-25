@@ -29,7 +29,7 @@ package i3c_async_event_pkg;
     TTIBusEv_DeadBus     = 4'h1,  // No response to Start request when the bus was idle.
     TTIBusEv_Idle        = 4'h2,  // Bus Idle condition (> 200us with no activity).
     TTIBusEv_TargetRst   = 4'h3,  // Target Reset signal received.
-    // TODO: For CCC failures perhaps we want the _ccc_t information in some form?
+    // TODO(#31337): For CCC failures perhaps we want the _ccc_t information in some form?
     TTIBusEv_ParityCCC   = 4'h4,  // CCC not actioned because of a parity error.
     TTIBusEv_ChksumCCC   = 4'h5,  // CCC not actioned because of a CRC5 mismatch.
     TTIBusEv_UnknownCCC  = 4'h6,  // Common Command Code not known or not supported.

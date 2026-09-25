@@ -506,7 +506,7 @@ module i3c_controller_fsm
       Inactive:     state_d = Idle;
       // --- Bus is idle; a command may be available but still awaiting a retry ---
       //
-      // TODO: we should perform some form of access periodically in order that Targets
+      // TODO(#31304): we should perform some form of access periodically in order that Targets
       // performing passive Hot-Join receive attention... Q: what, and how often, sw enable/disable?
       // We also need to report stall conditions here in the event that we're waiting for another
       // command having not received a TOC, and avoid leaving the bus in HDR-DDR mode for too long.
@@ -529,7 +529,7 @@ module i3c_controller_fsm
       // - validate the command and read from the DAT to discover the properties of the Target.
       CmdBegin: state_d = DATCapt;
       DATCapt:  state_d = CmdDecode;
-      CmdDecode: begin  // TODO: This probably wants re-expressing once the logic is finalized.
+      CmdDecode: begin  // TODO(#31304): This probably wants tidying once the logic is finalized.
         if (cmd_dec_err) state_d = CmdDecErr;
         else begin
           // Here we need only handle the Command Descriptors that `i3c_cmd_decode` did not reject.
@@ -546,7 +546,7 @@ module i3c_controller_fsm
                     RstOpType_Single: state_d = TargRst;
                     default: state_d = Idle;
                   endcase
-                // TODO: The following three are not yet implemented.
+                // TODO(#31304): The following three are not yet implemented.
                 MIPICmd_CtrlSDARecovery,
                 MIPICmd_CtrlHandoff,
                 MIPICmd_AttemptDBR: state_d = CmdDecErr;
@@ -566,9 +566,9 @@ module i3c_controller_fsm
       // The Transceiver informs us of the outcome of the Arbitrable Address Header, and we must
       // respond promptly by sending an ACK/NACK request to the transceiver logic.
       //
-      // TODO: If we lose arbitration at this point we must erase any state changes that resulted
-      // from starting to work on this command. We must start afresh later. More generally the
-      // lifetime and (re)initialization of the members of `cmd_state` needs consideration.
+      // TODO(#31304) If we lose arbitration at this point we must erase any state changes that
+      // resulted from starting to work on this command. We must start afresh later. More generally
+      // the lifetime and (re)initialization of the members of `cmd_state` needs consideration.
       WaitArb:  state_d = trx_arb_i.arb_lost ? SendAckb : WaitAckb;
       // Repeated Start (Sr) after using the I3C Broadcast Address to command a Private Read/Write.
       RepStPriv: state_d = CmdAddr;
@@ -632,14 +632,14 @@ module i3c_controller_fsm
   //   `enable_i` in the following cycle, leaving the FSM in `Inactive`.
   assign inactive_o = &{state_q == Idle, !direct_drive, disable_now};
 
-  // TODO: Suspend when an error condition occurs.
+  // TODO(#31304): Suspend when an error condition occurs.
   assign suspending_o = 1'b0;
 
   // Response to Abort request; this status indication is consulted only in `GState_Aborting`
   // so it needs no further qualification here.
   assign aborted_o = (state_q == Idle && !cmd_state.available);  // This is just temporary.
-  // TODO: We do, however, need to respond more promptly to `Aborting` in a few states such as
-  // part-way through handling an Address Assignment command. HCI 6.5.6 seems to indicate that
+  // TODO(#31304): We do, however, need to respond more promptly to `Aborting` in a few states such
+  // as part-way through handling an Address Assignment command. HCI 6.5.6 seems to indicate that
   //` transfer_aborted_o` shall be asserted only when actually reporting `HC_ABORTED` in one or
   // more Response Descriptors. Also, note that there are _two_ abort mechanisms(!); HC_CONTROL and
   // PIO_CONTROL.
@@ -835,7 +835,7 @@ module i3c_controller_fsm
         reg_state[r] <= '0;
     end else if (enable_i) begin
       // Capture/Reset the CCC and DEFB attributes when starting a command.
-      // TODO: invalidate state when a cmd is rejected.
+      // TODO(#31305): invalidate state when a cmd is rejected.
       if (state_q == CmdBegin) begin
         reg_state[CtrlCR_CCC]   <= cmd_attrs.ccc;
         // Similarly for the DEFB.
@@ -882,7 +882,7 @@ module i3c_controller_fsm
   assign cmd_nack_excess = &{trans_type == TransType_Cmd, cmd_trans_done, nacked};
 
   // Reading of data from the Tx buffer.
-  // TODO: Availability check required....must abort transfer if buffer underruns.
+  // TODO(#31305): Availability check required....must abort transfer if buffer underruns.
   assign txbuf_rready_o = &{cmd_attrs.attr != CmdAttr_ImmTransfer, state_q == TxData, trx_dready_i}
                         | &{state_q == CCC, ccc_rsp.txd_consume, !txd_imm};
 
@@ -1057,11 +1057,11 @@ module i3c_controller_fsm
       rx_data_q   <= '0;
     end else if (sw_reset_i) rx_wvalid_q <= 1'b0;
     else if (enable_i) begin
-      // TODO: Is this check sufficient/appropriate?
+      // TODO(#31304): Is this check sufficient/appropriate?
       if ((state_q == DATCapt) & !rsp_info.pending) begin
         rx_data_len <= '0;
       end else begin
-        // TODO: Consider more carefully the use of `cmd_state` here.
+        // TODO(#31304): Consider more carefully the use of `cmd_state` here.
         case ({cmd_state.available, cmd_attrs.attr})
           {1'b1, CmdAttr_AddrAssignment}: begin
             // The `data_length` field of the posted response indicates only whether there _may_ be
@@ -1104,7 +1104,8 @@ module i3c_controller_fsm
     // bit but it does not specify its location. The MIPI Alliance driver does not use this
     // field, and we're supposing it has the same format as the corresponding DAT field, rather
     // than the transmission bit order within the ENTDAA operation.
-    // TODO: Is there a way to resolve this so that driver software need not be adapted?
+    //
+    // TODO(#31304): Is there a way to resolve this so that driver software need not be adapted?
     dct_wdata_o.dynamic_address = {dat_entry.dynamic_address[23],      // Parity bit
                                    dat_entry.dynamic_address[22:16]};  // Dynamic address
   end
@@ -1180,7 +1181,8 @@ module i3c_controller_fsm
                            rsp_info.nack_det ? ErrStatus_NACK : trx_rsp_i.err_status;
         rsp.tid         <= rsp_info.tid;
         rsp.reserved    <= 'b0;  // Not used; pacify synthesis.
-        // TODO: The reported `DATA_LENGTH` field can be incorrect for early-terminated writes.
+        // TODO(#31304): The reported `DATA_LENGTH` field can be incorrect for early-terminated/
+        // writes.
         rsp.data_length <= (rsp_info.nack_det | ~rsp_info.rnw) ? data_len :  // From the command.
                                                  trx_rdvalid_i ? rx_next_len : rx_data_len;
       end
@@ -1223,8 +1225,8 @@ module i3c_controller_fsm
     else if (enable_i) rsp_info <= rsp_next;
   end
 
-  // TODO: Presently always able to receive a response; this indication is important in permitting
-  // the transceiver to proceed after reporting an error condition.
+  // TODO(#31304): Presently always able to receive a response; this indication is important in
+  // permitting the transceiver to proceed after reporting an error condition.
   assign trx_rready_o = 1'b1;
 
   // ------------------------------------- In-Band Interrupts --------------------------------------
@@ -1245,14 +1247,14 @@ module i3c_controller_fsm
       HotJoin:  ibi_capt_crr_hj = reg2hw_i.ibi_notify_ctrl.notify_hj_rejected.q  | !nacked;
       CRR:      ibi_capt_crr_hj = reg2hw_i.ibi_notify_ctrl.notify_crr_rejected.q | !nacked;
       // IBI (usually) carries a data payload and an ACKed IBI writes the status descriptor later.
-      // TODO: Some IBIs, as indicated by BCR[2], but we don't have that information!
+      // TODO(#31304): Some IBIs, as indicated by BCR[2], but we don't have that information!
       IBICheck: ibi_capt_crr_hj = reg2hw_i.ibi_notify_ctrl.notify_ibi_rejected.q;
       default:  ibi_capt_crr_hj = 1'b0;
     endcase
   end
 
-  // TODO: We need to wend the Broadcast CCCs into the IBI logic, when Standby Controller operation
-  // is supported.
+  // TODO(#31304): We need to wend the Broadcast CCCs into the IBI logic, when Standby Controller
+  // operation is supported.
   assign stby_bcst_wready_o = 1'b1;
   // Proposed IBI Status Descriptor.
   i3c_ibi_status_t ibi_stat_desc;
@@ -1390,7 +1392,7 @@ module i3c_controller_fsm
   //   Role Handoff commands.
   logic       datc_req, datc_gnt;
   logic [6:0] datc_addr;
-  // TODO: CRR Handoff MIPI internal comand needs DAT Cache access too.
+  // TODO(#31304): CRR Handoff MIPI internal comand needs DAT Cache access too.
   assign datc_req  = &{state_q == WaitArb, trx_avalid_i, trx_arb_i.arb_lost};
   assign datc_addr = datc_req ? trx_arb_i.addr : cmd_intn.mipi_reserved[18:12];
 
@@ -1398,7 +1400,8 @@ module i3c_controller_fsm
   // - since the DAT may not describe all devices we opt (in `i3c_dat_cache`) to reject IBI/CRR
   //   requests for a device not described, and for IBI issue a `DISEC`. This avoids us wasting
   //   bus bandwidth and perhaps makes us a bit more resilient.
-  //   TODO(#31304): We need to issue `DISEC`, and we may want to make the default verdict configurable.
+  // TODO(#31304): We need to issue `DISEC`, and we may want to make the default verdict
+  // configurable.
   // - the software driver can always be informed of the rejection via `IBI_NOTIFY_CTRL`.
   logic datc_hit;
   assign trx_aready_o = trx_avalid_i & (datc_gnt | ~trx_arb_i.arb_lost);
