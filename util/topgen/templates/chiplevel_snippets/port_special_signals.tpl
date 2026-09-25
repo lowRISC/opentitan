@@ -8,8 +8,10 @@
   clkmgr = lib.find_module(top['module'], 'clkmgr')
   rstmgr = lib.find_module(top['module'], 'rstmgr')
 %>\
+% if not feature_info["ast_is_internal"]:
   // Base clocks from AST
   input ast_pkg::ast_clks_t ast_base_clks_i,
+% endif
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
   // Unmanaged external clocks
@@ -30,9 +32,15 @@
 % endif\
 
   // Manual DFT signals
+% if feature_info["ast_is_internal"]:
+  ## If the scanmode source is internal, we expose it via an external connection in the top.hjson
+  ## file. But we must expose the raw scan clock to the padring.
+  output logic padring_scan_clk_o,
+% else:
   input                        scan_rst_ni, // reset used for test mode
   input                        scan_en_i,
   input prim_mubi_pkg::mubi4_t scanmode_i,  // lc_ctrl_pkg::On for Scan
+% endif
 
 % if feature_info["has_pinmux"]:
 % if cio_info["num_mio_pads"] != 0:

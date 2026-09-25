@@ -16,7 +16,7 @@ from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
 from reggen.lib import (PART_BOTH, PARTITIONS, PART_PRIMARY, PART_SECONDARY, check_bool,
-                        check_int, check_keys, check_list, check_name)
+                        check_int, check_keys, check_list, check_name, filter_by_partition)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
@@ -447,6 +447,10 @@ class IpBlock:
             raise ValueError(
                 f'{what} is marked is_split_ip, but nothing is assigned to '
                 'its secondary partition.')
+        if is_split_ip and not clocking.has_partition(PART_SECONDARY):
+            raise ValueError(
+                f'{what} is marked is_split_ip, but its secondary partition '
+                'declares no clocking.')
         if not is_split_ip and PART_SECONDARY in declared:
             raise ValueError(
                 f'{what} assigns {", ".join(declared[PART_SECONDARY])} to the '
@@ -464,6 +468,23 @@ class IpBlock:
                     f'{what} assigns parameter {param.name} to the '
                     f'{param.partition} partition, but the block has no such '
                     f'partition.')
+
+        # Auto-generated pwrmgr connections (wakeups and reset requests) refer
+        # to the IP's inter-module signal of the same name, qualified by
+        # partition for a split IP. A wakeup or reset request must therefore sit
+        # in the same partition as its matching inter-module signal.
+        im_partitions: dict[str, set[str]] = {}
+        for s in inter_signals:
+            im_partitions.setdefault(s.name, set()).add(s.partition)
+        for kind, sigs in (('wakeup', wakeups), ('reset request', rst_reqs)):
+            for sig in sigs:
+                parts = im_partitions.get(sig.name)
+                if parts is not None and sig.partition not in parts:
+                    raise ValueError(
+                        f'{what} declares {kind} {sig.name!r} in the '
+                        f'{sig.partition} partition, but its inter-module '
+                        f'signal is in the {", ".join(sorted(parts))} '
+                        'partition. They must be in the same partition.')
 
         # A split IP additionally needs an alert count per partition, since each
         # partition module carries only its own alerts. Generated here, once the
@@ -730,6 +751,21 @@ class IpBlock:
         '''Return the primary clock of the given partition of a block'''
 
         return self.clocking.get_primary_clock(partition)
+
+    def alerts_for(self, partition: Optional[str] = PART_PRIMARY) -> list[Alert]:
+        return filter_by_partition(self.alerts, partition)
+
+    def interrupts_for(self,
+                       partition: Optional[str] = PART_PRIMARY) -> list[Interrupt]:
+        return filter_by_partition(self.interrupts, partition)
+
+    def xputs_for(
+        self, partition: Optional[str] = PART_PRIMARY
+    ) -> tuple[list[Signal], list[Signal], list[Signal]]:
+        inouts, inputs, outputs = self.xputs
+        return (filter_by_partition(inouts, partition),
+                filter_by_partition(inputs, partition),
+                filter_by_partition(outputs, partition))
 
     def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:

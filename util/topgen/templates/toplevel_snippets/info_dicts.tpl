@@ -12,6 +12,20 @@ feature_info['has_rstmgr']        = lib.find_module(top['module'], 'rstmgr') is 
 feature_info['has_gpio']          = lib.find_module(top['module'], 'gpio') is not None
 feature_info['has_usb']           = lib.find_module(top['module'], 'usbdev') is not None
 
+feature_info['ast_is_internal'] = False
+if feature_info['has_ast']:
+  ast = lib.find_module(top['module'], 'ast')
+  ## TODO: We assume a split AST is always inside the PDs.
+  feature_info['ast_is_internal'] = ast.get('domain_secondary', None) is not None
+
+feature_info['dft_source_in_domain'] = {}
+for domain in top['power']['domains']:
+  feature_info['dft_source_in_domain'][domain] = False
+  if feature_info['ast_is_internal']:
+    ## TODO: for now the DFT source is fixed to the secondary partition of ast.
+    ast = lib.find_module(top['module'], 'ast')
+    feature_info['dft_source_in_domain'][domain] = ast['domain_secondary'] == domain
+
 feature_info['has_scan_en'] = {}
 for domain in top['power']['domains']:
   feature_info['has_scan_en'][domain] = False
@@ -21,6 +35,7 @@ for m in top['module']:
     continue
   block = name_to_block[m['type']]
   if block.scan_en:
+    # Scan / DFT ports are emitted for the primary partition only.
     feature_info['has_scan_en'][m['domain']] = True
 
 if feature_info['has_pinmux']:

@@ -18,7 +18,14 @@
   % endif
 <%
   block = name_to_block[m['type']]
-  inouts, inputs, outputs = block.xputs
+  ## A split IP can have both partitions in the same domain so we have to collect all CIOs of the
+  ## relevant partitions.
+  inouts, inputs, outputs = [], [], []
+  for p in lib.get_module_partitions(m, domain):
+    p_inouts, p_inputs, p_outputs = block.xputs_for(p)
+    inouts += p_inouts
+    inputs += p_inputs
+    outputs += p_outputs
 %>\
   // ${m["name"]}
   % for p_in in inputs + inouts:
