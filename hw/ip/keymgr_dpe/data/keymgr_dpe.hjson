@@ -275,6 +275,12 @@
       default: "1",
       expose:  "true"
     },
+    { name:    "SupportOtbnAsKdfEngine",
+      desc:    "Enable support for otbn as kdf engine",
+      type:    "bit",
+      default: "0",
+      expose:  "true"
+    }
   ],
 
 countermeasures: [

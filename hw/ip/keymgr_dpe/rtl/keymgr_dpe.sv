@@ -31,7 +31,9 @@ module keymgr_dpe
   // Number of available boot stages
   parameter int unsigned NumBootStages         = 3,
   // Number of ROM digest inputs
-  parameter int unsigned NumRomDigestInputs    = 1
+  parameter int unsigned NumRomDigestInputs    = 1,
+  // Enable support for otbn as kdf engine
+  parameter bit SupportOtbnAsKdfEngine         = 1'b0
 ) (
   input clk_i,
   input rst_ni,
@@ -151,6 +153,10 @@ module keymgr_dpe
     .out_o  (sensitive_key_buf)
   );
   assign sensitive_key_o = mubi4_t'(sensitive_key_buf);
+
+  // TODO: read unassigned parameter to avoid linter error
+  logic unused_parameter;
+  assign unused_parameter = SupportOtbnAsKdfEngine;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants

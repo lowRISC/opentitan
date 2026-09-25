@@ -734,6 +734,7 @@
         NumInstHwSlot: "8",
         NumBootStages: "2",
         NumRomDigestInputs: "2",
+        SupportOtbnAsKdfEngine: "1",
       },
     },
     { name: "csrng",
