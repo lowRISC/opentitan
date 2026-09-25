@@ -1459,13 +1459,13 @@
       name: chip_jtag_csr_rw
       uvm_test_seq: "chip_jtag_csr_rw_vseq"
       en_run_modes: ["stub_cpu_mode"]
-      run_opts: ["+en_scb=0", "+csr_rw", "+create_jtag_riscv_map=1"]
+      run_opts: ["+en_scb=0", "+en_scb_mem_chk=0", "+csr_rw", "+create_jtag_riscv_map=1"]
     }
     {
       name: chip_jtag_mem_access
       uvm_test_seq: "chip_jtag_mem_vseq"
       en_run_modes: ["stub_cpu_mode"]
-      run_opts: ["+create_jtag_riscv_map=1"]
+      run_opts: ["+en_scb_mem_chk=0", "+create_jtag_riscv_map=1"]
     }
     {
       name: chip_sw_ast_clk_outputs
