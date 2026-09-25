@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+`include "prim_fifo_assert.svh"
 
 module rom_ctrl
   import rom_ctrl_reg_pkg::NumAlerts;
@@ -202,7 +203,7 @@ module rom_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(SecDisableScrambling),
     .EnableDataIntgPt(!SecDisableScrambling), // SEC_CM: BUS.INTEGRITY
-    .SecFifoPtr      (1)                      // SEC_CM: TLUL_FIFO.CTR.REDUN
+    .SecFifo(1)                               // SEC_CM: TLUL_FIFO.MEM.REDUN
   ) u_tl_adapter_rom (
     .clk_i,
     .rst_ni,
@@ -623,29 +624,22 @@ module rom_ctrl
                                                     (gen_alert_tx[AlertFatalIdx].
                                                      u_alert_sender.alert_req_i))
 
-  // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
-                                            gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
+  // Alert assertions for the redundant fifos in the TL-UL adapter. Each fifo raises err_o if the
+  // main and shadow copies disagree. In this case, intg_error_o is set, which triggers a fatal
+  // alert.
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    RspFifo,
+    u_tl_adapter_rom.gen_sec_u_rspfifo.u_rspfifo,
+    gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    SramReqFifo,
+    u_tl_adapter_rom.gen_sec_u_sramreqfifo.u_sramreqfifo,
+    gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    ReqFifo,
+    u_tl_adapter_rom.gen_sec_u_reqfifo.u_reqfifo,
+    gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i
+  )
 endmodule
