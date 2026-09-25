@@ -65,18 +65,22 @@ Providing this sequence as additional data to CSRNG requires software to write t
   </tr>
 </table>
 
-When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_val), CSRNG returns the bytes of V and Key in the following order:
+When reading the internal state of a stopped instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 14 words: the reseed counter, the bytes of V and Key, and finally the FIPS/instantiated status, in the following order:
 <table>
 <caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
 <thead>
   <tr>
     <th>Word Index</th>
-    <th>Byte Indices of V and Key</th>
+    <th>Contents</th>
   </tr>
 </thead>
 <tbody>
   <tr>
     <td>1</td>
+    <td>Reseed counter</td>
+  </tr>
+  <tr>
+    <td>2</td>
     <td>0xV<sub>13</sub>V<sub>14</sub>V<sub>15</sub>V<sub>16</sub></td>
   </tr>
   <tr>
@@ -84,11 +88,11 @@ When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_va
     <td>...</td>
   </tr>
   <tr>
-    <td>4</td>
+    <td>5</td>
     <td>0xV<sub>01</sub>V<sub>02</sub>V<sub>03</sub>V<sub>04</sub></td>
   </tr>
   <tr>
-    <td>5</td>
+    <td>6</td>
     <td>0xKey<sub>29</sub>Key<sub>30</sub>Key<sub>31</sub>Key<sub>32</sub></td>
   </tr>
   <tr>
@@ -96,14 +100,38 @@ When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_va
     <td>...</td>
   </tr>
   <tr>
-    <td>11</td>
+    <td>12</td>
     <td>0xKey<sub>05</sub>Key<sub>06</sub>Key<sub>07</sub>Key<sub>08</sub></td>
   </tr>
   <tr>
-    <td>12</td>
+    <td>13</td>
     <td>0xKey<sub>01</sub>Key<sub>02</sub>Key<sub>03</sub>Key<sub>04</sub></td>
   </tr>
+  <tr>
+    <td>14</td>
+    <td>Bit 0: instantiated, bit 1: FIPS, bits 2-31: reserved (read as 0)</td>
+  </tr>
 </table>
+
+### Internal-State Save and Restore
+
+CSRNG supports pausing a single instance, reading out (or overwriting) its full internal DRBG state, and resuming it, via [`INT_STATE_CMD`](registers.md#int_state_cmd):
+
+1. Select the target instance by writing its index to [`INT_STATE_NUM`](registers.md#int_state_num).
+1. Write EXPORT_REQ (to read out the instance's state) or IMPORT_REQ (to overwrite it) to [`INT_STATE_CMD`](registers.md#int_state_cmd).
+   Only one instance may have an EXPORT/IMPORT session open at a time. Software must RESUME an already-stopped instance before starting a new EXPORT/IMPORT on a different one.
+1. Wait for the instance to quiesce, either by polling [`INT_STATE_CMD_STS`](registers.md#int_state_cmd_sts) or by waiting for the `cs_int_state_stopped` interrupt.
+1. Read out the internal state DB through [`INT_STATE_VAL`](registers.md#int_state_val).
+   If the instance may have a Generate command paused mid-sequence, read [`INT_STATE_CMD_GEN_VAL`](registers.md#int_state_cmd_gen_val).
+   If `GENERATE_ADATA_VLD` reads True, read [`INT_STATE_CMD_ADATA_VAL`](registers.md#int_state_cmd_adata_val).
+   For IMPORT, write these registers instead; accepting IMPORT always first resets the Generate-resume bookkeeping in [`INT_STATE_CMD_GEN_VAL`](registers.md#int_state_cmd_gen_val) and [`INT_STATE_CMD_ADATA_VAL`](registers.md#int_state_cmd_adata_val) to a "no Generate in progress" default, so only the fields that actually need to change must be written.
+1. Write RESUME to [`INT_STATE_CMD`](registers.md#int_state_cmd) to let the instance continue processing commands.
+
+Note that [`CTRL.INT_STATE_ENABLE`](registers.md#ctrl) must be set to `kMultiBitBool4True`, and the `otp_en_csrng_sw_app_read` input from OTP must be `kMultiBitBool8True`, for any of this to be permitted.
+Otherwise EXPORT/IMPORT/RESUME are rejected and the internal-state registers read as 0.
+
+On a multi-block Generate command, an in-progress command stops immediately, without waiting for the application to read genbits.
+If the final block's genbits are still sitting unread in the FIFO when the stop takes effect, the command is not acked and the block remains there for the application to read whenever it does.
 
 Finally, when reading a byte string of say 64 bytes (16 words) B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>64</sub> from [`GENBITS`](registers.md#genbits) as defined in Appendix A of [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf), the bytes are returned in the following order.
 Note that always 4 words return 1 128-bit GENBITS block.
