@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 import re
 
 from reggen.lib import (PARTITIONS, PART_PRIMARY, PART_SECONDARY, check_keys, check_list,
-                        check_bool, check_optional_name)
+                        check_bool, check_optional_name, filter_by_partition)
 
 
 class ClockingItem:
@@ -103,9 +103,9 @@ class Clocking:
         # Extract the raw lists for each partition.
         raw_partitions: List[Tuple[str, List[object]]] = []
         if isinstance(raw, dict):
-            # The primary partition must always be present and non-empty.
-            # An unclocked secondary partition may omit the key or leave it
-            # empty.
+            # The primary partition must always be present and non-empty. A
+            # split IP always requires a secondary partition. Handled by
+            # IpBlock.
             rd = check_keys(raw, what, [PART_PRIMARY], [PART_SECONDARY])
             if not rd.get(PART_PRIMARY):
                 raise ValueError(f'Primary partition of {what} is empty but '
@@ -162,9 +162,7 @@ class Clocking:
         '''Return the list of clocking items for the given partition.
 
         If partition is None, return all items.'''
-        if partition is None:
-            return self.items
-        return [item for item in self.items if item.partition == partition]
+        return filter_by_partition(self.items, partition)
 
     def get_primary_clock(self, partition: str = PART_PRIMARY) -> Optional[ClockingItem]:
         return self._primaries.get(partition)

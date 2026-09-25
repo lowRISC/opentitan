@@ -125,13 +125,8 @@ module ast (
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   // analog test outputs
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequency is 96MHz
@@ -151,20 +146,129 @@ module ast (
   output scan_reset_no                          // Scan Reset output
 );
 
-import ast_aon_main_pkg::*;
+localparam int unsigned EntropyStreams  = ast_pkg::EntropyStreams;
+localparam int unsigned UsbCalibWidth   = ast_pkg::UsbCalibWidth;
+localparam int unsigned Pad2AstInWidth  = ast_pkg::Pad2AstInWidth;
+localparam int unsigned Ast2PadOutWidth = ast_pkg::Ast2PadOutWidth;
 
-// Inter-domain communication signals
-ast_aon_main_pkg::aon_to_main_t aon_to_main;
-ast_aon_main_pkg::main_to_aon_t main_to_aon;
+// Intra-IP communication signals
+ast_intraip_pkg::s2p_t intraip_s2p;
+ast_intraip_pkg::p2s_t intraip_p2s;
 
-// Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
-ast_pkg::tpm_rm_t tpram_rm;
-ast_pkg::spm_rm_t spram_rm;
-ast_pkg::rom_rm_t sprom_rm;
+// Clock bypass for OS FPGA
+ast_pkg::clks_osc_byp_t clk_osc_byp;
+`ifdef AST_BYPASS_CLK
+  assign clk_osc_byp = clk_osc_byp_i;
+`else
+  assign clk_osc_byp = '0;
+`endif
 
+//////////////////////////////////////////////////////////
+// Conversion signals to keep ast.sv interface the same //
+//////////////////////////////////////////////////////////
+// Convert ADC signals to/from req/rsp
+ast_pkg::adc_ast_req_t adc_req;
+assign adc_req = '{
+  pd:          adc_pd_i,
+  channel_sel: adc_chnsel_i
+};
+
+ast_pkg::adc_ast_rsp_t adc_rsp;
+assign adc_d_o = adc_rsp.data;
+assign adc_d_val_o = adc_rsp.data_valid;
+
+ast_pkg::ast_vx_supp_t vx_supp;
+assign vx_supp = '{
+  vcc:    vcc_supp_i,
+  vcaon:  vcaon_supp_i,
+  vcmain: vcmain_supp_i,
+  vioa:   vioa_supp_i,
+  viob:   viob_supp_i
+};
+
+ast_pkg::ast_obs_bus_t obs;
+assign obs = '{
+  fla_obs: fla_obs_i,
+  otp_obs: otp_obs_i,
+  otm_obs: otm_obs_i,
+  usb_obs: usb_obs_i
+};
+
+ast_pkg::ast_mem_cfg_primary_req_t mem_cfg_primary_req;
+ast_pkg::ast_mem_cfg_primary_rsp_t mem_cfg_primary_rsp;
+ast_pkg::ast_mem_cfg_secondary_req_t mem_cfg_secondary_req;
+ast_pkg::ast_mem_cfg_secondary_rsp_t mem_cfg_secondary_rsp;
+
+assign mem_cfg_req_o = '{
+  otbn_imem:                mem_cfg_primary_req.otbn_imem,
+  otbn_dmem:                mem_cfg_primary_req.otbn_dmem,
+  i2c0:                     mem_cfg_primary_req.i2c0,
+  i2c1:                     mem_cfg_primary_req.i2c1,
+  i2c2:                     mem_cfg_primary_req.i2c2,
+  usbdev_ram:               mem_cfg_primary_req.usbdev_ram,
+  rv_core_ibex_icache_tag:  mem_cfg_primary_req.rv_core_ibex_icache_tag,
+  rv_core_ibex_icache_data: mem_cfg_primary_req.rv_core_ibex_icache_data,
+  sram_ctrl_main:           mem_cfg_primary_req.sram_ctrl_main,
+  sram_ctrl_sec:            mem_cfg_primary_req.sram_ctrl_sec,
+  sram_ctrl_ret:            mem_cfg_secondary_req.sram_ctrl_ret,
+  sram_ctrl_meta:           mem_cfg_primary_req.sram_ctrl_meta,
+  spi_device_sys2spi:       mem_cfg_primary_req.spi_device_sys2spi,
+  spi_device_spi2sys:       mem_cfg_primary_req.spi_device_spi2sys,
+  rom_ctrl_rom:             mem_cfg_primary_req.rom_ctrl_rom
+};
+
+assign mem_cfg_primary_rsp = '{
+  otbn_imem: mem_cfg_rsp_i.otbn_imem,
+  otbn_dmem: mem_cfg_rsp_i.otbn_dmem,
+  i2c0: mem_cfg_rsp_i.i2c0,
+  i2c1: mem_cfg_rsp_i.i2c1,
+  i2c2: mem_cfg_rsp_i.i2c2,
+  usbdev_ram: mem_cfg_rsp_i.usbdev_ram,
+  rv_core_ibex_icache_tag: mem_cfg_rsp_i.rv_core_ibex_icache_tag,
+  rv_core_ibex_icache_data: mem_cfg_rsp_i.rv_core_ibex_icache_data,
+  sram_ctrl_main: mem_cfg_rsp_i.sram_ctrl_main,
+  sram_ctrl_sec: mem_cfg_rsp_i.sram_ctrl_sec,
+  sram_ctrl_meta: mem_cfg_rsp_i.sram_ctrl_meta,
+  spi_device_sys2spi: mem_cfg_rsp_i.spi_device_sys2spi,
+  spi_device_spi2sys: mem_cfg_rsp_i.spi_device_spi2sys,
+  rom_ctrl_rom: mem_cfg_rsp_i.rom_ctrl_rom
+};
+
+assign mem_cfg_secondary_rsp = '{
+  sram_ctrl_ret: mem_cfg_rsp_i.sram_ctrl_ret
+};
+
+pwrmgr_pkg::pwr_ast_req_t pwrmgr_req;
+pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_rsp;
+
+assign pwrmgr_req = '{
+  main_pd_n:     main_pd_ni,
+  pwr_clamp_env: main_env_iso_en_i,
+  pwr_clamp:     1'b0, // unused
+  slow_clk_en:   1'b0, // unused
+  core_clk_en:   clk_src_sys_en_i,
+  io_clk_en:     clk_src_io_en_i,
+  usb_clk_en:    clk_src_usb_en_i
+};
+
+assign clk_src_aon_val_o = pwrmgr_rsp.slow_clk_val;
+assign clk_src_io_val_o  = pwrmgr_rsp.io_clk_val;
+assign clk_src_usb_val_o = pwrmgr_rsp.usb_clk_val;
+assign clk_src_sys_val_o = pwrmgr_rsp.core_clk_val;
+// pwrmgr_rsp.main_pok goes via ast_pwst_o.
+logic unused_rsp_main_pok;
+assign unused_rsp_main_pok = pwrmgr_rsp.main_pok;
+
+////////////////////
+// AST partitions //
+////////////////////
 
 // AON Domain instantiation
-ast_aon u_ast_aon (
+ast_part_secondary #(
+  .UsbCalibWidth   ( UsbCalibWidth ),
+  .Pad2AstInWidth  ( Pad2AstInWidth ),
+  .Ast2PadOutWidth ( Ast2PadOutWidth )
+) u_ast_part_secondary (
   .clk_ast_adc_i           ( clk_ast_adc_i ),
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
@@ -176,142 +280,92 @@ ast_aon u_ast_aon (
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
   .rst_ast_tlul_ni         ( rst_ast_tlul_ni ),
   .clk_ast_ext_i           ( clk_ast_ext_i ),
-  .por_ni                  ( por_ni ),
+  .por_n_i                 ( por_ni ),
   .sns_clks_i              ( sns_clks_i ),
   .sns_rsts_i              ( sns_rsts_i ),
   .sns_spi_ext_clk_i       ( sns_spi_ext_clk_i ),
-  .vcc_supp_i              ( vcc_supp_i ),
-  .vcaon_supp_i            ( vcaon_supp_i ),
-  .vcmain_supp_i           ( vcmain_supp_i ),
-  .vioa_supp_i             ( vioa_supp_i ),
-  .viob_supp_i             ( viob_supp_i ),
+  .vx_supp_i               ( vx_supp ),
   .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
-  .main_pd_ni              ( main_pd_ni ),
-  .main_env_iso_en_i       ( main_env_iso_en_i ),
+  .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst
+  .io_pwr_st_o             ( ), // Unused
+  .pwrmgr_i                ( pwrmgr_req ),
+  .pwrmgr_o                ( pwrmgr_rsp ),
   .flash_power_down_h_o    ( flash_power_down_h_o ),
   .flash_power_ready_h_o   ( flash_power_ready_h_o ),
   .otp_power_seq_i         ( otp_power_seq_i ),
   .otp_power_seq_h_o       ( otp_power_seq_h_o ),
   .clk_src_aon_o           ( clk_src_aon_o ),
-  .clk_src_aon_val_o       ( clk_src_aon_val_o ),
   .usb_ref_pulse_i         ( usb_ref_pulse_i ),
   .usb_ref_val_i           ( usb_ref_val_i ),
   .clk_ast_usb_i           ( clk_ast_usb_i ),
   .rst_ast_usb_ni          ( rst_ast_usb_ni ),
-  .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .usb_io_pu_cal_o         ( usb_io_pu_cal_o ),
-  .adc_pd_i                ( adc_pd_i ),
-  .adc_a0_ai               ( adc_a0_ai ),
-  .adc_a1_ai               ( adc_a1_ai ),
-  .adc_chnsel_i            ( adc_chnsel_i ),
-  .adc_d_o                 ( adc_d_o ),
-  .adc_d_val_o             ( adc_d_val_o ),
-  .alert_rsp_i             ( alert_rsp_i ),
-  .alert_req_o             ( alert_req_o ),
+  .adc_i                   ( adc_req ),
+  .adc_o                   ( adc_rsp ),
+  .adc_a0_a_i              ( adc_a0_ai ),
+  .adc_a1_a_i              ( adc_a1_ai ),
+  .alert_i                 ( alert_rsp_i ),
+  .alert_o                 ( alert_req_o ),
   .dft_strap_test_i        ( dft_strap_test_i ),
   .lc_dft_en_i             ( lc_dft_en_i ),
-  .fla_obs_i               ( fla_obs_i ),
-  .otp_obs_i               ( otp_obs_i ),
-  .otm_obs_i               ( otm_obs_i ),
-  .usb_obs_i               ( usb_obs_i ),
+  .obs_i                   ( obs ),
   .obs_ctrl_o              ( obs_ctrl_o ),
   .padmux2ast_i            ( padmux2ast_i ),
   .ast2padmux_o            ( ast2padmux_o ),
   .mux_iob_sel_o           ( mux_iob_sel_o ),
-  .ast2pad_t0_ao           ( ast2pad_t0_ao ),
-  .ast2pad_t1_ao           ( ast2pad_t1_ao ),
+  .ast2pad_t0_a_o          ( ast2pad_t0_ao ),
+  .ast2pad_t1_a_o          ( ast2pad_t1_ao ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .flash_bist_en_o         ( flash_bist_en_o ),
-  .tpram_rm_o              ( tpram_rm ),
-  .spram_rm_o              ( spram_rm ),
-  .sprom_rm_o              ( sprom_rm ),
+  .mem_cfg_o               ( mem_cfg_secondary_req ),
+  .mem_cfg_i               ( mem_cfg_secondary_rsp ),
   .dft_scan_md_o           ( dft_scan_md_o ),
   .scan_shift_en_o         ( scan_shift_en_o ),
-  .scan_reset_no           ( scan_reset_no ),
-  .aon_to_main_o           ( aon_to_main ),
-  .main_to_aon_i           ( main_to_aon )
+  .scan_reset_n_o          ( scan_reset_no ),
+  .intraip_s2p_o           ( intraip_s2p ),
+  .intraip_p2s_i           ( intraip_p2s )
 );
 
 // Main Domain instantiation
-ast_main u_ast_main (
+ast_part_primary #(
+  .EntropyStreams ( EntropyStreams )
+) u_ast_part_primary (
   .tl_i                    ( tl_i ),
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
   .rst_ast_tlul_ni         ( rst_ast_tlul_ni ),
-  .ast_init_done_o         ( ast_init_done_o ),
+  .init_done_o             ( ast_init_done_o ),
   .rng_en_i                ( rng_en_i ),
   .rng_fips_i              ( rng_fips_i ),
   .rng_val_o               ( rng_val_o ),
   .rng_b_o                 ( rng_b_o ),
-  .entropy_rsp_i           ( entropy_rsp_i ),
-  .entropy_req_o           ( entropy_req_o ),
+  .edn_i                   ( entropy_rsp_i ),
+  .edn_o                   ( entropy_req_o ),
   .clk_src_sys_jen_i       ( clk_src_sys_jen_i ),
   .clk_ast_es_i            ( clk_ast_es_i ),
   .rst_ast_es_ni           ( rst_ast_es_ni ),
-  .aon_to_main_i           ( aon_to_main ),
-  .main_to_aon_o           ( main_to_aon ),
+  .intraip_s2p_i           ( intraip_s2p ),
+  .intraip_p2s_o           ( intraip_p2s ),
   // Clock bypass interface
   .clk_ast_ext_i           ( clk_ast_ext_i ),
-  .clk_src_sys_en_i        ( clk_src_sys_en_i ),
-  .clk_src_io_en_i         ( clk_src_io_en_i ),
-  .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .clk_ast_usb_i           ( clk_ast_usb_i ),
   .rst_ast_usb_ni          ( rst_ast_usb_ni ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .clk_src_sys_o           ( clk_src_sys_o ),
-  .clk_src_sys_val_o       ( clk_src_sys_val_o ),
   .clk_src_io_o            ( clk_src_io_o ),
-  .clk_src_io_val_o        ( clk_src_io_val_o ),
   .clk_src_io_48m_o        ( clk_src_io_48m_o ),
   .clk_src_usb_o           ( clk_src_usb_o ),
-  .clk_src_usb_val_o       ( clk_src_usb_val_o ),
   .io_clk_byp_ack_o        ( io_clk_byp_ack_o ),
-  .all_clk_byp_ack_o       ( all_clk_byp_ack_o )
+  .all_clk_byp_ack_o       ( all_clk_byp_ack_o ),
+  .mem_cfg_o               ( mem_cfg_primary_req ),
+  .mem_cfg_i               ( mem_cfg_primary_rsp )
 );
-
-///////////////////////////////////////
-// Memory configuration distribution
-///////////////////////////////////////
-assign mem_cfg_req_o.otbn_imem                = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.otbn_dmem                = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c0                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c1                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.i2c2                     = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.usbdev_ram               = '{req: spram_rm.cfg};
-assign mem_cfg_req_o.rv_core_ibex_icache_tag  =
-    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.rv_core_ibex_icache_data =
-    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_main           =
-    {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_sec            =
-    {ast_pkg::SramCtrlSecNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_ret            =
-    {ast_pkg::SramCtrlRetNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.sram_ctrl_meta           =
-    {ast_pkg::SramCtrlMetaNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
-assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};
-assign mem_cfg_req_o.spi_device_spi2sys       = '{req: tpram_rm.cfg};
-assign mem_cfg_req_o.rom_ctrl_rom             = '{req: sprom_rm.cfg};
-
-logic unused_mem_cfg;
-assign unused_mem_cfg = ^mem_cfg_rsp_i;
-
-///////////////////////////////////////
-// Assertions
-///////////////////////////////////////
-// Memory configuration requests
-`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_req_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 endmodule : ast

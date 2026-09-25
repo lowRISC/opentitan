@@ -16,7 +16,7 @@ last_modidx_with_params = lib.idx_of_last_module_with_params(top, domain)
   % if not lib.is_inst(m):
 <% continue %>
   % endif
-<% param_list_filtered = [p for p in m["param_list"] if p.get("local") == "false" and p.get("expose") == "true"] %>\
+<% param_list_filtered = lib.exposed_params_for_domain(m, domain) %>\
   % if not feedthrough and param_list_filtered:
   // parameters for ${m['name']}
   % endif
