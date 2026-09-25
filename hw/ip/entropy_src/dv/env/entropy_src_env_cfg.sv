@@ -212,6 +212,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     repcnt_ht_cntr  :/ 4,
     repcnts_ht_cntr :/ 1,
     adaptp_ht_cntr  :/ 4,
+    adaptps_ht_cntr :/ 1,
     bucket_ht_cntr  :/ 16,
     markov_ht_cntr  :/ 4};}
 

@@ -110,6 +110,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           adaptp_ht_cntr: begin // Adaptive Proportion Test counter
             adaptp_ht_cntr_test(m_rng_push_seq, fld);
           end
+          adaptps_ht_cntr: begin // Adaptive Proportion Symbol Test counter
+            adaptps_ht_cntr_test(m_rng_push_seq, fld);
+          end
           bucket_ht_cntr: begin // Bucket test counter
             bucket_ht_cntr_test(m_rng_push_seq, fld);
           end

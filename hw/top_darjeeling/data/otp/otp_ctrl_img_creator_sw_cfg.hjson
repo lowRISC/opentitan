@@ -113,6 +113,10 @@
                     value: "0x0",
                 }
                 {
+                    name: "CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
                     value: "0xffffffff",
                 }

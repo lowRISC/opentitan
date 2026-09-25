@@ -616,6 +616,37 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask // adaptp_ht_fail_seq
 
+  task adaptps_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
+                           bit[15:0] thresh,
+                           int window_size,
+                           int num_trans = m_rng_push_seq.num_trans);
+    bit fail_symbol;
+    rng_val_t fixed_rng_val;
+    ral.adaptps_threshold.set(thresh);
+    csr_update(.csr(ral.adaptps_threshold));
+    // Randomly pick a symbol to fail. We will start every window with this symbol.
+    fixed_rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+    `uvm_info(`gfn, $sformatf("fixed_rng_val %0x", fixed_rng_val), UVM_MEDIUM)
+    // Turn on module_enable
+    enable_dut();
+    // Set rng_val. Start with the fixed symbol picked above.
+    for (int i = 0; i < num_trans; i++) begin
+      if (i % window_size == 0) begin
+        // Start every new window with the fixed symbol.
+        rng_val = fixed_rng_val;
+      end else begin
+        // Randomly pick the fixed or any other symbol.
+        fail_symbol = $urandom_range(0, 1);
+        if (fail_symbol) begin
+          rng_val = fixed_rng_val;
+        end else begin
+          rng_val = rng_val_t'($urandom_range(0, 2**`RNG_BUS_WIDTH-1));
+        end
+      end
+      cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
+    end
+  endtask // adaptps_ht_fail_seq
+
   task bucket_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] thresh,
                           int num_trans = m_rng_push_seq.num_trans);
@@ -780,6 +811,31 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.adaptp_lo_threshold.set(16'hfffe);
     csr_update(.csr(ral.adaptp_lo_threshold));
   endtask // adaptp_ht_cntr_test
+
+  task adaptps_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
+                            uvm_reg_field reg_field);
+    int window_size;
+    string path;
+    bit [15:0] thresh = 16'h0008;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
+    if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+      window_size = cfg.dut_cfg.fips_window_size;
+    end else begin
+      window_size = cfg.dut_cfg.bypass_window_size / `RNG_BUS_WIDTH;
+    end
+    adaptps_ht_fail_seq(m_rng_push_seq, thresh, window_size);
+    // Start the sequence
+    m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
+    cfg.clk_rst_vif.wait_clks(100);
+    // Force adaptp ht counter err
+    path = cfg.entropy_src_path_vif.cntr_err_path("adaptps_ht", cfg.which_cntr_replicate);
+    // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
+    // the counter error
+    force_path_err(path, path_err_val, reg_field, 1'b1);
+    // Write the threshold back to a high value
+    ral.adaptp_hi_threshold.set(16'hfffe);
+    csr_update(.csr(ral.adaptps_threshold));
+  endtask // adaptps_ht_cntr_test
 
   task bucket_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);

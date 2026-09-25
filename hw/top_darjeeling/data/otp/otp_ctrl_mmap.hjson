@@ -211,6 +211,10 @@
                     size: "4"
                 }
                 {
+                    name: "CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS",
+                    size: "4"
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
                     size: "4"
                 }

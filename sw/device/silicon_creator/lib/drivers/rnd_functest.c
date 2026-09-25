@@ -32,6 +32,7 @@ static uint16_t random_low_threshold(dif_entropy_src_test_t test_id,
   switch (test_id) {
     case kDifEntropySrcTestRepetitionCount:
     case kDifEntropySrcTestRepetitionCountSymbol:
+    case kDifEntropySrcTestAdaptiveProportionSymbol:
     case kDifEntropySrcTestBucket:
       result = 0;
       break;
@@ -113,6 +114,15 @@ static void configure_fips_health_checks_from_otp(void) {
                       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS_OFFSET) >>
                   16,
           },
+      [kDifEntropySrcTestAdaptiveProportionSymbol] =
+          {
+              .test_type = kDifEntropySrcTestAdaptiveProportionSymbol,
+              .high_threshold =
+                  otp_read32(
+                      OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS_OFFSET) >>
+                  16,
+              .low_threshold = 0,
+          },
       [kDifEntropySrcTestBucket] =
           {
               .test_type = kDifEntropySrcTestBucket,
@@ -179,6 +189,7 @@ rom_error_t test_boot_otp_crc_check(void) {
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS_OFFSET,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS_OFFSET,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS_OFFSET,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ADAPTPS_THRESHOLDS_OFFSET,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS_OFFSET,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS_OFFSET,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS_OFFSET,

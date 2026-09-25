@@ -69,7 +69,9 @@ status_t entropy_src_testutils_disable_health_tests(
   static dif_entropy_src_test_t kHealthTest[] = {
       kDifEntropySrcTestRepetitionCount,
       kDifEntropySrcTestRepetitionCountSymbol,
-      kDifEntropySrcTestAdaptiveProportion, kDifEntropySrcTestBucket,
+      kDifEntropySrcTestAdaptiveProportion,
+      kDifEntropySrcTestAdaptiveProportionSymbol,
+      kDifEntropySrcTestBucket,
       kDifEntropySrcTestMarkov};
   for (size_t i = 0; i < ARRAYSIZE(kHealthTest); i++) {
     TRY(dif_entropy_src_health_test_configure(
@@ -99,6 +101,9 @@ uint32_t entropy_src_config_crc32(dif_entropy_src_t *entropy_src) {
   crc32_add32(&ctx,
               mmio_region_read32(entropy_src->base_addr,
                                  ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET));
+  crc32_add32(&ctx,
+              mmio_region_read32(entropy_src->base_addr,
+                                 ENTROPY_SRC_ADAPTPS_THRESHOLD_REG_OFFSET));
   crc32_add32(&ctx,
               mmio_region_read32(entropy_src->base_addr,
                                  ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET));

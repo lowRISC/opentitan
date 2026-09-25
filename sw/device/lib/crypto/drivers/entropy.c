@@ -205,6 +205,10 @@ typedef struct entropy_src_config {
    */
   uint16_t adaptp_lo_threshold;
   /**
+   * Adaptive proportion symbol test threshold.
+   */
+  uint16_t adaptps_threshold;
+  /**
    * Bucket test threshold.
    */
   uint16_t bucket_threshold;
@@ -275,6 +279,7 @@ static const entropy_complex_config_t
                         .repcnts_threshold = 0xffff,
                         .adaptp_hi_threshold = 0xffff,
                         .adaptp_lo_threshold = 0x0,
+                        .adaptps_threshold = 0xffff,
                         .bucket_threshold = 0xffff,
                         .markov_hi_threshold = 0xffff,
                         .markov_lo_threshold = 0x0,
@@ -354,6 +359,7 @@ static const entropy_complex_config_t
                     .repcnts_threshold = 21,
                     .adaptp_hi_threshold = 1591,
                     .adaptp_lo_threshold = 2048 - 1591,  // 457
+                    .adaptps_threshold = 0xffff,
                     .bucket_threshold = 201,
                     .markov_hi_threshold = 824,
                     .markov_lo_threshold = 1024 - 824,  // 200
@@ -857,6 +863,9 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   abs_mmio_write32(
       entropy_src_base() + ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET,
       config->adaptp_lo_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_ADAPTPS_THRESHOLD_REG_OFFSET,
+      config->adaptps_threshold);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET,
                    config->bucket_threshold);
   abs_mmio_write32(
@@ -989,6 +998,11 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   if (abs_mmio_read32(entropy_src_base() +
                       ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET) !=
       config->adaptp_lo_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_ADAPTPS_THRESHOLD_REG_OFFSET) !=
+      config->adaptps_threshold) {
     return OTCRYPTO_RECOV_ERR;
   }
   if (abs_mmio_read32(entropy_src_base() +
@@ -1168,6 +1182,11 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
   if (abs_mmio_read32(entropy_src_base() +
                       ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET) !=
       entropy_src_config->adaptp_lo_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_ADAPTPS_THRESHOLD_REG_OFFSET) !=
+      entropy_src_config->adaptps_threshold) {
     return OTCRYPTO_RECOV_ERR;
   }
   if (abs_mmio_read32(entropy_src_base() +

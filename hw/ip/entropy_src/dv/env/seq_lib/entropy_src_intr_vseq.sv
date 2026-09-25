@@ -99,6 +99,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     int num_valid_rng_trans = 0;
     int num_invalid_rng_trans = 0;
     int bundles_found = 0;
+    int window_size;
     // The actual RNG symbols are generated based on this array. For configurations with a symbol
     // size greater than 4 bits, every 4 consecutive lanes of the symbols are chosen from multiple,
     // shuffled versions of this array.
@@ -243,10 +244,27 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         end
         adaptp_ht_fail_seq(m_rng_push_seq, lo_thresh, hi_thresh, num_invalid_rng_trans);
       end
+      adaptps_ht_fail: begin // Adaptive proportion symbol test
+        `uvm_info(`gfn, $sformatf("adaptps_ht_fail"), UVM_MEDIUM)
+        // We know that the numbers 0-15 are evenly distributed. So we get our Adaptive Proportion
+        // Symbol threshold by calculating window size / number of symbols.
+        fips_thresh = cfg.dut_cfg.fips_window_size / 2**`RNG_BUS_WIDTH;
+        bypass_thresh = cfg.dut_cfg.bypass_window_size / `RNG_BUS_WIDTH / 2**`RNG_BUS_WIDTH;
+        fips_thresh = fips_thresh + 1;
+        bypass_thresh = bypass_thresh + 3;
+        if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+          thresh = fips_thresh;
+          window_size = cfg.dut_cfg.fips_window_size;
+        end else begin
+          thresh = bypass_thresh;
+          window_size = cfg.dut_cfg.bypass_window_size / `RNG_BUS_WIDTH;
+        end
+        adaptps_ht_fail_seq(m_rng_push_seq, thresh, window_size, num_invalid_rng_trans);
+      end
       bucket_ht_fail: begin // Bucket test
         `uvm_info(`gfn, $sformatf("bucket_ht_fail"), UVM_MEDIUM)
         // We know that the numbers 0-15 are evenly distributed. So we get our bucket threshold
-        // by calculating window size in bits / bucket size * number of buckets * number of
+        // by calculating window size in bits / (bucket size * number of buckets * number of
         // bucket groups).
         fips_thresh = cfg.dut_cfg.fips_window_size * `RNG_BUS_WIDTH /
             (BucketHtDataWidth * NumBuckets * NumBucketHtInst) + 1;
