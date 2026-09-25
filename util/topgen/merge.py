@@ -1135,6 +1135,14 @@ def _make_lpg_entry(top: ConfigT,
     else:
         # Discover what clock group we are related to.
         clock_group = clock_groups[clk.split(".")[-1]]
+        if clock_group.src == 'ext':
+            raise ValueError(
+                f"Module {module['name']!r}s primary clock {block_clock.clock!r} "
+                f"is sourced by the external clock '{clk}'. This is not "
+                "supported for alerts. Alerts can only be driven by clocks "
+                "managed by the clkmgr as they require the proper clock gating. "
+                "Set this module's primary clock to a clkmgr-managed clock group "
+                "instead.")
         # using this info, we can create an LPG identifier and uniquify it via
         # a dict.
         lpg_name = '_'.join([clock_group.name, reset_name, reset_domain])
