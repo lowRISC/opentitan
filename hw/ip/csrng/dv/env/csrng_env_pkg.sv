@@ -43,16 +43,17 @@ package csrng_env_pkg;
 
   // types
   typedef enum int {
-    CmdReqDone = 0,
-    EntropyReq = 1,
-    HwInstExc  = 2,
-    FifoErr    = 3
+    CmdReqDone      = 0,
+    EntropyReq      = 1,
+    HwInstExc       = 2,
+    FifoErr         = 3,
+    IntStateStopped = 4
   } csrng_intr_e;
 
   typedef enum int {
-    invalid_enable         = 0,
-    invalid_sw_app_enable  = 1,
-    invalid_read_int_state = 2
+    invalid_enable           = 0,
+    invalid_sw_app_enable    = 1,
+    invalid_int_state_enable = 2
   } invalid_mubi_e;
 
   // Keep these in groups and with ascending encodings as csrng_env_cfg refers to
