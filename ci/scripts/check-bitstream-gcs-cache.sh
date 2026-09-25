@@ -6,7 +6,7 @@
 set -e
 
 usage_string="
-Usage: get-bitstream-strategy.sh <cached-bitstream-design> [pathspec]...
+Usage: check-bitstream-gcs-cache.sh <cached-bitstream-design> [pathspec]...
 
     cached-bitstream-design The design name for the cached bitstream. This script
                             will retrieve the most recent image from a commit in
@@ -45,7 +45,7 @@ bitstream_commit=$(./bazelisk.sh run //util/py/scripts:get_bitstream_build_id \
 
 if [ -z "${bitstream_commit}" ]; then
   echo "Design ${bitstream_design} not found in the cache"
-  bitstream_strategy=build
+  cache_hit=false
 else
   echo "Checking for changes against pre-built bitstream from ${bitstream_commit}"
   echo "Files changed:"
@@ -54,12 +54,12 @@ else
   echo "Changed files after exclusions applied:"
   # Use the cached bitstream if no changed files remain.
   if git diff --exit-code --stat --name-only ${bitstream_commit} -- "${excluded_files[@]}"; then
-    bitstream_strategy=cached
+    cache_hit=true
   else
-    bitstream_strategy=build
+    cache_hit=false
   fi
 fi
 
 echo
-echo "Bitstream strategy is ${bitstream_strategy}"
-echo "bitstreamStrategy=${bitstream_strategy}" >> "${GITHUB_OUTPUT:-/dev/null}"
+echo "GCS cache-hit is ${cache_hit}"
+echo "cache-hit=${cache_hit}" >> "${GITHUB_OUTPUT:-/dev/null}"
