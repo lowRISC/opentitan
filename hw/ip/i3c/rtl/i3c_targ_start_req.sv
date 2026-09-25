@@ -54,7 +54,7 @@ module i3c_targ_start_req
     .q_negedge_pulse_o  (scl_fall)
   );
 
-  // TODO: We may need to introduce delays but the non-initial address bits may be sent in
+  // TODO(#31337): We may need to introduce delays but the non-initial address bits may be sent in
   // push-pull mode by some Active Controllers, with Pure Bus timing.
   logic sda_sample, sda_drive, stopping;
   assign sda_sample = scl_rise;

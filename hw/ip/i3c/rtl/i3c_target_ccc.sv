@@ -156,7 +156,7 @@ module i3c_target_ccc
         endcase
       GETBCR: rdata_src = RData_BCR;  // Figure 37.
       GETDCR: rdata_src = RData_DCR;  // Figure 38.
-      GETSTATUS:  // TODO: Check support for NASTAT SCMSTAT (Table 28).
+      GETSTATUS:  // TODO(#31128): Check support for NASTAT SCMSTAT (Table 28).
         if (has_defb && (defb != 8'h00)) begin
           case (defb)
             8'h91:
@@ -171,7 +171,7 @@ module i3c_target_ccc
             1: rdata_src = RData_TGTSTAT1;
           endcase
         end
-      // TODO(31128): We have to conditionally respond with 'Not Accepted through a NACK.'
+      // TODO(#31128): We have to respond conditionally with 'Not Accepted through a NACK.'
       GETACCCR: rdata_src = RData_DYNADDR;
       //
       ENDXFER:  rdata_src = RData_ENDXFER;
@@ -191,7 +191,7 @@ module i3c_target_ccc
         end
       GETCAPS:  // Figure 50.
         if (has_defb && (defb != 8'h00)) begin
-          // GETCAPS Format 2
+          // GETCAPS Format 2; DEFB has already been validated.
           case (defb)
             8'h5a:
               case (ccc_req_i.idx)
@@ -205,8 +205,7 @@ module i3c_target_ccc
                 0: rdata_src = RData_CRCAP1;
                 1: rdata_src = RData_CRCAP2;
               endcase
-            // TODO: DEFB shall be validated in _trx.
-            8'h93:
+            default: // 8'h93
               case (ccc_req_i.idx)
                 0: rdata_src = RData_VTCAP1;
                 1: rdata_src = RData_VTCAP2;
@@ -234,7 +233,7 @@ module i3c_target_ccc
     assign maxrdturn[t] = {reg2hw_i.targ_max_rdwr[t].rdturn_val.q, 1'b0} << maxrdscale[t];
   end
 
-  // TODO: GETSTATUS (TGTSTAT1).
+  // TODO(#31128): GETSTATUS (TGTSTAT1).
   logic [3:0] pend_interrupt;
   assign pend_interrupt = '0;
 
@@ -274,7 +273,7 @@ module i3c_target_ccc
         RData_DCR:  rdata[t] = reg2hw_i.targ_char[t].dcr.q;
         RData_GETCAP1: rdata[t] = 8'h1;
         RData_GETCAP2: rdata[t] = 8'hf2;  // Max support, I3C Basic V1.2.
-        // TODO: This is quite likely to need revising.
+        // TODO(#31128): This is quite likely to need revising.
         RData_GETCAP3: rdata[t] = 8'h58;
         RData_GETCAP4: rdata[t] = 8'h00;
         RData_TGTSTAT0: rdata[t] = 8'h00;
@@ -320,7 +319,7 @@ module i3c_target_ccc
           end
         end
         RData_ENDXFER: begin
-          // TODO: DEFB has already been validated.
+          // The transceiver logic has already validated DEFB, we just handle the two cases.
           if (defb == 8'hf7) begin
             rdata[t] = {!reg2hw_i.targ_info[t].endxfer_cand_crc_early.q, 1'b1,
                          reg2hw_i.targ_info[t].endxfer_cand_wr_early_term.q,
@@ -463,7 +462,7 @@ module i3c_target_ccc
 
   // Modification of Dynamic Address.
   // - RSTDAA, SETAASA, SETDASA, SETNEWDA.
-  // TODO: ENTDAA
+  // TODO(#31128): ENTDAA
   assign dynaddr_valid_d_o = (ccc != RSTDAA);
   for (genvar t = 0; t < NumTargets; t++) begin : gen_dynaddr
     assign dynaddr_de_o[t] = wr_commit & r_i[TargCR_Targets][t] &
@@ -499,9 +498,9 @@ module i3c_target_ccc
 
   // Reset Action.
   // TODO(31128): This only implements a small part of what RSTACT is supposed to do.
-  // Write only on broadcast or if any of our virtual targets has been addressed.
+  // Write only on Broadcast or if any of our Virtual Targets has been addressed.
   // Write only if the defining byte has the MSB cleared, otherwise it is a GET RSTACT.
-  assign rstact_de_o = wr_commit & (ccc inside {RSTACTB, RSTACT}) & ((ccc == RSTACTB) | |targets) &
+  assign rstact_de_o = wr_commit & (ccc inside {RSTACTB, RSTACT}) & |{ccc == RSTACTB, |targets} &
                        !defb[7] & !ccc_req_i.rnw;
   assign rstact_d_o  = i3c_rstact_e'(defb);
 
