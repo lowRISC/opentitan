@@ -228,8 +228,10 @@ module mbx_sysif
   // Dedicated TL-UL adapter for implementing the write data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
   // the bus if there are too many outstanding requests.
-  logic reg_wdata_we;
+  // As for the CSRs, a write narrower than the full word returns an error and has no effect.
+  logic reg_wdata_req, reg_wdata_we, reg_wdata_err;
   logic [top_pkg::TL_DW-1:0] reg_wdata_wdata;
+  logic [top_pkg::TL_DBW-1:0] reg_wdata_be;
   tlul_adapter_reg_racl #(
     .RegAw             ( SocAw                    ),
     .RegDw             ( top_pkg::TL_DW           ),
@@ -246,21 +248,25 @@ module mbx_sysif
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
     .racl_error_o     ( racl_error[1]                ),
-    .we_o             ( reg_wdata_we                 ),
+    .we_o             ( reg_wdata_req                ),
     // No Reading of the write register. Always reads zero
     .re_o             (                              ),
     .addr_o           (                              ),
     .wdata_o          ( reg_wdata_wdata              ),
-    .be_o             (                              ),
+    .be_o             ( reg_wdata_be                 ),
     .busy_i           ( imbx_pending_i               ),
     .rdata_i          ( '0                           ),
-    .error_i          ( 1'b0                         )
+    .error_i          ( reg_wdata_err                )
   );
+  assign reg_wdata_err = reg_wdata_req & ~&reg_wdata_be;
+  assign reg_wdata_we  = reg_wdata_req & ~reg_wdata_err;
 
   // Dedicated TL-UL adapter for implementing the read data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
   // the bus if there are too many outstanding requests. The register is implemented as hwext
   // outside of this hierarchy
+  logic reg_rdata_req, reg_rdata_err;
+  logic [top_pkg::TL_DBW-1:0] reg_rdata_be;
   tlul_adapter_reg_racl #(
     .RegAw             ( SocAw                    ),
     .RegDw             ( top_pkg::TL_DW           ),
@@ -278,16 +284,18 @@ module mbx_sysif
     .racl_policies_i  ( racl_policies_i              ),
     .racl_error_o     ( racl_error[2]                ),
     // No writing to the read register
-    .we_o             ( read_data_write_valid_o      ),
+    .we_o             ( reg_rdata_req                ),
     .re_o             ( read_data_read_valid_o       ),
     .addr_o           (                              ),
     // Write values are ignored. A Write simply means the read has occurred.
     .wdata_o          (                              ),
-    .be_o             (                              ),
+    .be_o             ( reg_rdata_be                 ),
     .busy_i           ( ombx_pending_i               ),
     .rdata_i          ( read_data_i                  ),
-    .error_i          ( 1'b0                         )
+    .error_i          ( reg_rdata_err                )
   );
+  assign reg_rdata_err           = reg_rdata_req & ~&reg_rdata_be;
+  assign read_data_write_valid_o = reg_rdata_req & ~reg_rdata_err;
 
   // Manual implementation of the write read mailbox register.
   // The manual implementation of the register via a register window is needed to expose the
