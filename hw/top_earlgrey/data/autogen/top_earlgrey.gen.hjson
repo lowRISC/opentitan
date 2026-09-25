@@ -9643,6 +9643,7 @@
         NumInstHwSlot: "4"
         NumBootStages: "3"
         NumRomDigestInputs: "1"
+        KdfEngineSel: keymgr_dpe_pkg::KdfEngineBoth
       }
       domain: Main
       clock_connections:
@@ -9688,6 +9689,22 @@
           local: "true"
           expose: "true"
           name_top: KeymgrDpeNumRomDigestInputs
+        }
+        {
+          name: KdfEngineSel
+          desc:
+            '''
+            Determines the possible KDF engines for the keymgr_dpe.
+            Supported options are:
+            - KdfEngineKmac: Uses exclusively `kmac` as kdf engine.
+            - KdfEngineOtbn: Uses exclusively `otbn` as kdf engine.
+            - KdfEngineBoth: The register !!KDF_ENGINE_SHADOWED selects if either the `kmac` or the `otbn` is used.
+            '''
+          type: keymgr_dpe_pkg::kdf_engine_sel_e
+          default: keymgr_dpe_pkg::KdfEngineBoth
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeKdfEngineSel
         }
       ]
       inter_signal_list:

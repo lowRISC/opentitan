@@ -16,7 +16,7 @@
 | keymgr_dpe.[`RESEED_INTERVAL_REGWEN`](#reseed_interval_regwen)             | 0x20     |        4 | regwen for reseed interval                                                                                        |
 | keymgr_dpe.[`RESEED_INTERVAL_SHADOWED`](#reseed_interval_shadowed)         | 0x24     |        4 | Reseed interval for key manager entropy reseed                                                                    |
 | keymgr_dpe.[`KDF_ENGINE_REGWEN`](#kdf_engine_regwen)                       | 0x28     |        4 | Register write enable for KDF_ENGINE                                                                              |
-| keymgr_dpe.[`KDF_ENGINE_SHADOWED`](#kdf_engine_shadowed)                   | 0x2c     |        4 | Selects the engine used to perform key derivation                                                                 |
+| keymgr_dpe.[`KDF_ENGINE_SHADOWED`](#kdf_engine_shadowed)                   | 0x2c     |        4 | Selects the engine used to perform key derivation if KdfEngineSel equals `KdfEngineBoth`, otherwise ignored.      |
 | keymgr_dpe.[`SLOT_POLICY_REGWEN`](#slot_policy_regwen)                     | 0x30     |        4 | Register write enable for SLOT_POLICY                                                                             |
 | keymgr_dpe.[`SLOT_POLICY`](#slot_policy)                                   | 0x34     |        4 | Policy bits for the child DPE context                                                                             |
 | keymgr_dpe.[`SW_BINDING_REGWEN`](#sw_binding_regwen)                       | 0x38     |        4 | Register write enable for SOFTWARE_BINDING                                                                        |
@@ -362,7 +362,7 @@ Register write enable for KDF_ENGINE
 |   0    |  rw0c  |   0x1   | EN     | Configuration enable for KDF_ENGINE. |
 
 ## KDF_ENGINE_SHADOWED
-Selects the engine used to perform key derivation
+Selects the engine used to perform key derivation if KdfEngineSel equals `KdfEngineBoth`, otherwise ignored.
 - Offset: `0x2c`
 - Reset default: `0x9`
 - Reset mask: `0xf`
