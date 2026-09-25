@@ -876,6 +876,7 @@ module rram_ctrl
 
   // SEC_CM: HOST.BUS.INTEGRITY
   // SEC_CM: MEM.ADDR_INFECTION
+  // SEC_CM: TLUL_FIFO.MEM.REDUN
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
@@ -887,7 +888,7 @@ module rram_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1),
-    .SecFifoPtr(1),
+    .SecFifo(1),
     .DataXorAddr(1)
   ) u_tl_adapter_host (
     .clk_i,
@@ -1328,18 +1329,20 @@ module rram_ctrl
                                                u_to_rd_fifo.gen_no_sec_u_reqfifo.u_reqfifo,
                                                alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostRspFifo,
-                                              u_tl_adapter_host.gen_no_sec_u_rspfifo.u_rspfifo,
-                                              alert_tx_o[1])
+  // The host adapter's fifos are duplicated (SecFifo). Each fifo raises err_o if the main and
+  // shadow copies disagree.
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostRspFifo,
+                                               u_tl_adapter_host.gen_sec_u_rspfifo.u_rspfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostSramReqFifo,
-                                              u_tl_adapter_host.gen_no_sec_u_sramreqfifo
-                                                .u_sramreqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostSramReqFifo,
+                                               u_tl_adapter_host.gen_sec_u_sramreqfifo
+                                                 .u_sramreqfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostReqFifo,
-                                              u_tl_adapter_host.gen_no_sec_u_reqfifo.u_reqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostReqFifo,
+                                               u_tl_adapter_host.gen_sec_u_reqfifo.u_reqfifo,
+                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CtrlWrFifo,
                                               u_wr_fifo, alert_tx_o[1])
