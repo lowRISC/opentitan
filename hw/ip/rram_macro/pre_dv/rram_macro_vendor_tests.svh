@@ -9,6 +9,11 @@
 `ifndef VENDOR_TESTS_SVH
 `define VENDOR_TESTS_SVH
 
+// not used in open-source
+assign cio_tck = 1'b0;
+assign cio_tdi = 1'b0;
+assign cio_tms = 1'b0;
+
 task automatic run_vendor_tests();
 endtask
 

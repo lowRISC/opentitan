@@ -154,12 +154,9 @@ module tb;
   `include "rram_macro_vendor_tests.svh"
 
   initial begin
-    cio_tck                 = 1'b0;
-    cio_tdi                 = 1'b0;
-    cio_tms                 = 1'b0;
     rram_test_analog_drv    = 1'b0;
     rram_test_analog_drv_en = 1'b0;
-    lc_nvm_debug_en         = lc_ctrl_pkg::On;
+    lc_nvm_debug_en         = lc_ctrl_pkg::Off;
     scanmode                = MuBi4False;
     scan_en                 = 1'b0;
     scan_rst_n              = 1'b0;
