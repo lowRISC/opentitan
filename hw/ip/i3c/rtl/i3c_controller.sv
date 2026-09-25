@@ -225,7 +225,7 @@ module i3c_controller
   // Controller enable that includes Standby Controller mode too.
   // - we must keep the IBI Queue and associated logic operational in Standby Controller mode, so
   //   that Broadcast CCC notifications can be presented to the software driver.
-  // TODO: This may require refinement when Secondary/Standby Controller role is supported.
+  // TODO(#31308): This may require refinement when Secondary/Standby Controller role is supported.
   assign enabled_stby = enabled | stby_cr_enabled_i;
 
   // Software writes to the DAT must update entries in the DAT cache; writes are narrower than the
@@ -438,7 +438,7 @@ module i3c_controller
     .dct_cfg_o
   );
 
-  // TODO: This will need revisiting when Standby Controller operation is fully implemented.
+  // TODO(#31308): This will need revisiting when Standby Controller operation is fully implemented.
   assign ac_current_own_o = enabled;
 
   // Interrupt-generating thresholds on Rx and Tx Data Buffers.
@@ -467,14 +467,16 @@ module i3c_controller
 
   // Interrupt generation.
   always_comb begin
-    intr_hc_o = '0;  // TODO: Error-related interrupts yet to be implemented; no scheduled cmds.
+    // TODO(#31305): Error-related interrupts yet to be implemented; no scheduled cmds.
+    intr_hc_o = '0;
     intr_pio_o = '0;
-    intr_stby_cr_o = '0;  // TODO: Standby Controller role deferred.
+    intr_stby_cr_o = '0;  // TODO(#31308): Standby Controller role deferred.
 
     // FIFO-state threshold interrupt signals.
     // Note: These threshold values are programmed as entry counts; for the Command Queue an entry
     //       is equivalent to 2 DWORDs.
-    // TODO: Transfer errors and aborts are not yet properly reported here; placeholder drivers.
+    // TODO(#31305): Transfer errors and aborts are not yet properly reported here; placeholder
+    // drivers.
     intr_pio_o.transfer_err    = suspending;
     intr_pio_o.transfer_abort  = transfer_aborted;
     intr_pio_o.resp_ready      = |reg2hw_i.queue_thld_ctrl.resp_buf_thld.q &&  // Field valid?

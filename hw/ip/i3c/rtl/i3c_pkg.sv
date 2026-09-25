@@ -35,7 +35,7 @@ package i3c_pkg;
   // - cacheing In-Band Interrupt and Controller-Role Request configuration reduces the latency of
   //   the Controller's ACK/NACK response; otherwise the Controller would need to search the DAT.
   // - the present simple implementation requires that we have enough cache for all current DAT
-  //   entries; TODO: ratify and simplify, or modify as required.
+  //   entries; TODO(#31304): ratify and simplify, or modify as required.
   localparam int unsigned DATCacheSize = NumDATEntries;
 
   // Number of Target(s) presented simultaneously on the I3C bus, including the Standby Controller.
@@ -390,11 +390,11 @@ package i3c_pkg;
   localparam int unsigned TmCycW = 10;  // Width of cycle counter in Controller transceiver.
 
   // Type of data unit transferred/request to be actioned.
-  // TODO: It's likely that there's some benefit to splitting this into two types.
+  // TODO(#31035): It's likely that there's some benefit to splitting this into two types.
   // Then move them into controller/target_pkg.
   typedef enum logic [4:0] {
     // Time interval.
-    I3CDType_TimedDelay   = 5'b00000,  // TODO: This seemed useful but presently is unused.
+    I3CDType_TimedDelay   = 5'b00000,  // TODO(#31035): This seemed useful but presently is unused.
     // HDR-DDR Words; bits [1:0] are the Preamble bits.
     I3CDType_CommandWord  = 5'b00001,
     I3CDType_DataWord     = 5'b00011,
@@ -452,8 +452,8 @@ package i3c_pkg;
 
   // Indicates whether the given address is an 'Error Type TE0' address (4.3.8.1.1).
   // - these are single-bit deviations from the I3C Broadcast Address 7'h7e.
-  // TODO: Target-side logic checking using this function also needs to catch 7'h7e/R except when
-  // handling ENTDAA (HCI 4.3.8.1.1).
+  // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
+  // when handling ENTDAA (HCI 4.3.8.1.1).
   function automatic bit te0_invalid_addr(bit [6:0] addr);
     return (addr inside {7'h7f, 7'h7c, 7'h7a, 7'h76, 7'h6e, 7'h5e, 7'h3e});
   endfunction
@@ -462,7 +462,7 @@ package i3c_pkg;
   // arbitrable address header. This is primarily a safeguard against addressing any I2C device(s)
   // on the bus that are known to employ clock-stretching.
   //
-  // TODO: Update this according to usage, include masks and parameterize for NumBlocked.
+  // TODO(#31304): Update this according to usage, include masks and parameterize for NumBlocked.
   function automatic bit invalid_addr(bit [6:0] addr,
                                       bit [6:0] blocked_addr0,
                                       bit [6:0] blocked_addr1,

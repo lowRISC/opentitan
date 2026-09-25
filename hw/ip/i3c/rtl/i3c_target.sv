@@ -105,7 +105,7 @@ module i3c_target
   // - SDA lowered to request Start signaling, and partial address phase.
   output                    sreq_sda_od_en_o,
   output                    sreq_sda_o,
-  // TODO: Handoff of the address arbitration to the transceiver logic.
+  // TODO(#31337): Handoff of the address arbitration to the transceiver logic.
 
   // Status indications from the transceiver. Originates in SCL domain, must be glitch free.
   input                     rep_start_det_i,
@@ -322,9 +322,9 @@ module i3c_target
   );
 
   // Target Reset Detector request.
-  // TODO: Needs to interact with the RSTACT CCC handling when that exists.
+  // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists.
   assign rstdet_req_o = '{
-    activate:   enable_i, // TODO: This is incomplete.
+    activate:   enable_i, // TODO(#31128): This is incomplete.
     deep_sleep: reg2hw_i.reset_det_ctrl.sleep_req.q,
     rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
     rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
@@ -663,9 +663,8 @@ module i3c_target
                   reg2hw_i.targ_error.te1.q, reg2hw_i.targ_error.te0.q};
   end
 
-  // TODO: When we have logic for detecting TE0/TE1 we are required to enable the
-  // HDR Exit Pattern Detector then too.
-  // TODO: This may need to come from the transceiver.
+  // TODO(#31333): When we have logic for detecting TE0/TE1 we are required to enable the
+  // HDR Exit Pattern Detector then too. This may need to come from the transceiver.
   assign hdr_exit_det_en_o = 1'b1;
 
   // Clear Hot-Join request once it has been acknowledged by the Active Controller.

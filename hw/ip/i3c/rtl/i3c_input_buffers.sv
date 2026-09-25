@@ -87,7 +87,7 @@ module i3c_input_buffers #(
   );
 
   // Data buffering, to avoid SCL-relative skew.
-  // TODO: Ensure that this addresses skew, or resort to employing clock buffers here too.
+  // TODO(#31335): Ensure that this addresses skew, or resort to employing clock buffers here too.
   i3c_buf_en #(
     .Width        (NumSDALanes),
     .OutDisabled  ({NumSDALanes{1'b1}})

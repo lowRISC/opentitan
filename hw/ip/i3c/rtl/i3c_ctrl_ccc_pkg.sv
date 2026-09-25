@@ -82,8 +82,9 @@ package i3c_ctrl_ccc_pkg;
     // Register write data.
     logic [CtrlCRWidth-1:0] reg_wdata;
     // Data requests to the Controller transceiver logic.
-    // TODO: These request fields are a significant subset of the `i3c_ctrl_trx_txd_t` structure,
-    // so perhaps this warrants a nested structure, which the FSM logic can propagate wholesale?
+    // TODO(#31304): These request fields are a significant subset of the `i3c_ctrl_trx_txd_t`
+    // structure, so perhaps this warrants a nested structure, which the FSM logic can propagate
+    // wholesale?
     logic                   req_dvalid;
     i3c_ctrl_req_e          req_type;
     logic                   req_rx;
