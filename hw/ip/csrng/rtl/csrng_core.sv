@@ -42,7 +42,8 @@ module csrng_core import csrng_pkg::*; #(
   output logic                                    intr_cs_cmd_req_done_o,
   output logic                                    intr_cs_entropy_req_o,
   output logic                                    intr_cs_hw_inst_exc_o,
-  output logic                                    intr_cs_fatal_err_o
+  output logic                                    intr_cs_fatal_err_o,
+  output logic                                    intr_cs_int_state_stopped_o
 );
 
   import csrng_reg_pkg::*;
@@ -79,7 +80,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        acmd_eop;
 
   logic                        state_db_wr_vld;
-  csrng_state_t                state_db_rd_data;
+  csrng_state_db_t             state_db_rd_data;
 
   logic [CmdBusWidth-1:0]      acmd_bus;
   acmd_e                       acmd_hold;
@@ -184,6 +185,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          invalid_cmd_seq_alert;
   logic [NumApps-1:0]          invalid_acmd_alert;
   logic [NumApps-1:0]          reseed_cnt_alert;
+  logic [NumApps-1:0]          gen_abort_req;
+  logic [NumApps-1:0]          gen_abort_invalid_alert;
+  logic [NumApps-1:0]          gen_abort_field_alert;
+  logic                        sw_gen_abort_ack;
   logic [1:0]                  otp_sw_app_read_en;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
@@ -395,6 +400,8 @@ module csrng_core import csrng_pkg::*; #(
          |reseed_cnt_alert ||
          |invalid_cmd_seq_alert ||
          |invalid_acmd_alert ||
+         |gen_abort_invalid_alert ||
+         |gen_abort_field_alert ||
          cs_bus_cmp_alert;
 
 
@@ -457,11 +464,11 @@ module csrng_core import csrng_pkg::*; #(
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_read_int_state;
   mubi4_t [1:0] mubi_read_int_state_fanout;
-  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
+  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.int_state_enable.q);
   assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state_fanout[0]);
   assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state_fanout[1]);
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.d  = read_int_state_pfa;
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.de = read_int_state_pfa;
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.d  = read_int_state_pfa;
 
   prim_mubi4_sync #(
     .NumCopies(2),
@@ -506,7 +513,30 @@ module csrng_core import csrng_pkg::*; #(
   // and return any genbits if the command
   // is a generate command.
 
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t [NumApps-1:0]      mubi_gen_abort;
+  mubi4_t [NumApps-1:0][1:0] mubi_gen_abort_fanout;
+
   for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
+
+    assign mubi_gen_abort[ai] = mubi4_t'(reg2hw.gen_abort[ai].q);
+    assign gen_abort_req[ai] = mubi4_test_true_strict(mubi_gen_abort_fanout[ai][0]);
+    assign gen_abort_field_alert[ai] = mubi4_test_invalid(mubi_gen_abort_fanout[ai][1]);
+
+    prim_mubi4_sync #(
+      .NumCopies(2),
+      .AsyncOn(0)
+    ) u_prim_mubi4_sync_gen_abort (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(mubi_gen_abort[ai]),
+      .mubi_o(mubi_gen_abort_fanout[ai])
+    );
+
+    // GEN_ABORT always self-clears the cycle after being written.
+    // The request is handled by cmd_stage.
+    assign hw2reg.gen_abort[ai].de = 1'b1;
+    assign hw2reg.gen_abort[ai].d  = prim_mubi_pkg::MuBi4False;
 
     csrng_cmd_stage u_csrng_cmd_stage (
       .clk_i                        (clk_i),
@@ -520,6 +550,10 @@ module csrng_core import csrng_pkg::*; #(
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
+      .gen_abort_req_i              (gen_abort_req[ai]),
+      .gen_abort_invalid_o          (gen_abort_invalid_alert[ai]),
+      .stop_i                       (1'b0),
+      .stopped_o                    (),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
@@ -548,6 +582,11 @@ module csrng_core import csrng_pkg::*; #(
     assign reseed_cnt_reached_d[ai] = (ctr_drbg_rsp_vld && (ctr_drbg_rsp_data.inst_id == ai)) ?
                                       (ctr_drbg_rsp_data.rs_ctr >= reg2hw.reseed_interval.q) :
                                       reseed_cnt_reached_q[ai];
+
+    // GEN_ABORT status polling interface.
+    assign hw2reg.gen_abort_status[ai].de = cmd_stage_ack[ai] &&
+                                            (cmd_stage_ack_sts[ai] == CMD_STS_GEN_ABORTED);
+    assign hw2reg.gen_abort_status[ai].d  = 1'b1;
 
   end : gen_cmd_stage
 
@@ -596,6 +635,10 @@ module csrng_core import csrng_pkg::*; #(
     .mubi_o(otp_sw_app_read_en_mubi)
   );
 
+  // Signal to clear SW genbits fifo on GEN abort.
+  assign sw_gen_abort_ack = cmd_stage_ack[NumApps-1] &&
+                            (cmd_stage_ack_sts[NumApps-1] == CMD_STS_GEN_ABORTED);
+
   // pack the gen bits into a 32 bit register sized word
   prim_packer_fifo #(
     .InW(BlkLen),
@@ -604,7 +647,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_sw_genbits (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .clr_i   (!cs_enable_fo[29]),
+    .clr_i   (!cs_enable_fo[29] || sw_gen_abort_ack),
     .wvalid_i(genbits_stage_vld[NumApps-1]),
     .wdata_i (genbits_stage_bus[NumApps-1]),
     .wready_o(genbits_stage_rdy[NumApps-1]),
@@ -654,6 +697,12 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.de = |reseed_cnt_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.de = |gen_abort_invalid_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.d  = |gen_abort_invalid_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.de = |gen_abort_field_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.d  = |gen_abort_field_alert;
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
@@ -848,15 +897,22 @@ module csrng_core import csrng_pkg::*; #(
     .wr_vld_i   (state_db_wr_vld),
     .wr_data_i  (ctr_drbg_rsp_data),
 
-    .reg_rd_otp_en_i    (state_db_reg_read_en),
-    .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
+    .reg_inst_id_i(reg2hw.int_state_num.q[NumAppsLg-1:0]),
 
-    .reg_rd_id_vld_i(reg2hw.int_state_num.qe),
-    .reg_rd_id_i    (reg2hw.int_state_num.q),
-    .reg_rd_strb_i  (reg2hw.int_state_val.re),
-    .reg_rd_val_o   (hw2reg.int_state_val.d),
+    .reg_ptr_incr_i(state_db_reg_read_en && reg2hw.int_state_val.re),
+    .reg_ptr_clr_i (reg2hw.int_state_num.qe),
 
-    .reseed_counter_o(reseed_counter)
+    .reg_rd_val_o(hw2reg.int_state_val.d),
+    // TODO: Import writes aren't wired up yet.
+    .reg_wr_vld_i (1'b0),
+    .reg_wr_data_i('0),
+
+    .wr_inst_state_o    (),
+    .wr_inst_state_vld_o(),
+
+    .reseed_counter_o(reseed_counter),
+
+    .reg_rd_ptr_err_o()
   );
 
   // Forward the reseed counter values to the register interface.
@@ -1002,6 +1058,56 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  //------------------------------------------
+  // Internal-state save/restore: registers
+  //------------------------------------------
+  // TODO: Wire up the registers to context import/export control logic.
+
+  assign hw2reg.int_state_cmd.export_req.de = 1'b0;
+  assign hw2reg.int_state_cmd.export_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.import_req.de = 1'b0;
+  assign hw2reg.int_state_cmd.import_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.resume.de = 1'b0;
+  assign hw2reg.int_state_cmd.resume.d  = prim_mubi_pkg::MuBi4False;
+
+  assign hw2reg.int_state_cmd_adata_val.d = '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_cnt.d = '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_flag.d = 1'b0;
+  assign hw2reg.int_state_cmd_gen_val.generate_adata_vld.d = 1'b0;
+
+  assign hw2reg.intr_state.cs_int_state_stopped.de = 1'b0;
+  assign hw2reg.intr_state.cs_int_state_stopped.d  = 1'b0;
+  // TODO: Connect the state stopped interrupt.
+  assign intr_cs_int_state_stopped_o = 1'b0;
+
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.de = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.d  = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.de = 1'b0;
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.d  = 1'b0;
+
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_int_state_cmd_sts_stub
+    assign hw2reg.int_state_cmd_sts[ai].de = 1'b0;
+    assign hw2reg.int_state_cmd_sts[ai].d  = 1'b0;
+  end : gen_int_state_cmd_sts_stub
+
+  logic unused_int_state_cmd_regs;
+  assign unused_int_state_cmd_regs =
+      (|reg2hw.int_state_cmd.export_req.q) | reg2hw.int_state_cmd.export_req.qe |
+      (|reg2hw.int_state_cmd.import_req.q) | reg2hw.int_state_cmd.import_req.qe |
+      (|reg2hw.int_state_cmd.resume.q)     | reg2hw.int_state_cmd.resume.qe     |
+      (|reg2hw.int_state_cmd_adata_val.q)  | reg2hw.int_state_cmd_adata_val.qe  |
+      reg2hw.int_state_cmd_adata_val.re    |
+      (|reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.q) |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.qe   |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_flag.q   |
+      reg2hw.int_state_cmd_gen_val.cmd_gen_flag.qe  |
+      reg2hw.int_state_cmd_gen_val.generate_adata_vld.q  |
+      reg2hw.int_state_cmd_gen_val.generate_adata_vld.qe |
+      reg2hw.intr_enable.cs_int_state_stopped.q |
+      reg2hw.intr_state.cs_int_state_stopped.q  |
+      reg2hw.intr_test.cs_int_state_stopped.q   |
+      reg2hw.intr_test.cs_int_state_stopped.qe;
+
   // unused signals
   logic               unused_err_code_test_bit;
   logic               unused_enable_fo;
@@ -1015,7 +1121,7 @@ module csrng_core import csrng_pkg::*; #(
                                     (|err_code_test_bit[19:2]);
   assign unused_enable_fo = (|cs_enable_fo[47:46]) || cs_enable_fo[42] || (|cs_enable_fo[18:4]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
-  assign unused_int_state_val = (|reg2hw.int_state_val.q);
+  assign unused_int_state_val = (|reg2hw.int_state_val.q) | reg2hw.int_state_val.qe;
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
   assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;

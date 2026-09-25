@@ -204,10 +204,12 @@ module csrng_ctr_drbg import csrng_pkg::*; (
     logic capt_adata;
     logic clear_adata_vld;
     // 1) Write adata to local buffer upon a GENerate command and _vld not being set
-    // 2) Clear _vld when the last GENerate beat appears on the cmd_rsp port
+    // 2) Clear _vld and zeroize the buffer when the last GENerate beat appears on the cmd_rsp
+    //    port, or on any Uninstantiate
     assign capt_adata = req_vld_i && (core_data.cmd == GEN) && (core_data.inst_id == i) &&
                         !generate_adata_vld_q[i];
-    assign clear_adata_vld = rsp_vld_o && req_glast_i && (core_data.inst_id == i);
+    assign clear_adata_vld = rsp_vld_o && (req_glast_i || (core_data.cmd == UNI)) &&
+                             (core_data.inst_id == i);
 
     always_comb begin
       generate_adata_vld_d[i] = generate_adata_vld_q[i];
@@ -221,6 +223,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
         generate_adata_d[i]     = core_data.pdata;
       end else if (clear_adata_vld) begin
         generate_adata_vld_d[i] = 1'b0;
+        generate_adata_d[i]     = '0;
       end
     end
   end

@@ -544,7 +544,7 @@
  * address between #TOP_CSRNG_BASE_ADDR and
  * `TOP_CSRNG_BASE_ADDR + TOP_CSRNG_SIZE_BYTES`.
  */
-#define TOP_CSRNG_SIZE_BYTES 0x80
+#define TOP_CSRNG_SIZE_BYTES 0x100
 /**
  * Peripheral base address for entropy_src in top darjeeling.
  *

@@ -11,10 +11,10 @@ package csrng_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 24;
+  parameter int NumRegs = 36;
 
   // Alert indices
   typedef enum int {
@@ -27,6 +27,9 @@ package csrng_reg_pkg;
   ////////////////////////////
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } cs_int_state_stopped;
     struct packed {
       logic        q;
     } cs_fatal_err;
@@ -44,6 +47,9 @@ package csrng_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } cs_int_state_stopped;
+    struct packed {
+      logic        q;
     } cs_fatal_err;
     struct packed {
       logic        q;
@@ -57,6 +63,10 @@ package csrng_reg_pkg;
   } csrng_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } cs_int_state_stopped;
     struct packed {
       logic        q;
       logic        qe;
@@ -92,7 +102,7 @@ package csrng_reg_pkg;
     } fips_force_enable;
     struct packed {
       logic [3:0]  q;
-    } read_int_state;
+    } int_state_enable;
     struct packed {
       logic [3:0]  q;
     } sw_app_enable;
@@ -117,8 +127,19 @@ package csrng_reg_pkg;
   } csrng_reg2hw_genbits_reg_t;
 
   typedef struct packed {
-    logic [2:0]  q;
-  } csrng_reg2hw_int_state_read_enable_reg_t;
+    struct packed {
+      logic [3:0]  q;
+      logic        qe;
+    } resume;
+    struct packed {
+      logic [3:0]  q;
+      logic        qe;
+    } import_req;
+    struct packed {
+      logic [3:0]  q;
+      logic        qe;
+    } export_req;
+  } csrng_reg2hw_int_state_cmd_reg_t;
 
   typedef struct packed {
     logic [3:0]  q;
@@ -127,12 +148,38 @@ package csrng_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        qe;
     logic        re;
   } csrng_reg2hw_int_state_val_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } generate_adata_vld;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } cmd_gen_flag;
+    struct packed {
+      logic [11:0] q;
+      logic        qe;
+    } cmd_gen_cnt;
+  } csrng_reg2hw_int_state_cmd_gen_val_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+    logic        re;
+  } csrng_reg2hw_int_state_cmd_adata_val_reg_t;
+
+  typedef struct packed {
     logic [2:0]  q;
   } csrng_reg2hw_fips_force_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } csrng_reg2hw_gen_abort_mreg_t;
 
   typedef struct packed {
     logic [4:0]  q;
@@ -140,6 +187,10 @@ package csrng_reg_pkg;
   } csrng_reg2hw_err_code_test_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } cs_int_state_stopped;
     struct packed {
       logic        d;
       logic        de;
@@ -191,8 +242,54 @@ package csrng_reg_pkg;
   } csrng_hw2reg_genbits_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } resume;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } import_req;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } export_req;
+  } csrng_hw2reg_int_state_cmd_reg_t;
+
+  typedef struct packed {
     logic [31:0] d;
   } csrng_hw2reg_int_state_val_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+    } generate_adata_vld;
+    struct packed {
+      logic        d;
+    } cmd_gen_flag;
+    struct packed {
+      logic [11:0] d;
+    } cmd_gen_cnt;
+  } csrng_hw2reg_int_state_cmd_gen_val_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } csrng_hw2reg_int_state_cmd_adata_val_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } csrng_hw2reg_int_state_cmd_sts_mreg_t;
+
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } csrng_hw2reg_gen_abort_mreg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } csrng_hw2reg_gen_abort_status_mreg_t;
 
   typedef struct packed {
     logic [15:0] d;
@@ -219,6 +316,22 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } int_state_cmd_invalid_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } int_state_cmd_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } gen_abort_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } gen_abort_invalid_alert;
+    struct packed {
+      logic        d;
+      logic        de;
     } acmd_flag0_field_alert;
     struct packed {
       logic        d;
@@ -227,7 +340,7 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } read_int_state_field_alert;
+    } int_state_enable_field_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -288,67 +401,89 @@ package csrng_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [184:181]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [180:177]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [176:169]
-    csrng_reg2hw_alert_test_reg_t alert_test; // [168:165]
-    csrng_reg2hw_ctrl_reg_t ctrl; // [164:149]
-    csrng_reg2hw_cmd_req_reg_t cmd_req; // [148:116]
-    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [115:83]
-    csrng_reg2hw_genbits_reg_t genbits; // [82:50]
-    csrng_reg2hw_int_state_read_enable_reg_t int_state_read_enable; // [49:47]
-    csrng_reg2hw_int_state_num_reg_t int_state_num; // [46:42]
-    csrng_reg2hw_int_state_val_reg_t int_state_val; // [41:9]
-    csrng_reg2hw_fips_force_reg_t fips_force; // [8:6]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [264:260]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [259:255]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [254:245]
+    csrng_reg2hw_alert_test_reg_t alert_test; // [244:241]
+    csrng_reg2hw_ctrl_reg_t ctrl; // [240:225]
+    csrng_reg2hw_cmd_req_reg_t cmd_req; // [224:192]
+    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [191:159]
+    csrng_reg2hw_genbits_reg_t genbits; // [158:126]
+    csrng_reg2hw_int_state_cmd_reg_t int_state_cmd; // [125:111]
+    csrng_reg2hw_int_state_num_reg_t int_state_num; // [110:106]
+    csrng_reg2hw_int_state_val_reg_t int_state_val; // [105:72]
+    csrng_reg2hw_int_state_cmd_gen_val_reg_t int_state_cmd_gen_val; // [71:55]
+    csrng_reg2hw_int_state_cmd_adata_val_reg_t int_state_cmd_adata_val; // [54:21]
+    csrng_reg2hw_fips_force_reg_t fips_force; // [20:18]
+    csrng_reg2hw_gen_abort_mreg_t [2:0] gen_abort; // [17:6]
     csrng_reg2hw_err_code_test_reg_t err_code_test; // [5:0]
   } csrng_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [239:232]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [231:136]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [135:128]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [127:126]
-    csrng_hw2reg_genbits_reg_t genbits; // [125:94]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [93:62]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [61:45]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [44:27]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [337:328]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [327:232]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [231:224]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [223:222]
+    csrng_hw2reg_genbits_reg_t genbits; // [221:190]
+    csrng_hw2reg_int_state_cmd_reg_t int_state_cmd; // [189:175]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [174:143]
+    csrng_hw2reg_int_state_cmd_gen_val_reg_t int_state_cmd_gen_val; // [142:129]
+    csrng_hw2reg_int_state_cmd_adata_val_reg_t int_state_cmd_adata_val; // [128:97]
+    csrng_hw2reg_int_state_cmd_sts_mreg_t [2:0] int_state_cmd_sts; // [96:91]
+    csrng_hw2reg_gen_abort_mreg_t [2:0] gen_abort; // [90:76]
+    csrng_hw2reg_gen_abort_status_mreg_t [2:0] gen_abort_status; // [75:70]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [69:53]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [52:27]
     csrng_hw2reg_err_code_reg_t err_code; // [26:7]
     csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] CSRNG_ALERT_TEST_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] CSRNG_REGWEN_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] CSRNG_RESEED_INTERVAL_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_0_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_1_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_2_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] CSRNG_SW_CMD_STS_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] CSRNG_GENBITS_VLD_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] CSRNG_GENBITS_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_READ_ENABLE_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_READ_ENABLE_REGWEN_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_NUM_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_VAL_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] CSRNG_FIPS_FORCE_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] CSRNG_HW_EXC_STS_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] CSRNG_RECOV_ALERT_STS_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] CSRNG_MAIN_SM_STATE_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] CSRNG_ALERT_TEST_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] CSRNG_REGWEN_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 8'h 14;
+  parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 8'h 18;
+  parameter logic [BlockAw-1:0] CSRNG_RESEED_INTERVAL_OFFSET = 8'h 1c;
+  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_0_OFFSET = 8'h 20;
+  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_1_OFFSET = 8'h 24;
+  parameter logic [BlockAw-1:0] CSRNG_RESEED_COUNTER_2_OFFSET = 8'h 28;
+  parameter logic [BlockAw-1:0] CSRNG_SW_CMD_STS_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_VLD_OFFSET = 8'h 30;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_OFFSET = 8'h 34;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_REGWEN_OFFSET = 8'h 38;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_NUM_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_VAL_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_GEN_VAL_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_ADATA_VAL_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_STS_0_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_STS_1_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_CMD_STS_2_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] CSRNG_FIPS_FORCE_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_REGWEN_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_0_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_1_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_2_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_STATUS_0_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_STATUS_1_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] CSRNG_GEN_ABORT_STATUS_2_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] CSRNG_HW_EXC_STS_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] CSRNG_RECOV_ALERT_STS_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] CSRNG_MAIN_SM_STATE_OFFSET = 8'h 8c;
 
   // Reset values for hwext registers and their fields
-  parameter logic [3:0] CSRNG_INTR_TEST_RESVAL = 4'h 0;
+  parameter logic [4:0] CSRNG_INTR_TEST_RESVAL = 5'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_CMD_REQ_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_ENTROPY_REQ_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_HW_INST_EXC_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_FATAL_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] CSRNG_INTR_TEST_CS_INT_STATE_STOPPED_RESVAL = 1'h 0;
   parameter logic [1:0] CSRNG_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] CSRNG_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
@@ -361,6 +496,8 @@ package csrng_reg_pkg;
   parameter logic [1:0] CSRNG_GENBITS_VLD_RESVAL = 2'h 0;
   parameter logic [31:0] CSRNG_GENBITS_RESVAL = 32'h 0;
   parameter logic [31:0] CSRNG_INT_STATE_VAL_RESVAL = 32'h 0;
+  parameter logic [13:0] CSRNG_INT_STATE_CMD_GEN_VAL_RESVAL = 14'h 0;
+  parameter logic [31:0] CSRNG_INT_STATE_CMD_ADATA_VAL_RESVAL = 32'h 0;
 
   // Register index
   typedef enum int {
@@ -378,11 +515,23 @@ package csrng_reg_pkg;
     CSRNG_SW_CMD_STS,
     CSRNG_GENBITS_VLD,
     CSRNG_GENBITS,
-    CSRNG_INT_STATE_READ_ENABLE,
-    CSRNG_INT_STATE_READ_ENABLE_REGWEN,
+    CSRNG_INT_STATE_CMD_REGWEN,
+    CSRNG_INT_STATE_CMD,
     CSRNG_INT_STATE_NUM,
     CSRNG_INT_STATE_VAL,
+    CSRNG_INT_STATE_CMD_GEN_VAL,
+    CSRNG_INT_STATE_CMD_ADATA_VAL,
+    CSRNG_INT_STATE_CMD_STS_0,
+    CSRNG_INT_STATE_CMD_STS_1,
+    CSRNG_INT_STATE_CMD_STS_2,
     CSRNG_FIPS_FORCE,
+    CSRNG_GEN_ABORT_REGWEN,
+    CSRNG_GEN_ABORT_0,
+    CSRNG_GEN_ABORT_1,
+    CSRNG_GEN_ABORT_2,
+    CSRNG_GEN_ABORT_STATUS_0,
+    CSRNG_GEN_ABORT_STATUS_1,
+    CSRNG_GEN_ABORT_STATUS_2,
     CSRNG_HW_EXC_STS,
     CSRNG_RECOV_ALERT_STS,
     CSRNG_ERR_CODE,
@@ -391,7 +540,7 @@ package csrng_reg_pkg;
   } csrng_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CSRNG_PERMIT [24] = '{
+  parameter logic [3:0] CSRNG_PERMIT [36] = '{
     4'b 0001, // index[ 0] CSRNG_INTR_STATE
     4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
@@ -406,16 +555,28 @@ package csrng_reg_pkg;
     4'b 0001, // index[11] CSRNG_SW_CMD_STS
     4'b 0001, // index[12] CSRNG_GENBITS_VLD
     4'b 1111, // index[13] CSRNG_GENBITS
-    4'b 0001, // index[14] CSRNG_INT_STATE_READ_ENABLE
-    4'b 0001, // index[15] CSRNG_INT_STATE_READ_ENABLE_REGWEN
+    4'b 0001, // index[14] CSRNG_INT_STATE_CMD_REGWEN
+    4'b 0011, // index[15] CSRNG_INT_STATE_CMD
     4'b 0001, // index[16] CSRNG_INT_STATE_NUM
     4'b 1111, // index[17] CSRNG_INT_STATE_VAL
-    4'b 0001, // index[18] CSRNG_FIPS_FORCE
-    4'b 0011, // index[19] CSRNG_HW_EXC_STS
-    4'b 0011, // index[20] CSRNG_RECOV_ALERT_STS
-    4'b 1111, // index[21] CSRNG_ERR_CODE
-    4'b 0001, // index[22] CSRNG_ERR_CODE_TEST
-    4'b 0001  // index[23] CSRNG_MAIN_SM_STATE
+    4'b 0011, // index[18] CSRNG_INT_STATE_CMD_GEN_VAL
+    4'b 1111, // index[19] CSRNG_INT_STATE_CMD_ADATA_VAL
+    4'b 0001, // index[20] CSRNG_INT_STATE_CMD_STS_0
+    4'b 0001, // index[21] CSRNG_INT_STATE_CMD_STS_1
+    4'b 0001, // index[22] CSRNG_INT_STATE_CMD_STS_2
+    4'b 0001, // index[23] CSRNG_FIPS_FORCE
+    4'b 0001, // index[24] CSRNG_GEN_ABORT_REGWEN
+    4'b 0001, // index[25] CSRNG_GEN_ABORT_0
+    4'b 0001, // index[26] CSRNG_GEN_ABORT_1
+    4'b 0001, // index[27] CSRNG_GEN_ABORT_2
+    4'b 0001, // index[28] CSRNG_GEN_ABORT_STATUS_0
+    4'b 0001, // index[29] CSRNG_GEN_ABORT_STATUS_1
+    4'b 0001, // index[30] CSRNG_GEN_ABORT_STATUS_2
+    4'b 0011, // index[31] CSRNG_HW_EXC_STS
+    4'b 0011, // index[32] CSRNG_RECOV_ALERT_STS
+    4'b 1111, // index[33] CSRNG_ERR_CODE
+    4'b 0001, // index[34] CSRNG_ERR_CODE_TEST
+    4'b 0001  // index[35] CSRNG_MAIN_SM_STATE
   };
 
 endpackage

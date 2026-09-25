@@ -537,7 +537,7 @@ pub const CSRNG_BASE_ADDR: usize = 0x41150000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CSRNG_BASE_ADDR and
 /// `CSRNG_BASE_ADDR + CSRNG_SIZE_BYTES`.
-pub const CSRNG_SIZE_BYTES: usize = 0x80;
+pub const CSRNG_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for entropy_src in top earlgrey.
 ///
@@ -1174,22 +1174,24 @@ pub enum PlicIrqId {
     CsrngCsHwInstExc = 174,
     /// csrng_cs_fatal_err
     CsrngCsFatalErr = 175,
+    /// csrng_cs_int_state_stopped
+    CsrngCsIntStateStopped = 176,
     /// entropy_src_es_entropy_valid
-    EntropySrcEsEntropyValid = 176,
+    EntropySrcEsEntropyValid = 177,
     /// entropy_src_es_health_test_failed
-    EntropySrcEsHealthTestFailed = 177,
+    EntropySrcEsHealthTestFailed = 178,
     /// entropy_src_es_observe_fifo_ready
-    EntropySrcEsObserveFifoReady = 178,
+    EntropySrcEsObserveFifoReady = 179,
     /// entropy_src_es_fatal_err
-    EntropySrcEsFatalErr = 179,
+    EntropySrcEsFatalErr = 180,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 180,
+    Edn0EdnCmdReqDone = 181,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 181,
+    Edn0EdnFatalErr = 182,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 182,
+    Edn1EdnCmdReqDone = 183,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 183,
+    Edn1EdnFatalErr = 184,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1372,14 +1374,15 @@ impl TryFrom<u32> for PlicIrqId {
             173 => Ok(Self::CsrngCsEntropyReq),
             174 => Ok(Self::CsrngCsHwInstExc),
             175 => Ok(Self::CsrngCsFatalErr),
-            176 => Ok(Self::EntropySrcEsEntropyValid),
-            177 => Ok(Self::EntropySrcEsHealthTestFailed),
-            178 => Ok(Self::EntropySrcEsObserveFifoReady),
-            179 => Ok(Self::EntropySrcEsFatalErr),
-            180 => Ok(Self::Edn0EdnCmdReqDone),
-            181 => Ok(Self::Edn0EdnFatalErr),
-            182 => Ok(Self::Edn1EdnCmdReqDone),
-            183 => Ok(Self::Edn1EdnFatalErr),
+            176 => Ok(Self::CsrngCsIntStateStopped),
+            177 => Ok(Self::EntropySrcEsEntropyValid),
+            178 => Ok(Self::EntropySrcEsHealthTestFailed),
+            179 => Ok(Self::EntropySrcEsObserveFifoReady),
+            180 => Ok(Self::EntropySrcEsFatalErr),
+            181 => Ok(Self::Edn0EdnCmdReqDone),
+            182 => Ok(Self::Edn0EdnFatalErr),
+            183 => Ok(Self::Edn1EdnCmdReqDone),
+            184 => Ok(Self::Edn1EdnFatalErr),
             _ => Err(val),
         }
     }
@@ -1400,7 +1403,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 185] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1752,6 +1755,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
     // CsrngCsHwInstExc -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
     // CsrngCsFatalErr -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // CsrngCsIntStateStopped -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
     // EntropySrcEsEntropyValid -> PlicPeripheral::EntropySrc
     PlicPeripheral::EntropySrc,
