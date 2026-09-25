@@ -42,7 +42,8 @@ module csrng_core import csrng_pkg::*; #(
   output logic                                    intr_cs_cmd_req_done_o,
   output logic                                    intr_cs_entropy_req_o,
   output logic                                    intr_cs_hw_inst_exc_o,
-  output logic                                    intr_cs_fatal_err_o
+  output logic                                    intr_cs_fatal_err_o,
+  output logic                                    intr_cs_int_state_stopped_o
 );
 
   import csrng_reg_pkg::*;
@@ -66,9 +67,9 @@ module csrng_core import csrng_pkg::*; #(
   logic                        sw_app_enable;
   logic                        sw_app_enable_pfe;
   logic                        sw_app_enable_pfa;
-  logic                        read_int_state;
-  logic                        read_int_state_pfe;
-  logic                        read_int_state_pfa;
+  logic                        int_state_enable;
+  logic                        int_state_enable_pfe;
+  logic                        int_state_enable_pfa;
   logic                        fips_force_enable;
   logic                        fips_force_enable_pfe;
   logic                        fips_force_enable_pfa;
@@ -79,7 +80,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        acmd_eop;
 
   logic                        state_db_wr_vld;
-  csrng_state_t                state_db_rd_data;
+  csrng_state_db_t             state_db_rd_data;
 
   logic [CmdBusWidth-1:0]      acmd_bus;
   acmd_e                       acmd_hold;
@@ -120,7 +121,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [MainSmStateWidth-1:0] cs_main_sm_state;
   logic                        ctr_drbg_sm_err_sum;
   logic                        ctr_drbg_sm_err;
-  logic                        ctr_drbg_v_ctr_err;
+  logic                        ctr_drbg_ctr_err;
+  logic                        state_db_reg_rd_ptr_err;
   logic                        block_encrypt_sm_err_sum;
   logic                        block_encrypt_sm_err;
 
@@ -175,7 +177,8 @@ module csrng_core import csrng_pkg::*; #(
 
   logic [15:0]                 hw_exception_sts;
   logic [LcHwDebugCopies-1:0]  lc_hw_debug_on_fo;
-  logic                        state_db_reg_read_en;
+  logic                        int_state_reg_en;
+  logic                        int_state_rd_en;
 
   logic [30:0]                 err_code_test_bit;
 
@@ -184,6 +187,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          invalid_cmd_seq_alert;
   logic [NumApps-1:0]          invalid_acmd_alert;
   logic [NumApps-1:0]          reseed_cnt_alert;
+  logic [NumApps-1:0]          gen_abort_req;
+  logic [NumApps-1:0]          gen_abort_invalid_alert;
+  logic [NumApps-1:0]          gen_abort_field_alert;
+  logic                        sw_gen_abort_ack;
   logic [1:0]                  otp_sw_app_read_en;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
@@ -191,6 +198,47 @@ module csrng_core import csrng_pkg::*; #(
   prim_mubi_pkg::mubi8_t                [1:0] otp_sw_app_read_en_mubi;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
+
+  // Internal-state EXPORT/IMPORT/RESUME (context save/restore) signals
+  mubi4_t                            mubi_int_state_export, mubi_int_state_import,
+                                     mubi_int_state_resume;
+  mubi4_t [1:0]                      mubi_int_state_export_fanout, mubi_int_state_import_fanout,
+                                     mubi_int_state_resume_fanout;
+  logic                              int_state_export_pulse, int_state_import_pulse,
+                                     int_state_resume_pulse;
+  logic                              int_state_export_field_bad, int_state_import_field_bad,
+                                     int_state_resume_field_bad;
+  logic                              int_state_cmd_field_alert, int_state_cmd_invalid_alert;
+  logic                              int_state_cmd_multi_assert;
+  logic                              int_state_resume_invalid;
+  logic                              int_state_export_import_invalid;
+  logic                              int_state_any_inst_stopped;
+  logic [NumAppsLg-1:0]              int_state_num_idx;
+  logic                              int_state_ptr_clr;
+  logic [NumApps-1:0]                int_state_stopped_pulse_vec;
+  logic                              int_state_stopped_pulse;
+  logic [NumApps-1:0]                cmd_stage_stopped;
+  logic [NumApps-1:0]                stop_cmd_stage;
+  logic [GenBitsCtrWidth-1:0]        cmd_stage_cmd_gen_cnt[NumApps];
+  logic [NumApps-1:0]                cmd_stage_cmd_gen_flag;
+  logic [NumApps-1:0]                generate_adata_vld;
+  logic                              wr_inst_state;
+  logic                              wr_inst_state_vld;
+  logic [NumApps-1:0]                cmd_state_import;
+  logic [NumApps-1:0]                import_inst_state_vld;
+  logic                              int_state_wr_target_ok;
+  logic                              int_state_wr_redirect_alert;
+  logic [NumApps-1:0]                int_state_gen_val_reset;
+  logic                              int_state_gen_val_wr_vld;
+  logic                              import_cmd_gen_flag;
+  logic [GenBitsCtrWidth-1:0]        import_cmd_gen_cnt;
+  logic                              generate_adata_vld_wr_data;
+  logic [CmdBusWidth-1:0]            int_state_val_rd_data;
+  logic                              int_state_val_wr_vld;
+  logic                              int_state_val_ptr_incr;
+  logic [CmdBusWidth-1:0]            int_state_adata_rd_data;
+  logic                              int_state_adata_wr_vld;
+  logic                              int_state_adata_ptr_incr;
 
   // flops
   acmd_e                  acmd_q, acmd_d;
@@ -207,6 +255,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                   sw_rdy_sts_q, sw_rdy_sts_d;
   logic                   sw_sts_ack_q, sw_sts_ack_d;
   logic     [NumApps-1:0] reseed_cnt_reached_q, reseed_cnt_reached_d;
+  logic     [NumApps-1:0] stopping_q, stopping_d;
+  logic                   state_import_active_q, state_import_active_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -224,6 +274,8 @@ module csrng_core import csrng_pkg::*; #(
       sw_rdy_sts_q            <= '0;
       sw_sts_ack_q            <= '0;
       reseed_cnt_reached_q    <= '0;
+      stopping_q              <= '0;
+      state_import_active_q   <= '0;
     end else begin
       acmd_q                  <= acmd_d;
       inst_id_q               <= inst_id_d;
@@ -239,6 +291,8 @@ module csrng_core import csrng_pkg::*; #(
       sw_rdy_sts_q            <= sw_rdy_sts_d;
       sw_sts_ack_q            <= sw_sts_ack_d;
       reseed_cnt_reached_q    <= reseed_cnt_reached_d;
+      stopping_q              <= stopping_d;
+      state_import_active_q   <= state_import_active_d;
     end
   end
 
@@ -307,6 +361,35 @@ module csrng_core import csrng_pkg::*; #(
     .intr_o                (intr_cs_fatal_err_o)
   );
 
+  prim_edge_detector #(
+    .Width(NumApps),
+    .ResetValue('0),
+    .EnSync(0)
+  ) u_prim_edge_detector_int_state_stopped (
+    .clk_i,
+    .rst_ni,
+    .d_i(cmd_stage_stopped),
+    .q_sync_o(),
+    .q_posedge_pulse_o(int_state_stopped_pulse_vec),
+    .q_negedge_pulse_o()
+  );
+  assign int_state_stopped_pulse = |int_state_stopped_pulse_vec;
+
+  prim_intr_hw #(
+    .Width(1)
+  ) u_intr_hw_cs_int_state_stopped (
+    .clk_i                 (clk_i),
+    .rst_ni                (rst_ni),
+    .event_intr_i          (int_state_stopped_pulse),
+    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_int_state_stopped.q),
+    .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_int_state_stopped.q),
+    .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_int_state_stopped.qe),
+    .reg2hw_intr_state_q_i (reg2hw.intr_state.cs_int_state_stopped.q),
+    .hw2reg_intr_state_de_o(hw2reg.intr_state.cs_int_state_stopped.de),
+    .hw2reg_intr_state_d_o (hw2reg.intr_state.cs_int_state_stopped.d),
+    .intr_o                (intr_cs_int_state_stopped_o)
+  );
+
   // Counter and FSM errors are structural errors and are always active regardless of the
   // functional state. main_sm_err_sum is not included here to prevent some tools from
   // inferring combo loops. However, to include the state machine error for testing,
@@ -328,7 +411,8 @@ module csrng_core import csrng_pkg::*; #(
   assign block_encrypt_sm_err_sum = block_encrypt_sm_err || err_code_test_bit[25];
 
   // Collective error signals for each type of error
-  assign ctr_err_sum         = (|cmd_stage_ctr_err) || ctr_drbg_v_ctr_err || err_code_test_bit[26];
+  assign ctr_err_sum         = (|cmd_stage_ctr_err) || ctr_drbg_ctr_err ||
+                                state_db_reg_rd_ptr_err || err_code_test_bit[26];
   assign fifo_write_err_sum  = (|cmd_stage_sfifo_genbits_err_wr) || (|cmd_stage_sfifo_cmd_err_wr) ||
                                err_code_test_bit[28];
   assign fifo_read_err_sum   = (|cmd_stage_sfifo_genbits_err_rd) || (|cmd_stage_sfifo_cmd_err_rd) ||
@@ -390,11 +474,15 @@ module csrng_core import csrng_pkg::*; #(
 
   assign recov_alert_event = cs_enable_pfa ||
          sw_app_enable_pfa ||
-         read_int_state_pfa ||
+         int_state_enable_pfa ||
          acmd_flag0_pfa ||
          |reseed_cnt_alert ||
          |invalid_cmd_seq_alert ||
          |invalid_acmd_alert ||
+         |gen_abort_invalid_alert ||
+         |gen_abort_field_alert ||
+         int_state_cmd_invalid_alert ||
+         int_state_cmd_field_alert ||
          cs_bus_cmp_alert;
 
 
@@ -455,22 +543,22 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // SEC_CM: CONFIG.MUBI
-  mubi4_t mubi_read_int_state;
-  mubi4_t [1:0] mubi_read_int_state_fanout;
-  assign mubi_read_int_state = mubi4_t'(reg2hw.ctrl.read_int_state.q);
-  assign read_int_state_pfe = mubi4_test_true_strict(mubi_read_int_state_fanout[0]);
-  assign read_int_state_pfa = mubi4_test_invalid(mubi_read_int_state_fanout[1]);
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.de = read_int_state_pfa;
-  assign hw2reg.recov_alert_sts.read_int_state_field_alert.d  = read_int_state_pfa;
+  mubi4_t mubi_int_state_enable;
+  mubi4_t [1:0] mubi_int_state_enable_fanout;
+  assign mubi_int_state_enable = mubi4_t'(reg2hw.ctrl.int_state_enable.q);
+  assign int_state_enable_pfe = mubi4_test_true_strict(mubi_int_state_enable_fanout[0]);
+  assign int_state_enable_pfa = mubi4_test_invalid(mubi_int_state_enable_fanout[1]);
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.de = int_state_enable_pfa;
+  assign hw2reg.recov_alert_sts.int_state_enable_field_alert.d  = int_state_enable_pfa;
 
   prim_mubi4_sync #(
     .NumCopies(2),
     .AsyncOn(0)
-  ) u_prim_mubi4_sync_read_int_state (
+  ) u_prim_mubi4_sync_int_state_enable (
     .clk_i,
     .rst_ni,
-    .mubi_i(mubi_read_int_state),
-    .mubi_o(mubi_read_int_state_fanout)
+    .mubi_i(mubi_int_state_enable),
+    .mubi_o(mubi_int_state_enable_fanout)
   );
 
   // SEC_CM: CONFIG.MUBI
@@ -494,8 +582,137 @@ module csrng_core import csrng_pkg::*; #(
 
   // master module enable
   assign sw_app_enable = sw_app_enable_pfe;
-  assign read_int_state = read_int_state_pfe;
+  assign int_state_enable = int_state_enable_pfe;
   assign fips_force_enable = fips_force_enable_pfe;
+
+  //------------------------------------------
+  // Internal-state save/restore control
+  //------------------------------------------
+  // This section of the RTL processes incoming IMPORT/EXPORT and triggers an alert for
+  // illegal operations.
+
+  // Permission gate for all internal-state register access.
+  assign int_state_reg_en = cs_enable_fo[40] && int_state_enable && otp_sw_app_read_en[1];
+
+  assign int_state_num_idx = reg2hw.int_state_num.q[NumAppsLg-1:0];
+
+  // Whether a read of the currently-selected instance's internal state is permitted.
+  assign int_state_rd_en = int_state_reg_en && (reg2hw.int_state_num.q < NumApps);
+
+  // Any write to INT_STATE_NUM or INT_STATE_CMD starts a fresh access sequence, so the
+  // state_db/ctr_drbg word pointers reset.
+  assign int_state_ptr_clr = reg2hw.int_state_num.qe || reg2hw.int_state_cmd.export_req.qe;
+
+  // SEC_CM: CONFIG.MUBI
+  assign mubi_int_state_export = mubi4_t'(reg2hw.int_state_cmd.export_req.q);
+  assign mubi_int_state_import = mubi4_t'(reg2hw.int_state_cmd.import_req.q);
+  assign mubi_int_state_resume = mubi4_t'(reg2hw.int_state_cmd.resume.q);
+
+  assign int_state_export_pulse     = mubi4_test_true_strict(mubi_int_state_export_fanout[0]);
+  assign int_state_export_field_bad = mubi4_test_invalid(mubi_int_state_export_fanout[1]);
+  assign int_state_import_pulse     = mubi4_test_true_strict(mubi_int_state_import_fanout[0]);
+  assign int_state_import_field_bad = mubi4_test_invalid(mubi_int_state_import_fanout[1]);
+  assign int_state_resume_pulse     = mubi4_test_true_strict(mubi_int_state_resume_fanout[0]);
+  assign int_state_resume_field_bad = mubi4_test_invalid(mubi_int_state_resume_fanout[1]);
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_int_state_export (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_int_state_export),
+    .mubi_o(mubi_int_state_export_fanout)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_int_state_import (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_int_state_import),
+    .mubi_o(mubi_int_state_import_fanout)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_int_state_resume (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_int_state_resume),
+    .mubi_o(mubi_int_state_resume_fanout)
+  );
+
+  // Self-clear every cycle.
+  assign hw2reg.int_state_cmd.export_req.de = 1'b1;
+  assign hw2reg.int_state_cmd.export_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.import_req.de = 1'b1;
+  assign hw2reg.int_state_cmd.import_req.d  = prim_mubi_pkg::MuBi4False;
+  assign hw2reg.int_state_cmd.resume.de = 1'b1;
+  assign hw2reg.int_state_cmd.resume.d  = prim_mubi_pkg::MuBi4False;
+
+  // Check if the commands are valid.
+  assign int_state_cmd_field_alert =
+      int_state_export_field_bad || int_state_import_field_bad || int_state_resume_field_bad;
+
+  assign int_state_cmd_multi_assert =
+      (int_state_export_pulse + int_state_import_pulse + int_state_resume_pulse) > 1;
+
+  // Neither EXPORT nor IMPORT is accepted while any instance is already stopped.
+  assign int_state_any_inst_stopped = |stopping_q;
+
+  // Check if we have an invalid RESUME command.
+  assign int_state_resume_invalid = int_state_resume_pulse &&
+      (int_state_cmd_multi_assert || !int_state_reg_en || !int_state_wr_target_ok);
+
+  // Check if we have an invalid EXPORT/IMPORT command.
+  assign int_state_export_import_invalid = (int_state_export_pulse || int_state_import_pulse) &&
+                                           (int_state_cmd_multi_assert ||
+                                            !int_state_reg_en ||
+                                            (reg2hw.int_state_num.q >= NumApps) ||
+                                            int_state_any_inst_stopped);
+
+  assign int_state_cmd_invalid_alert = int_state_resume_invalid ||
+                                       int_state_export_import_invalid ||
+                                       int_state_wr_redirect_alert;
+
+  always_comb begin
+    for (int ai = 0; ai < NumApps; ai++) begin
+      stopping_d[ai] = stopping_q[ai];
+      if (!cs_enable_fo[4]) begin
+        stopping_d[ai] = 1'b0;
+      end else if ((reg2hw.int_state_num.q == ai) && !int_state_export_import_invalid) begin
+        if (int_state_resume_pulse) begin
+          stopping_d[ai] = 1'b0;
+        end else if (int_state_export_pulse || int_state_import_pulse) begin
+          stopping_d[ai] = 1'b1;
+        end
+      end
+    end
+  end
+
+  assign state_import_active_d =
+      !cs_enable_fo[5]                                              ? 1'b0 :
+      (int_state_resume_pulse && !int_state_resume_invalid)         ? 1'b0 :
+      (int_state_import_pulse && !int_state_export_import_invalid)  ? 1'b1 :
+      state_import_active_q;
+
+  // Check if importing data is currently allowed.
+  assign int_state_wr_target_ok = (reg2hw.int_state_num.q < NumApps) &&
+      stopping_q[int_state_num_idx] &&
+      cmd_stage_stopped[int_state_num_idx];
+
+  // Check if data is written to an invalid target.
+  assign int_state_wr_redirect_alert = state_import_active_q && !int_state_wr_target_ok &&
+      (reg2hw.int_state_val.qe || reg2hw.int_state_cmd_adata_val.qe ||
+       reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.qe);
+
+  // Gate any invalid invalid generate command state import.
+  assign int_state_gen_val_wr_vld = int_state_reg_en &&
+      state_import_active_q && int_state_wr_target_ok &&
+      reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.qe;
 
   //------------------------------------------
   // application interface
@@ -506,7 +723,50 @@ module csrng_core import csrng_pkg::*; #(
   // and return any genbits if the command
   // is a generate command.
 
+  // Signal to stop the command stage from doing any arbitration requests.
+  assign stop_cmd_stage = stopping_q;
+
+  // Gate import write access to command stage internal state.
+  assign import_cmd_gen_flag =
+      int_state_gen_val_wr_vld ? reg2hw.int_state_cmd_gen_val.cmd_gen_flag.q : 1'b0;
+  assign import_cmd_gen_cnt =
+      int_state_gen_val_wr_vld ? reg2hw.int_state_cmd_gen_val.cmd_gen_cnt.q : '0;
+
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t [NumApps-1:0]      mubi_gen_abort;
+  mubi4_t [NumApps-1:0][1:0] mubi_gen_abort_fanout;
+
   for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage
+
+    // Reset the internal command generate state before importing data.
+    assign int_state_gen_val_reset[ai] = state_import_active_q && int_state_stopped_pulse_vec[ai];
+
+    // Import data either on int_state_gen_val_reset or on SW import via CSRs.
+    assign cmd_state_import[ai] = int_state_gen_val_reset[ai] ||
+        (int_state_gen_val_wr_vld && (reg2hw.int_state_num.q == ai));
+
+    // Import the instantiated state bit at the same time as the state db.
+    assign import_inst_state_vld[ai] = cmd_stage_stopped[ai] &&
+        wr_inst_state_vld && (reg2hw.int_state_num.q == ai);
+
+    assign mubi_gen_abort[ai] = mubi4_t'(reg2hw.gen_abort[ai].q);
+    assign gen_abort_req[ai] = mubi4_test_true_strict(mubi_gen_abort_fanout[ai][0]);
+    assign gen_abort_field_alert[ai] = mubi4_test_invalid(mubi_gen_abort_fanout[ai][1]);
+
+    prim_mubi4_sync #(
+      .NumCopies(2),
+      .AsyncOn(0)
+    ) u_prim_mubi4_sync_gen_abort (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(mubi_gen_abort[ai]),
+      .mubi_o(mubi_gen_abort_fanout[ai])
+    );
+
+    // GEN_ABORT always self-clears the cycle after being written.
+    // The request is handled by cmd_stage.
+    assign hw2reg.gen_abort[ai].de = 1'b1;
+    assign hw2reg.gen_abort[ai].d  = prim_mubi_pkg::MuBi4False;
 
     csrng_cmd_stage u_csrng_cmd_stage (
       .clk_i                        (clk_i),
@@ -520,6 +780,17 @@ module csrng_core import csrng_pkg::*; #(
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
+      .gen_abort_req_i              (gen_abort_req[ai]),
+      .gen_abort_invalid_o          (gen_abort_invalid_alert[ai]),
+      .stop_i                       (stop_cmd_stage[ai]),
+      .stopped_o                    (cmd_stage_stopped[ai]),
+      .import_req_i                 (cmd_state_import[ai]),
+      .import_inst_state_vld_i      (import_inst_state_vld[ai]),
+      .import_inst_state_i          (wr_inst_state),
+      .import_cmd_gen_flag_i        (import_cmd_gen_flag),
+      .import_cmd_gen_cnt_i         (import_cmd_gen_cnt),
+      .cmd_gen_flag_o               (cmd_stage_cmd_gen_flag[ai]),
+      .cmd_gen_cnt_o                (cmd_stage_cmd_gen_cnt[ai]),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
@@ -548,6 +819,11 @@ module csrng_core import csrng_pkg::*; #(
     assign reseed_cnt_reached_d[ai] = (ctr_drbg_rsp_vld && (ctr_drbg_rsp_data.inst_id == ai)) ?
                                       (ctr_drbg_rsp_data.rs_ctr >= reg2hw.reseed_interval.q) :
                                       reseed_cnt_reached_q[ai];
+
+    // GEN_ABORT status polling interface.
+    assign hw2reg.gen_abort_status[ai].de = cmd_stage_ack[ai] &&
+                                            (cmd_stage_ack_sts[ai] == CMD_STS_GEN_ABORTED);
+    assign hw2reg.gen_abort_status[ai].d  = 1'b1;
 
   end : gen_cmd_stage
 
@@ -596,6 +872,10 @@ module csrng_core import csrng_pkg::*; #(
     .mubi_o(otp_sw_app_read_en_mubi)
   );
 
+  // Signal to clear SW genbits fifo on GEN abort.
+  assign sw_gen_abort_ack = cmd_stage_ack[NumApps-1] &&
+                            (cmd_stage_ack_sts[NumApps-1] == CMD_STS_GEN_ABORTED);
+
   // pack the gen bits into a 32 bit register sized word
   prim_packer_fifo #(
     .InW(BlkLen),
@@ -604,7 +884,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_sw_genbits (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .clr_i   (!cs_enable_fo[29]),
+    .clr_i   (!cs_enable_fo[29] || sw_gen_abort_ack),
     .wvalid_i(genbits_stage_vld[NumApps-1]),
     .wdata_i (genbits_stage_bus[NumApps-1]),
     .wready_o(genbits_stage_rdy[NumApps-1]),
@@ -654,6 +934,18 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.de = |reseed_cnt_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.de = |gen_abort_invalid_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_invalid_alert.d  = |gen_abort_invalid_alert;
+
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.de = |gen_abort_field_alert;
+  assign hw2reg.recov_alert_sts.gen_abort_field_alert.d  = |gen_abort_field_alert;
+
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.de = int_state_cmd_invalid_alert;
+  assign hw2reg.recov_alert_sts.int_state_cmd_invalid_alert.d  = int_state_cmd_invalid_alert;
+
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.de = int_state_cmd_field_alert;
+  assign hw2reg.recov_alert_sts.int_state_cmd_field_alert.d  = int_state_cmd_field_alert;
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
@@ -835,7 +1127,12 @@ module csrng_core import csrng_pkg::*; #(
   //-------------------------------------
   // Holds the internal state of each csrng instance. Gets updated after every command.
 
-  assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state && otp_sw_app_read_en[1];
+  assign int_state_val_wr_vld = int_state_reg_en && state_import_active_q &&
+      int_state_wr_target_ok && reg2hw.int_state_val.qe;
+
+  // The word pointer increments on either a read or a write.
+  assign int_state_val_ptr_incr =
+      (int_state_reg_en && reg2hw.int_state_val.re) || int_state_val_wr_vld;
 
   csrng_state_db u_csrng_state_db (
     .clk_i   (clk_i),
@@ -848,16 +1145,32 @@ module csrng_core import csrng_pkg::*; #(
     .wr_vld_i   (state_db_wr_vld),
     .wr_data_i  (ctr_drbg_rsp_data),
 
-    .reg_rd_otp_en_i    (state_db_reg_read_en),
-    .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
+    .reg_inst_id_i(int_state_num_idx),
 
-    .reg_rd_id_vld_i(reg2hw.int_state_num.qe),
-    .reg_rd_id_i    (reg2hw.int_state_num.q),
-    .reg_rd_strb_i  (reg2hw.int_state_val.re),
-    .reg_rd_val_o   (hw2reg.int_state_val.d),
+    .reg_ptr_incr_i(int_state_val_ptr_incr),
+    .reg_rd_val_o  (int_state_val_rd_data),
 
-    .reseed_counter_o(reseed_counter)
+    .reg_wr_vld_i       (int_state_val_wr_vld),
+    .reg_wr_data_i      (reg2hw.int_state_val.q),
+    .wr_inst_state_o    (wr_inst_state),
+    .wr_inst_state_vld_o(wr_inst_state_vld),
+
+    .reg_ptr_clr_i(int_state_ptr_clr),
+
+    .reseed_counter_o(reseed_counter),
+
+    .reg_rd_ptr_err_o(state_db_reg_rd_ptr_err)
   );
+
+  // Internal state exports should return zero when we are not exporting the state.
+  assign hw2reg.int_state_val.d = int_state_rd_en ? int_state_val_rd_data : '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_cnt.d =
+      int_state_rd_en ? cmd_stage_cmd_gen_cnt[int_state_num_idx] : '0;
+  assign hw2reg.int_state_cmd_gen_val.cmd_gen_flag.d =
+      int_state_rd_en ? cmd_stage_cmd_gen_flag[int_state_num_idx] : 1'b0;
+  assign hw2reg.int_state_cmd_gen_val.generate_adata_vld.d =
+      int_state_rd_en ? generate_adata_vld[int_state_num_idx] : 1'b0;
+  assign hw2reg.int_state_cmd_adata_val.d = int_state_rd_en ? int_state_adata_rd_data : '0;
 
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
@@ -896,6 +1209,16 @@ module csrng_core import csrng_pkg::*; #(
   // CTR DRBG instantiation
   //-------------------------------------
 
+  assign int_state_adata_wr_vld = int_state_reg_en && state_import_active_q &&
+      int_state_wr_target_ok && reg2hw.int_state_cmd_adata_val.qe;
+
+  // The word pointer increments on either a read or a write.
+  assign int_state_adata_ptr_incr =
+      (int_state_reg_en && reg2hw.int_state_cmd_adata_val.re) || int_state_adata_wr_vld;
+
+  assign generate_adata_vld_wr_data =
+      int_state_gen_val_wr_vld ? reg2hw.int_state_cmd_gen_val.generate_adata_vld.q : 1'b0;
+
   assign ctr_drbg_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
   assign ctr_drbg_cmd_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
 
@@ -931,6 +1254,17 @@ module csrng_core import csrng_pkg::*; #(
 
     .state_db_wr_o(state_db_wr_vld),
 
+    .int_state_inst_id_i         (int_state_num_idx),
+    .generate_adata_vld_wr_vld_i (cmd_state_import),
+    .generate_adata_vld_wr_data_i(generate_adata_vld_wr_data),
+    .generate_adata_vld_o        (generate_adata_vld),
+    .int_state_gen_val_reset_i   (int_state_gen_val_reset),
+    .int_state_adata_ptr_incr_i  (int_state_adata_ptr_incr),
+    .int_state_adata_ptr_clr_i   (int_state_ptr_clr),
+    .int_state_adata_wr_vld_i    (int_state_adata_wr_vld),
+    .int_state_adata_wr_data_i   (reg2hw.int_state_cmd_adata_val.q),
+    .int_state_adata_rd_data_o   (int_state_adata_rd_data),
+
     .block_encrypt_req_vld_o (block_encrypt_req_vld),
     .block_encrypt_req_rdy_i (block_encrypt_req_rdy),
     .block_encrypt_req_data_o(block_encrypt_req_data),
@@ -939,7 +1273,7 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_rsp_rdy_o (block_encrypt_rsp_rdy),
     .block_encrypt_rsp_data_i(block_encrypt_rsp_data),
 
-    .ctr_err_o(ctr_drbg_v_ctr_err),
+    .ctr_err_o(ctr_drbg_ctr_err),
     .sm_err_o (ctr_drbg_sm_err)
   );
 
@@ -1002,23 +1336,35 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  // Per-instance command stage stopped status.
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_int_state_cmd_sts
+    assign hw2reg.int_state_cmd_sts[ai].de = 1'b1;
+    assign hw2reg.int_state_cmd_sts[ai].d  = cmd_stage_stopped[ai];
+  end : gen_int_state_cmd_sts
+
   // unused signals
   logic               unused_err_code_test_bit;
   logic               unused_enable_fo;
   logic               unused_reg2hw_genbits;
-  logic               unused_int_state_val;
   logic               unused_reseed_interval;
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
+  logic               unused_state_db_rsvd;
+  logic               unused_int_state_cmd_qe;
 
   assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[24:23]) ||
                                     (|err_code_test_bit[19:2]);
-  assign unused_enable_fo = (|cs_enable_fo[47:46]) || cs_enable_fo[42] || (|cs_enable_fo[18:4]);
+  assign unused_enable_fo = (|cs_enable_fo[47:46]) || cs_enable_fo[42] || (|cs_enable_fo[18:6]);
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
-  assign unused_int_state_val = (|reg2hw.int_state_val.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
   assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;
+  // Padding, never meaningful.
+  assign unused_state_db_rsvd = |state_db_rd_data.rsvd;
+  // Unused. The qe signals of all fields of the int_state_cmd CSR are equivalent.
+  assign unused_int_state_cmd_qe = reg2hw.int_state_cmd.import_req.qe |
+      reg2hw.int_state_cmd.resume.qe | reg2hw.int_state_cmd_gen_val.cmd_gen_flag.qe |
+      reg2hw.int_state_cmd_gen_val.generate_adata_vld.qe;
 
   //--------------------------------------------
   // Assertions

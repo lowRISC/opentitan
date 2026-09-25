@@ -397,7 +397,7 @@ pub const CSRNG_BASE_ADDR: usize = 0x21150000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CSRNG_BASE_ADDR and
 /// `CSRNG_BASE_ADDR + CSRNG_SIZE_BYTES`.
-pub const CSRNG_SIZE_BYTES: usize = 0x80;
+pub const CSRNG_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for entropy_src in top darjeeling.
 ///
@@ -1014,92 +1014,94 @@ pub enum PlicIrqId {
     CsrngCsHwInstExc = 87,
     /// csrng_cs_fatal_err
     CsrngCsFatalErr = 88,
+    /// csrng_cs_int_state_stopped
+    CsrngCsIntStateStopped = 89,
     /// entropy_src_es_entropy_valid
-    EntropySrcEsEntropyValid = 89,
+    EntropySrcEsEntropyValid = 90,
     /// entropy_src_es_health_test_failed
-    EntropySrcEsHealthTestFailed = 90,
+    EntropySrcEsHealthTestFailed = 91,
     /// entropy_src_es_observe_fifo_ready
-    EntropySrcEsObserveFifoReady = 91,
+    EntropySrcEsObserveFifoReady = 92,
     /// entropy_src_es_fatal_err
-    EntropySrcEsFatalErr = 92,
+    EntropySrcEsFatalErr = 93,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 93,
+    Edn0EdnCmdReqDone = 94,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 94,
+    Edn0EdnFatalErr = 95,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 95,
+    Edn1EdnCmdReqDone = 96,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 96,
+    Edn1EdnFatalErr = 97,
     /// dma_dma_done
-    DmaDmaDone = 97,
+    DmaDmaDone = 98,
     /// dma_dma_chunk_done
-    DmaDmaChunkDone = 98,
+    DmaDmaChunkDone = 99,
     /// dma_dma_error
-    DmaDmaError = 99,
+    DmaDmaError = 100,
     /// mbx0_mbx_ready
-    Mbx0MbxReady = 100,
+    Mbx0MbxReady = 101,
     /// mbx0_mbx_abort
-    Mbx0MbxAbort = 101,
+    Mbx0MbxAbort = 102,
     /// mbx0_mbx_error
-    Mbx0MbxError = 102,
+    Mbx0MbxError = 103,
     /// mbx1_mbx_ready
-    Mbx1MbxReady = 103,
+    Mbx1MbxReady = 104,
     /// mbx1_mbx_abort
-    Mbx1MbxAbort = 104,
+    Mbx1MbxAbort = 105,
     /// mbx1_mbx_error
-    Mbx1MbxError = 105,
+    Mbx1MbxError = 106,
     /// mbx2_mbx_ready
-    Mbx2MbxReady = 106,
+    Mbx2MbxReady = 107,
     /// mbx2_mbx_abort
-    Mbx2MbxAbort = 107,
+    Mbx2MbxAbort = 108,
     /// mbx2_mbx_error
-    Mbx2MbxError = 108,
+    Mbx2MbxError = 109,
     /// mbx3_mbx_ready
-    Mbx3MbxReady = 109,
+    Mbx3MbxReady = 110,
     /// mbx3_mbx_abort
-    Mbx3MbxAbort = 110,
+    Mbx3MbxAbort = 111,
     /// mbx3_mbx_error
-    Mbx3MbxError = 111,
+    Mbx3MbxError = 112,
     /// mbx4_mbx_ready
-    Mbx4MbxReady = 112,
+    Mbx4MbxReady = 113,
     /// mbx4_mbx_abort
-    Mbx4MbxAbort = 113,
+    Mbx4MbxAbort = 114,
     /// mbx4_mbx_error
-    Mbx4MbxError = 114,
+    Mbx4MbxError = 115,
     /// mbx5_mbx_ready
-    Mbx5MbxReady = 115,
+    Mbx5MbxReady = 116,
     /// mbx5_mbx_abort
-    Mbx5MbxAbort = 116,
+    Mbx5MbxAbort = 117,
     /// mbx5_mbx_error
-    Mbx5MbxError = 117,
+    Mbx5MbxError = 118,
     /// mbx6_mbx_ready
-    Mbx6MbxReady = 118,
+    Mbx6MbxReady = 119,
     /// mbx6_mbx_abort
-    Mbx6MbxAbort = 119,
+    Mbx6MbxAbort = 120,
     /// mbx6_mbx_error
-    Mbx6MbxError = 120,
+    Mbx6MbxError = 121,
     /// mbx_jtag_mbx_ready
-    MbxJtagMbxReady = 121,
+    MbxJtagMbxReady = 122,
     /// mbx_jtag_mbx_abort
-    MbxJtagMbxAbort = 122,
+    MbxJtagMbxAbort = 123,
     /// mbx_jtag_mbx_error
-    MbxJtagMbxError = 123,
+    MbxJtagMbxError = 124,
     /// mbx_pcie0_mbx_ready
-    MbxPcie0MbxReady = 124,
+    MbxPcie0MbxReady = 125,
     /// mbx_pcie0_mbx_abort
-    MbxPcie0MbxAbort = 125,
+    MbxPcie0MbxAbort = 126,
     /// mbx_pcie0_mbx_error
-    MbxPcie0MbxError = 126,
+    MbxPcie0MbxError = 127,
     /// mbx_pcie1_mbx_ready
-    MbxPcie1MbxReady = 127,
+    MbxPcie1MbxReady = 128,
     /// mbx_pcie1_mbx_abort
-    MbxPcie1MbxAbort = 128,
+    MbxPcie1MbxAbort = 129,
     /// mbx_pcie1_mbx_error
-    MbxPcie1MbxError = 129,
+    MbxPcie1MbxError = 130,
     /// racl_ctrl_racl_error
-    RaclCtrlRaclError = 130,
+    RaclCtrlRaclError = 131,
     /// ac_range_check_deny_cnt_reached
-    AcRangeCheckDenyCntReached = 131,
+    AcRangeCheckDenyCntReached = 132,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1195,49 +1197,50 @@ impl TryFrom<u32> for PlicIrqId {
             86 => Ok(Self::CsrngCsEntropyReq),
             87 => Ok(Self::CsrngCsHwInstExc),
             88 => Ok(Self::CsrngCsFatalErr),
-            89 => Ok(Self::EntropySrcEsEntropyValid),
-            90 => Ok(Self::EntropySrcEsHealthTestFailed),
-            91 => Ok(Self::EntropySrcEsObserveFifoReady),
-            92 => Ok(Self::EntropySrcEsFatalErr),
-            93 => Ok(Self::Edn0EdnCmdReqDone),
-            94 => Ok(Self::Edn0EdnFatalErr),
-            95 => Ok(Self::Edn1EdnCmdReqDone),
-            96 => Ok(Self::Edn1EdnFatalErr),
-            97 => Ok(Self::DmaDmaDone),
-            98 => Ok(Self::DmaDmaChunkDone),
-            99 => Ok(Self::DmaDmaError),
-            100 => Ok(Self::Mbx0MbxReady),
-            101 => Ok(Self::Mbx0MbxAbort),
-            102 => Ok(Self::Mbx0MbxError),
-            103 => Ok(Self::Mbx1MbxReady),
-            104 => Ok(Self::Mbx1MbxAbort),
-            105 => Ok(Self::Mbx1MbxError),
-            106 => Ok(Self::Mbx2MbxReady),
-            107 => Ok(Self::Mbx2MbxAbort),
-            108 => Ok(Self::Mbx2MbxError),
-            109 => Ok(Self::Mbx3MbxReady),
-            110 => Ok(Self::Mbx3MbxAbort),
-            111 => Ok(Self::Mbx3MbxError),
-            112 => Ok(Self::Mbx4MbxReady),
-            113 => Ok(Self::Mbx4MbxAbort),
-            114 => Ok(Self::Mbx4MbxError),
-            115 => Ok(Self::Mbx5MbxReady),
-            116 => Ok(Self::Mbx5MbxAbort),
-            117 => Ok(Self::Mbx5MbxError),
-            118 => Ok(Self::Mbx6MbxReady),
-            119 => Ok(Self::Mbx6MbxAbort),
-            120 => Ok(Self::Mbx6MbxError),
-            121 => Ok(Self::MbxJtagMbxReady),
-            122 => Ok(Self::MbxJtagMbxAbort),
-            123 => Ok(Self::MbxJtagMbxError),
-            124 => Ok(Self::MbxPcie0MbxReady),
-            125 => Ok(Self::MbxPcie0MbxAbort),
-            126 => Ok(Self::MbxPcie0MbxError),
-            127 => Ok(Self::MbxPcie1MbxReady),
-            128 => Ok(Self::MbxPcie1MbxAbort),
-            129 => Ok(Self::MbxPcie1MbxError),
-            130 => Ok(Self::RaclCtrlRaclError),
-            131 => Ok(Self::AcRangeCheckDenyCntReached),
+            89 => Ok(Self::CsrngCsIntStateStopped),
+            90 => Ok(Self::EntropySrcEsEntropyValid),
+            91 => Ok(Self::EntropySrcEsHealthTestFailed),
+            92 => Ok(Self::EntropySrcEsObserveFifoReady),
+            93 => Ok(Self::EntropySrcEsFatalErr),
+            94 => Ok(Self::Edn0EdnCmdReqDone),
+            95 => Ok(Self::Edn0EdnFatalErr),
+            96 => Ok(Self::Edn1EdnCmdReqDone),
+            97 => Ok(Self::Edn1EdnFatalErr),
+            98 => Ok(Self::DmaDmaDone),
+            99 => Ok(Self::DmaDmaChunkDone),
+            100 => Ok(Self::DmaDmaError),
+            101 => Ok(Self::Mbx0MbxReady),
+            102 => Ok(Self::Mbx0MbxAbort),
+            103 => Ok(Self::Mbx0MbxError),
+            104 => Ok(Self::Mbx1MbxReady),
+            105 => Ok(Self::Mbx1MbxAbort),
+            106 => Ok(Self::Mbx1MbxError),
+            107 => Ok(Self::Mbx2MbxReady),
+            108 => Ok(Self::Mbx2MbxAbort),
+            109 => Ok(Self::Mbx2MbxError),
+            110 => Ok(Self::Mbx3MbxReady),
+            111 => Ok(Self::Mbx3MbxAbort),
+            112 => Ok(Self::Mbx3MbxError),
+            113 => Ok(Self::Mbx4MbxReady),
+            114 => Ok(Self::Mbx4MbxAbort),
+            115 => Ok(Self::Mbx4MbxError),
+            116 => Ok(Self::Mbx5MbxReady),
+            117 => Ok(Self::Mbx5MbxAbort),
+            118 => Ok(Self::Mbx5MbxError),
+            119 => Ok(Self::Mbx6MbxReady),
+            120 => Ok(Self::Mbx6MbxAbort),
+            121 => Ok(Self::Mbx6MbxError),
+            122 => Ok(Self::MbxJtagMbxReady),
+            123 => Ok(Self::MbxJtagMbxAbort),
+            124 => Ok(Self::MbxJtagMbxError),
+            125 => Ok(Self::MbxPcie0MbxReady),
+            126 => Ok(Self::MbxPcie0MbxAbort),
+            127 => Ok(Self::MbxPcie0MbxError),
+            128 => Ok(Self::MbxPcie1MbxReady),
+            129 => Ok(Self::MbxPcie1MbxAbort),
+            130 => Ok(Self::MbxPcie1MbxError),
+            131 => Ok(Self::RaclCtrlRaclError),
+            132 => Ok(Self::AcRangeCheckDenyCntReached),
             _ => Err(val),
         }
     }
@@ -1258,7 +1261,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 132] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 133] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1436,6 +1439,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 132] = [
     // CsrngCsHwInstExc -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
     // CsrngCsFatalErr -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // CsrngCsIntStateStopped -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
     // EntropySrcEsEntropyValid -> PlicPeripheral::EntropySrc
     PlicPeripheral::EntropySrc,

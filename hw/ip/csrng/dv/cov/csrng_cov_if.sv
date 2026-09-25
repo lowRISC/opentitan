@@ -128,7 +128,7 @@ interface csrng_cov_if (
   covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
                                                bit [3:0] lc_hw_debug_en,
                                                mubi4_t   sw_app_enable,
-                                               mubi4_t   read_int_state,
+                                               mubi4_t   int_state_enable,
                                                bit       regwen,
                                                bit [3:0] enable
                                               );
@@ -150,9 +150,9 @@ interface csrng_cov_if (
       bins lc_off   = { lc_ctrl_pkg::Off };
       bins lc_inval = { [0:$] } with (!(item inside { lc_ctrl_pkg::On, lc_ctrl_pkg::Off }));
     }
-    cp_sw_app_enable:  coverpoint sw_app_enable;
-    cp_read_int_state: coverpoint read_int_state;
-    cp_regwen:         coverpoint regwen;
+    cp_sw_app_enable:    coverpoint sw_app_enable;
+    cp_int_state_enable: coverpoint int_state_enable;
+    cp_regwen:           coverpoint regwen;
 
     sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
@@ -394,7 +394,7 @@ interface csrng_cov_if (
     bit read_int_state_val_reg,
     bit read_genbits_reg,
     bit [7:0] otp_en_cs_sw_app_read,
-    bit [3:0] read_int_state,
+    bit [3:0] int_state_enable,
     bit [3:0] sw_app_enable
   );
     option.per_instance  = 1;
@@ -419,15 +419,15 @@ interface csrng_cov_if (
       bins mubi_false = { MuBi4False };
       bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
     }
-    // Cover values of field CTRL.READ_INT_STATE
-    cp_read_int_state: coverpoint read_int_state {
+    // Cover values of field CTRL.INT_STATE_ENABLE
+    cp_int_state_enable: coverpoint int_state_enable {
       bins mubi_true  = { MuBi4True };
       bins mubi_false = { MuBi4False };
       bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
     }
     // Cover a scenario where INT_STATE_VAL register is read with a combination of
-    // CTRL.READ_INT_STATE field and OTP_EN_CS_SW_APP_READ pin values
-    cross_read_int_state_x_otp_en_cs_sw_app_read: cross cp_read_int_state,
+    // CTRL.INT_STATE_ENABLE field and OTP_EN_CS_SW_APP_READ pin values
+    cross_int_state_enable_x_otp_en_cs_sw_app_read: cross cp_int_state_enable,
                                              cp_otp_en_cs_sw_app_read iff (read_int_state_val_reg);
 
     // Cover a scenario where GENBITS register is read with a combination of
@@ -577,7 +577,7 @@ interface csrng_cov_if (
     csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
                              cfg.lc_hw_debug_en,
                              cfg.sw_app_enable,
-                             cfg.read_int_state,
+                             cfg.int_state_enable,
                              cfg.regwen,
                              cfg.enable
                             );
@@ -621,14 +621,14 @@ interface csrng_cov_if (
     bit read_int_state_val_reg,
     bit read_genbits_reg,
     bit [7:0] otp_en_cs_sw_app_read,
-    bit [3:0] read_int_state,
+    bit [3:0] int_state_enable,
     bit [3:0] sw_app_enable
   );
     csrng_otp_en_sw_app_read_cg_inst.sample(
       read_int_state_val_reg,
       read_genbits_reg,
       otp_en_cs_sw_app_read,
-      read_int_state,
+      int_state_enable,
       sw_app_enable
     );
   endfunction

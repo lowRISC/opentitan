@@ -50,7 +50,7 @@
       name: sec_cm_intersig_mubi
       desc: '''
             Verify the countermeasure(s) INTERSIG.MUBI.
-            Verify that unless the otp_en_csrng_sw_app_read input signal is equal to MuBi8True and CTRL.SW_APP_ENABLE or CTRL.READ_INT_STATE is set to kMultiBitBool4True the DUT doesn't allow reading the genbits or the internal state from the GENBITS or INT_STATE_VAL register, respectively.
+            Verify that unless the otp_en_csrng_sw_app_read input signal is equal to MuBi8True and CTRL.SW_APP_ENABLE or CTRL.INT_STATE_ENABLE is set to kMultiBitBool4True the DUT doesn't allow reading the genbits or the internal state from the GENBITS or INT_STATE_VAL register, respectively.
             '''
       stage: V2S
       tests: ["csrng_stress_all"]
@@ -106,6 +106,30 @@
       desc: '''
             Verify the countermeasure(s) GEN_CMD.CTR.REDUN.
             The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the Generate command counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
+      stage: V2S
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
+    }
+    {
+      // All counter errors are reported in ERR_CODE.CTR_ERR.
+      name: sec_cm_state_db_ctr_redun
+      desc: '''
+            Verify the countermeasure(s) STATE_DB.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the INT_STATE_VAL word pointer 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
+      stage: V2S
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
+    }
+    {
+      // All counter errors are reported in ERR_CODE.CTR_ERR.
+      name: sec_cm_adata_ptr_ctr_redun
+      desc: '''
+            Verify the countermeasure(s) ADATA_PTR.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the INT_STATE_CMD_ADATA_VAL word pointer 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
             They currently don't check whether the DUT actually triggers a fatal alert.
             Alert connection and triggering are verified through automated FPV.
             '''

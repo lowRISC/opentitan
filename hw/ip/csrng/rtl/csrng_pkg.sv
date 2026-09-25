@@ -59,6 +59,7 @@ package csrng_pkg;
     CMD_STS_INVALID_GEN_CMD      = 'h2,
     CMD_STS_INVALID_CMD_SEQ      = 'h3,
     CMD_STS_RESEED_CNT_EXCEEDED  = 'h4,
+    CMD_STS_GEN_ABORTED          = 'h5,
     CMD_STS_UNDRIVEN             = 'z
   } csrng_cmd_sts_e;
 
@@ -111,17 +112,34 @@ package csrng_pkg;
     logic [BlkLen-1:0] v;
   } csrng_key_v_t;
 
+  // Width of the state_db fields, before word-alignment padding.
+  parameter int unsigned StateDbFieldsWidth = 1 + 1 + KeyLen + BlkLen + RsCtrWidth;
+  // Number of 32b words csrng_state_db_t occupies once padded.
+  parameter int unsigned StateDbNumWords = (StateDbFieldsWidth + CmdBusWidth - 1) / CmdBusWidth;
+  // Padding needed to round csrng_state_db_t up to a whole number of words.
+  parameter int unsigned StateDbRsvdWidth = (StateDbNumWords * CmdBusWidth) - StateDbFieldsWidth;
+
   // Do not reorder these fields - software expects them in this order when doing the raw
   // state readout through the register interface.
   typedef struct packed {
-    logic                  fips;
-    logic                  inst_state;
-    logic     [KeyLen-1:0] key;
-    logic     [BlkLen-1:0] v;
-    logic [RsCtrWidth-1:0] rs_ctr;
-  } csrng_state_t;
+    logic [StateDbRsvdWidth-1:0] rsvd;
+    logic                        fips;
+    logic                        inst_state;
+    logic     [KeyLen-1:0]       key;
+    logic     [BlkLen-1:0]       v;
+    logic [RsCtrWidth-1:0]       rs_ctr;
+  } csrng_state_db_t;
 
-  parameter int unsigned StateWidth    = $bits(csrng_state_t);
+  parameter int unsigned StateDbStateWidth = $bits(csrng_state_db_t);
+
+  // Register word that csrng_state_db_t's inst_state bit falls into: inst_state sits directly
+  // above key/v/rs_ctr, which are the struct's least-significant, lowest-numbered-word fields.
+  parameter int unsigned InstStateRegIdx = (RsCtrWidth + BlkLen + KeyLen) / CmdBusWidth;
+
+  // Number of 32b words the Generate-resume additional-data field (backing
+  // !!INT_STATE_CMD_ADATA_VAL) occupies: exact, since SeedLen is a multiple of CmdBusWidth.
+  parameter int unsigned AdataNumWords   = SeedLen / CmdBusWidth;
+  parameter int unsigned AdataNumWordsLg = $clog2(AdataNumWords);
 
   parameter int unsigned MainSmStateWidth = 6;
 

@@ -20,12 +20,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                                                                                                                         |
-|:-----------------|:-------|:------------------------------------------------------------------------------------------------------------------------------------|
-| cs_cmd_req_done  | Event  | Asserted when a command request is completed.                                                                                       |
-| cs_entropy_req   | Event  | Asserted when a request for entropy has been made.                                                                                  |
-| cs_hw_inst_exc   | Event  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                                     |
-| cs_fatal_err     | Event  | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](registers.md#err_code) register to get more information. |
+| Interrupt Name       | Type   | Description                                                                                                                              |
+|:---------------------|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| cs_cmd_req_done      | Event  | Asserted when a command request is completed.                                                                                            |
+| cs_entropy_req       | Event  | Asserted when a request for entropy has been made.                                                                                       |
+| cs_hw_inst_exc       | Event  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                                          |
+| cs_fatal_err         | Event  | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](registers.md#err_code) register to get more information.      |
+| cs_int_state_stopped | Event  | Asserted when a CSRNG instance targeted by an internal-state EXPORT or IMPORT command has quiesced and is ready for state export/import. |
 
 ## Security Alerts
 
@@ -46,6 +47,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | CSRNG.CTR_DRBG.FSM.SPARSE           | The CTR DRBG state machine uses a sparse state encoding.                                                                                                                                                                                                            |
 | CSRNG.GEN_CMD.CTR.REDUN             | The generate command uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                                                                    |
 | CSRNG.CTR_DRBG.CTR.REDUN            | The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                                                                  |
+| CSRNG.STATE_DB.CTR.REDUN            | The [`INT_STATE_VAL`](registers.md#int_state_val) word pointer uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                          |
+| CSRNG.ADATA_PTR.CTR.REDUN           | The [`INT_STATE_CMD_ADATA_VAL`](registers.md#int_state_cmd_adata_val) word pointer uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                      |
 | CSRNG.CTRL.MUBI                     | Multi-bit field used for selection control.                                                                                                                                                                                                                         |
 | CSRNG.MAIN_SM.CTR.LOCAL_ESC         | A mismatch detected inside any CSRNG counter moves the  main state machine into a terminal error state.                                                                                                                                                             |
 | CSRNG.CONSTANTS.LC_GATED            | Seed diversification based on the lifecycle state.                                                                                                                                                                                                                  |
