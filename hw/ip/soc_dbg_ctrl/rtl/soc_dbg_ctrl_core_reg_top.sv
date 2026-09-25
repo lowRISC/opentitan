@@ -260,6 +260,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_debug_policy_relocked (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_policy_relocked_we),
@@ -288,6 +289,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_trace_debug_policy_category (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -317,6 +319,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_trace_debug_policy_valid_relocked_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -344,6 +347,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_trace_debug_policy_valid_relocked_relocked (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -373,6 +377,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_status_auth_debug_intent_set (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -400,6 +405,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_status_auth_window_open (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -427,6 +433,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_status_auth_window_closed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -454,6 +461,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_status_auth_unlock_success (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -481,6 +489,7 @@ module soc_dbg_ctrl_core_reg_top (
   ) u_status_auth_unlock_failed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),

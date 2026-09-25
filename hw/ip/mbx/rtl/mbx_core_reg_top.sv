@@ -206,6 +206,7 @@ module mbx_core_reg_top
   ) u_intr_state_mbx_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -233,6 +234,7 @@ module mbx_core_reg_top
   ) u_intr_state_mbx_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -260,6 +262,7 @@ module mbx_core_reg_top
   ) u_intr_state_mbx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -289,6 +292,7 @@ module mbx_core_reg_top
   ) u_intr_enable_mbx_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -316,6 +320,7 @@ module mbx_core_reg_top
   ) u_intr_enable_mbx_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -343,6 +348,7 @@ module mbx_core_reg_top
   ) u_intr_enable_mbx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -576,6 +582,7 @@ module mbx_core_reg_top
   ) u_address_range_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (address_range_regwen_we),
@@ -615,6 +622,7 @@ module mbx_core_reg_top
   ) u_address_range_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (address_range_valid_we),
@@ -649,6 +657,7 @@ module mbx_core_reg_top
   ) u_inbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (inbound_base_address_gated_we),
@@ -682,6 +691,7 @@ module mbx_core_reg_top
   ) u_inbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (inbound_limit_address_gated_we),
@@ -731,6 +741,7 @@ module mbx_core_reg_top
   ) u_outbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (outbound_base_address_gated_we),
@@ -764,6 +775,7 @@ module mbx_core_reg_top
   ) u_outbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (outbound_limit_address_gated_we),
@@ -819,6 +831,7 @@ module mbx_core_reg_top
   ) u_outbound_object_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (outbound_object_size_we),

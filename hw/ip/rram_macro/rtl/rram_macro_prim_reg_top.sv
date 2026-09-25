@@ -157,6 +157,7 @@ module rram_macro_prim_reg_top (
   ) u_csr0_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_regwen_we),
@@ -189,6 +190,7 @@ module rram_macro_prim_reg_top (
   ) u_csr1_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_gated_we),
@@ -216,6 +218,7 @@ module rram_macro_prim_reg_top (
   ) u_csr1_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_gated_we),
@@ -245,6 +248,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -272,6 +276,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -299,6 +304,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -326,6 +332,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -353,6 +360,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -380,6 +388,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -407,6 +416,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -434,6 +444,7 @@ module rram_macro_prim_reg_top (
   ) u_csr2_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),

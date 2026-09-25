@@ -236,16 +236,17 @@ module prim_subreg_shadow
     .RESVAL  (RESVAL),
     .Mubi    (Mubi)
   ) committed_reg (
-    .clk_i (clk_i),
-    .rst_ni(rst_ni),
-    .we    (committed_we),
-    .wd    (wr_data),
-    .de    (committed_de),
-    .d     (d),
-    .qe    (committed_qe),
-    .q     (committed_q),
-    .ds    (ds),
-    .qs    (committed_qs)
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+    .we      (committed_we),
+    .wd      (wr_data),
+    .de      (committed_de),
+    .d       (d),
+    .qe      (committed_qe),
+    .q       (committed_q),
+    .ds      (ds),
+    .qs      (committed_qs)
   );
 
   // Output phase for hwext.

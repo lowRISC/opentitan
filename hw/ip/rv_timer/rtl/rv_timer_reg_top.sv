@@ -194,6 +194,7 @@ module rv_timer_reg_top
   ) u_ctrl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -223,6 +224,7 @@ module rv_timer_reg_top
   ) u_intr_enable0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable0_we),
@@ -252,6 +254,7 @@ module rv_timer_reg_top
   ) u_intr_state0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state0_we),
@@ -302,6 +305,7 @@ module rv_timer_reg_top
   ) u_cfg0_prescale (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cfg0_we),
@@ -329,6 +333,7 @@ module rv_timer_reg_top
   ) u_cfg0_step (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cfg0_we),
@@ -357,6 +362,7 @@ module rv_timer_reg_top
   ) u_timer_v_lower0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (timer_v_lower0_we),
@@ -385,6 +391,7 @@ module rv_timer_reg_top
   ) u_timer_v_upper0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (timer_v_upper0_we),
@@ -424,6 +431,7 @@ module rv_timer_reg_top
   ) u_compare_lower0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (compare_lower0_0_we),
@@ -464,6 +472,7 @@ module rv_timer_reg_top
   ) u_compare_upper0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (compare_upper0_0_we),

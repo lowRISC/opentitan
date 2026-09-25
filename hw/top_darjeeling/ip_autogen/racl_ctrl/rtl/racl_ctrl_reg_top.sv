@@ -413,6 +413,7 @@ module racl_ctrl_reg_top
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -441,6 +442,7 @@ module racl_ctrl_reg_top
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -538,6 +540,7 @@ module racl_ctrl_reg_top
   ) u_error_log_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (error_log_we),
@@ -566,6 +569,7 @@ module racl_ctrl_reg_top
   ) u_error_log_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -593,6 +597,7 @@ module racl_ctrl_reg_top
   ) u_error_log_read_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -620,6 +625,7 @@ module racl_ctrl_reg_top
   ) u_error_log_role (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -647,6 +653,7 @@ module racl_ctrl_reg_top
   ) u_error_log_ctn_uid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -675,6 +682,7 @@ module racl_ctrl_reg_top
   ) u_error_log_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

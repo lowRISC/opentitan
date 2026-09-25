@@ -628,6 +628,7 @@ module clkmgr_reg_top (
   ) u_extclk_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (extclk_ctrl_regwen_we),
@@ -660,6 +661,7 @@ module clkmgr_reg_top (
   ) u_extclk_ctrl_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (extclk_ctrl_gated_we),
@@ -687,6 +689,7 @@ module clkmgr_reg_top (
   ) u_extclk_ctrl_hi_speed_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (extclk_ctrl_gated_we),
@@ -731,6 +734,7 @@ module clkmgr_reg_top (
   ) u_jitter_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (jitter_regwen_we),
@@ -762,6 +766,7 @@ module clkmgr_reg_top (
   ) u_jitter_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (jitter_enable_gated_we),
@@ -791,6 +796,7 @@ module clkmgr_reg_top (
   ) u_clk_enables_clk_io_div4_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_enables_we),
@@ -818,6 +824,7 @@ module clkmgr_reg_top (
   ) u_clk_enables_clk_io_div2_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_enables_we),
@@ -845,6 +852,7 @@ module clkmgr_reg_top (
   ) u_clk_enables_clk_io_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_enables_we),
@@ -872,6 +880,7 @@ module clkmgr_reg_top (
   ) u_clk_enables_clk_usb_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_enables_we),
@@ -900,6 +909,7 @@ module clkmgr_reg_top (
   ) u_clk_hints (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_hints_we),
@@ -928,6 +938,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -956,6 +967,7 @@ module clkmgr_reg_top (
   ) u_measure_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (measure_ctrl_regwen_we),
@@ -989,6 +1001,7 @@ module clkmgr_reg_top (
   ) u_io_meas_ctrl_en (
     .clk_i   (clk_io_i),
     .rst_ni  (rst_io_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (io_io_meas_ctrl_en_gated_we),
@@ -1171,6 +1184,7 @@ module clkmgr_reg_top (
   ) u_io_div4_meas_ctrl_en (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (io_div4_io_div4_meas_ctrl_en_gated_we),
@@ -1353,6 +1367,7 @@ module clkmgr_reg_top (
   ) u_main_meas_ctrl_en (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (main_main_meas_ctrl_en_gated_we),
@@ -1534,6 +1549,7 @@ module clkmgr_reg_top (
   ) u_usb_meas_ctrl_en (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (usb_usb_meas_ctrl_en_gated_we),
@@ -1711,6 +1727,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_shadow_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1738,6 +1755,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1765,6 +1783,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_div4_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1792,6 +1811,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_main_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1819,6 +1839,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_usb_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1846,6 +1867,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1873,6 +1895,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_div4_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1900,6 +1923,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_main_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1927,6 +1951,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_usb_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1956,6 +1981,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_reg_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1983,6 +2009,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_idle_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2010,6 +2037,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_shadow_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

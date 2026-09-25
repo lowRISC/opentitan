@@ -139,17 +139,18 @@ module mbx_sysif
   ) u_soc_control_doe_intr_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
     // from register interface
-    .we     (reg2hw.soc_control.doe_intr_en.qe),
-    .wd     (reg2hw.soc_control.doe_intr_en.q & DoeIrqSupport),
+    .we      (reg2hw.soc_control.doe_intr_en.qe),
+    .wd      (reg2hw.soc_control.doe_intr_en.q & DoeIrqSupport),
     // HWAccess: hro
-    .de     (1'b0),
-    .d      (1'b0),
+    .de      (1'b0),
+    .d       (1'b0),
     // to internal hardware
-    .qe     (),
-    .q      (doe_intr_en_o),
-    .ds     (hw2reg.soc_control.doe_intr_en.d),
-    .qs     ()
+    .qe      (),
+    .q       (doe_intr_en_o),
+    .ds      (hw2reg.soc_control.doe_intr_en.d),
+    .qs      ()
   );
 
   // Manual implementation of the doe_async_msg_en bit
@@ -163,17 +164,18 @@ module mbx_sysif
   ) u_soc_control_doe_async_msg_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
     // from register interface
-    .we     (reg2hw.soc_control.doe_async_msg_en.qe),
-    .wd     (reg2hw.soc_control.doe_async_msg_en.q & DoeAsyncMsgSupport),
+    .we      (reg2hw.soc_control.doe_async_msg_en.qe),
+    .wd      (reg2hw.soc_control.doe_async_msg_en.q & DoeAsyncMsgSupport),
     // HWAccess: hro
-    .de     (1'b0),
-    .d      (1'b0),
+    .de      (1'b0),
+    .d       (1'b0),
     // to internal hardware
-    .qe     (),
-    .q      (doe_async_msg_en_o),
-    .ds     (hw2reg.soc_control.doe_async_msg_en.d),
-    .qs     ()
+    .qe      (),
+    .q       (doe_async_msg_en_o),
+    .ds      (hw2reg.soc_control.doe_async_msg_en.d),
+    .qs      ()
   );
 
   // Extract status register bits for the RoT-side interface.
@@ -291,7 +293,7 @@ module mbx_sysif
 
   // Manual implementation of the write read mailbox register.
   // The manual implementation of the register via a register window is needed to expose the
-  // internal register interface of the TL-UL bus to halt the bus if there too many outstanding
+  // internal register interface of the TL-UL bus to halt the bus if there are too many outstanding
   // requests.
   logic mbx_wrdata_flds_we;
   prim_flop #(
@@ -310,22 +312,23 @@ module mbx_sysif
   ) u_reg_wrdata (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
-    .we     (reg_wdata_we),
-    .wd     (reg_wdata_wdata),
+    .we      (reg_wdata_we),
+    .wd      (reg_wdata_wdata),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de      (1'b0),
+    .d       ('0),
 
     // to internal hardware
-    .qe     (mbx_wrdata_flds_we),
-    .q      (write_data_o),
-    .ds     (),
+    .qe      (mbx_wrdata_flds_we),
+    .q       (write_data_o),
+    .ds      (),
 
     // to register interface (read)
-    .qs     ()
+    .qs      ()
   );
 
   // Forward IRQ addr and data register to the host interface

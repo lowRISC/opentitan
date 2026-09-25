@@ -170,6 +170,7 @@ module rv_dm_regs_reg_top
   ) u_late_debug_enable_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (late_debug_enable_regwen_we),
@@ -201,6 +202,7 @@ module rv_dm_regs_reg_top
   ) u_late_debug_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (late_debug_enable_gated_we),

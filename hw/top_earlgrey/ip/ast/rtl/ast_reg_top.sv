@@ -302,6 +302,7 @@ module ast_reg_top (
   ) u_rega0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -330,6 +331,7 @@ module ast_reg_top (
   ) u_rega1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -358,6 +360,7 @@ module ast_reg_top (
   ) u_rega2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega2_we),
@@ -386,6 +389,7 @@ module ast_reg_top (
   ) u_rega3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega3_we),
@@ -414,6 +418,7 @@ module ast_reg_top (
   ) u_rega4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega4_we),
@@ -442,6 +447,7 @@ module ast_reg_top (
   ) u_rega5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega5_we),
@@ -470,6 +476,7 @@ module ast_reg_top (
   ) u_rega6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega6_we),
@@ -498,6 +505,7 @@ module ast_reg_top (
   ) u_rega7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega7_we),
@@ -526,6 +534,7 @@ module ast_reg_top (
   ) u_rega8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega8_we),
@@ -554,6 +563,7 @@ module ast_reg_top (
   ) u_rega9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega9_we),
@@ -582,6 +592,7 @@ module ast_reg_top (
   ) u_rega10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega10_we),
@@ -610,6 +621,7 @@ module ast_reg_top (
   ) u_rega11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega11_we),
@@ -638,6 +650,7 @@ module ast_reg_top (
   ) u_rega12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega12_we),
@@ -666,6 +679,7 @@ module ast_reg_top (
   ) u_rega13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega13_we),
@@ -694,6 +708,7 @@ module ast_reg_top (
   ) u_rega14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega14_we),
@@ -722,6 +737,7 @@ module ast_reg_top (
   ) u_rega15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega15_we),
@@ -750,6 +766,7 @@ module ast_reg_top (
   ) u_rega16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega16_we),
@@ -778,6 +795,7 @@ module ast_reg_top (
   ) u_rega17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega17_we),
@@ -806,6 +824,7 @@ module ast_reg_top (
   ) u_rega18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega18_we),
@@ -834,6 +853,7 @@ module ast_reg_top (
   ) u_rega19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega19_we),
@@ -862,6 +882,7 @@ module ast_reg_top (
   ) u_rega20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega20_we),
@@ -890,6 +911,7 @@ module ast_reg_top (
   ) u_rega21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega21_we),
@@ -918,6 +940,7 @@ module ast_reg_top (
   ) u_rega22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega22_we),
@@ -946,6 +969,7 @@ module ast_reg_top (
   ) u_rega23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega23_we),
@@ -974,6 +998,7 @@ module ast_reg_top (
   ) u_rega24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega24_we),
@@ -1002,6 +1027,7 @@ module ast_reg_top (
   ) u_rega25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega25_we),
@@ -1030,6 +1056,7 @@ module ast_reg_top (
   ) u_rega26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega26_we),
@@ -1058,6 +1085,7 @@ module ast_reg_top (
   ) u_rega27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega27_we),
@@ -1086,6 +1114,7 @@ module ast_reg_top (
   ) u_rega28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1114,6 +1143,7 @@ module ast_reg_top (
   ) u_rega29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega29_we),
@@ -1142,6 +1172,7 @@ module ast_reg_top (
   ) u_rega30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega30_we),
@@ -1170,6 +1201,7 @@ module ast_reg_top (
   ) u_rega31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega31_we),
@@ -1198,6 +1230,7 @@ module ast_reg_top (
   ) u_rega32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega32_we),
@@ -1226,6 +1259,7 @@ module ast_reg_top (
   ) u_rega33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega33_we),
@@ -1254,6 +1288,7 @@ module ast_reg_top (
   ) u_rega34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega34_we),
@@ -1282,6 +1317,7 @@ module ast_reg_top (
   ) u_rega35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega35_we),
@@ -1310,6 +1346,7 @@ module ast_reg_top (
   ) u_rega36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega36_we),
@@ -1338,6 +1375,7 @@ module ast_reg_top (
   ) u_rega37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega37_we),
@@ -1366,6 +1404,7 @@ module ast_reg_top (
   ) u_rega38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega38_we),
@@ -1394,6 +1433,7 @@ module ast_reg_top (
   ) u_rega39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega39_we),
@@ -1422,6 +1462,7 @@ module ast_reg_top (
   ) u_rega40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega40_we),
@@ -1450,6 +1491,7 @@ module ast_reg_top (
   ) u_rega41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega41_we),
@@ -1478,6 +1520,7 @@ module ast_reg_top (
   ) u_rega42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega42_we),
@@ -1506,6 +1549,7 @@ module ast_reg_top (
   ) u_rega43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega43_we),
@@ -1534,6 +1578,7 @@ module ast_reg_top (
   ) u_rega44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega44_we),
@@ -1562,6 +1607,7 @@ module ast_reg_top (
   ) u_rega45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega45_we),
@@ -1590,6 +1636,7 @@ module ast_reg_top (
   ) u_rega46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega46_we),
@@ -1618,6 +1665,7 @@ module ast_reg_top (
   ) u_rega47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega47_we),
@@ -1646,6 +1694,7 @@ module ast_reg_top (
   ) u_rega48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega48_we),
@@ -1674,6 +1723,7 @@ module ast_reg_top (
   ) u_rega49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega49_we),
@@ -1702,6 +1752,7 @@ module ast_reg_top (
   ) u_rega50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega50_we),
@@ -1730,6 +1781,7 @@ module ast_reg_top (
   ) u_rega51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega51_we),
@@ -1758,6 +1810,7 @@ module ast_reg_top (
   ) u_rega52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rega52_we),
@@ -1807,6 +1860,7 @@ module ast_reg_top (
   ) u_regb_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regb_0_we),
@@ -1836,6 +1890,7 @@ module ast_reg_top (
   ) u_regb_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regb_1_we),
@@ -1865,6 +1920,7 @@ module ast_reg_top (
   ) u_regb_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regb_2_we),
@@ -1894,6 +1950,7 @@ module ast_reg_top (
   ) u_regb_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regb_3_we),
@@ -1923,6 +1980,7 @@ module ast_reg_top (
   ) u_regb_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regb_4_we),
