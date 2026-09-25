@@ -1530,6 +1530,8 @@ module otbn
 
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
+  `ASSERT_INIT(SideloadKeySizeMismatch_A, SideloadKeyWidth == keymgr_dpe_pkg::WideHwKeyWidth)
+  `ASSERT_INIT(SideloadKeyRegisterSizeMismatch_A, SideloadKeyWidth == WLEN*2)
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnStartStopFsmCheck_A,
