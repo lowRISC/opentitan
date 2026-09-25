@@ -8,7 +8,7 @@ description: "UVM agent for RACL error_log signals"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:dv_lib
+      - lowrisc:dv:dv_base_agent
       - lowrisc:virtual_constants:top_racl_pkg
     files:
       - racl_error_log_if.sv

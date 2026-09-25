@@ -5,8 +5,6 @@
 // A monitor for an error log interface
 
 class racl_error_log_monitor extends dv_base_monitor #(.ITEM_T (racl_error_log_vec_item),
-                                                       .REQ_ITEM_T (racl_error_log_vec_driver_item),
-                                                       .RSP_ITEM_T (racl_error_log_vec_driver_item),
                                                        .CFG_T (racl_error_log_agent_cfg));
   `uvm_component_utils(racl_error_log_monitor)
 
