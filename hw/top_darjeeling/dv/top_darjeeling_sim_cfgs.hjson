@@ -56,6 +56,7 @@
              "{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/racl_ctrl/dv/racl_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
