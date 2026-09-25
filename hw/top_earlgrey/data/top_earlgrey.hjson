@@ -1002,6 +1002,7 @@
         NumInstHwSlot: "4",
         NumBootStages: "3",
         NumRomDigestInputs: "1",
+        KdfEngineSel: "keymgr_dpe_pkg::KdfEngineBoth",
       },
     },
     { name: "csrng",

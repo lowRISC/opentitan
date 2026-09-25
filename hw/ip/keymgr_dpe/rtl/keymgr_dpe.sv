@@ -32,7 +32,9 @@ module keymgr_dpe
   // Number of available boot stages
   parameter int unsigned NumBootStages         = 3,
   // Number of ROM digest inputs
-  parameter int unsigned NumRomDigestInputs    = 1
+  parameter int unsigned NumRomDigestInputs    = 1,
+  // Define which kdf engine is supported
+  parameter kdf_engine_sel_e KdfEngineSel      = KdfEngineKmac
 ) (
   input clk_i,
   input rst_ni,
@@ -143,6 +145,10 @@ module keymgr_dpe
     .out_o  (sensitive_key_buf)
   );
   assign sensitive_key_o = mubi4_t'(sensitive_key_buf);
+
+  // TODO(#915): read unassigned parameter to avoid linter error
+  logic unused_parameter;
+  assign unused_parameter = ^KdfEngineSel;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -1050,6 +1056,10 @@ module keymgr_dpe
   logic [KeyVersionWidth-1:0] unused_active_key_version;
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
+
+  // Verify the kdf engine selection parameter
+  `ASSERT_INIT(InvalidKdfEngineSelection_A,
+      KdfEngineSel inside {KdfEngineKmac, KdfEngineOtbn, KdfEngineBoth})
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
