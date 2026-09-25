@@ -763,8 +763,8 @@ Subregion write enable. Once set to 0, it can no longer be configured to 1.
 
 ## EMUL_INFO_SUBREGION
 Subregions are configured with TOR (top of range) addressing, but relative to the window's base.
-A subregion's range runs from the prior subregion's END plus one up to its own END.
-Configure subregions in increasing END order, locking each starting from index 0.
+A subregion's range runs from the prior subregion's TOP plus one up to its own TOP.
+Configure subregions in increasing TOP order, locking each starting from index 0.
 A subregion is enabled once its whole lock chain back to index 0 is locked and its offset does not overflow past its window.
 - Reset default: `0x0`
 - Reset mask: `0xff`
@@ -803,13 +803,13 @@ A subregion is enabled once its whole lock chain back to index 0 is locked and i
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "END", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TOP", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                               |
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------|
 |  31:8  |        |         |        | Reserved                                                                  |
-|  7:0   |   rw   |   0x0   | END    | Subregion's last page, as an offset in pages from its window's base page. |
+|  7:0   |   rw   |   0x0   | TOP    | Subregion's last page, as an offset in pages from its window's base page. |
 
 ## EMUL_INFO_SUBREGION_CFG_REGWEN
 Emulated info subregion permission registers configuration enable.
