@@ -69,6 +69,8 @@
       desc: "Asserted when a hardware-attached CSRNG instance encounters a command exception"}
     { name: "cs_fatal_err"
       desc: "Asserted when a FIFO error or a fatal alert occurs. Check the !!ERR_CODE register to get more information."}
+    { name: "cs_int_state_stopped"
+      desc: "Asserted when a CSRNG instance targeted by an internal-state EXPORT or IMPORT command has quiesced and is ready for state export/import."}
   ],
   alert_list: [
     { name: "recov_alert",
@@ -138,10 +140,11 @@
       desc: "CSRNG can be set up to generate non-deterministic random values by using a random seed from the entropy source."
     }
     {
-      name: "CSRNG.READ_INT_STATE",
+      name: "CSRNG.ACCESS_INT_STATE",
       desc: '''
-            CSRNG allows reading the internal state of the three CTR_DRBG instances corresponding to the three interfaces.
-            This is useful for debugging and validation testing.
+            CSRNG allows a selected instance to be stopped, have its state read out or overwritten, and resumed,
+            via !!INT_STATE_CMD.
+            This is useful for debugging and validation testing, as well as context save/restore.
 
             Note that for this to work the `otp_en_csrng_sw_app_read` input from OTP needs to be `kMultiBitBool8True`.
             '''
@@ -281,13 +284,12 @@
         },
         {
             bits: "11:8",
-            name: "READ_INT_STATE",
+            name: "INT_STATE_ENABLE",
             mubi: true
             desc: '''
-                  Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
-                  Reading the internal state of the enable instances will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-                  Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
+                  Setting this field to kMultiBitBool4True will enable issuing EXPORT/IMPORT/RESUME commands via !!INT_STATE_CMD.
+                  Issuing EXPORT/IMPORT/RESUME commands to the internal state of the enabled instances is enabled only if the
+                  otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
           resval: false
         },
@@ -439,6 +441,14 @@
                     This happens only for Generate commands.
                     '''
             },
+            { value: "5",
+              name: "GEN_ABORTED",
+              desc: '''
+                    This bit indicates that a Generate command for this instance was aborted via !!GEN_ABORT before returning all requested genbits.
+                    The instance has been uninstantiated as a result and must be instantiated again before further commands will succeed.
+                    This happens only for Generate commands.
+                    '''
+            },
           ]
         }
       ]
@@ -484,36 +494,63 @@
       ]
     },
     {
-      name: "INT_STATE_READ_ENABLE",
-      desc: "Internal state read enable register",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "INT_STATE_READ_ENABLE_REGWEN",
-      fields: [
-        { bits: "2:0",
-          name: "INT_STATE_READ_ENABLE",
-          desc: '''
-                Per-instance internal state read enable.
-                Defines whether the internal state of the corresponding instance is readable via !!INT_STATE_VAL.
-                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
-                '''
-          resval: 0x7
-        }
-      ]
-    },
-    {
-      name: "INT_STATE_READ_ENABLE_REGWEN",
-      desc: "Internal state read enable REGWEN register",
+      name: "INT_STATE_CMD_REGWEN",
+      desc: "Register write enable for !!INT_STATE_CMD",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits: "0",
           desc: '''
-                INT_STATE_READ_ENABLE register configuration enable bit.
-                If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore.
+                When true, the !!INT_STATE_CMD register can be written.
+                When false, it becomes read-only until the next reset.
                 '''
           resval: 1,
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_CMD",
+      desc: "Internal state EXPORT/IMPORT/RESUME command register",
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      hwqe: "true",
+      regwen: "INT_STATE_CMD_REGWEN",
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "3:0",
+          name: "EXPORT_REQ",
+          mubi: true,
+          resval: false,
+          desc: '''
+                Setting this field to kMultiBitBool4True requests that the instance selected by !!INT_STATE_NUM
+                stops accepting and processing further commands, and quiesces as soon as it safely can, so that
+                its state can be read out via !!INT_STATE_VAL.
+                Poll !!INT_STATE_CMD_STS.STOPPED, or wait for !!INTR_STATE.CS_INT_STATE_STOPPED, before reading
+                !!INT_STATE_VAL or issuing a RESUME command.
+                Subsequent reads to !!INT_STATE_VAL export the state word by word.
+                '''
+        }
+        { bits: "7:4",
+          name: "IMPORT_REQ",
+          mubi: true,
+          resval: false,
+          desc: '''
+                Setting this field to kMultiBitBool4True requests that the instance selected by !!INT_STATE_NUM
+                stops accepting and processing further commands, and quiesces as soon as it safely can, so that
+                its state can be overwritten via !!INT_STATE_VAL.
+                Poll !!INT_STATE_CMD_STS.STOPPED, or wait for !!INTR_STATE.CS_INT_STATE_STOPPED, before writing
+                !!INT_STATE_VAL or issuing a RESUME command.
+                Subsequent writes to !!INT_STATE_VAL overwrite the state word by word.
+                '''
+        }
+        { bits: "11:8",
+          name: "RESUME",
+          mubi: true,
+          resval: false,
+          desc: '''
+                Setting this field to kMultiBitBool4True resumes the command processing of the instance selected
+                by !!INT_STATE_NUM.
+                '''
         }
       ]
     },
@@ -527,12 +564,12 @@
             bits: "3:0",
             name: "INT_STATE_NUM",
             desc: '''
-                  Setting this field will set the number for which internal state can be
-                  selected for a read access. Up to 16 internal state values can be chosen
+                  Setting this field will set the number for which instance is targeted by
+                  !!INT_STATE_CMD. Up to 16 internal state values can be chosen
                   from this register. The actual number of valid internal state fields
                   is set by parameter NumHwApps plus 1 software app. For those selections that point
                   to reserved locations (greater than NumHwApps plus 1), the returned value
-                  will be zero. Writing this register will also reset the internal read
+                  will be zero. Writing this register will also reset the internal read/write
                   pointer for the !!INT_STATE_VAL register.
                   Note: This register should be read back after being written to ensure
                   that the !!INT_STATE_VAL read back is accurate.
@@ -542,28 +579,133 @@
     },
     {
       name: "INT_STATE_VAL",
-      desc: "Internal state read access register",
-      swaccess: "ro",
+      desc: "Internal state read/write access register",
+      swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
       hwre: "true",
+      hwqe: "true",
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "31:0",
           name: "INT_STATE_VAL",
           desc: '''
-                Reading this register will dump out the contents of the selected internal state field.
-                Since the internal state field is 448 bits wide, it will require 14 reads from this
-                register to gather the entire field. Once 14 reads have been done, the internal read
-                pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
-                can be re-written at this time (internal read pointer is also reset), and then
-                another internal state field can be read.
-                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
+                Reading this register will dump out the contents of the selected instance's CTR_DRBG
+                state. Since this field is 448 bits wide, it will require 14 reads from this register
+                to gather the entire field. Once 14 reads have been done, the internal read/write
+                pointer (selects 32 bits of the 448 bit field) will reset to zero.
+
+                Writing this register is only meaningful while an IMPORT command is active for the
+                currently stopped and targeted instance (see !!INT_STATE_CMD). Writes overwrite the state
+                word by word as they arrive. Reading while an IMPORT command is active returns the
+                already-written contents.
+
+                This register only covers the CTR_DRBG state (key/V/reseed counter/fips/instantiated).
+                If the targeted instance may have a Generate command paused mid-sequence that needs to
+                be resumed correctly, also see !!INT_STATE_CMD_GEN_VAL and !!INT_STATE_CMD_ADATA_VAL.
+
+                Note that for !!INT_STATE_VAL to provide access to the internal state, also
+                !!CTRL.INT_STATE_ENABLE needs to be set to `kMultiBitBool4True`.
                 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
-                Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
-                Otherwise, the register reads as 0.
+                Otherwise, the register reads as 0 and writes are dropped.
                 '''
         }
       ]
+    },
+    {
+      name: "INT_STATE_CMD_GEN_VAL",
+      desc: "Internal state Generate-resume bookkeeping read/write access register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "11:0",
+          name: "CMD_GEN_CNT",
+          desc: '''
+                Number of generate requests remaining in the Generate command that was paused
+                mid-sequence for the selected instance. Directly reflects/overwrites the internal
+                cmd_gen_cnt flip-flop.
+                '''
+        }
+        { bits: "12",
+          name: "CMD_GEN_FLAG",
+          desc: '''
+                Whether the selected instance has a Generate command paused mid-sequence. Directly
+                reflects/overwrites the internal cmd_gen_flag_q flip-flop.
+                '''
+        }
+        { bits: "13",
+          name: "GENERATE_ADATA_VLD",
+          desc: '''
+                Whether !!INT_STATE_CMD_ADATA_VAL currently holds valid additional data for the
+                paused Generate command. Directly reflects/overwrites the internal generate_adata_vld_q
+                flip-flop.
+                '''
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_CMD_ADATA_VAL",
+      desc: "Internal state Generate-resume additional data read/write access register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      hwqe: "true",
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "31:0",
+          name: "INT_STATE_CMD_ADATA_VAL",
+          desc: '''
+                Reading this register will dump out the additional data supplied to the Generate
+                command that was paused mid-sequence for the selected instance. Since this field is
+                384 bits wide, it will require 12 reads from this register to gather the entire
+                field. Once 12 reads have been done, the internal read/write pointer (selects 32
+                bits of the 384 bit field) will reset to zero.
+
+                Writing this register is only meaningful while an IMPORT command is active for the
+                currently stopped and targeted instance (see !!INT_STATE_CMD). Writes overwrite the
+                additional data word by word as they arrive. Reading while an IMPORT command is
+                active returns the already-written (or defaulted) contents.
+
+                This register only covers the Generate-resume additional data. Accepting an IMPORT
+                command always first resets all Generate-resume bookkeeping, including this field,
+                to a "no Generate in progress" default, which then only changes for the words that
+                are subsequently written. If !!INT_STATE_CMD_GEN_VAL.GENERATE_ADATA_VLD reads
+                False, this register does not need to be read or written.
+
+                Note that for !!INT_STATE_CMD_ADATA_VAL to provide access to the internal state, also
+                !!CTRL.INT_STATE_ENABLE needs to be set to `kMultiBitBool4True`.
+                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+                Otherwise, the register reads as 0 and writes are dropped.
+                '''
+        }
+      ]
+    },
+    { multireg: {
+      name: "INT_STATE_CMD_STS",
+      desc: "Internal state command status register",
+      count: "NumApps",
+      cname: "INT_STATE_CMD_STS",
+      compact: false,
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "0",
+          name: "STOPPED",
+          desc: '''
+                Reflects whether this instance has quiesced following an accepted EXPORT/IMPORT
+                command, and is safe to read/write via !!INT_STATE_VAL/!!INT_STATE_CMD_GEN_VAL/
+                !!INT_STATE_CMD_ADATA_VAL or resume via !!INT_STATE_CMD.RESUME.
+                Also see !!INTR_STATE.CS_INT_STATE_STOPPED, which fires for either command.
+                '''
+          resval: 0
+        }
+      ]
+      }
     },
     {
       name: "FIPS_FORCE",
@@ -584,6 +726,68 @@
                 '''
         }
       ]
+    },
+    { name: "GEN_ABORT_REGWEN",
+      desc: "Register write enable for !!GEN_ABORT",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                When true, the !!GEN_ABORT register can be written.
+                When false, it becomes read-only until the next reset.
+                '''
+          resval: 1
+        }
+      ]
+    },
+    { multireg: {
+      name: "GEN_ABORT",
+      desc: "Generate command abort request register",
+      count: "NumApps",
+      cname: "GEN_ABORT",
+      compact: false,
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      regwen: "GEN_ABORT_REGWEN",
+      tags: [// This register self-clears every cycle and a write can affect RECOV_ALERT_STS.
+                 "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "3:0",
+          name: "GEN_ABORT",
+          mubi: true,
+          resval: false,
+          desc: '''
+                Setting this field to kMultiBitBool4True requests aborting a Generate command that is currently in progress for this instance.
+                The instance is zeroed as a result.
+                It must be instantiated again before further Reseed, Update, or Generate commands can succeed.
+
+                This request is only accepted while a Generate command is actually in progress for this instance.
+                If no Generate command is in progress, the write is ignored and !!RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT is set instead.
+                '''
+        }
+      ]
+      }
+    },
+    { multireg: {
+      name: "GEN_ABORT_STATUS",
+      desc: "Generate command abort completion status register",
+      count: "NumApps",
+      cname: "GEN_ABORT_STATUS",
+      compact: false,
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "GEN_ABORT_STATUS",
+          resval: false,
+          desc: '''
+                This bit is set when a Generate command abort requested via !!GEN_ABORT for this instance has completed.
+                Write 1 to clear.
+                '''
+        }
+      ]
+      }
     },
     {
       name: "HW_EXC_STS",
@@ -627,9 +831,9 @@
                 '''
         }
         { bits: "2",
-          name: "READ_INT_STATE_FIELD_ALERT",
+          name: "INT_STATE_ENABLE_FIELD_ALERT",
           desc: '''
-                This bit is set when the READ_INT_STATE field in the !!CTRL register is set to
+                This bit is set when the INT_STATE_ENABLE field in the !!CTRL register is set to
                 a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
@@ -646,6 +850,44 @@
           desc: '''
                 This bit is set when the FLAG0 field in the Application Command is set to
                 a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "5",
+          name: "GEN_ABORT_INVALID_ALERT",
+          desc: '''
+                This bit is set when a field of the !!GEN_ABORT register is set to kMultiBitBool4True for an instance that does not currently have a Generate command in progress.
+                The write is ignored and CSRNG continues to operate.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "6",
+          name: "GEN_ABORT_FIELD_ALERT",
+          desc: '''
+                This bit is set when a field of the !!GEN_ABORT register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "7",
+          name: "INT_STATE_CMD_FIELD_ALERT",
+          desc: '''
+                This bit is set when a field of the !!INT_STATE_CMD register is set to a value other than
+                kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "8",
+          name: "INT_STATE_CMD_INVALID_ALERT",
+          desc: '''
+                This bit is set on a misuse of the internal-state EXPORT/IMPORT/RESUME command
+                interface. This is the case for any of the following:
+                  - More than one of EXPORT/IMPORT/RESUME is set to kMultiBitBool4True in the same write.
+                  - EXPORT or IMPORT is issued while !!CTRL.INT_STATE_ENABLE (and the OTP gate) is not enabled.
+                  - IMPORT/EXPORT is issued while an IMPORT/EXPORT is already active for some instance.
+                  - RESUME is issued for an instance that has not yet reached !!INT_STATE_CMD_STS.STOPPED.
+                  - !!INT_STATE_VAL, !!INT_STATE_CMD_GEN_VAL, or !!INT_STATE_CMD_ADATA_VAL is written
+                    for an instance that has not yet reached !!INT_STATE_CMD_STS.STOPPED.
+                  - !!INT_STATE_NUM was written to while an instance was stopped.
                 Writing a zero resets this status bit.
                 '''
         }
