@@ -56,31 +56,29 @@ It is implemented this way because the access window supports transaction back-p
 | rram_ctrl.[`INFO_REGWEN_4`](#info_regwen)                 | 0xb4     |        4 | Memory region registers configuration enable.                       |
 | rram_ctrl.[`INFO_REGWEN_5`](#info_regwen)                 | 0xb8     |        4 | Memory region registers configuration enable.                       |
 | rram_ctrl.[`INFO_REGWEN_6`](#info_regwen)                 | 0xbc     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_REGWEN_7`](#info_regwen)                 | 0xc0     |        4 | Memory region registers configuration enable.                       |
-| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)             | 0xc4     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)             | 0xc8     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)             | 0xcc     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)             | 0xd0     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)             | 0xd4     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)             | 0xd8     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)             | 0xdc     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`INFO_PAGE_CFG_7`](#info_page_cfg)             | 0xe0     |        4 | Memory property configuration for info partition.                   |
-| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override) | 0xe4     |        4 | HW interface info configuration rule overrides                      |
-| rram_ctrl.[`OP_STATUS`](#op_status)                       | 0xe8     |        4 | RRAM Operation Status                                               |
-| rram_ctrl.[`STATUS`](#status)                             | 0xec     |        4 | RRAM Controller Status                                              |
-| rram_ctrl.[`ERR_CODE`](#err_code)                         | 0xf0     |        4 | RRAM error code register.                                           |
-| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)         | 0xf4     |        4 | This register tabulates standard fault status of the RRAM.          |
-| rram_ctrl.[`FAULT_STATUS`](#fault_status)                 | 0xf8     |        4 | This register tabulates customized fault status of the RRAM.        |
-| rram_ctrl.[`ERR_ADDR`](#err_addr)                         | 0xfc     |        4 | Synchronous error address                                           |
-| rram_ctrl.[`CORR_ERR_CNT`](#corr_err_cnt)                 | 0x100    |        4 | Count of correctable ECC errors                                     |
-| rram_ctrl.[`CORR_ERR_LOC`](#corr_err_loc)                 | 0x104    |        4 | Last address that was successfully corrected                        |
-| rram_ctrl.[`PHY_STATUS`](#phy_status)                     | 0x108    |        4 | RRAM Phy Status                                                     |
-| rram_ctrl.[`SCRATCH`](#scratch)                           | 0x10c    |        4 | RRAM Controller Scratch                                             |
-| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                         | 0x110    |        4 | Programmable depth where FIFOs should generate interrupts           |
-| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                         | 0x114    |        4 | Clears RRAM controller FIFOs                                        |
-| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)               | 0x118    |        4 | Current write and read fifo level                                   |
-| rram_ctrl.[`wr_fifo`](#wr_fifo)                           | 0x11c    |        4 | RRAM write FIFO.                                                    |
-| rram_ctrl.[`rd_fifo`](#rd_fifo)                           | 0x120    |        4 | RRAM read FIFO.                                                     |
+| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)             | 0xc0     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)             | 0xc4     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)             | 0xc8     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)             | 0xcc     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)             | 0xd0     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)             | 0xd4     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)             | 0xd8     |        4 | Memory property configuration for info partition.                   |
+| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override) | 0xdc     |        4 | HW interface info configuration rule overrides                      |
+| rram_ctrl.[`OP_STATUS`](#op_status)                       | 0xe0     |        4 | RRAM Operation Status                                               |
+| rram_ctrl.[`STATUS`](#status)                             | 0xe4     |        4 | RRAM Controller Status                                              |
+| rram_ctrl.[`ERR_CODE`](#err_code)                         | 0xe8     |        4 | RRAM error code register.                                           |
+| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)         | 0xec     |        4 | This register tabulates standard fault status of the RRAM.          |
+| rram_ctrl.[`FAULT_STATUS`](#fault_status)                 | 0xf0     |        4 | This register tabulates customized fault status of the RRAM.        |
+| rram_ctrl.[`ERR_ADDR`](#err_addr)                         | 0xf4     |        4 | Synchronous error address                                           |
+| rram_ctrl.[`CORR_ERR_CNT`](#corr_err_cnt)                 | 0xf8     |        4 | Count of correctable ECC errors                                     |
+| rram_ctrl.[`CORR_ERR_LOC`](#corr_err_loc)                 | 0xfc     |        4 | Last address that was successfully corrected                        |
+| rram_ctrl.[`PHY_STATUS`](#phy_status)                     | 0x100    |        4 | RRAM Phy Status                                                     |
+| rram_ctrl.[`SCRATCH`](#scratch)                           | 0x104    |        4 | RRAM Controller Scratch                                             |
+| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                         | 0x108    |        4 | Programmable depth where FIFOs should generate interrupts           |
+| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                         | 0x10c    |        4 | Clears RRAM controller FIFOs                                        |
+| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)               | 0x110    |        4 | Current write and read fifo level                                   |
+| rram_ctrl.[`wr_fifo`](#wr_fifo)                           | 0x114    |        4 | RRAM write FIFO.                                                    |
+| rram_ctrl.[`rd_fifo`](#rd_fifo)                           | 0x118    |        4 | RRAM read FIFO.                                                     |
 
 ## INTR_STATE
 Interrupt State Register
@@ -478,7 +476,6 @@ Memory region registers configuration enable.
 | INFO_REGWEN_4 | 0xb4     |
 | INFO_REGWEN_5 | 0xb8     |
 | INFO_REGWEN_6 | 0xbc     |
-| INFO_REGWEN_7 | 0xc0     |
 
 
 ### Fields
@@ -505,6 +502,9 @@ Once set to 0, it can no longer be configured to 1.
 ## INFO_PAGE_CFG
 Memory property configuration for info partition.
 Unlike data partition, each page is individually configured.
+The last page is reserved for the relocated OTP partition and has no
+corresponding register: it is hardware-only, accessible solely to the OTP
+hardware interface.
 - Reset default: `0x99999`
 - Reset mask: `0xfffff`
 - Register enable: [`INFO_REGWEN`](#info_regwen)
@@ -513,14 +513,13 @@ Unlike data partition, each page is individually configured.
 
 | Name            | Offset   |
 |:----------------|:---------|
-| INFO_PAGE_CFG_0 | 0xc4     |
-| INFO_PAGE_CFG_1 | 0xc8     |
-| INFO_PAGE_CFG_2 | 0xcc     |
-| INFO_PAGE_CFG_3 | 0xd0     |
-| INFO_PAGE_CFG_4 | 0xd4     |
-| INFO_PAGE_CFG_5 | 0xd8     |
-| INFO_PAGE_CFG_6 | 0xdc     |
-| INFO_PAGE_CFG_7 | 0xe0     |
+| INFO_PAGE_CFG_0 | 0xc0     |
+| INFO_PAGE_CFG_1 | 0xc4     |
+| INFO_PAGE_CFG_2 | 0xc8     |
+| INFO_PAGE_CFG_3 | 0xcc     |
+| INFO_PAGE_CFG_4 | 0xd0     |
+| INFO_PAGE_CFG_5 | 0xd4     |
+| INFO_PAGE_CFG_6 | 0xd8     |
 
 
 ### Fields
@@ -540,7 +539,7 @@ Unlike data partition, each page is individually configured.
 
 ## HW_INFO_CFG_OVERRIDE
 HW interface info configuration rule overrides
-- Offset: `0xe4`
+- Offset: `0xdc`
 - Reset default: `0x99`
 - Reset mask: `0xff`
 
@@ -558,7 +557,7 @@ HW interface info configuration rule overrides
 
 ## OP_STATUS
 RRAM Operation Status
-- Offset: `0xe8`
+- Offset: `0xe0`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -576,7 +575,7 @@ RRAM Operation Status
 
 ## STATUS
 RRAM Controller Status
-- Offset: `0xec`
+- Offset: `0xe4`
 - Reset default: `0xa`
 - Reset mask: `0x3f`
 
@@ -602,7 +601,7 @@ This register tabulates detailed error status of the RRAM.
 This is separate from [`OP_STATUS`](#op_status), which is used to indicate the current state of the software initiated RRAM operation.
 
 Note, all errors in this register are considered recoverable errors, i.e., errors that could have been generated by software.
-- Offset: `0xf0`
+- Offset: `0xe8`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -625,7 +624,7 @@ This register tabulates standard fault status of the RRAM.
 
 These represent errors that occur in the standard structures of the design.
 For example fsm integrity, counter integrity and tlul integrity.
-- Offset: `0xf4`
+- Offset: `0xec`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
 
@@ -659,7 +658,7 @@ These are errors that are impossible to have been caused by software or unrecove
 
 All errors except for multi-bit ECC errors ([`FAULT_STATUS.PHY_RELBL_ERR`](#fault_status)).
 Once set, they remain set until reset.
-- Offset: `0xf8`
+- Offset: `0xf0`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
 
@@ -743,7 +742,7 @@ See [`CONTROL.OP`](#control) for list of valid operations.
 
 ## ERR_ADDR
 Synchronous error address
-- Offset: `0xfc`
+- Offset: `0xf4`
 - Reset default: `0x0`
 - Reset mask: `0x1fffff`
 
@@ -760,7 +759,7 @@ Synchronous error address
 
 ## CORR_ERR_CNT
 Count of correctable ECC errors
-- Offset: `0x100`
+- Offset: `0xf8`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -777,7 +776,7 @@ Count of correctable ECC errors
 
 ## CORR_ERR_LOC
 Last address that was successfully corrected
-- Offset: `0x104`
+- Offset: `0xfc`
 - Reset default: `0x0`
 - Reset mask: `0x11fffff`
 
@@ -796,7 +795,7 @@ Last address that was successfully corrected
 
 ## PHY_STATUS
 RRAM Phy Status
-- Offset: `0x108`
+- Offset: `0x100`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -814,7 +813,7 @@ RRAM Phy Status
 
 ## SCRATCH
 RRAM Controller Scratch
-- Offset: `0x10c`
+- Offset: `0x104`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -830,7 +829,7 @@ RRAM Controller Scratch
 
 ## FIFO_LVL
 Programmable depth where FIFOs should generate interrupts
-- Offset: `0x110`
+- Offset: `0x108`
 - Reset default: `0xf0f`
 - Reset mask: `0x1f1f`
 
@@ -849,7 +848,7 @@ Programmable depth where FIFOs should generate interrupts
 
 ## FIFO_CLR
 Clears RRAM controller FIFOs
-- Offset: `0x114`
+- Offset: `0x10c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -867,7 +866,7 @@ Clears RRAM controller FIFOs
 
 ## CURR_FIFO_LVL
 Current write and read fifo level
-- Offset: `0x118`
+- Offset: `0x110`
 - Reset default: `0x0`
 - Reset mask: `0x1f1f`
 
@@ -890,7 +889,7 @@ RRAM write FIFO.
 The FIFO is 4 entries of 4B words. This FIFO can only be programmed by software after a write operation has been initiated via the [`CONTROL`](#control) register.
 This ensures accidental programming of the write FIFO cannot lock up the system.
 
-- Word Aligned Offset Range: `0x11c`to`0x11c`
+- Word Aligned Offset Range: `0x114`to`0x114`
 - Size (words): `1`
 - Access: `wo`
 - Byte writes are *not* supported.
@@ -900,7 +899,7 @@ RRAM read FIFO.
 
 The FIFO is 16 entries of 4B words.
 
-- Word Aligned Offset Range: `0x120`to`0x120`
+- Word Aligned Offset Range: `0x118`to`0x118`
 - Size (words): `1`
 - Access: `ro`
 - Byte writes are *not* supported.

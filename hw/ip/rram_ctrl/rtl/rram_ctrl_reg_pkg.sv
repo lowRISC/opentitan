@@ -21,7 +21,7 @@ package rram_ctrl_reg_pkg;
   parameter int CoreAw = 9;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 71;
+  parameter int NumRegsCore = 69;
 
   // Alert indices
   typedef enum int {
@@ -600,19 +600,19 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [814:809]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [808:803]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [802:791]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [790:781]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [780:773]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [772:741]
-    rram_ctrl_reg2hw_init_reg_t init; // [740:740]
-    rram_ctrl_reg2hw_control_reg_t control; // [739:726]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [725:705]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [704:505]
-    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [504:265]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [264:249]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [248:89]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [794:789]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [788:783]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [782:771]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [770:761]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [760:753]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [752:721]
+    rram_ctrl_reg2hw_init_reg_t init; // [720:720]
+    rram_ctrl_reg2hw_control_reg_t control; // [719:706]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [705:685]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [684:485]
+    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [484:245]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [244:229]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [6:0] info_page_cfg; // [228:89]
     rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [88:81]
     rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [80:68]
     rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [67:54]
@@ -688,29 +688,27 @@ package rram_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_4_OFFSET = 9'h b4;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_5_OFFSET = 9'h b8;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_6_OFFSET = 9'h bc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_7_OFFSET = 9'h c0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET = 9'h c4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET = 9'h c8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET = 9'h cc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET = 9'h d0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET = 9'h d4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET = 9'h d8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET = 9'h dc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET = 9'h e0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET = 9'h e4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_OP_STATUS_OFFSET = 9'h e8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_STATUS_OFFSET = 9'h ec;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_CODE_OFFSET = 9'h f0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_STD_FAULT_STATUS_OFFSET = 9'h f4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FAULT_STATUS_OFFSET = 9'h f8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 9'h fc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_CNT_OFFSET = 9'h 100;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_LOC_OFFSET = 9'h 104;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h 108;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h 10c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h 110;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h 114;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 118;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET = 9'h c0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET = 9'h c4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET = 9'h c8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET = 9'h cc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET = 9'h d0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET = 9'h d4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET = 9'h d8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET = 9'h dc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_OP_STATUS_OFFSET = 9'h e0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_STATUS_OFFSET = 9'h e4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_CODE_OFFSET = 9'h e8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_STD_FAULT_STATUS_OFFSET = 9'h ec;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FAULT_STATUS_OFFSET = 9'h f0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 9'h f4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_CNT_OFFSET = 9'h f8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_LOC_OFFSET = 9'h fc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h 100;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h 104;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h 108;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h 10c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 110;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [5:0] RRAM_CTRL_INTR_TEST_RESVAL = 6'h 0;
@@ -736,10 +734,10 @@ package rram_ctrl_reg_pkg;
   parameter logic [4:0] RRAM_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 11c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 114;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_IDX    = 0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 120;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 118;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_IDX    = 1;
 
@@ -793,7 +791,6 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_INFO_REGWEN_4,
     RRAM_CTRL_INFO_REGWEN_5,
     RRAM_CTRL_INFO_REGWEN_6,
-    RRAM_CTRL_INFO_REGWEN_7,
     RRAM_CTRL_INFO_PAGE_CFG_0,
     RRAM_CTRL_INFO_PAGE_CFG_1,
     RRAM_CTRL_INFO_PAGE_CFG_2,
@@ -801,7 +798,6 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_INFO_PAGE_CFG_4,
     RRAM_CTRL_INFO_PAGE_CFG_5,
     RRAM_CTRL_INFO_PAGE_CFG_6,
-    RRAM_CTRL_INFO_PAGE_CFG_7,
     RRAM_CTRL_HW_INFO_CFG_OVERRIDE,
     RRAM_CTRL_OP_STATUS,
     RRAM_CTRL_STATUS,
@@ -819,7 +815,7 @@ package rram_ctrl_reg_pkg;
   } rram_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [71] = '{
+  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [69] = '{
     4'b 0001, // index[ 0] RRAM_CTRL_INTR_STATE
     4'b 0001, // index[ 1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] RRAM_CTRL_INTR_TEST
@@ -868,29 +864,27 @@ package rram_ctrl_reg_pkg;
     4'b 0001, // index[45] RRAM_CTRL_INFO_REGWEN_4
     4'b 0001, // index[46] RRAM_CTRL_INFO_REGWEN_5
     4'b 0001, // index[47] RRAM_CTRL_INFO_REGWEN_6
-    4'b 0001, // index[48] RRAM_CTRL_INFO_REGWEN_7
-    4'b 0111, // index[49] RRAM_CTRL_INFO_PAGE_CFG_0
-    4'b 0111, // index[50] RRAM_CTRL_INFO_PAGE_CFG_1
-    4'b 0111, // index[51] RRAM_CTRL_INFO_PAGE_CFG_2
-    4'b 0111, // index[52] RRAM_CTRL_INFO_PAGE_CFG_3
-    4'b 0111, // index[53] RRAM_CTRL_INFO_PAGE_CFG_4
-    4'b 0111, // index[54] RRAM_CTRL_INFO_PAGE_CFG_5
-    4'b 0111, // index[55] RRAM_CTRL_INFO_PAGE_CFG_6
-    4'b 0111, // index[56] RRAM_CTRL_INFO_PAGE_CFG_7
-    4'b 0001, // index[57] RRAM_CTRL_HW_INFO_CFG_OVERRIDE
-    4'b 0001, // index[58] RRAM_CTRL_OP_STATUS
-    4'b 0001, // index[59] RRAM_CTRL_STATUS
-    4'b 0001, // index[60] RRAM_CTRL_ERR_CODE
-    4'b 0011, // index[61] RRAM_CTRL_STD_FAULT_STATUS
-    4'b 0011, // index[62] RRAM_CTRL_FAULT_STATUS
-    4'b 0111, // index[63] RRAM_CTRL_ERR_ADDR
-    4'b 0001, // index[64] RRAM_CTRL_CORR_ERR_CNT
-    4'b 1111, // index[65] RRAM_CTRL_CORR_ERR_LOC
-    4'b 0001, // index[66] RRAM_CTRL_PHY_STATUS
-    4'b 1111, // index[67] RRAM_CTRL_SCRATCH
-    4'b 0011, // index[68] RRAM_CTRL_FIFO_LVL
-    4'b 0001, // index[69] RRAM_CTRL_FIFO_CLR
-    4'b 0011  // index[70] RRAM_CTRL_CURR_FIFO_LVL
+    4'b 0111, // index[48] RRAM_CTRL_INFO_PAGE_CFG_0
+    4'b 0111, // index[49] RRAM_CTRL_INFO_PAGE_CFG_1
+    4'b 0111, // index[50] RRAM_CTRL_INFO_PAGE_CFG_2
+    4'b 0111, // index[51] RRAM_CTRL_INFO_PAGE_CFG_3
+    4'b 0111, // index[52] RRAM_CTRL_INFO_PAGE_CFG_4
+    4'b 0111, // index[53] RRAM_CTRL_INFO_PAGE_CFG_5
+    4'b 0111, // index[54] RRAM_CTRL_INFO_PAGE_CFG_6
+    4'b 0001, // index[55] RRAM_CTRL_HW_INFO_CFG_OVERRIDE
+    4'b 0001, // index[56] RRAM_CTRL_OP_STATUS
+    4'b 0001, // index[57] RRAM_CTRL_STATUS
+    4'b 0001, // index[58] RRAM_CTRL_ERR_CODE
+    4'b 0011, // index[59] RRAM_CTRL_STD_FAULT_STATUS
+    4'b 0011, // index[60] RRAM_CTRL_FAULT_STATUS
+    4'b 0111, // index[61] RRAM_CTRL_ERR_ADDR
+    4'b 0001, // index[62] RRAM_CTRL_CORR_ERR_CNT
+    4'b 1111, // index[63] RRAM_CTRL_CORR_ERR_LOC
+    4'b 0001, // index[64] RRAM_CTRL_PHY_STATUS
+    4'b 1111, // index[65] RRAM_CTRL_SCRATCH
+    4'b 0011, // index[66] RRAM_CTRL_FIFO_LVL
+    4'b 0001, // index[67] RRAM_CTRL_FIFO_CLR
+    4'b 0011  // index[68] RRAM_CTRL_CURR_FIFO_LVL
   };
 
 endpackage

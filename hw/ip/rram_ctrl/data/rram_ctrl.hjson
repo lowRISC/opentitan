@@ -392,6 +392,20 @@
       local:     "false",
       expose:    "true"
     },
+    { name:      "RemapStart",
+      desc:      "Byte offset of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.",
+      type:      "int"
+      default:   "0",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "RemapSize",
+      desc:      "Byte size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.",
+      type:      "int"
+      default:   "0",
+      local:     "false",
+      expose:    "true"
+    },
     { name:      "NumRegions",
       desc:      "Number of configurable rram regions",
       type:      "int",
@@ -866,7 +880,7 @@
           cname: "RRAM_CTRL",
           name: "INFO_REGWEN"
           desc: "Memory region registers configuration enable.",
-          count: "NumInfoPages",
+          count: "NumInfoPages - 1",
           swaccess: "rw0c",
           hwaccess: "none",
           compact: false,
@@ -903,8 +917,11 @@
           desc: '''
                 Memory property configuration for info partition.
                 Unlike data partition, each page is individually configured.
+                The last page is reserved for the relocated OTP partition and has no
+                corresponding register: it is hardware-only, accessible solely to the OTP
+                hardware interface.
                 '''
-          count: "NumInfoPages",
+          count: "NumInfoPages - 1",
           swaccess: "rw",
           hwaccess: "hro",
           regwen: "INFO_REGWEN",
