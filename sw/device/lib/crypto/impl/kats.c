@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
@@ -412,19 +413,15 @@ static inline otcrypto_hash_digest_t make_hash_digest(
 
 // The functions to run the kats
 static status_t kat_sha256_hash(void) {
-  otcrypto_sha2_context_t ctx;
-  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
-
   otcrypto_const_byte_buf_t msg_buf =
       otcrypto_make_const_byte_buf(sha256_in, sizeof(sha256_in));
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[256 / 32];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
       .len = 256 / 32,
   };
-  HARDENED_TRY(otcrypto_sha2_final(&ctx, &digest_buf));
+  HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &digest_buf));
 
   if (memcmp(act_digest, sha256_ans, 256 / 8)) {
     return OTCRYPTO_BAD_ARGS;
@@ -434,23 +431,19 @@ static status_t kat_sha256_hash(void) {
 }
 
 static status_t kat_sha512_hash(void) {
-  otcrypto_sha2_context_t ctx;
-  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
-
   // FIPS 180-4 SHA Test Vectors for Hashing Byte-Oriented Messages SHA-512
   // ShortMsg Len = 8 Msg = 21 MD =
   // 3831a6a6155e509dee59a7f451eb35324d8f8f2df6e3708894740f98fdee23889f4de5adb0c5010dfb555cda77c8ab5dc902094c52de3278f35a75ebc25f093a
   const uint8_t sha512_in[] = {0x21};
   otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, sha512_in, sizeof(sha512_in));
-  HARDENED_TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[512 / 32];
   otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
       .len = 512 / 32,
   };
-  HARDENED_TRY(otcrypto_sha2_final(&ctx, &digest_buf));
+  HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &digest_buf));
 
   if (memcmp(act_digest, sha512_ans, 512 / 8)) {
     return OTCRYPTO_BAD_ARGS;
@@ -1229,6 +1222,10 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  crypto_state_t *state = NULL;
+  HARDENED_TRY(read_state_pointer(&state));
+  state->kat_state |= (uint32_t)tests.flags;  // Re-entrance lock
 
   if ((tests.flags & OTCRYPTO_KAT_HASH_SHA256) != 0) {
     HARDENED_TRY(kat_sha256_hash());
