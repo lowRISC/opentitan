@@ -21,8 +21,6 @@ task rv_dm_mode_driver::get_and_drive();
     rv_dm_mode_seq_item item;
     seq_item_port.get_next_item(item);
 
-    `uvm_info("rjs", $sformatf("Setting rv_dm mode:\n%0s", item.sprint()), UVM_HIGH)
-
     // If we aren't in reset, drive the signals from the item (possibly through a clocking block)
     if (item.m_has_next_dm_addr) begin
       cfg.vif.next_dm_addr_internal <= item.m_next_dm_addr;
