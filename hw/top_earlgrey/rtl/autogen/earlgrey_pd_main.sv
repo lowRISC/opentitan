@@ -405,6 +405,8 @@ module earlgrey_pd_main #(
   localparam int KeymgrDpeNumInstHwSlot = 4;
   localparam int KeymgrDpeNumBootStages = 4;
   localparam int KeymgrDpeNumRomDigestInputs = 1;
+  localparam keymgr_dpe_pkg::kdf_engine_sel_e KeymgrDpeKdfEngineSel =
+      keymgr_dpe_pkg::KdfEngineBoth;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 3;
@@ -2424,7 +2426,8 @@ module earlgrey_pd_main #(
     .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
     .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
     .NumBootStages(KeymgrDpeNumBootStages),
-    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs)
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs),
+    .KdfEngineSel(KeymgrDpeKdfEngineSel)
   ) u_keymgr_dpe (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_secure),
