@@ -45,7 +45,7 @@ When a slot is active, `boot_stage` refers to its DPE context boot stage.
 For flexibility, `boot_stage` is a simple unsigned integer that is incremented from the parent's `boot_stage` during advance calls.
 Its actual mapping to boot stages such as ROM, BL0 or Kernel can be determined by SW.
 Hence, keymgr_dpe is oblivious to this mapping between counter values and the boot stages, though with an exception.
-The exception is that the initial boot stages are treated specially by RTL during KDF advance calls, as they consume other HW-backed inputs that come from keymgr_dpe’s peripheral inputs.
+The exception is that the initial boot stages are treated specially by RTL during KDF advance calls, as they consume other HW binding values that come from keymgr_dpe’s peripheral inputs.
 From SW's point of view, they are still treated as any arbitrary DICE layer in that SW can provide further inputs through `SW_CDI_INPUT` CSR.
 
 A slot's `max_key_version` receives its value from `MAX_KEY_VERSION` register during a previous advance call that ends up populating this slot with DPE context.
@@ -133,8 +133,8 @@ If the OTP creator root key is not valid during the latching cycle, keymgr_dpe m
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
 `child_key = KDF(parent_key, message)`, where the message input takes different forms depending on the parent slot's `boot_stage` value.
-Which HW-backed inputs are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated intermediate owner stage (three-stage configuration).
-See [KDF Details](#kdf-details) for more details on HW-backed inputs.
+Which HW binding values are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated intermediate owner stage (three-stage configuration).
+See [KDF Details](#kdf-details) for more details on HW binding values.
 
 With `NumBootStages = 3`, the `creator_seed` is consumed by a dedicated `OwnerInt` (owner intermediate) stage:
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || device_identifier || health_st_measurement || rom_descriptors || hw_revision_seed`.
@@ -146,6 +146,10 @@ With `NumBootStages = 2`, the `OwnerInt` stage is omitted; the `creator_seed` is
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`.
 * If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
 * If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+
+Regardless of `boot_stage`, software can force an advance call to use only `message = SW_CDI_INPUT` (dropping HW binding values) by setting `CONTROL_SHADOWED.SW_BINDING_ONLY`.
+To prevent a later `boot_stage` from clearing this option to maliciously reconstruct earlier keys, the `ENFORCE_SW_BINDING` register locks this behavior.
+Once set, every subsequent advance call must use `SW_BINDING_ONLY`, permanently blocking access to HW binding values until the next reset.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by `SLOT_DST_SEL`:
 * `valid` bit is set to 1.
@@ -171,6 +175,7 @@ When there is no fault and the enable signal is active by life cycle controller,
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
   * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < NumBootStages`).
+  * If `ENFORCE_SW_BINDING.ENFORCE` is set, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
 
 
 ### Versioned Key Generation
