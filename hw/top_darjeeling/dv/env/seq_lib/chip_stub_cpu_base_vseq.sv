@@ -46,6 +46,16 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     wait_rom_check_done();
   endtask
 
+  // Wait for the pwrmgr to have sampled the straps. rv_dm answers DMI requests blank until then,
+  // and wait_rom_check_done() can return before it, so call this before the first rv_dm access.
+  // Do not wait for the active state: in the TEST_LOCKED states soc_dbg_ctrl holds
+  // continue_cpu_boot, so the pwrmgr never gets there.
+  virtual task wait_pwrmgr_strap_sampled();
+    `DV_SPINWAIT(wait(cfg.chip_vif.pwrmgr_strap_sampled);,
+                 "timeout waiting for the pwrmgr to sample the straps before rv_dm DMI access",
+                 5_000_000)
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     // Program the AST with the configuration data loaded in OTP creator SW config region.

@@ -55,13 +55,8 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     super.dut_init(reset_kind);
     `uvm_info(`gfn, $sformatf("DUT Init with lc_state %0s", lc_state.name), UVM_LOW)
 
-    // TODO(#15624): remove this part later.
-    // We already wait for the ROM check to complete in the post_apply_reset sequence of
-    // chip_stub_cpu_base_vseq. However, we need to wait a few additional cycles here since
-    // the strap sampling pulse is released a few cycles after the ROM check completes.
-    cfg.clk_rst_vif.wait_clks(100);
-
     gated = !allow_rv_dm_access();
+    wait_pwrmgr_strap_sampled();
     `uvm_info(`gfn, "Attempt to activate RV_DM via JTAG.", UVM_MEDIUM)
     // RV_DM needs to be activated for the registers to work properly.
     // We always attempt to write this via the JTAG - even in states where the RV_DM is locked
