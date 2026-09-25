@@ -20,6 +20,21 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      // The CHERIoT variant locks the core into CHERIoT mode; the ePMP variant
+      // locks it into ePMP. Between them they cover both locked states of the
+      // execution mode switch FSM.
+      name: chip_sw_cheriot_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:cheriot_smoketest:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_cheriot_epmp_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:cheriot_smoketest_epmp:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_clkmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:clkmgr_smoketest:1:new_rules"]

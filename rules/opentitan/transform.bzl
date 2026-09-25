@@ -115,6 +115,11 @@ def obj_disassemble(ctx, **kwargs):
         feature_configuration = feature_config,
         action_name = OT_ACTION_OBJDUMP,
     )
+    flags = cc_common.get_memory_inefficient_command_line(
+        feature_configuration = feature_config,
+        action_name = OT_ACTION_OBJDUMP,
+        variables = cc_common.empty_variables(),
+    )
 
     output = kwargs.get("output")
     if not output:
@@ -132,7 +137,7 @@ def obj_disassemble(ctx, **kwargs):
             src.path,
             output.path,
         ],
-        command = "$1 -wx --disassemble --line-numbers --disassemble-zeroes --source --visualize-jumps $2 | expand > $3",
+        command = "$1 {} $2 | expand > $3".format(" ".join(flags)),
     )
     return output
 
