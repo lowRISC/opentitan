@@ -155,6 +155,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   ) u_jtag_trace_debug_policy_category (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -184,6 +185,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   ) u_jtag_trace_debug_policy_valid_relocked_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -211,6 +213,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   ) u_jtag_trace_debug_policy_valid_relocked_relocked (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -239,6 +242,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   ) u_jtag_control (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (jtag_control_we),

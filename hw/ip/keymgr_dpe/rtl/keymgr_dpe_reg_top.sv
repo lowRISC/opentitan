@@ -357,6 +357,7 @@ module keymgr_dpe_reg_top (
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -385,6 +386,7 @@ module keymgr_dpe_reg_top (
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -489,6 +491,7 @@ module keymgr_dpe_reg_top (
   ) u_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (start_gated_we),
@@ -705,6 +708,7 @@ module keymgr_dpe_reg_top (
   ) u_sideload_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sideload_clear_gated_we),
@@ -733,6 +737,7 @@ module keymgr_dpe_reg_top (
   ) u_reseed_interval_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (reseed_interval_regwen_we),
@@ -826,6 +831,7 @@ module keymgr_dpe_reg_top (
   ) u_slot_policy_allow_child (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (slot_policy_gated_we),
@@ -853,6 +859,7 @@ module keymgr_dpe_reg_top (
   ) u_slot_policy_exportable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (slot_policy_gated_we),
@@ -880,6 +887,7 @@ module keymgr_dpe_reg_top (
   ) u_slot_policy_retain_parent (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (slot_policy_gated_we),
@@ -932,6 +940,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_0_gated_we),
@@ -964,6 +973,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_1_gated_we),
@@ -996,6 +1006,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_2_gated_we),
@@ -1028,6 +1039,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_3_gated_we),
@@ -1060,6 +1072,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_4_gated_we),
@@ -1092,6 +1105,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_5_gated_we),
@@ -1124,6 +1138,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_6_gated_we),
@@ -1156,6 +1171,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_binding_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_binding_7_gated_we),
@@ -1188,6 +1204,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_0_gated_we),
@@ -1220,6 +1237,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_1_gated_we),
@@ -1252,6 +1270,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_2_gated_we),
@@ -1284,6 +1303,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_3_gated_we),
@@ -1316,6 +1336,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_4_gated_we),
@@ -1348,6 +1369,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_5_gated_we),
@@ -1380,6 +1402,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_6_gated_we),
@@ -1412,6 +1435,7 @@ module keymgr_dpe_reg_top (
   ) u_salt_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (salt_7_gated_we),
@@ -1444,6 +1468,7 @@ module keymgr_dpe_reg_top (
   ) u_key_version (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (key_version_gated_we),
@@ -1533,6 +1558,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_0_re),
@@ -1562,6 +1588,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_1_re),
@@ -1591,6 +1618,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_2_re),
@@ -1620,6 +1648,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_3_re),
@@ -1649,6 +1678,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_4_re),
@@ -1678,6 +1708,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_5_re),
@@ -1707,6 +1738,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_6_re),
@@ -1736,6 +1768,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share0_output_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share0_output_7_re),
@@ -1765,6 +1798,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_0_re),
@@ -1794,6 +1828,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_1_re),
@@ -1823,6 +1858,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_2_re),
@@ -1852,6 +1888,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_3_re),
@@ -1881,6 +1918,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_4_re),
@@ -1910,6 +1948,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_5_re),
@@ -1939,6 +1978,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_6_re),
@@ -1968,6 +2008,7 @@ module keymgr_dpe_reg_top (
   ) u_sw_share1_output_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_share1_output_7_re),
@@ -1996,6 +2037,7 @@ module keymgr_dpe_reg_top (
   ) u_working_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2024,6 +2066,7 @@ module keymgr_dpe_reg_top (
   ) u_op_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (op_status_we),
@@ -2053,6 +2096,7 @@ module keymgr_dpe_reg_top (
   ) u_err_code_invalid_op (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -2080,6 +2124,7 @@ module keymgr_dpe_reg_top (
   ) u_err_code_invalid_kmac_input (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -2107,6 +2152,7 @@ module keymgr_dpe_reg_top (
   ) u_err_code_invalid_shadow_update (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -2136,6 +2182,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_cmd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2163,6 +2210,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_kmac_fsm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2190,6 +2238,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2217,6 +2266,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_kmac_op (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2244,6 +2294,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_kmac_out (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2271,6 +2322,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_regfile_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2298,6 +2350,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_shadow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2325,6 +2378,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_ctrl_fsm_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2352,6 +2406,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_ctrl_fsm_chk (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2379,6 +2434,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_ctrl_fsm_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2406,6 +2462,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_reseed_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2433,6 +2490,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_side_ctrl_fsm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2460,6 +2518,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_side_ctrl_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2487,6 +2546,7 @@ module keymgr_dpe_reg_top (
   ) u_fault_status_key_ecc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2516,6 +2576,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_creator_seed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2543,6 +2604,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_owner_seed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2570,6 +2632,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_dev_id (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2597,6 +2660,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_health_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2624,6 +2688,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_key_version (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2651,6 +2716,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2678,6 +2744,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_digest (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2705,6 +2772,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_invalid_root_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2732,6 +2800,7 @@ module keymgr_dpe_reg_top (
   ) u_debug_inactive_lc_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (debug_we),
@@ -2760,6 +2829,7 @@ module keymgr_dpe_reg_top (
   ) u_load_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (load_key_lock_we),

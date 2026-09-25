@@ -215,6 +215,7 @@ module otp_macro_prim_reg_top
   ) u_csr0_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_we),
@@ -242,6 +243,7 @@ module otp_macro_prim_reg_top
   ) u_csr0_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_we),
@@ -269,6 +271,7 @@ module otp_macro_prim_reg_top
   ) u_csr0_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_we),
@@ -296,6 +299,7 @@ module otp_macro_prim_reg_top
   ) u_csr0_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_we),
@@ -323,6 +327,7 @@ module otp_macro_prim_reg_top
   ) u_csr0_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_we),
@@ -352,6 +357,7 @@ module otp_macro_prim_reg_top
   ) u_csr1_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_we),
@@ -379,6 +385,7 @@ module otp_macro_prim_reg_top
   ) u_csr1_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_we),
@@ -406,6 +413,7 @@ module otp_macro_prim_reg_top
   ) u_csr1_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_we),
@@ -433,6 +441,7 @@ module otp_macro_prim_reg_top
   ) u_csr1_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_we),
@@ -460,6 +469,7 @@ module otp_macro_prim_reg_top
   ) u_csr1_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_we),
@@ -488,6 +498,7 @@ module otp_macro_prim_reg_top
   ) u_csr2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -517,6 +528,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_we),
@@ -544,6 +556,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_we),
@@ -571,6 +584,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_we),
@@ -598,6 +612,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -625,6 +640,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -652,6 +668,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -679,6 +696,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -706,6 +724,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -733,6 +752,7 @@ module otp_macro_prim_reg_top
   ) u_csr3_field8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -762,6 +782,7 @@ module otp_macro_prim_reg_top
   ) u_csr4_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_we),
@@ -789,6 +810,7 @@ module otp_macro_prim_reg_top
   ) u_csr4_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_we),
@@ -816,6 +838,7 @@ module otp_macro_prim_reg_top
   ) u_csr4_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_we),
@@ -843,6 +866,7 @@ module otp_macro_prim_reg_top
   ) u_csr4_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_we),
@@ -872,6 +896,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_we),
@@ -899,6 +924,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_we),
@@ -926,6 +952,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -953,6 +980,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -980,6 +1008,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1007,6 +1036,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1034,6 +1064,7 @@ module otp_macro_prim_reg_top
   ) u_csr5_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_we),
@@ -1063,6 +1094,7 @@ module otp_macro_prim_reg_top
   ) u_csr6_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_we),
@@ -1090,6 +1122,7 @@ module otp_macro_prim_reg_top
   ) u_csr6_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_we),
@@ -1117,6 +1150,7 @@ module otp_macro_prim_reg_top
   ) u_csr6_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_we),
@@ -1144,6 +1178,7 @@ module otp_macro_prim_reg_top
   ) u_csr6_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_we),
@@ -1173,6 +1208,7 @@ module otp_macro_prim_reg_top
   ) u_csr7_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1200,6 +1236,7 @@ module otp_macro_prim_reg_top
   ) u_csr7_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1227,6 +1264,7 @@ module otp_macro_prim_reg_top
   ) u_csr7_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1254,6 +1292,7 @@ module otp_macro_prim_reg_top
   ) u_csr7_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

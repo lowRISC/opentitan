@@ -45,6 +45,9 @@ ${hdr}
 %>\
 
   typedef struct packed {
+    % if r.reinit is not None:
+    logic reinit;
+    % endif
     % if r.is_homogeneous():
       ## If we have a homogeneous register or multireg, there is just one field
       ## (possibly replicated many times). The typedef is for one copy of that
@@ -165,7 +168,7 @@ ${hdr}
 <%def name="reg2hw_for_iface(iface_name, iface_desc, for_iface, rb)">\
 <%
 lpfx = gen_rtl.get_type_name_pfx(block, iface_name)
-nbits = rb.get_n_bits(["q", "qe", "re"])
+nbits = rb.get_n_bits(["q", "qe", "re", "reinit"])
 packbit = 0
 
 addr_width = rb.get_addr_width()
@@ -185,7 +188,7 @@ reg_if_width = 2 + addr_width + data_width + data_byte_width
 <%
     r0 = gen_rtl.get_r0(r)
     struct_type = gen_rtl.get_reg_tx_type(block, r, False)
-    struct_width = r0.get_n_bits(['q', 'qe', 're'])
+    struct_width = r0.get_n_bits(['q', 'qe', 're', 'reinit'])
 
     if isinstance(r, MultiRegister):
       struct_type += " [{}:0]".format(len(r.pregs) - 1)

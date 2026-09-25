@@ -1140,6 +1140,7 @@ module ac_range_check_reg_top
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1168,6 +1169,7 @@ module ac_range_check_reg_top
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -1254,6 +1256,7 @@ module ac_range_check_reg_top
   ) u_alert_status_shadowed_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_status_re),
@@ -1281,6 +1284,7 @@ module ac_range_check_reg_top
   ) u_alert_status_shadowed_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1308,6 +1312,7 @@ module ac_range_check_reg_top
   ) u_alert_status_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1335,6 +1340,7 @@ module ac_range_check_reg_top
   ) u_alert_status_counter_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1417,6 +1423,7 @@ module ac_range_check_reg_top
   ) u_log_status_deny_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1444,6 +1451,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_read_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1471,6 +1479,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_write_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1498,6 +1507,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_execute_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1525,6 +1535,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_no_match (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1552,6 +1563,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_racl_read (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1579,6 +1591,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_racl_write (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1606,6 +1619,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_source_role (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1633,6 +1647,7 @@ module ac_range_check_reg_top
   ) u_log_status_denied_ctn_uid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1660,6 +1675,7 @@ module ac_range_check_reg_top
   ) u_log_status_deny_range_index (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1688,6 +1704,7 @@ module ac_range_check_reg_top
   ) u_log_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1717,6 +1734,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_0_we),
@@ -1746,6 +1764,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_1_we),
@@ -1775,6 +1794,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_2_we),
@@ -1804,6 +1824,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_3_we),
@@ -1833,6 +1854,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_4_we),
@@ -1862,6 +1884,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_5_we),
@@ -1891,6 +1914,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_6_we),
@@ -1920,6 +1944,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_7_we),
@@ -1949,6 +1974,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_8_we),
@@ -1978,6 +2004,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_9_we),
@@ -2007,6 +2034,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_10_we),
@@ -2036,6 +2064,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_11_we),
@@ -2065,6 +2094,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_12_we),
@@ -2094,6 +2124,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_13_we),
@@ -2123,6 +2154,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_14_we),
@@ -2152,6 +2184,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_15_we),
@@ -2181,6 +2214,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_16_we),
@@ -2210,6 +2244,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_17_we),
@@ -2239,6 +2274,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_18_we),
@@ -2268,6 +2304,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_19_we),
@@ -2297,6 +2334,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_20_we),
@@ -2326,6 +2364,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_21_we),
@@ -2355,6 +2394,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_22_we),
@@ -2384,6 +2424,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_23_we),
@@ -2413,6 +2454,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_24_we),
@@ -2442,6 +2484,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_25_we),
@@ -2471,6 +2514,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_26_we),
@@ -2500,6 +2544,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_27_we),
@@ -2529,6 +2574,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_28_we),
@@ -2558,6 +2604,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_29_we),
@@ -2587,6 +2634,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_30_we),
@@ -2616,6 +2664,7 @@ module ac_range_check_reg_top
   ) u_range_regwen_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_31_we),
@@ -2650,6 +2699,7 @@ module ac_range_check_reg_top
   ) u_range_base_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_0_gated_we),
@@ -2684,6 +2734,7 @@ module ac_range_check_reg_top
   ) u_range_base_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_1_gated_we),
@@ -2718,6 +2769,7 @@ module ac_range_check_reg_top
   ) u_range_base_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_2_gated_we),
@@ -2752,6 +2804,7 @@ module ac_range_check_reg_top
   ) u_range_base_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_3_gated_we),
@@ -2786,6 +2839,7 @@ module ac_range_check_reg_top
   ) u_range_base_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_4_gated_we),
@@ -2820,6 +2874,7 @@ module ac_range_check_reg_top
   ) u_range_base_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_5_gated_we),
@@ -2854,6 +2909,7 @@ module ac_range_check_reg_top
   ) u_range_base_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_6_gated_we),
@@ -2888,6 +2944,7 @@ module ac_range_check_reg_top
   ) u_range_base_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_7_gated_we),
@@ -2922,6 +2979,7 @@ module ac_range_check_reg_top
   ) u_range_base_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_8_gated_we),
@@ -2956,6 +3014,7 @@ module ac_range_check_reg_top
   ) u_range_base_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_9_gated_we),
@@ -2990,6 +3049,7 @@ module ac_range_check_reg_top
   ) u_range_base_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_10_gated_we),
@@ -3024,6 +3084,7 @@ module ac_range_check_reg_top
   ) u_range_base_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_11_gated_we),
@@ -3058,6 +3119,7 @@ module ac_range_check_reg_top
   ) u_range_base_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_12_gated_we),
@@ -3092,6 +3154,7 @@ module ac_range_check_reg_top
   ) u_range_base_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_13_gated_we),
@@ -3126,6 +3189,7 @@ module ac_range_check_reg_top
   ) u_range_base_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_14_gated_we),
@@ -3160,6 +3224,7 @@ module ac_range_check_reg_top
   ) u_range_base_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_15_gated_we),
@@ -3194,6 +3259,7 @@ module ac_range_check_reg_top
   ) u_range_base_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_16_gated_we),
@@ -3228,6 +3294,7 @@ module ac_range_check_reg_top
   ) u_range_base_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_17_gated_we),
@@ -3262,6 +3329,7 @@ module ac_range_check_reg_top
   ) u_range_base_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_18_gated_we),
@@ -3296,6 +3364,7 @@ module ac_range_check_reg_top
   ) u_range_base_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_19_gated_we),
@@ -3330,6 +3399,7 @@ module ac_range_check_reg_top
   ) u_range_base_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_20_gated_we),
@@ -3364,6 +3434,7 @@ module ac_range_check_reg_top
   ) u_range_base_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_21_gated_we),
@@ -3398,6 +3469,7 @@ module ac_range_check_reg_top
   ) u_range_base_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_22_gated_we),
@@ -3432,6 +3504,7 @@ module ac_range_check_reg_top
   ) u_range_base_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_23_gated_we),
@@ -3466,6 +3539,7 @@ module ac_range_check_reg_top
   ) u_range_base_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_24_gated_we),
@@ -3500,6 +3574,7 @@ module ac_range_check_reg_top
   ) u_range_base_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_25_gated_we),
@@ -3534,6 +3609,7 @@ module ac_range_check_reg_top
   ) u_range_base_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_26_gated_we),
@@ -3568,6 +3644,7 @@ module ac_range_check_reg_top
   ) u_range_base_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_27_gated_we),
@@ -3602,6 +3679,7 @@ module ac_range_check_reg_top
   ) u_range_base_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_28_gated_we),
@@ -3636,6 +3714,7 @@ module ac_range_check_reg_top
   ) u_range_base_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_29_gated_we),
@@ -3670,6 +3749,7 @@ module ac_range_check_reg_top
   ) u_range_base_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_30_gated_we),
@@ -3704,6 +3784,7 @@ module ac_range_check_reg_top
   ) u_range_base_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_base_31_gated_we),
@@ -3738,6 +3819,7 @@ module ac_range_check_reg_top
   ) u_range_limit_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_0_gated_we),
@@ -3772,6 +3854,7 @@ module ac_range_check_reg_top
   ) u_range_limit_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_1_gated_we),
@@ -3806,6 +3889,7 @@ module ac_range_check_reg_top
   ) u_range_limit_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_2_gated_we),
@@ -3840,6 +3924,7 @@ module ac_range_check_reg_top
   ) u_range_limit_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_3_gated_we),
@@ -3874,6 +3959,7 @@ module ac_range_check_reg_top
   ) u_range_limit_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_4_gated_we),
@@ -3908,6 +3994,7 @@ module ac_range_check_reg_top
   ) u_range_limit_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_5_gated_we),
@@ -3942,6 +4029,7 @@ module ac_range_check_reg_top
   ) u_range_limit_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_6_gated_we),
@@ -3976,6 +4064,7 @@ module ac_range_check_reg_top
   ) u_range_limit_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_7_gated_we),
@@ -4010,6 +4099,7 @@ module ac_range_check_reg_top
   ) u_range_limit_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_8_gated_we),
@@ -4044,6 +4134,7 @@ module ac_range_check_reg_top
   ) u_range_limit_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_9_gated_we),
@@ -4078,6 +4169,7 @@ module ac_range_check_reg_top
   ) u_range_limit_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_10_gated_we),
@@ -4112,6 +4204,7 @@ module ac_range_check_reg_top
   ) u_range_limit_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_11_gated_we),
@@ -4146,6 +4239,7 @@ module ac_range_check_reg_top
   ) u_range_limit_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_12_gated_we),
@@ -4180,6 +4274,7 @@ module ac_range_check_reg_top
   ) u_range_limit_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_13_gated_we),
@@ -4214,6 +4309,7 @@ module ac_range_check_reg_top
   ) u_range_limit_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_14_gated_we),
@@ -4248,6 +4344,7 @@ module ac_range_check_reg_top
   ) u_range_limit_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_15_gated_we),
@@ -4282,6 +4379,7 @@ module ac_range_check_reg_top
   ) u_range_limit_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_16_gated_we),
@@ -4316,6 +4414,7 @@ module ac_range_check_reg_top
   ) u_range_limit_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_17_gated_we),
@@ -4350,6 +4449,7 @@ module ac_range_check_reg_top
   ) u_range_limit_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_18_gated_we),
@@ -4384,6 +4484,7 @@ module ac_range_check_reg_top
   ) u_range_limit_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_19_gated_we),
@@ -4418,6 +4519,7 @@ module ac_range_check_reg_top
   ) u_range_limit_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_20_gated_we),
@@ -4452,6 +4554,7 @@ module ac_range_check_reg_top
   ) u_range_limit_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_21_gated_we),
@@ -4486,6 +4589,7 @@ module ac_range_check_reg_top
   ) u_range_limit_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_22_gated_we),
@@ -4520,6 +4624,7 @@ module ac_range_check_reg_top
   ) u_range_limit_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_23_gated_we),
@@ -4554,6 +4659,7 @@ module ac_range_check_reg_top
   ) u_range_limit_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_24_gated_we),
@@ -4588,6 +4694,7 @@ module ac_range_check_reg_top
   ) u_range_limit_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_25_gated_we),
@@ -4622,6 +4729,7 @@ module ac_range_check_reg_top
   ) u_range_limit_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_26_gated_we),
@@ -4656,6 +4764,7 @@ module ac_range_check_reg_top
   ) u_range_limit_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_27_gated_we),
@@ -4690,6 +4799,7 @@ module ac_range_check_reg_top
   ) u_range_limit_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_28_gated_we),
@@ -4724,6 +4834,7 @@ module ac_range_check_reg_top
   ) u_range_limit_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_29_gated_we),
@@ -4758,6 +4869,7 @@ module ac_range_check_reg_top
   ) u_range_limit_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_30_gated_we),
@@ -4792,6 +4904,7 @@ module ac_range_check_reg_top
   ) u_range_limit_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_limit_31_gated_we),
@@ -4827,6 +4940,7 @@ module ac_range_check_reg_top
   ) u_range_attr_0_enable_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_0_gated_we),
@@ -4854,6 +4968,7 @@ module ac_range_check_reg_top
   ) u_range_attr_0_read_access_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_0_gated_we),
@@ -4881,6 +4996,7 @@ module ac_range_check_reg_top
   ) u_range_attr_0_write_access_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_0_gated_we),
@@ -4908,6 +5024,7 @@ module ac_range_check_reg_top
   ) u_range_attr_0_execute_access_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_0_gated_we),
@@ -4935,6 +5052,7 @@ module ac_range_check_reg_top
   ) u_range_attr_0_log_denied_access_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_0_gated_we),
@@ -4970,6 +5088,7 @@ module ac_range_check_reg_top
   ) u_range_attr_1_enable_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_1_gated_we),
@@ -4997,6 +5116,7 @@ module ac_range_check_reg_top
   ) u_range_attr_1_read_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_1_gated_we),
@@ -5024,6 +5144,7 @@ module ac_range_check_reg_top
   ) u_range_attr_1_write_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_1_gated_we),
@@ -5051,6 +5172,7 @@ module ac_range_check_reg_top
   ) u_range_attr_1_execute_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_1_gated_we),
@@ -5078,6 +5200,7 @@ module ac_range_check_reg_top
   ) u_range_attr_1_log_denied_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_1_gated_we),
@@ -5113,6 +5236,7 @@ module ac_range_check_reg_top
   ) u_range_attr_2_enable_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_2_gated_we),
@@ -5140,6 +5264,7 @@ module ac_range_check_reg_top
   ) u_range_attr_2_read_access_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_2_gated_we),
@@ -5167,6 +5292,7 @@ module ac_range_check_reg_top
   ) u_range_attr_2_write_access_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_2_gated_we),
@@ -5194,6 +5320,7 @@ module ac_range_check_reg_top
   ) u_range_attr_2_execute_access_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_2_gated_we),
@@ -5221,6 +5348,7 @@ module ac_range_check_reg_top
   ) u_range_attr_2_log_denied_access_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_2_gated_we),
@@ -5256,6 +5384,7 @@ module ac_range_check_reg_top
   ) u_range_attr_3_enable_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_3_gated_we),
@@ -5283,6 +5412,7 @@ module ac_range_check_reg_top
   ) u_range_attr_3_read_access_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_3_gated_we),
@@ -5310,6 +5440,7 @@ module ac_range_check_reg_top
   ) u_range_attr_3_write_access_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_3_gated_we),
@@ -5337,6 +5468,7 @@ module ac_range_check_reg_top
   ) u_range_attr_3_execute_access_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_3_gated_we),
@@ -5364,6 +5496,7 @@ module ac_range_check_reg_top
   ) u_range_attr_3_log_denied_access_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_3_gated_we),
@@ -5399,6 +5532,7 @@ module ac_range_check_reg_top
   ) u_range_attr_4_enable_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_4_gated_we),
@@ -5426,6 +5560,7 @@ module ac_range_check_reg_top
   ) u_range_attr_4_read_access_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_4_gated_we),
@@ -5453,6 +5588,7 @@ module ac_range_check_reg_top
   ) u_range_attr_4_write_access_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_4_gated_we),
@@ -5480,6 +5616,7 @@ module ac_range_check_reg_top
   ) u_range_attr_4_execute_access_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_4_gated_we),
@@ -5507,6 +5644,7 @@ module ac_range_check_reg_top
   ) u_range_attr_4_log_denied_access_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_4_gated_we),
@@ -5542,6 +5680,7 @@ module ac_range_check_reg_top
   ) u_range_attr_5_enable_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_5_gated_we),
@@ -5569,6 +5708,7 @@ module ac_range_check_reg_top
   ) u_range_attr_5_read_access_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_5_gated_we),
@@ -5596,6 +5736,7 @@ module ac_range_check_reg_top
   ) u_range_attr_5_write_access_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_5_gated_we),
@@ -5623,6 +5764,7 @@ module ac_range_check_reg_top
   ) u_range_attr_5_execute_access_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_5_gated_we),
@@ -5650,6 +5792,7 @@ module ac_range_check_reg_top
   ) u_range_attr_5_log_denied_access_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_5_gated_we),
@@ -5685,6 +5828,7 @@ module ac_range_check_reg_top
   ) u_range_attr_6_enable_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_6_gated_we),
@@ -5712,6 +5856,7 @@ module ac_range_check_reg_top
   ) u_range_attr_6_read_access_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_6_gated_we),
@@ -5739,6 +5884,7 @@ module ac_range_check_reg_top
   ) u_range_attr_6_write_access_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_6_gated_we),
@@ -5766,6 +5912,7 @@ module ac_range_check_reg_top
   ) u_range_attr_6_execute_access_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_6_gated_we),
@@ -5793,6 +5940,7 @@ module ac_range_check_reg_top
   ) u_range_attr_6_log_denied_access_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_6_gated_we),
@@ -5828,6 +5976,7 @@ module ac_range_check_reg_top
   ) u_range_attr_7_enable_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_7_gated_we),
@@ -5855,6 +6004,7 @@ module ac_range_check_reg_top
   ) u_range_attr_7_read_access_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_7_gated_we),
@@ -5882,6 +6032,7 @@ module ac_range_check_reg_top
   ) u_range_attr_7_write_access_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_7_gated_we),
@@ -5909,6 +6060,7 @@ module ac_range_check_reg_top
   ) u_range_attr_7_execute_access_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_7_gated_we),
@@ -5936,6 +6088,7 @@ module ac_range_check_reg_top
   ) u_range_attr_7_log_denied_access_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_7_gated_we),
@@ -5971,6 +6124,7 @@ module ac_range_check_reg_top
   ) u_range_attr_8_enable_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_8_gated_we),
@@ -5998,6 +6152,7 @@ module ac_range_check_reg_top
   ) u_range_attr_8_read_access_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_8_gated_we),
@@ -6025,6 +6180,7 @@ module ac_range_check_reg_top
   ) u_range_attr_8_write_access_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_8_gated_we),
@@ -6052,6 +6208,7 @@ module ac_range_check_reg_top
   ) u_range_attr_8_execute_access_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_8_gated_we),
@@ -6079,6 +6236,7 @@ module ac_range_check_reg_top
   ) u_range_attr_8_log_denied_access_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_8_gated_we),
@@ -6114,6 +6272,7 @@ module ac_range_check_reg_top
   ) u_range_attr_9_enable_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_9_gated_we),
@@ -6141,6 +6300,7 @@ module ac_range_check_reg_top
   ) u_range_attr_9_read_access_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_9_gated_we),
@@ -6168,6 +6328,7 @@ module ac_range_check_reg_top
   ) u_range_attr_9_write_access_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_9_gated_we),
@@ -6195,6 +6356,7 @@ module ac_range_check_reg_top
   ) u_range_attr_9_execute_access_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_9_gated_we),
@@ -6222,6 +6384,7 @@ module ac_range_check_reg_top
   ) u_range_attr_9_log_denied_access_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_9_gated_we),
@@ -6257,6 +6420,7 @@ module ac_range_check_reg_top
   ) u_range_attr_10_enable_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_10_gated_we),
@@ -6284,6 +6448,7 @@ module ac_range_check_reg_top
   ) u_range_attr_10_read_access_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_10_gated_we),
@@ -6311,6 +6476,7 @@ module ac_range_check_reg_top
   ) u_range_attr_10_write_access_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_10_gated_we),
@@ -6338,6 +6504,7 @@ module ac_range_check_reg_top
   ) u_range_attr_10_execute_access_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_10_gated_we),
@@ -6365,6 +6532,7 @@ module ac_range_check_reg_top
   ) u_range_attr_10_log_denied_access_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_10_gated_we),
@@ -6400,6 +6568,7 @@ module ac_range_check_reg_top
   ) u_range_attr_11_enable_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_11_gated_we),
@@ -6427,6 +6596,7 @@ module ac_range_check_reg_top
   ) u_range_attr_11_read_access_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_11_gated_we),
@@ -6454,6 +6624,7 @@ module ac_range_check_reg_top
   ) u_range_attr_11_write_access_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_11_gated_we),
@@ -6481,6 +6652,7 @@ module ac_range_check_reg_top
   ) u_range_attr_11_execute_access_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_11_gated_we),
@@ -6508,6 +6680,7 @@ module ac_range_check_reg_top
   ) u_range_attr_11_log_denied_access_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_11_gated_we),
@@ -6543,6 +6716,7 @@ module ac_range_check_reg_top
   ) u_range_attr_12_enable_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_12_gated_we),
@@ -6570,6 +6744,7 @@ module ac_range_check_reg_top
   ) u_range_attr_12_read_access_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_12_gated_we),
@@ -6597,6 +6772,7 @@ module ac_range_check_reg_top
   ) u_range_attr_12_write_access_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_12_gated_we),
@@ -6624,6 +6800,7 @@ module ac_range_check_reg_top
   ) u_range_attr_12_execute_access_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_12_gated_we),
@@ -6651,6 +6828,7 @@ module ac_range_check_reg_top
   ) u_range_attr_12_log_denied_access_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_12_gated_we),
@@ -6686,6 +6864,7 @@ module ac_range_check_reg_top
   ) u_range_attr_13_enable_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_13_gated_we),
@@ -6713,6 +6892,7 @@ module ac_range_check_reg_top
   ) u_range_attr_13_read_access_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_13_gated_we),
@@ -6740,6 +6920,7 @@ module ac_range_check_reg_top
   ) u_range_attr_13_write_access_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_13_gated_we),
@@ -6767,6 +6948,7 @@ module ac_range_check_reg_top
   ) u_range_attr_13_execute_access_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_13_gated_we),
@@ -6794,6 +6976,7 @@ module ac_range_check_reg_top
   ) u_range_attr_13_log_denied_access_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_13_gated_we),
@@ -6829,6 +7012,7 @@ module ac_range_check_reg_top
   ) u_range_attr_14_enable_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_14_gated_we),
@@ -6856,6 +7040,7 @@ module ac_range_check_reg_top
   ) u_range_attr_14_read_access_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_14_gated_we),
@@ -6883,6 +7068,7 @@ module ac_range_check_reg_top
   ) u_range_attr_14_write_access_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_14_gated_we),
@@ -6910,6 +7096,7 @@ module ac_range_check_reg_top
   ) u_range_attr_14_execute_access_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_14_gated_we),
@@ -6937,6 +7124,7 @@ module ac_range_check_reg_top
   ) u_range_attr_14_log_denied_access_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_14_gated_we),
@@ -6972,6 +7160,7 @@ module ac_range_check_reg_top
   ) u_range_attr_15_enable_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_15_gated_we),
@@ -6999,6 +7188,7 @@ module ac_range_check_reg_top
   ) u_range_attr_15_read_access_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_15_gated_we),
@@ -7026,6 +7216,7 @@ module ac_range_check_reg_top
   ) u_range_attr_15_write_access_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_15_gated_we),
@@ -7053,6 +7244,7 @@ module ac_range_check_reg_top
   ) u_range_attr_15_execute_access_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_15_gated_we),
@@ -7080,6 +7272,7 @@ module ac_range_check_reg_top
   ) u_range_attr_15_log_denied_access_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_15_gated_we),
@@ -7115,6 +7308,7 @@ module ac_range_check_reg_top
   ) u_range_attr_16_enable_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_16_gated_we),
@@ -7142,6 +7336,7 @@ module ac_range_check_reg_top
   ) u_range_attr_16_read_access_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_16_gated_we),
@@ -7169,6 +7364,7 @@ module ac_range_check_reg_top
   ) u_range_attr_16_write_access_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_16_gated_we),
@@ -7196,6 +7392,7 @@ module ac_range_check_reg_top
   ) u_range_attr_16_execute_access_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_16_gated_we),
@@ -7223,6 +7420,7 @@ module ac_range_check_reg_top
   ) u_range_attr_16_log_denied_access_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_16_gated_we),
@@ -7258,6 +7456,7 @@ module ac_range_check_reg_top
   ) u_range_attr_17_enable_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_17_gated_we),
@@ -7285,6 +7484,7 @@ module ac_range_check_reg_top
   ) u_range_attr_17_read_access_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_17_gated_we),
@@ -7312,6 +7512,7 @@ module ac_range_check_reg_top
   ) u_range_attr_17_write_access_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_17_gated_we),
@@ -7339,6 +7540,7 @@ module ac_range_check_reg_top
   ) u_range_attr_17_execute_access_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_17_gated_we),
@@ -7366,6 +7568,7 @@ module ac_range_check_reg_top
   ) u_range_attr_17_log_denied_access_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_17_gated_we),
@@ -7401,6 +7604,7 @@ module ac_range_check_reg_top
   ) u_range_attr_18_enable_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_18_gated_we),
@@ -7428,6 +7632,7 @@ module ac_range_check_reg_top
   ) u_range_attr_18_read_access_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_18_gated_we),
@@ -7455,6 +7660,7 @@ module ac_range_check_reg_top
   ) u_range_attr_18_write_access_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_18_gated_we),
@@ -7482,6 +7688,7 @@ module ac_range_check_reg_top
   ) u_range_attr_18_execute_access_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_18_gated_we),
@@ -7509,6 +7716,7 @@ module ac_range_check_reg_top
   ) u_range_attr_18_log_denied_access_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_18_gated_we),
@@ -7544,6 +7752,7 @@ module ac_range_check_reg_top
   ) u_range_attr_19_enable_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_19_gated_we),
@@ -7571,6 +7780,7 @@ module ac_range_check_reg_top
   ) u_range_attr_19_read_access_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_19_gated_we),
@@ -7598,6 +7808,7 @@ module ac_range_check_reg_top
   ) u_range_attr_19_write_access_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_19_gated_we),
@@ -7625,6 +7836,7 @@ module ac_range_check_reg_top
   ) u_range_attr_19_execute_access_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_19_gated_we),
@@ -7652,6 +7864,7 @@ module ac_range_check_reg_top
   ) u_range_attr_19_log_denied_access_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_19_gated_we),
@@ -7687,6 +7900,7 @@ module ac_range_check_reg_top
   ) u_range_attr_20_enable_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_20_gated_we),
@@ -7714,6 +7928,7 @@ module ac_range_check_reg_top
   ) u_range_attr_20_read_access_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_20_gated_we),
@@ -7741,6 +7956,7 @@ module ac_range_check_reg_top
   ) u_range_attr_20_write_access_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_20_gated_we),
@@ -7768,6 +7984,7 @@ module ac_range_check_reg_top
   ) u_range_attr_20_execute_access_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_20_gated_we),
@@ -7795,6 +8012,7 @@ module ac_range_check_reg_top
   ) u_range_attr_20_log_denied_access_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_20_gated_we),
@@ -7830,6 +8048,7 @@ module ac_range_check_reg_top
   ) u_range_attr_21_enable_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_21_gated_we),
@@ -7857,6 +8076,7 @@ module ac_range_check_reg_top
   ) u_range_attr_21_read_access_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_21_gated_we),
@@ -7884,6 +8104,7 @@ module ac_range_check_reg_top
   ) u_range_attr_21_write_access_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_21_gated_we),
@@ -7911,6 +8132,7 @@ module ac_range_check_reg_top
   ) u_range_attr_21_execute_access_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_21_gated_we),
@@ -7938,6 +8160,7 @@ module ac_range_check_reg_top
   ) u_range_attr_21_log_denied_access_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_21_gated_we),
@@ -7973,6 +8196,7 @@ module ac_range_check_reg_top
   ) u_range_attr_22_enable_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_22_gated_we),
@@ -8000,6 +8224,7 @@ module ac_range_check_reg_top
   ) u_range_attr_22_read_access_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_22_gated_we),
@@ -8027,6 +8252,7 @@ module ac_range_check_reg_top
   ) u_range_attr_22_write_access_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_22_gated_we),
@@ -8054,6 +8280,7 @@ module ac_range_check_reg_top
   ) u_range_attr_22_execute_access_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_22_gated_we),
@@ -8081,6 +8308,7 @@ module ac_range_check_reg_top
   ) u_range_attr_22_log_denied_access_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_22_gated_we),
@@ -8116,6 +8344,7 @@ module ac_range_check_reg_top
   ) u_range_attr_23_enable_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_23_gated_we),
@@ -8143,6 +8372,7 @@ module ac_range_check_reg_top
   ) u_range_attr_23_read_access_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_23_gated_we),
@@ -8170,6 +8400,7 @@ module ac_range_check_reg_top
   ) u_range_attr_23_write_access_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_23_gated_we),
@@ -8197,6 +8428,7 @@ module ac_range_check_reg_top
   ) u_range_attr_23_execute_access_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_23_gated_we),
@@ -8224,6 +8456,7 @@ module ac_range_check_reg_top
   ) u_range_attr_23_log_denied_access_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_23_gated_we),
@@ -8259,6 +8492,7 @@ module ac_range_check_reg_top
   ) u_range_attr_24_enable_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_24_gated_we),
@@ -8286,6 +8520,7 @@ module ac_range_check_reg_top
   ) u_range_attr_24_read_access_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_24_gated_we),
@@ -8313,6 +8548,7 @@ module ac_range_check_reg_top
   ) u_range_attr_24_write_access_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_24_gated_we),
@@ -8340,6 +8576,7 @@ module ac_range_check_reg_top
   ) u_range_attr_24_execute_access_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_24_gated_we),
@@ -8367,6 +8604,7 @@ module ac_range_check_reg_top
   ) u_range_attr_24_log_denied_access_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_24_gated_we),
@@ -8402,6 +8640,7 @@ module ac_range_check_reg_top
   ) u_range_attr_25_enable_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_25_gated_we),
@@ -8429,6 +8668,7 @@ module ac_range_check_reg_top
   ) u_range_attr_25_read_access_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_25_gated_we),
@@ -8456,6 +8696,7 @@ module ac_range_check_reg_top
   ) u_range_attr_25_write_access_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_25_gated_we),
@@ -8483,6 +8724,7 @@ module ac_range_check_reg_top
   ) u_range_attr_25_execute_access_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_25_gated_we),
@@ -8510,6 +8752,7 @@ module ac_range_check_reg_top
   ) u_range_attr_25_log_denied_access_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_25_gated_we),
@@ -8545,6 +8788,7 @@ module ac_range_check_reg_top
   ) u_range_attr_26_enable_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_26_gated_we),
@@ -8572,6 +8816,7 @@ module ac_range_check_reg_top
   ) u_range_attr_26_read_access_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_26_gated_we),
@@ -8599,6 +8844,7 @@ module ac_range_check_reg_top
   ) u_range_attr_26_write_access_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_26_gated_we),
@@ -8626,6 +8872,7 @@ module ac_range_check_reg_top
   ) u_range_attr_26_execute_access_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_26_gated_we),
@@ -8653,6 +8900,7 @@ module ac_range_check_reg_top
   ) u_range_attr_26_log_denied_access_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_26_gated_we),
@@ -8688,6 +8936,7 @@ module ac_range_check_reg_top
   ) u_range_attr_27_enable_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_27_gated_we),
@@ -8715,6 +8964,7 @@ module ac_range_check_reg_top
   ) u_range_attr_27_read_access_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_27_gated_we),
@@ -8742,6 +8992,7 @@ module ac_range_check_reg_top
   ) u_range_attr_27_write_access_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_27_gated_we),
@@ -8769,6 +9020,7 @@ module ac_range_check_reg_top
   ) u_range_attr_27_execute_access_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_27_gated_we),
@@ -8796,6 +9048,7 @@ module ac_range_check_reg_top
   ) u_range_attr_27_log_denied_access_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_27_gated_we),
@@ -8831,6 +9084,7 @@ module ac_range_check_reg_top
   ) u_range_attr_28_enable_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_28_gated_we),
@@ -8858,6 +9112,7 @@ module ac_range_check_reg_top
   ) u_range_attr_28_read_access_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_28_gated_we),
@@ -8885,6 +9140,7 @@ module ac_range_check_reg_top
   ) u_range_attr_28_write_access_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_28_gated_we),
@@ -8912,6 +9168,7 @@ module ac_range_check_reg_top
   ) u_range_attr_28_execute_access_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_28_gated_we),
@@ -8939,6 +9196,7 @@ module ac_range_check_reg_top
   ) u_range_attr_28_log_denied_access_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_28_gated_we),
@@ -8974,6 +9232,7 @@ module ac_range_check_reg_top
   ) u_range_attr_29_enable_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_29_gated_we),
@@ -9001,6 +9260,7 @@ module ac_range_check_reg_top
   ) u_range_attr_29_read_access_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_29_gated_we),
@@ -9028,6 +9288,7 @@ module ac_range_check_reg_top
   ) u_range_attr_29_write_access_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_29_gated_we),
@@ -9055,6 +9316,7 @@ module ac_range_check_reg_top
   ) u_range_attr_29_execute_access_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_29_gated_we),
@@ -9082,6 +9344,7 @@ module ac_range_check_reg_top
   ) u_range_attr_29_log_denied_access_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_29_gated_we),
@@ -9117,6 +9380,7 @@ module ac_range_check_reg_top
   ) u_range_attr_30_enable_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_30_gated_we),
@@ -9144,6 +9408,7 @@ module ac_range_check_reg_top
   ) u_range_attr_30_read_access_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_30_gated_we),
@@ -9171,6 +9436,7 @@ module ac_range_check_reg_top
   ) u_range_attr_30_write_access_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_30_gated_we),
@@ -9198,6 +9464,7 @@ module ac_range_check_reg_top
   ) u_range_attr_30_execute_access_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_30_gated_we),
@@ -9225,6 +9492,7 @@ module ac_range_check_reg_top
   ) u_range_attr_30_log_denied_access_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_30_gated_we),
@@ -9260,6 +9528,7 @@ module ac_range_check_reg_top
   ) u_range_attr_31_enable_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_31_gated_we),
@@ -9287,6 +9556,7 @@ module ac_range_check_reg_top
   ) u_range_attr_31_read_access_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_31_gated_we),
@@ -9314,6 +9584,7 @@ module ac_range_check_reg_top
   ) u_range_attr_31_write_access_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_31_gated_we),
@@ -9341,6 +9612,7 @@ module ac_range_check_reg_top
   ) u_range_attr_31_execute_access_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_31_gated_we),
@@ -9368,6 +9640,7 @@ module ac_range_check_reg_top
   ) u_range_attr_31_log_denied_access_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_attr_31_gated_we),

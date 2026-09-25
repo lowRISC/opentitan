@@ -2095,6 +2095,7 @@ module alert_handler_reg_top (
   ) u_intr_state_classa (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -2122,6 +2123,7 @@ module alert_handler_reg_top (
   ) u_intr_state_classb (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -2149,6 +2151,7 @@ module alert_handler_reg_top (
   ) u_intr_state_classc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -2176,6 +2179,7 @@ module alert_handler_reg_top (
   ) u_intr_state_classd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -2205,6 +2209,7 @@ module alert_handler_reg_top (
   ) u_intr_enable_classa (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -2232,6 +2237,7 @@ module alert_handler_reg_top (
   ) u_intr_enable_classb (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -2259,6 +2265,7 @@ module alert_handler_reg_top (
   ) u_intr_enable_classc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -2286,6 +2293,7 @@ module alert_handler_reg_top (
   ) u_intr_enable_classd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -2383,6 +2391,7 @@ module alert_handler_reg_top (
   ) u_ping_timer_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ping_timer_regwen_we),
@@ -2492,6 +2501,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_0_we),
@@ -2521,6 +2531,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_1_we),
@@ -2550,6 +2561,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_2_we),
@@ -2579,6 +2591,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_3_we),
@@ -2608,6 +2621,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_4_we),
@@ -2637,6 +2651,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_5_we),
@@ -2666,6 +2681,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_6_we),
@@ -2695,6 +2711,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_7_we),
@@ -2724,6 +2741,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_8_we),
@@ -2753,6 +2771,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_9_we),
@@ -2782,6 +2801,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_10_we),
@@ -2811,6 +2831,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_11_we),
@@ -2840,6 +2861,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_12_we),
@@ -2869,6 +2891,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_13_we),
@@ -2898,6 +2921,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_14_we),
@@ -2927,6 +2951,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_15_we),
@@ -2956,6 +2981,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_16_we),
@@ -2985,6 +3011,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_17_we),
@@ -3014,6 +3041,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_18_we),
@@ -3043,6 +3071,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_19_we),
@@ -3072,6 +3101,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_20_we),
@@ -3101,6 +3131,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_21_we),
@@ -3130,6 +3161,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_22_we),
@@ -3159,6 +3191,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_23_we),
@@ -3188,6 +3221,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_24_we),
@@ -3217,6 +3251,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_25_we),
@@ -3246,6 +3281,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_26_we),
@@ -3275,6 +3311,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_27_we),
@@ -3304,6 +3341,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_28_we),
@@ -3333,6 +3371,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_29_we),
@@ -3362,6 +3401,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_30_we),
@@ -3391,6 +3431,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_31_we),
@@ -3420,6 +3461,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_32_we),
@@ -3449,6 +3491,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_33_we),
@@ -3478,6 +3521,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_34_we),
@@ -3507,6 +3551,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_35_we),
@@ -3536,6 +3581,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_36_we),
@@ -3565,6 +3611,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_37_we),
@@ -3594,6 +3641,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_38_we),
@@ -3623,6 +3671,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_39_we),
@@ -3652,6 +3701,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_40_we),
@@ -3681,6 +3731,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_41_we),
@@ -3710,6 +3761,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_42_we),
@@ -3739,6 +3791,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_43_we),
@@ -3768,6 +3821,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_44_we),
@@ -3797,6 +3851,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_45_we),
@@ -3826,6 +3881,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_46_we),
@@ -3855,6 +3911,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_47_we),
@@ -3884,6 +3941,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_48_we),
@@ -3913,6 +3971,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_49_we),
@@ -3942,6 +4001,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_50_we),
@@ -3971,6 +4031,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_51_we),
@@ -4000,6 +4061,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_52_we),
@@ -4029,6 +4091,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_53_we),
@@ -4058,6 +4121,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_54_we),
@@ -4087,6 +4151,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_55_we),
@@ -4116,6 +4181,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_56_we),
@@ -4145,6 +4211,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_57_we),
@@ -4174,6 +4241,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_58_we),
@@ -4203,6 +4271,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_59_we),
@@ -4232,6 +4301,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_60_we),
@@ -4261,6 +4331,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_61_we),
@@ -4290,6 +4361,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_62_we),
@@ -4319,6 +4391,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_63_we),
@@ -4348,6 +4421,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_64_we),
@@ -4377,6 +4451,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_65_we),
@@ -4406,6 +4481,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_66_we),
@@ -4435,6 +4511,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_67_we),
@@ -4464,6 +4541,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_68_we),
@@ -4493,6 +4571,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_69_we),
@@ -4522,6 +4601,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_70_we),
@@ -4551,6 +4631,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_71_we),
@@ -4580,6 +4661,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_72_we),
@@ -4609,6 +4691,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_73_we),
@@ -4638,6 +4721,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_74_we),
@@ -4667,6 +4751,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_75_we),
@@ -4696,6 +4781,7 @@ module alert_handler_reg_top (
   ) u_alert_regwen_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_regwen_76_we),
@@ -11039,6 +11125,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_0_we),
@@ -11068,6 +11155,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_1_we),
@@ -11097,6 +11185,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_2_we),
@@ -11126,6 +11215,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_3_we),
@@ -11155,6 +11245,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_4_we),
@@ -11184,6 +11275,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_5_we),
@@ -11213,6 +11305,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_6_we),
@@ -11242,6 +11335,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_7_we),
@@ -11271,6 +11365,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_8_we),
@@ -11300,6 +11395,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_9_we),
@@ -11329,6 +11425,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_10_we),
@@ -11358,6 +11455,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_11_we),
@@ -11387,6 +11485,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_12_we),
@@ -11416,6 +11515,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_13_we),
@@ -11445,6 +11545,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_14_we),
@@ -11474,6 +11575,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_15_we),
@@ -11503,6 +11605,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_16_we),
@@ -11532,6 +11635,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_17_we),
@@ -11561,6 +11665,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_18_we),
@@ -11590,6 +11695,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_19_we),
@@ -11619,6 +11725,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_20_we),
@@ -11648,6 +11755,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_21_we),
@@ -11677,6 +11785,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_22_we),
@@ -11706,6 +11815,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_23_we),
@@ -11735,6 +11845,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_24_we),
@@ -11764,6 +11875,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_25_we),
@@ -11793,6 +11905,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_26_we),
@@ -11822,6 +11935,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_27_we),
@@ -11851,6 +11965,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_28_we),
@@ -11880,6 +11995,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_29_we),
@@ -11909,6 +12025,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_30_we),
@@ -11938,6 +12055,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_31_we),
@@ -11967,6 +12085,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_32_we),
@@ -11996,6 +12115,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_33_we),
@@ -12025,6 +12145,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_34_we),
@@ -12054,6 +12175,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_35_we),
@@ -12083,6 +12205,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_36_we),
@@ -12112,6 +12235,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_37_we),
@@ -12141,6 +12265,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_38_we),
@@ -12170,6 +12295,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_39_we),
@@ -12199,6 +12325,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_40_we),
@@ -12228,6 +12355,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_41_we),
@@ -12257,6 +12385,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_42_we),
@@ -12286,6 +12415,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_43_we),
@@ -12315,6 +12445,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_44_we),
@@ -12344,6 +12475,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_45_we),
@@ -12373,6 +12505,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_46_we),
@@ -12402,6 +12535,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_47_we),
@@ -12431,6 +12565,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_48_we),
@@ -12460,6 +12595,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_49_we),
@@ -12489,6 +12625,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_50_we),
@@ -12518,6 +12655,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_51_we),
@@ -12547,6 +12685,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_52_we),
@@ -12576,6 +12715,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_53_we),
@@ -12605,6 +12745,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_54_we),
@@ -12634,6 +12775,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_55_we),
@@ -12663,6 +12805,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_56_we),
@@ -12692,6 +12835,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_57_we),
@@ -12721,6 +12865,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_58_we),
@@ -12750,6 +12895,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_59_we),
@@ -12779,6 +12925,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_60_we),
@@ -12808,6 +12955,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_61_we),
@@ -12837,6 +12985,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_62_we),
@@ -12866,6 +13015,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_63_we),
@@ -12895,6 +13045,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_64_we),
@@ -12924,6 +13075,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_65_we),
@@ -12953,6 +13105,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_66_we),
@@ -12982,6 +13135,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_67_we),
@@ -13011,6 +13165,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_68_we),
@@ -13040,6 +13195,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_69_we),
@@ -13069,6 +13225,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_70_we),
@@ -13098,6 +13255,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_71_we),
@@ -13127,6 +13285,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_72_we),
@@ -13156,6 +13315,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_73_we),
@@ -13185,6 +13345,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_74_we),
@@ -13214,6 +13375,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_75_we),
@@ -13243,6 +13405,7 @@ module alert_handler_reg_top (
   ) u_alert_cause_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_cause_76_we),
@@ -13272,6 +13435,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_0_we),
@@ -13301,6 +13465,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_1_we),
@@ -13330,6 +13495,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_2_we),
@@ -13359,6 +13525,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_3_we),
@@ -13388,6 +13555,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_4_we),
@@ -13417,6 +13585,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_5_we),
@@ -13446,6 +13615,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_regwen_6_we),
@@ -14056,6 +14226,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_0_we),
@@ -14085,6 +14256,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_1_we),
@@ -14114,6 +14286,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_2_we),
@@ -14143,6 +14316,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_3_we),
@@ -14172,6 +14346,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_4_we),
@@ -14201,6 +14376,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_5_we),
@@ -14230,6 +14406,7 @@ module alert_handler_reg_top (
   ) u_loc_alert_cause_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (loc_alert_cause_6_we),
@@ -14258,6 +14435,7 @@ module alert_handler_reg_top (
   ) u_classa_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classa_regwen_we),
@@ -14651,6 +14829,7 @@ module alert_handler_reg_top (
   ) u_classa_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classa_clr_regwen_we),
@@ -15060,6 +15239,7 @@ module alert_handler_reg_top (
   ) u_classb_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classb_regwen_we),
@@ -15453,6 +15633,7 @@ module alert_handler_reg_top (
   ) u_classb_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classb_clr_regwen_we),
@@ -15862,6 +16043,7 @@ module alert_handler_reg_top (
   ) u_classc_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classc_regwen_we),
@@ -16255,6 +16437,7 @@ module alert_handler_reg_top (
   ) u_classc_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classc_clr_regwen_we),
@@ -16664,6 +16847,7 @@ module alert_handler_reg_top (
   ) u_classd_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classd_regwen_we),
@@ -17057,6 +17241,7 @@ module alert_handler_reg_top (
   ) u_classd_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (classd_clr_regwen_we),

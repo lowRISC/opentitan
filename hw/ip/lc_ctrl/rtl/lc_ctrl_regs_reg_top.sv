@@ -471,6 +471,7 @@ module lc_ctrl_regs_reg_top (
   ) u_claim_transition_if_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (claim_transition_if_regwen_we),

@@ -274,6 +274,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr0_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr0_regwen_we),
@@ -306,6 +307,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr1_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_gated_we),
@@ -333,6 +335,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr1_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr1_gated_we),
@@ -362,6 +365,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -389,6 +393,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -416,6 +421,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -443,6 +449,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -470,6 +477,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -497,6 +505,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -524,6 +533,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -551,6 +561,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr2_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr2_we),
@@ -583,6 +594,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -610,6 +622,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -637,6 +650,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -664,6 +678,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -691,6 +706,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -718,6 +734,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -745,6 +762,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -772,6 +790,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -799,6 +818,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -826,6 +846,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr3_field9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr3_gated_we),
@@ -858,6 +879,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr4_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_gated_we),
@@ -885,6 +907,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr4_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_gated_we),
@@ -912,6 +935,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr4_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_gated_we),
@@ -939,6 +963,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr4_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr4_gated_we),
@@ -971,6 +996,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr5_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_gated_we),
@@ -998,6 +1024,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr5_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_gated_we),
@@ -1025,6 +1052,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr5_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_gated_we),
@@ -1052,6 +1080,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr5_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_gated_we),
@@ -1079,6 +1108,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr5_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr5_gated_we),
@@ -1111,6 +1141,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1138,6 +1169,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1165,6 +1197,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1192,6 +1225,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1219,6 +1253,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1246,6 +1281,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1273,6 +1309,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1300,6 +1337,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1327,6 +1365,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr6_field8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr6_gated_we),
@@ -1359,6 +1398,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr7_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr7_gated_we),
@@ -1386,6 +1426,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr7_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr7_gated_we),
@@ -1417,6 +1458,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr8_gated_we),
@@ -1448,6 +1490,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr9_gated_we),
@@ -1479,6 +1522,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr10_gated_we),
@@ -1510,6 +1554,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr11_gated_we),
@@ -1541,6 +1586,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr12_gated_we),
@@ -1573,6 +1619,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr13_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr13_gated_we),
@@ -1600,6 +1647,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr13_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr13_gated_we),
@@ -1632,6 +1680,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr14_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr14_gated_we),
@@ -1659,6 +1708,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr14_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr14_gated_we),
@@ -1691,6 +1741,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr15_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr15_gated_we),
@@ -1718,6 +1769,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr15_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr15_gated_we),
@@ -1750,6 +1802,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr16_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr16_gated_we),
@@ -1777,6 +1830,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr16_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr16_gated_we),
@@ -1809,6 +1863,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr17_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr17_gated_we),
@@ -1836,6 +1891,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr17_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr17_gated_we),
@@ -1867,6 +1923,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr18_gated_we),
@@ -1898,6 +1955,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr19_gated_we),
@@ -1927,6 +1985,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr20_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr20_we),
@@ -1954,6 +2013,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr20_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (csr20_we),
@@ -1981,6 +2041,7 @@ module flash_ctrl_prim_reg_top (
   ) u_csr20_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

@@ -312,6 +312,7 @@ module sensor_ctrl_reg_top (
   ) u_intr_state_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -339,6 +340,7 @@ module sensor_ctrl_reg_top (
   ) u_intr_state_init_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -368,6 +370,7 @@ module sensor_ctrl_reg_top (
   ) u_intr_enable_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -395,6 +398,7 @@ module sensor_ctrl_reg_top (
   ) u_intr_enable_init_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -497,6 +501,7 @@ module sensor_ctrl_reg_top (
   ) u_cfg_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cfg_regwen_we),
@@ -527,6 +532,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -554,6 +560,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -581,6 +588,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -608,6 +616,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -635,6 +644,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -662,6 +672,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -689,6 +700,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -716,6 +728,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -743,6 +756,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -770,6 +784,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -797,6 +812,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_trig_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_trig_we),
@@ -829,6 +845,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_0_gated_we),
@@ -861,6 +878,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_1_gated_we),
@@ -893,6 +911,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_2_gated_we),
@@ -925,6 +944,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_3_gated_we),
@@ -957,6 +977,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_4_gated_we),
@@ -989,6 +1010,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_5_gated_we),
@@ -1021,6 +1043,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_6_gated_we),
@@ -1053,6 +1076,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_7_gated_we),
@@ -1085,6 +1109,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_8_gated_we),
@@ -1117,6 +1142,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_9_gated_we),
@@ -1149,6 +1175,7 @@ module sensor_ctrl_reg_top (
   ) u_alert_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_en_10_gated_we),
@@ -1182,6 +1209,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1209,6 +1237,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1236,6 +1265,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1263,6 +1293,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1290,6 +1321,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1317,6 +1349,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1344,6 +1377,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1371,6 +1405,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1398,6 +1433,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1425,6 +1461,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1452,6 +1489,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_en_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fatal_alert_en_gated_we),
@@ -1482,6 +1520,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1509,6 +1548,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1536,6 +1576,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1563,6 +1604,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1590,6 +1632,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1617,6 +1660,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1644,6 +1688,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1671,6 +1716,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1698,6 +1744,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1725,6 +1772,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1752,6 +1800,7 @@ module sensor_ctrl_reg_top (
   ) u_recov_alert_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_we),
@@ -1782,6 +1831,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1809,6 +1859,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1836,6 +1887,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1863,6 +1915,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1890,6 +1943,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1917,6 +1971,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1944,6 +1999,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1971,6 +2027,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1998,6 +2055,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2025,6 +2083,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2052,6 +2111,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2079,6 +2139,7 @@ module sensor_ctrl_reg_top (
   ) u_fatal_alert_val_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2108,6 +2169,7 @@ module sensor_ctrl_reg_top (
   ) u_status_ast_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2135,6 +2197,7 @@ module sensor_ctrl_reg_top (
   ) u_status_io_pok (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2164,6 +2227,7 @@ module sensor_ctrl_reg_top (
   ) u_manual_pad_attr_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (manual_pad_attr_regwen_0_we),
@@ -2193,6 +2257,7 @@ module sensor_ctrl_reg_top (
   ) u_manual_pad_attr_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (manual_pad_attr_regwen_1_we),
@@ -2222,6 +2287,7 @@ module sensor_ctrl_reg_top (
   ) u_manual_pad_attr_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (manual_pad_attr_regwen_2_we),
@@ -2251,6 +2317,7 @@ module sensor_ctrl_reg_top (
   ) u_manual_pad_attr_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (manual_pad_attr_regwen_3_we),

@@ -346,6 +346,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_sw_recov_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_recov_err_we),
@@ -374,6 +375,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_sw_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_fatal_err_we),
@@ -403,6 +405,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_regwen_0_we),
@@ -432,6 +435,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_regwen_1_we),
@@ -475,6 +479,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_addr_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_addr_en_0_gated_we),
@@ -519,6 +524,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_addr_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_addr_en_1_gated_we),
@@ -563,6 +569,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_addr_matching_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_addr_matching_0_gated_we),
@@ -607,6 +614,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_addr_matching_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_addr_matching_1_gated_we),
@@ -651,6 +659,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_remap_addr_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_remap_addr_0_gated_we),
@@ -695,6 +704,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_ibus_remap_addr_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ibus_remap_addr_1_gated_we),
@@ -725,6 +735,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_regwen_0_we),
@@ -754,6 +765,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_regwen_1_we),
@@ -797,6 +809,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_addr_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_addr_en_0_gated_we),
@@ -841,6 +854,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_addr_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_addr_en_1_gated_we),
@@ -885,6 +899,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_addr_matching_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_addr_matching_0_gated_we),
@@ -929,6 +944,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_addr_matching_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_addr_matching_1_gated_we),
@@ -973,6 +989,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_remap_addr_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_remap_addr_0_gated_we),
@@ -1017,6 +1034,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_dbus_remap_addr_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dbus_remap_addr_1_gated_we),
@@ -1047,6 +1065,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_nmi_enable_alert_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (nmi_enable_we),
@@ -1074,6 +1093,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_nmi_enable_wdog_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (nmi_enable_we),
@@ -1103,6 +1123,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_nmi_state_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (nmi_state_we),
@@ -1130,6 +1151,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_nmi_state_wdog (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (nmi_state_we),
@@ -1159,6 +1181,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_err_status_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_status_we),
@@ -1186,6 +1209,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_err_status_fatal_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_status_we),
@@ -1213,6 +1237,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_err_status_fatal_core_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_status_we),
@@ -1240,6 +1265,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_err_status_recov_core_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_status_we),
@@ -1316,6 +1342,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_cheriot_ena (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cheriot_ena_we),
@@ -1380,6 +1407,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_mcounteren_writable_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mcounteren_writable_regwen_we),
@@ -1411,6 +1439,7 @@ module rv_core_ibex_cfg_reg_top (
   ) u_mcounteren_writable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mcounteren_writable_gated_we),

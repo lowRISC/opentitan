@@ -195,6 +195,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_bus_integ_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -222,6 +223,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_init_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -249,6 +251,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_escalated (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -276,6 +279,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_scr_key_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -303,6 +307,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_scr_key_seed_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -330,6 +335,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -357,6 +363,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_readback_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -384,6 +391,7 @@ module sram_ctrl_regs_reg_top
   ) u_status_sram_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -412,6 +420,7 @@ module sram_ctrl_regs_reg_top
   ) u_exec_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (exec_regwen_we),
@@ -443,6 +452,7 @@ module sram_ctrl_regs_reg_top
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (exec_gated_we),
@@ -471,6 +481,7 @@ module sram_ctrl_regs_reg_top
   ) u_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_regwen_we),
@@ -514,6 +525,7 @@ module sram_ctrl_regs_reg_top
   ) u_ctrl_renew_scr_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -542,6 +554,7 @@ module sram_ctrl_regs_reg_top
   ) u_ctrl_init (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -571,6 +584,7 @@ module sram_ctrl_regs_reg_top
   ) u_scr_key_rotated (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scr_key_rotated_we),
@@ -599,6 +613,7 @@ module sram_ctrl_regs_reg_top
   ) u_readback_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (readback_regwen_we),
@@ -630,6 +645,7 @@ module sram_ctrl_regs_reg_top
   ) u_readback (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (readback_gated_we),

@@ -15,6 +15,9 @@ module prim_subreg
   input clk_i,
   input rst_ni,
 
+  // Reinitialize register; takes precedence over writes.
+  input reinit_i,
+
   // From SW: valid for RW, WO, W1C, W1S, W0C, RC
   // In case of RC, Top connects Read Pulse to we
   input          we,
@@ -54,6 +57,8 @@ module prim_subreg
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      q <= RESVAL;
+    end else if (reinit_i) begin
       q <= RESVAL;
     end else if (wr_en) begin
       q <= wr_data;
