@@ -32,12 +32,6 @@ cc_library(
     name = "p256",
     srcs = ["p256.c"],
     hdrs = ["p256.h"],
-    local_defines = select({
-        "//sw/device/lib/crypto/configs:hashed": [
-            "FIPS_MODE",
-        ],
-        "//conditions:default": [],
-    }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:crc32",
@@ -56,12 +50,6 @@ cc_library(
     name = "p384",
     srcs = ["p384.c"],
     hdrs = ["p384.h"],
-    local_defines = select({
-        "//sw/device/lib/crypto/configs:hashed": [
-            "FIPS_MODE",
-        ],
-        "//conditions:default": [],
-    }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:crc32",
