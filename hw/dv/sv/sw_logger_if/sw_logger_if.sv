@@ -540,4 +540,43 @@ interface sw_logger_if #(
     ->printed_log_event;
   endfunction
 
+  // Wait until a call to print_sw_log sets the printed_log variable to match msg.
+  //
+  // This has a timeout argument which defaults to ten milliseconds. If this is nonzero, the task
+  // has a timeout with that length.
+  //
+  // To add extra information to timeout error messages, the caller may supply a nonempty
+  // description of the thing we are waiting for. This might be "a thing to happen", giving an error
+  // message that includes "... waiting for a thing to happen".
+  task automatic wait_for_log_message(string       msg,
+                                      int unsigned timeout_ns = 10_000_000, // 10ms
+                                      string       exp_event_description = "");
+    if (string'(printed_log) == msg) return;
+
+    fork : isolation_fork begin
+      fork
+        // Because printed_log_event always gets triggered when printed_log is updated, we can just
+        // check after each time the event is triggered.
+        while (string'(printed_log) != msg) @printed_log_event;
+
+        begin
+          string expected_event;
+
+          if (timeout_ns == 0) wait(0);
+          else #(timeout_ns * 1ns);
+
+          expected_event = (exp_event_description == "") ?
+                           $sformatf("printed_log to be '%0s'", msg) :
+                           $sformatf("%0s (seen when printed_log becomes '%0s')",
+                                     exp_event_description, msg);
+
+          `uvm_fatal($sformatf("%m"),
+                     $sformatf("Timed out after %0d ns waiting for %0s.",
+                               timeout_ns, expected_event))
+        end
+      join_any
+      disable fork;
+    end join
+  endtask
+
 endinterface

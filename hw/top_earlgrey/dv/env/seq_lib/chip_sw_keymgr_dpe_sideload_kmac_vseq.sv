@@ -20,7 +20,8 @@ class chip_sw_keymgr_dpe_sideload_kmac_vseq extends chip_sw_keymgr_dpe_key_deriv
     bit [7:0] digest_arr[DigestBytes];
 
     // Wait until the sideloaded key is generated
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HW output for Kmac from the CreatorRootKey")
+    cfg.sw_logger_vif.wait_for_log_message({"KeymgrDpe generated ",
+                                            "HW output for Kmac from the CreatorRootKey"});
 
     // Check if the generated key matches the expected key
     check_generated_output(.key_shares(creator_key),

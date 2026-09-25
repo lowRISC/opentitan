@@ -122,9 +122,12 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
     // Wait for keymgr_dpe to become available by loading the UDS into a slot
     // with boot stage set to 0.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr DPE loaded the UDS and entered Available state.",
-             "Timed out waiting for keymgr_dpe to derive CreatorRootKey",
-             20_000_000 /* 20 ms, longer than default because OT needs to come out of SW reset*/)
+    cfg.sw_logger_vif.wait_for_log_message(
+        "Keymgr DPE loaded the UDS and entered Available state.",
+        20_000_000 /* 20 ms, longer than default because OT needs to come out of SW reset*/,
+        "keymgr_dpe to derive CreatorRootKey"
+    );
+
     // At this point, exactly one key slot should be valid and that key slot should contain the
     // creator key and be in boot stage 0.
     begin
@@ -158,7 +161,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Wait for keymgr_dpe to derive the CreatorRootKey and thus have consumed the associated
     // values (creator seed etc.).
     // Afterwards the UDS is manually removed from the keymgr dpe.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe derived CreatorRootKey and removed the UDS")
+    cfg.sw_logger_vif.wait_for_log_message("KeymgrDpe derived CreatorRootKey and removed the UDS");
     // At this point, exactly one key slot should contain the boot stage 1 key. Verify that this
     // holds.
     begin
@@ -191,7 +194,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Verify that the outputs generated from the CreatorRootKey match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from CreatorRootKey")
+    wait_for_keymgr_dpe_gen_output_msg("OTBN", "CreatorRootKey");
     check_generated_output(.key_shares(creator_key),
                            // These values must match those passed in SW. (Ideally, we would
                            // backdoor-load them into SW to remove the redundancy, but that's no
@@ -200,7 +203,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d0),
                            .salt({32'h49379059, 32'hff523992, 32'h75666880, 32'hc0e44716,
                                   32'h999612df, 32'h80f1a9de, 32'h481eae40, 32'h45e2c7f0}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated SW output from CreatorRootKey")
+    wait_for_keymgr_dpe_gen_output_msg("SW", "CreatorRootKey");
     check_generated_output(.key_shares(creator_key),
                            // These values must match those passed in SW. (Ideally, we would
                            // backdoor-load them into SW to remove the redundancy, but that's no
@@ -209,7 +212,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d0),
                            .salt({32'h72d5886b, 32'h4e359e52, 32'h0d7ff336, 32'h267773cf,
                                   32'h00c7d10c, 32'h6dea4fb9, 32'h77fa328a, 32'h15779805}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated KMAC output from CreatorRootKey")
+    wait_for_keymgr_dpe_gen_output_msg("KMAC", "CreatorRootKey");
     check_generated_output(.key_shares(creator_key),
                            // These values must match those passed in SW. (Ideally, we would
                            // backdoor-load them into SW to remove the redundancy, but that's no
@@ -218,7 +221,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                            .version('d0),
                            .salt({32'h78ad5715, 32'h508680d4, 32'hc7f825b2, 32'ha7924b8d,
                                   32'h0906825f, 32'h77cf81a3, 32'hd63d89bd, 32'h88fd3697}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated AES output from CreatorRootKey")
+    wait_for_keymgr_dpe_gen_output_msg("AES", "CreatorRootKey");
     check_generated_output(.key_shares(creator_key),
                            // These values must match those passed in SW. (Ideally, we would
                            // backdoor-load them into SW to remove the redundancy, but that's no
@@ -230,7 +233,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
     // Wait for keymgr_dpe to have advanced to boot stage 1 and thus have consumed the associated
     // values (creator seed etc.).
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe derived OwnerIntKey")
+    cfg.sw_logger_vif.wait_for_log_message("KeymgrDpe derived OwnerIntKey");
     // At this point, exactly one key slot should contain the boot stage 1 key. Verify that this
     // holds.
     begin
@@ -255,25 +258,25 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Verify that the outputs generated from the OwnerIntKey match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated KMAC output from OwnerIntKey")
+    wait_for_keymgr_dpe_gen_output_msg("KMAC", "OwnerIntKey");
     check_generated_output(.key_shares(owner_int_key),
                            .dest(keymgr_dpe_pkg::Kmac),
                            .version('d0),
                            .salt({32'h6b21d5da, 32'h929ea4f4, 32'heb06038b, 32'hcecba4ea,
                                   32'h8c8e756a, 32'h26691553, 32'h7189202b, 32'h5e560c86}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated AES output from OwnerIntKey")
+    wait_for_keymgr_dpe_gen_output_msg("AES", "OwnerIntKey");
     check_generated_output(.key_shares(owner_int_key),
                            .dest(keymgr_dpe_pkg::Aes),
                            .version('d1),
                            .salt({32'hcd887c60, 32'hcc40f919, 32'hdd2972b7, 32'h09cdc35f,
                                   32'h3a10980c, 32'h4b38fdec, 32'h3d56d980, 32'h25314e07}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated SW output from OwnerIntKey")
+    wait_for_keymgr_dpe_gen_output_msg("SW", "OwnerIntKey");
     check_generated_output(.key_shares(owner_int_key),
                            .dest(keymgr_dpe_pkg::None),
                            .version('d2),
                            .salt({32'h72d5886b, 32'h4e359e52, 32'h0d7ff336, 32'h267773cf,
                                   32'h00c7d10c, 32'h6dea4fb9, 32'h77fa328a, 32'h15779805}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from OwnerIntKey")
+    wait_for_keymgr_dpe_gen_output_msg("OTBN", "OwnerIntKey");
     check_generated_output(.key_shares(owner_int_key),
                            .dest(keymgr_dpe_pkg::Otbn),
                            .version('d3),
@@ -282,7 +285,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
     // Wait for keymgr_dpe to have advanced to boot stage 2 and thus have consumed the owner seed
     // and the owner SW binding.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe derived OwnerKey")
+    cfg.sw_logger_vif.wait_for_log_message("KeymgrDpe derived OwnerKey");
     // At this point, exactly one key slot should contain the boot stage 2 key. Verify that this
     // holds.
     begin
@@ -307,25 +310,25 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Verify that the outputs generated from the boot stage 2 key match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated SW output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("SW", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::None),
                            .version('d0),
                            .salt({32'he1b3f29c, 32'ha3bc4d2a, 32'h458fdc76, 32'h1b1c0c2e,
                                   32'h1a128785, 32'h69ce2d2f, 32'h8a60fd60, 32'h5307745c}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated AES output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("AES", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::Aes),
                            .version('d1),
                            .salt({32'h0f20f37e, 32'hb951b619, 32'hcb815e8d, 32'h77e17fa4,
                                   32'h3074e3db, 32'he7482b04, 32'hed12d4ee, 32'ha34fba3c}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated KMAC output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("KMAC", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::Kmac),
                            .version('d2),
                            .salt({32'hb31031a3, 32'h59fe6e8e, 32'h4171de6b, 32'ha3f3d397,
                                   32'h7bb7800b, 32'h8f8f8cda, 32'hb697609d, 32'h122eb3b7}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("OTBN", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::Otbn),
                            .version('d3),
@@ -333,7 +336,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                                   32'h29f7114f, 32'hf5bf3e01, 32'h6a961bc2, 32'hec932d64}));
 
     // Wait for keymgr_dpe to have advanced to boot stage 3.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe derived new DPE context from OwnerKey")
+    cfg.sw_logger_vif.wait_for_log_message("KeymgrDpe derived new DPE context from OwnerKey");
     // At this point, exactly one key slot should contain the boot stage 3 key. Verify that this
     // holds.
     begin
@@ -367,29 +370,25 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // Verify that the outputs generated from the boot stage 4 key match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
-        $sformatf("KeymgrDpe generated AES output from DPE context in slot %0d", derived_key_slot_idx))
+    wait_for_keymgr_dpe_gen_output_slot_msg("AES", derived_key_slot_idx);
     check_generated_output(.key_shares(derived_key),
                            .dest(keymgr_dpe_pkg::Aes),
                            .version(32'h10),
                            .salt({32'h30059d96, 32'h97436d9c, 32'hf539a20a, 32'h6838564e,
                                   32'h74ad4bb7, 32'h78000277, 32'h423025af, 32'h732e53a9}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
-        $sformatf("KeymgrDpe generated OTBN output from DPE context in slot %0d", derived_key_slot_idx))
+    wait_for_keymgr_dpe_gen_output_slot_msg("OTBN", derived_key_slot_idx);
     check_generated_output(.key_shares(derived_key),
                            .dest(keymgr_dpe_pkg::Otbn),
                            .version(32'h20),
                            .salt({32'h2cd82d66, 32'h24275e98, 32'he0344ab2, 32'hc048d59e,
                                   32'h139694c3, 32'h0043f9b4, 32'h413a2212, 32'hc2dcfbc8}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
-        $sformatf("KeymgrDpe generated SW output from DPE context in slot %0d", derived_key_slot_idx))
+    wait_for_keymgr_dpe_gen_output_slot_msg("SW", derived_key_slot_idx);
     check_generated_output(.key_shares(derived_key),
                            .dest(keymgr_dpe_pkg::None),
                            .version(32'h30),
                            .salt({32'h23c20696, 32'hebaf62f0, 32'ha2ff413f, 32'h22d65603,
                                   32'h91155c24, 32'hda1269fc, 32'hc8611986, 32'hf129041f}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log ==
-        $sformatf("KeymgrDpe generated KMAC output from DPE context in slot %0d", derived_key_slot_idx))
+    wait_for_keymgr_dpe_gen_output_slot_msg("KMAC", derived_key_slot_idx);
     check_generated_output(.key_shares(derived_key),
                            .dest(keymgr_dpe_pkg::Kmac),
                            .version(32'h40),
@@ -400,13 +399,13 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // be available, match the expectation.
     // Note that the values for version and salt must match those passed in SW. (Ideally, we would
     // backdoor-load them into SW to remove the redundancy, but that's no immediate priority.)
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated SW output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("SW", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::None),
                            .version(32'd42),
                            .salt({32'h2488d617, 32'h99227306, 32'hcd789bc0, 32'h9787039b,
                                   32'h9869544a, 32'hb28b9fc7, 32'h69ab6f9d, 32'hfb11f188}));
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated OTBN output from OwnerKey")
+    wait_for_keymgr_dpe_gen_output_msg("OTBN", "OwnerKey");
     check_generated_output(.key_shares(owner_key),
                            .dest(keymgr_dpe_pkg::Otbn),
                            .version(32'd7),
@@ -415,6 +414,24 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, "chip_sw_keymgr_dpe_key_derivation_vseq successful finished!", UVM_LOW)
 
+  endtask
+
+  // Wait for a SW log message that describes KeymgrDpe generating a specific type of output from a
+  // particular thing. If output_type is T and source is S, we expect to see:
+  //
+  //        KeymgrDpe generated T output from S
+  local task wait_for_keymgr_dpe_gen_output_msg(string thing_generated, string source);
+    string msg = $sformatf("KeymgrDpe generated %0s output from %0s", thing_generated, source);
+    cfg.sw_logger_vif.wait_for_log_message(msg);
+  endtask
+
+  // Wait for a SW log message that describes KeymgrDpe generating a specific type of output from
+  // the DPE context in the given slot. If output_type is T and slot_idx is N, we expect to see:
+  //
+  //        KeymgrDpe generated T output from DPE context in slot N
+  local task wait_for_keymgr_dpe_gen_output_slot_msg(string thing_generated, int unsigned slot_idx);
+    wait_for_keymgr_dpe_gen_output_msg(thing_generated,
+                                       $sformatf("DPE context in slot %0d", slot_idx));
   endtask
 
   // Backdoor-read a given keymgr-internal key slot.
