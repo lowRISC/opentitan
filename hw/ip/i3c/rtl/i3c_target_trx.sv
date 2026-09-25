@@ -36,7 +36,7 @@ module i3c_target_trx
   // Asynchronous reset.
   input                     rst_ni,
 
-  // TODO: Decide upon multi-cycle path/CDC/waiver here.
+  // TODO(#31065): Decide upon multi-cycle path/CDC/waiver here.
   // - these signals may be treated as quasi-static? Note, though, that they are modified in
   //   the target core in response to CCC traffic.
   // Target device descriptions.
@@ -107,7 +107,7 @@ module i3c_target_trx
   localparam int unsigned BitW = 4;
 
   // Fault injection for testing Controllers.
-  // TODO: Decide whether to keep this functionality.
+  // TODO(#31307): Decide whether to keep this functionality.
   localparam bit FIParity = 1'b0;
   localparam bit FICRC5   = 1'b0;
 
@@ -267,7 +267,7 @@ module i3c_target_trx
   logic                  is_group;    // Is this a group address?
   logic    [TargIDW-1:0] targ_id;     // Individual Target addressed, _NoMatch or _Broadcast.
   logic [NumTargets-1:0] targ_set;    // Set of addressed target(s), valid for Group Addressing too.
-  logic                  capture_all; // Capturing all traffic? TODO: Currently assigned but not used.
+  logic                  capture_all; // Capturing all traffic? TODO(#31337): presently unused.
   always_comb begin : addr_matching
     // Disabled targets and those without a valid address shall ignore all traffic; i.e., they do
     // not even receive and respond to broadcast writes.
@@ -418,11 +418,11 @@ module i3c_target_trx
     State_TxPreDDR,
     State_TxDataDDR,
     State_TxCRCDDR,
-    State_TxNACKDDR,  // TODO: Implement this state; send `11`.
+    State_TxNACKDDR,  // TODO(#31065): Implement this state; send `11`.
 
     // --- HDR-DDR Reception ---
-    // TODO: ACK/NACK of command (first data word).
-    // TODO: Must respond to Controller abort of read Data Word.
+    // TODO(#31065): ACK/NACK of command (first data word).
+    // TODO(#31065): Must respond to Controller abort of read Data Word.
     State_RxCmdDDR,
     State_RxPreDDR,
     State_RxDataDDR,
@@ -490,7 +490,7 @@ module i3c_target_trx
   // Arbitration is lost if we're requesting a '1' but the line was pulled to '0'.
   wire arb_lost = bus_drv_o.sda[0] & !sda_pq[0][0];
 
-  // TODO: This will need to be latched and perhaps sent with a toggle.
+  // TODO(#31337): This will need to be latched and perhaps sent with a toggle.
   assign arb_won = &{(state_q == State_ArbCont), penult_bit, !arb_lost};
 
   // Shall we arbitrate on the bus when Start signaling is detected?
@@ -518,6 +518,7 @@ module i3c_target_trx
   // Release the bus whenever we are no longer entitled to drive it: we lost arbitration, we won
   // the Arbitrable Address Header (the Active Controller drives the ACK, not us), or we are
   // ignoring the remainder of the frame.
+  // TODO(#31065): This logic has been added recently and is not 'thinking ahead of time.'
   assign drv_release = state_q inside {State_Idle, State_WaitStop, State_Ignore} ||
                        ((state_q == State_ArbCont) && (arb_lost || penult_bit));
 
@@ -578,9 +579,9 @@ module i3c_target_trx
   wire [1:0] ddr_pre = {sda_pq[0][0], sda_i[0]};
 
   // Has the Controller requested that a transmission (SDR/HDR-DDR Read) be aborted?
-  // TODO: Needs qualifying with knowledge of whether this is the first data word in the HDR-DDR
-  // transmission because PRE0 has the opposite sense for the first word, in order to support an
-  // ACK/NACK response from the Target.
+  // TODO(#31337): Needs qualifying with knowledge of whether this is the first data word in the
+  // HDR-DDR transmission because PRE0 has the opposite sense for the first word, in order to
+  // support an ACK/NACK response from the Target.
   wire tx_abort = 1'b0 & !ddr_pre[0];
 
   // We need to make a decision on whether to ACK/NACK; this depends upon the address received,
@@ -603,12 +604,12 @@ module i3c_target_trx
 
   // Detection of Error Type TE0 (4.3.8.1.1).
   assign te_o[0]   = &{state_q == State_ArbCede, penult_bit, te0_invalid_addr(addr_recvd)};
-  // TODO: Te1-TE6 are not yet detected.
+  // TODO(#31333): TE1-TE6 are not yet detected.
   assign te_o[6:1] = '0;
 
   // CCCs that are not understood shall be NACKed if they are not Broadcasts.
-  // TODO: The NACK 'generation'. There are also some rules about Defining Bytes and payload bytes
-  // to be implemented here.
+  // TODO(#31337): The NACK 'generation'. There are also some rules about Defining Bytes and payload
+  // bytes to be implemented here.
   // nack = ~{broadcast_ccc(ccc_req_i.rdata), supported_direct_ccc(ccc_req_i.rdata)};
 
   // Arbitration loss or driver conflict on SDA line, including any mismatch detected during the
@@ -619,8 +620,8 @@ module i3c_target_trx
   // reception or transmission of either 1 bit (SDR) or 2 bits (HDR-DDR) per SDA lane.
   always_comb begin
     state_d = state_q;
-    // TODO: HDR Exit detection must be responsive at all times, but it is perhaps the Target core
-    // that needs to respond.
+    // TODO(#31337): HDR Exit detection must be responsive at all times, but it is perhaps the
+    // Target core that needs to respond.
     if (starting) begin
       // START handling.
       state_d = arb_reqd ? State_ArbCont : State_ArbCede;
@@ -650,7 +651,7 @@ module i3c_target_trx
         State_WaitStop: state_d = State_WaitStop;  // stoP and repeated Start are handled above.
 
         // --- Expecting an HDR-DDR Command word ---
-        // TODO: Check the expected 2'b01 preamble; what do we do if we get something else?
+        // TODO(#31065): Check the expected 2'b01 preamble; what do we do if we get something else?
         //       I think this is a case of waiting for HDR Restart/Exit.
         State_RxCmdDDR: begin
           // Respond to Read/Write Command, considering whether or not there is data available.
@@ -672,7 +673,8 @@ module i3c_target_trx
         State_RxCRCDDR:  state_d = last_bit ? State_RxCmdDDR : State_RxCRCDDR;
         State_RxRsvdDDR: state_d = last_bit ? State_RxPreDDR : State_RxRsvdDDR;
         // --- Word Transmission ---
-        // TODO: We have the option here of transmitting the CRC following the Controller's Abort.
+        // TODO(#31065): We have the option here of transmitting the CRC following the Controller's
+        // Abort.
         State_TxPreDDR:  state_d = tx_abort ? State_RxCmdDDR : State_TxDataDDR;
         State_TxDataDDR: state_d = last_bit ? (tx_avail ? State_TxPreDDR : State_TxCRCDDR)
                                             : State_TxDataDDR;
@@ -710,7 +712,7 @@ module i3c_target_trx
       ccc_state_q     <= CCC_Idle;
       ccc_idx_q       <= '0;
     end else begin
-      // TODO: Need to check that these conditions become appropriately deasserted.
+      // TODO(#31337): Need to check that these conditions become appropriately deasserted.
       if (starting || stopping || (rep_starting && !ccc_continues)) begin
         // CCC has ended, or was never in progress.
         trans.cmd       <= '0;
@@ -900,7 +902,7 @@ module i3c_target_trx
   assign upd_crc  = (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR}) & data_bit;
 
   // Do the calculated parity and CRC-5 values match against the received values?
-  // TODO: Can we defer the parity checking slightly, to avoid the combinational signal
+  // TODO(#31337): Can we defer the parity checking slightly, to avoid the combinational signal
   // `parity_error_ddr` briefly becoming asserted and causing confusion?
   wire parity_match_ddr = (parcrc_bit == parity_q);
   wire parity_check_ddr = (state_q == State_RxCmdDDR || state_q == State_RxDataDDR) && last_bit;
@@ -919,7 +921,7 @@ module i3c_target_trx
 
   // Transmission of parity and CRC_5.
   assign parity_nq_emit = (state_q == State_TxDataDDR) & penult_bit;
-  // TODO: We shall also need to respond to an explict 'last datum' indicator.
+  // TODO(#31337): We shall also need to respond to an explict 'last datum' indicator.
   assign crc5_nq_emit = (state_q == State_TxDataDDR) & last_bit & !tx_avail;
 
   // Bit counting within data unit, and calculation of parity/CRC-5 on the data bits.
@@ -1038,8 +1040,8 @@ module i3c_target_trx
     // On the fourth bit, data has eventually arrived (through `trx_areq_i`), handover occurs, and
     // the roles switch (transceiver drives, i3c_targ_start_req must output logic high).
     //
-    // TODO: Handover not yet implemented: `arb_starting` is a single pulse at the first SCL falling
-    // edge, which is before `trx_avalid_i` can have crossed the CDC, and the transceiver's
+    // TODO(#31337): Handover not yet implemented: `arb_starting` is a single pulse at the first SCL
+    // falling edge, which is before `trx_avalid_i` can have crossed the CDC, and the transceiver's
     // contribution to the wired-AND is not forced high while it is not driving (`sda_nq` still
     // holds data from the previous frame).
     assign bus_drv_o.sda = ((sda_out_ptog ^ sda_out_ntog) ? sda_pq[0][8] : sda_nq[0][8])
@@ -1085,36 +1087,36 @@ module i3c_target_trx
 
   // -------------------------- Arbitration Requests from Target core ------------------------------
 
-  // TODO: No support for arbitration requests at present (port does not exist).
-  //assign trx_agnt_o = 1'b0;
 
   // -------------------------------- Response to Target core --------------------------------------
 
-  // TODO: Request/response interface is incomplete at present; just capture the received word here
-  // for checking.
+  // TODO(#31337): Request/response interface is incomplete at present; just capture the received
+  // word here for checking.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_dready
     assign trx_dready_o[t] = tx_starting & (t == trans.targ_id) & !ccc_command;
+    // Note: we consume data from all targets rather than the specific one that is transmitting
+    // because this is easier than trying to retract the data later. Also, the target count is low.
   end
   assign trx_ctready_o = tx_starting & ccc_command;
-  // Signalling mode, such that the core knows how much of the presented read data each
+  // Signaling mode, such that the core knows how much of the presented read data each
   // `trx_dready_o`/`trx_ctready_o` pulse is valid (two bytes for HDR-DDR, one byte for SDR).
   assign ddr_mode_o = ddr_mode;
 
   // We want to warn the FSM as soon as possible that prefetched read data is required.
-  // TODO: Rename, and give more thought to the introduction of a suitable state encoding.
+  // TODO(#31337): Rename, and give more thought to the introduction of a suitable state encoding.
   wire rxd_sr = &{ccc_state_q == CCC_SegAddr, direct_get(trans.cmd), bit_idx == BitW'(8)};
 
   // Under-construction response to the FSM logic.
   i3c_targ_trx_rxd_t rxd;
   always_comb begin
     rxd = '0;
-    // TODO: It seems quite likely that we want a simplified encoding here:
+    // TODO(#31337): It seems quite likely that we want a simplified encoding here:
     //  setup, sr, segaddr, segread, segwrite.
     rxd.sr        = (ccc_state_q == CCC_SegAddr) & direct_get(trans.cmd);
     rxd.ccc_state = ccc_state_q;
     rxd.ccc_idx   = ccc_idx_q;
     rxd.rnw       = trans.rnw;
-    // TODO: At the point of trying to capture the phase/segment address/targ_id/targ_set
+    // TODO(#31337): At the point of trying to capture the phase/segment address/targ_id/targ_set
     // `trans` has not yet been updated in CCC_SegAddr state. Sort out timing here...perhaps
     // everything needs to be captured during the final bit, re-timing now-stale data if necessary?
     if (ccc_state_q == CCC_SegAddr) begin
@@ -1142,8 +1144,8 @@ module i3c_target_trx
     endcase
   end
 
-  // TODO: Very much need to nail down what gets passed to the FSM. Perhaps the FSM should have
-  // the responsibility, we just tell it the extra state above.
+  // TODO(#31337): Very much need to nail down what gets passed to the FSM. Perhaps the FSM should
+  // have the responsibility, we just tell it the extra state above.
   wire rxd_reqd = |{state_q inside {State_RxSDR, State_RxCmdDDR, State_RxDataDDR, State_RxCRCDDR},
                     (ccc_state_q == CCC_SegAddr &&  // Address required.
                      state_q inside {State_ArbCont, State_ArbCede, State_AckAddr}),

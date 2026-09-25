@@ -104,7 +104,7 @@ module i3c
   input                                     scan_rst_ni,
   input prim_mubi_pkg::mubi4_t              scanmode_i
 
-  // TODO: Dummy ports for top-level integration. These are presently required because `topgen`
+  // TODO(#31336): Dummy ports for top-level integration. These are presently required because `topgen`
   // creates enables for all output signals.
   ,
   output cio_ctrl_bus_drv_en_o,
@@ -127,7 +127,7 @@ module i3c
 
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  // TODO: These drivers should not exist, because the ports should not exist, but it's adding noise
+  // TODO(#31336): These drivers should not exist, because the ports should not exist, but it's adding noise
   // to synthesis logs.
   assign {cio_ctrl_bus_drv_en_o, cio_targ_bus_drv_en_o} = 'b0;
 
