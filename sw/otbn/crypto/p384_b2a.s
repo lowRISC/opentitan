@@ -48,6 +48,15 @@
  * clobbered flag groups: FG0
  */
 p384_boolean_to_arithmetic:
+  /* Truncate inputs to 384 bits.
+       [w21, w20] <= s0 mod 2^384
+       [w11, w10] <= s1 mod 2^384 = x1 */
+  bn.rshi   w21, w21, w31 >> 128
+  bn.rshi   w21, w31, w21 >> 128
+  bn.rshi   w31, w31, w31 >> 128  /* dummy instruction to flush ALU datapath */
+  bn.rshi   w11, w11, w31 >> 128
+  bn.rshi   w11, w31, w11 >> 128
+
   /* Fetch 385 bits of randomness from URND.
        [w2, w1] <= gamma */
   bn.wsrr   w1, URND
