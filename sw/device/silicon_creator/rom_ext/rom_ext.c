@@ -304,10 +304,6 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  epmp_clear_lock_bits();
-
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
-
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
   // Otherwise, compute the epmp regions and the entry point for the load
@@ -331,7 +327,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
                                  (uintptr_t)_owner_virtual_size},
-          kEpmpPermReadOnly);
+          kEpmpPermLockedReadOnly);
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
       // Move the ROM_EXT execution section from the load address to the virtual
@@ -349,7 +345,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   }
 
   // Allow execution of owner stage executable code (text) sections.
-  epmp_set_tor(2, text_region, kEpmpPermReadExecute);
+  epmp_set_tor(2, text_region, kEpmpPermLockedReadExecute);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Lock the address translation windows.
@@ -379,6 +375,27 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   coverage_report();
   coverage_invalidate();
+
+  // Replace the ROM_EXT stack guard (entry 11) and full-flash region (entry 12)
+  // with a TOR region covering only the verified ROM_EXT image first (unlocked
+  // so ROM_EXT remains executable while entries 8/9 are reconfigured), then
+  // repurpose entries 8/9 to cover the verified owner stage image. Because
+  // mseccfg.MMWP=1, unverified flash not covered by any ePMP entry remains
+  // inaccessible and non-executable in M-mode even after lock bits are cleared.
+  const manifest_t *self = rom_ext_manifest();
+  epmp_set_tor(11,
+               (epmp_region_t){.start = (uintptr_t)self,
+                               .end = (uintptr_t)self + self->length},
+               kEpmpPermReadOnly);
+  epmp_set_tor(8,
+               (epmp_region_t){.start = (uintptr_t)manifest,
+                               .end = (uintptr_t)manifest + manifest->length},
+               kEpmpPermLockedReadOnly);
+
+  // Clear lock bits as late as possible in ROM_EXT.
+  epmp_clear_lock_bits();
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
+
   ((owner_stage_entry_point *)entry_point)();
   coverage_init();  // re-init after invalidate.
 

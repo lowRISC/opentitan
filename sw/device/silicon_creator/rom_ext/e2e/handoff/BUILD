@@ -116,13 +116,13 @@ opentitan_test(
             "3: a.......   TOR -X-R sz=........",  # Application code end.
             "4: a0000000 NAPOT ---R sz=00080000",  # Application rodata region.
             "5: 00000000 ----- ---- sz=00000000",
-            "6: 00000000 ----- ---- sz=00000000",
-            "7: 00000000 ----- ---- sz=00000000",
+            "6: 2....... ----- ---- sz=00000000",  # Application image start.
+            "7: 2.......   TOR ---R sz=........",  # Application image end.
             "8: 2....... ----- ---- sz=00000000",  # ROM_EXT code start.
             "9: 2.......   TOR -X-R sz=........",  # ROM_EXT code end.
             "10: 00000000 ----- ---- sz=00000000",
-            "11: 1001c000   NA4 ---- sz=00000004",  # Stack guard.
-            "12: 20000000 NAPOT ---R sz=00100000",  # Entire flash region.
+            "11: 2....... ----- ---- sz=00000000",  # ROM_EXT image start.
+            "12: 2.......   TOR ---R sz=........",  # ROM_EXT image end.
             "13: 00010000 NAPOT -XWR sz=00001000",  # RvDM regionn
             "14: 40000000 NAPOT --WR sz=10000000",  # MMIO for peripherals.
             "15: 10000000 NAPOT --WR sz=00020000",  # All of RAM.
