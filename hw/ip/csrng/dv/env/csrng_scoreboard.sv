@@ -21,7 +21,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit                                                     fips[];
 
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
-  bit [3:0] intr_pins;
+  bit [4:0] intr_pins;
 
   // Per-app state, sized to cfg.m_num_apps in build_phase
   bit                        genbits_fips_previous[];
@@ -30,7 +30,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   csrng_pkg::csrng_cmd_sts_e cmd_sts[];
 
   bit [3:0]            int_state_num;
-  bit [MaxNumApps-1:0] int_state_read_enable;
 
   virtual csrng_cov_if                                    cov_vif;
 
@@ -173,7 +172,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "intr_state": begin
         if (addr_phase_read) intr_pins = cfg.intr_vif.pins;
         if (data_phase_read && cov_vif.en_full_cov) begin
-          bit [3:0] intr_en = `gmv(ral.intr_enable);
+          bit [4:0] intr_en = `gmv(ral.intr_enable);
           foreach (intr_pins[i]) begin
             csrng_intr_e intr = csrng_intr_e'(i);
             `DV_CHECK_CASE_EQ(intr_pins[i], (intr_en[i] & item.d_data[i]),
@@ -191,8 +190,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "intr_test": begin
         if (addr_phase_write && cov_vif.en_full_cov) begin
-          bit [3:0] intr_en  = `gmv(ral.intr_enable);
-          bit [3:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
+          bit [4:0] intr_en  = `gmv(ral.intr_enable);
+          bit [4:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
           foreach (intr_exp[i]) begin
             cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
           end
@@ -340,7 +339,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               .read_int_state_val_reg(1'b0),
               .read_genbits_reg(1'b1),
               .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
-              .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
+              .int_state_enable(ral.ctrl.int_state_enable.get_mirrored_value()),
               .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
             );
             hw_genbits_reg_q.push_back(item.d_data);
@@ -369,10 +368,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "int_state_read_enable": begin
-      end
-      "int_state_read_enable_regwen": begin
-      end
       "int_state_num": begin
       end
       "int_state_val": begin
@@ -382,18 +377,18 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             .read_int_state_val_reg(1'b1),
             .read_genbits_reg(1'b0),
             .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
-            .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
+            .int_state_enable(ral.ctrl.int_state_enable.get_mirrored_value()),
             .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
           );
           csr_rd(.ptr(ral.int_state_num), .value(int_state_num), .backdoor(1'b1));
-          csr_rd(.ptr(ral.int_state_read_enable), .value(int_state_read_enable), .backdoor(1'b1));
           // Unless reading of the selected internal state is enabled, the returned data must be 0.
           // If read access is indeed enabled, the actual check is performed by the
           // check_internal_state() task.
-          if (`gmv(ral.ctrl.read_int_state) != MuBi4True ||
+          // TODO: this doesn't yet model that the targeted instance must also be STOPPED via
+          // IMPORT/EXPORT for INT_STATE_VAL to read back real data (stubbed out for now).
+          if (`gmv(ral.ctrl.int_state_enable) != MuBi4True ||
               cfg.otp_en_cs_sw_app_read != MuBi8True ||
-              int_state_num >= cfg.m_num_apps ||
-              int_state_read_enable[int_state_num] == 1'b0) begin
+              int_state_num >= cfg.m_num_apps) begin
             `DV_CHECK_EQ_FATAL(item.d_data, 0)
           end
         end
