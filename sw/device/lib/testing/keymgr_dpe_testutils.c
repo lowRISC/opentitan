@@ -421,6 +421,19 @@ status_t keymgr_dpe_testutils_check_state(
   return OK_STATUS();
 }
 
+status_t keymgr_dpe_testutils_check_boot_stage(
+    const dif_keymgr_dpe_t *keymgr_dpe, uint32_t slot,
+    uint32_t exp_boot_stage) {
+  dif_keymgr_dpe_metadata_t metadata;
+  TRY(dif_keymgr_dpe_get_metadata(keymgr_dpe, slot, &metadata));
+  TRY_CHECK(metadata.valid, "Keymgr DPE slot %d is not valid", slot);
+  TRY_CHECK(
+      metadata.boot_stage == exp_boot_stage,
+      "Keymgr DPE slot %d in unexpected boot stage: %x, expected to be %x",
+      slot, metadata.boot_stage, exp_boot_stage);
+  return OK_STATUS();
+}
+
 status_t keymgr_dpe_testutils_generate_key(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_generate_params_t *params) {
