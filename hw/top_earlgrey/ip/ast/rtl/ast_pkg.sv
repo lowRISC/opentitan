@@ -71,7 +71,9 @@ typedef struct packed {
   logic [4-1:0] cfg;
 } rom_rm_t;
 
-// Aggregated memory configuration interface.
+// Aggregated memory configuration interface per partition.
+
+// Full structure. TODO: delete once ast.sv is no longer required.
 typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_imem;
   prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_dmem;
@@ -91,6 +93,28 @@ typedef struct packed {
 } ast_mem_cfg_req_t;
 
 typedef struct packed {
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_imem;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_dmem;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c0;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c1;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c2;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              usbdev_ram;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_sys2spi;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_spi2sys;
+  prim_rom_pkg::rom_cfg_req_t                                    rom_ctrl_rom;
+} ast_mem_cfg_primary_req_t;
+
+typedef struct packed {
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+} ast_mem_cfg_secondary_req_t;
+
+// Full structure. TODO: delete once ast.sv is no longer required.
+typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_imem;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_dmem;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c0;
@@ -107,6 +131,27 @@ typedef struct packed {
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_spi2sys;
   prim_rom_pkg::rom_cfg_rsp_t                                    rom_ctrl_rom;
 } ast_mem_cfg_rsp_t;
+
+typedef struct packed {
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_imem;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_dmem;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c0;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c1;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c2;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              usbdev_ram;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_sys2spi;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_spi2sys;
+  prim_rom_pkg::rom_cfg_rsp_t                                    rom_ctrl_rom;
+} ast_mem_cfg_primary_rsp_t;
+
+typedef struct packed {
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+} ast_mem_cfg_secondary_rsp_t;
 
 // ADC Interface
 typedef struct packed {
@@ -152,6 +197,14 @@ typedef struct packed {
   logic                  main_pok;
   logic [NumIoRails-1:0] io_pok;
 } ast_pwst_t;
+
+typedef struct packed {
+  logic vcc;    // VCC Supply Test for OS FPGA
+  logic vcaon;  // VCAON Supply Test for OS FPGA
+  logic vcmain; // VCMAIN Supply Test for OS FPGA
+  logic vioa;   // VIOA Rail Supply Test for OS FPGA
+  logic viob;   // VIOB Rail Supply Test for OS FPGA
+} ast_vx_supp_t;
 
 // Alerts Interface
 typedef struct packed {
@@ -206,6 +259,13 @@ typedef struct packed {
   ast_omdl_e             obmsl;
   prim_mubi_pkg::mubi4_t obmen;
 } ast_obs_ctrl_t;
+
+typedef struct packed {
+  logic [8-1:0] fla_obs; // FLASH Observe Bus
+  logic [8-1:0] otp_obs; // OTP Observe Bus
+  logic [8-1:0] otm_obs; // OT Modules Observe Bus
+  logic usb_obs;         // USB DIFF RX Observe
+} ast_obs_bus_t;
 
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV
