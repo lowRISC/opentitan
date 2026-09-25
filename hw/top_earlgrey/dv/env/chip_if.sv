@@ -1213,7 +1213,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 
   // Signal probe function for `st` of KMAC_CORE
   wire [5:0] kmac_fsm_state;
-  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.u_state_regs.state_o;
+  assign kmac_fsm_state = `KMAC_HIER.gen_kmac_core.u_kmac_core.u_state_regs.state_o;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
       kmac_fsm_state, 6)
 

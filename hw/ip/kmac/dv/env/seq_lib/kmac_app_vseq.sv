@@ -38,11 +38,7 @@ class kmac_app_vseq extends kmac_sideload_vseq;
 
   constraint hash_mode_c {
     if (en_app) {
-      if (app_mode == AppKeymgr) {
-        kmac_en == 1;
-      } else {
-        kmac_en == 0;
-      }
+      kmac_en == ((app_mode == AppKeymgr) && cfg.enable_full_kmac);
     } else {
       if (kmac_en) {
         hash_mode == sha3_pkg::CShake;
