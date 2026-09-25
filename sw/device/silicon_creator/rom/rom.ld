@@ -24,12 +24,17 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _rom_boot_address = ORIGIN(rom);
 
 /**
- * Symbols to be used in the setup of the address translation for ROM_EXT.
+ * Symbols to be used in the setup of the address translation for ROM_EXT and
+ * for checking virtual flash address ranges in `flash_exc_handler.S`.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
   "Error: rom ext flash is bigger than slot.");
+_owner_virtual_start_address = ORIGIN(owner_virtual);
+_owner_virtual_size = LENGTH(owner_virtual);
+ASSERT((_owner_virtual_size <= (LENGTH(eflash) / 2)),
+  "Error: owner flash is bigger than slot.");
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
