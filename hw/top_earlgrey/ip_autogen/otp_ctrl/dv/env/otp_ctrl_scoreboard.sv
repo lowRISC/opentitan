@@ -763,8 +763,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 // Check if it is sw partition read lock
                 check_dai_rd_data = 1;
 
+                // Zeroize markers stay readable even when the partition is read-locked.
                 // SW partitions write read_lock_csr can lock read access.
-                if (sw_read_lock ||
+                if (!is_zeroize_marker(dai_addr) && (sw_read_lock ||
                     // Secret partitions cal digest can also lock read access.
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
@@ -772,10 +773,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // If the partition has creator key material and lc_creator_seed_sw_rw is
                     // disable, then return access error.
                     (PartInfo[part_idx].iskeymgr_creator && !is_digest(dai_addr) &&
-                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On))) begin
                   predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
-                end else if (sw_read_lock ||
+                end else if (!is_zeroize_marker(dai_addr) && (sw_read_lock ||
                     // Secret partitions cal digest can also lock read access.
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
@@ -783,7 +784,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // If the partition has owner key material and lc_owner_seed_sw_rw is disable,
                     // then return access error.
                     (PartInfo[part_idx].iskeymgr_owner && !is_digest(dai_addr) &&
-                     cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                     cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On))) begin
                   predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
 
@@ -809,12 +810,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   // As a special case, if this is the Zeroize marker on a partition with integrity,
                   // we use the second function (modelling the ReadRaw OTP command) and discard any
                   // ECC errors.
-                  if (part_has_integrity(part_idx)) begin
+                  if (part_has_integrity(part_idx) && !is_zeroize_marker(dai_addr)) begin
                     ecc_err = read_a_word_with_ecc(dai_addr, read_out0);
                     if (is_64_bit_fuse) begin
                       ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out1), ecc_err);
                     end
-                    if (is_zeroize_marker(dai_addr)) ecc_err = 0;
                   end else begin
                     read_a_word_with_ecc_raw(dai_addr, read_out0);
                     if (is_64_bit_fuse) begin
@@ -841,6 +841,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // do not check direct_access_rdata_* on ECC errors in
                     // non-integrity partitions
                     check_dai_rd_data = 0;
+                  // The Zeroize marker is read raw: flipped bits come back as they are and no ECC
+                  // error is reported.
+                  end else if (is_zeroize_marker(dai_addr)) begin
+                    predict_no_err(OtpDaiErrIdx);
+                    predict_rdata(1, read_out0, read_out1);
                   end else begin
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_64_bit_fuse, otp_a[otp_addr], otp_a[otp_addr+1]);
@@ -880,7 +885,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     end else begin
                       predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpMacroWriteBlankError);
                     end
-                  end else if (is_digest(dai_addr)) begin
+                  // DAI writes to a HW digest or a Zeroize marker are rejected.
+                  end else if (is_digest(dai_addr) || is_zeroize_marker(dai_addr)) begin
                     predict_err(OtpDaiErrIdx, otp_partition_e'(0), OtpAccessError);
                   // write OTP memory
                   end else begin
