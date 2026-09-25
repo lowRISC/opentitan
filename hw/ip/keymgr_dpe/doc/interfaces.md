@@ -17,7 +17,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | kmac_key         | keymgr_dpe_pkg::hw_key_req                  | uni     | req   | 1                  |               |
 | hmac_key         | keymgr_dpe_pkg::hw_key_req                  | uni     | req   | 1                  |               |
 | otbn_key         | keymgr_dpe_pkg::wide_hw_key_req             | uni     | req   | 1                  |               |
-| kmac_data        | kmac_pkg::app                               | req_rsp | req   | 1                  |               |
+| kmac_app         | kmac_pkg::app                               | req_rsp | req   | 1                  |               |
+| otbn_app         | kmac_pkg::app                               | req_rsp | req   | 1                  |               |
+| sensitive_key    | prim_mubi_pkg::mubi4                        | uni     | req   | 1                  |               |
 | creator_root_key | keymgr_dpe_pkg::keymgr_dpe_creator_root_key | uni     | rcv   | 1                  |               |
 | creator_seed     | keymgr_dpe_pkg::keymgr_dpe_creator_seed     | uni     | rcv   | 1                  |               |
 | owner_seed       | keymgr_dpe_pkg::keymgr_dpe_owner_seed       | uni     | rcv   | 1                  |               |

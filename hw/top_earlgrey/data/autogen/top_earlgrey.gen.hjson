@@ -7519,7 +7519,7 @@
           index: -1
         }
         {
-          name: kmac_data
+          name: kmac_app
           struct: app
           package: kmac_pkg
           type: req_rsp
@@ -7530,6 +7530,34 @@
           domain: Main
           top_signame: kmac_app
           index: 3
+        }
+        {
+          name: keymgr_app
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: otbn
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: otbn_keymgr_app
+          index: -1
+        }
+        {
+          name: keymgr_sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: otbn
+          end_idx: -1
+          top_type: broadcast
+          top_signame: otbn_keymgr_sensitive_key
+          index: -1
         }
         {
           name: tl
@@ -7701,7 +7729,7 @@
           index: -1
         }
         {
-          name: kmac_data
+          name: kmac_app
           struct: app
           package: kmac_pkg
           type: req_rsp
@@ -7712,6 +7740,32 @@
           domain: Main
           top_signame: kmac_app
           index: 0
+        }
+        {
+          name: otbn_app
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: keymgr_dpe
+          default: ""
+          domain: Main
+          top_signame: otbn_keymgr_app
+          index: -1
+        }
+        {
+          name: sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: keymgr_dpe
+          domain: Main
+          top_signame: otbn_keymgr_sensitive_key
+          index: -1
         }
         {
           name: creator_root_key
@@ -10833,14 +10887,22 @@
       ]
       kmac.app:
       [
-        keymgr_dpe.kmac_data
+        keymgr_dpe.kmac_app
         lc_ctrl.kmac_data
         rom_ctrl.kmac_data
-        otbn.kmac_data
+        otbn.kmac_app
       ]
       kmac.en_masking:
       [
         keymgr_dpe.kmac_en_masking
+      ]
+      otbn.keymgr_app:
+      [
+        keymgr_dpe.otbn_app
+      ]
+      otbn.keymgr_sensitive_key:
+      [
+        keymgr_dpe.sensitive_key
       ]
       clkmgr.idle:
       [
@@ -25553,7 +25615,7 @@
         index: -1
       }
       {
-        name: kmac_data
+        name: kmac_app
         struct: app
         package: kmac_pkg
         type: req_rsp
@@ -25564,6 +25626,34 @@
         domain: Main
         top_signame: kmac_app
         index: 3
+      }
+      {
+        name: keymgr_app
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: otbn
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: otbn_keymgr_app
+        index: -1
+      }
+      {
+        name: keymgr_sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: otbn
+        end_idx: -1
+        top_type: broadcast
+        top_signame: otbn_keymgr_sensitive_key
+        index: -1
       }
       {
         name: tl
@@ -25649,7 +25739,7 @@
         index: -1
       }
       {
-        name: kmac_data
+        name: kmac_app
         struct: app
         package: kmac_pkg
         type: req_rsp
@@ -25660,6 +25750,32 @@
         domain: Main
         top_signame: kmac_app
         index: 0
+      }
+      {
+        name: otbn_app
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: keymgr_dpe
+        default: ""
+        domain: Main
+        top_signame: otbn_keymgr_app
+        index: -1
+      }
+      {
+        name: sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: keymgr_dpe
+        domain: Main
+        top_signame: otbn_keymgr_sensitive_key
+        index: -1
       }
       {
         name: creator_root_key
@@ -33021,6 +33137,42 @@
         act: req
         suffix: ""
         default: 1'b0
+      }
+      {
+        package: kmac_pkg
+        struct: app_req
+        domain: Main
+        signame: otbn_keymgr_app_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: kmac_pkg::APP_REQ_DEFAULT
+      }
+      {
+        package: kmac_pkg
+        struct: app_rsp
+        domain: Main
+        signame: otbn_keymgr_app_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: otbn_keymgr_sensitive_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
       }
       {
         package: jtag_pkg

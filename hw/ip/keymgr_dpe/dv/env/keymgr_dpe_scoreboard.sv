@@ -1346,7 +1346,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
       // need to check invalidOp as well as InvalidIn, because either would result
-      // in needing to check invalid data on the kmac_data_o
+      // in needing to check invalid data on the kmac_app_o
       return !(get_fault_err() |
                err_code[keymgr_dpe_pkg::ErrInvalidIn]  |
                err_code[keymgr_dpe_pkg::ErrInvalidOp]  |

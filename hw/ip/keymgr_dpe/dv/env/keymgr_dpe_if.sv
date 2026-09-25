@@ -495,10 +495,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
     if (force_cmds[AdvOpIdx]) force tb.dut.u_ctrl.adv_en_o = 1;
     if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = 1;
     // if in current cycle, kmac_data_rsp is unknown, assign it with a random value to
-    // avoid X propagation, because forcing *en_o may cause design to read `kmac_data_i`.
+    // avoid X propagation, because forcing *en_o may cause design to read `kmac_app_i`.
     #1ps;
     if ($isunknown(kmac_data_rsp)) begin
-      string path = "tb.dut.kmac_data_i";
+      string path = "tb.dut.kmac_app_i";
       `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
       // don't change these control signals, otherwise, handshaking may get stuck
       invalid_kmac_rsp.req_ready = kmac_data_rsp.req_ready;

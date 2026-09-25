@@ -48,9 +48,14 @@ module keymgr_dpe
   output hw_key_req_t hmac_key_o,
   output wide_hw_key_req_t otbn_key_o,
 
-  // data interface to/from crypto modules
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i,
+  // Application interface when KMAC is used as hashing engine
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i,
+
+  // Application interface when OTBN is used as hashing engine
+  output kmac_pkg::app_req_t    otbn_app_o,
+  input  kmac_pkg::app_rsp_t    otbn_app_i,
+  output prim_mubi_pkg::mubi4_t sensitive_key_o,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -117,6 +122,36 @@ module keymgr_dpe
     .in_i   ('0),
     .out_o  (hmac_key_o)
   );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
+  localparam int NumOutBufBitsOtbnApp = $bits(kmac_pkg::app_req_t);
+  prim_buf #(
+    .Width  (NumOutBufBitsOtbnApp)
+  ) u_anchor_buf_app_req (
+    .in_i   ('0),
+    .out_o  (otbn_app_o)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
+  localparam int NumInBufBitsOtbnApp = $bits(kmac_pkg::app_rsp_t);
+  kmac_pkg::app_rsp_t unused_rsp;
+  prim_buf #(
+    .Width  (NumInBufBitsOtbnApp)
+  ) u_anchor_buf_app_rsp (
+    .in_i   (otbn_app_i),
+    .out_o  (unused_rsp)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
+  localparam int NumOutBufBitsSensKey = $bits(prim_mubi_pkg::mubi4_t);
+  logic [NumOutBufBitsSensKey-1:0] sensitive_key_buf;
+  prim_buf #(
+    .Width  (NumOutBufBitsSensKey)
+  ) u_anchor_buf_sens_key (
+    .in_i   (prim_mubi_pkg::MuBi4False),
+    .out_o  (sensitive_key_buf)
+  );
+  assign sensitive_key_o = prim_mubi_pkg::mubi4_t'(sensitive_key_buf);
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -702,8 +737,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o,
-    .kmac_data_i,
+    .kmac_data_o(kmac_app_o),
+    .kmac_data_i(kmac_app_i),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -908,7 +943,9 @@ module keymgr_dpe
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
+  `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
+  `ASSERT_KNOWN(SensitiveKeyKnownO_A, sensitive_key_o)
 
 
   // kmac parameter consistency
