@@ -18,14 +18,16 @@ module tb;
   rram_macro_rsp_t rram_macro_rsp;
 
   logic [DataWidth-1:0] rdata, data;
+  logic [2:0] ecc_err;
   logic [AddrW-1:0] addr;
   logic info;
+  logic ecc_en;
   int num_words;
   int errors = 0;
 
   // Test/observability ports not exercised by the shared data-path tests below: JTAG, scan, BIST
   // lifecycle gating, and AST observability.
-  // A vendor-specific test can drive any of them directly, from run_vendor_tests().
+  // The JTAG inputs (cio_tck/tdi/tms) are driven by the vendor tests include.
   logic cio_tck, cio_tdi, cio_tms, cio_tdo, cio_tdo_en;
   lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en;
   prim_mubi_pkg::mubi4_t scanmode;
@@ -71,12 +73,14 @@ module tb;
     end
   endtask
 
-  task automatic rram_store_buf(input logic [AddrW-1:0] addr, input logic [DataWidth-1:0] data);
+  task automatic rram_store_buf(input logic [AddrW-1:0] addr, input logic [DataWidth-1:0] data,
+                                input logic ecc_en = 1'b0);
     @(posedge clk);
     #1ns;
     rram_macro_req.wr_req = 1'b1;
     rram_macro_req.wr_last = 1'b0;
     rram_macro_req.addr = addr;
+    rram_macro_req.ecc_en = ecc_en;
     rram_macro_req.wr_data = data;
     #1ns;
     wait_ack();
@@ -90,12 +94,14 @@ module tb;
     end
   endtask
 
-  task automatic rram_write(input logic [AddrW-1:0] addr, input logic info);
+  task automatic rram_write(input logic [AddrW-1:0] addr, input logic info,
+                            input logic ecc_en = 1'b0);
     @(posedge clk);
     #1ns;
     rram_macro_req.wr_req = 1'b1;
     rram_macro_req.wr_last = 1'b1;
     rram_macro_req.addr = addr;
+    rram_macro_req.ecc_en = ecc_en;
     rram_macro_req.part = info ? RramPartInfo : RramPartData;
     wait_ack();
     rram_macro_req.wr_req = 1'b0;
@@ -103,31 +109,41 @@ module tb;
     wait_done();
   endtask
 
+  // Also returns the ECC error flags, sampled together with the read data.
   task automatic rram_read(input logic [AddrW-1:0] addr, input logic info,
-                           output logic [DataWidth-1:0] rdata);
+                           output logic [DataWidth-1:0] rdata, output logic [2:0] ecc_err,
+                           input logic ecc_en = 1'b0);
     @(posedge clk);
     #1ns;
     rram_macro_req.rd_req = 1'b1;
     rram_macro_req.addr = addr;
+    rram_macro_req.ecc_en = ecc_en;
     rram_macro_req.part = info ? RramPartInfo : RramPartData;
     wait_ack();
     rram_macro_req.rd_req = 1'b0;
     wait_done();
     rdata = rram_macro_rsp.rd_data;
+    ecc_err = rram_macro_rsp.ecc_err;
     @(posedge clk);
   endtask
 
+  // Writes num_words words starting at addr and reads them back, all with the given ecc_en.
+  // The words are written without errors, so no read may report an ECC error.
   task automatic rram_access_test(input logic [AddrW-1:0] addr, input logic info,
-                                  input integer num_words);
+                                  input integer num_words, input logic ecc_en);
     for (int unsigned k = 0; k < num_words; k++) begin
-      rram_store_buf(addr + k, addr + k);
+      rram_store_buf(addr + k, addr + k, ecc_en);
     end
-    rram_write(addr, info);
+    rram_write(addr, info, ecc_en);
     for (int unsigned k = 0; k < num_words; k++) begin
       data = addr + k;
-      rram_read(addr + k, info, rdata);
+      rram_read(addr + k, info, rdata, ecc_err, ecc_en);
       if (data !== rdata) begin
         $error("RRAM-ERROR: rdata[%0d]=%x, exp=%x", k, rdata, data);
+        errors++;
+      end
+      if (ecc_err !== 3'b000) begin
+        $error("RRAM-ERROR: ecc_err[%0d]=%b with ecc_en=%b, exp=000", k, ecc_err, ecc_en);
         errors++;
       end
     end
@@ -141,10 +157,11 @@ module tb;
     for (int i = 0; i < iter; i++) begin
       @(posedge clk);
       info = $urandom();
+      ecc_en = $urandom();
       addr = $urandom();
       addr[4:0] = '0;
       num_words = $urandom_range(1, MaxWrWords);
-      rram_access_test(addr, info, num_words);
+      rram_access_test(addr, info, num_words, ecc_en);
     end
     $display("test_func(%0d): %s", iter, (errors == errors_before) ? "PASS" : "FAIL");
   endtask
@@ -154,12 +171,9 @@ module tb;
   `include "rram_macro_vendor_tests.svh"
 
   initial begin
-    cio_tck                 = 1'b0;
-    cio_tdi                 = 1'b0;
-    cio_tms                 = 1'b0;
     rram_test_analog_drv    = 1'b0;
     rram_test_analog_drv_en = 1'b0;
-    lc_nvm_debug_en         = lc_ctrl_pkg::On;
+    lc_nvm_debug_en         = lc_ctrl_pkg::Off;
     scanmode                = MuBi4False;
     scan_en                 = 1'b0;
     scan_rst_n              = 1'b0;
