@@ -25,3 +25,7 @@ Condition 2 "175047464" "(valid_o && ((!ready_i))) 1 -1" (2 "10")
 ANNOTATION: "[UNR]"
 MODULE: prim_arbiter_ppc ( parameter N=3,DW=102,EnDataPort=1,EnReqStabA=0 )
 Condition 2 "175047464" "(valid_o && ((!ready_i))) 1 -1" (2 "10")
+
+ANNOTATION: "[UNR]"
+MODULE: prim_arbiter_ppc ( parameter N=4,DW=102,EnDataPort=1,EnReqStabA=0 )
+Condition 2 "175047464" "(valid_o && ((!ready_i))) 1 -1" (2 "10")

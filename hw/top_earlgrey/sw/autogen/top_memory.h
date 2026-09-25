@@ -860,7 +860,7 @@
  * address between #TOP_CHERIOT_REGS_BASE_ADDR and
  * `TOP_CHERIOT_REGS_BASE_ADDR + TOP_CHERIOT_REGS_SIZE_BYTES`.
  */
-#define TOP_CHERIOT_REGS_SIZE_BYTES 0x4
+#define TOP_CHERIOT_REGS_SIZE_BYTES 0x20
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
  *

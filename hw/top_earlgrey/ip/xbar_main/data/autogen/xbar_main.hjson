@@ -26,6 +26,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_cheriot__trbe"
+      act:    "rsp"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_rv_dm__sba"
       act:    "rsp"
       package: "tlul_pkg"

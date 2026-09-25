@@ -649,7 +649,7 @@ pub const CHERIOT_REGS_BASE_ADDR: usize = 0x411B0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CHERIOT_REGS_BASE_ADDR and
 /// `CHERIOT_REGS_BASE_ADDR + CHERIOT_REGS_SIZE_BYTES`.
-pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x4;
+pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x20;
 
 /// Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
 ///

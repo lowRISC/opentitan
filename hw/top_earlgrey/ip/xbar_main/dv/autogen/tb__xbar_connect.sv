@@ -28,6 +28,7 @@ initial force dut.rst_spi_host1_ni = rst_n;
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(rv_core_ibex__corei, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(cheriot__cored, dut, clk_main_i, rst_n)
+`CONNECT_TL_HOST_IF(cheriot__trbe, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(rv_dm__sba, dut, clk_main_i, rst_n)
 
 // Device TileLink interface connections

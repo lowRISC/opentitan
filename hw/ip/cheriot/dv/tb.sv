@@ -54,6 +54,8 @@ module tb;
     // Host port towards the interconnect
     .cored_tl_h_o         (),
     .cored_tl_h_i         (tlul_pkg::TL_D2H_DEFAULT),
+    .trbe_tl_h_o          (),
+    .trbe_tl_h_i          (tlul_pkg::TL_D2H_DEFAULT),
 
     // Host port towards the meta SRAM
     .meta_sram_tl_o       (),
