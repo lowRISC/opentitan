@@ -50,8 +50,8 @@ RRAM_PRINCE_NUM_HALF_ROUNDS = 5
 RRAM_WORDS_PER_PAGE = 32
 # rram_ctrl_pkg::TotalDataPages = TotalBytes / (DataWidth / 8) / WordsPerPage = 4096.
 RRAM_TOTAL_DATA_PAGES = 4096
-# rram_ctrl_pkg::OtpPages = TotalOtpBytes / (DataWidth / 8) / WordsPerPage = 5.
-RRAM_OTP_PAGES = 5
+# rram_ctrl_pkg::OtpPages = TotalOtpBytes / (DataWidth / 8) / WordsPerPage = 6.
+RRAM_OTP_PAGES = 6
 
 # There are always exactly two slots splitting the full data partition evenly in half (see
 # NVM_BYTES_PER_SLOT in sw/device/silicon_creator/lib/nvm_ctrl.h).
@@ -205,6 +205,11 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
 
     # One RRAM row holds OTP_WORDS_PER_RRAM_WORD native OTP words.
     num_rows = (max(data_words, default=-1) + OTP_WORDS_PER_RRAM_WORD) // OTP_WORDS_PER_RRAM_WORD
+
+    # Round up to a full group of data rows sharing one integrity row (8 data rows per row here),
+    # so the last group's data rows are all written.
+    rows_per_intg = INTG_BYTES_PER_RRAM_WORD // (RRAM_WORD_SIZE // INTG_CHUNK_SIZE)
+    num_rows = ((num_rows + rows_per_intg - 1) // rows_per_intg) * rows_per_intg
 
     rows = {}
     comments = {}

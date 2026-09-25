@@ -413,7 +413,7 @@
     { name:      "NumOtpPages",
       desc:      "Number of data pages reserved for OTP",
       type:      "int",
-      default:   "5",
+      default:   "6",
       local:     "true"
     },
     { name:      "WordsPerPage",
