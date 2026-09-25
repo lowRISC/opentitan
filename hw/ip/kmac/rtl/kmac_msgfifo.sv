@@ -45,10 +45,10 @@ module kmac_msgfifo
   // Control
   input prim_mubi_pkg::mubi4_t clear_i,
 
-  // When process_i is asserted, packer and FIFO are flushed. Once flushed, process_o is asserted.
+  // When flush_i is asserted, packer and FIFO are flushed. Once flushed, flush_done_o is asserted.
   // When bypassing, nothing must be flushed.
-  input  logic process_i,
-  output logic process_o,
+  input  logic flush_i,
+  output logic flush_done_o,
 
   err_t err_o
 );
@@ -84,12 +84,12 @@ module kmac_msgfifo
   end
 
   // If bypassing, packer and FIFO must not be flushed so we can gate the flush signal and
-  // feed it directly to process_o.
-  logic process_to_fifo;
-  logic process_from_fifo;
+  // feed it directly to flush_done_o.
+  logic flush_to_fifo;
+  logic flush_from_fifo;
 
-  assign process_to_fifo = fifo_bypass_i ? '0        : process_i;
-  assign process_o       = fifo_bypass_i ? process_i : process_from_fifo;
+  assign flush_to_fifo = fifo_bypass_i ? '0      : flush_i;
+  assign flush_done_o  = fifo_bypass_i ? flush_i : flush_from_fifo;
 
   /////////////////
   // Definitions //
@@ -109,11 +109,11 @@ module kmac_msgfifo
     // MSG FIFO received the request.
     FlushPacker,
 
-    // In Fifo, it waits until MsgFifo is empty. Then asserts process_o
+    // In Fifo, it waits until MsgFifo is empty. Then asserts flush_done_o
     FlushFifo,
 
     // After flushing, it waits the done (clear) signal. It is assumed that
-    // no incoming messages are transmitted between `process_i` and `clear_i`
+    // no incoming messages are transmitted between `flush_i` and `clear_i`
     FlushClear
   } flush_st_e;
 
@@ -145,7 +145,7 @@ module kmac_msgfifo
 
   logic packer_err;
 
-  assign packer_flush = process_to_fifo;
+  assign packer_flush = flush_to_fifo;
 
   // SEC_CM: PACKER.CTR.REDUN
   prim_packer #(
@@ -244,7 +244,7 @@ module kmac_msgfifo
     unique case (flush_st)
       FlushIdle: begin
         // Only enter packer-flush sequence when not in bypass mode.
-        // In bypass mode, process_o is driven directly from process_i below.
+        // In bypass mode, flush_done_o is driven directly from flush_i below.
         if (packer_flush) begin
           flush_st_d = FlushPacker;
         end else begin
@@ -284,7 +284,7 @@ module kmac_msgfifo
     endcase
   end
 
-  assign process_from_fifo = msgfifo_flush_done;
+  assign flush_from_fifo = msgfifo_flush_done;
 
   err_t error;
   assign err_o = error;
@@ -324,10 +324,10 @@ module kmac_msgfifo
   // Packer done signal is asserted at least one cycle later
   `ASSERT(PackerDoneDelay_A, $onehot0({packer_flush, packer_flush_done}))
 
-  // process_i not asserted during the flush operation
+  // flush_i not asserted during the flush operation
   `ASSUME(PackerDoneValid_a, packer_flush |-> flush_st == FlushIdle)
 
-  // No messages in between `process_i` and `clear_i`
+  // No messages in between `flush_i` and `clear_i`
   `ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
 
 `ifdef INC_ASSERT
@@ -343,13 +343,13 @@ module kmac_msgfifo
       first_data_entered <= 1'b0;
     end else if (fifo_valid_i && fifo_ready_o) begin
       first_data_entered <= 1'b1;
-    end else if (process_o) begin
+    end else if (flush_done_o) begin
       first_data_entered <= 1'b0;
     end
   end
 
   `ASSERT(BypassCtrlStable_A,
-    first_data_entered && !process_o
+    first_data_entered && !flush_done_o
     |-> fifo_bypass_i == $past(fifo_bypass_i))
 
 `endif

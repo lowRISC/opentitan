@@ -253,6 +253,35 @@ typedef struct dif_kmac_operation_state {
 } dif_kmac_operation_state_t;
 
 /**
+ * A saved KMAC context.
+ *
+ * Holds the internal state of a paused hashing operation so that it can be
+ * resumed later on. The secret key is not part of it, as it has been absorbed
+ * into the Keccak state when the operation was started.
+ *
+ * The context is therefore equivalent to the secret key. The Keccak function is
+ * public and invertible, so anyone holding the context can compute the key from
+ * it. It must be protected like the key itself.
+ */
+typedef struct dif_kmac_context {
+  /**
+   * The first share of the Keccak state.
+   */
+  uint32_t share0[kDifKmacStateWords];
+
+  /**
+   * The second share of the Keccak state. Reads as zero if masking is disabled
+   * in hardware.
+   */
+  uint32_t share1[kDifKmacStateWords];
+
+  /**
+   * The operation state that belongs to the saved Keccak state.
+   */
+  dif_kmac_operation_state_t operation_state;
+} dif_kmac_context_t;
+
+/**
  * Supported SHA-3 modes of operation.
  */
 typedef enum dif_kmac_mode_sha3 {
@@ -402,6 +431,10 @@ typedef enum dif_kmac_error {
 
   kDifErrorSoftwareHashingWithoutEntropyReady = 9,
 
+  kDifErrorStopNotBlockAligned = 0xA,
+
+  kDifErrorSaveRestoreSideload = 0xB,
+
   kDifErrorFatalError = 0xC1,
 
   kDifErrorPackerIntegrity = 0xC2,
@@ -442,6 +475,12 @@ typedef enum dif_kmac_sha3_state {
    * the hashing engine.
    */
   kDifKmacSha3StateSqueezing = 1 << 2,
+
+  /**
+   * SHA3 stopped the sponge absorbing stage to save a context. In this stage,
+   * SW can read the state to save the context.
+   */
+  kDifKmacSha3StateStopped = 1 << 3,
 } dif_kmac_sha3_state_t;
 
 /**
@@ -701,6 +740,45 @@ dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
                           dif_kmac_operation_state_t *operation_state);
+
+/**
+ * Saves the context of an absorbing operation.
+ *
+ * Not available if a sideloaded key is used.
+ *
+ * @param kmac A KMAC handle.
+ * @param operation_state A KMAC operation state context.
+ * @param[out] context The saved context.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_context_save(const dif_kmac_t *kmac,
+                                   dif_kmac_operation_state_t *operation_state,
+                                   dif_kmac_context_t *context);
+
+/**
+ * Restores a previously saved context and resumes the absorbing operation.
+ *
+ * The KMAC HWIP must be configured with the same mode and strength as when the
+ * context was saved. This is not checked, and a mismatch silently produces a
+ * wrong digest.
+ *
+ * Claims the block before writing the context, so that no application interface
+ * can take it over while the context is being restored. Returns
+ * `kDifUnavailable` if the block was granted to an application interface
+ * instead, in which case nothing has been written and the caller may retry.
+ *
+ * Not available if a sideloaded key is used.
+ *
+ * @param kmac A KMAC handle.
+ * @param context The context to restore.
+ * @param[out] operation_state A KMAC operation state context.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_context_restore(
+    const dif_kmac_t *kmac, const dif_kmac_context_t *context,
+    dif_kmac_operation_state_t *operation_state);
 
 /**
  * Read the kmac error register to get the error code indicated the interrupt

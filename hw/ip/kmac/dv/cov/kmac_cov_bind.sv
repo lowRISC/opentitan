@@ -4,7 +4,7 @@
 
 module kmac_cov_bind;
   bind kmac kmac_cov_if kmac_cov_if (
-    .sw_cmd_process (reg2msgfifo_process),
+    .sw_cmd_process (reg2msgfifo_flush),
     .keccak_st      (u_sha3.u_keccak.keccak_st),
     .msgfifo_depth  (msgfifo_depth),
     .msgfifo_full   (msgfifo_full),
