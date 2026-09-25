@@ -456,6 +456,16 @@ void sc_keymgr_dpe_lock_uds(void) {
 }
 
 /**
+ * Write into the lock register to enforce the derivation of sw-binding-only DPE
+ * contexts.
+ */
+void sc_keymgr_dpe_enforce_sw_binding(void) {
+  abs_mmio_write32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      1 << KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_BIT);
+}
+
+/**
  * Load the UDS into the provided destination slot.
  */
 // TODO(#30667): Verify if the max key version needs to be written here too!

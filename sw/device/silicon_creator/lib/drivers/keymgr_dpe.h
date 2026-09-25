@@ -384,6 +384,15 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void);
 
 /**
+ * Locks the Key Manager DPE into only using software binding value for all
+ * subsequent DPE context derivations until the next reset.
+ *
+ * Once called, all hw binding values are excluded from every future derivation
+ * call. This lock can only be released by resetting the device.
+ */
+void sc_keymgr_dpe_enforce_sw_binding(void);
+
+/**
  * Load the UDS into an empty hw slot.
  *
  * Load the UDS into the selected hw slot. If the selected hw slot is not

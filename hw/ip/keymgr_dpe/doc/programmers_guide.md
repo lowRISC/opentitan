@@ -26,6 +26,8 @@ The advance operation is executed by configuring the following CSR:
 
 *  Set `SW_BINDING`.
 *  Set `SW_BINDING_REGWEN` to zero, if modifications on `SW_BINDING` needs to be prevented until the next advance call.
+*  Set `CONTROL_SHADOWED.SW_BINDING_ONLY` if this advance call should use `SW_BINDING` only, excluding all HW binding values.
+This is mandatory once `ENFORCE_SW_BINDING.ENFORCE` has been set.
 *  Set `MAX_KEY_VER_SHADOWED`.
 *  Set `MAX_KEY_VER_REGWEN` to zero, if modifications on `MAX_KEY_VER_SHADOWED` needs to be prevented until the next advance call.
 *  Set `SLOT_POLICY` to control policy fields of the generated child slot.
