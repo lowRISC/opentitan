@@ -5,12 +5,12 @@
 package racl_error_log_agent_pkg;
   import uvm_pkg::*;
 
-  import dv_lib_pkg::dv_base_agent;
-  import dv_lib_pkg::dv_base_agent_cfg;
-  import dv_lib_pkg::dv_base_driver;
-  import dv_lib_pkg::dv_base_monitor;
-  import dv_lib_pkg::dv_base_sequencer;
-  import dv_lib_pkg::dv_base_seq;
+  import dv_base_agent_pkg::dv_base_agent;
+  import dv_base_agent_pkg::dv_base_agent_cfg;
+  import dv_base_agent_pkg::dv_base_driver;
+  import dv_base_agent_pkg::dv_base_monitor;
+  import dv_base_agent_pkg::dv_base_sequencer;
+  import dv_base_agent_pkg::dv_base_seq;
 
   `include "uvm_macros.svh"
 

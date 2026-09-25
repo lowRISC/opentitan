@@ -89,7 +89,7 @@ task racl_ctrl_error_arb_predictor::watch_errors();
     if (saw_internal) begin
       racl_error_log_vec_item vec_item = flush_vec_fifo(internal_errors_fifo);
       foreach (vec_item.errors[i]) begin
-        `DV_CHECK(`gfn, i < cfg.internal_error_agent_cfg.num_subscribing_ips)
+        `DV_CHECK(i < cfg.internal_error_agent_cfg.num_subscribing_ips)
         items[i] = vec_item.errors[i];
       end
     end
@@ -97,7 +97,7 @@ task racl_ctrl_error_arb_predictor::watch_errors();
       racl_error_log_vec_item vec_item = flush_vec_fifo(external_errors_fifo);
       `DV_CHECK_FATAL(vec_item != null)
       foreach (vec_item.errors[i]) begin
-        `DV_CHECK(`gfn, i < cfg.external_error_agent_cfg.num_subscribing_ips)
+        `DV_CHECK(i < cfg.external_error_agent_cfg.num_subscribing_ips)
         items[cfg.internal_error_agent_cfg.num_subscribing_ips + i] = vec_item.errors[i];
       end
     end
