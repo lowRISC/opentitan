@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+.include "../mldsa87.inc"
+
 /* High-level operations for the ML-DSA-87 verify function. */
 
 .globl sig_decode
@@ -144,10 +146,10 @@ compute_w_approx:
 
   /* Transfer the Z vector into NTT domain in-place. */
   addi x14, x9, 0
-  loopi 7, 4
+  loopi 7, 11
     addi x2, x14, 0
     addi x3, x14, 0
-    jal x1, ntt
+    jal_fi ntt, 977 /* 7 instructions. */
     addi x14, x14, 1024
     /* End of loop */
 
@@ -160,8 +162,8 @@ compute_w_approx:
   addi x17, x12, 0
 
   /* Compute W_approx = A * NTT(Z). */
-  loopi 8, 17
-    loopi 7, 12
+  loopi 8, 24
+    loopi 7, 19
       /* Expand A[r][s] into the slot. */
       addi x2, x13, 0
       addi x3, x8, 0
@@ -174,7 +176,7 @@ compute_w_approx:
       addi x3, x16, 0
       addi x4, x17, 0
       addi x5, x17, 0
-      jal x1, poly_mul_add
+      jal_fi poly_mul_add, 252  /* 7 instructions. */
 
       /* Increment s and the Z address pointer. */
       addi x15, x15, 1
@@ -200,41 +202,41 @@ compute_w_approx:
   /* Map C into NTT domain in-place. */
   addi x2, x10, 0
   addi x3, x10, 0
-  jal x1, ntt
+  jal_fi ntt, 977 /* 7 instructions. */
 
   /* Compute W_approx[i] = INTT((A * NTT(Z))[i] - NTT(C) * NTT(T1[i] * 2^d)). */
-  loopi 8, 22
+  loopi 8, 64
     /* Decode T1[i] into slot 0. */
     addi x2, x11, 0
     addi x3, x13, 0
-    jal x1, decode_t1
+    jal_fi decode_t1, 1232 /* 7 instructions. */
 
     /* Shift left: T1[i] * 2^d. */
     addi x2, x13, 0
     addi x3, x13, 0
-    jal x1, shift_left
+    jal_fi shift_left, 106 /* 7 instructions. */
 
     /* Map T1[i] * 2^d into NTT domain in-place. */
     addi x2, x13, 0
     addi x3, x13, 0
-    jal x1, ntt
+    jal_fi ntt, 977 /* 7 instructions. */
 
     /* Calculate T1[i] = c * T1[i]. */
     addi x2, x10, 0
     addi x3, x13, 0
     addi x4, x13, 0
-    jal x1, poly_mul
+    jal_fi poly_mul, 179 /* 7 instructions. */
 
     /* Calculate W[i] = W[i] - c * T1[i]. */
     addi x2, x14, 0
     addi x3, x13, 0
     addi x4, x14, 0
-    jal x1, poly_sub
+    jal_fi poly_sub, 147 /* 7 instructions. */
 
     /* Map the result back to the time domain. */
     addi x2, x14, 0
     addi x3, x14, 0
-    jal x1, intt
+    jal_fi intt, 1042 /* 7 instructions. */
 
     addi x11, x11, 320
     addi x14, x14, 1024
@@ -293,13 +295,13 @@ use_hint:
    * and high (r1) bits polynomials, then decodes the i-th hint polynomial and
    * adjusts each of the 256 coefficients in r1 per inner loop.
    */
-  loopi 8, 28
+  loopi 8, 35
     /* Decompose W[i] and put the high bits in the output location and the low
       bits into slot 0. */
     addi x2, x6, 0
     addi x3, x8, 0 /* r0 */
     addi x4, x6, 0 /* r1 */
-    jal x1, decompose
+    jal_fi decompose, 513 /* 7 instructions. */
 
     /* Decode H[i] and place into slot 1. */
     addi x2, x7, 0
@@ -360,8 +362,8 @@ use_hint:
   slli x2, x2, 3
   sub  x2, x6, x2
   addi x3, x2, 0
-  loopi 8, 3
-    jal x1, encode_w1
+  loopi 8, 10
+    jal_fi encode_w1, 690 /* 7 instructions. */
     addi x2, x2, 1024
     addi x3, x3, 128
     /* End of loop */

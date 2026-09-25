@@ -24,4 +24,5 @@ otbn_binary(
         "mldsa87_verify_mem.s",
         "mldsa87_verify.s",
     ],
+    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
 )
