@@ -35,9 +35,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=ci/lint/lib.sh
 source "$SCRIPT_DIR/lib.sh"
 
-# All tops the project builds. The per-top `hw` category figures out which
-# checks actually apply to each (see cat_hw).
-ALL_TOPS=(earlgrey darjeeling englishbreakfast)
+# Tops linted in CI. The per-top `hw` category figures out which checks
+# actually apply to each (see cat_hw).
+#
+# englishbreakfast is excluded: although it ships lint cfgs, they have
+# bit-rotted (never having been exercised by CI, which only ever linted
+# earlgrey and darjeeling) and no longer resolve. top_englishbreakfast_
+# lint_cfgs.hjson names fusesoc cores that do not exist, e.g.
+# lowrisc:englishbreakfast_ip:otp_ctrl -- englishbreakfast has no
+# ip_autogen/otp_ctrl -- so fusesoc errors out before any linting happens.
+# Its slang lint also fails on an RTL error that cannot be fixed right now
+# (see issue #31379). Fixing those is a separate, hardware-side change.
+ALL_TOPS=(earlgrey darjeeling)
 
 # ---------------------------------------------------------------------------
 # hygiene: fast text, metadata and Python checks. No Bazel, no hardware.
@@ -142,19 +151,8 @@ cat_hw() {
 
     # Verible style lint (design/DV/FPV). Run for whichever flavours the top
     # actually provides a lint config for.
-    #
-    # englishbreakfast is skipped: although it ships lint cfgs, they have
-    # bit-rotted (never having been exercised by CI, which only ever linted
-    # earlgrey and darjeeling) and no longer resolve. top_englishbreakfast_
-    # lint_cfgs.hjson names fusesoc cores that do not exist, e.g.
-    # lowrisc:englishbreakfast_ip:otp_ctrl -- englishbreakfast has no
-    # ip_autogen/otp_ctrl -- so fusesoc errors out before any linting happens.
-    # Fixing those cfgs is a separate, hardware-side change; until then this
-    # keeps the coverage CI has today rather than adding a permanently red
-    # check. Countermeasures for this top are checked below, as before.
     local flavour cfg
     for flavour in rtl dv fpv; do
-        [ "$top" = "englishbreakfast" ] && continue
         case "$flavour" in
             rtl) cfg="hw/top_${top}/lint/top_${top}_lint_cfgs.hjson" ;;
             dv)  cfg="hw/top_${top}/lint/top_${top}_dv_lint_cfgs.hjson" ;;
@@ -176,9 +174,6 @@ cat_hw() {
 # ---------------------------------------------------------------------------
 # Slang lint for the top.
 #
-# englishbreakfast is skipped: there is an RTL error that cannot be fixed
-# right now. See issue #31379.
-#
 # The chip-level entry in each cfg exercises full-hierarchy elaboration, not
 # just per-IP checks.
 # ---------------------------------------------------------------------------
@@ -194,12 +189,6 @@ cat_slang() {
         echo "::error::unknown top: $top" >&2
         echo "Valid tops: ${ALL_TOPS[*]}" >&2
         exit 2
-    fi
-
-    # englishbreakfast currently fails linting. See issue #31379
-    if [ "$top" = "englishbreakfast" ]; then
-        echo "Slang RTL for englishbreakfast: skipped pending a hw fix."
-        return 0
     fi
 
     local cfg="hw/top_${top}/lint/top_${top}_lint_cfgs.hjson"
