@@ -57,6 +57,7 @@ enum module_ {
   kModulePersoTlv =        MODULE_CODE('P', 'T'),
   kModuleDice =            MODULE_CODE('D', 'C'),
   kModuleUsb =             MODULE_CODE('U', 'S'),
+  kModuleOtp =             MODULE_CODE('O', 'P'),
   // clang-format on
 };
 
@@ -265,6 +266,8 @@ enum module_ {
   \
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
+  \
+  X(kErrorOtpSecretNotProvisioned,    ERROR_(0, kModuleOtp, kFailedPrecondition)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
