@@ -173,6 +173,7 @@ module rom_ctrl_regs_reg_top (
   ) u_fatal_alert_cause_checker_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -200,6 +201,7 @@ module rom_ctrl_regs_reg_top (
   ) u_fatal_alert_cause_integrity_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -229,6 +231,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -258,6 +261,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -287,6 +291,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -316,6 +321,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -345,6 +351,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -374,6 +381,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -403,6 +411,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -432,6 +441,7 @@ module rom_ctrl_regs_reg_top (
   ) u_digest_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -461,6 +471,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -490,6 +501,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -519,6 +531,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -548,6 +561,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -577,6 +591,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -606,6 +621,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -635,6 +651,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -664,6 +681,7 @@ module rom_ctrl_regs_reg_top (
   ) u_exp_digest_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

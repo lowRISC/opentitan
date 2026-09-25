@@ -265,6 +265,7 @@ module csrng_reg_top (
   ) u_intr_state_cs_cmd_req_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -292,6 +293,7 @@ module csrng_reg_top (
   ) u_intr_state_cs_entropy_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -319,6 +321,7 @@ module csrng_reg_top (
   ) u_intr_state_cs_hw_inst_exc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -346,6 +349,7 @@ module csrng_reg_top (
   ) u_intr_state_cs_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -375,6 +379,7 @@ module csrng_reg_top (
   ) u_intr_enable_cs_cmd_req_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -402,6 +407,7 @@ module csrng_reg_top (
   ) u_intr_enable_cs_entropy_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -429,6 +435,7 @@ module csrng_reg_top (
   ) u_intr_enable_cs_hw_inst_exc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -456,6 +463,7 @@ module csrng_reg_top (
   ) u_intr_enable_cs_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -590,6 +598,7 @@ module csrng_reg_top (
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (regwen_we),
@@ -622,6 +631,7 @@ module csrng_reg_top (
   ) u_ctrl_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -649,6 +659,7 @@ module csrng_reg_top (
   ) u_ctrl_sw_app_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -676,6 +687,7 @@ module csrng_reg_top (
   ) u_ctrl_read_int_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -703,6 +715,7 @@ module csrng_reg_top (
   ) u_ctrl_fips_force_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_gated_we),
@@ -742,6 +755,7 @@ module csrng_reg_top (
   ) u_cmd_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cmd_req_we),
@@ -782,6 +796,7 @@ module csrng_reg_top (
   ) u_reseed_interval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (reseed_interval_we),
@@ -863,6 +878,7 @@ module csrng_reg_top (
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -890,6 +906,7 @@ module csrng_reg_top (
   ) u_sw_cmd_sts_cmd_ack (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -917,6 +934,7 @@ module csrng_reg_top (
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -993,6 +1011,7 @@ module csrng_reg_top (
   ) u_int_state_read_enable_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (int_state_read_enable_regwen_we),
@@ -1025,6 +1044,7 @@ module csrng_reg_top (
   ) u_int_state_read_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (int_state_read_enable_gated_we),
@@ -1064,6 +1084,7 @@ module csrng_reg_top (
   ) u_int_state_num (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (int_state_num_we),
@@ -1112,6 +1133,7 @@ module csrng_reg_top (
   ) u_fips_force (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fips_force_gated_we),
@@ -1140,6 +1162,7 @@ module csrng_reg_top (
   ) u_gen_abort_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_regwen_we),
@@ -1172,6 +1195,7 @@ module csrng_reg_top (
   ) u_gen_abort_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_0_gated_we),
@@ -1204,6 +1228,7 @@ module csrng_reg_top (
   ) u_gen_abort_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_1_gated_we),
@@ -1236,6 +1261,7 @@ module csrng_reg_top (
   ) u_gen_abort_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_2_gated_we),
@@ -1265,6 +1291,7 @@ module csrng_reg_top (
   ) u_gen_abort_status_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_status_0_we),
@@ -1294,6 +1321,7 @@ module csrng_reg_top (
   ) u_gen_abort_status_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_status_1_we),
@@ -1323,6 +1351,7 @@ module csrng_reg_top (
   ) u_gen_abort_status_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (gen_abort_status_2_we),
@@ -1351,6 +1380,7 @@ module csrng_reg_top (
   ) u_hw_exc_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (hw_exc_sts_we),
@@ -1380,6 +1410,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1407,6 +1438,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_sw_app_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1434,6 +1466,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_read_int_state_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1461,6 +1494,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_fips_force_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1488,6 +1522,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_acmd_flag0_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1515,6 +1550,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_gen_abort_invalid_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1542,6 +1578,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_gen_abort_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1569,6 +1606,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_cs_bus_cmp_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1596,6 +1634,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_cmd_stage_invalid_acmd_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1623,6 +1662,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_cmd_stage_invalid_cmd_seq_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1650,6 +1690,7 @@ module csrng_reg_top (
   ) u_recov_alert_sts_cmd_stage_reseed_cnt_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -1679,6 +1720,7 @@ module csrng_reg_top (
   ) u_err_code_sfifo_cmd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1706,6 +1748,7 @@ module csrng_reg_top (
   ) u_err_code_sfifo_genbits_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1733,6 +1776,7 @@ module csrng_reg_top (
   ) u_err_code_cmd_stage_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1760,6 +1804,7 @@ module csrng_reg_top (
   ) u_err_code_main_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1787,6 +1832,7 @@ module csrng_reg_top (
   ) u_err_code_ctr_drbg_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1814,6 +1860,7 @@ module csrng_reg_top (
   ) u_err_code_aes_cipher_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1841,6 +1888,7 @@ module csrng_reg_top (
   ) u_err_code_ctr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1868,6 +1916,7 @@ module csrng_reg_top (
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1895,6 +1944,7 @@ module csrng_reg_top (
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1922,6 +1972,7 @@ module csrng_reg_top (
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1964,6 +2015,7 @@ module csrng_reg_top (
   ) u_err_code_test (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_test_gated_we),
@@ -1993,6 +2045,7 @@ module csrng_reg_top (
   ) u_main_sm_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

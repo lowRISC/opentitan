@@ -366,6 +366,7 @@ module hmac_reg_top (
   ) u_intr_state_hmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -393,6 +394,7 @@ module hmac_reg_top (
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -420,6 +422,7 @@ module hmac_reg_top (
   ) u_intr_state_hmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -449,6 +452,7 @@ module hmac_reg_top (
   ) u_intr_enable_hmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -476,6 +480,7 @@ module hmac_reg_top (
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -503,6 +508,7 @@ module hmac_reg_top (
   ) u_intr_enable_hmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -852,6 +858,7 @@ module hmac_reg_top (
   ) u_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

@@ -4481,6 +4481,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_regwen_0_we),
@@ -4510,6 +4511,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_regwen_1_we),
@@ -4539,6 +4541,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_regwen_2_we),
@@ -4568,6 +4571,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_regwen_3_we),
@@ -4600,6 +4604,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_0_gated_we),
@@ -4632,6 +4637,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_1_gated_we),
@@ -4664,6 +4670,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_2_gated_we),
@@ -4696,6 +4703,7 @@ module pinmux_reg_top (
   ) u_mio_periph_insel_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_periph_insel_3_gated_we),
@@ -4725,6 +4733,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_0_we),
@@ -4754,6 +4763,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_1_we),
@@ -4783,6 +4793,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_2_we),
@@ -4812,6 +4823,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_3_we),
@@ -4841,6 +4853,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_4_we),
@@ -4870,6 +4883,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_5_we),
@@ -4899,6 +4913,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_6_we),
@@ -4928,6 +4943,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_7_we),
@@ -4957,6 +4973,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_8_we),
@@ -4986,6 +5003,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_9_we),
@@ -5015,6 +5033,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_10_we),
@@ -5044,6 +5063,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_regwen_11_we),
@@ -5076,6 +5096,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_0_gated_we),
@@ -5108,6 +5129,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_1_gated_we),
@@ -5140,6 +5162,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_2_gated_we),
@@ -5172,6 +5195,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_3_gated_we),
@@ -5204,6 +5228,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_4_gated_we),
@@ -5236,6 +5261,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_5_gated_we),
@@ -5268,6 +5294,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_6_gated_we),
@@ -5300,6 +5327,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_7_gated_we),
@@ -5332,6 +5360,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_8_gated_we),
@@ -5364,6 +5393,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_9_gated_we),
@@ -5396,6 +5426,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_10_gated_we),
@@ -5428,6 +5459,7 @@ module pinmux_reg_top (
   ) u_mio_outsel_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_outsel_11_gated_we),
@@ -5457,6 +5489,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_0_we),
@@ -5486,6 +5519,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_1_we),
@@ -5515,6 +5549,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_2_we),
@@ -5544,6 +5579,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_3_we),
@@ -5573,6 +5609,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_4_we),
@@ -5602,6 +5639,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_5_we),
@@ -5631,6 +5669,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_6_we),
@@ -5660,6 +5699,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_7_we),
@@ -5689,6 +5729,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_8_we),
@@ -5718,6 +5759,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_9_we),
@@ -5747,6 +5789,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_10_we),
@@ -5776,6 +5819,7 @@ module pinmux_reg_top (
   ) u_mio_pad_attr_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_attr_regwen_11_we),
@@ -7833,6 +7877,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_0_we),
@@ -7862,6 +7907,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_1_we),
@@ -7891,6 +7937,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_2_we),
@@ -7920,6 +7967,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_3_we),
@@ -7949,6 +7997,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_4_we),
@@ -7978,6 +8027,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_5_we),
@@ -8007,6 +8057,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_6_we),
@@ -8036,6 +8087,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_7_we),
@@ -8065,6 +8117,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_8_we),
@@ -8094,6 +8147,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_9_we),
@@ -8123,6 +8177,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_10_we),
@@ -8152,6 +8207,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_11_we),
@@ -8181,6 +8237,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_12_we),
@@ -8210,6 +8267,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_13_we),
@@ -8239,6 +8297,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_14_we),
@@ -8268,6 +8327,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_15_we),
@@ -8297,6 +8357,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_16_we),
@@ -8326,6 +8387,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_17_we),
@@ -8355,6 +8417,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_18_we),
@@ -8384,6 +8447,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_19_we),
@@ -8413,6 +8477,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_20_we),
@@ -8442,6 +8507,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_21_we),
@@ -8471,6 +8537,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_22_we),
@@ -8500,6 +8567,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_23_we),
@@ -8529,6 +8597,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_24_we),
@@ -8558,6 +8627,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_25_we),
@@ -8587,6 +8657,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_26_we),
@@ -8616,6 +8687,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_27_we),
@@ -8645,6 +8717,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_28_we),
@@ -8674,6 +8747,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_29_we),
@@ -8703,6 +8777,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_30_we),
@@ -8732,6 +8807,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_31_we),
@@ -8761,6 +8837,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_32_we),
@@ -8790,6 +8867,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_33_we),
@@ -8819,6 +8897,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_34_we),
@@ -8848,6 +8927,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_35_we),
@@ -8877,6 +8957,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_36_we),
@@ -8906,6 +8987,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_37_we),
@@ -8935,6 +9017,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_38_we),
@@ -8964,6 +9047,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_39_we),
@@ -8993,6 +9077,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_40_we),
@@ -9022,6 +9107,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_41_we),
@@ -9051,6 +9137,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_42_we),
@@ -9080,6 +9167,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_43_we),
@@ -9109,6 +9197,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_44_we),
@@ -9138,6 +9227,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_45_we),
@@ -9167,6 +9257,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_46_we),
@@ -9196,6 +9287,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_47_we),
@@ -9225,6 +9317,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_48_we),
@@ -9254,6 +9347,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_49_we),
@@ -9283,6 +9377,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_50_we),
@@ -9312,6 +9407,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_51_we),
@@ -9341,6 +9437,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_52_we),
@@ -9370,6 +9467,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_53_we),
@@ -9399,6 +9497,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_54_we),
@@ -9428,6 +9527,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_55_we),
@@ -9457,6 +9557,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_56_we),
@@ -9486,6 +9587,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_57_we),
@@ -9515,6 +9617,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_58_we),
@@ -9544,6 +9647,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_59_we),
@@ -9573,6 +9677,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_60_we),
@@ -9602,6 +9707,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_61_we),
@@ -9631,6 +9737,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_62_we),
@@ -9660,6 +9767,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_63_we),
@@ -9689,6 +9797,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_64_we),
@@ -9718,6 +9827,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_65_we),
@@ -9747,6 +9857,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_66_we),
@@ -9776,6 +9887,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_67_we),
@@ -9805,6 +9917,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_68_we),
@@ -9834,6 +9947,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_69_we),
@@ -9863,6 +9977,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_70_we),
@@ -9892,6 +10007,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_71_we),
@@ -9921,6 +10037,7 @@ module pinmux_reg_top (
   ) u_dio_pad_attr_regwen_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_attr_regwen_72_we),
@@ -22288,6 +22405,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22315,6 +22433,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22342,6 +22461,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22369,6 +22489,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22396,6 +22517,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22423,6 +22545,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22450,6 +22573,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22477,6 +22601,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22504,6 +22629,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22531,6 +22657,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22558,6 +22685,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22585,6 +22713,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_status_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_status_we),
@@ -22614,6 +22743,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_0_we),
@@ -22643,6 +22773,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_1_we),
@@ -22672,6 +22803,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_2_we),
@@ -22701,6 +22833,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_3_we),
@@ -22730,6 +22863,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_4_we),
@@ -22759,6 +22893,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_5_we),
@@ -22788,6 +22923,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_6_we),
@@ -22817,6 +22953,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_7_we),
@@ -22846,6 +22983,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_8_we),
@@ -22875,6 +23013,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_9_we),
@@ -22904,6 +23043,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_10_we),
@@ -22933,6 +23073,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_regwen_11_we),
@@ -22965,6 +23106,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_0_gated_we),
@@ -22997,6 +23139,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_1_gated_we),
@@ -23029,6 +23172,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_2_gated_we),
@@ -23061,6 +23205,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_3_gated_we),
@@ -23093,6 +23238,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_4_gated_we),
@@ -23125,6 +23271,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_5_gated_we),
@@ -23157,6 +23304,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_6_gated_we),
@@ -23189,6 +23337,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_7_gated_we),
@@ -23221,6 +23370,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_8_gated_we),
@@ -23253,6 +23403,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_9_gated_we),
@@ -23285,6 +23436,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_10_gated_we),
@@ -23317,6 +23469,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_en_11_gated_we),
@@ -23349,6 +23502,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_0_gated_we),
@@ -23381,6 +23535,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_1_gated_we),
@@ -23413,6 +23568,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_2_gated_we),
@@ -23445,6 +23601,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_3_gated_we),
@@ -23477,6 +23634,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_4_gated_we),
@@ -23509,6 +23667,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_5_gated_we),
@@ -23541,6 +23700,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_6_gated_we),
@@ -23573,6 +23733,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_7_gated_we),
@@ -23605,6 +23766,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_8_gated_we),
@@ -23637,6 +23799,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_9_gated_we),
@@ -23669,6 +23832,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_10_gated_we),
@@ -23701,6 +23865,7 @@ module pinmux_reg_top (
   ) u_mio_pad_sleep_mode_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mio_pad_sleep_mode_11_gated_we),
@@ -23731,6 +23896,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23758,6 +23924,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23785,6 +23952,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23812,6 +23980,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23839,6 +24008,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23866,6 +24036,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23893,6 +24064,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23920,6 +24092,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23947,6 +24120,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -23974,6 +24148,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24001,6 +24176,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24028,6 +24204,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24055,6 +24232,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24082,6 +24260,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24109,6 +24288,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24136,6 +24316,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24163,6 +24344,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24190,6 +24372,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24217,6 +24400,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24244,6 +24428,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24271,6 +24456,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24298,6 +24484,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24325,6 +24512,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24352,6 +24540,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24379,6 +24568,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24406,6 +24596,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24433,6 +24624,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24460,6 +24652,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24487,6 +24680,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24514,6 +24708,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24541,6 +24736,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24568,6 +24764,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_0_en_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_0_we),
@@ -24598,6 +24795,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24625,6 +24823,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24652,6 +24851,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24679,6 +24879,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24706,6 +24907,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24733,6 +24935,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24760,6 +24963,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24787,6 +24991,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24814,6 +25019,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24841,6 +25047,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24868,6 +25075,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24895,6 +25103,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24922,6 +25131,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24949,6 +25159,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -24976,6 +25187,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25003,6 +25215,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25030,6 +25243,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25057,6 +25271,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25084,6 +25299,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25111,6 +25327,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25138,6 +25355,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25165,6 +25383,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25192,6 +25411,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25219,6 +25439,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25246,6 +25467,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25273,6 +25495,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25300,6 +25523,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25327,6 +25551,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25354,6 +25579,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25381,6 +25607,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25408,6 +25635,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25435,6 +25663,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_1_en_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_1_we),
@@ -25465,6 +25694,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25492,6 +25722,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25519,6 +25750,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25546,6 +25778,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25573,6 +25806,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25600,6 +25834,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25627,6 +25862,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25654,6 +25890,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25681,6 +25918,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_status_2_en_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_status_2_we),
@@ -25710,6 +25948,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_0_we),
@@ -25739,6 +25978,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_1_we),
@@ -25768,6 +26008,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_2_we),
@@ -25797,6 +26038,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_3_we),
@@ -25826,6 +26068,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_4_we),
@@ -25855,6 +26098,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_5_we),
@@ -25884,6 +26128,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_6_we),
@@ -25913,6 +26158,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_7_we),
@@ -25942,6 +26188,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_8_we),
@@ -25971,6 +26218,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_9_we),
@@ -26000,6 +26248,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_10_we),
@@ -26029,6 +26278,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_11_we),
@@ -26058,6 +26308,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_12_we),
@@ -26087,6 +26338,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_13_we),
@@ -26116,6 +26368,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_14_we),
@@ -26145,6 +26398,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_15_we),
@@ -26174,6 +26428,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_16_we),
@@ -26203,6 +26458,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_17_we),
@@ -26232,6 +26488,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_18_we),
@@ -26261,6 +26518,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_19_we),
@@ -26290,6 +26548,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_20_we),
@@ -26319,6 +26578,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_21_we),
@@ -26348,6 +26608,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_22_we),
@@ -26377,6 +26638,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_23_we),
@@ -26406,6 +26668,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_24_we),
@@ -26435,6 +26698,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_25_we),
@@ -26464,6 +26728,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_26_we),
@@ -26493,6 +26758,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_27_we),
@@ -26522,6 +26788,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_28_we),
@@ -26551,6 +26818,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_29_we),
@@ -26580,6 +26848,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_30_we),
@@ -26609,6 +26878,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_31_we),
@@ -26638,6 +26908,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_32_we),
@@ -26667,6 +26938,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_33_we),
@@ -26696,6 +26968,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_34_we),
@@ -26725,6 +26998,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_35_we),
@@ -26754,6 +27028,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_36_we),
@@ -26783,6 +27058,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_37_we),
@@ -26812,6 +27088,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_38_we),
@@ -26841,6 +27118,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_39_we),
@@ -26870,6 +27148,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_40_we),
@@ -26899,6 +27178,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_41_we),
@@ -26928,6 +27208,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_42_we),
@@ -26957,6 +27238,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_43_we),
@@ -26986,6 +27268,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_44_we),
@@ -27015,6 +27298,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_45_we),
@@ -27044,6 +27328,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_46_we),
@@ -27073,6 +27358,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_47_we),
@@ -27102,6 +27388,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_48_we),
@@ -27131,6 +27418,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_49_we),
@@ -27160,6 +27448,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_50_we),
@@ -27189,6 +27478,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_51_we),
@@ -27218,6 +27508,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_52_we),
@@ -27247,6 +27538,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_53_we),
@@ -27276,6 +27568,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_54_we),
@@ -27305,6 +27598,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_55_we),
@@ -27334,6 +27628,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_56_we),
@@ -27363,6 +27658,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_57_we),
@@ -27392,6 +27688,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_58_we),
@@ -27421,6 +27718,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_59_we),
@@ -27450,6 +27748,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_60_we),
@@ -27479,6 +27778,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_61_we),
@@ -27508,6 +27808,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_62_we),
@@ -27537,6 +27838,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_63_we),
@@ -27566,6 +27868,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_64_we),
@@ -27595,6 +27898,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_65_we),
@@ -27624,6 +27928,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_66_we),
@@ -27653,6 +27958,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_67_we),
@@ -27682,6 +27988,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_68_we),
@@ -27711,6 +28018,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_69_we),
@@ -27740,6 +28048,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_70_we),
@@ -27769,6 +28078,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_71_we),
@@ -27798,6 +28108,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_regwen_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_regwen_72_we),
@@ -27830,6 +28141,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_0_gated_we),
@@ -27862,6 +28174,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_1_gated_we),
@@ -27894,6 +28207,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_2_gated_we),
@@ -27926,6 +28240,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_3_gated_we),
@@ -27958,6 +28273,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_4_gated_we),
@@ -27990,6 +28306,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_5_gated_we),
@@ -28022,6 +28339,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_6_gated_we),
@@ -28054,6 +28372,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_7_gated_we),
@@ -28086,6 +28405,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_8_gated_we),
@@ -28118,6 +28438,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_9_gated_we),
@@ -28150,6 +28471,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_10_gated_we),
@@ -28182,6 +28504,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_11_gated_we),
@@ -28214,6 +28537,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_12_gated_we),
@@ -28246,6 +28570,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_13_gated_we),
@@ -28278,6 +28603,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_14_gated_we),
@@ -28310,6 +28636,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_15_gated_we),
@@ -28342,6 +28669,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_16_gated_we),
@@ -28374,6 +28702,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_17_gated_we),
@@ -28406,6 +28735,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_18_gated_we),
@@ -28438,6 +28768,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_19_gated_we),
@@ -28470,6 +28801,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_20_gated_we),
@@ -28502,6 +28834,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_21_gated_we),
@@ -28534,6 +28867,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_22_gated_we),
@@ -28566,6 +28900,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_23_gated_we),
@@ -28598,6 +28933,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_24_gated_we),
@@ -28630,6 +28966,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_25_gated_we),
@@ -28662,6 +28999,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_26_gated_we),
@@ -28694,6 +29032,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_27_gated_we),
@@ -28726,6 +29065,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_28_gated_we),
@@ -28758,6 +29098,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_29_gated_we),
@@ -28790,6 +29131,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_30_gated_we),
@@ -28822,6 +29164,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_31_gated_we),
@@ -28854,6 +29197,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_32_gated_we),
@@ -28886,6 +29230,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_33_gated_we),
@@ -28918,6 +29263,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_34_gated_we),
@@ -28950,6 +29296,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_35_gated_we),
@@ -28982,6 +29329,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_36_gated_we),
@@ -29014,6 +29362,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_37_gated_we),
@@ -29046,6 +29395,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_38_gated_we),
@@ -29078,6 +29428,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_39_gated_we),
@@ -29110,6 +29461,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_40_gated_we),
@@ -29142,6 +29494,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_41_gated_we),
@@ -29174,6 +29527,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_42_gated_we),
@@ -29206,6 +29560,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_43_gated_we),
@@ -29238,6 +29593,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_44_gated_we),
@@ -29270,6 +29626,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_45_gated_we),
@@ -29302,6 +29659,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_46_gated_we),
@@ -29334,6 +29692,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_47_gated_we),
@@ -29366,6 +29725,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_48_gated_we),
@@ -29398,6 +29758,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_49_gated_we),
@@ -29430,6 +29791,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_50_gated_we),
@@ -29462,6 +29824,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_51_gated_we),
@@ -29494,6 +29857,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_52_gated_we),
@@ -29526,6 +29890,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_53_gated_we),
@@ -29558,6 +29923,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_54_gated_we),
@@ -29590,6 +29956,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_55_gated_we),
@@ -29622,6 +29989,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_56_gated_we),
@@ -29654,6 +30022,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_57_gated_we),
@@ -29686,6 +30055,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_58_gated_we),
@@ -29718,6 +30088,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_59_gated_we),
@@ -29750,6 +30121,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_60_gated_we),
@@ -29782,6 +30154,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_61_gated_we),
@@ -29814,6 +30187,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_62_gated_we),
@@ -29846,6 +30220,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_63_gated_we),
@@ -29878,6 +30253,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_64_gated_we),
@@ -29910,6 +30286,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_65_gated_we),
@@ -29942,6 +30319,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_66_gated_we),
@@ -29974,6 +30352,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_67_gated_we),
@@ -30006,6 +30385,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_68_gated_we),
@@ -30038,6 +30418,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_69_gated_we),
@@ -30070,6 +30451,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_70_gated_we),
@@ -30102,6 +30484,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_71_gated_we),
@@ -30134,6 +30517,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_en_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_en_72_gated_we),
@@ -30166,6 +30550,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_0_gated_we),
@@ -30198,6 +30583,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_1_gated_we),
@@ -30230,6 +30616,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_2_gated_we),
@@ -30262,6 +30649,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_3_gated_we),
@@ -30294,6 +30682,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_4_gated_we),
@@ -30326,6 +30715,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_5_gated_we),
@@ -30358,6 +30748,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_6_gated_we),
@@ -30390,6 +30781,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_7_gated_we),
@@ -30422,6 +30814,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_8_gated_we),
@@ -30454,6 +30847,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_9_gated_we),
@@ -30486,6 +30880,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_10_gated_we),
@@ -30518,6 +30913,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_11_gated_we),
@@ -30550,6 +30946,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_12_gated_we),
@@ -30582,6 +30979,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_13_gated_we),
@@ -30614,6 +31012,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_14_gated_we),
@@ -30646,6 +31045,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_15_gated_we),
@@ -30678,6 +31078,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_16_gated_we),
@@ -30710,6 +31111,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_17_gated_we),
@@ -30742,6 +31144,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_18_gated_we),
@@ -30774,6 +31177,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_19_gated_we),
@@ -30806,6 +31210,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_20_gated_we),
@@ -30838,6 +31243,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_21_gated_we),
@@ -30870,6 +31276,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_22_gated_we),
@@ -30902,6 +31309,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_23_gated_we),
@@ -30934,6 +31342,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_24_gated_we),
@@ -30966,6 +31375,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_25_gated_we),
@@ -30998,6 +31408,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_26_gated_we),
@@ -31030,6 +31441,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_27_gated_we),
@@ -31062,6 +31474,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_28_gated_we),
@@ -31094,6 +31507,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_29_gated_we),
@@ -31126,6 +31540,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_30_gated_we),
@@ -31158,6 +31573,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_31_gated_we),
@@ -31190,6 +31606,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_32_gated_we),
@@ -31222,6 +31639,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_33_gated_we),
@@ -31254,6 +31672,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_34_gated_we),
@@ -31286,6 +31705,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_35_gated_we),
@@ -31318,6 +31738,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_36_gated_we),
@@ -31350,6 +31771,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_37_gated_we),
@@ -31382,6 +31804,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_38_gated_we),
@@ -31414,6 +31837,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_39_gated_we),
@@ -31446,6 +31870,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_40_gated_we),
@@ -31478,6 +31903,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_41_gated_we),
@@ -31510,6 +31936,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_42_gated_we),
@@ -31542,6 +31969,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_43_gated_we),
@@ -31574,6 +32002,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_44_gated_we),
@@ -31606,6 +32035,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_45_gated_we),
@@ -31638,6 +32068,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_46_gated_we),
@@ -31670,6 +32101,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_47_gated_we),
@@ -31702,6 +32134,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_48_gated_we),
@@ -31734,6 +32167,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_49_gated_we),
@@ -31766,6 +32200,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_50_gated_we),
@@ -31798,6 +32233,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_51_gated_we),
@@ -31830,6 +32266,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_52_gated_we),
@@ -31862,6 +32299,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_53_gated_we),
@@ -31894,6 +32332,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_54_gated_we),
@@ -31926,6 +32365,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_55_gated_we),
@@ -31958,6 +32398,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_56_gated_we),
@@ -31990,6 +32431,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_57_gated_we),
@@ -32022,6 +32464,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_58_gated_we),
@@ -32054,6 +32497,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_59_gated_we),
@@ -32086,6 +32530,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_60_gated_we),
@@ -32118,6 +32563,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_61_gated_we),
@@ -32150,6 +32596,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_62_gated_we),
@@ -32182,6 +32629,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_63_gated_we),
@@ -32214,6 +32662,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_64_gated_we),
@@ -32246,6 +32695,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_65_gated_we),
@@ -32278,6 +32728,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_66_gated_we),
@@ -32310,6 +32761,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_67_gated_we),
@@ -32342,6 +32794,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_68_gated_we),
@@ -32374,6 +32827,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_69_gated_we),
@@ -32406,6 +32860,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_70_gated_we),
@@ -32438,6 +32893,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_71_gated_we),
@@ -32470,6 +32926,7 @@ module pinmux_reg_top (
   ) u_dio_pad_sleep_mode_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dio_pad_sleep_mode_72_gated_we),
@@ -32499,6 +32956,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_0_we),
@@ -32528,6 +32986,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_1_we),
@@ -32557,6 +33016,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_2_we),
@@ -32586,6 +33046,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_3_we),
@@ -32615,6 +33076,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_4_we),
@@ -32644,6 +33106,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_5_we),
@@ -32673,6 +33136,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_6_we),
@@ -32702,6 +33166,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_regwen_7_we),
@@ -32735,6 +33200,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_0_gated_we),
@@ -32768,6 +33234,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_1_gated_we),
@@ -32801,6 +33268,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_2_gated_we),
@@ -32834,6 +33302,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_3_gated_we),
@@ -32867,6 +33336,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_4_gated_we),
@@ -32900,6 +33370,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_5_gated_we),
@@ -32933,6 +33404,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_6_gated_we),
@@ -32966,6 +33438,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_en_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_en_7_gated_we),
@@ -32999,6 +33472,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_0_mode_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_0_gated_we),
@@ -33026,6 +33500,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_0_filter_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_0_gated_we),
@@ -33053,6 +33528,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_0_miodio_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_0_gated_we),
@@ -33086,6 +33562,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_1_mode_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_1_gated_we),
@@ -33113,6 +33590,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_1_filter_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_1_gated_we),
@@ -33140,6 +33618,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_1_miodio_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_1_gated_we),
@@ -33173,6 +33652,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_2_mode_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_2_gated_we),
@@ -33200,6 +33680,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_2_filter_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_2_gated_we),
@@ -33227,6 +33708,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_2_miodio_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_2_gated_we),
@@ -33260,6 +33742,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_3_mode_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_3_gated_we),
@@ -33287,6 +33770,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_3_filter_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_3_gated_we),
@@ -33314,6 +33798,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_3_miodio_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_3_gated_we),
@@ -33347,6 +33832,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_4_mode_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_4_gated_we),
@@ -33374,6 +33860,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_4_filter_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_4_gated_we),
@@ -33401,6 +33888,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_4_miodio_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_4_gated_we),
@@ -33434,6 +33922,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_5_mode_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_5_gated_we),
@@ -33461,6 +33950,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_5_filter_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_5_gated_we),
@@ -33488,6 +33978,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_5_miodio_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_5_gated_we),
@@ -33521,6 +34012,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_6_mode_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_6_gated_we),
@@ -33548,6 +34040,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_6_filter_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_6_gated_we),
@@ -33575,6 +34068,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_6_miodio_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_6_gated_we),
@@ -33608,6 +34102,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_7_mode_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_7_gated_we),
@@ -33635,6 +34130,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_7_filter_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_7_gated_we),
@@ -33662,6 +34158,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_7_miodio_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_7_gated_we),
@@ -33695,6 +34192,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_0_gated_we),
@@ -33728,6 +34226,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_1_gated_we),
@@ -33761,6 +34260,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_2_gated_we),
@@ -33794,6 +34294,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_3_gated_we),
@@ -33827,6 +34328,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_4_gated_we),
@@ -33860,6 +34362,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_5_gated_we),
@@ -33893,6 +34396,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_6_gated_we),
@@ -33926,6 +34430,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_cnt_th_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_detector_cnt_th_7_gated_we),
@@ -33958,6 +34463,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_0_gated_we),
@@ -33990,6 +34496,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_1_gated_we),
@@ -34022,6 +34529,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_2_gated_we),
@@ -34054,6 +34562,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_3_gated_we),
@@ -34086,6 +34595,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_4_gated_we),
@@ -34118,6 +34628,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_5_gated_we),
@@ -34150,6 +34661,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_6_gated_we),
@@ -34182,6 +34694,7 @@ module pinmux_reg_top (
   ) u_wkup_detector_padsel_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wkup_detector_padsel_7_gated_we),
@@ -34214,6 +34727,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34241,6 +34755,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34268,6 +34783,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34295,6 +34811,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34322,6 +34839,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_4 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34349,6 +34867,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_5 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34376,6 +34895,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_6 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),
@@ -34403,6 +34923,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_7 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),

@@ -332,6 +332,7 @@ module dma_reg_top
   ) u_intr_state_dma_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -359,6 +360,7 @@ module dma_reg_top
   ) u_intr_state_dma_chunk_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -386,6 +388,7 @@ module dma_reg_top
   ) u_intr_state_dma_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -415,6 +418,7 @@ module dma_reg_top
   ) u_intr_enable_dma_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -442,6 +446,7 @@ module dma_reg_top
   ) u_intr_enable_dma_chunk_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -469,6 +474,7 @@ module dma_reg_top
   ) u_intr_enable_dma_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -575,6 +581,7 @@ module dma_reg_top
   ) u_src_addr_lo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (src_addr_lo_gated_we),
@@ -608,6 +615,7 @@ module dma_reg_top
   ) u_src_addr_hi (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (src_addr_hi_gated_we),
@@ -641,6 +649,7 @@ module dma_reg_top
   ) u_dst_addr_lo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dst_addr_lo_gated_we),
@@ -674,6 +683,7 @@ module dma_reg_top
   ) u_dst_addr_hi (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dst_addr_hi_gated_we),
@@ -708,6 +718,7 @@ module dma_reg_top
   ) u_addr_space_id_src_asid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (addr_space_id_gated_we),
@@ -735,6 +746,7 @@ module dma_reg_top
   ) u_addr_space_id_dst_asid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (addr_space_id_gated_we),
@@ -779,6 +791,7 @@ module dma_reg_top
   ) u_enabled_memory_range_base (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (enabled_memory_range_base_gated_we),
@@ -824,6 +837,7 @@ module dma_reg_top
   ) u_enabled_memory_range_limit (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (enabled_memory_range_limit_gated_we),
@@ -858,6 +872,7 @@ module dma_reg_top
   ) u_range_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_valid_gated_we),
@@ -886,6 +901,7 @@ module dma_reg_top
   ) u_range_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (range_regwen_we),
@@ -935,6 +951,7 @@ module dma_reg_top
   ) u_total_data_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (total_data_size_gated_we),
@@ -968,6 +985,7 @@ module dma_reg_top
   ) u_chunk_data_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (chunk_data_size_gated_we),
@@ -1001,6 +1019,7 @@ module dma_reg_top
   ) u_transfer_width (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (transfer_width_gated_we),
@@ -1041,6 +1060,7 @@ module dma_reg_top
   ) u_control_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1068,6 +1088,7 @@ module dma_reg_top
   ) u_control_hardware_handshake_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1095,6 +1116,7 @@ module dma_reg_top
   ) u_control_digest_swap (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1122,6 +1144,7 @@ module dma_reg_top
   ) u_control_initial_transfer (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1149,6 +1172,7 @@ module dma_reg_top
   ) u_control_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1176,6 +1200,7 @@ module dma_reg_top
   ) u_control_go (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -1211,6 +1236,7 @@ module dma_reg_top
   ) u_src_config_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (src_config_gated_we),
@@ -1238,6 +1264,7 @@ module dma_reg_top
   ) u_src_config_wrap (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (src_config_gated_we),
@@ -1272,6 +1299,7 @@ module dma_reg_top
   ) u_dst_config_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dst_config_gated_we),
@@ -1299,6 +1327,7 @@ module dma_reg_top
   ) u_dst_config_wrap (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dst_config_gated_we),
@@ -1339,6 +1368,7 @@ module dma_reg_top
   ) u_status_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1366,6 +1396,7 @@ module dma_reg_top
   ) u_status_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -1393,6 +1424,7 @@ module dma_reg_top
   ) u_status_aborted (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -1420,6 +1452,7 @@ module dma_reg_top
   ) u_status_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -1448,6 +1481,7 @@ module dma_reg_top
   ) u_status_sha2_digest_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1476,6 +1510,7 @@ module dma_reg_top
   ) u_status_chunk_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (status_we),
@@ -1505,6 +1540,7 @@ module dma_reg_top
   ) u_error_code_src_addr_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1532,6 +1568,7 @@ module dma_reg_top
   ) u_error_code_dst_addr_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1559,6 +1596,7 @@ module dma_reg_top
   ) u_error_code_opcode_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1586,6 +1624,7 @@ module dma_reg_top
   ) u_error_code_size_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1613,6 +1652,7 @@ module dma_reg_top
   ) u_error_code_bus_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1640,6 +1680,7 @@ module dma_reg_top
   ) u_error_code_base_limit_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1667,6 +1708,7 @@ module dma_reg_top
   ) u_error_code_range_valid_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1694,6 +1736,7 @@ module dma_reg_top
   ) u_error_code_asid_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1723,6 +1766,7 @@ module dma_reg_top
   ) u_sha2_digest_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1752,6 +1796,7 @@ module dma_reg_top
   ) u_sha2_digest_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1781,6 +1826,7 @@ module dma_reg_top
   ) u_sha2_digest_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1810,6 +1856,7 @@ module dma_reg_top
   ) u_sha2_digest_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1839,6 +1886,7 @@ module dma_reg_top
   ) u_sha2_digest_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1868,6 +1916,7 @@ module dma_reg_top
   ) u_sha2_digest_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1897,6 +1946,7 @@ module dma_reg_top
   ) u_sha2_digest_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1926,6 +1976,7 @@ module dma_reg_top
   ) u_sha2_digest_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1955,6 +2006,7 @@ module dma_reg_top
   ) u_sha2_digest_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1984,6 +2036,7 @@ module dma_reg_top
   ) u_sha2_digest_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2013,6 +2066,7 @@ module dma_reg_top
   ) u_sha2_digest_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2042,6 +2096,7 @@ module dma_reg_top
   ) u_sha2_digest_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2071,6 +2126,7 @@ module dma_reg_top
   ) u_sha2_digest_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2100,6 +2156,7 @@ module dma_reg_top
   ) u_sha2_digest_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2129,6 +2186,7 @@ module dma_reg_top
   ) u_sha2_digest_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2158,6 +2216,7 @@ module dma_reg_top
   ) u_sha2_digest_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2191,6 +2250,7 @@ module dma_reg_top
   ) u_handshake_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (handshake_intr_enable_gated_we),
@@ -2224,6 +2284,7 @@ module dma_reg_top
   ) u_clear_intr_src (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clear_intr_src_gated_we),
@@ -2257,6 +2318,7 @@ module dma_reg_top
   ) u_clear_intr_bus (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clear_intr_bus_gated_we),
@@ -2291,6 +2353,7 @@ module dma_reg_top
   ) u_intr_src_addr_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_0_gated_we),
@@ -2325,6 +2388,7 @@ module dma_reg_top
   ) u_intr_src_addr_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_1_gated_we),
@@ -2359,6 +2423,7 @@ module dma_reg_top
   ) u_intr_src_addr_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_2_gated_we),
@@ -2393,6 +2458,7 @@ module dma_reg_top
   ) u_intr_src_addr_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_3_gated_we),
@@ -2427,6 +2493,7 @@ module dma_reg_top
   ) u_intr_src_addr_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_4_gated_we),
@@ -2461,6 +2528,7 @@ module dma_reg_top
   ) u_intr_src_addr_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_5_gated_we),
@@ -2495,6 +2563,7 @@ module dma_reg_top
   ) u_intr_src_addr_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_6_gated_we),
@@ -2529,6 +2598,7 @@ module dma_reg_top
   ) u_intr_src_addr_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_7_gated_we),
@@ -2563,6 +2633,7 @@ module dma_reg_top
   ) u_intr_src_addr_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_8_gated_we),
@@ -2597,6 +2668,7 @@ module dma_reg_top
   ) u_intr_src_addr_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_9_gated_we),
@@ -2631,6 +2703,7 @@ module dma_reg_top
   ) u_intr_src_addr_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_addr_10_gated_we),
@@ -2665,6 +2738,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_0_gated_we),
@@ -2699,6 +2773,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_1_gated_we),
@@ -2733,6 +2808,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_2_gated_we),
@@ -2767,6 +2843,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_3_gated_we),
@@ -2801,6 +2878,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_4_gated_we),
@@ -2835,6 +2913,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_5_gated_we),
@@ -2869,6 +2948,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_6_gated_we),
@@ -2903,6 +2983,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_7_gated_we),
@@ -2937,6 +3018,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_8_gated_we),
@@ -2971,6 +3053,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_9_gated_we),
@@ -3005,6 +3088,7 @@ module dma_reg_top
   ) u_intr_src_wr_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_src_wr_val_10_gated_we),

@@ -844,6 +844,7 @@ module ascon_reg_top (
   ) u_tag_in_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (tag_in_0_we),
@@ -885,6 +886,7 @@ module ascon_reg_top (
   ) u_tag_in_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (tag_in_1_we),
@@ -926,6 +928,7 @@ module ascon_reg_top (
   ) u_tag_in_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (tag_in_2_we),
@@ -967,6 +970,7 @@ module ascon_reg_top (
   ) u_tag_in_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (tag_in_3_we),
@@ -1463,6 +1467,7 @@ module ascon_reg_top (
   ) u_ctrl_aux_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_aux_regwen_we),
@@ -1602,6 +1607,7 @@ module ascon_reg_top (
   ) u_trigger_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1629,6 +1635,7 @@ module ascon_reg_top (
   ) u_trigger_wipe (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1658,6 +1665,7 @@ module ascon_reg_top (
   ) u_status_idle (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1685,6 +1693,7 @@ module ascon_reg_top (
   ) u_status_stall (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1712,6 +1721,7 @@ module ascon_reg_top (
   ) u_status_wait_edn (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1739,6 +1749,7 @@ module ascon_reg_top (
   ) u_status_ascon_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1766,6 +1777,7 @@ module ascon_reg_top (
   ) u_status_alert_recov_ctrl_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1793,6 +1805,7 @@ module ascon_reg_top (
   ) u_status_alert_fatal_fault (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1822,6 +1835,7 @@ module ascon_reg_top (
   ) u_output_valid_msg_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1849,6 +1863,7 @@ module ascon_reg_top (
   ) u_output_valid_tag_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1876,6 +1891,7 @@ module ascon_reg_top (
   ) u_output_valid_tag_comparison_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1925,6 +1941,7 @@ module ascon_reg_top (
   ) u_fsm_state_regren (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fsm_state_regren_we),
@@ -1954,6 +1971,7 @@ module ascon_reg_top (
   ) u_error_no_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1981,6 +1999,7 @@ module ascon_reg_top (
   ) u_error_no_nonce (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2008,6 +2027,7 @@ module ascon_reg_top (
   ) u_error_wrong_order (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2035,6 +2055,7 @@ module ascon_reg_top (
   ) u_error_flag_input_missmatch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2057,7 +2078,6 @@ module ascon_reg_top (
 
   logic [46:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ASCON_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == ASCON_KEY_SHARE0_0_OFFSET);
     addr_hit[ 2] = (reg_addr == ASCON_KEY_SHARE0_1_OFFSET);
@@ -2304,7 +2324,6 @@ module ascon_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = key_share0_0_we;
     reg_we_check[2] = key_share0_1_we;

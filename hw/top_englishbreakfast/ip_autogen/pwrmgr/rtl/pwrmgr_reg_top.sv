@@ -199,6 +199,7 @@ module pwrmgr_reg_top (
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -227,6 +228,7 @@ module pwrmgr_reg_top (
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -315,6 +317,7 @@ module pwrmgr_reg_top (
   ) u_control_low_power_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -342,6 +345,7 @@ module pwrmgr_reg_top (
   ) u_control_core_clk_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -369,6 +373,7 @@ module pwrmgr_reg_top (
   ) u_control_io_clk_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -396,6 +401,7 @@ module pwrmgr_reg_top (
   ) u_control_usb_clk_en_lp (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -423,6 +429,7 @@ module pwrmgr_reg_top (
   ) u_control_usb_clk_en_active (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -450,6 +457,7 @@ module pwrmgr_reg_top (
   ) u_control_main_pd_n (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -489,6 +497,7 @@ module pwrmgr_reg_top (
   ) u_cfg_cdc_sync (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (cfg_cdc_sync_we),
@@ -518,6 +527,7 @@ module pwrmgr_reg_top (
   ) u_wakeup_en_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wakeup_en_regwen_we),
@@ -551,6 +561,7 @@ module pwrmgr_reg_top (
   ) u_wakeup_en_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wakeup_en_gated_we),
@@ -578,6 +589,7 @@ module pwrmgr_reg_top (
   ) u_wakeup_en_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wakeup_en_gated_we),
@@ -605,6 +617,7 @@ module pwrmgr_reg_top (
   ) u_wakeup_en_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wakeup_en_gated_we),
@@ -635,6 +648,7 @@ module pwrmgr_reg_top (
   ) u_wake_status_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -662,6 +676,7 @@ module pwrmgr_reg_top (
   ) u_wake_status_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -689,6 +704,7 @@ module pwrmgr_reg_top (
   ) u_wake_status_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -717,6 +733,7 @@ module pwrmgr_reg_top (
   ) u_reset_en_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (reset_en_regwen_we),
@@ -748,6 +765,7 @@ module pwrmgr_reg_top (
   ) u_reset_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (reset_en_gated_we),
@@ -777,6 +795,7 @@ module pwrmgr_reg_top (
   ) u_reset_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -805,6 +824,7 @@ module pwrmgr_reg_top (
   ) u_escalate_reset_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -833,6 +853,7 @@ module pwrmgr_reg_top (
   ) u_wake_info_capture_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wake_info_capture_dis_we),
@@ -916,6 +937,7 @@ module pwrmgr_reg_top (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),
     .rst_ni  (rst_lc_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -944,6 +966,7 @@ module pwrmgr_reg_top (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),
     .rst_ni  (rst_lc_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -972,6 +995,7 @@ module pwrmgr_reg_top (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),
     .rst_ni  (rst_lc_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

@@ -270,6 +270,7 @@ module otbn_reg_top (
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -298,6 +299,7 @@ module otbn_reg_top (
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -456,6 +458,7 @@ module otbn_reg_top (
   ) u_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -762,6 +765,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_imem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -789,6 +793,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_dmem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -816,6 +821,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_reg_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -843,6 +849,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_bus_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -870,6 +877,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_bad_internal_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -897,6 +905,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_illegal_bus_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -924,6 +933,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_lifecycle_escalation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -951,6 +961,7 @@ module otbn_reg_top (
   ) u_fatal_alert_cause_fatal_software (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1020,6 +1031,7 @@ module otbn_reg_top (
   ) u_scratch_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scratch_0_we),
@@ -1049,6 +1061,7 @@ module otbn_reg_top (
   ) u_scratch_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scratch_1_we),
@@ -1078,6 +1091,7 @@ module otbn_reg_top (
   ) u_scratch_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scratch_2_we),
@@ -1107,6 +1121,7 @@ module otbn_reg_top (
   ) u_scratch_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scratch_3_we),

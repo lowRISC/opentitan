@@ -201,6 +201,7 @@ module gpio_reg_top
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -229,6 +230,7 @@ module gpio_reg_top
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -297,6 +299,7 @@ module gpio_reg_top
   ) u_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -513,6 +516,7 @@ module gpio_reg_top
   ) u_intr_ctrl_en_rising (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_ctrl_en_rising_we),
@@ -541,6 +545,7 @@ module gpio_reg_top
   ) u_intr_ctrl_en_falling (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_ctrl_en_falling_we),
@@ -569,6 +574,7 @@ module gpio_reg_top
   ) u_intr_ctrl_en_lvlhigh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_ctrl_en_lvlhigh_we),
@@ -597,6 +603,7 @@ module gpio_reg_top
   ) u_intr_ctrl_en_lvllow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_ctrl_en_lvllow_we),
@@ -625,6 +632,7 @@ module gpio_reg_top
   ) u_ctrl_en_input_filter (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_en_input_filter_we),
@@ -653,6 +661,7 @@ module gpio_reg_top
   ) u_hw_straps_data_in_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -681,6 +690,7 @@ module gpio_reg_top
   ) u_hw_straps_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

@@ -192,6 +192,7 @@ module pattgen_reg_top (
   ) u_intr_state_done_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -219,6 +220,7 @@ module pattgen_reg_top (
   ) u_intr_state_done_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -248,6 +250,7 @@ module pattgen_reg_top (
   ) u_intr_enable_done_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -275,6 +278,7 @@ module pattgen_reg_top (
   ) u_intr_enable_done_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -361,6 +365,7 @@ module pattgen_reg_top (
   ) u_ctrl_enable_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -388,6 +393,7 @@ module pattgen_reg_top (
   ) u_ctrl_enable_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -415,6 +421,7 @@ module pattgen_reg_top (
   ) u_ctrl_polarity_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -442,6 +449,7 @@ module pattgen_reg_top (
   ) u_ctrl_polarity_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -469,6 +477,7 @@ module pattgen_reg_top (
   ) u_ctrl_inactive_level_pcl_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -496,6 +505,7 @@ module pattgen_reg_top (
   ) u_ctrl_inactive_level_pda_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -523,6 +533,7 @@ module pattgen_reg_top (
   ) u_ctrl_inactive_level_pcl_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -550,6 +561,7 @@ module pattgen_reg_top (
   ) u_ctrl_inactive_level_pda_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_we),
@@ -578,6 +590,7 @@ module pattgen_reg_top (
   ) u_prediv_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prediv_ch0_we),
@@ -606,6 +619,7 @@ module pattgen_reg_top (
   ) u_prediv_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prediv_ch1_we),
@@ -635,6 +649,7 @@ module pattgen_reg_top (
   ) u_data_ch0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_ch0_0_we),
@@ -664,6 +679,7 @@ module pattgen_reg_top (
   ) u_data_ch0_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_ch0_1_we),
@@ -693,6 +709,7 @@ module pattgen_reg_top (
   ) u_data_ch1_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_ch1_0_we),
@@ -722,6 +739,7 @@ module pattgen_reg_top (
   ) u_data_ch1_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_ch1_1_we),
@@ -751,6 +769,7 @@ module pattgen_reg_top (
   ) u_size_len_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (size_we),
@@ -778,6 +797,7 @@ module pattgen_reg_top (
   ) u_size_reps_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (size_we),
@@ -805,6 +825,7 @@ module pattgen_reg_top (
   ) u_size_len_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (size_we),
@@ -832,6 +853,7 @@ module pattgen_reg_top (
   ) u_size_reps_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (size_we),

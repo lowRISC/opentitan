@@ -444,6 +444,7 @@ module otp_ctrl_core_reg_top (
   ) u_intr_state_otp_operation_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -471,6 +472,7 @@ module otp_ctrl_core_reg_top (
   ) u_intr_state_otp_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -500,6 +502,7 @@ module otp_ctrl_core_reg_top (
   ) u_intr_enable_otp_operation_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -527,6 +530,7 @@ module otp_ctrl_core_reg_top (
   ) u_intr_enable_otp_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -1664,6 +1668,7 @@ module otp_ctrl_core_reg_top (
   ) u_direct_access_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (direct_access_address_gated_we),
@@ -1696,6 +1701,7 @@ module otp_ctrl_core_reg_top (
   ) u_direct_access_wdata_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (direct_access_wdata_0_gated_we),
@@ -1728,6 +1734,7 @@ module otp_ctrl_core_reg_top (
   ) u_direct_access_wdata_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (direct_access_wdata_1_gated_we),
@@ -1790,6 +1797,7 @@ module otp_ctrl_core_reg_top (
   ) u_check_trigger_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (check_trigger_regwen_we),
@@ -1858,6 +1866,7 @@ module otp_ctrl_core_reg_top (
   ) u_check_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (check_regwen_we),
@@ -1889,6 +1898,7 @@ module otp_ctrl_core_reg_top (
   ) u_check_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (check_timeout_gated_we),
@@ -1920,6 +1930,7 @@ module otp_ctrl_core_reg_top (
   ) u_integrity_check_period (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (integrity_check_period_gated_we),
@@ -1951,6 +1962,7 @@ module otp_ctrl_core_reg_top (
   ) u_consistency_check_period (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (consistency_check_period_gated_we),
@@ -1982,6 +1994,7 @@ module otp_ctrl_core_reg_top (
   ) u_vendor_test_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (vendor_test_read_lock_gated_we),
@@ -2013,6 +2026,7 @@ module otp_ctrl_core_reg_top (
   ) u_creator_sw_cfg_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (creator_sw_cfg_read_lock_gated_we),
@@ -2044,6 +2058,7 @@ module otp_ctrl_core_reg_top (
   ) u_owner_sw_cfg_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (owner_sw_cfg_read_lock_gated_we),
@@ -2076,6 +2091,7 @@ module otp_ctrl_core_reg_top (
   ) u_ownership_slot_state_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ownership_slot_state_read_lock_gated_we),
@@ -2108,6 +2124,7 @@ module otp_ctrl_core_reg_top (
   ) u_rot_creator_auth_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rot_creator_auth_read_lock_gated_we),
@@ -2140,6 +2157,7 @@ module otp_ctrl_core_reg_top (
   ) u_rot_owner_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rot_owner_auth_slot0_read_lock_gated_we),
@@ -2172,6 +2190,7 @@ module otp_ctrl_core_reg_top (
   ) u_rot_owner_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rot_owner_auth_slot1_read_lock_gated_we),
@@ -2204,6 +2223,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_integ_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_integ_auth_slot0_read_lock_gated_we),
@@ -2236,6 +2256,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_integ_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_integ_auth_slot1_read_lock_gated_we),
@@ -2268,6 +2289,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_owner_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_owner_auth_slot0_read_lock_gated_we),
@@ -2300,6 +2322,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_owner_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_owner_auth_slot1_read_lock_gated_we),
@@ -2332,6 +2355,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_owner_auth_slot2_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_owner_auth_slot2_read_lock_gated_we),
@@ -2364,6 +2388,7 @@ module otp_ctrl_core_reg_top (
   ) u_plat_owner_auth_slot3_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (plat_owner_auth_slot3_read_lock_gated_we),
@@ -2395,6 +2420,7 @@ module otp_ctrl_core_reg_top (
   ) u_ext_nvm_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ext_nvm_read_lock_gated_we),
@@ -2426,6 +2452,7 @@ module otp_ctrl_core_reg_top (
   ) u_rom_patch_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (rom_patch_read_lock_gated_we),

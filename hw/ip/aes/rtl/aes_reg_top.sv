@@ -717,6 +717,7 @@ module aes_reg_top (
   ) u_data_in_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_in_0_we),
@@ -758,6 +759,7 @@ module aes_reg_top (
   ) u_data_in_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_in_1_we),
@@ -799,6 +801,7 @@ module aes_reg_top (
   ) u_data_in_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_in_2_we),
@@ -840,6 +843,7 @@ module aes_reg_top (
   ) u_data_in_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (data_in_3_we),
@@ -1115,6 +1119,7 @@ module aes_reg_top (
   ) u_ctrl_aux_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (ctrl_aux_regwen_we),
@@ -1144,6 +1149,7 @@ module aes_reg_top (
   ) u_trigger_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1171,6 +1177,7 @@ module aes_reg_top (
   ) u_trigger_key_iv_data_in_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1198,6 +1205,7 @@ module aes_reg_top (
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1225,6 +1233,7 @@ module aes_reg_top (
   ) u_trigger_prng_reseed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (trigger_we),
@@ -1254,6 +1263,7 @@ module aes_reg_top (
   ) u_status_idle (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1281,6 +1291,7 @@ module aes_reg_top (
   ) u_status_stall (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1308,6 +1319,7 @@ module aes_reg_top (
   ) u_status_output_lost (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1335,6 +1347,7 @@ module aes_reg_top (
   ) u_status_output_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1362,6 +1375,7 @@ module aes_reg_top (
   ) u_status_input_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1389,6 +1403,7 @@ module aes_reg_top (
   ) u_status_alert_recov_ctrl_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1416,6 +1431,7 @@ module aes_reg_top (
   ) u_status_alert_fatal_fault (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

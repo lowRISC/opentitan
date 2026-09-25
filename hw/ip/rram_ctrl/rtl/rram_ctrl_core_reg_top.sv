@@ -632,6 +632,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_wr_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -659,6 +660,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_wr_lvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -686,6 +688,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_rd_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -713,6 +716,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_rd_lvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -740,6 +744,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_op_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -767,6 +772,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_state_corr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -796,6 +802,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_wr_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -823,6 +830,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_wr_lvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -850,6 +858,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_rd_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -877,6 +886,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_rd_lvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -904,6 +914,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_op_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -931,6 +942,7 @@ module rram_ctrl_core_reg_top (
   ) u_intr_enable_corr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -1146,6 +1158,7 @@ module rram_ctrl_core_reg_top (
   ) u_dis_sw_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dis_we),
@@ -1173,6 +1186,7 @@ module rram_ctrl_core_reg_top (
   ) u_dis_relbl_err_fatal (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (dis_we),
@@ -1201,6 +1215,7 @@ module rram_ctrl_core_reg_top (
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (exec_we),
@@ -1229,6 +1244,7 @@ module rram_ctrl_core_reg_top (
   ) u_init (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (init_we),
@@ -1277,6 +1293,7 @@ module rram_ctrl_core_reg_top (
   ) u_control_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -1304,6 +1321,7 @@ module rram_ctrl_core_reg_top (
   ) u_control_op (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -1331,6 +1349,7 @@ module rram_ctrl_core_reg_top (
   ) u_control_partition (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -1358,6 +1377,7 @@ module rram_ctrl_core_reg_top (
   ) u_control_num (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_gated_we),
@@ -1389,6 +1409,7 @@ module rram_ctrl_core_reg_top (
   ) u_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (addr_gated_we),
@@ -1418,6 +1439,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_0_we),
@@ -1447,6 +1469,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_1_we),
@@ -1476,6 +1499,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_2_we),
@@ -1505,6 +1529,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_3_we),
@@ -1534,6 +1559,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_4_we),
@@ -1563,6 +1589,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_5_we),
@@ -1592,6 +1619,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_6_we),
@@ -1621,6 +1649,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_7_we),
@@ -1650,6 +1679,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_8_we),
@@ -1679,6 +1709,7 @@ module rram_ctrl_core_reg_top (
   ) u_region_cfg_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (region_cfg_regwen_9_we),
@@ -1712,6 +1743,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_0_gated_we),
@@ -1739,6 +1771,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_0_gated_we),
@@ -1766,6 +1799,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_0_wr_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_0_gated_we),
@@ -1793,6 +1827,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_0_gated_we),
@@ -1820,6 +1855,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_0_gated_we),
@@ -1853,6 +1889,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_1_gated_we),
@@ -1880,6 +1917,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_1_gated_we),
@@ -1907,6 +1945,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_1_wr_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_1_gated_we),
@@ -1934,6 +1973,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_1_gated_we),
@@ -1961,6 +2001,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_1_gated_we),
@@ -1994,6 +2035,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_2_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_2_gated_we),
@@ -2021,6 +2063,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_2_rd_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_2_gated_we),
@@ -2048,6 +2091,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_2_wr_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_2_gated_we),
@@ -2075,6 +2119,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_2_scramble_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_2_gated_we),
@@ -2102,6 +2147,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_2_ecc_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_2_gated_we),
@@ -2135,6 +2181,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_3_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_3_gated_we),
@@ -2162,6 +2209,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_3_rd_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_3_gated_we),
@@ -2189,6 +2237,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_3_wr_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_3_gated_we),
@@ -2216,6 +2265,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_3_scramble_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_3_gated_we),
@@ -2243,6 +2293,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_3_ecc_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_3_gated_we),
@@ -2276,6 +2327,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_4_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_4_gated_we),
@@ -2303,6 +2355,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_4_rd_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_4_gated_we),
@@ -2330,6 +2383,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_4_wr_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_4_gated_we),
@@ -2357,6 +2411,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_4_scramble_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_4_gated_we),
@@ -2384,6 +2439,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_4_ecc_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_4_gated_we),
@@ -2417,6 +2473,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_5_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_5_gated_we),
@@ -2444,6 +2501,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_5_rd_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_5_gated_we),
@@ -2471,6 +2529,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_5_wr_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_5_gated_we),
@@ -2498,6 +2557,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_5_scramble_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_5_gated_we),
@@ -2525,6 +2585,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_5_ecc_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_5_gated_we),
@@ -2558,6 +2619,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_6_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_6_gated_we),
@@ -2585,6 +2647,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_6_rd_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_6_gated_we),
@@ -2612,6 +2675,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_6_wr_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_6_gated_we),
@@ -2639,6 +2703,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_6_scramble_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_6_gated_we),
@@ -2666,6 +2731,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_6_ecc_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_6_gated_we),
@@ -2699,6 +2765,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_7_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_7_gated_we),
@@ -2726,6 +2793,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_7_rd_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_7_gated_we),
@@ -2753,6 +2821,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_7_wr_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_7_gated_we),
@@ -2780,6 +2849,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_7_scramble_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_7_gated_we),
@@ -2807,6 +2877,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_7_ecc_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_7_gated_we),
@@ -2840,6 +2911,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_8_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_8_gated_we),
@@ -2867,6 +2939,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_8_rd_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_8_gated_we),
@@ -2894,6 +2967,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_8_wr_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_8_gated_we),
@@ -2921,6 +2995,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_8_scramble_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_8_gated_we),
@@ -2948,6 +3023,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_8_ecc_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_8_gated_we),
@@ -2981,6 +3057,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_9_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_9_gated_we),
@@ -3008,6 +3085,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_9_rd_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_9_gated_we),
@@ -3035,6 +3113,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_9_wr_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_9_gated_we),
@@ -3062,6 +3141,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_9_scramble_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_9_gated_we),
@@ -3089,6 +3169,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_cfg_9_ecc_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_cfg_9_gated_we),
@@ -3122,6 +3203,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_0_base_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_0_gated_we),
@@ -3149,6 +3231,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_0_size_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_0_gated_we),
@@ -3182,6 +3265,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_1_base_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_1_gated_we),
@@ -3209,6 +3293,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_1_size_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_1_gated_we),
@@ -3242,6 +3327,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_2_base_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_2_gated_we),
@@ -3269,6 +3355,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_2_size_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_2_gated_we),
@@ -3302,6 +3389,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_3_base_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_3_gated_we),
@@ -3329,6 +3417,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_3_size_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_3_gated_we),
@@ -3362,6 +3451,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_4_base_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_4_gated_we),
@@ -3389,6 +3479,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_4_size_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_4_gated_we),
@@ -3422,6 +3513,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_5_base_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_5_gated_we),
@@ -3449,6 +3541,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_5_size_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_5_gated_we),
@@ -3482,6 +3575,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_6_base_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_6_gated_we),
@@ -3509,6 +3603,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_6_size_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_6_gated_we),
@@ -3542,6 +3637,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_7_base_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_7_gated_we),
@@ -3569,6 +3665,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_7_size_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_7_gated_we),
@@ -3602,6 +3699,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_8_base_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_8_gated_we),
@@ -3629,6 +3727,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_8_size_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_8_gated_we),
@@ -3662,6 +3761,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_9_base_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_9_gated_we),
@@ -3689,6 +3789,7 @@ module rram_ctrl_core_reg_top (
   ) u_mp_region_9_size_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mp_region_9_gated_we),
@@ -3718,6 +3819,7 @@ module rram_ctrl_core_reg_top (
   ) u_default_region_rd_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (default_region_we),
@@ -3745,6 +3847,7 @@ module rram_ctrl_core_reg_top (
   ) u_default_region_wr_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (default_region_we),
@@ -3772,6 +3875,7 @@ module rram_ctrl_core_reg_top (
   ) u_default_region_scramble_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (default_region_we),
@@ -3799,6 +3903,7 @@ module rram_ctrl_core_reg_top (
   ) u_default_region_ecc_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (default_region_we),
@@ -3828,6 +3933,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_0_we),
@@ -3857,6 +3963,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_1_we),
@@ -3886,6 +3993,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_2_we),
@@ -3915,6 +4023,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_3_we),
@@ -3944,6 +4053,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_4_we),
@@ -3973,6 +4083,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_5_we),
@@ -4002,6 +4113,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_6_we),
@@ -4031,6 +4143,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_regwen_7_we),
@@ -4064,6 +4177,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_0_gated_we),
@@ -4091,6 +4205,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_0_rd_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_0_gated_we),
@@ -4118,6 +4233,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_0_wr_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_0_gated_we),
@@ -4145,6 +4261,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_0_scramble_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_0_gated_we),
@@ -4172,6 +4289,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_0_ecc_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_0_gated_we),
@@ -4205,6 +4323,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_1_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_1_gated_we),
@@ -4232,6 +4351,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_1_rd_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_1_gated_we),
@@ -4259,6 +4379,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_1_wr_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_1_gated_we),
@@ -4286,6 +4407,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_1_scramble_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_1_gated_we),
@@ -4313,6 +4435,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_1_ecc_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_1_gated_we),
@@ -4346,6 +4469,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_2_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_2_gated_we),
@@ -4373,6 +4497,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_2_rd_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_2_gated_we),
@@ -4400,6 +4525,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_2_wr_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_2_gated_we),
@@ -4427,6 +4553,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_2_scramble_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_2_gated_we),
@@ -4454,6 +4581,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_2_ecc_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_2_gated_we),
@@ -4487,6 +4615,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_3_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_3_gated_we),
@@ -4514,6 +4643,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_3_rd_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_3_gated_we),
@@ -4541,6 +4671,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_3_wr_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_3_gated_we),
@@ -4568,6 +4699,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_3_scramble_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_3_gated_we),
@@ -4595,6 +4727,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_3_ecc_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_3_gated_we),
@@ -4628,6 +4761,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_4_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_4_gated_we),
@@ -4655,6 +4789,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_4_rd_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_4_gated_we),
@@ -4682,6 +4817,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_4_wr_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_4_gated_we),
@@ -4709,6 +4845,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_4_scramble_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_4_gated_we),
@@ -4736,6 +4873,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_4_ecc_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_4_gated_we),
@@ -4769,6 +4907,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_5_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_5_gated_we),
@@ -4796,6 +4935,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_5_rd_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_5_gated_we),
@@ -4823,6 +4963,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_5_wr_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_5_gated_we),
@@ -4850,6 +4991,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_5_scramble_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_5_gated_we),
@@ -4877,6 +5019,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_5_ecc_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_5_gated_we),
@@ -4910,6 +5053,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_6_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_6_gated_we),
@@ -4937,6 +5081,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_6_rd_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_6_gated_we),
@@ -4964,6 +5109,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_6_wr_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_6_gated_we),
@@ -4991,6 +5137,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_6_scramble_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_6_gated_we),
@@ -5018,6 +5165,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_6_ecc_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_6_gated_we),
@@ -5051,6 +5199,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_7_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_7_gated_we),
@@ -5078,6 +5227,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_7_rd_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_7_gated_we),
@@ -5105,6 +5255,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_7_wr_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_7_gated_we),
@@ -5132,6 +5283,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_7_scramble_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_7_gated_we),
@@ -5159,6 +5311,7 @@ module rram_ctrl_core_reg_top (
   ) u_info_page_cfg_7_ecc_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (info_page_cfg_7_gated_we),
@@ -5188,6 +5341,7 @@ module rram_ctrl_core_reg_top (
   ) u_hw_info_cfg_override_scramble_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (hw_info_cfg_override_we),
@@ -5215,6 +5369,7 @@ module rram_ctrl_core_reg_top (
   ) u_hw_info_cfg_override_ecc_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (hw_info_cfg_override_we),
@@ -5244,6 +5399,7 @@ module rram_ctrl_core_reg_top (
   ) u_op_status_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (op_status_we),
@@ -5271,6 +5427,7 @@ module rram_ctrl_core_reg_top (
   ) u_op_status_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (op_status_we),
@@ -5300,6 +5457,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_rd_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5327,6 +5485,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_rd_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5354,6 +5513,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_wr_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5381,6 +5541,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_wr_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5408,6 +5569,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5435,6 +5597,7 @@ module rram_ctrl_core_reg_top (
   ) u_status_keys_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5464,6 +5627,7 @@ module rram_ctrl_core_reg_top (
   ) u_err_code_op_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -5491,6 +5655,7 @@ module rram_ctrl_core_reg_top (
   ) u_err_code_mp_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -5518,6 +5683,7 @@ module rram_ctrl_core_reg_top (
   ) u_err_code_rd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -5545,6 +5711,7 @@ module rram_ctrl_core_reg_top (
   ) u_err_code_wr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_we),
@@ -5574,6 +5741,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5601,6 +5769,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_lcmgr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5628,6 +5797,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_lcmgr_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5655,6 +5825,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_otp_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5682,6 +5853,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_otp_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5709,6 +5881,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_phy_wr_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5736,6 +5909,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_phy_fifo_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5763,6 +5937,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_phy_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5790,6 +5965,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_phy_cnt_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5817,6 +5993,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_phy_arb_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5844,6 +6021,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_ctrl_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5871,6 +6049,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_ctrl_cnt_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5898,6 +6077,7 @@ module rram_ctrl_core_reg_top (
   ) u_std_fault_status_ctrl_fifo_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5927,6 +6107,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_lcmgr_op_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5954,6 +6135,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_lcmgr_mp_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -5981,6 +6163,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_lcmgr_rd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6008,6 +6191,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_lcmgr_wr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6035,6 +6219,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_otp_op_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6062,6 +6247,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_otp_mp_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6089,6 +6275,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_otp_rd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6116,6 +6303,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_otp_wr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6143,6 +6331,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_seed_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6170,6 +6359,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_phy_relbl_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fault_status_we),
@@ -6197,6 +6387,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_phy_rd_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6224,6 +6415,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_phy_rd_ctrl_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6251,6 +6443,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_spurious_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6278,6 +6471,7 @@ module rram_ctrl_core_reg_top (
   ) u_fault_status_host_gnt_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6306,6 +6500,7 @@ module rram_ctrl_core_reg_top (
   ) u_err_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6334,6 +6529,7 @@ module rram_ctrl_core_reg_top (
   ) u_corr_err_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (corr_err_cnt_we),
@@ -6363,6 +6559,7 @@ module rram_ctrl_core_reg_top (
   ) u_corr_err_loc_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6390,6 +6587,7 @@ module rram_ctrl_core_reg_top (
   ) u_corr_err_loc_part (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6419,6 +6617,7 @@ module rram_ctrl_core_reg_top (
   ) u_phy_status_wr_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6446,6 +6645,7 @@ module rram_ctrl_core_reg_top (
   ) u_phy_status_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -6474,6 +6674,7 @@ module rram_ctrl_core_reg_top (
   ) u_scratch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (scratch_we),
@@ -6503,6 +6704,7 @@ module rram_ctrl_core_reg_top (
   ) u_fifo_lvl_wr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fifo_lvl_we),
@@ -6530,6 +6732,7 @@ module rram_ctrl_core_reg_top (
   ) u_fifo_lvl_rd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fifo_lvl_we),

@@ -286,6 +286,7 @@ module mbx_soc_reg_top
   ) u_soc_status_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -313,6 +314,7 @@ module mbx_soc_reg_top
   ) u_soc_status_doe_intr_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (soc_status_we),
@@ -340,6 +342,7 @@ module mbx_soc_reg_top
   ) u_soc_status_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -367,6 +370,7 @@ module mbx_soc_reg_top
   ) u_soc_status_doe_async_msg_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -394,6 +398,7 @@ module mbx_soc_reg_top
   ) u_soc_status_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -422,6 +427,7 @@ module mbx_soc_reg_top
   ) u_soc_doe_intr_msg_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (soc_doe_intr_msg_addr_we),
@@ -450,6 +456,7 @@ module mbx_soc_reg_top
   ) u_soc_doe_intr_msg_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (soc_doe_intr_msg_data_we),

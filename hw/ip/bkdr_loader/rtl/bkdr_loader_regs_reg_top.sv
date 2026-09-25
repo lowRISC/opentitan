@@ -322,6 +322,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -350,6 +351,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_write_ena (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -378,6 +380,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_clear_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -406,6 +409,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_clear_segment_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -434,6 +438,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_auto_incr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -462,6 +467,7 @@ module bkdr_loader_regs_reg_top (
   ) u_control_target_idx (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (control_we),
@@ -507,6 +513,7 @@ module bkdr_loader_regs_reg_top (
   ) u_mission_mode_switch_delay (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (mission_mode_switch_delay_we),
@@ -535,6 +542,7 @@ module bkdr_loader_regs_reg_top (
   ) u_clear_index_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clear_index_start_we),
@@ -563,6 +571,7 @@ module bkdr_loader_regs_reg_top (
   ) u_clear_index_end (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clear_index_end_we),
@@ -1112,6 +1121,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_0_we),
@@ -1153,6 +1163,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_1_we),
@@ -1194,6 +1205,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_2_we),
@@ -1235,6 +1247,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_3_we),
@@ -1276,6 +1289,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_4_we),
@@ -1317,6 +1331,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_5_we),
@@ -1358,6 +1373,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_6_we),
@@ -1399,6 +1415,7 @@ module bkdr_loader_regs_reg_top (
   ) u_write_data_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (write_data_7_we),
@@ -1439,6 +1456,7 @@ module bkdr_loader_regs_reg_top (
   ) u_index (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (index_we),

@@ -629,6 +629,7 @@ module aon_timer_reg_top
   ) u_wkup_ctrl_enable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_ctrl_we),
@@ -656,6 +657,7 @@ module aon_timer_reg_top
   ) u_wkup_ctrl_prescaler (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_ctrl_we),
@@ -685,6 +687,7 @@ module aon_timer_reg_top
   ) u_wkup_thold_hi (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_thold_hi_we),
@@ -713,6 +716,7 @@ module aon_timer_reg_top
   ) u_wkup_thold_lo (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_thold_lo_we),
@@ -743,6 +747,7 @@ module aon_timer_reg_top
   ) u_wkup_count_hi (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_count_hi_we),
@@ -773,6 +778,7 @@ module aon_timer_reg_top
   ) u_wkup_count_lo (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_count_lo_we),
@@ -801,6 +807,7 @@ module aon_timer_reg_top
   ) u_wdog_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (wdog_regwen_we),
@@ -833,6 +840,7 @@ module aon_timer_reg_top
   ) u_wdog_ctrl_enable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wdog_ctrl_gated_we),
@@ -860,6 +868,7 @@ module aon_timer_reg_top
   ) u_wdog_ctrl_pause_in_sleep (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wdog_ctrl_gated_we),
@@ -891,6 +900,7 @@ module aon_timer_reg_top
   ) u_wdog_bark_thold (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wdog_bark_thold_gated_we),
@@ -922,6 +932,7 @@ module aon_timer_reg_top
   ) u_wdog_bite_thold (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wdog_bite_thold_gated_we),
@@ -952,6 +963,7 @@ module aon_timer_reg_top
   ) u_wdog_count (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wdog_count_we),
@@ -981,6 +993,7 @@ module aon_timer_reg_top
   ) u_intr_state_wkup_timer_expired (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -1008,6 +1021,7 @@ module aon_timer_reg_top
   ) u_intr_state_wdog_timer_bark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -1075,6 +1089,7 @@ module aon_timer_reg_top
   ) u_wkup_cause (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (aon_wkup_cause_we),

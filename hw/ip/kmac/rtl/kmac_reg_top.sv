@@ -385,6 +385,7 @@ module kmac_reg_top (
   ) u_intr_state_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -412,6 +413,7 @@ module kmac_reg_top (
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -439,6 +441,7 @@ module kmac_reg_top (
   ) u_intr_state_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -468,6 +471,7 @@ module kmac_reg_top (
   ) u_intr_enable_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -495,6 +499,7 @@ module kmac_reg_top (
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -522,6 +527,7 @@ module kmac_reg_top (
   ) u_intr_enable_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -1274,6 +1280,7 @@ module kmac_reg_top (
   ) u_entropy_period_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_period_gated_we),
@@ -1301,6 +1308,7 @@ module kmac_reg_top (
   ) u_entropy_period_wait_timer (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_period_gated_we),
@@ -1329,6 +1337,7 @@ module kmac_reg_top (
   ) u_entropy_refresh_hash_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2189,6 +2198,7 @@ module kmac_reg_top (
   ) u_key_len (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (key_len_gated_we),
@@ -2221,6 +2231,7 @@ module kmac_reg_top (
   ) u_prefix_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_0_gated_we),
@@ -2253,6 +2264,7 @@ module kmac_reg_top (
   ) u_prefix_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_1_gated_we),
@@ -2285,6 +2297,7 @@ module kmac_reg_top (
   ) u_prefix_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_2_gated_we),
@@ -2317,6 +2330,7 @@ module kmac_reg_top (
   ) u_prefix_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_3_gated_we),
@@ -2349,6 +2363,7 @@ module kmac_reg_top (
   ) u_prefix_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_4_gated_we),
@@ -2381,6 +2396,7 @@ module kmac_reg_top (
   ) u_prefix_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_5_gated_we),
@@ -2413,6 +2429,7 @@ module kmac_reg_top (
   ) u_prefix_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_6_gated_we),
@@ -2445,6 +2462,7 @@ module kmac_reg_top (
   ) u_prefix_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_7_gated_we),
@@ -2477,6 +2495,7 @@ module kmac_reg_top (
   ) u_prefix_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_8_gated_we),
@@ -2509,6 +2528,7 @@ module kmac_reg_top (
   ) u_prefix_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_9_gated_we),
@@ -2541,6 +2561,7 @@ module kmac_reg_top (
   ) u_prefix_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (prefix_10_gated_we),
@@ -2569,6 +2590,7 @@ module kmac_reg_top (
   ) u_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

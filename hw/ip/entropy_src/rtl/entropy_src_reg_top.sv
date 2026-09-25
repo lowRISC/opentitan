@@ -361,6 +361,7 @@ module entropy_src_reg_top (
   ) u_intr_state_es_entropy_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -388,6 +389,7 @@ module entropy_src_reg_top (
   ) u_intr_state_es_health_test_failed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -415,6 +417,7 @@ module entropy_src_reg_top (
   ) u_intr_state_es_observe_fifo_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -442,6 +445,7 @@ module entropy_src_reg_top (
   ) u_intr_state_es_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_state_we),
@@ -471,6 +475,7 @@ module entropy_src_reg_top (
   ) u_intr_enable_es_entropy_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -498,6 +503,7 @@ module entropy_src_reg_top (
   ) u_intr_enable_es_health_test_failed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -525,6 +531,7 @@ module entropy_src_reg_top (
   ) u_intr_enable_es_observe_fifo_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -552,6 +559,7 @@ module entropy_src_reg_top (
   ) u_intr_enable_es_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (intr_enable_we),
@@ -686,6 +694,7 @@ module entropy_src_reg_top (
   ) u_me_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (me_regwen_we),
@@ -714,6 +723,7 @@ module entropy_src_reg_top (
   ) u_sw_regupd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (sw_regupd_we),
@@ -742,6 +752,7 @@ module entropy_src_reg_top (
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -773,6 +784,7 @@ module entropy_src_reg_top (
   ) u_module_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (module_enable_gated_we),
@@ -805,6 +817,7 @@ module entropy_src_reg_top (
   ) u_conf_fips_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -832,6 +845,7 @@ module entropy_src_reg_top (
   ) u_conf_fips_flag (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -859,6 +873,7 @@ module entropy_src_reg_top (
   ) u_conf_rng_fips (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -886,6 +901,7 @@ module entropy_src_reg_top (
   ) u_conf_rng_bit_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -913,6 +929,7 @@ module entropy_src_reg_top (
   ) u_conf_threshold_scope (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -940,6 +957,7 @@ module entropy_src_reg_top (
   ) u_conf_entropy_data_reg_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -967,6 +985,7 @@ module entropy_src_reg_top (
   ) u_conf_rng_bit_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (conf_gated_we),
@@ -999,6 +1018,7 @@ module entropy_src_reg_top (
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_control_gated_we),
@@ -1026,6 +1046,7 @@ module entropy_src_reg_top (
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (entropy_control_gated_we),
@@ -1074,6 +1095,7 @@ module entropy_src_reg_top (
   ) u_health_test_windows_fips_window (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (health_test_windows_gated_we),
@@ -1101,6 +1123,7 @@ module entropy_src_reg_top (
   ) u_health_test_windows_bypass_window (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (health_test_windows_gated_we),
@@ -1129,6 +1152,7 @@ module entropy_src_reg_top (
   ) u_threshold_oneway (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (threshold_oneway_we),
@@ -1551,6 +1575,7 @@ module entropy_src_reg_top (
   ) u_alert_threshold_alert_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_threshold_gated_we),
@@ -1578,6 +1603,7 @@ module entropy_src_reg_top (
   ) u_alert_threshold_alert_threshold_inv (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (alert_threshold_gated_we),
@@ -1765,6 +1791,7 @@ module entropy_src_reg_top (
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fw_ov_control_gated_we),
@@ -1792,6 +1819,7 @@ module entropy_src_reg_top (
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fw_ov_control_gated_we),
@@ -1820,6 +1848,7 @@ module entropy_src_reg_top (
   ) u_fw_ov_sha3_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (fw_ov_sha3_start_we),
@@ -1864,6 +1893,7 @@ module entropy_src_reg_top (
   ) u_fw_ov_rd_fifo_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1931,6 +1961,7 @@ module entropy_src_reg_top (
   ) u_observe_fifo_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (observe_fifo_thresh_gated_we),
@@ -2098,6 +2129,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_fips_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2125,6 +2157,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_entropy_data_reg_en_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2152,6 +2185,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_module_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2179,6 +2213,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_threshold_scope_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2206,6 +2241,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_threshold_oneway_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2233,6 +2269,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_rng_bit_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2260,6 +2297,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_fw_ov_sha3_start_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2287,6 +2325,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_fw_ov_mode_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2314,6 +2353,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_fw_ov_entropy_insert_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2341,6 +2381,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_route_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2368,6 +2409,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_type_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2395,6 +2437,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_main_sm_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2422,6 +2465,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_bus_cmp_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2449,6 +2493,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_thresh_cfg_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2476,6 +2521,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_fw_ov_wr_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2503,6 +2549,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_es_fw_ov_disable_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2530,6 +2577,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_fips_flag_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2557,6 +2605,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_rng_fips_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2584,6 +2633,7 @@ module entropy_src_reg_top (
   ) u_recov_alert_sts_postht_entropy_drop_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_alert_sts_we),
@@ -2613,6 +2663,7 @@ module entropy_src_reg_top (
   ) u_err_code_sfifo_esrng_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2640,6 +2691,7 @@ module entropy_src_reg_top (
   ) u_err_code_sfifo_distr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2667,6 +2719,7 @@ module entropy_src_reg_top (
   ) u_err_code_sfifo_observe_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2694,6 +2747,7 @@ module entropy_src_reg_top (
   ) u_err_code_sfifo_esfinal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2721,6 +2775,7 @@ module entropy_src_reg_top (
   ) u_err_code_es_ack_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2748,6 +2803,7 @@ module entropy_src_reg_top (
   ) u_err_code_es_main_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2775,6 +2831,7 @@ module entropy_src_reg_top (
   ) u_err_code_es_cntr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2802,6 +2859,7 @@ module entropy_src_reg_top (
   ) u_err_code_sha3_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2829,6 +2887,7 @@ module entropy_src_reg_top (
   ) u_err_code_sha3_rst_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2856,6 +2915,7 @@ module entropy_src_reg_top (
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2883,6 +2943,7 @@ module entropy_src_reg_top (
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2910,6 +2971,7 @@ module entropy_src_reg_top (
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -2949,6 +3011,7 @@ module entropy_src_reg_top (
   ) u_err_code_test (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (err_code_test_we),
@@ -2978,6 +3041,7 @@ module entropy_src_reg_top (
   ) u_main_sm_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),

@@ -415,6 +415,7 @@ module clkmgr_reg_top (
   ) u_jitter_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (jitter_regwen_we),
@@ -446,6 +447,7 @@ module clkmgr_reg_top (
   ) u_jitter_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (jitter_enable_gated_we),
@@ -474,6 +476,7 @@ module clkmgr_reg_top (
   ) u_clk_enables (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_enables_we),
@@ -503,6 +506,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_clk_main_aes_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_hints_we),
@@ -530,6 +534,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_clk_main_hmac_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_hints_we),
@@ -557,6 +562,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_clk_main_kmac_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_hints_we),
@@ -584,6 +590,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_clk_main_otbn_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (clk_hints_we),
@@ -613,6 +620,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_status_clk_main_aes_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -640,6 +648,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_status_clk_main_hmac_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -667,6 +676,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_status_clk_main_kmac_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -694,6 +704,7 @@ module clkmgr_reg_top (
   ) u_clk_hints_status_clk_main_otbn_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -722,6 +733,7 @@ module clkmgr_reg_top (
   ) u_measure_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (measure_ctrl_regwen_we),
@@ -755,6 +767,7 @@ module clkmgr_reg_top (
   ) u_io_meas_ctrl_en (
     .clk_i   (clk_io_i),
     .rst_ni  (rst_io_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (io_io_meas_ctrl_en_gated_we),
@@ -937,6 +950,7 @@ module clkmgr_reg_top (
   ) u_main_meas_ctrl_en (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (main_main_meas_ctrl_en_gated_we),
@@ -1114,6 +1128,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_shadow_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1141,6 +1156,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1168,6 +1184,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_main_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1195,6 +1212,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_io_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1222,6 +1240,7 @@ module clkmgr_reg_top (
   ) u_recov_err_code_main_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (recov_err_code_we),
@@ -1251,6 +1270,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_reg_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1278,6 +1298,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_idle_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
@@ -1305,6 +1326,7 @@ module clkmgr_reg_top (
   ) u_fatal_err_code_shadow_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
     // from register interface
     .we     (1'b0),
