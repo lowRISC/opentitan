@@ -330,6 +330,7 @@ module darjeeling_pd_main #(
   localparam int KeymgrDpeNumInstHwSlot = 8;
   localparam int KeymgrDpeNumBootStages = 2;
   localparam int KeymgrDpeNumRomDigestInputs = 2;
+  localparam bit KeymgrDpeSupportOtbnAsKdfEngine = 1;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
@@ -1702,7 +1703,8 @@ module darjeeling_pd_main #(
     .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
     .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
     .NumBootStages(KeymgrDpeNumBootStages),
-    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs)
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs),
+    .SupportOtbnAsKdfEngine(KeymgrDpeSupportOtbnAsKdfEngine)
   ) u_keymgr_dpe (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_secure),

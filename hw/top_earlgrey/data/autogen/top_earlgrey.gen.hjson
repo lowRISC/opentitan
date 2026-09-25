@@ -7611,6 +7611,7 @@
         NumInstHwSlot: "4"
         NumBootStages: "3"
         NumRomDigestInputs: "1"
+        SupportOtbnAsKdfEngine: "1"
       }
       domain: Main
       clock_connections:
@@ -7656,6 +7657,15 @@
           local: "true"
           expose: "true"
           name_top: KeymgrDpeNumRomDigestInputs
+        }
+        {
+          name: SupportOtbnAsKdfEngine
+          desc: Enable support for otbn as kdf engine
+          type: bit
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: KeymgrDpeSupportOtbnAsKdfEngine
         }
       ]
       inter_signal_list:
