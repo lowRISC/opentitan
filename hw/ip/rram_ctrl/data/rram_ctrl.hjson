@@ -404,6 +404,18 @@
       default:   "8",
       local:     "true"
     },
+    { name:      "NumEmulInfoRegions",
+      desc:      "Number of emulated info page regions (windows) on the data partition",
+      type:      "int",
+      default:   "2",
+      local:     "true"
+    },
+    { name:      "NumEmulInfoSubregions",
+      desc:      "Total number of emulated info subregions across all emulated info regions",
+      type:      "int",
+      default:   "24",
+      local:     "true"
+    },
     { name:      "NumDataPages",
       desc:      "Number of data pages",
       type:      "int",
@@ -489,6 +501,16 @@
             For each region, SW can establish the access policy by programming RRAM_CTRL.MP_REGION_CFG.
             In the case of information partitions, the access policy can be configured on a per page basis.
             To achieve this, SW must configure RRAM_CTRL.INFO_PAGE_CFG*.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.MEM_PROTECTION.EMULATED_INFO_PAGES"
+      desc: '''RRAM has only 8 physical info pages, fewer than firmware needs.
+            SW can define up to two windows on the data partition through RRAM_CTRL.EMUL_INFO_REGION, each locked by its own RRAM_CTRL.EMUL_INFO_REGWEN.
+            Each window can be split into up to 12 subregions using TOR-style (relative-offset) addressing, configured through RRAM_CTRL.EMUL_INFO_SUBREGION and locked individually by RRAM_CTRL.EMUL_INFO_SUBREGION_REGWEN.
+            Each subregion has its own read, write, scramble, and ECC permissions, configured through RRAM_CTRL.EMUL_INFO_SUBREGION_CFG and locked separately by RRAM_CTRL.EMUL_INFO_SUBREGION_CFG_REGWEN.
+            Host reads always deny the whole window, regardless of subregion configuration.
+            Emulated info subregions take priority over the generic memory-protection regions, but never over the fixed OTP exclusion region.
             '''
     }
     {
@@ -947,6 +969,228 @@
               mubi: true,
               desc: '''
                     Region is ECC enabled (both integrity and reliability ECC).
+                    ''',
+              resval: false
+            }
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_REGWEN"
+          desc: '''
+                Emulated info region registers configuration enable.
+                !!EMUL_INFO_REGION has no enable of its own.
+                A window is only treated as configured once this is locked.
+                '''
+          count: "NumEmulInfoRegions",
+          swaccess: "rw0c",
+          hwaccess: "hro",
+          compact: false,
+          fields: [
+              { bits: "0",
+                name: "REGION",
+                resval: "1"
+                desc: "Region register write enable. Once set to 0, it can no longer be configured to 1.",
+                enum: [
+                  { value: "0",
+                    name: "Region locked",
+                    desc: '''
+                          Region can no longer be configured until next reset.
+                          This also enables the region. See !!EMUL_INFO_REGION.
+                          '''
+                  },
+                  { value: "1",
+                    name: "Region enabled",
+                    desc: '''
+                          Region can be configured.
+                          '''
+                  },
+                ]
+              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_REGION",
+          desc: '''
+                Base and size configuration for an emulated info page region (window).
+                Unlike !!MP_REGION, this register carries no access permissions of its own.
+                See !!EMUL_INFO_SUBREGION_CFG for per-subregion permissions.
+                Host access to this window is always blocked in hardware.
+                Configuring and locking this via !!EMUL_INFO_REGWEN is a precondition for using any subregions configured through !!EMUL_INFO_SUBREGION and !!EMUL_INFO_SUBREGION_CFG within this window.
+                '''
+          count: "NumEmulInfoRegions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "EMUL_INFO_REGWEN",
+          regwen_multi: true,
+          fields: [
+            { bits: "11:0",
+              name: "BASE",
+              desc: '''
+                    Region base page. Note the granularity is page, not byte or word.
+                    ''',
+              resval: "0"
+            },
+            { bits: "23:12",
+              name: "SIZE",
+              desc: '''
+                    Region size, encoded as (number of pages - 1).
+                    ''',
+              resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_SUBREGION_REGWEN"
+          desc: '''
+                Emulated info subregion size registers configuration enable.
+                Independent from !!EMUL_INFO_SUBREGION_CFG_REGWEN.
+                A subregion's placement and its permissions can be locked separately.
+                A subregion is only considered once its placement is locked.
+                '''
+          count: "NumEmulInfoSubregions",
+          swaccess: "rw0c",
+          hwaccess: "hro",
+          compact: false,
+          fields: [
+              { bits: "0",
+                name: "REGION",
+                resval: "1"
+                desc: "Subregion write enable. Once set to 0, it can no longer be configured to 1.",
+                enum: [
+                  { value: "0",
+                    name: "Subregion locked",
+                    desc: '''
+                          Subregion size can no longer be configured until next reset.
+                          Once this is locked, the subregion configuration in !!EMUL_INFO_SUBREGION becomes active.
+                          '''
+                  },
+                  { value: "1",
+                    name: "Subregion enabled",
+                    desc: '''
+                          Subregion size can be configured.
+                          '''
+                  },
+                ]
+              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_SUBREGION",
+          desc: '''
+                Subregions are configured with TOR (top of range) addressing, but relative to the window's base.
+                A subregion's range runs from the prior subregion's TOP plus one up to its own TOP.
+                Configure subregions in increasing TOP order, locking each starting from index 0.
+                A subregion is enabled once its whole lock chain back to index 0 is locked and its offset does not overflow past its window.
+                '''
+          count: "NumEmulInfoSubregions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "EMUL_INFO_SUBREGION_REGWEN",
+          regwen_multi: true,
+          fields: [
+            { bits: "7:0",
+              name: "TOP",
+              desc: '''
+                    Subregion's last page, as an offset in pages from its window's base page.
+                    ''',
+              resval: "0"
+            },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_SUBREGION_CFG_REGWEN"
+          desc: '''
+                Emulated info subregion permission registers configuration enable.
+                Independent from !!EMUL_INFO_SUBREGION_REGWEN.
+                A subregion's permissions and its placement can be locked separately.
+                '''
+          count: "NumEmulInfoSubregions",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          compact: false,
+          fields: [
+              { bits: "0",
+                name: "REGION",
+                resval: "1"
+                desc: "Subregion write enable. Once set to 0, it can no longer be configured to 1.",
+                enum: [
+                  { value: "0",
+                    name: "Subregion locked",
+                    desc: '''
+                          Subregion permissions can no longer be configured until next reset.
+                          '''
+                  },
+                  { value: "1",
+                    name: "Subregion enabled",
+                    desc: '''
+                          Subregion permissions can be configured.
+                          '''
+                  },
+                ]
+              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "EMUL_INFO_SUBREGION_CFG",
+          desc: '''
+                Memory property configuration for an emulated info subregion.
+                There is no separate EN field.
+                Bits 3:0 are reserved, so RD_EN, WR_EN, SCRAMBLE_EN, and ECC_EN sit at the same bit positions as in !!MP_REGION_CFG and !!INFO_PAGE_CFG.
+                A subregion is enabled once its placement and its region are both locked.
+                '''
+          count: "NumEmulInfoSubregions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "EMUL_INFO_SUBREGION_CFG_REGWEN",
+          regwen_multi: true,
+          fields: [
+            { bits: "7:4",
+              name: "RD_EN",
+              mubi: true,
+              desc: '''
+                    Subregion can be read.
+                    ''',
+              resval: false
+            },
+            { bits: "11:8",
+              name: "WR_EN",
+              mubi: true,
+              desc: '''
+                    Subregion can be written.
+                    ''',
+              resval: false
+            }
+            { bits: "15:12",
+              name: "SCRAMBLE_EN",
+              mubi: true,
+              desc: '''
+                    Subregion is scramble enabled.
+                    ''',
+              resval: false
+            }
+            { bits: "19:16",
+              name: "ECC_EN",
+              mubi: true,
+              desc: '''
+                    Subregion is ECC enabled (both integrity and reliability ECC).
                     ''',
               resval: false
             }

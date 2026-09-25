@@ -75,6 +75,9 @@ The RRAM controller sits between the software interface, other hardware IPs, and
   - 10 configurable memory protection (MP) regions for the data partition.
   - A default region configuration applies when no region rule matches.
   - Per-page protection for the information partition.
+  - Two emulated info page windows on the data partition, each with up to 12 independently
+    lockable subregions, for info-page-like storage beyond the RRAM's 8 physical info pages.
+    Host access to these windows is always blocked.
 - XEX scrambling using the PRINCE cipher (similar construction to original flash_ctrl).
   - Scrambling is optional and independently configurable per region or info page.
   - Scrambling keys are sideloaded from emulated OTP through `otp_ctrl` and `rram_ctrl_otp`.

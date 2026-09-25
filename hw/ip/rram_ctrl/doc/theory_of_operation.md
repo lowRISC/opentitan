@@ -331,10 +331,33 @@ Host `host_tl` reads are checked separately, through their own dedicated region-
 
 ### Data partition
 
-Software accesses are matched against the configurable MP regions, with the lowest-indexed matching region taking priority.
-If no region matches, the access falls through to `DEFAULT_REGION`.
+Software accesses are matched against a single priority-ordered list: a fixed OTP exclusion, the emulated info subregions and their per-window deny entries (see [Emulated Info Pages](#emulated-info-pages)), and the configurable MP regions, with the lowest-indexed matching entry taking priority.
+If nothing matches, the access falls through to `DEFAULT_REGION`.
 Hardware OTP and lcmgr accesses bypass the software-configured regions entirely, matched instead against fixed compile-time tables.
 See [Memory Protection for OTP Hardware Plug](#memory-protection-for-otp-hardware-plug) and [Memory Protection for LCMGR Hardware Plug](#memory-protection-for-lcmgr-hardware-plug) for details.
+
+### Emulated Info Pages
+
+See [Emulated Info Pages](programmers_guide.md#emulated-info-pages) in the programmer's guide for how to configure windows and subregions.
+
+Software can define up to two windows on the data partition (see [`EMUL_INFO_REGION`](registers.md#emul_info_region)), each independently locked via [`EMUL_INFO_REGWEN`](registers.md#emul_info_regwen).
+A window carries no access permissions of its own and only reserves a window within the data partition.
+Host access to that window is always blocked in hardware, regardless of the subregion configuration.
+
+Each window can be split into up to 12 subregions.
+Subregions use TOR (top-of-range) addressing relative to the window's base: each subregion's [`EMUL_INFO_SUBREGION`](registers.md#emul_info_subregion) register stores only the offset (`TOP`) of its own last page, relative to the window's base.
+Since lower-indexed subregions take priority over higher-indexed ones in the same array, a subregion's effective range runs from the prior subregion's `TOP` plus one up to its own `TOP`.
+Subregions must be configured and locked in order starting from index 0 (see [`EMUL_INFO_SUBREGION_REGWEN`](registers.md#emul_info_subregion_regwen)).
+A subregion is only enabled once its own placement, and every earlier subregion's placement in the same window, are locked.
+This prevents a forgotten, unlocked lower-indexed subregion from silently widening a later subregion's effective access.
+Each subregion has its own read, write, scramble, and ECC permissions ([`EMUL_INFO_SUBREGION_CFG`](registers.md#emul_info_subregion_cfg)), which can be locked independently via [`EMUL_INFO_SUBREGION_CFG_REGWEN`](registers.md#emul_info_subregion_cfg_regwen).
+
+Within `rram_ctrl_mp`'s priority scan, emulated info subregions rank above the configurable MP regions but below the fixed OTP exclusion, so a subregion can never grant access to the reserved OTP pages.
+Any address inside a window not covered by an enabled subregion is denied by a window-wide deny entry, once the window is locked, so a gap can never fall through to the configurable regions or default region below.
+
+The hardware does not constrain where a window's base and size are placed within the data partition.
+For Earl Grey, the two windows are placed at the tail (highest addresses) of boot Slot A and Slot B respectively.
+This leaves a single contiguous area at the start of each slot for firmware code and data.
 
 ### Information partition
 

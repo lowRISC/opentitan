@@ -26,8 +26,18 @@ package rram_ctrl_pkg;
   parameter int unsigned BusIntgWidth    = tlul_pkg::DataIntgWidth;
   parameter int unsigned BusFullWidth    = BusWidth + BusIntgWidth;
 
-  parameter int unsigned MpRegions       = 10;  // controller protection regions
-  parameter int unsigned TotalMpRegions  = MpRegions + 2; // + default region and init region
+  parameter int unsigned MpRegions                   = 10; // controller protection regions
+  parameter int unsigned EmulInfoRegions             = 2;  // emulated info page windows
+  parameter int unsigned EmulInfoSubregions          = 24; // total number of subregions
+  parameter int unsigned EmulInfoSubregionsPerRegion = EmulInfoSubregions / EmulInfoRegions;
+  // Adds the default region, the OTP exclusion region, the emulated info subregions, one
+  // window-deny entry per emulated info region, and the configurable regions.
+  parameter int unsigned TotalMpRegions = MpRegions + EmulInfoSubregions + EmulInfoRegions + 2;
+  // Host requests always deny a whole emulated info region, regardless of subregion
+  // configuration.
+  // The host-facing priority array only needs the OTP exclusion, one no-access entry per
+  // emulated info region, the configurable regions, and the default region.
+  parameter int unsigned HostMpRegions = MpRegions + EmulInfoRegions + 2;
 
   // RRAM phy parameters
   parameter int unsigned DataByteWidth   = prim_util_pkg::vbits(DataWidth / 8);
@@ -206,11 +216,21 @@ package rram_ctrl_pkg;
   import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_mp_region_cfg_mreg_t;
   import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_default_region_reg_t;
   import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_info_page_cfg_mreg_t;
+  import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_emul_info_regwen_mreg_t;
+  import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_emul_info_region_mreg_t;
+  import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_emul_info_subregion_regwen_mreg_t;
+  import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_emul_info_subregion_mreg_t;
+  import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_emul_info_subregion_cfg_mreg_t;
 
   typedef rram_ctrl_reg2hw_mp_region_mreg_t sw_region_t;
   typedef rram_ctrl_reg2hw_mp_region_cfg_mreg_t sw_region_cfg_t;
   typedef rram_ctrl_reg2hw_default_region_reg_t sw_default_cfg_t;
   typedef rram_ctrl_reg2hw_info_page_cfg_mreg_t sw_info_cfg_t;
+  typedef rram_ctrl_reg2hw_emul_info_regwen_mreg_t sw_emul_info_regwen_t;
+  typedef rram_ctrl_reg2hw_emul_info_region_mreg_t sw_emul_info_region_t;
+  typedef rram_ctrl_reg2hw_emul_info_subregion_regwen_mreg_t sw_emul_info_subregion_regwen_t;
+  typedef rram_ctrl_reg2hw_emul_info_subregion_mreg_t sw_emul_info_subregion_t;
+  typedef rram_ctrl_reg2hw_emul_info_subregion_cfg_mreg_t sw_emul_info_subregion_cfg_t;
 
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4True;
@@ -353,8 +373,8 @@ package rram_ctrl_pkg;
     '{
       phase: PhaseInvalid,
       cfg:   CfgAllowRdWrOtp,
-      base:  PageW'(OtpStartPage),
-      size:  OtpPages-1
+      base:  OtpStartPage,
+      size:  OtpPages - 1
     }
   };
 
@@ -362,8 +382,8 @@ package rram_ctrl_pkg;
   parameter mp_region_cfg_t SwInitDataCfg = '{
     phase: PhaseInvalid,
     cfg:   CfgNoAccess,
-    base:  PageW'(OtpStartPage),
-    size:  OtpPages-1
+    base:  OtpStartPage,
+    size:  OtpPages - 1
   };
 
   // which page of which info type of which bank for seed selection

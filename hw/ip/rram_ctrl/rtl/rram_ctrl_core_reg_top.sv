@@ -26,7 +26,7 @@ module rram_ctrl_core_reg_top (
 
   import rram_ctrl_reg_pkg::* ;
 
-  localparam int AW = 9;
+  localparam int AW = 10;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -57,9 +57,9 @@ module rram_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [70:0] reg_we_check;
+  logic [170:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(71)
+    .OneHotWidth(171)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -130,8 +130,8 @@ module rram_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[284:287]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[288:291]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[684:687]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[688:691]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -544,6 +544,454 @@ module rram_ctrl_core_reg_top (
   logic [3:0] info_page_cfg_7_scramble_en_7_wd;
   logic [3:0] info_page_cfg_7_ecc_en_7_qs;
   logic [3:0] info_page_cfg_7_ecc_en_7_wd;
+  logic emul_info_regwen_0_we;
+  logic emul_info_regwen_0_qs;
+  logic emul_info_regwen_0_wd;
+  logic emul_info_regwen_1_we;
+  logic emul_info_regwen_1_qs;
+  logic emul_info_regwen_1_wd;
+  logic emul_info_region_0_we;
+  logic [11:0] emul_info_region_0_base_0_qs;
+  logic [11:0] emul_info_region_0_base_0_wd;
+  logic [11:0] emul_info_region_0_size_0_qs;
+  logic [11:0] emul_info_region_0_size_0_wd;
+  logic emul_info_region_1_we;
+  logic [11:0] emul_info_region_1_base_1_qs;
+  logic [11:0] emul_info_region_1_base_1_wd;
+  logic [11:0] emul_info_region_1_size_1_qs;
+  logic [11:0] emul_info_region_1_size_1_wd;
+  logic emul_info_subregion_regwen_0_we;
+  logic emul_info_subregion_regwen_0_qs;
+  logic emul_info_subregion_regwen_0_wd;
+  logic emul_info_subregion_regwen_1_we;
+  logic emul_info_subregion_regwen_1_qs;
+  logic emul_info_subregion_regwen_1_wd;
+  logic emul_info_subregion_regwen_2_we;
+  logic emul_info_subregion_regwen_2_qs;
+  logic emul_info_subregion_regwen_2_wd;
+  logic emul_info_subregion_regwen_3_we;
+  logic emul_info_subregion_regwen_3_qs;
+  logic emul_info_subregion_regwen_3_wd;
+  logic emul_info_subregion_regwen_4_we;
+  logic emul_info_subregion_regwen_4_qs;
+  logic emul_info_subregion_regwen_4_wd;
+  logic emul_info_subregion_regwen_5_we;
+  logic emul_info_subregion_regwen_5_qs;
+  logic emul_info_subregion_regwen_5_wd;
+  logic emul_info_subregion_regwen_6_we;
+  logic emul_info_subregion_regwen_6_qs;
+  logic emul_info_subregion_regwen_6_wd;
+  logic emul_info_subregion_regwen_7_we;
+  logic emul_info_subregion_regwen_7_qs;
+  logic emul_info_subregion_regwen_7_wd;
+  logic emul_info_subregion_regwen_8_we;
+  logic emul_info_subregion_regwen_8_qs;
+  logic emul_info_subregion_regwen_8_wd;
+  logic emul_info_subregion_regwen_9_we;
+  logic emul_info_subregion_regwen_9_qs;
+  logic emul_info_subregion_regwen_9_wd;
+  logic emul_info_subregion_regwen_10_we;
+  logic emul_info_subregion_regwen_10_qs;
+  logic emul_info_subregion_regwen_10_wd;
+  logic emul_info_subregion_regwen_11_we;
+  logic emul_info_subregion_regwen_11_qs;
+  logic emul_info_subregion_regwen_11_wd;
+  logic emul_info_subregion_regwen_12_we;
+  logic emul_info_subregion_regwen_12_qs;
+  logic emul_info_subregion_regwen_12_wd;
+  logic emul_info_subregion_regwen_13_we;
+  logic emul_info_subregion_regwen_13_qs;
+  logic emul_info_subregion_regwen_13_wd;
+  logic emul_info_subregion_regwen_14_we;
+  logic emul_info_subregion_regwen_14_qs;
+  logic emul_info_subregion_regwen_14_wd;
+  logic emul_info_subregion_regwen_15_we;
+  logic emul_info_subregion_regwen_15_qs;
+  logic emul_info_subregion_regwen_15_wd;
+  logic emul_info_subregion_regwen_16_we;
+  logic emul_info_subregion_regwen_16_qs;
+  logic emul_info_subregion_regwen_16_wd;
+  logic emul_info_subregion_regwen_17_we;
+  logic emul_info_subregion_regwen_17_qs;
+  logic emul_info_subregion_regwen_17_wd;
+  logic emul_info_subregion_regwen_18_we;
+  logic emul_info_subregion_regwen_18_qs;
+  logic emul_info_subregion_regwen_18_wd;
+  logic emul_info_subregion_regwen_19_we;
+  logic emul_info_subregion_regwen_19_qs;
+  logic emul_info_subregion_regwen_19_wd;
+  logic emul_info_subregion_regwen_20_we;
+  logic emul_info_subregion_regwen_20_qs;
+  logic emul_info_subregion_regwen_20_wd;
+  logic emul_info_subregion_regwen_21_we;
+  logic emul_info_subregion_regwen_21_qs;
+  logic emul_info_subregion_regwen_21_wd;
+  logic emul_info_subregion_regwen_22_we;
+  logic emul_info_subregion_regwen_22_qs;
+  logic emul_info_subregion_regwen_22_wd;
+  logic emul_info_subregion_regwen_23_we;
+  logic emul_info_subregion_regwen_23_qs;
+  logic emul_info_subregion_regwen_23_wd;
+  logic emul_info_subregion_0_we;
+  logic [7:0] emul_info_subregion_0_qs;
+  logic [7:0] emul_info_subregion_0_wd;
+  logic emul_info_subregion_1_we;
+  logic [7:0] emul_info_subregion_1_qs;
+  logic [7:0] emul_info_subregion_1_wd;
+  logic emul_info_subregion_2_we;
+  logic [7:0] emul_info_subregion_2_qs;
+  logic [7:0] emul_info_subregion_2_wd;
+  logic emul_info_subregion_3_we;
+  logic [7:0] emul_info_subregion_3_qs;
+  logic [7:0] emul_info_subregion_3_wd;
+  logic emul_info_subregion_4_we;
+  logic [7:0] emul_info_subregion_4_qs;
+  logic [7:0] emul_info_subregion_4_wd;
+  logic emul_info_subregion_5_we;
+  logic [7:0] emul_info_subregion_5_qs;
+  logic [7:0] emul_info_subregion_5_wd;
+  logic emul_info_subregion_6_we;
+  logic [7:0] emul_info_subregion_6_qs;
+  logic [7:0] emul_info_subregion_6_wd;
+  logic emul_info_subregion_7_we;
+  logic [7:0] emul_info_subregion_7_qs;
+  logic [7:0] emul_info_subregion_7_wd;
+  logic emul_info_subregion_8_we;
+  logic [7:0] emul_info_subregion_8_qs;
+  logic [7:0] emul_info_subregion_8_wd;
+  logic emul_info_subregion_9_we;
+  logic [7:0] emul_info_subregion_9_qs;
+  logic [7:0] emul_info_subregion_9_wd;
+  logic emul_info_subregion_10_we;
+  logic [7:0] emul_info_subregion_10_qs;
+  logic [7:0] emul_info_subregion_10_wd;
+  logic emul_info_subregion_11_we;
+  logic [7:0] emul_info_subregion_11_qs;
+  logic [7:0] emul_info_subregion_11_wd;
+  logic emul_info_subregion_12_we;
+  logic [7:0] emul_info_subregion_12_qs;
+  logic [7:0] emul_info_subregion_12_wd;
+  logic emul_info_subregion_13_we;
+  logic [7:0] emul_info_subregion_13_qs;
+  logic [7:0] emul_info_subregion_13_wd;
+  logic emul_info_subregion_14_we;
+  logic [7:0] emul_info_subregion_14_qs;
+  logic [7:0] emul_info_subregion_14_wd;
+  logic emul_info_subregion_15_we;
+  logic [7:0] emul_info_subregion_15_qs;
+  logic [7:0] emul_info_subregion_15_wd;
+  logic emul_info_subregion_16_we;
+  logic [7:0] emul_info_subregion_16_qs;
+  logic [7:0] emul_info_subregion_16_wd;
+  logic emul_info_subregion_17_we;
+  logic [7:0] emul_info_subregion_17_qs;
+  logic [7:0] emul_info_subregion_17_wd;
+  logic emul_info_subregion_18_we;
+  logic [7:0] emul_info_subregion_18_qs;
+  logic [7:0] emul_info_subregion_18_wd;
+  logic emul_info_subregion_19_we;
+  logic [7:0] emul_info_subregion_19_qs;
+  logic [7:0] emul_info_subregion_19_wd;
+  logic emul_info_subregion_20_we;
+  logic [7:0] emul_info_subregion_20_qs;
+  logic [7:0] emul_info_subregion_20_wd;
+  logic emul_info_subregion_21_we;
+  logic [7:0] emul_info_subregion_21_qs;
+  logic [7:0] emul_info_subregion_21_wd;
+  logic emul_info_subregion_22_we;
+  logic [7:0] emul_info_subregion_22_qs;
+  logic [7:0] emul_info_subregion_22_wd;
+  logic emul_info_subregion_23_we;
+  logic [7:0] emul_info_subregion_23_qs;
+  logic [7:0] emul_info_subregion_23_wd;
+  logic emul_info_subregion_cfg_regwen_0_we;
+  logic emul_info_subregion_cfg_regwen_0_qs;
+  logic emul_info_subregion_cfg_regwen_0_wd;
+  logic emul_info_subregion_cfg_regwen_1_we;
+  logic emul_info_subregion_cfg_regwen_1_qs;
+  logic emul_info_subregion_cfg_regwen_1_wd;
+  logic emul_info_subregion_cfg_regwen_2_we;
+  logic emul_info_subregion_cfg_regwen_2_qs;
+  logic emul_info_subregion_cfg_regwen_2_wd;
+  logic emul_info_subregion_cfg_regwen_3_we;
+  logic emul_info_subregion_cfg_regwen_3_qs;
+  logic emul_info_subregion_cfg_regwen_3_wd;
+  logic emul_info_subregion_cfg_regwen_4_we;
+  logic emul_info_subregion_cfg_regwen_4_qs;
+  logic emul_info_subregion_cfg_regwen_4_wd;
+  logic emul_info_subregion_cfg_regwen_5_we;
+  logic emul_info_subregion_cfg_regwen_5_qs;
+  logic emul_info_subregion_cfg_regwen_5_wd;
+  logic emul_info_subregion_cfg_regwen_6_we;
+  logic emul_info_subregion_cfg_regwen_6_qs;
+  logic emul_info_subregion_cfg_regwen_6_wd;
+  logic emul_info_subregion_cfg_regwen_7_we;
+  logic emul_info_subregion_cfg_regwen_7_qs;
+  logic emul_info_subregion_cfg_regwen_7_wd;
+  logic emul_info_subregion_cfg_regwen_8_we;
+  logic emul_info_subregion_cfg_regwen_8_qs;
+  logic emul_info_subregion_cfg_regwen_8_wd;
+  logic emul_info_subregion_cfg_regwen_9_we;
+  logic emul_info_subregion_cfg_regwen_9_qs;
+  logic emul_info_subregion_cfg_regwen_9_wd;
+  logic emul_info_subregion_cfg_regwen_10_we;
+  logic emul_info_subregion_cfg_regwen_10_qs;
+  logic emul_info_subregion_cfg_regwen_10_wd;
+  logic emul_info_subregion_cfg_regwen_11_we;
+  logic emul_info_subregion_cfg_regwen_11_qs;
+  logic emul_info_subregion_cfg_regwen_11_wd;
+  logic emul_info_subregion_cfg_regwen_12_we;
+  logic emul_info_subregion_cfg_regwen_12_qs;
+  logic emul_info_subregion_cfg_regwen_12_wd;
+  logic emul_info_subregion_cfg_regwen_13_we;
+  logic emul_info_subregion_cfg_regwen_13_qs;
+  logic emul_info_subregion_cfg_regwen_13_wd;
+  logic emul_info_subregion_cfg_regwen_14_we;
+  logic emul_info_subregion_cfg_regwen_14_qs;
+  logic emul_info_subregion_cfg_regwen_14_wd;
+  logic emul_info_subregion_cfg_regwen_15_we;
+  logic emul_info_subregion_cfg_regwen_15_qs;
+  logic emul_info_subregion_cfg_regwen_15_wd;
+  logic emul_info_subregion_cfg_regwen_16_we;
+  logic emul_info_subregion_cfg_regwen_16_qs;
+  logic emul_info_subregion_cfg_regwen_16_wd;
+  logic emul_info_subregion_cfg_regwen_17_we;
+  logic emul_info_subregion_cfg_regwen_17_qs;
+  logic emul_info_subregion_cfg_regwen_17_wd;
+  logic emul_info_subregion_cfg_regwen_18_we;
+  logic emul_info_subregion_cfg_regwen_18_qs;
+  logic emul_info_subregion_cfg_regwen_18_wd;
+  logic emul_info_subregion_cfg_regwen_19_we;
+  logic emul_info_subregion_cfg_regwen_19_qs;
+  logic emul_info_subregion_cfg_regwen_19_wd;
+  logic emul_info_subregion_cfg_regwen_20_we;
+  logic emul_info_subregion_cfg_regwen_20_qs;
+  logic emul_info_subregion_cfg_regwen_20_wd;
+  logic emul_info_subregion_cfg_regwen_21_we;
+  logic emul_info_subregion_cfg_regwen_21_qs;
+  logic emul_info_subregion_cfg_regwen_21_wd;
+  logic emul_info_subregion_cfg_regwen_22_we;
+  logic emul_info_subregion_cfg_regwen_22_qs;
+  logic emul_info_subregion_cfg_regwen_22_wd;
+  logic emul_info_subregion_cfg_regwen_23_we;
+  logic emul_info_subregion_cfg_regwen_23_qs;
+  logic emul_info_subregion_cfg_regwen_23_wd;
+  logic emul_info_subregion_cfg_0_we;
+  logic [3:0] emul_info_subregion_cfg_0_rd_en_0_qs;
+  logic [3:0] emul_info_subregion_cfg_0_rd_en_0_wd;
+  logic [3:0] emul_info_subregion_cfg_0_wr_en_0_qs;
+  logic [3:0] emul_info_subregion_cfg_0_wr_en_0_wd;
+  logic [3:0] emul_info_subregion_cfg_0_scramble_en_0_qs;
+  logic [3:0] emul_info_subregion_cfg_0_scramble_en_0_wd;
+  logic [3:0] emul_info_subregion_cfg_0_ecc_en_0_qs;
+  logic [3:0] emul_info_subregion_cfg_0_ecc_en_0_wd;
+  logic emul_info_subregion_cfg_1_we;
+  logic [3:0] emul_info_subregion_cfg_1_rd_en_1_qs;
+  logic [3:0] emul_info_subregion_cfg_1_rd_en_1_wd;
+  logic [3:0] emul_info_subregion_cfg_1_wr_en_1_qs;
+  logic [3:0] emul_info_subregion_cfg_1_wr_en_1_wd;
+  logic [3:0] emul_info_subregion_cfg_1_scramble_en_1_qs;
+  logic [3:0] emul_info_subregion_cfg_1_scramble_en_1_wd;
+  logic [3:0] emul_info_subregion_cfg_1_ecc_en_1_qs;
+  logic [3:0] emul_info_subregion_cfg_1_ecc_en_1_wd;
+  logic emul_info_subregion_cfg_2_we;
+  logic [3:0] emul_info_subregion_cfg_2_rd_en_2_qs;
+  logic [3:0] emul_info_subregion_cfg_2_rd_en_2_wd;
+  logic [3:0] emul_info_subregion_cfg_2_wr_en_2_qs;
+  logic [3:0] emul_info_subregion_cfg_2_wr_en_2_wd;
+  logic [3:0] emul_info_subregion_cfg_2_scramble_en_2_qs;
+  logic [3:0] emul_info_subregion_cfg_2_scramble_en_2_wd;
+  logic [3:0] emul_info_subregion_cfg_2_ecc_en_2_qs;
+  logic [3:0] emul_info_subregion_cfg_2_ecc_en_2_wd;
+  logic emul_info_subregion_cfg_3_we;
+  logic [3:0] emul_info_subregion_cfg_3_rd_en_3_qs;
+  logic [3:0] emul_info_subregion_cfg_3_rd_en_3_wd;
+  logic [3:0] emul_info_subregion_cfg_3_wr_en_3_qs;
+  logic [3:0] emul_info_subregion_cfg_3_wr_en_3_wd;
+  logic [3:0] emul_info_subregion_cfg_3_scramble_en_3_qs;
+  logic [3:0] emul_info_subregion_cfg_3_scramble_en_3_wd;
+  logic [3:0] emul_info_subregion_cfg_3_ecc_en_3_qs;
+  logic [3:0] emul_info_subregion_cfg_3_ecc_en_3_wd;
+  logic emul_info_subregion_cfg_4_we;
+  logic [3:0] emul_info_subregion_cfg_4_rd_en_4_qs;
+  logic [3:0] emul_info_subregion_cfg_4_rd_en_4_wd;
+  logic [3:0] emul_info_subregion_cfg_4_wr_en_4_qs;
+  logic [3:0] emul_info_subregion_cfg_4_wr_en_4_wd;
+  logic [3:0] emul_info_subregion_cfg_4_scramble_en_4_qs;
+  logic [3:0] emul_info_subregion_cfg_4_scramble_en_4_wd;
+  logic [3:0] emul_info_subregion_cfg_4_ecc_en_4_qs;
+  logic [3:0] emul_info_subregion_cfg_4_ecc_en_4_wd;
+  logic emul_info_subregion_cfg_5_we;
+  logic [3:0] emul_info_subregion_cfg_5_rd_en_5_qs;
+  logic [3:0] emul_info_subregion_cfg_5_rd_en_5_wd;
+  logic [3:0] emul_info_subregion_cfg_5_wr_en_5_qs;
+  logic [3:0] emul_info_subregion_cfg_5_wr_en_5_wd;
+  logic [3:0] emul_info_subregion_cfg_5_scramble_en_5_qs;
+  logic [3:0] emul_info_subregion_cfg_5_scramble_en_5_wd;
+  logic [3:0] emul_info_subregion_cfg_5_ecc_en_5_qs;
+  logic [3:0] emul_info_subregion_cfg_5_ecc_en_5_wd;
+  logic emul_info_subregion_cfg_6_we;
+  logic [3:0] emul_info_subregion_cfg_6_rd_en_6_qs;
+  logic [3:0] emul_info_subregion_cfg_6_rd_en_6_wd;
+  logic [3:0] emul_info_subregion_cfg_6_wr_en_6_qs;
+  logic [3:0] emul_info_subregion_cfg_6_wr_en_6_wd;
+  logic [3:0] emul_info_subregion_cfg_6_scramble_en_6_qs;
+  logic [3:0] emul_info_subregion_cfg_6_scramble_en_6_wd;
+  logic [3:0] emul_info_subregion_cfg_6_ecc_en_6_qs;
+  logic [3:0] emul_info_subregion_cfg_6_ecc_en_6_wd;
+  logic emul_info_subregion_cfg_7_we;
+  logic [3:0] emul_info_subregion_cfg_7_rd_en_7_qs;
+  logic [3:0] emul_info_subregion_cfg_7_rd_en_7_wd;
+  logic [3:0] emul_info_subregion_cfg_7_wr_en_7_qs;
+  logic [3:0] emul_info_subregion_cfg_7_wr_en_7_wd;
+  logic [3:0] emul_info_subregion_cfg_7_scramble_en_7_qs;
+  logic [3:0] emul_info_subregion_cfg_7_scramble_en_7_wd;
+  logic [3:0] emul_info_subregion_cfg_7_ecc_en_7_qs;
+  logic [3:0] emul_info_subregion_cfg_7_ecc_en_7_wd;
+  logic emul_info_subregion_cfg_8_we;
+  logic [3:0] emul_info_subregion_cfg_8_rd_en_8_qs;
+  logic [3:0] emul_info_subregion_cfg_8_rd_en_8_wd;
+  logic [3:0] emul_info_subregion_cfg_8_wr_en_8_qs;
+  logic [3:0] emul_info_subregion_cfg_8_wr_en_8_wd;
+  logic [3:0] emul_info_subregion_cfg_8_scramble_en_8_qs;
+  logic [3:0] emul_info_subregion_cfg_8_scramble_en_8_wd;
+  logic [3:0] emul_info_subregion_cfg_8_ecc_en_8_qs;
+  logic [3:0] emul_info_subregion_cfg_8_ecc_en_8_wd;
+  logic emul_info_subregion_cfg_9_we;
+  logic [3:0] emul_info_subregion_cfg_9_rd_en_9_qs;
+  logic [3:0] emul_info_subregion_cfg_9_rd_en_9_wd;
+  logic [3:0] emul_info_subregion_cfg_9_wr_en_9_qs;
+  logic [3:0] emul_info_subregion_cfg_9_wr_en_9_wd;
+  logic [3:0] emul_info_subregion_cfg_9_scramble_en_9_qs;
+  logic [3:0] emul_info_subregion_cfg_9_scramble_en_9_wd;
+  logic [3:0] emul_info_subregion_cfg_9_ecc_en_9_qs;
+  logic [3:0] emul_info_subregion_cfg_9_ecc_en_9_wd;
+  logic emul_info_subregion_cfg_10_we;
+  logic [3:0] emul_info_subregion_cfg_10_rd_en_10_qs;
+  logic [3:0] emul_info_subregion_cfg_10_rd_en_10_wd;
+  logic [3:0] emul_info_subregion_cfg_10_wr_en_10_qs;
+  logic [3:0] emul_info_subregion_cfg_10_wr_en_10_wd;
+  logic [3:0] emul_info_subregion_cfg_10_scramble_en_10_qs;
+  logic [3:0] emul_info_subregion_cfg_10_scramble_en_10_wd;
+  logic [3:0] emul_info_subregion_cfg_10_ecc_en_10_qs;
+  logic [3:0] emul_info_subregion_cfg_10_ecc_en_10_wd;
+  logic emul_info_subregion_cfg_11_we;
+  logic [3:0] emul_info_subregion_cfg_11_rd_en_11_qs;
+  logic [3:0] emul_info_subregion_cfg_11_rd_en_11_wd;
+  logic [3:0] emul_info_subregion_cfg_11_wr_en_11_qs;
+  logic [3:0] emul_info_subregion_cfg_11_wr_en_11_wd;
+  logic [3:0] emul_info_subregion_cfg_11_scramble_en_11_qs;
+  logic [3:0] emul_info_subregion_cfg_11_scramble_en_11_wd;
+  logic [3:0] emul_info_subregion_cfg_11_ecc_en_11_qs;
+  logic [3:0] emul_info_subregion_cfg_11_ecc_en_11_wd;
+  logic emul_info_subregion_cfg_12_we;
+  logic [3:0] emul_info_subregion_cfg_12_rd_en_12_qs;
+  logic [3:0] emul_info_subregion_cfg_12_rd_en_12_wd;
+  logic [3:0] emul_info_subregion_cfg_12_wr_en_12_qs;
+  logic [3:0] emul_info_subregion_cfg_12_wr_en_12_wd;
+  logic [3:0] emul_info_subregion_cfg_12_scramble_en_12_qs;
+  logic [3:0] emul_info_subregion_cfg_12_scramble_en_12_wd;
+  logic [3:0] emul_info_subregion_cfg_12_ecc_en_12_qs;
+  logic [3:0] emul_info_subregion_cfg_12_ecc_en_12_wd;
+  logic emul_info_subregion_cfg_13_we;
+  logic [3:0] emul_info_subregion_cfg_13_rd_en_13_qs;
+  logic [3:0] emul_info_subregion_cfg_13_rd_en_13_wd;
+  logic [3:0] emul_info_subregion_cfg_13_wr_en_13_qs;
+  logic [3:0] emul_info_subregion_cfg_13_wr_en_13_wd;
+  logic [3:0] emul_info_subregion_cfg_13_scramble_en_13_qs;
+  logic [3:0] emul_info_subregion_cfg_13_scramble_en_13_wd;
+  logic [3:0] emul_info_subregion_cfg_13_ecc_en_13_qs;
+  logic [3:0] emul_info_subregion_cfg_13_ecc_en_13_wd;
+  logic emul_info_subregion_cfg_14_we;
+  logic [3:0] emul_info_subregion_cfg_14_rd_en_14_qs;
+  logic [3:0] emul_info_subregion_cfg_14_rd_en_14_wd;
+  logic [3:0] emul_info_subregion_cfg_14_wr_en_14_qs;
+  logic [3:0] emul_info_subregion_cfg_14_wr_en_14_wd;
+  logic [3:0] emul_info_subregion_cfg_14_scramble_en_14_qs;
+  logic [3:0] emul_info_subregion_cfg_14_scramble_en_14_wd;
+  logic [3:0] emul_info_subregion_cfg_14_ecc_en_14_qs;
+  logic [3:0] emul_info_subregion_cfg_14_ecc_en_14_wd;
+  logic emul_info_subregion_cfg_15_we;
+  logic [3:0] emul_info_subregion_cfg_15_rd_en_15_qs;
+  logic [3:0] emul_info_subregion_cfg_15_rd_en_15_wd;
+  logic [3:0] emul_info_subregion_cfg_15_wr_en_15_qs;
+  logic [3:0] emul_info_subregion_cfg_15_wr_en_15_wd;
+  logic [3:0] emul_info_subregion_cfg_15_scramble_en_15_qs;
+  logic [3:0] emul_info_subregion_cfg_15_scramble_en_15_wd;
+  logic [3:0] emul_info_subregion_cfg_15_ecc_en_15_qs;
+  logic [3:0] emul_info_subregion_cfg_15_ecc_en_15_wd;
+  logic emul_info_subregion_cfg_16_we;
+  logic [3:0] emul_info_subregion_cfg_16_rd_en_16_qs;
+  logic [3:0] emul_info_subregion_cfg_16_rd_en_16_wd;
+  logic [3:0] emul_info_subregion_cfg_16_wr_en_16_qs;
+  logic [3:0] emul_info_subregion_cfg_16_wr_en_16_wd;
+  logic [3:0] emul_info_subregion_cfg_16_scramble_en_16_qs;
+  logic [3:0] emul_info_subregion_cfg_16_scramble_en_16_wd;
+  logic [3:0] emul_info_subregion_cfg_16_ecc_en_16_qs;
+  logic [3:0] emul_info_subregion_cfg_16_ecc_en_16_wd;
+  logic emul_info_subregion_cfg_17_we;
+  logic [3:0] emul_info_subregion_cfg_17_rd_en_17_qs;
+  logic [3:0] emul_info_subregion_cfg_17_rd_en_17_wd;
+  logic [3:0] emul_info_subregion_cfg_17_wr_en_17_qs;
+  logic [3:0] emul_info_subregion_cfg_17_wr_en_17_wd;
+  logic [3:0] emul_info_subregion_cfg_17_scramble_en_17_qs;
+  logic [3:0] emul_info_subregion_cfg_17_scramble_en_17_wd;
+  logic [3:0] emul_info_subregion_cfg_17_ecc_en_17_qs;
+  logic [3:0] emul_info_subregion_cfg_17_ecc_en_17_wd;
+  logic emul_info_subregion_cfg_18_we;
+  logic [3:0] emul_info_subregion_cfg_18_rd_en_18_qs;
+  logic [3:0] emul_info_subregion_cfg_18_rd_en_18_wd;
+  logic [3:0] emul_info_subregion_cfg_18_wr_en_18_qs;
+  logic [3:0] emul_info_subregion_cfg_18_wr_en_18_wd;
+  logic [3:0] emul_info_subregion_cfg_18_scramble_en_18_qs;
+  logic [3:0] emul_info_subregion_cfg_18_scramble_en_18_wd;
+  logic [3:0] emul_info_subregion_cfg_18_ecc_en_18_qs;
+  logic [3:0] emul_info_subregion_cfg_18_ecc_en_18_wd;
+  logic emul_info_subregion_cfg_19_we;
+  logic [3:0] emul_info_subregion_cfg_19_rd_en_19_qs;
+  logic [3:0] emul_info_subregion_cfg_19_rd_en_19_wd;
+  logic [3:0] emul_info_subregion_cfg_19_wr_en_19_qs;
+  logic [3:0] emul_info_subregion_cfg_19_wr_en_19_wd;
+  logic [3:0] emul_info_subregion_cfg_19_scramble_en_19_qs;
+  logic [3:0] emul_info_subregion_cfg_19_scramble_en_19_wd;
+  logic [3:0] emul_info_subregion_cfg_19_ecc_en_19_qs;
+  logic [3:0] emul_info_subregion_cfg_19_ecc_en_19_wd;
+  logic emul_info_subregion_cfg_20_we;
+  logic [3:0] emul_info_subregion_cfg_20_rd_en_20_qs;
+  logic [3:0] emul_info_subregion_cfg_20_rd_en_20_wd;
+  logic [3:0] emul_info_subregion_cfg_20_wr_en_20_qs;
+  logic [3:0] emul_info_subregion_cfg_20_wr_en_20_wd;
+  logic [3:0] emul_info_subregion_cfg_20_scramble_en_20_qs;
+  logic [3:0] emul_info_subregion_cfg_20_scramble_en_20_wd;
+  logic [3:0] emul_info_subregion_cfg_20_ecc_en_20_qs;
+  logic [3:0] emul_info_subregion_cfg_20_ecc_en_20_wd;
+  logic emul_info_subregion_cfg_21_we;
+  logic [3:0] emul_info_subregion_cfg_21_rd_en_21_qs;
+  logic [3:0] emul_info_subregion_cfg_21_rd_en_21_wd;
+  logic [3:0] emul_info_subregion_cfg_21_wr_en_21_qs;
+  logic [3:0] emul_info_subregion_cfg_21_wr_en_21_wd;
+  logic [3:0] emul_info_subregion_cfg_21_scramble_en_21_qs;
+  logic [3:0] emul_info_subregion_cfg_21_scramble_en_21_wd;
+  logic [3:0] emul_info_subregion_cfg_21_ecc_en_21_qs;
+  logic [3:0] emul_info_subregion_cfg_21_ecc_en_21_wd;
+  logic emul_info_subregion_cfg_22_we;
+  logic [3:0] emul_info_subregion_cfg_22_rd_en_22_qs;
+  logic [3:0] emul_info_subregion_cfg_22_rd_en_22_wd;
+  logic [3:0] emul_info_subregion_cfg_22_wr_en_22_qs;
+  logic [3:0] emul_info_subregion_cfg_22_wr_en_22_wd;
+  logic [3:0] emul_info_subregion_cfg_22_scramble_en_22_qs;
+  logic [3:0] emul_info_subregion_cfg_22_scramble_en_22_wd;
+  logic [3:0] emul_info_subregion_cfg_22_ecc_en_22_qs;
+  logic [3:0] emul_info_subregion_cfg_22_ecc_en_22_wd;
+  logic emul_info_subregion_cfg_23_we;
+  logic [3:0] emul_info_subregion_cfg_23_rd_en_23_qs;
+  logic [3:0] emul_info_subregion_cfg_23_rd_en_23_wd;
+  logic [3:0] emul_info_subregion_cfg_23_wr_en_23_qs;
+  logic [3:0] emul_info_subregion_cfg_23_wr_en_23_wd;
+  logic [3:0] emul_info_subregion_cfg_23_scramble_en_23_qs;
+  logic [3:0] emul_info_subregion_cfg_23_scramble_en_23_wd;
+  logic [3:0] emul_info_subregion_cfg_23_ecc_en_23_qs;
+  logic [3:0] emul_info_subregion_cfg_23_ecc_en_23_wd;
   logic hw_info_cfg_override_we;
   logic [3:0] hw_info_cfg_override_scramble_dis_qs;
   logic [3:0] hw_info_cfg_override_scramble_dis_wd;
@@ -5178,6 +5626,5128 @@ module rram_ctrl_core_reg_top (
   );
 
 
+  // Subregister 0 of Multireg emul_info_regwen
+  // R[emul_info_regwen_0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_regwen_0_we),
+    .wd     (emul_info_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_regwen[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_regwen_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_regwen
+  // R[emul_info_regwen_1]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_regwen_1_we),
+    .wd     (emul_info_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_regwen[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_regwen_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg emul_info_region
+  // R[emul_info_region_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_region_0_gated_we;
+  assign emul_info_region_0_gated_we = emul_info_region_0_we & emul_info_regwen_0_qs;
+  //   F[base_0]: 11:0
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_region_0_base_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_region_0_gated_we),
+    .wd     (emul_info_region_0_base_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_region[0].base.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_region_0_base_0_qs)
+  );
+
+  //   F[size_0]: 23:12
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_region_0_size_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_region_0_gated_we),
+    .wd     (emul_info_region_0_size_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_region[0].size.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_region_0_size_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_region
+  // R[emul_info_region_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_region_1_gated_we;
+  assign emul_info_region_1_gated_we = emul_info_region_1_we & emul_info_regwen_1_qs;
+  //   F[base_1]: 11:0
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_region_1_base_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_region_1_gated_we),
+    .wd     (emul_info_region_1_base_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_region[1].base.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_region_1_base_1_qs)
+  );
+
+  //   F[size_1]: 23:12
+  prim_subreg #(
+    .DW      (12),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (12'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_region_1_size_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_region_1_gated_we),
+    .wd     (emul_info_region_1_size_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_region[1].size.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_region_1_size_1_qs)
+  );
+
+
+  // Subregister 0 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_0_we),
+    .wd     (emul_info_subregion_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_1]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_1_we),
+    .wd     (emul_info_subregion_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_2]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_2_we),
+    .wd     (emul_info_subregion_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_3]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_3_we),
+    .wd     (emul_info_subregion_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_4]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_4_we),
+    .wd     (emul_info_subregion_regwen_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_5]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_5_we),
+    .wd     (emul_info_subregion_regwen_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_6]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_6_we),
+    .wd     (emul_info_subregion_regwen_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_7]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_7_we),
+    .wd     (emul_info_subregion_regwen_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_8]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_8_we),
+    .wd     (emul_info_subregion_regwen_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_9]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_9_we),
+    .wd     (emul_info_subregion_regwen_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_10]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_10_we),
+    .wd     (emul_info_subregion_regwen_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_11]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_11_we),
+    .wd     (emul_info_subregion_regwen_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[11].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_12]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_12_we),
+    .wd     (emul_info_subregion_regwen_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[12].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_13]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_13_we),
+    .wd     (emul_info_subregion_regwen_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[13].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_14]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_14_we),
+    .wd     (emul_info_subregion_regwen_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[14].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_15]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_15_we),
+    .wd     (emul_info_subregion_regwen_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[15].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_16]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_16_we),
+    .wd     (emul_info_subregion_regwen_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[16].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_17]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_17_we),
+    .wd     (emul_info_subregion_regwen_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[17].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_18]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_18_we),
+    .wd     (emul_info_subregion_regwen_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[18].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_19]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_19_we),
+    .wd     (emul_info_subregion_regwen_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[19].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_20]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_20_we),
+    .wd     (emul_info_subregion_regwen_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[20].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_21]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_21_we),
+    .wd     (emul_info_subregion_regwen_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[21].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_22]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_22_we),
+    .wd     (emul_info_subregion_regwen_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[22].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg emul_info_subregion_regwen
+  // R[emul_info_subregion_regwen_23]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_regwen_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_regwen_23_we),
+    .wd     (emul_info_subregion_regwen_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_regwen[23].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_regwen_23_qs)
+  );
+
+
+  // Subregister 0 of Multireg emul_info_subregion
+  // R[emul_info_subregion_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_0_gated_we;
+  assign emul_info_subregion_0_gated_we =
+    emul_info_subregion_0_we & emul_info_subregion_regwen_0_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_0_gated_we),
+    .wd     (emul_info_subregion_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_subregion
+  // R[emul_info_subregion_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_1_gated_we;
+  assign emul_info_subregion_1_gated_we =
+    emul_info_subregion_1_we & emul_info_subregion_regwen_1_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_1_gated_we),
+    .wd     (emul_info_subregion_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg emul_info_subregion
+  // R[emul_info_subregion_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_2_gated_we;
+  assign emul_info_subregion_2_gated_we =
+    emul_info_subregion_2_we & emul_info_subregion_regwen_2_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_2_gated_we),
+    .wd     (emul_info_subregion_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg emul_info_subregion
+  // R[emul_info_subregion_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_3_gated_we;
+  assign emul_info_subregion_3_gated_we =
+    emul_info_subregion_3_we & emul_info_subregion_regwen_3_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_3_gated_we),
+    .wd     (emul_info_subregion_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg emul_info_subregion
+  // R[emul_info_subregion_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_4_gated_we;
+  assign emul_info_subregion_4_gated_we =
+    emul_info_subregion_4_we & emul_info_subregion_regwen_4_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_4_gated_we),
+    .wd     (emul_info_subregion_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg emul_info_subregion
+  // R[emul_info_subregion_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_5_gated_we;
+  assign emul_info_subregion_5_gated_we =
+    emul_info_subregion_5_we & emul_info_subregion_regwen_5_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_5_gated_we),
+    .wd     (emul_info_subregion_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg emul_info_subregion
+  // R[emul_info_subregion_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_6_gated_we;
+  assign emul_info_subregion_6_gated_we =
+    emul_info_subregion_6_we & emul_info_subregion_regwen_6_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_6_gated_we),
+    .wd     (emul_info_subregion_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg emul_info_subregion
+  // R[emul_info_subregion_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_7_gated_we;
+  assign emul_info_subregion_7_gated_we =
+    emul_info_subregion_7_we & emul_info_subregion_regwen_7_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_7_gated_we),
+    .wd     (emul_info_subregion_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg emul_info_subregion
+  // R[emul_info_subregion_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_8_gated_we;
+  assign emul_info_subregion_8_gated_we =
+    emul_info_subregion_8_we & emul_info_subregion_regwen_8_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_8_gated_we),
+    .wd     (emul_info_subregion_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg emul_info_subregion
+  // R[emul_info_subregion_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_9_gated_we;
+  assign emul_info_subregion_9_gated_we =
+    emul_info_subregion_9_we & emul_info_subregion_regwen_9_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_9_gated_we),
+    .wd     (emul_info_subregion_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg emul_info_subregion
+  // R[emul_info_subregion_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_10_gated_we;
+  assign emul_info_subregion_10_gated_we =
+    emul_info_subregion_10_we & emul_info_subregion_regwen_10_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_10_gated_we),
+    .wd     (emul_info_subregion_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg emul_info_subregion
+  // R[emul_info_subregion_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_11_gated_we;
+  assign emul_info_subregion_11_gated_we =
+    emul_info_subregion_11_we & emul_info_subregion_regwen_11_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_11_gated_we),
+    .wd     (emul_info_subregion_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[11].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg emul_info_subregion
+  // R[emul_info_subregion_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_12_gated_we;
+  assign emul_info_subregion_12_gated_we =
+    emul_info_subregion_12_we & emul_info_subregion_regwen_12_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_12_gated_we),
+    .wd     (emul_info_subregion_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[12].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg emul_info_subregion
+  // R[emul_info_subregion_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_13_gated_we;
+  assign emul_info_subregion_13_gated_we =
+    emul_info_subregion_13_we & emul_info_subregion_regwen_13_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_13_gated_we),
+    .wd     (emul_info_subregion_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[13].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg emul_info_subregion
+  // R[emul_info_subregion_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_14_gated_we;
+  assign emul_info_subregion_14_gated_we =
+    emul_info_subregion_14_we & emul_info_subregion_regwen_14_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_14_gated_we),
+    .wd     (emul_info_subregion_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[14].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg emul_info_subregion
+  // R[emul_info_subregion_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_15_gated_we;
+  assign emul_info_subregion_15_gated_we =
+    emul_info_subregion_15_we & emul_info_subregion_regwen_15_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_15_gated_we),
+    .wd     (emul_info_subregion_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[15].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg emul_info_subregion
+  // R[emul_info_subregion_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_16_gated_we;
+  assign emul_info_subregion_16_gated_we =
+    emul_info_subregion_16_we & emul_info_subregion_regwen_16_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_16_gated_we),
+    .wd     (emul_info_subregion_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[16].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg emul_info_subregion
+  // R[emul_info_subregion_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_17_gated_we;
+  assign emul_info_subregion_17_gated_we =
+    emul_info_subregion_17_we & emul_info_subregion_regwen_17_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_17_gated_we),
+    .wd     (emul_info_subregion_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[17].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg emul_info_subregion
+  // R[emul_info_subregion_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_18_gated_we;
+  assign emul_info_subregion_18_gated_we =
+    emul_info_subregion_18_we & emul_info_subregion_regwen_18_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_18_gated_we),
+    .wd     (emul_info_subregion_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[18].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg emul_info_subregion
+  // R[emul_info_subregion_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_19_gated_we;
+  assign emul_info_subregion_19_gated_we =
+    emul_info_subregion_19_we & emul_info_subregion_regwen_19_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_19_gated_we),
+    .wd     (emul_info_subregion_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[19].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg emul_info_subregion
+  // R[emul_info_subregion_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_20_gated_we;
+  assign emul_info_subregion_20_gated_we =
+    emul_info_subregion_20_we & emul_info_subregion_regwen_20_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_20_gated_we),
+    .wd     (emul_info_subregion_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[20].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg emul_info_subregion
+  // R[emul_info_subregion_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_21_gated_we;
+  assign emul_info_subregion_21_gated_we =
+    emul_info_subregion_21_we & emul_info_subregion_regwen_21_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_21_gated_we),
+    .wd     (emul_info_subregion_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[21].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg emul_info_subregion
+  // R[emul_info_subregion_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_22_gated_we;
+  assign emul_info_subregion_22_gated_we =
+    emul_info_subregion_22_we & emul_info_subregion_regwen_22_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_22_gated_we),
+    .wd     (emul_info_subregion_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[22].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg emul_info_subregion
+  // R[emul_info_subregion_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_23_gated_we;
+  assign emul_info_subregion_23_gated_we =
+    emul_info_subregion_23_we & emul_info_subregion_regwen_23_qs;
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_23_gated_we),
+    .wd     (emul_info_subregion_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion[23].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_23_qs)
+  );
+
+
+  // Subregister 0 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_0]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_0_we),
+    .wd     (emul_info_subregion_cfg_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_1]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_1_we),
+    .wd     (emul_info_subregion_cfg_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_2]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_2_we),
+    .wd     (emul_info_subregion_cfg_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_3]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_3_we),
+    .wd     (emul_info_subregion_cfg_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_4]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_4_we),
+    .wd     (emul_info_subregion_cfg_regwen_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_5]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_5_we),
+    .wd     (emul_info_subregion_cfg_regwen_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_6]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_6_we),
+    .wd     (emul_info_subregion_cfg_regwen_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_7]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_7_we),
+    .wd     (emul_info_subregion_cfg_regwen_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_8]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_8_we),
+    .wd     (emul_info_subregion_cfg_regwen_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_9]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_9_we),
+    .wd     (emul_info_subregion_cfg_regwen_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_10]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_10_we),
+    .wd     (emul_info_subregion_cfg_regwen_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_11]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_11_we),
+    .wd     (emul_info_subregion_cfg_regwen_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_12]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_12_we),
+    .wd     (emul_info_subregion_cfg_regwen_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_13]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_13_we),
+    .wd     (emul_info_subregion_cfg_regwen_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_14]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_14_we),
+    .wd     (emul_info_subregion_cfg_regwen_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_15]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_15_we),
+    .wd     (emul_info_subregion_cfg_regwen_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_16]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_16_we),
+    .wd     (emul_info_subregion_cfg_regwen_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_17]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_17_we),
+    .wd     (emul_info_subregion_cfg_regwen_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_18]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_18_we),
+    .wd     (emul_info_subregion_cfg_regwen_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_19]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_19_we),
+    .wd     (emul_info_subregion_cfg_regwen_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_20]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_20_we),
+    .wd     (emul_info_subregion_cfg_regwen_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_21]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_21_we),
+    .wd     (emul_info_subregion_cfg_regwen_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_22]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_22_we),
+    .wd     (emul_info_subregion_cfg_regwen_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg emul_info_subregion_cfg_regwen
+  // R[emul_info_subregion_cfg_regwen_23]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_emul_info_subregion_cfg_regwen_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_regwen_23_we),
+    .wd     (emul_info_subregion_cfg_regwen_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_regwen_23_qs)
+  );
+
+
+  // Subregister 0 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_0_gated_we;
+  assign emul_info_subregion_cfg_0_gated_we =
+    emul_info_subregion_cfg_0_we & emul_info_subregion_cfg_regwen_0_qs;
+  //   F[rd_en_0]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_0_rd_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_0_gated_we),
+    .wd     (emul_info_subregion_cfg_0_rd_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[0].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_0_rd_en_0_qs)
+  );
+
+  //   F[wr_en_0]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_0_wr_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_0_gated_we),
+    .wd     (emul_info_subregion_cfg_0_wr_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[0].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_0_wr_en_0_qs)
+  );
+
+  //   F[scramble_en_0]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_0_gated_we),
+    .wd     (emul_info_subregion_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[0].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_0_scramble_en_0_qs)
+  );
+
+  //   F[ecc_en_0]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_0_ecc_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_0_gated_we),
+    .wd     (emul_info_subregion_cfg_0_ecc_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[0].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_0_ecc_en_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_1_gated_we;
+  assign emul_info_subregion_cfg_1_gated_we =
+    emul_info_subregion_cfg_1_we & emul_info_subregion_cfg_regwen_1_qs;
+  //   F[rd_en_1]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_1_rd_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_1_gated_we),
+    .wd     (emul_info_subregion_cfg_1_rd_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[1].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_1_rd_en_1_qs)
+  );
+
+  //   F[wr_en_1]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_1_wr_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_1_gated_we),
+    .wd     (emul_info_subregion_cfg_1_wr_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[1].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_1_wr_en_1_qs)
+  );
+
+  //   F[scramble_en_1]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_1_gated_we),
+    .wd     (emul_info_subregion_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[1].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_1_scramble_en_1_qs)
+  );
+
+  //   F[ecc_en_1]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_1_ecc_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_1_gated_we),
+    .wd     (emul_info_subregion_cfg_1_ecc_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[1].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_1_ecc_en_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_2_gated_we;
+  assign emul_info_subregion_cfg_2_gated_we =
+    emul_info_subregion_cfg_2_we & emul_info_subregion_cfg_regwen_2_qs;
+  //   F[rd_en_2]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_2_rd_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_2_gated_we),
+    .wd     (emul_info_subregion_cfg_2_rd_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[2].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_2_rd_en_2_qs)
+  );
+
+  //   F[wr_en_2]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_2_wr_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_2_gated_we),
+    .wd     (emul_info_subregion_cfg_2_wr_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[2].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_2_wr_en_2_qs)
+  );
+
+  //   F[scramble_en_2]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_2_gated_we),
+    .wd     (emul_info_subregion_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[2].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_2_scramble_en_2_qs)
+  );
+
+  //   F[ecc_en_2]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_2_ecc_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_2_gated_we),
+    .wd     (emul_info_subregion_cfg_2_ecc_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[2].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_2_ecc_en_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_3_gated_we;
+  assign emul_info_subregion_cfg_3_gated_we =
+    emul_info_subregion_cfg_3_we & emul_info_subregion_cfg_regwen_3_qs;
+  //   F[rd_en_3]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_3_rd_en_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_3_gated_we),
+    .wd     (emul_info_subregion_cfg_3_rd_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[3].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_3_rd_en_3_qs)
+  );
+
+  //   F[wr_en_3]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_3_wr_en_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_3_gated_we),
+    .wd     (emul_info_subregion_cfg_3_wr_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[3].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_3_wr_en_3_qs)
+  );
+
+  //   F[scramble_en_3]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_3_gated_we),
+    .wd     (emul_info_subregion_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[3].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_3_scramble_en_3_qs)
+  );
+
+  //   F[ecc_en_3]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_3_ecc_en_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_3_gated_we),
+    .wd     (emul_info_subregion_cfg_3_ecc_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[3].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_3_ecc_en_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_4_gated_we;
+  assign emul_info_subregion_cfg_4_gated_we =
+    emul_info_subregion_cfg_4_we & emul_info_subregion_cfg_regwen_4_qs;
+  //   F[rd_en_4]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_4_rd_en_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_4_gated_we),
+    .wd     (emul_info_subregion_cfg_4_rd_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[4].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_4_rd_en_4_qs)
+  );
+
+  //   F[wr_en_4]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_4_wr_en_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_4_gated_we),
+    .wd     (emul_info_subregion_cfg_4_wr_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[4].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_4_wr_en_4_qs)
+  );
+
+  //   F[scramble_en_4]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_4_scramble_en_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_4_gated_we),
+    .wd     (emul_info_subregion_cfg_4_scramble_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[4].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_4_scramble_en_4_qs)
+  );
+
+  //   F[ecc_en_4]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_4_ecc_en_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_4_gated_we),
+    .wd     (emul_info_subregion_cfg_4_ecc_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[4].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_4_ecc_en_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_5_gated_we;
+  assign emul_info_subregion_cfg_5_gated_we =
+    emul_info_subregion_cfg_5_we & emul_info_subregion_cfg_regwen_5_qs;
+  //   F[rd_en_5]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_5_rd_en_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_5_gated_we),
+    .wd     (emul_info_subregion_cfg_5_rd_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[5].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_5_rd_en_5_qs)
+  );
+
+  //   F[wr_en_5]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_5_wr_en_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_5_gated_we),
+    .wd     (emul_info_subregion_cfg_5_wr_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[5].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_5_wr_en_5_qs)
+  );
+
+  //   F[scramble_en_5]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_5_scramble_en_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_5_gated_we),
+    .wd     (emul_info_subregion_cfg_5_scramble_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[5].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_5_scramble_en_5_qs)
+  );
+
+  //   F[ecc_en_5]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_5_ecc_en_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_5_gated_we),
+    .wd     (emul_info_subregion_cfg_5_ecc_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[5].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_5_ecc_en_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_6_gated_we;
+  assign emul_info_subregion_cfg_6_gated_we =
+    emul_info_subregion_cfg_6_we & emul_info_subregion_cfg_regwen_6_qs;
+  //   F[rd_en_6]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_6_rd_en_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_6_gated_we),
+    .wd     (emul_info_subregion_cfg_6_rd_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[6].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_6_rd_en_6_qs)
+  );
+
+  //   F[wr_en_6]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_6_wr_en_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_6_gated_we),
+    .wd     (emul_info_subregion_cfg_6_wr_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[6].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_6_wr_en_6_qs)
+  );
+
+  //   F[scramble_en_6]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_6_scramble_en_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_6_gated_we),
+    .wd     (emul_info_subregion_cfg_6_scramble_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[6].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_6_scramble_en_6_qs)
+  );
+
+  //   F[ecc_en_6]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_6_ecc_en_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_6_gated_we),
+    .wd     (emul_info_subregion_cfg_6_ecc_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[6].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_6_ecc_en_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_7_gated_we;
+  assign emul_info_subregion_cfg_7_gated_we =
+    emul_info_subregion_cfg_7_we & emul_info_subregion_cfg_regwen_7_qs;
+  //   F[rd_en_7]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_7_rd_en_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_7_gated_we),
+    .wd     (emul_info_subregion_cfg_7_rd_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[7].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_7_rd_en_7_qs)
+  );
+
+  //   F[wr_en_7]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_7_wr_en_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_7_gated_we),
+    .wd     (emul_info_subregion_cfg_7_wr_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[7].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_7_wr_en_7_qs)
+  );
+
+  //   F[scramble_en_7]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_7_scramble_en_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_7_gated_we),
+    .wd     (emul_info_subregion_cfg_7_scramble_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[7].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_7_scramble_en_7_qs)
+  );
+
+  //   F[ecc_en_7]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_7_ecc_en_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_7_gated_we),
+    .wd     (emul_info_subregion_cfg_7_ecc_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[7].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_7_ecc_en_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_8]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_8_gated_we;
+  assign emul_info_subregion_cfg_8_gated_we =
+    emul_info_subregion_cfg_8_we & emul_info_subregion_cfg_regwen_8_qs;
+  //   F[rd_en_8]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_8_rd_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_8_gated_we),
+    .wd     (emul_info_subregion_cfg_8_rd_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[8].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_8_rd_en_8_qs)
+  );
+
+  //   F[wr_en_8]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_8_wr_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_8_gated_we),
+    .wd     (emul_info_subregion_cfg_8_wr_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[8].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_8_wr_en_8_qs)
+  );
+
+  //   F[scramble_en_8]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_8_scramble_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_8_gated_we),
+    .wd     (emul_info_subregion_cfg_8_scramble_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[8].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_8_scramble_en_8_qs)
+  );
+
+  //   F[ecc_en_8]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_8_ecc_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_8_gated_we),
+    .wd     (emul_info_subregion_cfg_8_ecc_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[8].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_8_ecc_en_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_9]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_9_gated_we;
+  assign emul_info_subregion_cfg_9_gated_we =
+    emul_info_subregion_cfg_9_we & emul_info_subregion_cfg_regwen_9_qs;
+  //   F[rd_en_9]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_9_rd_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_9_gated_we),
+    .wd     (emul_info_subregion_cfg_9_rd_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[9].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_9_rd_en_9_qs)
+  );
+
+  //   F[wr_en_9]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_9_wr_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_9_gated_we),
+    .wd     (emul_info_subregion_cfg_9_wr_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[9].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_9_wr_en_9_qs)
+  );
+
+  //   F[scramble_en_9]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_9_scramble_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_9_gated_we),
+    .wd     (emul_info_subregion_cfg_9_scramble_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[9].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_9_scramble_en_9_qs)
+  );
+
+  //   F[ecc_en_9]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_9_ecc_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_9_gated_we),
+    .wd     (emul_info_subregion_cfg_9_ecc_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[9].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_9_ecc_en_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_10]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_10_gated_we;
+  assign emul_info_subregion_cfg_10_gated_we =
+    emul_info_subregion_cfg_10_we & emul_info_subregion_cfg_regwen_10_qs;
+  //   F[rd_en_10]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_10_rd_en_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_10_gated_we),
+    .wd     (emul_info_subregion_cfg_10_rd_en_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[10].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_10_rd_en_10_qs)
+  );
+
+  //   F[wr_en_10]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_10_wr_en_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_10_gated_we),
+    .wd     (emul_info_subregion_cfg_10_wr_en_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[10].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_10_wr_en_10_qs)
+  );
+
+  //   F[scramble_en_10]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_10_scramble_en_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_10_gated_we),
+    .wd     (emul_info_subregion_cfg_10_scramble_en_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[10].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_10_scramble_en_10_qs)
+  );
+
+  //   F[ecc_en_10]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_10_ecc_en_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_10_gated_we),
+    .wd     (emul_info_subregion_cfg_10_ecc_en_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[10].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_10_ecc_en_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_11]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_11_gated_we;
+  assign emul_info_subregion_cfg_11_gated_we =
+    emul_info_subregion_cfg_11_we & emul_info_subregion_cfg_regwen_11_qs;
+  //   F[rd_en_11]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_11_rd_en_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_11_gated_we),
+    .wd     (emul_info_subregion_cfg_11_rd_en_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[11].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_11_rd_en_11_qs)
+  );
+
+  //   F[wr_en_11]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_11_wr_en_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_11_gated_we),
+    .wd     (emul_info_subregion_cfg_11_wr_en_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[11].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_11_wr_en_11_qs)
+  );
+
+  //   F[scramble_en_11]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_11_scramble_en_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_11_gated_we),
+    .wd     (emul_info_subregion_cfg_11_scramble_en_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[11].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_11_scramble_en_11_qs)
+  );
+
+  //   F[ecc_en_11]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_11_ecc_en_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_11_gated_we),
+    .wd     (emul_info_subregion_cfg_11_ecc_en_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[11].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_11_ecc_en_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_12_gated_we;
+  assign emul_info_subregion_cfg_12_gated_we =
+    emul_info_subregion_cfg_12_we & emul_info_subregion_cfg_regwen_12_qs;
+  //   F[rd_en_12]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_12_rd_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_12_gated_we),
+    .wd     (emul_info_subregion_cfg_12_rd_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[12].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_12_rd_en_12_qs)
+  );
+
+  //   F[wr_en_12]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_12_wr_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_12_gated_we),
+    .wd     (emul_info_subregion_cfg_12_wr_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[12].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_12_wr_en_12_qs)
+  );
+
+  //   F[scramble_en_12]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_12_scramble_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_12_gated_we),
+    .wd     (emul_info_subregion_cfg_12_scramble_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[12].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_12_scramble_en_12_qs)
+  );
+
+  //   F[ecc_en_12]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_12_ecc_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_12_gated_we),
+    .wd     (emul_info_subregion_cfg_12_ecc_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[12].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_12_ecc_en_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_13_gated_we;
+  assign emul_info_subregion_cfg_13_gated_we =
+    emul_info_subregion_cfg_13_we & emul_info_subregion_cfg_regwen_13_qs;
+  //   F[rd_en_13]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_13_rd_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_13_gated_we),
+    .wd     (emul_info_subregion_cfg_13_rd_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[13].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_13_rd_en_13_qs)
+  );
+
+  //   F[wr_en_13]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_13_wr_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_13_gated_we),
+    .wd     (emul_info_subregion_cfg_13_wr_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[13].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_13_wr_en_13_qs)
+  );
+
+  //   F[scramble_en_13]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_13_scramble_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_13_gated_we),
+    .wd     (emul_info_subregion_cfg_13_scramble_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[13].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_13_scramble_en_13_qs)
+  );
+
+  //   F[ecc_en_13]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_13_ecc_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_13_gated_we),
+    .wd     (emul_info_subregion_cfg_13_ecc_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[13].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_13_ecc_en_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_14_gated_we;
+  assign emul_info_subregion_cfg_14_gated_we =
+    emul_info_subregion_cfg_14_we & emul_info_subregion_cfg_regwen_14_qs;
+  //   F[rd_en_14]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_14_rd_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_14_gated_we),
+    .wd     (emul_info_subregion_cfg_14_rd_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[14].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_14_rd_en_14_qs)
+  );
+
+  //   F[wr_en_14]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_14_wr_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_14_gated_we),
+    .wd     (emul_info_subregion_cfg_14_wr_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[14].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_14_wr_en_14_qs)
+  );
+
+  //   F[scramble_en_14]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_14_scramble_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_14_gated_we),
+    .wd     (emul_info_subregion_cfg_14_scramble_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[14].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_14_scramble_en_14_qs)
+  );
+
+  //   F[ecc_en_14]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_14_ecc_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_14_gated_we),
+    .wd     (emul_info_subregion_cfg_14_ecc_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[14].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_14_ecc_en_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_15_gated_we;
+  assign emul_info_subregion_cfg_15_gated_we =
+    emul_info_subregion_cfg_15_we & emul_info_subregion_cfg_regwen_15_qs;
+  //   F[rd_en_15]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_15_rd_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_15_gated_we),
+    .wd     (emul_info_subregion_cfg_15_rd_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[15].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_15_rd_en_15_qs)
+  );
+
+  //   F[wr_en_15]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_15_wr_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_15_gated_we),
+    .wd     (emul_info_subregion_cfg_15_wr_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[15].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_15_wr_en_15_qs)
+  );
+
+  //   F[scramble_en_15]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_15_scramble_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_15_gated_we),
+    .wd     (emul_info_subregion_cfg_15_scramble_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[15].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_15_scramble_en_15_qs)
+  );
+
+  //   F[ecc_en_15]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_15_ecc_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_15_gated_we),
+    .wd     (emul_info_subregion_cfg_15_ecc_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[15].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_15_ecc_en_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_16_gated_we;
+  assign emul_info_subregion_cfg_16_gated_we =
+    emul_info_subregion_cfg_16_we & emul_info_subregion_cfg_regwen_16_qs;
+  //   F[rd_en_16]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_16_rd_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_16_gated_we),
+    .wd     (emul_info_subregion_cfg_16_rd_en_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[16].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_16_rd_en_16_qs)
+  );
+
+  //   F[wr_en_16]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_16_wr_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_16_gated_we),
+    .wd     (emul_info_subregion_cfg_16_wr_en_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[16].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_16_wr_en_16_qs)
+  );
+
+  //   F[scramble_en_16]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_16_scramble_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_16_gated_we),
+    .wd     (emul_info_subregion_cfg_16_scramble_en_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[16].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_16_scramble_en_16_qs)
+  );
+
+  //   F[ecc_en_16]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_16_ecc_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_16_gated_we),
+    .wd     (emul_info_subregion_cfg_16_ecc_en_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[16].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_16_ecc_en_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_17_gated_we;
+  assign emul_info_subregion_cfg_17_gated_we =
+    emul_info_subregion_cfg_17_we & emul_info_subregion_cfg_regwen_17_qs;
+  //   F[rd_en_17]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_17_rd_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_17_gated_we),
+    .wd     (emul_info_subregion_cfg_17_rd_en_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[17].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_17_rd_en_17_qs)
+  );
+
+  //   F[wr_en_17]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_17_wr_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_17_gated_we),
+    .wd     (emul_info_subregion_cfg_17_wr_en_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[17].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_17_wr_en_17_qs)
+  );
+
+  //   F[scramble_en_17]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_17_scramble_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_17_gated_we),
+    .wd     (emul_info_subregion_cfg_17_scramble_en_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[17].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_17_scramble_en_17_qs)
+  );
+
+  //   F[ecc_en_17]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_17_ecc_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_17_gated_we),
+    .wd     (emul_info_subregion_cfg_17_ecc_en_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[17].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_17_ecc_en_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_18_gated_we;
+  assign emul_info_subregion_cfg_18_gated_we =
+    emul_info_subregion_cfg_18_we & emul_info_subregion_cfg_regwen_18_qs;
+  //   F[rd_en_18]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_18_rd_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_18_gated_we),
+    .wd     (emul_info_subregion_cfg_18_rd_en_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[18].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_18_rd_en_18_qs)
+  );
+
+  //   F[wr_en_18]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_18_wr_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_18_gated_we),
+    .wd     (emul_info_subregion_cfg_18_wr_en_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[18].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_18_wr_en_18_qs)
+  );
+
+  //   F[scramble_en_18]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_18_scramble_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_18_gated_we),
+    .wd     (emul_info_subregion_cfg_18_scramble_en_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[18].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_18_scramble_en_18_qs)
+  );
+
+  //   F[ecc_en_18]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_18_ecc_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_18_gated_we),
+    .wd     (emul_info_subregion_cfg_18_ecc_en_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[18].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_18_ecc_en_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_19_gated_we;
+  assign emul_info_subregion_cfg_19_gated_we =
+    emul_info_subregion_cfg_19_we & emul_info_subregion_cfg_regwen_19_qs;
+  //   F[rd_en_19]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_19_rd_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_19_gated_we),
+    .wd     (emul_info_subregion_cfg_19_rd_en_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[19].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_19_rd_en_19_qs)
+  );
+
+  //   F[wr_en_19]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_19_wr_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_19_gated_we),
+    .wd     (emul_info_subregion_cfg_19_wr_en_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[19].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_19_wr_en_19_qs)
+  );
+
+  //   F[scramble_en_19]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_19_scramble_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_19_gated_we),
+    .wd     (emul_info_subregion_cfg_19_scramble_en_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[19].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_19_scramble_en_19_qs)
+  );
+
+  //   F[ecc_en_19]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_19_ecc_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_19_gated_we),
+    .wd     (emul_info_subregion_cfg_19_ecc_en_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[19].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_19_ecc_en_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_20_gated_we;
+  assign emul_info_subregion_cfg_20_gated_we =
+    emul_info_subregion_cfg_20_we & emul_info_subregion_cfg_regwen_20_qs;
+  //   F[rd_en_20]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_20_rd_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_20_gated_we),
+    .wd     (emul_info_subregion_cfg_20_rd_en_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[20].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_20_rd_en_20_qs)
+  );
+
+  //   F[wr_en_20]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_20_wr_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_20_gated_we),
+    .wd     (emul_info_subregion_cfg_20_wr_en_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[20].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_20_wr_en_20_qs)
+  );
+
+  //   F[scramble_en_20]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_20_scramble_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_20_gated_we),
+    .wd     (emul_info_subregion_cfg_20_scramble_en_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[20].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_20_scramble_en_20_qs)
+  );
+
+  //   F[ecc_en_20]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_20_ecc_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_20_gated_we),
+    .wd     (emul_info_subregion_cfg_20_ecc_en_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[20].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_20_ecc_en_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_21_gated_we;
+  assign emul_info_subregion_cfg_21_gated_we =
+    emul_info_subregion_cfg_21_we & emul_info_subregion_cfg_regwen_21_qs;
+  //   F[rd_en_21]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_21_rd_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_21_gated_we),
+    .wd     (emul_info_subregion_cfg_21_rd_en_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[21].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_21_rd_en_21_qs)
+  );
+
+  //   F[wr_en_21]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_21_wr_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_21_gated_we),
+    .wd     (emul_info_subregion_cfg_21_wr_en_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[21].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_21_wr_en_21_qs)
+  );
+
+  //   F[scramble_en_21]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_21_scramble_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_21_gated_we),
+    .wd     (emul_info_subregion_cfg_21_scramble_en_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[21].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_21_scramble_en_21_qs)
+  );
+
+  //   F[ecc_en_21]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_21_ecc_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_21_gated_we),
+    .wd     (emul_info_subregion_cfg_21_ecc_en_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[21].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_21_ecc_en_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_22_gated_we;
+  assign emul_info_subregion_cfg_22_gated_we =
+    emul_info_subregion_cfg_22_we & emul_info_subregion_cfg_regwen_22_qs;
+  //   F[rd_en_22]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_22_rd_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_22_gated_we),
+    .wd     (emul_info_subregion_cfg_22_rd_en_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[22].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_22_rd_en_22_qs)
+  );
+
+  //   F[wr_en_22]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_22_wr_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_22_gated_we),
+    .wd     (emul_info_subregion_cfg_22_wr_en_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[22].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_22_wr_en_22_qs)
+  );
+
+  //   F[scramble_en_22]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_22_scramble_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_22_gated_we),
+    .wd     (emul_info_subregion_cfg_22_scramble_en_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[22].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_22_scramble_en_22_qs)
+  );
+
+  //   F[ecc_en_22]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_22_ecc_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_22_gated_we),
+    .wd     (emul_info_subregion_cfg_22_ecc_en_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[22].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_22_ecc_en_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg emul_info_subregion_cfg
+  // R[emul_info_subregion_cfg_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic emul_info_subregion_cfg_23_gated_we;
+  assign emul_info_subregion_cfg_23_gated_we =
+    emul_info_subregion_cfg_23_we & emul_info_subregion_cfg_regwen_23_qs;
+  //   F[rd_en_23]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_23_rd_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_23_gated_we),
+    .wd     (emul_info_subregion_cfg_23_rd_en_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[23].rd_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_23_rd_en_23_qs)
+  );
+
+  //   F[wr_en_23]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_23_wr_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_23_gated_we),
+    .wd     (emul_info_subregion_cfg_23_wr_en_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[23].wr_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_23_wr_en_23_qs)
+  );
+
+  //   F[scramble_en_23]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_23_scramble_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_23_gated_we),
+    .wd     (emul_info_subregion_cfg_23_scramble_en_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[23].scramble_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_23_scramble_en_23_qs)
+  );
+
+  //   F[ecc_en_23]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_emul_info_subregion_cfg_23_ecc_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (emul_info_subregion_cfg_23_gated_we),
+    .wd     (emul_info_subregion_cfg_23_ecc_en_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.emul_info_subregion_cfg[23].ecc_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (emul_info_subregion_cfg_23_ecc_en_23_qs)
+  );
+
+
   // R[hw_info_cfg_override]: V(False)
   //   F[scramble_dis]: 3:0
   prim_subreg #(
@@ -6619,79 +12189,179 @@ module rram_ctrl_core_reg_top (
 
 
 
-  logic [70:0] addr_hit;
+  logic [170:0] addr_hit;
   always_comb begin
-    addr_hit[ 0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == RRAM_CTRL_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == RRAM_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[ 4] = (reg_addr == RRAM_CTRL_DIS_OFFSET);
-    addr_hit[ 5] = (reg_addr == RRAM_CTRL_EXEC_OFFSET);
-    addr_hit[ 6] = (reg_addr == RRAM_CTRL_INIT_OFFSET);
-    addr_hit[ 7] = (reg_addr == RRAM_CTRL_CTRL_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == RRAM_CTRL_CONTROL_OFFSET);
-    addr_hit[ 9] = (reg_addr == RRAM_CTRL_ADDR_OFFSET);
-    addr_hit[10] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_0_OFFSET);
-    addr_hit[11] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_1_OFFSET);
-    addr_hit[12] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_2_OFFSET);
-    addr_hit[13] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_3_OFFSET);
-    addr_hit[14] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_4_OFFSET);
-    addr_hit[15] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_5_OFFSET);
-    addr_hit[16] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_6_OFFSET);
-    addr_hit[17] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_7_OFFSET);
-    addr_hit[18] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_8_OFFSET);
-    addr_hit[19] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_9_OFFSET);
-    addr_hit[20] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_0_OFFSET);
-    addr_hit[21] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_1_OFFSET);
-    addr_hit[22] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_2_OFFSET);
-    addr_hit[23] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_3_OFFSET);
-    addr_hit[24] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_4_OFFSET);
-    addr_hit[25] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_5_OFFSET);
-    addr_hit[26] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_6_OFFSET);
-    addr_hit[27] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_7_OFFSET);
-    addr_hit[28] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_8_OFFSET);
-    addr_hit[29] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_9_OFFSET);
-    addr_hit[30] = (reg_addr == RRAM_CTRL_MP_REGION_0_OFFSET);
-    addr_hit[31] = (reg_addr == RRAM_CTRL_MP_REGION_1_OFFSET);
-    addr_hit[32] = (reg_addr == RRAM_CTRL_MP_REGION_2_OFFSET);
-    addr_hit[33] = (reg_addr == RRAM_CTRL_MP_REGION_3_OFFSET);
-    addr_hit[34] = (reg_addr == RRAM_CTRL_MP_REGION_4_OFFSET);
-    addr_hit[35] = (reg_addr == RRAM_CTRL_MP_REGION_5_OFFSET);
-    addr_hit[36] = (reg_addr == RRAM_CTRL_MP_REGION_6_OFFSET);
-    addr_hit[37] = (reg_addr == RRAM_CTRL_MP_REGION_7_OFFSET);
-    addr_hit[38] = (reg_addr == RRAM_CTRL_MP_REGION_8_OFFSET);
-    addr_hit[39] = (reg_addr == RRAM_CTRL_MP_REGION_9_OFFSET);
-    addr_hit[40] = (reg_addr == RRAM_CTRL_DEFAULT_REGION_OFFSET);
-    addr_hit[41] = (reg_addr == RRAM_CTRL_INFO_REGWEN_0_OFFSET);
-    addr_hit[42] = (reg_addr == RRAM_CTRL_INFO_REGWEN_1_OFFSET);
-    addr_hit[43] = (reg_addr == RRAM_CTRL_INFO_REGWEN_2_OFFSET);
-    addr_hit[44] = (reg_addr == RRAM_CTRL_INFO_REGWEN_3_OFFSET);
-    addr_hit[45] = (reg_addr == RRAM_CTRL_INFO_REGWEN_4_OFFSET);
-    addr_hit[46] = (reg_addr == RRAM_CTRL_INFO_REGWEN_5_OFFSET);
-    addr_hit[47] = (reg_addr == RRAM_CTRL_INFO_REGWEN_6_OFFSET);
-    addr_hit[48] = (reg_addr == RRAM_CTRL_INFO_REGWEN_7_OFFSET);
-    addr_hit[49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
-    addr_hit[50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
-    addr_hit[51] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
-    addr_hit[52] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
-    addr_hit[53] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
-    addr_hit[54] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
-    addr_hit[55] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
-    addr_hit[56] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET);
-    addr_hit[57] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
-    addr_hit[58] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
-    addr_hit[59] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
-    addr_hit[60] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
-    addr_hit[61] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
-    addr_hit[62] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[63] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[64] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
-    addr_hit[65] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
-    addr_hit[66] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[67] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
-    addr_hit[68] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[69] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
-    addr_hit[70] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[  0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
+    addr_hit[  1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[  2] = (reg_addr == RRAM_CTRL_INTR_TEST_OFFSET);
+    addr_hit[  3] = (reg_addr == RRAM_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[  4] = (reg_addr == RRAM_CTRL_DIS_OFFSET);
+    addr_hit[  5] = (reg_addr == RRAM_CTRL_EXEC_OFFSET);
+    addr_hit[  6] = (reg_addr == RRAM_CTRL_INIT_OFFSET);
+    addr_hit[  7] = (reg_addr == RRAM_CTRL_CTRL_REGWEN_OFFSET);
+    addr_hit[  8] = (reg_addr == RRAM_CTRL_CONTROL_OFFSET);
+    addr_hit[  9] = (reg_addr == RRAM_CTRL_ADDR_OFFSET);
+    addr_hit[ 10] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_0_OFFSET);
+    addr_hit[ 11] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_1_OFFSET);
+    addr_hit[ 12] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_2_OFFSET);
+    addr_hit[ 13] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_3_OFFSET);
+    addr_hit[ 14] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_4_OFFSET);
+    addr_hit[ 15] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_5_OFFSET);
+    addr_hit[ 16] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_6_OFFSET);
+    addr_hit[ 17] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_7_OFFSET);
+    addr_hit[ 18] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_8_OFFSET);
+    addr_hit[ 19] = (reg_addr == RRAM_CTRL_REGION_CFG_REGWEN_9_OFFSET);
+    addr_hit[ 20] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_0_OFFSET);
+    addr_hit[ 21] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_1_OFFSET);
+    addr_hit[ 22] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_2_OFFSET);
+    addr_hit[ 23] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_3_OFFSET);
+    addr_hit[ 24] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_4_OFFSET);
+    addr_hit[ 25] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_5_OFFSET);
+    addr_hit[ 26] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_6_OFFSET);
+    addr_hit[ 27] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_7_OFFSET);
+    addr_hit[ 28] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_8_OFFSET);
+    addr_hit[ 29] = (reg_addr == RRAM_CTRL_MP_REGION_CFG_9_OFFSET);
+    addr_hit[ 30] = (reg_addr == RRAM_CTRL_MP_REGION_0_OFFSET);
+    addr_hit[ 31] = (reg_addr == RRAM_CTRL_MP_REGION_1_OFFSET);
+    addr_hit[ 32] = (reg_addr == RRAM_CTRL_MP_REGION_2_OFFSET);
+    addr_hit[ 33] = (reg_addr == RRAM_CTRL_MP_REGION_3_OFFSET);
+    addr_hit[ 34] = (reg_addr == RRAM_CTRL_MP_REGION_4_OFFSET);
+    addr_hit[ 35] = (reg_addr == RRAM_CTRL_MP_REGION_5_OFFSET);
+    addr_hit[ 36] = (reg_addr == RRAM_CTRL_MP_REGION_6_OFFSET);
+    addr_hit[ 37] = (reg_addr == RRAM_CTRL_MP_REGION_7_OFFSET);
+    addr_hit[ 38] = (reg_addr == RRAM_CTRL_MP_REGION_8_OFFSET);
+    addr_hit[ 39] = (reg_addr == RRAM_CTRL_MP_REGION_9_OFFSET);
+    addr_hit[ 40] = (reg_addr == RRAM_CTRL_DEFAULT_REGION_OFFSET);
+    addr_hit[ 41] = (reg_addr == RRAM_CTRL_INFO_REGWEN_0_OFFSET);
+    addr_hit[ 42] = (reg_addr == RRAM_CTRL_INFO_REGWEN_1_OFFSET);
+    addr_hit[ 43] = (reg_addr == RRAM_CTRL_INFO_REGWEN_2_OFFSET);
+    addr_hit[ 44] = (reg_addr == RRAM_CTRL_INFO_REGWEN_3_OFFSET);
+    addr_hit[ 45] = (reg_addr == RRAM_CTRL_INFO_REGWEN_4_OFFSET);
+    addr_hit[ 46] = (reg_addr == RRAM_CTRL_INFO_REGWEN_5_OFFSET);
+    addr_hit[ 47] = (reg_addr == RRAM_CTRL_INFO_REGWEN_6_OFFSET);
+    addr_hit[ 48] = (reg_addr == RRAM_CTRL_INFO_REGWEN_7_OFFSET);
+    addr_hit[ 49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
+    addr_hit[ 50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
+    addr_hit[ 51] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
+    addr_hit[ 52] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
+    addr_hit[ 53] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
+    addr_hit[ 54] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
+    addr_hit[ 55] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
+    addr_hit[ 56] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET);
+    addr_hit[ 57] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_0_OFFSET);
+    addr_hit[ 58] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_1_OFFSET);
+    addr_hit[ 59] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_0_OFFSET);
+    addr_hit[ 60] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_1_OFFSET);
+    addr_hit[ 61] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0_OFFSET);
+    addr_hit[ 62] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1_OFFSET);
+    addr_hit[ 63] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2_OFFSET);
+    addr_hit[ 64] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3_OFFSET);
+    addr_hit[ 65] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4_OFFSET);
+    addr_hit[ 66] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5_OFFSET);
+    addr_hit[ 67] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6_OFFSET);
+    addr_hit[ 68] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7_OFFSET);
+    addr_hit[ 69] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8_OFFSET);
+    addr_hit[ 70] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9_OFFSET);
+    addr_hit[ 71] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10_OFFSET);
+    addr_hit[ 72] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11_OFFSET);
+    addr_hit[ 73] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12_OFFSET);
+    addr_hit[ 74] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13_OFFSET);
+    addr_hit[ 75] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14_OFFSET);
+    addr_hit[ 76] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15_OFFSET);
+    addr_hit[ 77] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16_OFFSET);
+    addr_hit[ 78] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17_OFFSET);
+    addr_hit[ 79] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18_OFFSET);
+    addr_hit[ 80] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19_OFFSET);
+    addr_hit[ 81] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20_OFFSET);
+    addr_hit[ 82] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21_OFFSET);
+    addr_hit[ 83] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22_OFFSET);
+    addr_hit[ 84] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23_OFFSET);
+    addr_hit[ 85] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_0_OFFSET);
+    addr_hit[ 86] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_1_OFFSET);
+    addr_hit[ 87] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_2_OFFSET);
+    addr_hit[ 88] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_3_OFFSET);
+    addr_hit[ 89] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_4_OFFSET);
+    addr_hit[ 90] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_5_OFFSET);
+    addr_hit[ 91] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_6_OFFSET);
+    addr_hit[ 92] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_7_OFFSET);
+    addr_hit[ 93] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_8_OFFSET);
+    addr_hit[ 94] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_9_OFFSET);
+    addr_hit[ 95] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_10_OFFSET);
+    addr_hit[ 96] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_11_OFFSET);
+    addr_hit[ 97] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_12_OFFSET);
+    addr_hit[ 98] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_13_OFFSET);
+    addr_hit[ 99] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_14_OFFSET);
+    addr_hit[100] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_15_OFFSET);
+    addr_hit[101] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_16_OFFSET);
+    addr_hit[102] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_17_OFFSET);
+    addr_hit[103] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_18_OFFSET);
+    addr_hit[104] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_19_OFFSET);
+    addr_hit[105] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_20_OFFSET);
+    addr_hit[106] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_21_OFFSET);
+    addr_hit[107] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_22_OFFSET);
+    addr_hit[108] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_23_OFFSET);
+    addr_hit[109] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0_OFFSET);
+    addr_hit[110] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1_OFFSET);
+    addr_hit[111] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2_OFFSET);
+    addr_hit[112] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3_OFFSET);
+    addr_hit[113] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4_OFFSET);
+    addr_hit[114] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5_OFFSET);
+    addr_hit[115] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6_OFFSET);
+    addr_hit[116] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7_OFFSET);
+    addr_hit[117] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8_OFFSET);
+    addr_hit[118] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9_OFFSET);
+    addr_hit[119] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10_OFFSET);
+    addr_hit[120] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11_OFFSET);
+    addr_hit[121] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12_OFFSET);
+    addr_hit[122] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13_OFFSET);
+    addr_hit[123] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14_OFFSET);
+    addr_hit[124] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15_OFFSET);
+    addr_hit[125] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16_OFFSET);
+    addr_hit[126] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17_OFFSET);
+    addr_hit[127] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18_OFFSET);
+    addr_hit[128] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19_OFFSET);
+    addr_hit[129] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20_OFFSET);
+    addr_hit[130] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21_OFFSET);
+    addr_hit[131] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22_OFFSET);
+    addr_hit[132] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23_OFFSET);
+    addr_hit[133] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0_OFFSET);
+    addr_hit[134] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1_OFFSET);
+    addr_hit[135] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2_OFFSET);
+    addr_hit[136] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3_OFFSET);
+    addr_hit[137] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4_OFFSET);
+    addr_hit[138] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5_OFFSET);
+    addr_hit[139] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6_OFFSET);
+    addr_hit[140] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7_OFFSET);
+    addr_hit[141] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8_OFFSET);
+    addr_hit[142] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9_OFFSET);
+    addr_hit[143] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10_OFFSET);
+    addr_hit[144] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11_OFFSET);
+    addr_hit[145] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12_OFFSET);
+    addr_hit[146] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13_OFFSET);
+    addr_hit[147] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14_OFFSET);
+    addr_hit[148] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15_OFFSET);
+    addr_hit[149] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16_OFFSET);
+    addr_hit[150] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17_OFFSET);
+    addr_hit[151] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18_OFFSET);
+    addr_hit[152] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19_OFFSET);
+    addr_hit[153] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20_OFFSET);
+    addr_hit[154] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21_OFFSET);
+    addr_hit[155] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22_OFFSET);
+    addr_hit[156] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23_OFFSET);
+    addr_hit[157] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
+    addr_hit[158] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
+    addr_hit[159] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
+    addr_hit[160] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
+    addr_hit[161] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[162] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[163] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[164] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
+    addr_hit[165] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
+    addr_hit[166] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[167] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
+    addr_hit[168] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[169] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
+    addr_hit[170] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -6699,77 +12369,177 @@ module rram_ctrl_core_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(RRAM_CTRL_CORE_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(RRAM_CTRL_CORE_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(RRAM_CTRL_CORE_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(RRAM_CTRL_CORE_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(RRAM_CTRL_CORE_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(RRAM_CTRL_CORE_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(RRAM_CTRL_CORE_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(RRAM_CTRL_CORE_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(RRAM_CTRL_CORE_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(RRAM_CTRL_CORE_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(RRAM_CTRL_CORE_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(RRAM_CTRL_CORE_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(RRAM_CTRL_CORE_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(RRAM_CTRL_CORE_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(RRAM_CTRL_CORE_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(RRAM_CTRL_CORE_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(RRAM_CTRL_CORE_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(RRAM_CTRL_CORE_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(RRAM_CTRL_CORE_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(RRAM_CTRL_CORE_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(RRAM_CTRL_CORE_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(RRAM_CTRL_CORE_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(RRAM_CTRL_CORE_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(RRAM_CTRL_CORE_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(RRAM_CTRL_CORE_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(RRAM_CTRL_CORE_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(RRAM_CTRL_CORE_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(RRAM_CTRL_CORE_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(RRAM_CTRL_CORE_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(RRAM_CTRL_CORE_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(RRAM_CTRL_CORE_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(RRAM_CTRL_CORE_PERMIT[31] & ~reg_be))) |
-               (addr_hit[32] & (|(RRAM_CTRL_CORE_PERMIT[32] & ~reg_be))) |
-               (addr_hit[33] & (|(RRAM_CTRL_CORE_PERMIT[33] & ~reg_be))) |
-               (addr_hit[34] & (|(RRAM_CTRL_CORE_PERMIT[34] & ~reg_be))) |
-               (addr_hit[35] & (|(RRAM_CTRL_CORE_PERMIT[35] & ~reg_be))) |
-               (addr_hit[36] & (|(RRAM_CTRL_CORE_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(RRAM_CTRL_CORE_PERMIT[37] & ~reg_be))) |
-               (addr_hit[38] & (|(RRAM_CTRL_CORE_PERMIT[38] & ~reg_be))) |
-               (addr_hit[39] & (|(RRAM_CTRL_CORE_PERMIT[39] & ~reg_be))) |
-               (addr_hit[40] & (|(RRAM_CTRL_CORE_PERMIT[40] & ~reg_be))) |
-               (addr_hit[41] & (|(RRAM_CTRL_CORE_PERMIT[41] & ~reg_be))) |
-               (addr_hit[42] & (|(RRAM_CTRL_CORE_PERMIT[42] & ~reg_be))) |
-               (addr_hit[43] & (|(RRAM_CTRL_CORE_PERMIT[43] & ~reg_be))) |
-               (addr_hit[44] & (|(RRAM_CTRL_CORE_PERMIT[44] & ~reg_be))) |
-               (addr_hit[45] & (|(RRAM_CTRL_CORE_PERMIT[45] & ~reg_be))) |
-               (addr_hit[46] & (|(RRAM_CTRL_CORE_PERMIT[46] & ~reg_be))) |
-               (addr_hit[47] & (|(RRAM_CTRL_CORE_PERMIT[47] & ~reg_be))) |
-               (addr_hit[48] & (|(RRAM_CTRL_CORE_PERMIT[48] & ~reg_be))) |
-               (addr_hit[49] & (|(RRAM_CTRL_CORE_PERMIT[49] & ~reg_be))) |
-               (addr_hit[50] & (|(RRAM_CTRL_CORE_PERMIT[50] & ~reg_be))) |
-               (addr_hit[51] & (|(RRAM_CTRL_CORE_PERMIT[51] & ~reg_be))) |
-               (addr_hit[52] & (|(RRAM_CTRL_CORE_PERMIT[52] & ~reg_be))) |
-               (addr_hit[53] & (|(RRAM_CTRL_CORE_PERMIT[53] & ~reg_be))) |
-               (addr_hit[54] & (|(RRAM_CTRL_CORE_PERMIT[54] & ~reg_be))) |
-               (addr_hit[55] & (|(RRAM_CTRL_CORE_PERMIT[55] & ~reg_be))) |
-               (addr_hit[56] & (|(RRAM_CTRL_CORE_PERMIT[56] & ~reg_be))) |
-               (addr_hit[57] & (|(RRAM_CTRL_CORE_PERMIT[57] & ~reg_be))) |
-               (addr_hit[58] & (|(RRAM_CTRL_CORE_PERMIT[58] & ~reg_be))) |
-               (addr_hit[59] & (|(RRAM_CTRL_CORE_PERMIT[59] & ~reg_be))) |
-               (addr_hit[60] & (|(RRAM_CTRL_CORE_PERMIT[60] & ~reg_be))) |
-               (addr_hit[61] & (|(RRAM_CTRL_CORE_PERMIT[61] & ~reg_be))) |
-               (addr_hit[62] & (|(RRAM_CTRL_CORE_PERMIT[62] & ~reg_be))) |
-               (addr_hit[63] & (|(RRAM_CTRL_CORE_PERMIT[63] & ~reg_be))) |
-               (addr_hit[64] & (|(RRAM_CTRL_CORE_PERMIT[64] & ~reg_be))) |
-               (addr_hit[65] & (|(RRAM_CTRL_CORE_PERMIT[65] & ~reg_be))) |
-               (addr_hit[66] & (|(RRAM_CTRL_CORE_PERMIT[66] & ~reg_be))) |
-               (addr_hit[67] & (|(RRAM_CTRL_CORE_PERMIT[67] & ~reg_be))) |
-               (addr_hit[68] & (|(RRAM_CTRL_CORE_PERMIT[68] & ~reg_be))) |
-               (addr_hit[69] & (|(RRAM_CTRL_CORE_PERMIT[69] & ~reg_be))) |
-               (addr_hit[70] & (|(RRAM_CTRL_CORE_PERMIT[70] & ~reg_be)))));
+              ((addr_hit[  0] & (|(RRAM_CTRL_CORE_PERMIT[  0] & ~reg_be))) |
+               (addr_hit[  1] & (|(RRAM_CTRL_CORE_PERMIT[  1] & ~reg_be))) |
+               (addr_hit[  2] & (|(RRAM_CTRL_CORE_PERMIT[  2] & ~reg_be))) |
+               (addr_hit[  3] & (|(RRAM_CTRL_CORE_PERMIT[  3] & ~reg_be))) |
+               (addr_hit[  4] & (|(RRAM_CTRL_CORE_PERMIT[  4] & ~reg_be))) |
+               (addr_hit[  5] & (|(RRAM_CTRL_CORE_PERMIT[  5] & ~reg_be))) |
+               (addr_hit[  6] & (|(RRAM_CTRL_CORE_PERMIT[  6] & ~reg_be))) |
+               (addr_hit[  7] & (|(RRAM_CTRL_CORE_PERMIT[  7] & ~reg_be))) |
+               (addr_hit[  8] & (|(RRAM_CTRL_CORE_PERMIT[  8] & ~reg_be))) |
+               (addr_hit[  9] & (|(RRAM_CTRL_CORE_PERMIT[  9] & ~reg_be))) |
+               (addr_hit[ 10] & (|(RRAM_CTRL_CORE_PERMIT[ 10] & ~reg_be))) |
+               (addr_hit[ 11] & (|(RRAM_CTRL_CORE_PERMIT[ 11] & ~reg_be))) |
+               (addr_hit[ 12] & (|(RRAM_CTRL_CORE_PERMIT[ 12] & ~reg_be))) |
+               (addr_hit[ 13] & (|(RRAM_CTRL_CORE_PERMIT[ 13] & ~reg_be))) |
+               (addr_hit[ 14] & (|(RRAM_CTRL_CORE_PERMIT[ 14] & ~reg_be))) |
+               (addr_hit[ 15] & (|(RRAM_CTRL_CORE_PERMIT[ 15] & ~reg_be))) |
+               (addr_hit[ 16] & (|(RRAM_CTRL_CORE_PERMIT[ 16] & ~reg_be))) |
+               (addr_hit[ 17] & (|(RRAM_CTRL_CORE_PERMIT[ 17] & ~reg_be))) |
+               (addr_hit[ 18] & (|(RRAM_CTRL_CORE_PERMIT[ 18] & ~reg_be))) |
+               (addr_hit[ 19] & (|(RRAM_CTRL_CORE_PERMIT[ 19] & ~reg_be))) |
+               (addr_hit[ 20] & (|(RRAM_CTRL_CORE_PERMIT[ 20] & ~reg_be))) |
+               (addr_hit[ 21] & (|(RRAM_CTRL_CORE_PERMIT[ 21] & ~reg_be))) |
+               (addr_hit[ 22] & (|(RRAM_CTRL_CORE_PERMIT[ 22] & ~reg_be))) |
+               (addr_hit[ 23] & (|(RRAM_CTRL_CORE_PERMIT[ 23] & ~reg_be))) |
+               (addr_hit[ 24] & (|(RRAM_CTRL_CORE_PERMIT[ 24] & ~reg_be))) |
+               (addr_hit[ 25] & (|(RRAM_CTRL_CORE_PERMIT[ 25] & ~reg_be))) |
+               (addr_hit[ 26] & (|(RRAM_CTRL_CORE_PERMIT[ 26] & ~reg_be))) |
+               (addr_hit[ 27] & (|(RRAM_CTRL_CORE_PERMIT[ 27] & ~reg_be))) |
+               (addr_hit[ 28] & (|(RRAM_CTRL_CORE_PERMIT[ 28] & ~reg_be))) |
+               (addr_hit[ 29] & (|(RRAM_CTRL_CORE_PERMIT[ 29] & ~reg_be))) |
+               (addr_hit[ 30] & (|(RRAM_CTRL_CORE_PERMIT[ 30] & ~reg_be))) |
+               (addr_hit[ 31] & (|(RRAM_CTRL_CORE_PERMIT[ 31] & ~reg_be))) |
+               (addr_hit[ 32] & (|(RRAM_CTRL_CORE_PERMIT[ 32] & ~reg_be))) |
+               (addr_hit[ 33] & (|(RRAM_CTRL_CORE_PERMIT[ 33] & ~reg_be))) |
+               (addr_hit[ 34] & (|(RRAM_CTRL_CORE_PERMIT[ 34] & ~reg_be))) |
+               (addr_hit[ 35] & (|(RRAM_CTRL_CORE_PERMIT[ 35] & ~reg_be))) |
+               (addr_hit[ 36] & (|(RRAM_CTRL_CORE_PERMIT[ 36] & ~reg_be))) |
+               (addr_hit[ 37] & (|(RRAM_CTRL_CORE_PERMIT[ 37] & ~reg_be))) |
+               (addr_hit[ 38] & (|(RRAM_CTRL_CORE_PERMIT[ 38] & ~reg_be))) |
+               (addr_hit[ 39] & (|(RRAM_CTRL_CORE_PERMIT[ 39] & ~reg_be))) |
+               (addr_hit[ 40] & (|(RRAM_CTRL_CORE_PERMIT[ 40] & ~reg_be))) |
+               (addr_hit[ 41] & (|(RRAM_CTRL_CORE_PERMIT[ 41] & ~reg_be))) |
+               (addr_hit[ 42] & (|(RRAM_CTRL_CORE_PERMIT[ 42] & ~reg_be))) |
+               (addr_hit[ 43] & (|(RRAM_CTRL_CORE_PERMIT[ 43] & ~reg_be))) |
+               (addr_hit[ 44] & (|(RRAM_CTRL_CORE_PERMIT[ 44] & ~reg_be))) |
+               (addr_hit[ 45] & (|(RRAM_CTRL_CORE_PERMIT[ 45] & ~reg_be))) |
+               (addr_hit[ 46] & (|(RRAM_CTRL_CORE_PERMIT[ 46] & ~reg_be))) |
+               (addr_hit[ 47] & (|(RRAM_CTRL_CORE_PERMIT[ 47] & ~reg_be))) |
+               (addr_hit[ 48] & (|(RRAM_CTRL_CORE_PERMIT[ 48] & ~reg_be))) |
+               (addr_hit[ 49] & (|(RRAM_CTRL_CORE_PERMIT[ 49] & ~reg_be))) |
+               (addr_hit[ 50] & (|(RRAM_CTRL_CORE_PERMIT[ 50] & ~reg_be))) |
+               (addr_hit[ 51] & (|(RRAM_CTRL_CORE_PERMIT[ 51] & ~reg_be))) |
+               (addr_hit[ 52] & (|(RRAM_CTRL_CORE_PERMIT[ 52] & ~reg_be))) |
+               (addr_hit[ 53] & (|(RRAM_CTRL_CORE_PERMIT[ 53] & ~reg_be))) |
+               (addr_hit[ 54] & (|(RRAM_CTRL_CORE_PERMIT[ 54] & ~reg_be))) |
+               (addr_hit[ 55] & (|(RRAM_CTRL_CORE_PERMIT[ 55] & ~reg_be))) |
+               (addr_hit[ 56] & (|(RRAM_CTRL_CORE_PERMIT[ 56] & ~reg_be))) |
+               (addr_hit[ 57] & (|(RRAM_CTRL_CORE_PERMIT[ 57] & ~reg_be))) |
+               (addr_hit[ 58] & (|(RRAM_CTRL_CORE_PERMIT[ 58] & ~reg_be))) |
+               (addr_hit[ 59] & (|(RRAM_CTRL_CORE_PERMIT[ 59] & ~reg_be))) |
+               (addr_hit[ 60] & (|(RRAM_CTRL_CORE_PERMIT[ 60] & ~reg_be))) |
+               (addr_hit[ 61] & (|(RRAM_CTRL_CORE_PERMIT[ 61] & ~reg_be))) |
+               (addr_hit[ 62] & (|(RRAM_CTRL_CORE_PERMIT[ 62] & ~reg_be))) |
+               (addr_hit[ 63] & (|(RRAM_CTRL_CORE_PERMIT[ 63] & ~reg_be))) |
+               (addr_hit[ 64] & (|(RRAM_CTRL_CORE_PERMIT[ 64] & ~reg_be))) |
+               (addr_hit[ 65] & (|(RRAM_CTRL_CORE_PERMIT[ 65] & ~reg_be))) |
+               (addr_hit[ 66] & (|(RRAM_CTRL_CORE_PERMIT[ 66] & ~reg_be))) |
+               (addr_hit[ 67] & (|(RRAM_CTRL_CORE_PERMIT[ 67] & ~reg_be))) |
+               (addr_hit[ 68] & (|(RRAM_CTRL_CORE_PERMIT[ 68] & ~reg_be))) |
+               (addr_hit[ 69] & (|(RRAM_CTRL_CORE_PERMIT[ 69] & ~reg_be))) |
+               (addr_hit[ 70] & (|(RRAM_CTRL_CORE_PERMIT[ 70] & ~reg_be))) |
+               (addr_hit[ 71] & (|(RRAM_CTRL_CORE_PERMIT[ 71] & ~reg_be))) |
+               (addr_hit[ 72] & (|(RRAM_CTRL_CORE_PERMIT[ 72] & ~reg_be))) |
+               (addr_hit[ 73] & (|(RRAM_CTRL_CORE_PERMIT[ 73] & ~reg_be))) |
+               (addr_hit[ 74] & (|(RRAM_CTRL_CORE_PERMIT[ 74] & ~reg_be))) |
+               (addr_hit[ 75] & (|(RRAM_CTRL_CORE_PERMIT[ 75] & ~reg_be))) |
+               (addr_hit[ 76] & (|(RRAM_CTRL_CORE_PERMIT[ 76] & ~reg_be))) |
+               (addr_hit[ 77] & (|(RRAM_CTRL_CORE_PERMIT[ 77] & ~reg_be))) |
+               (addr_hit[ 78] & (|(RRAM_CTRL_CORE_PERMIT[ 78] & ~reg_be))) |
+               (addr_hit[ 79] & (|(RRAM_CTRL_CORE_PERMIT[ 79] & ~reg_be))) |
+               (addr_hit[ 80] & (|(RRAM_CTRL_CORE_PERMIT[ 80] & ~reg_be))) |
+               (addr_hit[ 81] & (|(RRAM_CTRL_CORE_PERMIT[ 81] & ~reg_be))) |
+               (addr_hit[ 82] & (|(RRAM_CTRL_CORE_PERMIT[ 82] & ~reg_be))) |
+               (addr_hit[ 83] & (|(RRAM_CTRL_CORE_PERMIT[ 83] & ~reg_be))) |
+               (addr_hit[ 84] & (|(RRAM_CTRL_CORE_PERMIT[ 84] & ~reg_be))) |
+               (addr_hit[ 85] & (|(RRAM_CTRL_CORE_PERMIT[ 85] & ~reg_be))) |
+               (addr_hit[ 86] & (|(RRAM_CTRL_CORE_PERMIT[ 86] & ~reg_be))) |
+               (addr_hit[ 87] & (|(RRAM_CTRL_CORE_PERMIT[ 87] & ~reg_be))) |
+               (addr_hit[ 88] & (|(RRAM_CTRL_CORE_PERMIT[ 88] & ~reg_be))) |
+               (addr_hit[ 89] & (|(RRAM_CTRL_CORE_PERMIT[ 89] & ~reg_be))) |
+               (addr_hit[ 90] & (|(RRAM_CTRL_CORE_PERMIT[ 90] & ~reg_be))) |
+               (addr_hit[ 91] & (|(RRAM_CTRL_CORE_PERMIT[ 91] & ~reg_be))) |
+               (addr_hit[ 92] & (|(RRAM_CTRL_CORE_PERMIT[ 92] & ~reg_be))) |
+               (addr_hit[ 93] & (|(RRAM_CTRL_CORE_PERMIT[ 93] & ~reg_be))) |
+               (addr_hit[ 94] & (|(RRAM_CTRL_CORE_PERMIT[ 94] & ~reg_be))) |
+               (addr_hit[ 95] & (|(RRAM_CTRL_CORE_PERMIT[ 95] & ~reg_be))) |
+               (addr_hit[ 96] & (|(RRAM_CTRL_CORE_PERMIT[ 96] & ~reg_be))) |
+               (addr_hit[ 97] & (|(RRAM_CTRL_CORE_PERMIT[ 97] & ~reg_be))) |
+               (addr_hit[ 98] & (|(RRAM_CTRL_CORE_PERMIT[ 98] & ~reg_be))) |
+               (addr_hit[ 99] & (|(RRAM_CTRL_CORE_PERMIT[ 99] & ~reg_be))) |
+               (addr_hit[100] & (|(RRAM_CTRL_CORE_PERMIT[100] & ~reg_be))) |
+               (addr_hit[101] & (|(RRAM_CTRL_CORE_PERMIT[101] & ~reg_be))) |
+               (addr_hit[102] & (|(RRAM_CTRL_CORE_PERMIT[102] & ~reg_be))) |
+               (addr_hit[103] & (|(RRAM_CTRL_CORE_PERMIT[103] & ~reg_be))) |
+               (addr_hit[104] & (|(RRAM_CTRL_CORE_PERMIT[104] & ~reg_be))) |
+               (addr_hit[105] & (|(RRAM_CTRL_CORE_PERMIT[105] & ~reg_be))) |
+               (addr_hit[106] & (|(RRAM_CTRL_CORE_PERMIT[106] & ~reg_be))) |
+               (addr_hit[107] & (|(RRAM_CTRL_CORE_PERMIT[107] & ~reg_be))) |
+               (addr_hit[108] & (|(RRAM_CTRL_CORE_PERMIT[108] & ~reg_be))) |
+               (addr_hit[109] & (|(RRAM_CTRL_CORE_PERMIT[109] & ~reg_be))) |
+               (addr_hit[110] & (|(RRAM_CTRL_CORE_PERMIT[110] & ~reg_be))) |
+               (addr_hit[111] & (|(RRAM_CTRL_CORE_PERMIT[111] & ~reg_be))) |
+               (addr_hit[112] & (|(RRAM_CTRL_CORE_PERMIT[112] & ~reg_be))) |
+               (addr_hit[113] & (|(RRAM_CTRL_CORE_PERMIT[113] & ~reg_be))) |
+               (addr_hit[114] & (|(RRAM_CTRL_CORE_PERMIT[114] & ~reg_be))) |
+               (addr_hit[115] & (|(RRAM_CTRL_CORE_PERMIT[115] & ~reg_be))) |
+               (addr_hit[116] & (|(RRAM_CTRL_CORE_PERMIT[116] & ~reg_be))) |
+               (addr_hit[117] & (|(RRAM_CTRL_CORE_PERMIT[117] & ~reg_be))) |
+               (addr_hit[118] & (|(RRAM_CTRL_CORE_PERMIT[118] & ~reg_be))) |
+               (addr_hit[119] & (|(RRAM_CTRL_CORE_PERMIT[119] & ~reg_be))) |
+               (addr_hit[120] & (|(RRAM_CTRL_CORE_PERMIT[120] & ~reg_be))) |
+               (addr_hit[121] & (|(RRAM_CTRL_CORE_PERMIT[121] & ~reg_be))) |
+               (addr_hit[122] & (|(RRAM_CTRL_CORE_PERMIT[122] & ~reg_be))) |
+               (addr_hit[123] & (|(RRAM_CTRL_CORE_PERMIT[123] & ~reg_be))) |
+               (addr_hit[124] & (|(RRAM_CTRL_CORE_PERMIT[124] & ~reg_be))) |
+               (addr_hit[125] & (|(RRAM_CTRL_CORE_PERMIT[125] & ~reg_be))) |
+               (addr_hit[126] & (|(RRAM_CTRL_CORE_PERMIT[126] & ~reg_be))) |
+               (addr_hit[127] & (|(RRAM_CTRL_CORE_PERMIT[127] & ~reg_be))) |
+               (addr_hit[128] & (|(RRAM_CTRL_CORE_PERMIT[128] & ~reg_be))) |
+               (addr_hit[129] & (|(RRAM_CTRL_CORE_PERMIT[129] & ~reg_be))) |
+               (addr_hit[130] & (|(RRAM_CTRL_CORE_PERMIT[130] & ~reg_be))) |
+               (addr_hit[131] & (|(RRAM_CTRL_CORE_PERMIT[131] & ~reg_be))) |
+               (addr_hit[132] & (|(RRAM_CTRL_CORE_PERMIT[132] & ~reg_be))) |
+               (addr_hit[133] & (|(RRAM_CTRL_CORE_PERMIT[133] & ~reg_be))) |
+               (addr_hit[134] & (|(RRAM_CTRL_CORE_PERMIT[134] & ~reg_be))) |
+               (addr_hit[135] & (|(RRAM_CTRL_CORE_PERMIT[135] & ~reg_be))) |
+               (addr_hit[136] & (|(RRAM_CTRL_CORE_PERMIT[136] & ~reg_be))) |
+               (addr_hit[137] & (|(RRAM_CTRL_CORE_PERMIT[137] & ~reg_be))) |
+               (addr_hit[138] & (|(RRAM_CTRL_CORE_PERMIT[138] & ~reg_be))) |
+               (addr_hit[139] & (|(RRAM_CTRL_CORE_PERMIT[139] & ~reg_be))) |
+               (addr_hit[140] & (|(RRAM_CTRL_CORE_PERMIT[140] & ~reg_be))) |
+               (addr_hit[141] & (|(RRAM_CTRL_CORE_PERMIT[141] & ~reg_be))) |
+               (addr_hit[142] & (|(RRAM_CTRL_CORE_PERMIT[142] & ~reg_be))) |
+               (addr_hit[143] & (|(RRAM_CTRL_CORE_PERMIT[143] & ~reg_be))) |
+               (addr_hit[144] & (|(RRAM_CTRL_CORE_PERMIT[144] & ~reg_be))) |
+               (addr_hit[145] & (|(RRAM_CTRL_CORE_PERMIT[145] & ~reg_be))) |
+               (addr_hit[146] & (|(RRAM_CTRL_CORE_PERMIT[146] & ~reg_be))) |
+               (addr_hit[147] & (|(RRAM_CTRL_CORE_PERMIT[147] & ~reg_be))) |
+               (addr_hit[148] & (|(RRAM_CTRL_CORE_PERMIT[148] & ~reg_be))) |
+               (addr_hit[149] & (|(RRAM_CTRL_CORE_PERMIT[149] & ~reg_be))) |
+               (addr_hit[150] & (|(RRAM_CTRL_CORE_PERMIT[150] & ~reg_be))) |
+               (addr_hit[151] & (|(RRAM_CTRL_CORE_PERMIT[151] & ~reg_be))) |
+               (addr_hit[152] & (|(RRAM_CTRL_CORE_PERMIT[152] & ~reg_be))) |
+               (addr_hit[153] & (|(RRAM_CTRL_CORE_PERMIT[153] & ~reg_be))) |
+               (addr_hit[154] & (|(RRAM_CTRL_CORE_PERMIT[154] & ~reg_be))) |
+               (addr_hit[155] & (|(RRAM_CTRL_CORE_PERMIT[155] & ~reg_be))) |
+               (addr_hit[156] & (|(RRAM_CTRL_CORE_PERMIT[156] & ~reg_be))) |
+               (addr_hit[157] & (|(RRAM_CTRL_CORE_PERMIT[157] & ~reg_be))) |
+               (addr_hit[158] & (|(RRAM_CTRL_CORE_PERMIT[158] & ~reg_be))) |
+               (addr_hit[159] & (|(RRAM_CTRL_CORE_PERMIT[159] & ~reg_be))) |
+               (addr_hit[160] & (|(RRAM_CTRL_CORE_PERMIT[160] & ~reg_be))) |
+               (addr_hit[161] & (|(RRAM_CTRL_CORE_PERMIT[161] & ~reg_be))) |
+               (addr_hit[162] & (|(RRAM_CTRL_CORE_PERMIT[162] & ~reg_be))) |
+               (addr_hit[163] & (|(RRAM_CTRL_CORE_PERMIT[163] & ~reg_be))) |
+               (addr_hit[164] & (|(RRAM_CTRL_CORE_PERMIT[164] & ~reg_be))) |
+               (addr_hit[165] & (|(RRAM_CTRL_CORE_PERMIT[165] & ~reg_be))) |
+               (addr_hit[166] & (|(RRAM_CTRL_CORE_PERMIT[166] & ~reg_be))) |
+               (addr_hit[167] & (|(RRAM_CTRL_CORE_PERMIT[167] & ~reg_be))) |
+               (addr_hit[168] & (|(RRAM_CTRL_CORE_PERMIT[168] & ~reg_be))) |
+               (addr_hit[169] & (|(RRAM_CTRL_CORE_PERMIT[169] & ~reg_be))) |
+               (addr_hit[170] & (|(RRAM_CTRL_CORE_PERMIT[170] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -7150,17 +12920,465 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
 
   assign info_page_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
-  assign hw_info_cfg_override_we = addr_hit[57] & reg_we & !reg_error;
+  assign emul_info_regwen_0_we = addr_hit[57] & reg_we & !reg_error;
+
+  assign emul_info_regwen_0_wd = reg_wdata[0];
+  assign emul_info_regwen_1_we = addr_hit[58] & reg_we & !reg_error;
+
+  assign emul_info_regwen_1_wd = reg_wdata[0];
+  assign emul_info_region_0_we = addr_hit[59] & reg_we & !reg_error;
+
+  assign emul_info_region_0_base_0_wd = reg_wdata[11:0];
+
+  assign emul_info_region_0_size_0_wd = reg_wdata[23:12];
+  assign emul_info_region_1_we = addr_hit[60] & reg_we & !reg_error;
+
+  assign emul_info_region_1_base_1_wd = reg_wdata[11:0];
+
+  assign emul_info_region_1_size_1_wd = reg_wdata[23:12];
+  assign emul_info_subregion_regwen_0_we = addr_hit[61] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_0_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_1_we = addr_hit[62] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_1_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_2_we = addr_hit[63] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_2_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_3_we = addr_hit[64] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_3_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_4_we = addr_hit[65] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_4_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_5_we = addr_hit[66] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_5_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_6_we = addr_hit[67] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_6_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_7_we = addr_hit[68] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_7_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_8_we = addr_hit[69] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_8_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_9_we = addr_hit[70] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_9_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_10_we = addr_hit[71] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_10_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_11_we = addr_hit[72] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_11_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_12_we = addr_hit[73] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_12_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_13_we = addr_hit[74] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_13_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_14_we = addr_hit[75] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_14_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_15_we = addr_hit[76] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_15_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_16_we = addr_hit[77] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_16_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_17_we = addr_hit[78] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_17_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_18_we = addr_hit[79] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_18_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_19_we = addr_hit[80] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_19_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_20_we = addr_hit[81] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_20_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_21_we = addr_hit[82] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_21_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_22_we = addr_hit[83] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_22_wd = reg_wdata[0];
+  assign emul_info_subregion_regwen_23_we = addr_hit[84] & reg_we & !reg_error;
+
+  assign emul_info_subregion_regwen_23_wd = reg_wdata[0];
+  assign emul_info_subregion_0_we = addr_hit[85] & reg_we & !reg_error;
+
+  assign emul_info_subregion_0_wd = reg_wdata[7:0];
+  assign emul_info_subregion_1_we = addr_hit[86] & reg_we & !reg_error;
+
+  assign emul_info_subregion_1_wd = reg_wdata[7:0];
+  assign emul_info_subregion_2_we = addr_hit[87] & reg_we & !reg_error;
+
+  assign emul_info_subregion_2_wd = reg_wdata[7:0];
+  assign emul_info_subregion_3_we = addr_hit[88] & reg_we & !reg_error;
+
+  assign emul_info_subregion_3_wd = reg_wdata[7:0];
+  assign emul_info_subregion_4_we = addr_hit[89] & reg_we & !reg_error;
+
+  assign emul_info_subregion_4_wd = reg_wdata[7:0];
+  assign emul_info_subregion_5_we = addr_hit[90] & reg_we & !reg_error;
+
+  assign emul_info_subregion_5_wd = reg_wdata[7:0];
+  assign emul_info_subregion_6_we = addr_hit[91] & reg_we & !reg_error;
+
+  assign emul_info_subregion_6_wd = reg_wdata[7:0];
+  assign emul_info_subregion_7_we = addr_hit[92] & reg_we & !reg_error;
+
+  assign emul_info_subregion_7_wd = reg_wdata[7:0];
+  assign emul_info_subregion_8_we = addr_hit[93] & reg_we & !reg_error;
+
+  assign emul_info_subregion_8_wd = reg_wdata[7:0];
+  assign emul_info_subregion_9_we = addr_hit[94] & reg_we & !reg_error;
+
+  assign emul_info_subregion_9_wd = reg_wdata[7:0];
+  assign emul_info_subregion_10_we = addr_hit[95] & reg_we & !reg_error;
+
+  assign emul_info_subregion_10_wd = reg_wdata[7:0];
+  assign emul_info_subregion_11_we = addr_hit[96] & reg_we & !reg_error;
+
+  assign emul_info_subregion_11_wd = reg_wdata[7:0];
+  assign emul_info_subregion_12_we = addr_hit[97] & reg_we & !reg_error;
+
+  assign emul_info_subregion_12_wd = reg_wdata[7:0];
+  assign emul_info_subregion_13_we = addr_hit[98] & reg_we & !reg_error;
+
+  assign emul_info_subregion_13_wd = reg_wdata[7:0];
+  assign emul_info_subregion_14_we = addr_hit[99] & reg_we & !reg_error;
+
+  assign emul_info_subregion_14_wd = reg_wdata[7:0];
+  assign emul_info_subregion_15_we = addr_hit[100] & reg_we & !reg_error;
+
+  assign emul_info_subregion_15_wd = reg_wdata[7:0];
+  assign emul_info_subregion_16_we = addr_hit[101] & reg_we & !reg_error;
+
+  assign emul_info_subregion_16_wd = reg_wdata[7:0];
+  assign emul_info_subregion_17_we = addr_hit[102] & reg_we & !reg_error;
+
+  assign emul_info_subregion_17_wd = reg_wdata[7:0];
+  assign emul_info_subregion_18_we = addr_hit[103] & reg_we & !reg_error;
+
+  assign emul_info_subregion_18_wd = reg_wdata[7:0];
+  assign emul_info_subregion_19_we = addr_hit[104] & reg_we & !reg_error;
+
+  assign emul_info_subregion_19_wd = reg_wdata[7:0];
+  assign emul_info_subregion_20_we = addr_hit[105] & reg_we & !reg_error;
+
+  assign emul_info_subregion_20_wd = reg_wdata[7:0];
+  assign emul_info_subregion_21_we = addr_hit[106] & reg_we & !reg_error;
+
+  assign emul_info_subregion_21_wd = reg_wdata[7:0];
+  assign emul_info_subregion_22_we = addr_hit[107] & reg_we & !reg_error;
+
+  assign emul_info_subregion_22_wd = reg_wdata[7:0];
+  assign emul_info_subregion_23_we = addr_hit[108] & reg_we & !reg_error;
+
+  assign emul_info_subregion_23_wd = reg_wdata[7:0];
+  assign emul_info_subregion_cfg_regwen_0_we = addr_hit[109] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_0_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_1_we = addr_hit[110] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_1_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_2_we = addr_hit[111] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_2_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_3_we = addr_hit[112] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_3_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_4_we = addr_hit[113] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_4_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_5_we = addr_hit[114] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_5_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_6_we = addr_hit[115] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_6_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_7_we = addr_hit[116] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_7_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_8_we = addr_hit[117] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_8_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_9_we = addr_hit[118] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_9_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_10_we = addr_hit[119] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_10_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_11_we = addr_hit[120] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_11_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_12_we = addr_hit[121] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_12_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_13_we = addr_hit[122] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_13_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_14_we = addr_hit[123] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_14_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_15_we = addr_hit[124] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_15_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_16_we = addr_hit[125] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_16_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_17_we = addr_hit[126] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_17_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_18_we = addr_hit[127] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_18_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_19_we = addr_hit[128] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_19_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_20_we = addr_hit[129] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_20_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_21_we = addr_hit[130] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_21_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_22_we = addr_hit[131] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_22_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_regwen_23_we = addr_hit[132] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_regwen_23_wd = reg_wdata[0];
+  assign emul_info_subregion_cfg_0_we = addr_hit[133] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_0_rd_en_0_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_0_wr_en_0_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_0_scramble_en_0_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_0_ecc_en_0_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_1_we = addr_hit[134] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_1_rd_en_1_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_1_wr_en_1_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_1_scramble_en_1_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_1_ecc_en_1_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_2_we = addr_hit[135] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_2_rd_en_2_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_2_wr_en_2_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_2_scramble_en_2_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_2_ecc_en_2_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_3_we = addr_hit[136] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_3_rd_en_3_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_3_wr_en_3_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_3_scramble_en_3_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_3_ecc_en_3_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_4_we = addr_hit[137] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_4_rd_en_4_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_4_wr_en_4_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_4_scramble_en_4_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_4_ecc_en_4_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_5_we = addr_hit[138] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_5_rd_en_5_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_5_wr_en_5_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_5_scramble_en_5_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_5_ecc_en_5_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_6_we = addr_hit[139] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_6_rd_en_6_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_6_wr_en_6_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_6_scramble_en_6_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_6_ecc_en_6_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_7_we = addr_hit[140] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_7_rd_en_7_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_7_wr_en_7_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_8_we = addr_hit[141] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_8_rd_en_8_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_8_wr_en_8_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_8_scramble_en_8_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_8_ecc_en_8_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_9_we = addr_hit[142] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_9_rd_en_9_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_9_wr_en_9_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_9_scramble_en_9_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_9_ecc_en_9_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_10_we = addr_hit[143] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_10_rd_en_10_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_10_wr_en_10_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_10_scramble_en_10_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_10_ecc_en_10_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_11_we = addr_hit[144] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_11_rd_en_11_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_11_wr_en_11_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_11_scramble_en_11_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_11_ecc_en_11_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_12_we = addr_hit[145] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_12_rd_en_12_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_12_wr_en_12_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_12_scramble_en_12_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_12_ecc_en_12_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_13_we = addr_hit[146] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_13_rd_en_13_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_13_wr_en_13_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_13_scramble_en_13_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_13_ecc_en_13_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_14_we = addr_hit[147] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_14_rd_en_14_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_14_wr_en_14_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_14_scramble_en_14_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_14_ecc_en_14_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_15_we = addr_hit[148] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_15_rd_en_15_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_15_wr_en_15_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_15_scramble_en_15_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_15_ecc_en_15_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_16_we = addr_hit[149] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_16_rd_en_16_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_16_wr_en_16_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_16_scramble_en_16_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_16_ecc_en_16_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_17_we = addr_hit[150] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_17_rd_en_17_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_17_wr_en_17_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_17_scramble_en_17_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_17_ecc_en_17_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_18_we = addr_hit[151] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_18_rd_en_18_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_18_wr_en_18_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_18_scramble_en_18_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_18_ecc_en_18_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_19_we = addr_hit[152] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_19_rd_en_19_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_19_wr_en_19_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_19_scramble_en_19_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_19_ecc_en_19_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_20_we = addr_hit[153] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_20_rd_en_20_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_20_wr_en_20_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_20_scramble_en_20_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_20_ecc_en_20_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_21_we = addr_hit[154] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_21_rd_en_21_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_21_wr_en_21_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_21_scramble_en_21_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_21_ecc_en_21_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_22_we = addr_hit[155] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_22_rd_en_22_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_22_wr_en_22_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_22_scramble_en_22_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_22_ecc_en_22_wd = reg_wdata[19:16];
+  assign emul_info_subregion_cfg_23_we = addr_hit[156] & reg_we & !reg_error;
+
+  assign emul_info_subregion_cfg_23_rd_en_23_wd = reg_wdata[7:4];
+
+  assign emul_info_subregion_cfg_23_wr_en_23_wd = reg_wdata[11:8];
+
+  assign emul_info_subregion_cfg_23_scramble_en_23_wd = reg_wdata[15:12];
+
+  assign emul_info_subregion_cfg_23_ecc_en_23_wd = reg_wdata[19:16];
+  assign hw_info_cfg_override_we = addr_hit[157] & reg_we & !reg_error;
 
   assign hw_info_cfg_override_scramble_dis_wd = reg_wdata[3:0];
 
   assign hw_info_cfg_override_ecc_dis_wd = reg_wdata[7:4];
-  assign op_status_we = addr_hit[58] & reg_we & !reg_error;
+  assign op_status_we = addr_hit[158] & reg_we & !reg_error;
 
   assign op_status_done_wd = reg_wdata[0];
 
   assign op_status_err_wd = reg_wdata[1];
-  assign err_code_we = addr_hit[60] & reg_we & !reg_error;
+  assign err_code_we = addr_hit[160] & reg_we & !reg_error;
 
   assign err_code_op_err_wd = reg_wdata[0];
 
@@ -7169,26 +13387,26 @@ module rram_ctrl_core_reg_top (
   assign err_code_rd_err_wd = reg_wdata[2];
 
   assign err_code_wr_err_wd = reg_wdata[3];
-  assign fault_status_we = addr_hit[62] & reg_we & !reg_error;
+  assign fault_status_we = addr_hit[162] & reg_we & !reg_error;
 
   assign fault_status_phy_relbl_err_wd = reg_wdata[9];
-  assign corr_err_cnt_we = addr_hit[64] & reg_we & !reg_error;
+  assign corr_err_cnt_we = addr_hit[164] & reg_we & !reg_error;
 
   assign corr_err_cnt_wd = reg_wdata[7:0];
-  assign scratch_we = addr_hit[67] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[167] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[68] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[168] & reg_we & !reg_error;
 
   assign fifo_lvl_wr_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_clr_we = addr_hit[69] & reg_we & !reg_error;
+  assign fifo_clr_we = addr_hit[169] & reg_we & !reg_error;
 
   assign fifo_clr_wr_wd = reg_wdata[0];
 
   assign fifo_clr_rd_wd = reg_wdata[1];
-  assign curr_fifo_lvl_re = addr_hit[70] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[170] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -7249,20 +13467,120 @@ module rram_ctrl_core_reg_top (
     reg_we_check[54] = info_page_cfg_5_gated_we;
     reg_we_check[55] = info_page_cfg_6_gated_we;
     reg_we_check[56] = info_page_cfg_7_gated_we;
-    reg_we_check[57] = hw_info_cfg_override_we;
-    reg_we_check[58] = op_status_we;
-    reg_we_check[59] = 1'b0;
-    reg_we_check[60] = err_code_we;
-    reg_we_check[61] = 1'b0;
-    reg_we_check[62] = fault_status_we;
-    reg_we_check[63] = 1'b0;
-    reg_we_check[64] = corr_err_cnt_we;
-    reg_we_check[65] = 1'b0;
-    reg_we_check[66] = 1'b0;
-    reg_we_check[67] = scratch_we;
-    reg_we_check[68] = fifo_lvl_we;
-    reg_we_check[69] = fifo_clr_we;
-    reg_we_check[70] = 1'b0;
+    reg_we_check[57] = emul_info_regwen_0_we;
+    reg_we_check[58] = emul_info_regwen_1_we;
+    reg_we_check[59] = emul_info_region_0_gated_we;
+    reg_we_check[60] = emul_info_region_1_gated_we;
+    reg_we_check[61] = emul_info_subregion_regwen_0_we;
+    reg_we_check[62] = emul_info_subregion_regwen_1_we;
+    reg_we_check[63] = emul_info_subregion_regwen_2_we;
+    reg_we_check[64] = emul_info_subregion_regwen_3_we;
+    reg_we_check[65] = emul_info_subregion_regwen_4_we;
+    reg_we_check[66] = emul_info_subregion_regwen_5_we;
+    reg_we_check[67] = emul_info_subregion_regwen_6_we;
+    reg_we_check[68] = emul_info_subregion_regwen_7_we;
+    reg_we_check[69] = emul_info_subregion_regwen_8_we;
+    reg_we_check[70] = emul_info_subregion_regwen_9_we;
+    reg_we_check[71] = emul_info_subregion_regwen_10_we;
+    reg_we_check[72] = emul_info_subregion_regwen_11_we;
+    reg_we_check[73] = emul_info_subregion_regwen_12_we;
+    reg_we_check[74] = emul_info_subregion_regwen_13_we;
+    reg_we_check[75] = emul_info_subregion_regwen_14_we;
+    reg_we_check[76] = emul_info_subregion_regwen_15_we;
+    reg_we_check[77] = emul_info_subregion_regwen_16_we;
+    reg_we_check[78] = emul_info_subregion_regwen_17_we;
+    reg_we_check[79] = emul_info_subregion_regwen_18_we;
+    reg_we_check[80] = emul_info_subregion_regwen_19_we;
+    reg_we_check[81] = emul_info_subregion_regwen_20_we;
+    reg_we_check[82] = emul_info_subregion_regwen_21_we;
+    reg_we_check[83] = emul_info_subregion_regwen_22_we;
+    reg_we_check[84] = emul_info_subregion_regwen_23_we;
+    reg_we_check[85] = emul_info_subregion_0_gated_we;
+    reg_we_check[86] = emul_info_subregion_1_gated_we;
+    reg_we_check[87] = emul_info_subregion_2_gated_we;
+    reg_we_check[88] = emul_info_subregion_3_gated_we;
+    reg_we_check[89] = emul_info_subregion_4_gated_we;
+    reg_we_check[90] = emul_info_subregion_5_gated_we;
+    reg_we_check[91] = emul_info_subregion_6_gated_we;
+    reg_we_check[92] = emul_info_subregion_7_gated_we;
+    reg_we_check[93] = emul_info_subregion_8_gated_we;
+    reg_we_check[94] = emul_info_subregion_9_gated_we;
+    reg_we_check[95] = emul_info_subregion_10_gated_we;
+    reg_we_check[96] = emul_info_subregion_11_gated_we;
+    reg_we_check[97] = emul_info_subregion_12_gated_we;
+    reg_we_check[98] = emul_info_subregion_13_gated_we;
+    reg_we_check[99] = emul_info_subregion_14_gated_we;
+    reg_we_check[100] = emul_info_subregion_15_gated_we;
+    reg_we_check[101] = emul_info_subregion_16_gated_we;
+    reg_we_check[102] = emul_info_subregion_17_gated_we;
+    reg_we_check[103] = emul_info_subregion_18_gated_we;
+    reg_we_check[104] = emul_info_subregion_19_gated_we;
+    reg_we_check[105] = emul_info_subregion_20_gated_we;
+    reg_we_check[106] = emul_info_subregion_21_gated_we;
+    reg_we_check[107] = emul_info_subregion_22_gated_we;
+    reg_we_check[108] = emul_info_subregion_23_gated_we;
+    reg_we_check[109] = emul_info_subregion_cfg_regwen_0_we;
+    reg_we_check[110] = emul_info_subregion_cfg_regwen_1_we;
+    reg_we_check[111] = emul_info_subregion_cfg_regwen_2_we;
+    reg_we_check[112] = emul_info_subregion_cfg_regwen_3_we;
+    reg_we_check[113] = emul_info_subregion_cfg_regwen_4_we;
+    reg_we_check[114] = emul_info_subregion_cfg_regwen_5_we;
+    reg_we_check[115] = emul_info_subregion_cfg_regwen_6_we;
+    reg_we_check[116] = emul_info_subregion_cfg_regwen_7_we;
+    reg_we_check[117] = emul_info_subregion_cfg_regwen_8_we;
+    reg_we_check[118] = emul_info_subregion_cfg_regwen_9_we;
+    reg_we_check[119] = emul_info_subregion_cfg_regwen_10_we;
+    reg_we_check[120] = emul_info_subregion_cfg_regwen_11_we;
+    reg_we_check[121] = emul_info_subregion_cfg_regwen_12_we;
+    reg_we_check[122] = emul_info_subregion_cfg_regwen_13_we;
+    reg_we_check[123] = emul_info_subregion_cfg_regwen_14_we;
+    reg_we_check[124] = emul_info_subregion_cfg_regwen_15_we;
+    reg_we_check[125] = emul_info_subregion_cfg_regwen_16_we;
+    reg_we_check[126] = emul_info_subregion_cfg_regwen_17_we;
+    reg_we_check[127] = emul_info_subregion_cfg_regwen_18_we;
+    reg_we_check[128] = emul_info_subregion_cfg_regwen_19_we;
+    reg_we_check[129] = emul_info_subregion_cfg_regwen_20_we;
+    reg_we_check[130] = emul_info_subregion_cfg_regwen_21_we;
+    reg_we_check[131] = emul_info_subregion_cfg_regwen_22_we;
+    reg_we_check[132] = emul_info_subregion_cfg_regwen_23_we;
+    reg_we_check[133] = emul_info_subregion_cfg_0_gated_we;
+    reg_we_check[134] = emul_info_subregion_cfg_1_gated_we;
+    reg_we_check[135] = emul_info_subregion_cfg_2_gated_we;
+    reg_we_check[136] = emul_info_subregion_cfg_3_gated_we;
+    reg_we_check[137] = emul_info_subregion_cfg_4_gated_we;
+    reg_we_check[138] = emul_info_subregion_cfg_5_gated_we;
+    reg_we_check[139] = emul_info_subregion_cfg_6_gated_we;
+    reg_we_check[140] = emul_info_subregion_cfg_7_gated_we;
+    reg_we_check[141] = emul_info_subregion_cfg_8_gated_we;
+    reg_we_check[142] = emul_info_subregion_cfg_9_gated_we;
+    reg_we_check[143] = emul_info_subregion_cfg_10_gated_we;
+    reg_we_check[144] = emul_info_subregion_cfg_11_gated_we;
+    reg_we_check[145] = emul_info_subregion_cfg_12_gated_we;
+    reg_we_check[146] = emul_info_subregion_cfg_13_gated_we;
+    reg_we_check[147] = emul_info_subregion_cfg_14_gated_we;
+    reg_we_check[148] = emul_info_subregion_cfg_15_gated_we;
+    reg_we_check[149] = emul_info_subregion_cfg_16_gated_we;
+    reg_we_check[150] = emul_info_subregion_cfg_17_gated_we;
+    reg_we_check[151] = emul_info_subregion_cfg_18_gated_we;
+    reg_we_check[152] = emul_info_subregion_cfg_19_gated_we;
+    reg_we_check[153] = emul_info_subregion_cfg_20_gated_we;
+    reg_we_check[154] = emul_info_subregion_cfg_21_gated_we;
+    reg_we_check[155] = emul_info_subregion_cfg_22_gated_we;
+    reg_we_check[156] = emul_info_subregion_cfg_23_gated_we;
+    reg_we_check[157] = hw_info_cfg_override_we;
+    reg_we_check[158] = op_status_we;
+    reg_we_check[159] = 1'b0;
+    reg_we_check[160] = err_code_we;
+    reg_we_check[161] = 1'b0;
+    reg_we_check[162] = fault_status_we;
+    reg_we_check[163] = 1'b0;
+    reg_we_check[164] = corr_err_cnt_we;
+    reg_we_check[165] = 1'b0;
+    reg_we_check[166] = 1'b0;
+    reg_we_check[167] = scratch_we;
+    reg_we_check[168] = fifo_lvl_we;
+    reg_we_check[169] = fifo_clr_we;
+    reg_we_check[170] = 1'b0;
   end
 
   // Read data return
@@ -7606,16 +13924,490 @@ module rram_ctrl_core_reg_top (
       end
 
       addr_hit[57]: begin
+        reg_rdata_next[0] = emul_info_regwen_0_qs;
+      end
+
+      addr_hit[58]: begin
+        reg_rdata_next[0] = emul_info_regwen_1_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[11:0] = emul_info_region_0_base_0_qs;
+        reg_rdata_next[23:12] = emul_info_region_0_size_0_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[11:0] = emul_info_region_1_base_1_qs;
+        reg_rdata_next[23:12] = emul_info_region_1_size_1_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_0_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_1_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_2_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_3_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_4_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_5_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_6_qs;
+      end
+
+      addr_hit[68]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_7_qs;
+      end
+
+      addr_hit[69]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_8_qs;
+      end
+
+      addr_hit[70]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_9_qs;
+      end
+
+      addr_hit[71]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_10_qs;
+      end
+
+      addr_hit[72]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_11_qs;
+      end
+
+      addr_hit[73]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_12_qs;
+      end
+
+      addr_hit[74]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_13_qs;
+      end
+
+      addr_hit[75]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_14_qs;
+      end
+
+      addr_hit[76]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_15_qs;
+      end
+
+      addr_hit[77]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_16_qs;
+      end
+
+      addr_hit[78]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_17_qs;
+      end
+
+      addr_hit[79]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_18_qs;
+      end
+
+      addr_hit[80]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_19_qs;
+      end
+
+      addr_hit[81]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_20_qs;
+      end
+
+      addr_hit[82]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_21_qs;
+      end
+
+      addr_hit[83]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_22_qs;
+      end
+
+      addr_hit[84]: begin
+        reg_rdata_next[0] = emul_info_subregion_regwen_23_qs;
+      end
+
+      addr_hit[85]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_0_qs;
+      end
+
+      addr_hit[86]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_1_qs;
+      end
+
+      addr_hit[87]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_2_qs;
+      end
+
+      addr_hit[88]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_3_qs;
+      end
+
+      addr_hit[89]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_4_qs;
+      end
+
+      addr_hit[90]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_5_qs;
+      end
+
+      addr_hit[91]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_6_qs;
+      end
+
+      addr_hit[92]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_7_qs;
+      end
+
+      addr_hit[93]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_8_qs;
+      end
+
+      addr_hit[94]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_9_qs;
+      end
+
+      addr_hit[95]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_10_qs;
+      end
+
+      addr_hit[96]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_11_qs;
+      end
+
+      addr_hit[97]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_12_qs;
+      end
+
+      addr_hit[98]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_13_qs;
+      end
+
+      addr_hit[99]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_14_qs;
+      end
+
+      addr_hit[100]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_15_qs;
+      end
+
+      addr_hit[101]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_16_qs;
+      end
+
+      addr_hit[102]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_17_qs;
+      end
+
+      addr_hit[103]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_18_qs;
+      end
+
+      addr_hit[104]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_19_qs;
+      end
+
+      addr_hit[105]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_20_qs;
+      end
+
+      addr_hit[106]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_21_qs;
+      end
+
+      addr_hit[107]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_22_qs;
+      end
+
+      addr_hit[108]: begin
+        reg_rdata_next[7:0] = emul_info_subregion_23_qs;
+      end
+
+      addr_hit[109]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_0_qs;
+      end
+
+      addr_hit[110]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_1_qs;
+      end
+
+      addr_hit[111]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_2_qs;
+      end
+
+      addr_hit[112]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_3_qs;
+      end
+
+      addr_hit[113]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_4_qs;
+      end
+
+      addr_hit[114]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_5_qs;
+      end
+
+      addr_hit[115]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_6_qs;
+      end
+
+      addr_hit[116]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_7_qs;
+      end
+
+      addr_hit[117]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_8_qs;
+      end
+
+      addr_hit[118]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_9_qs;
+      end
+
+      addr_hit[119]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_10_qs;
+      end
+
+      addr_hit[120]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_11_qs;
+      end
+
+      addr_hit[121]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_12_qs;
+      end
+
+      addr_hit[122]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_13_qs;
+      end
+
+      addr_hit[123]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_14_qs;
+      end
+
+      addr_hit[124]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_15_qs;
+      end
+
+      addr_hit[125]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_16_qs;
+      end
+
+      addr_hit[126]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_17_qs;
+      end
+
+      addr_hit[127]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_18_qs;
+      end
+
+      addr_hit[128]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_19_qs;
+      end
+
+      addr_hit[129]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_20_qs;
+      end
+
+      addr_hit[130]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_21_qs;
+      end
+
+      addr_hit[131]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_22_qs;
+      end
+
+      addr_hit[132]: begin
+        reg_rdata_next[0] = emul_info_subregion_cfg_regwen_23_qs;
+      end
+
+      addr_hit[133]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_0_rd_en_0_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_0_wr_en_0_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_0_scramble_en_0_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_0_ecc_en_0_qs;
+      end
+
+      addr_hit[134]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_1_rd_en_1_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_1_wr_en_1_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_1_scramble_en_1_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_1_ecc_en_1_qs;
+      end
+
+      addr_hit[135]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_2_rd_en_2_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_2_wr_en_2_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_2_scramble_en_2_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_2_ecc_en_2_qs;
+      end
+
+      addr_hit[136]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_3_rd_en_3_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_3_wr_en_3_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_3_scramble_en_3_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_3_ecc_en_3_qs;
+      end
+
+      addr_hit[137]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_4_rd_en_4_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_4_wr_en_4_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_4_scramble_en_4_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_4_ecc_en_4_qs;
+      end
+
+      addr_hit[138]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_5_rd_en_5_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_5_wr_en_5_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_5_scramble_en_5_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_5_ecc_en_5_qs;
+      end
+
+      addr_hit[139]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_6_rd_en_6_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_6_wr_en_6_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_6_scramble_en_6_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_6_ecc_en_6_qs;
+      end
+
+      addr_hit[140]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_7_rd_en_7_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_7_wr_en_7_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_7_scramble_en_7_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_7_ecc_en_7_qs;
+      end
+
+      addr_hit[141]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_8_rd_en_8_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_8_wr_en_8_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_8_scramble_en_8_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_8_ecc_en_8_qs;
+      end
+
+      addr_hit[142]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_9_rd_en_9_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_9_wr_en_9_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_9_scramble_en_9_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_9_ecc_en_9_qs;
+      end
+
+      addr_hit[143]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_10_rd_en_10_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_10_wr_en_10_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_10_scramble_en_10_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_10_ecc_en_10_qs;
+      end
+
+      addr_hit[144]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_11_rd_en_11_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_11_wr_en_11_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_11_scramble_en_11_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_11_ecc_en_11_qs;
+      end
+
+      addr_hit[145]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_12_rd_en_12_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_12_wr_en_12_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_12_scramble_en_12_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_12_ecc_en_12_qs;
+      end
+
+      addr_hit[146]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_13_rd_en_13_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_13_wr_en_13_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_13_scramble_en_13_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_13_ecc_en_13_qs;
+      end
+
+      addr_hit[147]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_14_rd_en_14_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_14_wr_en_14_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_14_scramble_en_14_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_14_ecc_en_14_qs;
+      end
+
+      addr_hit[148]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_15_rd_en_15_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_15_wr_en_15_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_15_scramble_en_15_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_15_ecc_en_15_qs;
+      end
+
+      addr_hit[149]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_16_rd_en_16_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_16_wr_en_16_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_16_scramble_en_16_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_16_ecc_en_16_qs;
+      end
+
+      addr_hit[150]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_17_rd_en_17_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_17_wr_en_17_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_17_scramble_en_17_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_17_ecc_en_17_qs;
+      end
+
+      addr_hit[151]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_18_rd_en_18_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_18_wr_en_18_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_18_scramble_en_18_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_18_ecc_en_18_qs;
+      end
+
+      addr_hit[152]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_19_rd_en_19_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_19_wr_en_19_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_19_scramble_en_19_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_19_ecc_en_19_qs;
+      end
+
+      addr_hit[153]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_20_rd_en_20_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_20_wr_en_20_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_20_scramble_en_20_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_20_ecc_en_20_qs;
+      end
+
+      addr_hit[154]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_21_rd_en_21_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_21_wr_en_21_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_21_scramble_en_21_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_21_ecc_en_21_qs;
+      end
+
+      addr_hit[155]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_22_rd_en_22_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_22_wr_en_22_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_22_scramble_en_22_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_22_ecc_en_22_qs;
+      end
+
+      addr_hit[156]: begin
+        reg_rdata_next[7:4] = emul_info_subregion_cfg_23_rd_en_23_qs;
+        reg_rdata_next[11:8] = emul_info_subregion_cfg_23_wr_en_23_qs;
+        reg_rdata_next[15:12] = emul_info_subregion_cfg_23_scramble_en_23_qs;
+        reg_rdata_next[19:16] = emul_info_subregion_cfg_23_ecc_en_23_qs;
+      end
+
+      addr_hit[157]: begin
         reg_rdata_next[3:0] = hw_info_cfg_override_scramble_dis_qs;
         reg_rdata_next[7:4] = hw_info_cfg_override_ecc_dis_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[158]: begin
         reg_rdata_next[0] = op_status_done_qs;
         reg_rdata_next[1] = op_status_err_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[159]: begin
         reg_rdata_next[0] = status_rd_full_qs;
         reg_rdata_next[1] = status_rd_empty_qs;
         reg_rdata_next[2] = status_wr_full_qs;
@@ -7624,14 +14416,14 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[5] = status_keys_valid_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[160]: begin
         reg_rdata_next[0] = err_code_op_err_qs;
         reg_rdata_next[1] = err_code_mp_err_qs;
         reg_rdata_next[2] = err_code_rd_err_qs;
         reg_rdata_next[3] = err_code_wr_err_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[161]: begin
         reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
         reg_rdata_next[1] = std_fault_status_lcmgr_err_qs;
         reg_rdata_next[2] = std_fault_status_lcmgr_intg_err_qs;
@@ -7647,7 +14439,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[12] = std_fault_status_ctrl_fifo_err_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[162]: begin
         reg_rdata_next[0] = fault_status_lcmgr_op_err_qs;
         reg_rdata_next[1] = fault_status_lcmgr_mp_err_qs;
         reg_rdata_next[2] = fault_status_lcmgr_rd_err_qs;
@@ -7664,39 +14456,39 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[13] = fault_status_host_gnt_err_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[163]: begin
         reg_rdata_next[20:0] = err_addr_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[164]: begin
         reg_rdata_next[7:0] = corr_err_cnt_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[165]: begin
         reg_rdata_next[20:0] = corr_err_loc_addr_qs;
         reg_rdata_next[24] = corr_err_loc_part_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[166]: begin
         reg_rdata_next[0] = phy_status_wr_busy_qs;
         reg_rdata_next[1] = phy_status_init_done_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[167]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[168]: begin
         reg_rdata_next[4:0] = fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[169]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[70]: begin
+      addr_hit[170]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

@@ -554,7 +554,7 @@
  * address between #TOP_RRAM_CTRL_CORE_BASE_ADDR and
  * `TOP_RRAM_CTRL_CORE_BASE_ADDR + TOP_RRAM_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_RRAM_CTRL_CORE_SIZE_BYTES 0x200
+#define TOP_RRAM_CTRL_CORE_SIZE_BYTES 0x400
 /**
  * Peripheral base address for prim device on rram_macro in top earlgrey.
  *

@@ -220,6 +220,7 @@ module rram_ctrl
   // rram_ctrl_mp signals
   logic           mp_err;
   mp_region_cfg_t region_cfgs[TotalMpRegions];
+  mp_region_cfg_t host_region_cfgs[HostMpRegions];
   mp_info_cfg_t   info_page_cfgs[TotalInfoPages];
 
   // lcmgr signals
@@ -925,12 +926,18 @@ module rram_ctrl
     .lc_owner_seed_sw_rw_en_i,
     .lc_iso_part_sw_wr_en_i,
     .lc_iso_part_sw_rd_en_i,
-    .region_i        (reg2hw.mp_region),
-    .region_cfg_i    (reg2hw.mp_region_cfg),
-    .default_cfg_i   (reg2hw.default_region),
-    .info_page_cfg_i (reg2hw.info_page_cfg),
-    .region_cfgs_o   (region_cfgs),
-    .info_page_cfgs_o(info_page_cfgs)
+    .region_i                     (reg2hw.mp_region),
+    .region_cfg_i                 (reg2hw.mp_region_cfg),
+    .default_cfg_i                (reg2hw.default_region),
+    .info_page_cfg_i              (reg2hw.info_page_cfg),
+    .emul_info_regwen_i           (reg2hw.emul_info_regwen),
+    .emul_info_region_i           (reg2hw.emul_info_region),
+    .emul_info_subregion_regwen_i (reg2hw.emul_info_subregion_regwen),
+    .emul_info_subregion_i        (reg2hw.emul_info_subregion),
+    .emul_info_subregion_cfg_i    (reg2hw.emul_info_subregion_cfg),
+    .region_cfgs_o                (region_cfgs),
+    .host_region_cfgs_o           (host_region_cfgs),
+    .info_page_cfgs_o             (info_page_cfgs)
   );
 
   rram_ctrl_mp u_rram_ctrl_mp (
@@ -941,6 +948,7 @@ module rram_ctrl
     .if_sel_i           (if_sel),
     // Memory protection configuration
     .region_cfgs_i      (region_cfgs),
+    .host_region_cfgs_i (host_region_cfgs),
     .info_page_cfgs_i   (info_page_cfgs),
     // Hardware interface override
     .hw_info_scr_dis_i  (mubi4_t'(reg2hw.hw_info_cfg_override.scramble_dis.q)),

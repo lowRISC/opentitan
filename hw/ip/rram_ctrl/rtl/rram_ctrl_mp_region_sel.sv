@@ -21,17 +21,18 @@ module rram_ctrl_mp_region_sel import rram_ctrl_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_true_strict;
 
   // Regions are allowed to overlap. Lower indices have priority
-  logic [PageW:0]     region_end[Regions];
   logic [Regions-1:0] region_match;
 
   // Check for region match
   always_comb begin
     for (int i = 0; i < Regions; i++) begin : gen_region_comps
-      region_end[i] = {1'b0, region_cfg_i[i].base} + region_cfg_i[i].size;
-
-      // Region matches if address within range and if the partition matches
+      logic [PageW:0] end_addr;
+      // end_addr is exclusive, one past the last valid page.
+      // Widen the sum so base+size+1 can never wrap even at the top of the address space.
+      end_addr = {1'b0, region_cfg_i[i].base} + {1'b0, region_cfg_i[i].size} + 1'b1;
+      // Region matches if address within [base, end_addr) and if the partition matches.
       region_match[i] = addr_i >= region_cfg_i[i].base &
-                        {1'b0, addr_i} <= region_end[i] &
+                        {1'b0, addr_i} < end_addr &
                         phase_i == region_cfg_i[i].phase &
                         mubi4_test_true_strict(region_cfg_i[i].cfg.en) &
                         req_i;
