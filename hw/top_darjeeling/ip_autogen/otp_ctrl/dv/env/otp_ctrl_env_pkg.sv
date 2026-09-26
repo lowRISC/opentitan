@@ -288,12 +288,13 @@ package otp_ctrl_env_pkg;
     return is_digest_for(addr, get_part_index(addr));
   endfunction
 
-  // Return true if this is the address of the Zeroize marker for a partition with zeroization
+  // Return true if the address points into the Zeroize marker for a partition with zeroization
   function automatic bit is_zeroize_marker(bit [TL_DW-1:0] addr);
     int unsigned part_idx = get_part_index(addr);
 
     // If the partition is zeroizable, its Zeroize status is in the last 64 bits of the partition.
-    return (PartInfo[part_idx].zeroizable && (addr == last_64_addr(part_idx)));
+    return (PartInfo[part_idx].zeroizable &&
+            ({addr[TL_DW-1:3], 3'b0} == last_64_addr(part_idx)));
   endfunction
 
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);

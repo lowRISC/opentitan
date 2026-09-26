@@ -37,7 +37,8 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
       int        part_idx = get_part_index(dai_addr);
       if (cfg.stop_transaction_generators()) break;
 
-      if (!is_digest(dai_addr)) begin
+      // Digests and Zeroize markers are not scrambled.
+      if (!is_digest(dai_addr) && !is_zeroize_marker(dai_addr)) begin
         // If read memory is in secret partitions, descramble the backdoor write data.
         if (is_secret(dai_addr)) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {normalize_dai_addr(dai_addr) + 4,

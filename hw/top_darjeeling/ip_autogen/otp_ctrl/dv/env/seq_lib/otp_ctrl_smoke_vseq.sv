@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // smoke test vseq to walk through DAI states and request keys
+
+// Leave out the last 64 bits of a partition, which usually hold its digest. Zeroizable partitions
+// end with a Zeroize marker after the digest, so leave out another 64 bits there.
 `define PART_CONTENT_RANGE(i) \
-    {[PartInfo[``i``].offset : (PartInfo[``i``].offset + PartInfo[``i``].size - DIGEST_SIZE - 1)]}
+    {[PartInfo[``i``].offset : (PartInfo[``i``].offset + PartInfo[``i``].size - DIGEST_SIZE - \
+                              (PartInfo[``i``].zeroizable ? 8 : 0) - 1)]}
 
 class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_smoke_vseq)
