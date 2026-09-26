@@ -14,9 +14,11 @@ from fusesoc.main import main
 if __name__ == "__main__":
     # First, ensure the calling interpreter is on the PATH first, so any
     # generators asking /usr/bin/env for python3 will use the same version.
-    path_env = os.environ["PATH"]
+    path_env = os.environ.get("PATH", None)
     if path_env is not None:
         path_env = ":" + path_env
+    else:
+        path_env = ""
     path_env = os.path.dirname(sys.executable) + path_env
     os.environ["PATH"] = path_env
 
