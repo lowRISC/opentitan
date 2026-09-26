@@ -39,6 +39,7 @@ clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
 tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
 tl_if cheriot__cored_tl_if(clk_main, rst_n);
+tl_if cheriot__trbe_tl_if(clk_main, rst_n);
 tl_if rv_dm__sba_tl_if(clk_main, rst_n);
 
 tl_if rv_dm__regs_tl_if(clk_main, rst_n);
@@ -124,6 +125,7 @@ initial begin
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h, main)
     `DRIVE_CHIP_TL_HOST_IF(cheriot__cored, cheriot, cored_tl_h, main)
+    `DRIVE_CHIP_TL_HOST_IF(cheriot__trbe, cheriot, trbe_tl_h, main)
     `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h, main)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d, main)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__mem, rv_dm, mem_tl_d, main)

@@ -8,6 +8,7 @@
 |------|-----------|------|---------|
 | `cored_tl_d`   | device | `rv_core_ibex`   | Core data accesses with the capability tag support. |
 | `cored_tl_h`   | host   | `xbar_main`      | The data half of the access, forwarded to SRAM, NVM and peripherals. |
+| `trbe_tl_h`    | host   | `xbar_main`      | Read-only port of the revocation engine towards the SRAMs holding capabilities. |
 | `corerevbm_tl` | device | `rv_core_ibex`   | Revocation bitmap reads from the core's TRVK filter. |
 | `revbm_tl_d`   | device | `xbar_main`      | Memory window through which software reads and writes the revocation bitmap. |
 | `regs_tl_d`    | device | `xbar_main`      | CSR interface. |
@@ -76,6 +77,19 @@ The FIFO depth sets the number of outstanding transactions the subsystem support
 matching Ibex's LSU, which never issues more than two outstanding split-access halves. Error
 responses from either the host or the meta path are merged into `d_error` towards the core.
 
+The meta response is accepted into a buffer, and the join consumes it from there. The fork hands
+out its three streams independently, so it can issue one lookup while the metadata FIFO is full.
+At most one lookup more than the FIFO depth is therefore unjoined, and the buffer is one entry
+deeper than the FIFO, so it never refuses a response (`MetaRspAlwaysAccepted_A`). The meta path
+therefore never waits for a data response: with two tag filters sharing the RMW filter, and the
+data paths of both reaching the same in-order SRAMs, a meta response held until its data response
+arrives could wait on a data response that is itself queued behind the other tag filter's.
+
+A write forks into its data write and its tag update independently. If one of them fails, the core
+receives `d_error`, but the other half is not undone: a failed data write still updates the tag, and
+a failed tag update leaves the old tag next to the new data. Software must treat a location whose
+store was answered with an error as holding a stale tag.
+
 ### RMW Filter
 
 Because tags are bit-granular, a tag write cannot be a plain TL-UL write. The RMW filter turns each
@@ -94,14 +108,44 @@ meta SRAM read per 32-bit store, and a read plus a write only when the tag actua
 The filter checks the response integrity and response data integrity of every meta SRAM response
 and separately reports `d_error`.
 
+The filter holds the state of a single operation, so it takes a new request only while no
+operation is unanswered, including in the cycle an answer is handed over. The meta SRAM reads and
+writes it issues for a write carry the requester's `a_source`, so every answer returns to the tag
+filter that sent the request.
+
+The RMW filter serves two tag filters, the core's and the revocation engine's: a `cheriot_socket_m1`
+arbitrates their meta ports, carrying the tag and bit select sideband, onto the single RMW filter,
+so every tag update of the subsystem goes through one read-modify-write.
+
+### Revocation Engine
+
+A write of 1 to `TRBE_START` starts a sweep over `TRBE_NUM_CAPS` capabilities from
+`TRBE_BASE_ADDR`, if `TRBE_NUM_CAPS` is not zero, `TRBE_BASE_ADDR` lies in the tagged SRAM range
+(`MainSramBaseAddr` up to `MainSramTopAddr`), and the subsystem is in CHERIoT mode (a strict
+`MuBi4True` on `cheriot_ena_i`). Any other start is ignored and leaves `TRBE_BUSY` and
+`TRBE_REGWEN` unchanged. `TRBE_BUSY` is set until every capability of the sweep is resolved, and
+while it is set `TRBE_REGWEN` locks the three registers.
+
+The engine reads both words of every capability, one word at a time, with the capability-load hint,
+through a TRVK filter of its own and a tag filter of its own, over `trbe_tl_h`. The TRVK filter
+applies the load barrier: a tagged capability that is not a sealing capability and whose base has
+its revocation bit set is revoked, and so is one whose bitmap lookup fails. For every revoked
+capability the engine clears the tag through its tag filter, which never forwards a write to
+`trbe_tl_h`: the engine does not modify memory data.
+
+A sweep that would reach past `MainSramTopAddr` ends there: the engine sweeps
+`min(TRBE_NUM_CAPS, (MainSramTopAddr - TRBE_BASE_ADDR) / 8)` capabilities, and `TRBE_NUM_CAPS`
+keeps the value software wrote. A sweep therefore never leaves the tagged SRAM range.
+
 
 ### Access Checkers
 
-Each of the three requesters passes an access checker parameterized with the region it owns. An
+Each of the four requesters passes an access checker parameterized with the region it owns. An
 access is forwarded only if all of the following hold:
 
 - `cheriot_ena_i` is `MuBi4True`.
 - The address is inside the allowable region for the requester.
+- The address is word-aligned and the access is a full 32-bit word.
 - The opcode is `Get` or `PutFullData`.
 
 Everything else is steered to a `tlul_err_resp` instance and answered with a TL-UL error. In
@@ -110,7 +154,7 @@ particular, any `cheriot_ena_i` value other than a strict `MuBi4True` - includin
 
 ### Arbitration
 
-A `tlul_socket_m1` arbitrates the three checked streams onto `meta_sram_tl`. Arbitration sits behind
+A `tlul_socket_m1` arbitrates the four checked streams onto `meta_sram_tl`. Arbitration sits behind
 the checkers, on transactions that are already integrity-protected end to end.
 
 ## System Bus Access
@@ -135,10 +179,12 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
-| Pointer error in the tag filter's hardened FIFO | `fatal_fault` alert |
+| Error or integrity fault on a response to the revocation engine | `fatal_fault` alert |
+| Error, integrity fault or malformed response on a revocation engine bitmap lookup | Capability counted as revoked, and `fatal_fault` alert |
 
 The first three are reachable by software and surface as a bus fault in the core, so they must not
-raise an alert. The last four latch the fatal alert until reset. There is no interrupt.
+raise an alert. The others latch the fatal alert until reset; a sweep that could not be completed
+correctly must not look successful. There is no interrupt.
 
 
 ## Timing

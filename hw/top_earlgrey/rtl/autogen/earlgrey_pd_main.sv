@@ -715,6 +715,8 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_cheriot__cored_req;
   tlul_pkg::tl_d2h_t       main_tl_cheriot__cored_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_cheriot__trbe_req;
+  tlul_pkg::tl_d2h_t       main_tl_cheriot__trbe_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_dm__sba_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_dm__sba_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_regs_tl_d_req;
@@ -2669,6 +2671,8 @@ module earlgrey_pd_main #(
     .meta_sram_tl_i(cheriot_meta_sram_tl_rsp),
     .cored_tl_h_o(main_tl_cheriot__cored_req),
     .cored_tl_h_i(main_tl_cheriot__cored_rsp),
+    .trbe_tl_h_o(main_tl_cheriot__trbe_req),
+    .trbe_tl_h_i(main_tl_cheriot__trbe_rsp),
     .regs_tl_d_i(cheriot_regs_tl_d_req),
     .regs_tl_d_o(cheriot_regs_tl_d_rsp),
     .revbm_tl_d_i(cheriot_revbm_tl_d_req),
@@ -2899,6 +2903,10 @@ module earlgrey_pd_main #(
     // port: tl_cheriot__cored
     .tl_cheriot__cored_i(main_tl_cheriot__cored_req),
     .tl_cheriot__cored_o(main_tl_cheriot__cored_rsp),
+
+    // port: tl_cheriot__trbe
+    .tl_cheriot__trbe_i(main_tl_cheriot__trbe_req),
+    .tl_cheriot__trbe_o(main_tl_cheriot__trbe_rsp),
 
     // port: tl_rv_dm__sba
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),

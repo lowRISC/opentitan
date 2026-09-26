@@ -29,17 +29,22 @@ SRAM are stored using a `sram_ctrl`.
 - Read-modify-write access to implement bit-granular access to capability bits.
 - Clears any capability tag of any location written by a non-capability store.
 - Exposes the revocation bitmap into the core's address map and serves the core's TRVK filter.
-- Per-port access checking: each of the three requesters may only reach the meta SRAM region it owns,
+- A background revocation engine that sweeps a range of capabilities within the tagged SRAM range
+  and clears the tag of every capability whose base is revoked.
+- Per-port access checking: each of the four requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
 - Fatal alert on a CSR bus integrity fault, a meta SRAM response integrity fault, a meta SRAM
-  device error, or a hardened FIFO pointer error.
+  device error, or an error the revocation engine reports.
 
 ## Description
 
-The CHERIoT HWIP has three requesters towards the meta SRAM and arbitrates between them:
+The CHERIoT HWIP has four requesters towards the meta SRAM and arbitrates between them:
 
-- The *tag filter* followed by the *RMW filter* which perform the bit-granular tag update.
+- The *RMW filter*, which performs the bit-granular tag update for the core's *tag filter* and for
+  the revocation engine's tag filter.
 - The core's TRVK filter, which reads the revocation bitmap on every capability load.
+- The revocation engine's TRVK filter, which reads the revocation bitmap for every capability it
+  sweeps.
 - The system, which reads and writes the revocation bitmap through the `revbm` memory window.
 
 Each requester passes an *access checker* module that confirms the address falls in the region

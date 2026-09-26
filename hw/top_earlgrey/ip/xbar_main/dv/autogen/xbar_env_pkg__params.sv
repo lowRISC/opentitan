@@ -90,7 +90,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h10020000, 32'h1002ffff}
     }},
     '{"cheriot__regs", '{
-        '{32'h411b0000, 32'h411b0003}
+        '{32'h411b0000, 32'h411b001f}
     }},
     '{"cheriot__revbm", '{
         '{32'h11000000, 32'h11000bff}
@@ -136,7 +136,11 @@ tl_host_t xbar_hosts[$] = '{
         "cheriot__regs",
         "cheriot__revbm"}}
     ,
-    '{"rv_dm__sba", 2, '{
+    '{"cheriot__trbe", 2, '{
+        "sram_ctrl_main__ram",
+        "sram_ctrl_sec__ram"}}
+    ,
+    '{"rv_dm__sba", 3, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
         "rv_dm__mem",

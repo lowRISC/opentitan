@@ -838,7 +838,7 @@ extern "C" {
  * address between #TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR and
  * `TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR + TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES 0x4u
+#define TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES 0x20u
 
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.

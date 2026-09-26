@@ -69,10 +69,10 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__REGS  = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_META__REGS = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_SEC__RAM   = 32'h 0000ffff;
-  localparam logic [31:0] ADDR_MASK_CHERIOT__REGS        = 32'h 00000003;
+  localparam logic [31:0] ADDR_MASK_CHERIOT__REGS        = 32'h 0000001f;
   localparam logic [31:0] ADDR_SIZE_CHERIOT__REVBM       = 32'h 00000c00;
 
-  localparam int N_HOST   = 3;
+  localparam int N_HOST   = 4;
   localparam int N_DEVICE = 29;
 
   typedef enum int {
@@ -110,7 +110,8 @@ package tl_main_pkg;
   typedef enum int {
     TlRvCoreIbexCorei = 0,
     TlCheriotCored = 1,
-    TlRvDmSba = 2
+    TlCheriotTrbe = 2,
+    TlRvDmSba = 3
   } tl_host_e;
 
 endpackage

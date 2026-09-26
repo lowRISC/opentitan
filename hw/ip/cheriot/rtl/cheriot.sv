@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
-`include "prim_fifo_assert.svh"
 
 // SEC_CM: LOGIC.SHADOW
 // TODO: Implement lockstep operation for this module
@@ -56,6 +55,10 @@ module cheriot
   output tlul_pkg::tl_h2d_t cored_tl_h_o,
   input  tlul_pkg::tl_d2h_t cored_tl_h_i,
 
+  // Revocation engine read-only port towards interconnect
+  output tlul_pkg::tl_h2d_t trbe_tl_h_o,
+  input  tlul_pkg::tl_d2h_t trbe_tl_h_i,
+
   // Meta SRAM host port (to external sram_ctrl)
   output tlul_pkg::tl_h2d_t meta_sram_tl_o,
   input  tlul_pkg::tl_d2h_t meta_sram_tl_i
@@ -91,17 +94,29 @@ module cheriot
   localparam addr_t MetaMainSramTagBase = MetaNvmTagBase      + NvmTagSizeByte;
   localparam addr_t MetaTop             = MetaMainSramTagBase + SramTagSizeByte;
 
+  // Byte address width of the revocation bitmap window
+  localparam int unsigned RevBmAddrWidth = $clog2(MemSizeRevbm);
+
   typedef struct packed {
     logic csr_intg;
-    logic tag_filter_fifo;
     logic meta_sram_intg;
     logic meta_sram_data_intg;
     logic rmw_error;
+    logic trbe_mover_error;
+    logic trbe_revbm_intg;
+    logic trbe_revbm_data_intg;
+    logic trbe_revbm_error;
   } cheriot_fatal_error_t;
 
   /////////////
   // Signals //
   /////////////
+
+  tlul_pkg::tl_h2d_t tag_mux_in_tl_h2d[32'd2];
+  logic              tag_mux_in_tag_h2d[32'd2];
+  logic [4:0]        tag_mux_in_bit_sel[32'd2];
+  tlul_pkg::tl_d2h_t tag_mux_in_tl_d2h[32'd2];
+  logic              tag_mux_in_tag_d2h[32'd2];
 
   tlul_pkg::tl_h2d_t rmw_tl_h2d;
   logic              rmw_tag_h2d;
@@ -112,10 +127,14 @@ module cheriot
   tlul_pkg::tl_h2d_t tags_tl_h2d;
   tlul_pkg::tl_d2h_t tags_tl_d2h;
 
-  tlul_pkg::tl_h2d_t meta_mux_in_tl_h2d[32'd3];
-  tlul_pkg::tl_d2h_t meta_mux_in_tl_d2h[32'd3];
+  tlul_pkg::tl_h2d_t trbe_revbm_tl_h2d;
+  tlul_pkg::tl_d2h_t trbe_revbm_tl_d2h;
+
+  tlul_pkg::tl_h2d_t meta_mux_in_tl_h2d[32'd4];
+  tlul_pkg::tl_d2h_t meta_mux_in_tl_d2h[32'd4];
 
   cheriot_regs_reg2hw_t reg2hw;
+  cheriot_regs_hw2reg_t hw2reg;
 
   logic alert_test;
 
@@ -133,6 +152,7 @@ module cheriot
     .tl_i      (regs_tl_d_i),
     .tl_o      (regs_tl_d_o),
     .reg2hw,
+    .hw2reg,
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(cheriot_fatal_error.csr_intg)
   );
@@ -173,14 +193,36 @@ module cheriot
     .tag_d_i      (cored_tag_h2d_i),
     .tl_d_o       (cored_tl_d_o),
     .tag_d_o      (cored_tag_d2h_o),
-    .tl_m_o       (rmw_tl_h2d),
-    .tag_m_o      (rmw_tag_h2d),
-    .bit_sel_m_o  (rmw_bit_sel),
-    .tl_m_i       (rmw_tl_d2h),
-    .tag_m_i      (rmw_tag_d2h),
+    .tl_m_o       (tag_mux_in_tl_h2d[32'd0]),
+    .tag_m_o      (tag_mux_in_tag_h2d[32'd0]),
+    .bit_sel_m_o  (tag_mux_in_bit_sel[32'd0]),
+    .tl_m_i       (tag_mux_in_tl_d2h[32'd0]),
+    .tag_m_i      (tag_mux_in_tag_d2h[32'd0]),
     .tl_h_o       (cored_tl_h_o),
-    .tl_h_i       (cored_tl_h_i),
-    .fifo_err_o   (cheriot_fatal_error.tag_filter_fifo)
+    .tl_h_i       (cored_tl_h_i)
+  );
+
+  // Arbitrates the tag traffic of the core's and the revocation engine's tag filters onto the
+  // single RMW filter.
+  cheriot_socket_m1 #(
+    .M(32'd2),
+    .HReqDepth('0),
+    .HRspDepth('0),
+    .DReqDepth('0),
+    .DRspDepth('0)
+  ) u_cheriot_socket_m1 (
+    .clk_i,
+    .rst_ni,
+    .tl_h_i     (tag_mux_in_tl_h2d),
+    .tag_h_i    (tag_mux_in_tag_h2d),
+    .bit_sel_h_i(tag_mux_in_bit_sel),
+    .tl_h_o     (tag_mux_in_tl_d2h),
+    .tag_h_o    (tag_mux_in_tag_d2h),
+    .tl_d_o     (rmw_tl_h2d),
+    .tag_d_o    (rmw_tag_h2d),
+    .bit_sel_d_o(rmw_bit_sel),
+    .tl_d_i     (rmw_tl_d2h),
+    .tag_d_i    (rmw_tag_d2h)
   );
 
   // SEC_CM: BUS.INTEGRITY
@@ -229,13 +271,27 @@ module cheriot
     .tl_d_i(meta_mux_in_tl_d2h[32'd2])
   );
 
+  cheriot_access_check #(
+    .addr_t(addr_t),
+    .CheriotBaseAddr(MetaRevBmBase),
+    .CheriotTopAddr(MetaNvmTagBase)
+  ) u_cheriot_access_check_trbe (
+    .clk_i,
+    .rst_ni,
+    .cheriot_ena_i,
+    .tl_h_i(trbe_revbm_tl_h2d),
+    .tl_h_o(trbe_revbm_tl_d2h),
+    .tl_d_o(meta_mux_in_tl_h2d[32'd3]),
+    .tl_d_i(meta_mux_in_tl_d2h[32'd3])
+  );
+
 
   ///////////////////////
   // Meta multiplexing //
   ///////////////////////
 
   tlul_socket_m1 #(
-    .M(32'd3),
+    .M(32'd4),
     .HReqDepth('0),
     .HRspDepth('0),
     .DReqDepth('0),
@@ -247,6 +303,89 @@ module cheriot
     .tl_h_o(meta_mux_in_tl_d2h),
     .tl_d_o(meta_sram_tl_o),
     .tl_d_i(meta_sram_tl_i)
+  );
+
+
+  ///////////////////////
+  // Revocation Engine //
+  ///////////////////////
+
+  logic  trbe_valid_d, trbe_valid_q;
+  logic  trbe_ready;
+  logic  trbe_busy;
+  logic  trbe_active;
+  addr_t trbe_start_addr;
+  addr_t trbe_num_words;
+  logic  trbe_in_range;
+  addr_t trbe_bytes_to_top;
+  addr_t trbe_caps_to_top;
+  logic [30:0] trbe_sweep_caps;
+
+  assign trbe_start_addr = {reg2hw.trbe_base_addr.q, 3'b000};
+
+  // A sweep starts in the main SRAM region and stops at its top.
+  assign trbe_in_range     = trbe_start_addr >= MainSramBaseAddr &&
+                             trbe_start_addr <  MainSramTopAddr;
+  assign trbe_bytes_to_top = MainSramTopAddr - trbe_start_addr;
+  assign trbe_caps_to_top  = trbe_bytes_to_top >> 3;
+  assign trbe_sweep_caps   = (addr_t'(reg2hw.trbe_num_caps.q) > trbe_caps_to_top) ?
+                             trbe_caps_to_top[30:0] : reg2hw.trbe_num_caps.q;
+  assign trbe_num_words    = {trbe_sweep_caps, 1'b0};
+
+  // Held until the engine accepts the sweep; a start without capabilities, outside the main SRAM
+  // region or outside CHERIoT mode is dropped.
+  assign trbe_valid_d = trbe_valid_q ? !trbe_ready :
+                        reg2hw.trbe_start.qe && reg2hw.trbe_start.q && |reg2hw.trbe_num_caps.q &&
+                        trbe_in_range && prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_trbe_valid_store
+    if (!rst_ni) begin
+      trbe_valid_q <= 1'b0;
+    end else begin
+      trbe_valid_q <= trbe_valid_d;
+    end
+  end
+
+  assign trbe_active          = trbe_valid_q || trbe_busy;
+  assign hw2reg.trbe_busy.d   = trbe_active;
+  assign hw2reg.trbe_regwen.d = !trbe_active;
+
+  // SEC_CM: BUS.INTEGRITY
+  cheriot_trbe #(
+    .addr_t             (addr_t),
+    .MainSramBaseAddr   (MainSramBaseAddr),
+    .MainSramTopAddr    (MainSramTopAddr),
+    .NvmBaseAddr        (NvmBaseAddr),
+    .NvmTopAddr         (NvmTopAddr),
+    .MetaMainSramTagBase(MetaMainSramTagBase),
+    .MetaNvmTagBase     (MetaNvmTagBase),
+    .RevBitmapAddrWidth (RevBmAddrWidth),
+    .RevBitmapSizeBytes (MemSizeRevbm),
+    .RevBitmapBaseAddr  (MetaRevBmBase),
+    .MemECC             (1'b1)
+  ) u_cheriot_trbe (
+    .clk_i,
+    .rst_ni,
+    .cheriot_ena_i,
+    .heap_base_addr_i       (MainSramBaseAddr),
+    .start_addr_i           (trbe_start_addr),
+    .num_words_i            (trbe_num_words),
+    .valid_i                (trbe_valid_q),
+    .ready_o                (trbe_ready),
+    .busy_o                 (trbe_busy),
+    .revbm_tl_o             (trbe_revbm_tl_h2d),
+    .revbm_tl_i             (trbe_revbm_tl_d2h),
+    .tl_m_o                 (tag_mux_in_tl_h2d[32'd1]),
+    .tag_m_o                (tag_mux_in_tag_h2d[32'd1]),
+    .bit_sel_m_o            (tag_mux_in_bit_sel[32'd1]),
+    .tl_m_i                 (tag_mux_in_tl_d2h[32'd1]),
+    .tag_m_i                (tag_mux_in_tag_d2h[32'd1]),
+    .tl_h_o                 (trbe_tl_h_o),
+    .tl_h_i                 (trbe_tl_h_i),
+    .mover_err_o            (cheriot_fatal_error.trbe_mover_error),
+    .revbm_data_intg_error_o(cheriot_fatal_error.trbe_revbm_data_intg),
+    .revbm_rsp_intg_error_o (cheriot_fatal_error.trbe_revbm_intg),
+    .revbm_device_error_o   (cheriot_fatal_error.trbe_revbm_error)
   );
 
 
@@ -295,6 +434,10 @@ module cheriot
   `ASSERT_KNOWN(CoredTlHDReadyKnown_A, cored_tl_h_o.d_ready)
   `ASSERT_KNOWN_IF(CoredTlHPayloadKnown_A, cored_tl_h_o, cored_tl_h_o.a_valid)
 
+  `ASSERT_KNOWN(TrbeTlHAValidKnown_A, trbe_tl_h_o.a_valid)
+  `ASSERT_KNOWN(TrbeTlHDReadyKnown_A, trbe_tl_h_o.d_ready)
+  `ASSERT_KNOWN_IF(TrbeTlHPayloadKnown_A, trbe_tl_h_o, trbe_tl_h_o.a_valid)
+
   `ASSERT_KNOWN(MetaSramAValidKnown_A, meta_sram_tl_o.a_valid)
   `ASSERT_KNOWN(MetaSramDReadyKnown_A, meta_sram_tl_o.d_ready)
   `ASSERT_KNOWN_IF(MetaSramPayloadKnown_A, meta_sram_tl_o, meta_sram_tl_o.a_valid)
@@ -305,9 +448,19 @@ module cheriot
 
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CheriotTagFilterFifo_A,
-      u_cheriot_tag_filter.u_prim_fifo_sync_align,
-      alert_tx_o[0])
+  // The engine reads the sweep from the registers until it accepts it.
+  `ASSERT(TrbeReqStable_A, trbe_valid_q && !trbe_ready |=>
+                           trbe_valid_q && $stable(trbe_start_addr) && $stable(trbe_num_words))
+  `ASSERT(TrbeReqNonZero_A, trbe_valid_q |-> trbe_num_words != '0)
+  // A sweep only starts in CHERIoT mode.
+  `ASSERT(TrbeReqCheriotMode_A,
+          $rose(trbe_valid_q) |-> $past(prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i)))
+  // A sweep stays inside the main SRAM region.
+  `ASSERT(TrbeReqInRange_A, trbe_valid_q |-> trbe_in_range &&
+          35'(trbe_start_addr) + (35'(trbe_num_words) << 2) <= 35'(MainSramTopAddr))
+
+  // The engine only updates tags, it never writes to memory.
+  `ASSERT(TrbeTlHReadOnly_A, trbe_tl_h_o.a_valid |-> trbe_tl_h_o.a_opcode == tlul_pkg::Get)
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A,
       u_reg_regs, alert_tx_o[0])
@@ -317,6 +470,9 @@ module cheriot
       (MainSramTopAddr - MainSramBaseAddr) % CapabilityBytePerWord == 0)
   `ASSERT_INIT(MainSramSizeMultipleOfRevocationWord_A,
       (MainSramTopAddr - MainSramBaseAddr) % RevocationBytePerWord == 0)
+  `ASSERT_INIT(MainSramRangeCapabilityAligned_A,
+      MainSramBaseAddr[2:0] == 3'b000 && MainSramTopAddr[2:0] == 3'b000 &&
+      MainSramBaseAddr < MainSramTopAddr)
   `ASSERT_INIT(NvmSizeMultipleOfCapabilityWord_A,
       (NvmTopAddr - NvmBaseAddr) % CapabilityBytePerWord == 0)
   `ASSERT_INIT(MetaSramBaseAddrWordAligned_A, MetaSramBaseAddr[1:0] == 2'b00)

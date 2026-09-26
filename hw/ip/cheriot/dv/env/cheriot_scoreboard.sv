@@ -62,6 +62,12 @@ class cheriot_scoreboard extends cip_base_scoreboard #(
       "alert_test": begin
         // do_alert_check is disabled above, so no set_exp_alert() call here yet.
       end
+      "trbe_base_addr", "trbe_num_caps", "trbe_start": begin
+      end
+      "trbe_regwen", "trbe_busy": begin
+        // Driven by the revocation engine, which this environment does not model yet.
+        do_read_check = 1'b0;
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end

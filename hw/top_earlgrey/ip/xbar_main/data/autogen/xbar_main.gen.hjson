@@ -97,6 +97,11 @@
       cheriot.regs
       cheriot.revbm
     ]
+    cheriot.trbe:
+    [
+      sram_ctrl_main.ram
+      sram_ctrl_sec.ram
+    ]
     rv_dm.sba:
     [
       rom_ctrl.rom
@@ -147,6 +152,19 @@
     }
     {
       name: cheriot.cored
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: cheriot.trbe
       type: host
       addr_space: hart
       clock: clk_main_i
@@ -785,7 +803,7 @@
           {
             hart: 0x411b0000
           }
-          size_byte: 0x4
+          size_byte: 0x20
         }
       ]
       xbar: false
@@ -849,6 +867,20 @@
       end_idx: -1
       top_type: one-to-one
       top_signame: main_tl_cheriot__cored
+      index: -1
+    }
+    {
+      name: tl_cheriot__trbe
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: main
+      width: 1
+      default: ""
+      end_idx: -1
+      top_type: one-to-one
+      top_signame: main_tl_cheriot__trbe
       index: -1
     }
     {

@@ -73,6 +73,9 @@ module cheriot_rmw_filter #(
   // We need to store whether a capability write had a valid tag bit
   logic tag_q;
 
+  // Source of the request, answered on the write-back
+  logic [top_pkg::TL_AIW-1:0] source_q;
+
   // We need to store the word read before writing it back modified
   logic [31:0] word_q;
 
@@ -123,13 +126,13 @@ module cheriot_rmw_filter #(
       // The pass-through state allows reads to just be forwarded. Should a properly handshaked
       // write request arrives, we switch to the Fill state.
       Passthrough: begin
-        if(tl_h_i.a_valid && (tl_h_i.a_opcode == tlul_pkg::PutFullData ||
-                              tl_h_i.a_opcode == tlul_pkg::PutPartialData)) begin
+        if(tl_h_i.a_valid && !is_read_q && (tl_h_i.a_opcode == tlul_pkg::PutFullData ||
+                                            tl_h_i.a_opcode == tlul_pkg::PutPartialData)) begin
           emit_r_req = 1'b1;
           if(tl_h_o.a_ready) begin
             state_d = Fill;
           end
-        end else if(tl_h_i.a_valid && tl_h_i.a_opcode == tlul_pkg::Get) begin
+        end else if(tl_h_i.a_valid && !is_read_q && tl_h_i.a_opcode == tlul_pkg::Get) begin
           forward_r_req = 1'b1;
           is_read_d     = 1'b1;
         end
@@ -183,11 +186,13 @@ module cheriot_rmw_filter #(
       meta_addr_q <= '0;
       bit_sel_q   <= '0;
       tag_q       <= 1'b0;
+      source_q    <= '0;
     end else begin
       if (tl_h_i.a_valid && tl_h_o.a_ready) begin
         meta_addr_q <= tl_h_i.a_address;
         bit_sel_q   <= bit_sel_h_i;
         tag_q       <= tag_h_i;
+        source_q    <= tl_h_i.a_source;
       end
     end
   end
@@ -268,6 +273,7 @@ module cheriot_rmw_filter #(
     // capability tag is set.
     end else if(emit_r_req) begin
       tl_d_o                  = tlul_pkg::TL_H2D_DEFAULT;
+      tl_d_o.a_source         = tl_h_i.a_source;
       tl_d_o.a_address        = addr_sel;
       tl_d_o.a_opcode         = tlul_pkg::Get;
       tl_d_o.a_size           = 'd2;
@@ -281,6 +287,7 @@ module cheriot_rmw_filter #(
     // don't have to handshake the upstream host request interface.
     end else if(emit_w_req) begin
       tl_d_o                             = tlul_pkg::TL_H2D_DEFAULT;
+      tl_d_o.a_source                    = source_q;
       tl_d_o.a_address                   = addr_sel;
       tl_d_o.a_opcode                    = tlul_pkg::PutFullData;
       tl_d_o.a_size                      = 'd2;
@@ -374,9 +381,9 @@ module cheriot_rmw_filter #(
   // Assertions //
   ////////////////
 
-  // The filter holds a single meta_addr_q/bit_sel_q/tag_q/is_read_q.
-  `ASSERT(SingleOutstandingRead_A,
-      (tl_h_i.a_valid && tl_h_o.a_ready) |-> !is_read_q || (tl_h_o.d_valid && tl_h_i.d_ready))
+  // The filter holds a single meta_addr_q/bit_sel_q/tag_q/is_read_q: no request is taken while a
+  // read is unanswered, not even in the cycle its response is handed over.
+  `ASSERT(SingleOutstandingRead_A, (tl_h_i.a_valid && tl_h_o.a_ready) |-> !is_read_q)
 
   // A read-modify-write cannot be interrupted: `a_ready` is only granted in `Passthrough`.
   `ASSERT(NoRequestDuringRmw_A, (tl_h_i.a_valid && tl_h_o.a_ready) |-> state_q == Passthrough)

@@ -457,7 +457,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for regs device on cheriot in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES = 32'h4;
+  parameter int unsigned TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES = 32'h20;
 
   /**
    * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.

@@ -38,6 +38,13 @@
       reset: "rst_main_ni",
       pipeline: false
     },
+    { name:  "cheriot.trbe",
+      type:  "host",
+      addr_space: "hart",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      pipeline: false
+    },
     { name:      "rv_dm.sba",
       type:      "host",
       addr_space: "hart",
@@ -260,6 +267,9 @@
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
       "sram_ctrl_meta.regs", "rv_core_ibex.cfg", "cheriot.regs", "cheriot.revbm"
     ],
+    // The revocation engine only reads the SRAMs with capability tags; it clears tags through the
+    // meta SRAM path.
+    cheriot.trbe: ["sram_ctrl_main.ram", "sram_ctrl_sec.ram"],
     // Note: rv_dm.sba reaches sram_ctrl_main.ram and sram_ctrl_sec.ram directly, bypassing
     // the CHERIoT tag filter, so a system-bus write does not clear the capability tag of
     // the location it overwrites. SBA accesses in CHERIoT mode are not supported.

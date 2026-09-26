@@ -4,5 +4,7 @@
 #
 # waiver file for the CHERIoT memory subsystem
 
-waive -rules {PARAM_NOT_USED} -location {cheriot.sv} -regexp {Parameter 'MemSizeRevbm' not used in module 'cheriot'} \
-      -comment "The parameter is only used in an assertion cross-checking the revocation bitmap window size."
+waive -rules {ONE_BIT_MEM_WIDTH} -location {cheriot.sv} -regexp {Memory 'tag_mux_in_tag_(h2d|d2h)' has word width which is single bit wide} \
+      -comment "Connects to the unpacked one-bit tag sideband ports of cheriot_socket_m1."
+waive -rules {ONE_BIT_MEM_WIDTH} -location {cheriot_trbe.sv} -regexp {Memory 'mover_tag_(h2d|d2h)' has word width which is single bit wide} \
+      -comment "Connects to the unpacked one-bit tag sideband ports of cheriot_socket_m1."

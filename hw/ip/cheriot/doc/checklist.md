@@ -81,7 +81,7 @@ Security      | [SEC_CM_ASSETS_LISTED][]     | Done        | [cheriot.hjson](../
 Security      | [SEC_CM_IMPLEMENTED][]       | Not Started | Everything except `LOGIC.SHADOW` is implemented and escalated by the `fatal_fault` alert.
 Security      | [SEC_CM_RND_CNST][]          | N/A         |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
-Security      | [SEC_CM_SHADOW_REGS][]       | N/A         | The only CSR is `ALERT_TEST`.
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started | The revocation engine sweep registers are not shadowed yet.
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 

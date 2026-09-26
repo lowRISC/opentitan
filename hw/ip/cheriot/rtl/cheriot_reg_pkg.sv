@@ -10,10 +10,10 @@ package cheriot_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 2;
+  parameter int RegsAw = 5;
 
   // Number of registers for every interface
-  parameter int NumRegsRegs = 1;
+  parameter int NumRegsRegs = 6;
 
   // Alert indices
   typedef enum int {
@@ -29,26 +29,77 @@ package cheriot_reg_pkg;
     logic        qe;
   } cheriot_reg2hw_alert_test_reg_t;
 
+  typedef struct packed {
+    logic [28:0] q;
+  } cheriot_reg2hw_trbe_base_addr_reg_t;
+
+  typedef struct packed {
+    logic [30:0] q;
+  } cheriot_reg2hw_trbe_num_caps_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } cheriot_reg2hw_trbe_start_reg_t;
+
+  typedef struct packed {
+    logic        d;
+  } cheriot_hw2reg_trbe_regwen_reg_t;
+
+  typedef struct packed {
+    logic        d;
+  } cheriot_hw2reg_trbe_busy_reg_t;
+
   // Register -> HW type for regs interface
   typedef struct packed {
-    cheriot_reg2hw_alert_test_reg_t alert_test; // [1:0]
+    cheriot_reg2hw_alert_test_reg_t alert_test; // [63:62]
+    cheriot_reg2hw_trbe_base_addr_reg_t trbe_base_addr; // [61:33]
+    cheriot_reg2hw_trbe_num_caps_reg_t trbe_num_caps; // [32:2]
+    cheriot_reg2hw_trbe_start_reg_t trbe_start; // [1:0]
   } cheriot_regs_reg2hw_t;
 
+  // HW -> register type for regs interface
+  typedef struct packed {
+    cheriot_hw2reg_trbe_regwen_reg_t trbe_regwen; // [1:1]
+    cheriot_hw2reg_trbe_busy_reg_t trbe_busy; // [0:0]
+  } cheriot_regs_hw2reg_t;
+
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] CHERIOT_ALERT_TEST_OFFSET = 2'h 0;
+  parameter logic [RegsAw-1:0] CHERIOT_ALERT_TEST_OFFSET = 5'h 0;
+  parameter logic [RegsAw-1:0] CHERIOT_TRBE_REGWEN_OFFSET = 5'h 4;
+  parameter logic [RegsAw-1:0] CHERIOT_TRBE_BASE_ADDR_OFFSET = 5'h 8;
+  parameter logic [RegsAw-1:0] CHERIOT_TRBE_NUM_CAPS_OFFSET = 5'h c;
+  parameter logic [RegsAw-1:0] CHERIOT_TRBE_START_OFFSET = 5'h 10;
+  parameter logic [RegsAw-1:0] CHERIOT_TRBE_BUSY_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] CHERIOT_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] CHERIOT_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_TRBE_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] CHERIOT_TRBE_REGWEN_EN_RESVAL = 1'h 1;
+  parameter logic [0:0] CHERIOT_TRBE_START_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_TRBE_START_START_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_TRBE_BUSY_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_TRBE_BUSY_BUSY_RESVAL = 1'h 0;
 
   // Register index for regs interface
   typedef enum int {
-    CHERIOT_ALERT_TEST
+    CHERIOT_ALERT_TEST,
+    CHERIOT_TRBE_REGWEN,
+    CHERIOT_TRBE_BASE_ADDR,
+    CHERIOT_TRBE_NUM_CAPS,
+    CHERIOT_TRBE_START,
+    CHERIOT_TRBE_BUSY
   } cheriot_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] CHERIOT_REGS_PERMIT [1] = '{
-    4'b 0001  // index[0] CHERIOT_ALERT_TEST
+  parameter logic [3:0] CHERIOT_REGS_PERMIT [6] = '{
+    4'b 0001, // index[0] CHERIOT_ALERT_TEST
+    4'b 0001, // index[1] CHERIOT_TRBE_REGWEN
+    4'b 1111, // index[2] CHERIOT_TRBE_BASE_ADDR
+    4'b 1111, // index[3] CHERIOT_TRBE_NUM_CAPS
+    4'b 0001, // index[4] CHERIOT_TRBE_START
+    4'b 0001  // index[5] CHERIOT_TRBE_BUSY
   };
 
 endpackage
