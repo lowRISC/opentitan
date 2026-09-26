@@ -194,7 +194,9 @@ _start:
   srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
   andi t0, t0, 0x1
   beqz t0, .L_ast_done_loop
+#endif
 
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
   // Enable jittery clock if not strictly disabled in OTP.
   // Use hardcoded MULTIBIT_ASM_BOOL4_TRUE as the enable word to reduce all
   // other possible OTP values to true.
