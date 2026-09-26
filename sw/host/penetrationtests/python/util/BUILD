@@ -29,6 +29,9 @@ py_library(
 py_library(
     name = "hyperdebug",
     srcs = ["hyperdebug.py"],
+    deps = [
+        requirement("pyserial"),
+    ],
 )
 
 py_library(

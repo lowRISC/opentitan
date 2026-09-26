@@ -29,6 +29,12 @@ py_test(
     srcs = [
         "bitstreams_workspace_test.py",
     ],
+    data = [":bitstreams_manifest_schema"],
+    imports = [
+        # //rules/scripts:
+        #   rules.scripts.bitstreams_workspace
+        ".",
+    ],
     deps = [
         ":bitstreams_workspace",
     ],

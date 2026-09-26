@@ -15,12 +15,24 @@ py_library(
 py_library(
     name = "access",
     srcs = ["access.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "alert",
     srcs = ["alert.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":bits",
         ":lib",
@@ -31,6 +43,11 @@ py_library(
 py_library(
     name = "bits",
     srcs = ["bits.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":lib",
         ":params",
@@ -40,6 +57,11 @@ py_library(
 py_library(
     name = "bus_interfaces",
     srcs = ["bus_interfaces.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":inter_signal",
         ":lib",
@@ -49,24 +71,51 @@ py_library(
 py_library(
     name = "clocking",
     srcs = ["clocking.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "countermeasure",
     srcs = ["countermeasure.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "enum_entry",
     srcs = ["enum_entry.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "field",
     srcs = ["field.py"],
+    imports = [
+        # //util:
+        #   util.design
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":access",
         ":bits",
@@ -80,7 +129,13 @@ py_library(
 py_library(
     name = "interrupt",
     srcs = ["interrupt.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
+        ":access",
         ":bits",
         ":lib",
         ":signal",
@@ -95,12 +150,24 @@ py_library(
 py_library(
     name = "inter_signal",
     srcs = ["inter_signal.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "ip_block",
     srcs = ["ip_block.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":alert",
         ":bus_interfaces",
@@ -120,24 +187,44 @@ py_library(
 py_library(
     name = "params",
     srcs = ["params.py"],
-    deps = [":lib"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_library(
     name = "reg_base",
     srcs = ["reg_base.py"],
-    deps = [":field"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":field",
+    ],
 )
 
 py_library(
     name = "reg_block",
     srcs = ["reg_block.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":access",
         ":alert",
         ":bus_interfaces",
         ":clocking",
         ":field",
+        ":interrupt",
         ":lib",
         ":multi_register",
         ":params",
@@ -151,6 +238,12 @@ py_library(
 py_library(
     name = "register",
     srcs = ["register.py"],
+    imports = [
+        # //util:
+        #   util.design
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":access",
         ":clocking",
@@ -158,12 +251,18 @@ py_library(
         ":lib",
         ":params",
         ":reg_base",
+        "//util/design/mubi:prim_mubi",
     ],
 )
 
 py_library(
     name = "multi_register",
     srcs = ["multi_register.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":clocking",
         ":field",
@@ -177,6 +276,11 @@ py_library(
 py_library(
     name = "signal",
     srcs = ["signal.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":bits",
         ":lib",
@@ -186,6 +290,11 @@ py_library(
 py_library(
     name = "window",
     srcs = ["window.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":access",
         ":lib",
@@ -196,6 +305,11 @@ py_library(
 py_library(
     name = "gen_cheader",
     srcs = ["gen_cheader.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":field",
         ":ip_block",
@@ -210,31 +324,46 @@ py_library(
 py_library(
     name = "gen_dv",
     srcs = ["gen_dv.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
         ":multi_register",
         ":register",
         ":window",
+        requirement("importlib_resources"),
         requirement("mako"),
         requirement("pyyaml"),
-        requirement("importlib_resources"),
     ],
 )
 
 py_library(
     name = "gen_fpv",
     srcs = ["gen_fpv.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
+        requirement("importlib_resources"),
         requirement("mako"),
         requirement("pyyaml"),
-        requirement("importlib_resources"),
     ],
 )
 
 py_library(
     name = "gen_html",
     srcs = ["gen_html.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":html_helpers",
         ":ip_block",
@@ -255,20 +384,30 @@ py_library(
 py_library(
     name = "gen_rtl",
     srcs = ["gen_rtl.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
         ":lib",
         ":multi_register",
         ":reg_base",
         ":register",
-        requirement("mako"),
         requirement("importlib_resources"),
+        requirement("mako"),
     ],
 )
 
 py_library(
     name = "gen_rust",
     srcs = ["gen_rust.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":field",
         ":ip_block",
@@ -283,6 +422,11 @@ py_library(
 py_library(
     name = "md_helpers",
     srcs = ["md_helpers.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":signal",
         requirement("tabulate"),
@@ -292,6 +436,11 @@ py_library(
 py_library(
     name = "gen_cfg_md",
     srcs = ["gen_cfg_md.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
         ":md_helpers",
@@ -301,6 +450,11 @@ py_library(
 py_library(
     name = "gen_md",
     srcs = ["gen_md.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
         ":md_helpers",
@@ -314,6 +468,12 @@ py_library(
 py_library(
     name = "gen_tock",
     srcs = ["gen_tock.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.version_file
+        "..",
+    ],
     deps = [
         ":field",
         ":ip_block",
@@ -329,17 +489,27 @@ py_library(
 py_library(
     name = "gen_sec_cm_testplan",
     srcs = ["gen_sec_cm_testplan.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ip_block",
         requirement("hjson"),
-        requirement("mako"),
         requirement("importlib_resources"),
+        requirement("mako"),
     ],
 )
 
 py_library(
     name = "gen_selfdoc",
     srcs = ["gen_selfdoc.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":access",
         ":enum_entry",
