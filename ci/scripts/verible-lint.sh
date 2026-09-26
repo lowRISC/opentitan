@@ -7,14 +7,14 @@
 #
 # Expects two arguments:
 # 1. The lint flavour (rtl, dv, fpv)
-# 2. The top name (earlgrey, darjeeling, englishbreakfast)
+# 2. The top name (earlgrey, darjeeling)
 
 set -e
 
 if [ $# != 2 ]; then
     echo >&2 "Usage: verible-lint.sh <flavour> <top>"
     echo >&2 "  flavour: rtl, dv, or fpv"
-    echo >&2 "  top: earlgrey, darjeeling, or englishbreakfast"
+    echo >&2 "  top: earlgrey or darjeeling"
     exit 1
 fi
 flavour="$1"

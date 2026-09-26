@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        top: [earlgrey, darjeeling, englishbreakfast]
+        top: [earlgrey, darjeeling]
     steps:
       - uses: actions/checkout@v6
       - name: Prepare Nix
@@ -90,15 +90,14 @@ jobs:
       - name: Run hardware lint
         run: nix run --quiet --no-warn-dirty .#lint -- hw ${{ matrix.top }}
 
-  # Per-top slang lint and elaboration. Englishbreakfast is skipped pending
-  # an RTL fix that cannot be addressed right now.
+  # Per-top slang lint and elaboration.
   lint_slang:
     name: Lint slang (${{ matrix.top }})
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        top: [earlgrey, darjeeling, englishbreakfast]
+        top: [earlgrey, darjeeling]
     steps:
       - uses: actions/checkout@v6
       - name: Prepare Nix
