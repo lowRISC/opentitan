@@ -26,9 +26,8 @@ class MaiCtrlCSR(DumbISPR):
 
     def on_start(self) -> None:
         super().on_start()
-        # On start, the default operation is set.
-        self._operation = MaiOperation.A2B
-        self._raw_op: int = int(MaiOperation.A2B)
+        # On start, the operation is secAdd, as in the RTL after reset or a secure wipe.
+        self._operation = MaiOperation.SECADD
         self._start_bit = False
         self._value = self._get_value()
 
@@ -40,8 +39,8 @@ class MaiCtrlCSR(DumbISPR):
         return raw
 
     def _get_value(self) -> int:
-        '''Construct the register value based on the current raw op bits and start bit.'''
-        return self._construct_value(self._start_bit, self._raw_op)
+        '''Construct the register value based on the current operation and start bit.'''
+        return self._construct_value(self._start_bit, int(self._operation))
 
     def _extract_start_bit(self, value: int) -> bool:
         '''Extract the start bit from a register value.'''
@@ -52,10 +51,6 @@ class MaiCtrlCSR(DumbISPR):
         The value to be checked must specify a valid operation option otherwise we crash.'''
         # If the conversion failed, the check when updating the operation did fail already.
         return MaiOperation((value >> self.OPERATION_OFFSET) & self.OPERATION_MASK)
-
-    def _extract_raw_op(self, value: int) -> int:
-        '''Extract the raw (possibly invalid) operation bits from a register value.'''
-        return (value >> self.OPERATION_OFFSET) & self.OPERATION_MASK
 
     def _extract_fields(self, value: int) -> tuple[bool, MaiOperation]:
         '''Extract the fields from a register value.'''
@@ -77,12 +72,7 @@ class MaiCtrlCSR(DumbISPR):
 
     def commit(self) -> None:
         if self._next_value is not None:
-            self._start_bit = self._extract_start_bit(self._next_value)
-            self._raw_op = self._extract_raw_op(self._next_value)
-            try:
-                self._operation = MaiOperation(self._raw_op)
-            except ValueError:
-                pass  # keep _operation as the last valid MaiOperation
+            self._start_bit, self._operation = self._extract_fields(self._next_value)
             self._value = self._next_value
         self._next_value = None
         self._pending_write = False
@@ -104,10 +94,6 @@ class MaiCtrlCSR(DumbISPR):
         '''Get the start bit from the CSR.'''
         return self._start_bit
 
-    def would_set_start_bit(self, value: int) -> bool:
-        '''Return whether writing value would set the start bit.'''
-        return self._extract_start_bit(value)
-
     def update_start_bit(self, start: bool) -> None:
         '''Set or clear the start bit in the CSR.
 
@@ -128,13 +114,6 @@ class MaiCtrlCSR(DumbISPR):
             return True
         except ValueError:
             return False
-
-    def would_change_raw_op(self, value: int) -> bool:
-        '''Return whether writing value would change the op field (compares raw bits).
-
-        Safe to call with any value, including those with invalid op encodings.
-        '''
-        return self._extract_raw_op(value) != self._raw_op
 
 
 class MaiStatusCSR(DumbISPR):

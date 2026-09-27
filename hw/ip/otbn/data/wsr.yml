@@ -116,28 +116,28 @@
   doc: |
     This WSR transfers share 0 of the first input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in0_s1
   address: 13
   doc: |
     This WSR transfers share 1 of the first input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in1_s0
   address: 14
   doc: |
     This WSR transfers share 0 of the second input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in1_s1
   address: 15
   doc: |
     This WSR transfers share 1 of the second input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: urnd_state
   address: 16
