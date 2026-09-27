@@ -211,10 +211,10 @@
         { bits: "30",
           name: "SW_RST",
           desc: '''Clears the internal state (not registers) to the reset state when set to 1,
-                   including the FIFOs, the CDC's, the core state machine and the shift register.
-                   In the current implementation, the CDC FIFOs are drained not reset.
-                   Therefore software must confirm that both FIFO's empty before releasing
-                   the IP from reset.''',
+                   including the FIFOs, and in particular the RXDATA and TXDATA FIFOs, the core
+                   state machine and the shift register.
+                   The clearing of the RXDATA and TXDATA FIFOs can be verified by checking the
+                   !!STATUS.RXEMPTY and !!STATUS.TXEMPTY bits.''',
           resval: "0x0"
         },
         { bits: "29",
@@ -407,8 +407,10 @@
         { bits: "15:0",
           name: "CLKDIV",
           desc: '''Core clock divider.  Slows down subsequent SPI transactions by a
-                    factor of (CLKDIV+1) relative to the core clock frequency.  The
-                    period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`'''
+                    factor of (CLKDIV+1) relative to the SPI_HOST core clock frequency.
+                    The period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`.
+                    For more details, refer to
+                    [Clock rate selection](theory_of_operation.md#clock-rate-selection).'''
           resval: 0
         },
       ]
@@ -432,8 +434,8 @@
     { name: "COMMAND",
       desc: '''Command Register
 
-               Parameters specific to each command segment.  Unlike the !!CONFIGOPTS multi-register,
-               there is only one command register for controlling all attached SPI devices''',
+               Parameters specific to each command segment.
+               There is one command register for controlling all attached SPI devices''',
       swaccess: "wo",
       hwaccess: "hro",
       hwext: "true",

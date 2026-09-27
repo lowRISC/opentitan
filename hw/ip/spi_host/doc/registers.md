@@ -118,10 +118,10 @@ Enables the SPI host.  On reset, this field is 0, meaning
 
 ### CONTROL . SW_RST
 Clears the internal state (not registers) to the reset state when set to 1,
-   including the FIFOs, the CDC's, the core state machine and the shift register.
-   In the current implementation, the CDC FIFOs are drained not reset.
-   Therefore software must confirm that both FIFO's empty before releasing
-   the IP from reset.
+   including the FIFOs, and in particular the RXDATA and TXDATA FIFOs, the core
+   state machine and the shift register.
+   The clearing of the RXDATA and TXDATA FIFOs can be verified by checking the
+   [`STATUS.RXEMPTY`](#status) and [`STATUS.TXEMPTY`](#status) bits.
 
 ### CONTROL . OUTPUT_EN
 Enable the SPI host output buffers for the sck, csb, and sd lines.  This allows
@@ -240,8 +240,10 @@ Minimum idle time between commands. Indicates the minimum
 
 ### CONFIGOPTS . CLKDIV
 Core clock divider.  Slows down subsequent SPI transactions by a
-    factor of (CLKDIV+1) relative to the core clock frequency.  The
-    period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`
+    factor of (CLKDIV+1) relative to the SPI_HOST core clock frequency.
+    The period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`.
+    For more details, refer to
+    [Clock rate selection](theory_of_operation.md#clock-rate-selection).
 
 ## CSID
 Chip-Select ID
@@ -266,8 +268,8 @@ Chip-Select ID
 ## COMMAND
 Command Register
 
-   Parameters specific to each command segment.  Unlike the [`CONFIGOPTS`](#configopts) multi-register,
-   there is only one command register for controlling all attached SPI devices
+   Parameters specific to each command segment.
+   There is one command register for controlling all attached SPI devices
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0x1ffffff`
