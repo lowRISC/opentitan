@@ -401,8 +401,9 @@ class OTBNSim:
         permutation entirely when we already know next cycle's instruction won't need it.
         '''
         if self._next_insn is not None and self._next_insn.samples_urnd:
+            # This runs after the commit, so take the URND value of the cycle that just ended.
             self.state.mac_rnd_offset_predec = BN_MAC_PERMUTATION.apply(
-                self.state.wsrs.URND.read_unsigned(), 2, 192)
+                self.state.wsrs.URND.read_unsigned_step(), 2, 192)
 
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
