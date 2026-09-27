@@ -906,7 +906,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   covergroup enc_bnan_cg
     with function sample(mnem_str_t    mnemonic,
                          logic [31:0]  insn_data,
-                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
                          flags_t       flags_write_data [2],
                          logic [255:0] wdr_write_data);
 
@@ -915,11 +915,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
-    // The shifted version of wdr_operand_a is nonzero
+    // The shifted version of wdr_operand_b is nonzero
     `DEF_SEEN_CP(nz_shifted_cp,
                  0 != (insn_data[30] ?
-                       (wdr_operand_a >> {insn_data[29:25], 3'b0}) :
-                       (wdr_operand_a << {insn_data[29:25], 3'b0})))
+                       (wdr_operand_b >> {insn_data[29:25], 3'b0}) :
+                       (wdr_operand_b << {insn_data[29:25], 3'b0})))
 
     sb_cp: coverpoint insn_data[29:25] { bins extremes[] = {'0, '1}; }
     st_cp: coverpoint insn_data[30];
@@ -930,7 +930,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MNEM_CROSS3(st, sb, nz_shifted)
 
     // Toggle coverage of the input result
-    `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_a)
+    `DEF_WDR_TOGGLE_COV(wrs, wdr_operand_b)
 
     // BN.NOT can write the M, L and Z flags, but does not affect the carry flag (bit 0 in the
     // flags_t struct).
@@ -2659,8 +2659,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       "bnam":
         enc_bnam_cg.sample(mnem, insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       "bnan":
+        // BN.NOT has a single source, which is encoded in the rs2 field. The RTL reads it on
+        // bignum read port B and leaves port A disabled.
         enc_bnan_cg.sample(mnem, insn_data,
-                           rtl_item.wdr_operand_a,
+                           rtl_item.wdr_operand_b,
                            rtl_item.flags_write_data,
                            rtl_item.wdr_write_data);
       "bnaq":
