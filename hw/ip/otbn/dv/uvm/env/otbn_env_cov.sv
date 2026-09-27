@@ -327,7 +327,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       12'h7d5: return 8;   // MOD5
       12'h7d6: return 9;   // MOD6
       12'h7d7: return 10;  // MOD7
-      12'hfc8: return 11;  // RND_PREFETCH
+      12'h7d8: return 11;  // RND_PREFETCH
       12'hfc0: return 12;  // RND
       12'hfc1: return 13;  // URND
       default: return -1;  // (invalid)
