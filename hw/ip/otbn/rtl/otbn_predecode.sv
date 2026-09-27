@@ -127,6 +127,7 @@ module otbn_predecode
   logic sel_insn;
 
   wsr_e  wsr_addr;
+  logic  wsr_addr_high;
   csr_e  csr_addr;
   ispr_e ispr_addr;
 
@@ -136,6 +137,8 @@ module otbn_predecode
 
   assign csr_addr = csr_e'(imem_rdata_i[31:20]);
   assign wsr_addr = wsr_e'(imem_rdata_i[20 +: WsrNumWidth]);
+  // WSR indices are 8 bits wide. An index with a bit set above the decoded ones is not a valid WSR.
+  assign wsr_addr_high = |imem_rdata_i[27:20+WsrNumWidth];
 
   assign imm_b_type_base = {{19{imem_rdata_i[31]}}, imem_rdata_i[31], imem_rdata_i[7],
     imem_rdata_i[30:25], imem_rdata_i[11:8], 1'b0};
@@ -772,7 +775,7 @@ module otbn_predecode
         CsrInsnCnt:                         ispr_addr = IsprInsnCnt;
         default: ;
       endcase
-    end else begin
+    end else if (!wsr_addr_high) begin
       unique case (wsr_addr)
         WsrMod:        ispr_addr = IsprMod;
         WsrRnd:        ispr_addr = IsprRnd;

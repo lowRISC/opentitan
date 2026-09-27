@@ -311,6 +311,7 @@ module otbn_controller
   logic dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
   logic illegal_insn_static;
   logic key_invalid;
+  logic wsr_addr_high;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
@@ -1490,6 +1491,8 @@ module otbn_controller
 
 
   assign wsr_addr = wsr_e'(insn_dec_bignum_i.i[WsrNumWidth-1:0]);
+  // WSR indices are 8 bits wide. An index with a bit set above the decoded ones is not a valid WSR.
+  assign wsr_addr_high = |insn_dec_bignum_i.i[7:WsrNumWidth];
 
   always_comb begin
     ispr_addr_bignum = IsprMod;
@@ -1528,6 +1531,13 @@ module otbn_controller
       WsrUrndState:  ispr_addr_bignum = IsprUrndState;
       default: wsr_illegal_addr = 1'b1;
     endcase
+
+    // Treat an index with high bits set like the default case above.
+    if (wsr_addr_high) begin
+      ispr_addr_bignum = IsprMod;
+      wsr_illegal_addr = 1'b1;
+      key_invalid      = 1'b0;
+    end
   end
 
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata | rf_bignum_rd_data_a_no_intg :
