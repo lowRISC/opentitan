@@ -129,6 +129,11 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_base_e
   // if it sees a write to a CSR, and is then consumed (and set to null again) on the following
   // negedge by the process_csr_writes task.
   local tl_seq_item pending_csr_write;
+
+  // Predicted values of ERROR_LOG and ERROR_LOG_ADDRESS for reads that are in flight, indexed by
+  // a_source. The register block returns the value that the register holds in the cycle when the
+  // read is accepted, and the log might change before the D-channel response arrives.
+  local uvm_reg_data_t error_log_read_preds[int unsigned];
 endclass
 
 function racl_ctrl_scoreboard::new (string name, uvm_component parent);
@@ -203,11 +208,25 @@ function void racl_ctrl_scoreboard::process_tl_a_channel(tl_seq_item item, strin
   uvm_reg           intr_enable_reg, intr_test_reg;
   bit               intr_enable_d, intr_test_d, intr_value_d;
 
-  // A-channel monitoring is only used to catch write requests, so we needn't track read requests.
-  if (!item.is_write) return;
-
   // Figure out what register is being accessed
   csr_addr = reg_block.get_word_aligned_addr(item.a_addr);
+
+  // For reads of the error log registers, record the value predicted for the current cycle. Other
+  // read requests needn't be tracked.
+  //
+  // This uses the d predictions, which already hold the register value for the current cycle: an
+  // error seen at this clock edge only reaches them 1ps later (see the delay in
+  // racl_ctrl_error_arb_predictor::watch_errors) and a CSR write is applied on the negedge. The q
+  // predictions would only be right if model_registers had already run at this edge.
+  if (!item.is_write) begin
+    uvm_reg csr = reg_block.default_map.get_reg_by_offset(csr_addr);
+    if (csr == null) return;
+    if (csr.get_name() == "error_log") error_log_read_preds[item.a_source] = error_log_d_pred;
+    if (csr.get_name() == "error_log_address") begin
+      error_log_read_preds[item.a_source] = error_log_address_d_pred;
+    end
+    return;
+  end
 
   // If this is a request to a non-existent register, we don't expect it to have any effect. Ignore
   // it.
@@ -242,9 +261,13 @@ function void racl_ctrl_scoreboard::process_tl_d_channel(tl_seq_item item, strin
     uvm_reg_data_t allowed_values[$] = {csr.get_mirrored_value()};
     bit matched_value;
 
-    if (csr_name == "error_log") allowed_values = {error_log_q_pred};
-    else if (csr_name == "error_log_address") allowed_values = {error_log_address_q_pred};
-    else if (csr_name == "intr_state") begin
+    if (csr_name inside {"error_log", "error_log_address"}) begin
+      if (!error_log_read_preds.exists(item.a_source)) begin
+        `uvm_fatal(`gfn, $sformatf("No prediction recorded for read of %0s", csr_name))
+      end
+      allowed_values = {error_log_read_preds[item.a_source]};
+      error_log_read_preds.delete(item.a_source);
+    end else if (csr_name == "intr_state") begin
       // Because the bus access might happen at the same time as an error log being raised (which
       // gets processed by watch_arbitrated_errors), the INTR_STATE.RACL_ERROR field might have
       // changed value. The RAL prediction will be updated by the mirror_error_log task, but this
@@ -331,7 +354,15 @@ task racl_ctrl_scoreboard::watch_arbitrated_errors();
 
   forever begin
     racl_error_log_item item;
+    int unsigned        word_address;
     arb_predictor.merged_errors_fifo.get(item);
+
+    // If ERROR_LOG already holds an error, the new error only sets the overflow flag: the rest of
+    // ERROR_LOG and ERROR_LOG_ADDRESS keep the first error until software clears the log.
+    if ((error_log_d_pred >> valid_fld.get_lsb_pos()) & 1) begin
+      error_log_d_pred |= 1 << overflow_fld.get_lsb_pos();
+      continue;
+    end
 
     // Predict a new value for the ERROR_LOG register. We can predict the relevant fields (extracted
     // above) separately. Note that the register is read-only to software, so these predictions use
@@ -356,13 +387,15 @@ task racl_ctrl_scoreboard::watch_arbitrated_errors();
     error_log_d_pred |= item.ctn_uid        << ctn_uid_fld.get_lsb_pos();
 
     // Predict a new value for the ERROR_LOG_ADDRESS register, using the same framework as the code
-    // above that predicts ERROR_LOG.
-    if (item.request_address >> address_fld.get_n_bits())
-      `uvm_error(`gfn, $sformatf({"Item has a request_address of %0h, ",
+    // above that predicts ERROR_LOG. The register holds the word address, dropping the bottom two
+    // bits of the request address.
+    word_address = item.request_address >> 2;
+    if (word_address >> address_fld.get_n_bits())
+      `uvm_error(`gfn, $sformatf({"Item has a word address of %0h, ",
                                   "but the one field of error_log_address only has %0d bits"},
-                                 item.request_address, address_fld.get_n_bits()))
+                                 word_address, address_fld.get_n_bits()))
 
-    error_log_address_d_pred = item.request_address << address_fld.get_lsb_pos();
+    error_log_address_d_pred = word_address << address_fld.get_lsb_pos();
 
     // Finally, predict the behaviour of the racl_error interrupt (which must have just been set)
     intr_valid_d_pred = 1'b1;
@@ -371,10 +404,11 @@ endtask
 
 function void racl_ctrl_scoreboard::take_error_log_write(uvm_reg_data_t data, bit [3:0] byte_mask);
   // The only field of ERROR_LOG that is not read-only is the VALID field, which is stored at bit
-  // zero. This is rw1c, so we need to clear its predicted bottom bit if the bottom bit of data is 1
-  // and the bottom byte is enabled.
+  // zero. This is rw1c, so we need to clear it if the bottom bit of data is 1 and the bottom byte
+  // is enabled. Clearing the log also clears the other ERROR_LOG fields and ERROR_LOG_ADDRESS.
   if (data[0] & byte_mask[0]) begin
-    error_log_d_pred[0] = 1'b0;
+    error_log_d_pred = 0;
+    error_log_address_d_pred = 0;
     intr_valid_d_pred = 0;
   end
 endfunction
@@ -535,6 +569,7 @@ task racl_ctrl_scoreboard::track_resets();
     intr_test_q_pred = 1'b0;
     intr_enable_d_pred = 1'b0;
     intr_enable_q_pred = 1'b0;
+    error_log_read_preds.delete();
 
     wait(!cfg.under_reset);
   end

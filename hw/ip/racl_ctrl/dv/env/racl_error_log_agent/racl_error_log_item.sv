@@ -29,6 +29,7 @@ class racl_error_log_item extends uvm_sequence_item;
 
   extern function new (string name="");
   extern function void do_print(uvm_printer printer);
+  extern function void do_copy(uvm_object rhs);
 endclass
 
 function racl_error_log_item::new(string name="");
@@ -42,4 +43,15 @@ function void racl_error_log_item::do_print(uvm_printer printer);
   printer.print_int("ctn_uid",         ctn_uid,         32);
   printer.print_int("read_not_write",  read_not_write,  1);
   printer.print_int("request_address", request_address, 32);
+endfunction
+
+function void racl_error_log_item::do_copy(uvm_object rhs);
+  racl_error_log_item rhs_;
+  if (!$cast(rhs_, rhs)) `uvm_fatal(get_full_name(), "Cannot copy from a different item type.")
+  super.do_copy(rhs);
+  overflow        = rhs_.overflow;
+  role            = rhs_.role;
+  ctn_uid         = rhs_.ctn_uid;
+  read_not_write  = rhs_.read_not_write;
+  request_address = rhs_.request_address;
 endfunction
