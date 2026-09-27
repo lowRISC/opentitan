@@ -1284,6 +1284,27 @@
                  "+bypass_alert_ready_to_end_check=1"]
     }
     {
+      name: chip_sw_otbn_kmac
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_kmac_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    }
+    {
+      name: chip_sw_otbn_mai
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_mai_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    }
+    {
+      name: chip_sw_otbn_wfi
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_wfi_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    }
+    {
       name: chip_sw_rv_core_ibex_rnd
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests:rv_core_ibex_rnd_test:1:new_rules"]
