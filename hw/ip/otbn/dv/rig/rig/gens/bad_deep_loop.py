@@ -45,29 +45,27 @@ class BadDeepLoop(SnippetGen):
 
         '''
         # Pick some value for bodysize that either points at an existing
-        # instruction or points above the top of memory. Rather than doing
-        # something clever, we pick the address at random and "re-roll" if it
-        # points at a gap in instruction memory. Since bodysize_range[1] is
-        # 4096, giving a maximum address of 16KiB, which happens to equal the
-        # size of IMEM, we know it's going to be possible. Try to pick 50
-        # times, which should fail with probability at most 1/4^50 = 1/2^100.
+        # instruction or points above the top of memory. List every value
+        # that works and pick one of them.
         bodysize_op_type = insn.operands[1].op_type
         bodysize_range = bodysize_op_type.get_op_val_range(pc)
         assert bodysize_range is not None
 
-        bodysize = None
-        for _ in range(50):
-            guess = random.randint(bodysize_range[0], bodysize_range[1])
+        # The largest bodysize must reach above the top of IMEM, so that
+        # there is always at least one choice.
+        assert pc + 4 * bodysize_range[1] >= program.imem_size
+
+        choices = []
+        for guess in range(bodysize_range[0], bodysize_range[1] + 1):
             last_insn_addr = pc + 4 * guess
             if ((last_insn_addr >= program.imem_size or
                  program.get_insn_space_at(last_insn_addr) == 0)):
-                bodysize = guess
-                break
+                choices.append(guess)
 
-        assert bodysize is not None
+        bodysize = random.choice(choices)
         enc_bodysize = bodysize_op_type.op_val_to_enc_val(bodysize, pc)
         assert enc_bodysize is not None
-        return (enc_bodysize, pc + 4 * guess)
+        return (enc_bodysize, pc + 4 * bodysize)
 
     def _pick_loop_iterations(self, model: Model) -> Optional[int]:
         # This is like Loop._pick_loop_iterations, but doesn't try to weight
