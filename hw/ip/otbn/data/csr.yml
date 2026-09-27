@@ -221,17 +221,17 @@
   bits:
     0: |
       START: Writing 1 to this bit starts the MAI operation.
-      Writing it when MAI is busy will cause a MAI_ERROR software error.
+      Writing it when MAI is busy will cause a MAI_SOFTWARE_ERROR.
     5-1:
       doc: |
         OPERATION: This field defines which type of operation is to be performed.
-        Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+        Invalid values and writing to these bits when MAI is busy will cause a MAI_SOFTWARE_ERROR.
       values:
         11: A2B
         16: B2A
         23: secAdd
         12: secAddMod
-    31-6: Reserved. Any write is ignored. Always reads as 0.
+    31-6: Reserved. Writing a non-zero value will cause a MAI_SOFTWARE_ERROR. Always reads as 0.
 
 - name: rnd
   address: 0xfc0

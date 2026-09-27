@@ -1008,7 +1008,7 @@ OTBN SW can perform a masking operation by following these steps (see also illus
 - Issue the `MAI_CTRL.START` command by writing a 1 to it.
   - The MAI will then start to push all 8 elements of the input WSRs sequentially into the masking accelerator.
   - As soon as the first result is available, the MAI will begin to overwrite the `MAI_RES_S0` / `MAI_RES_S1` WSRs with the new data.
-  - `MAI_CTRL.OPERATION` and any input data may not be changed as long as `MAI_STATUS.BUSY = 1`.
+  - `MAI_CTRL` may not be written as long as `MAI_STATUS.BUSY = 1`, and the input WSRs may not be written as long as `MAI_STATUS.INPUT_READY = 0`.
     Otherwise a SW error occurs, see below.
 - Poll until `MAI_STATUS.BUSY = 0`.
 - Read back the results from `MAI_RES_S0` / `MAI_RES_S1`.
@@ -1036,7 +1036,8 @@ The overlapping execution software flow is:
 - Repeat the steps starting with "Poll until `MAI_STATUS.INPUT_READY = 1`".
 
 This procedure can be even further optimized for secAdd, secAddMod, and A2B because their latency is deterministic and thus the polling can be replaced with the correct number of other instructions.
-It is only possible to overlap executions of the same type / configuration as `MAI_CTRL.OPERATION` must remain constant as long as `MAI_STATUS.BUSY = 1`.
+`MAI_CTRL.OPERATION` must remain constant as long as `MAI_STATUS.BUSY = 1`.
+A different operation can be selected together with the `MAI_CTRL.START` command of the next execution.
 
 The following image depicts the flow for multiple secAdd executions without any memory operations (to load data from/to WDRs / DMEM).
 A result with “1p” means that this WSR contains partial results (vector elements) / is being overwritten with results from the current conversion (2p for results of the second conversion, etc).
@@ -1052,13 +1053,16 @@ An erroneous use of the MAI will result in a `MAI_SOFTWARE_ERROR`.
 This will trigger an abortion of the OTBN execution with a secure wipe.
 
 The `MAI_SOFTWARE_ERROR` is triggered when:
-- `MAI_CTRL.OPERATION` contains an invalid selection when the `MAI_CTRL.START` bit is set.
-- The `MAI_CTRL.START` bit is set or `MAI_CTRL.OPERATION` is written to whilst `MAI_STATUS.BUSY = 1`.
+- A write to `MAI_CTRL` has an invalid `MAI_CTRL.OPERATION` value, whether or not the `MAI_CTRL.START` bit is set.
+- Any write to `MAI_CTRL` happens whilst `MAI_STATUS.BUSY = 1`.
 - A write to input WSRs is detected whilst `MAI_STATUS.INPUT_READY = 0`.
   - The `MAI_INx_Sy` registers are used as input buffers.
-    Modifying the register content can lead to unexpected results.
-- A write to the reserved section of `MAI_CTRL` is detected.
-  - Note that the MOD WSR must also remain constant but this is not checked for in HW.
+- A write to `MAI_CTRL` sets a reserved bit.
+
+Note that the MOD WSR must also remain constant but this is not checked for in HW.
+
+A write that triggers a `MAI_SOFTWARE_ERROR` has no effect on the MAI.
+It does not start an execution, change `MAI_CTRL.OPERATION` or change an input WSR.
 
 A write to the output WSRs whilst an operation is ongoing is on purpose not handled as an error.
 This allows clearing the output WSRs between two overlapping operations if this would be required for security reasons.
