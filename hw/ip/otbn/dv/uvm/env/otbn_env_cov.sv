@@ -2170,7 +2170,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(underflow_and_bad_addr_cp,
                  call_stack_underflow &&
                  (grs1 != 5'd1) &&
-                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+                 ((addr < 0) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(underflow_and_bad_addr)
 
     // Set both increments and have a bad WDR index in *grd/*grs2.
@@ -2182,14 +2182,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(inc_both_and_bad_addr_cp,
                  inc_both &&
                  !call_stack_underflow &&
-                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+                 ((addr < 0) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(inc_both_and_bad_addr)
 
     // Have a bad WDR index and also compute a bad address
     `DEF_SEEN_CP(bad_wdr_and_bad_addr_cp,
                  !call_stack_underflow &&
                  (operand_b >= 32) &&
-                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+                 ((addr < 0) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(bad_wdr_and_bad_addr)
 
     // Underflow call stack with grs1, set both increments, and have a bad WDR index in *grd/*grs2
@@ -2205,7 +2205,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  call_stack_underflow &&
                  inc_both &&
                  (grs1 != 5'd1) &&
-                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+                 ((addr < 0) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(underflow_and_inc_both_and_bad_addr)
 
     // Set both increments, have a bad WDR index and compute a bad address
@@ -2213,7 +2213,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                  inc_both &&
                  !call_stack_underflow &&
                  (operand_b >= 32) &&
-                 ((0 < addr) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
+                 ((addr < 0) || (addr >= DmemSizeByte) || ((addr & 32'd31) != 0)))
     `DEF_MNEM_CROSS(inc_both_and_bad_wdr_and_bad_addr)
   endgroup
 
