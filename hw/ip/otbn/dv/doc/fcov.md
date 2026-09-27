@@ -711,6 +711,13 @@ Encoding-level coverpoints are tracked in covergroup `enc_ecall_cg`.
 
 No special coverage points for this instruction.
 
+## WFI
+
+Like ECALL, this instruction uses the `I` encoding schema, but with every field set to a fixed value.
+Encoding-level coverpoints are tracked in covergroup `enc_ecall_cg`.
+
+No special coverage points for this instruction.
+
 ## LOOP
 
 This instruction uses the `loop` encoding schema, with covergroup `enc_loop_cg`.
