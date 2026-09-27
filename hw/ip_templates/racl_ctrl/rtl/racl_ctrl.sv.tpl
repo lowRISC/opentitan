@@ -178,32 +178,36 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   logic first_error;
   assign first_error = ~reg2hw.error_log.valid.q & racl_error_arb.valid;
 
-  // Writing 1 to the error valid bit clears the log and log address again
+  // Writing 1 to the error valid bit clears the log and log address again. The valid field clears
+  // itself on that write (it is rw1c), and the qe for the write arrives one cycle later, along with
+  // the updated q. Clear the other fields on a write to ERROR_LOG that leaves the valid bit clear.
   logic clear_log;
-  assign clear_log = reg2hw.error_log.valid.q & reg2hw.error_log.valid.qe;
+  assign clear_log = reg2hw.error_log.valid.qe & ~reg2hw.error_log.valid.q;
 
-  assign hw2reg.error_log.valid.d  = ~clear_log;
-  assign hw2reg.error_log.valid.de = racl_error_arb.valid | clear_log;
+  assign hw2reg.error_log.valid.d  = 1'b1;
+  assign hw2reg.error_log.valid.de = racl_error_arb.valid;
 
   // Overflow is raised when error is valid and a new error is coming in or more than one
   // error is coming in at the same time
-  assign hw2reg.error_log.overflow.d  = ~clear_log;
-  assign hw2reg.error_log.overflow.de = (reg2hw.error_log.valid.q & racl_error_arb.valid) |
-                                        racl_error_arb.overflow                           |
-                                        clear_log;
+  logic overflow;
+  assign overflow = (reg2hw.error_log.valid.q & racl_error_arb.valid) | racl_error_arb.overflow;
 
-  assign hw2reg.error_log.read_access.d  = clear_log ? '0 : racl_error_arb.read_access;
+  assign hw2reg.error_log.overflow.d  = overflow;
+  assign hw2reg.error_log.overflow.de = overflow | clear_log;
+
+  // An error that arrives in the cycle of clear_log is logged as a first error
+  assign hw2reg.error_log.read_access.d  = first_error ? racl_error_arb.read_access : '0;
   assign hw2reg.error_log.read_access.de = first_error | clear_log;
 
-  assign hw2reg.error_log.role.d  = clear_log ? '0 : racl_error_arb.racl_role;
+  assign hw2reg.error_log.role.d  = first_error ? racl_error_arb.racl_role : '0;
   assign hw2reg.error_log.role.de = first_error | clear_log;
 
-  assign hw2reg.error_log.ctn_uid.d  = clear_log ? '0 : racl_error_arb.ctn_uid;
+  assign hw2reg.error_log.ctn_uid.d  = first_error ? racl_error_arb.ctn_uid : '0;
   assign hw2reg.error_log.ctn_uid.de = first_error | clear_log;
 
-  assign hw2reg.error_log_address.d  = clear_log
-                                       ? '0
-                                       : racl_error_arb.request_address[top_pkg::TL_AW-1:2];
+  assign hw2reg.error_log_address.d  = first_error
+                                       ? racl_error_arb.request_address[top_pkg::TL_AW-1:2]
+                                       : '0;
   assign hw2reg.error_log_address.de = first_error | clear_log;
 
   // unused request_address bits
