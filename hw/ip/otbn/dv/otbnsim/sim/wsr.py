@@ -139,6 +139,12 @@ class URNDWSR(ISPR):
         self._next_value_permuted: bool = False
         self._value: int = 0
         self._value_permuted: bool = False
+        # URND value of the cycle of the last step(). Unlike _value it survives commit(). See
+        # read_unsigned_step().
+        self._step_value: int = 0
+        self._step_value_permuted: bool = False
+        # True until the first step() after a start. See step().
+        self._first_step = False
 
         # Running is not the opposite of stopped. It indicates that the first seeding is done.
         self.running = False
@@ -185,10 +191,22 @@ class URNDWSR(ISPR):
         self._cmd_restore = False
         self._pending_restore_word = None
         self._urnd_consumed = False
+        self._first_step = True
 
     def read_unsigned(self) -> int:
         # The URND WSR only gets the lower self.width bits of the Bivium output
         return self.read_unsigned_full() & ((1 << self.width) - 1)
+
+    def read_unsigned_step(self) -> int:
+        '''Return the URND value of the cycle of the last step(), even after commit().
+
+        The predecoder samples URND in the cycle before an instruction executes. The simulator
+        only knows that instruction once the cycle has been committed, when the register already
+        holds the next value.'''
+        if not self._step_value_permuted:
+            self._step_value = URND_PERMUTATION.apply(self._step_value)
+            self._step_value_permuted = True
+        return self._step_value & ((1 << self.width) - 1)
 
     def read_unsigned_full(self) -> int:
         # Get the full width of the Bivium output
@@ -264,6 +282,11 @@ class URNDWSR(ISPR):
             self._value = self._trivium.keystream()
             self._value_permuted = False
 
+        # Sample the current URND value to keep it across the commit(). This is required as the
+        # BN.MULV offset sampling actually happens one cycle earlier than the instruction executes.
+        self._step_value = self._value
+        self._step_value_permuted = self._value_permuted
+
         # Schedule a state update and readout the raw keystream. The state update is always
         # speculative. The URND commit()/abort() decide whether the state update actually takes
         # effect. The permutation is applied only when necessary.
@@ -271,6 +294,15 @@ class URNDWSR(ISPR):
         # The URND value is the registered output of the PRNG, so we latch it here.
         self._next_value = self._trivium.keystream()
         self._next_value_permuted = False
+
+        # The BN.MULV offset sampling happens one cycle earlier than the instruction executes. If
+        # a BN.MULV insn is the first instruction, we must already provide the correct URND value.
+        # The URND is at all times the PRNG output. The PRNG does not run yet so we preload the
+        # next value.
+        if self._first_step:
+            self._first_step = False
+            self._value = self._step_value = self._next_value
+            self._value_permuted = self._step_value_permuted = False
 
     def _advance(self, commit: bool) -> None:
         '''Model the advances of the PRNG and URND control logic when an instruction ends.'''
