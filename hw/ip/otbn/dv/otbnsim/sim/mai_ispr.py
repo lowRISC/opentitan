@@ -26,9 +26,9 @@ class MaiCtrlCSR(DumbISPR):
 
     def on_start(self) -> None:
         super().on_start()
-        # On start, the default operation is set.
-        self._operation = MaiOperation.A2B
-        self._raw_op: int = int(MaiOperation.A2B)
+        # On start, the operation is secAdd, as in the RTL after reset or a secure wipe.
+        self._operation = MaiOperation.SECADD
+        self._raw_op: int = int(MaiOperation.SECADD)
         self._start_bit = False
         self._value = self._get_value()
 

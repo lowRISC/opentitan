@@ -123,7 +123,7 @@ Control and Status Registers (CSRs) are 32b wide registers used for "special" pu
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} and {{#otbn-insn-ref CSRRW}}.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
+All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)), except `MAI_CTRL.OPERATION`, which starts as secAdd because 0 is not a valid operation.
 
 <!-- This list of CSRs is replicated in otbn_env_cov.sv, csr.py, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other five as well. -->
@@ -644,7 +644,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>31:6</td>
               <td>
-                Reserved. Any write is ignored. Always reads as 0.
+                Reserved. Writing a non-zero value will cause a MAI_ERROR software error. Always reads as 0.
               </td>
             </tr>
           </tbody>
