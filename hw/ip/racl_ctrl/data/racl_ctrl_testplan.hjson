@@ -36,7 +36,7 @@
         is raised correctly.
       '''
       stage: V1
-      tests: ["racl_ctrl_smoke"] // TODO: racl_ctrl_smoke does not yet drive the error inputs.
+      tests: ["racl_ctrl_smoke"]
     }
 
     {
@@ -47,7 +47,7 @@
         in the expected way (checking the arbitration works as expected).
       '''
       stage: V2
-      tests: []
+      tests: ["racl_ctrl_smoke", "racl_ctrl_stress_all"]
     }
   ]
 }
