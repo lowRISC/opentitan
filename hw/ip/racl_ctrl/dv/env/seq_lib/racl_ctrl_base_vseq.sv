@@ -99,7 +99,7 @@ function uvm_sequence racl_ctrl_base_vseq::create_seq_by_name(string name);
 endfunction
 
 task racl_ctrl_base_vseq::clear_error_log();
-  dv_base_reg error_log_reg;
+  dv_base_reg error_log_reg, error_log_address_reg;
   dv_base_reg_field valid_field;
 
   if (clear_error_log_running) `uvm_fatal(`gfn, "Nested call to clear_error_log")
@@ -107,6 +107,9 @@ task racl_ctrl_base_vseq::clear_error_log();
 
   error_log_reg = cfg.ral.get_dv_base_reg_by_name("error_log");
   if (!error_log_reg) `uvm_fatal(`gfn, "Cannot find the ERROR_LOG register.")
+
+  error_log_address_reg = cfg.ral.get_dv_base_reg_by_name("error_log_address");
+  if (!error_log_address_reg) `uvm_fatal(`gfn, "Cannot find the ERROR_LOG_ADDRESS register.")
 
   valid_field = error_log_reg.get_field_by_name("valid");
   if (!valid_field) `uvm_fatal(`gfn, "Cannot find a VALID field in the ERROR_LOG register.")
@@ -134,10 +137,21 @@ task racl_ctrl_base_vseq::clear_error_log();
       field_value = 1'b1;
     end
 
-    if (field_value) error_log_reg.write(status, 1, .prior(100));
+    // Handle a logged error the way software would: read ERROR_LOG_ADDRESS and ERROR_LOG (which
+    // lets the scoreboard check them) and then clear the log. Sometimes write 0 to ERROR_LOG first.
+    // VALID is rw1c, so that write should leave the log unchanged. After the clear, read both
+    // registers again. The scoreboard expects them empty unless a new error has landed.
+    if (field_value) begin
+      if ($urandom_range(0, 3) == 0) error_log_reg.write(status, 0, .prior(100));
+      if (status == UVM_IS_OK) error_log_address_reg.mirror(status, .prior(100));
+      if (status == UVM_IS_OK) error_log_reg.mirror(status, .prior(100));
+      if (status == UVM_IS_OK) error_log_reg.write(status, 1, .prior(100));
+      if (status == UVM_IS_OK) error_log_reg.mirror(status, .prior(100));
+      if (status == UVM_IS_OK) error_log_address_reg.mirror(status, .prior(100));
+    end
 
     if (status != UVM_IS_OK && !cfg.under_reset) begin
-      `uvm_error(`gfn, "Failed to write error_log register")
+      `uvm_error(`gfn, "Failed to access the error log registers")
     end
 
     // Pause this task if we have gone into reset, but drop out of the pause if stopping becomes

@@ -21,6 +21,9 @@ function racl_ctrl_smoke_vseq::new (string name="");
 endfunction
 
 task racl_ctrl_smoke_vseq::body();
+  // Enable the racl_error interrupt, so that the scoreboard sees it raised for each logged error.
+  cfg_interrupts(.interrupts(1));
+
   fork
     super.body();
     write_policy_regs();
