@@ -26,9 +26,9 @@ class MaiCtrlCSR(DumbISPR):
 
     def on_start(self) -> None:
         super().on_start()
-        # On start, the default operation is set.
-        self._operation = MaiOperation.A2B
-        self._raw_op: int = int(MaiOperation.A2B)
+        # On start, the operation is secAdd, as in the RTL after reset or a secure wipe.
+        self._operation = MaiOperation.SECADD
+        self._raw_op: int = int(MaiOperation.SECADD)
         self._start_bit = False
         self._value = self._get_value()
 
@@ -227,6 +227,13 @@ class MaiOutputWSR(DumbISPR):
 class MaiInputWSR(DumbISPR):
     def __init__(self, name: str) -> None:
         super().__init__(name, 256)
+
+    def abort(self) -> None:
+        '''Keep a pending write.
+
+        The RTL writes an MAI input WSR even if the instruction fails, so the
+        commit that follows the abort applies the write.'''
+        return
 
     def read_32bit_unsigned(self, index: int) -> int:
         assert 0 <= index < 8
