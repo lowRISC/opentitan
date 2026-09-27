@@ -252,12 +252,12 @@
     }
     {
       name: chip_sw_i2c_device_tx_rx
-      desc: '''Verify the transmission of data over the chip's I2C device interface.
+      desc: '''Verify the transmission of data over the chip's I2C target interface.
 
-            - Program the I2C to be in device mode.
-            - The testbench writes a known payload over the chip's I2C device interface, which is
+            - Program the I2C to be in target mode.
+            - The testbench writes a known payload over the chip's I2C target interface, which is
               received and verified by the SW test for correctness.
-            - The testbench reads and verifies a known payload over the chip's I2C device interface,
+            - The testbench reads and verifies a known payload over the chip's I2C target interface,
             - SW validates the reception of tx empty and trans complete interrupts.
             - Verify the virtual / true open drain capability.
 
