@@ -57,6 +57,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // The mirrored STATUS register from the ISS.
   bit [7:0] model_status;
 
+  // The number of instructions that the model has reported since model_status last changed. This
+  // is used to check instructions reported when PAUSED (see process_model_fifo).
+  int unsigned num_insns_while_paused;
+
   // The "locked" field is used to track whether OTBN is "locked". For most operational state
   // tracking, we go through the ISS, but OTBN can become locked without actually starting an
   // operation (for example, there might be a malformed TL transaction). We spot that sort of thing
@@ -426,9 +430,10 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           end
 
           model_status = item.status;
+          num_insns_while_paused = 0;
 
           if (cfg.en_cov) begin
-            cov.on_state_change(get_operational_state(status_e'(model_status)));
+            cov.on_state_change(status_e'(model_status));
           end
         end
 
@@ -436,9 +441,29 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // The model agent's monitor should be configured to only emit OtbnModelInsn items if
           // coverage is enabled.
           `DV_CHECK_FATAL(cfg.en_cov)
-          // We don't expect any instructions unless we're currently running something.
-          `DV_CHECK_EQ_FATAL(model_status, 1 /* BUSY_EXECUTE */,
-                             "Saw instruction when not in BUSY_EXECUTE operational state.")
+          // We don't expect any instructions unless we're currently running something. The
+          // exception is the end of a pause. A WFI instruction retires in the cycle that OTBN
+          // resumes, but the ISS's STATUS change is only visible two cycles later (STATUS is
+          // double-flopped, as in the RTL). The model monitor also reports instructions on the
+          // posedge and status changes on the negedge. So we can see the WFI and then one more
+          // instruction before the status change.
+          if (model_status == otbn_pkg::StatusPaused) begin
+            if (num_insns_while_paused == 0 && item.mnemonic != "wfi") begin
+              `uvm_error("non_wfi_when_paused",
+                         $sformatf("Saw an %0s instruction when PAUSED (but only expect 'wfi')",
+                                   item.mnemonic))
+            end
+            if (num_insns_while_paused >= 2) begin
+              `uvm_error("too_many_insns_when_paused",
+                         $sformatf({"Saw an %0s instruction when PAUSED (but only expect 'wfi' ",
+                                    "and at most one more instruction)"},
+                                   item.mnemonic))
+            end
+            num_insns_while_paused++;
+          end else begin
+            `DV_CHECK_EQ_FATAL(model_status, otbn_pkg::StatusBusyExecute,
+                               "Saw instruction when not in BUSY_EXECUTE operational state.")
+          end
 
           iss_trace_queue.push_back(item);
           pop_trace_queues();

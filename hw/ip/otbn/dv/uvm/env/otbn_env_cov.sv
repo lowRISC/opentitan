@@ -41,6 +41,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_MNEM(mnem_csrrs,         "csrrs");
   `DEF_MNEM(mnem_csrrw,         "csrrw");
   `DEF_MNEM(mnem_ecall,         "ecall");
+  `DEF_MNEM(mnem_wfi,           "wfi");
   `DEF_MNEM(mnem_loop,          "loop");
   `DEF_MNEM(mnem_loopi,         "loopi");
   `DEF_MNEM(mnem_bn_add,        "bn.add");
@@ -110,6 +111,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_MNEM_BIN(mnem_beq);           `DEF_MNEM_BIN(mnem_bne);           \
   `DEF_MNEM_BIN(mnem_jal);           `DEF_MNEM_BIN(mnem_jalr);          \
   `DEF_MNEM_BIN(mnem_csrrs);         `DEF_MNEM_BIN(mnem_csrrw);         \
+  `DEF_MNEM_BIN(mnem_wfi);                                              \
   `DEF_MNEM_BIN(mnem_loop);          `DEF_MNEM_BIN(mnem_loopi);         \
   `DEF_MNEM_BIN(mnem_bn_add);        `DEF_MNEM_BIN(mnem_bn_addc);       \
   `DEF_MNEM_BIN(mnem_bn_addi);       `DEF_MNEM_BIN(mnem_bn_addm);       \
@@ -1215,10 +1217,11 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup enc_ecall_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
-    // Used by the ECALL instruction. Although it uses the I encoding in the tooling, it has no
-    // immediate or register operands so we give it a separate covergroup here.
+    // Used by the ECALL and WFI instructions. Although they use the I encoding in the tooling, they
+    // have no immediate or register operands so we give them a separate covergroup here.
     mnemonic_cp: coverpoint mnemonic {
       `DEF_MNEM_BIN(mnem_ecall);
+      `DEF_MNEM_BIN(mnem_wfi);
       illegal_bins other = default;
     }
   endgroup
@@ -2381,6 +2384,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_csrrs]         = "I";
     insn_encodings[mnem_csrrw]         = "I";
     insn_encodings[mnem_ecall]         = "ecall";
+    insn_encodings[mnem_wfi]           = "ecall";
     insn_encodings[mnem_loop]          = "loop";
     insn_encodings[mnem_loopi]         = "loopi";
     insn_encodings[mnem_bn_add]        = "bnaf";
@@ -2433,10 +2437,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     last_mnem = '0;
   endfunction
 
-  // Called on each change of operational state
-  function void on_state_change(operational_state_e new_state);
+  // Called on each change of STATUS
+  function void on_state_change(otbn_pkg::status_e new_status);
     last_err_bits = 0;
-    last_mnem = '0;
+    // A WFI pause does not end the program, so keep tracking instruction pairs across it
+    if (!(new_status inside {otbn_pkg::StatusBusyExecute, otbn_pkg::StatusPaused})) begin
+      last_mnem = '0;
+    end
     // Sample bad internal state related signals here because otherwise they tend to not get
     // captured.
     bad_internal_state_cg.sample(cfg.trace_vif.urnd_all_zero_q,
