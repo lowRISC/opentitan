@@ -3,7 +3,7 @@
 The operation of the SPI_HOST IP proceeds in seven general steps.
 
 To initialize the IP:
-1. Program the [`CONFIGOPTS`](registers.md#configopts) multi-register with the appropriate timing and polarity settings for each `csb` line.
+1. Program the [`CONFIGOPTS`](registers.md#configopts) register with the appropriate timing and polarity settings.
 2. Set the desired interrupt parameters
 3. Enable the IP
 
@@ -25,8 +25,7 @@ The SPI_HOST IP is however suitable for interacting with any number of SPI devic
 
 ### Per-target Configuration
 
-The [`CONFIGOPTS`](registers.md#configopts) multi-register must be programmed to reflect the requirements of the attached target devices.
-As such these registers can be programmed once at initialization, or whenever a new device is connected (e.g., via changes in the external pin connections, or changes in the pinmux configuration).
+The [`CONFIGOPTS`](registers.md#configopts) register must be programmed to reflect the requirements of the target device of the next command selected with [`CSID`](registers.md#csid).
 The proper settings for the [`CONFIGOPTS`](registers.md#configopts) fields (e.g., CPOL and CPHA, clock divider, ratios, and other timing or sampling requirements) will all depend on the specific device attached as well as the board level delays.
 
 ### Interrupt configuration

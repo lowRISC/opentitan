@@ -109,7 +109,7 @@ For example, a Quad-IO (1-4-4) SPI Read could be constructed from the following 
 More generally, the process of issuing a SPI command consists of the following steps:
 
 1. Configure the IP to be compatible with each attached peripheral.
-The [`CONFIGOPTS`](registers.md#configopts) multi-register holds separate sets of configuration settings, one for each `CSB` line.
+The [`CONFIGOPTS`](registers.md#configopts) holds the configuration settings.
 In principle, the configuration of these device-specific options only needs to be done/performed once at initialization.
 2. Load the TX FIFO with the instructions and data to be transmitted to the remote device by writing to the [`TXDATA`](registers.md#txdata) memory window.
 3. Specify which device should receive the next command using the [`CSID`](registers.md#csid) register.
@@ -199,10 +199,7 @@ For this reason the speed-mode is also adjustable on a segment-by-segment basis.
 ### CSID Register
 
 The [`CSID`](registers.md#csid) register is used to identify the target device for the next command segment.
-Whenever a command segment descriptor is written to [`COMMAND`](registers.md#command), [`CSID`](registers.md#csid) is passed into the FSM along with the command segment descriptor and the corresponding configurations options (taken from the CSID'th element of the `CONFIGOPTS` multi-register).
-
-This register still exists when instantiated with only one `CSB` line (i.e. when NumCS=1).
-However in this case the [`CSID`](registers.md#csid) value is ignored.
+Whenever a command segment descriptor is written to [`COMMAND`](registers.md#command), [`CSID`](registers.md#csid) is passed into the FSM along with the command segment descriptor and the configuration options (taken from [`CONFIGOPTS`](registers.md#configopts)).
 
 Changes in [`CSID`](registers.md#csid) also affect the `CSB` lines, because a change in CSID can also implicitly end a command, overriding [`COMMAND.CSAAT`](registers.md#command).
 If a change is detected in [`CSID`](registers.md#csid), but the previous segment was submitted with the `CSAAT` bit asserted, the FSM terminates the previous command before moving on to the next segment.
@@ -213,15 +210,12 @@ The new `CSB` line is asserted low, and `SCK` begins toggling after the usual `C
 ### Configuration Options
 
 Before starting a command, some common configuration for the target device must be setup.
-Each target device attached to a chip-select can have an independent set of configuration parameters to match it's specific needs.
-When starting a command, the value of [`CSID`](registers.md#csid) is used to select the correct set of configuration parameters.
-The [`CONFIGOPTS`](registers.md#configopts) multi-register contains separate configuration entries for each chip select.
-Each entry holds clock configuration and timing settings which are specific to each peripheral.
-Once the [`CONFIGOPTS`](registers.md#configopts) multi-register has been programmed for each SPI peripheral device, the values can be left unchanged.
+All target devices attached to the chip-select lines share a single set of configuration parameters stored in [`CONFIGOPTS`](registers.md#configopts).
+Before starting a command, the configuration parameters in [`CONFIGOPTS`](registers.md#configopts) need to be set for the next target device, and [`CSID`](registers.md#csid) needs to be adapted to the corresponding `CSB` line.
+When starting the command via [`COMMAND`](registers.md#command), the value of [`CSID`](registers.md#csid) is then passed into the FSM along with the command segment descriptor and the configurations options.
 
 The following sections give details on how the SPI_HOST IP can be used to control a specific peripheral.
-For simplicity, this section describes how to interact one device, attached to `CSB[0]`, and as such references are made to the multi-registers [`CONFIGOPTS`](registers.md#configopts) and [`COMMAND`](registers.md#command).
-To configure timing and send commands to devices on other `CSB` lines, instead use the `CONFIGOPTS` multi-register corresponding to desired `CSB` line.
+For simplicity, this section describes how to interact one device, attached to `CSB[0]`.
 
 #### Clock rate selection
 
@@ -329,10 +323,13 @@ This full cycle mode has no effect on any of the signals transmitted, only on th
 It is important that the configuration changes are applied while `CSB` is high to avoid sending spurious `SCK` events to any devices.
 For example, if two devices have different requirements for `CPOL`, the clock polarity should not toggle except when `CSB` is high (inactive) for all devices.
 
-Furthermore, `CSB` should be remain high for the minimum idle time both before and after the configuration update.
+Furthermore, `CSB` should remain high for the minimum idle time both before and after updating the configuration in [`CONFIGOPTS`](registers.md#configopts).
 For example, consider a SPI_HOST attached to two devices each with different requirements for the clock divider, clock polarity, and idle time.
-Consider a configuration where total idle time (as determined by the [`CONFIGOPTS.CLKDIV`](registers.md#configopts) and [`CONFIGOPTS.CSNIDLE`](registers.md#configopts) multi-registers) works out to 9 idle clocks for the first device, and 4 clocks for the second device.
+Consider a configuration where total idle time (as determined by [`CONFIGOPTS.CLKDIV`](registers.md#configopts) and [`CONFIGOPTS.CSNIDLE`](registers.md#configopts)) works out to 9 idle clocks for the first device, and 4 clocks for the second device.
 In this scenario then, when swapping from the first device to the second, the SPI_HOST IP will only swap the clock polarity once the first `CSB` line, `CSB[0]`, has been high for at least 9 clocks, and will continue to hold the second `csb` line, `csb[1]`, high for 4 additional clocks before starting the next transaction.
+
+This additional idle time applies whenever making any changes to the configuration in [`CONFIGOPTS`](registers.md#configopts).
+For instance, even in a SPI_HOST configured for one device, changes to [`CONFIGOPTS`](registers.md#configopts), will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
 
 ```wavejson
 {signal: [
@@ -362,23 +359,20 @@ In this scenario then, when swapping from the first device to the second, the SP
 }
 ```
 
-This additional idle time applies not only when switching between devices but when making any changes to the configuration for most recently used device.
-For instance, even in a SPI_HOST configured for one device, changes to [`CONFIGOPTS`](registers.md#configopts), will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
-
-
 ### Special Command Fields
 
 The [`COMMAND`](registers.md#command) register must be written once for each command segment.
 Whenever a command segment is written to [`COMMAND`](registers.md#command), the contents of the [`CONFIGOPTS`](registers.md#configopts), [`CSID`](registers.md#csid), and [`COMMAND`](registers.md#command) registers are passed through the Config/Command FIFO to the SPI_HOST core FSM.
 Once the command is issued, the core will immediately deassert [`STATUS.READY`](registers.md#status), and once the command has started [`STATUS.ACTIVE`](registers.md#status) will go high.
 The command is complete when [`STATUS.ACTIVE`](registers.md#status) goes low.
+Note that if firmware enqueues multiple commands back to back, [`STATUS.ACTIVE`](registers.md#status) will only go low when the entire queue of commands has been handled.
 A `spi_event` interrupt can also be triggered to go off on completion by setting [`EVENT_ENABLE.IDLE`](registers.md#event_enable).
 
 ### Chip Select Masks
 
 Each instance of the SPI_HOST IP supports a parametrizable number of chip select lines (`CSB[NumCS-1:0]`).
 Each `CSB` line can be routed either to a single peripheral or to a daisy-chain of peripherals.
-Whenever a segment description is written to the [`COMMAND`](registers.md#command) register, the  [`CSID`](registers.md#csid) is sent along with [`COMMAND`](registers.md#command) and the `CONFIGOPTS` multi-register corresponding to [`CSID`](registers.md#csid)  to indicate which device is meant to receive the command.
+Whenever a segment description is written to the [`COMMAND`](registers.md#command) register, the  [`CSID`](registers.md#csid) is sent along with [`COMMAND`](registers.md#command) and [`CONFIGOPTS`](registers.md#configopts) to indicate which device is meant to receive the command.
 The SPI_HOST core typically then manages the details of asserting and deasserting the proper `CSB` line, subject to the timing parameters expressed in [`CONFIGOPTS.CSNLEAD`](registers.md#configopts), [`CONFIGOPTS.CSNTRAIL`](registers.md#configopts), and [`CONFIGOPTS.CSNIDLE`](registers.md#configopts).
 
 If [Pass-through mode](#pass-through-mode) is enabled then the `CSB` lines are controlled by *neither* the SPI_HOST hardware nor the firmware register.
@@ -392,6 +386,9 @@ Since most SPI Flash transactions typically consist of 3 or 4 segments, there is
 
 Writing a segment description to [`COMMAND`](registers.md#command) when [`STATUS.READY`](registers.md#status) is low will trigger an error condition, which must be acknowledged by software.
 When submitting multiple segments to the command queue, firmware can also check the [`STATUS.CMDQD`](registers.md#status) register to determine how many unprocessed segments are in the FIFO.
+
+The depth of this FIFO is parametrizable via compile-time Verilog parameter.
+By default, the FIFO has a depth of 4 to buffer 4 segments while a fifth segment is executed by the FSM.
 
 ## Data Formatting
 
@@ -1137,7 +1134,7 @@ From the `ConfigSwitch` state, the state machine directly enters the `WaitLead` 
 
 A complete state diagram, including the `ConfigSwitch` state, is shown in the following section.
 
-The following waveform illustrates how a change in a single [`CONFIGOPTS`](registers.md#configopts), here [`CONFIGOPTS.CPOL`](registers.md#configopts), triggers an entry into the `ConfigSwitch` Idle state, and how the new configuration is applied at the transition from `WaitIdle` to `ConfigSwitch` thereby ensuring ample idle time both before and after the configuration update.
+The following waveform illustrates how a change in [`CONFIGOPTS`](registers.md#configopts), here [`CONFIGOPTS.CPOL`](registers.md#configopts), triggers an entry into the `ConfigSwitch` Idle state, and how the new configuration is applied at the transition from `WaitIdle` to `ConfigSwitch` thereby ensuring ample idle time both before and after the configuration update.
 
 ```wavejson
 {signal: [

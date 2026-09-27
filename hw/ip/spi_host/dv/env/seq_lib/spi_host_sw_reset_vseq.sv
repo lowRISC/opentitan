@@ -3,11 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Trigger a software reset (CONTROL.SW_RST) randomly during an ongoing transaction
-
 // - Check rx and tx queues are empty post SW_RST application
-// From Documentation (hw/ip/spi_host/data/spi_host.hjson):
-// >  In the current implementation, the CDC FIFOs are drained (not reset).
-// >  Therefore, software must confirm that both FIFO's are empty before releasing the IP from reset
 //
 class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
   `uvm_object_utils(spi_host_sw_reset_vseq)
