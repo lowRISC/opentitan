@@ -231,7 +231,7 @@
         16: B2A
         23: secAdd
         12: secAddMod
-    31-6: Reserved. Any write is ignored. Always reads as 0.
+    31-6: Reserved. Writing a non-zero value will cause a MAI_ERROR software error. Always reads as 0.
 
 - name: rnd
   address: 0xfc0

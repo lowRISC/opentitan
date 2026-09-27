@@ -26,9 +26,9 @@ class MaiCtrlCSR(DumbISPR):
 
     def on_start(self) -> None:
         super().on_start()
-        # On start, the default operation is set.
-        self._operation = MaiOperation.A2B
-        self._raw_op: int = int(MaiOperation.A2B)
+        # On start, the operation is secAdd, as in the RTL after reset or a secure wipe.
+        self._operation = MaiOperation.SECADD
+        self._raw_op: int = int(MaiOperation.SECADD)
         self._start_bit = False
         self._value = self._get_value()
 
@@ -104,10 +104,6 @@ class MaiCtrlCSR(DumbISPR):
         '''Get the start bit from the CSR.'''
         return self._start_bit
 
-    def would_set_start_bit(self, value: int) -> bool:
-        '''Return whether writing value would set the start bit.'''
-        return self._extract_start_bit(value)
-
     def update_start_bit(self, start: bool) -> None:
         '''Set or clear the start bit in the CSR.
 
@@ -128,13 +124,6 @@ class MaiCtrlCSR(DumbISPR):
             return True
         except ValueError:
             return False
-
-    def would_change_raw_op(self, value: int) -> bool:
-        '''Return whether writing value would change the op field (compares raw bits).
-
-        Safe to call with any value, including those with invalid op encodings.
-        '''
-        return self._extract_raw_op(value) != self._raw_op
 
 
 class MaiStatusCSR(DumbISPR):
