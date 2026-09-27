@@ -76,7 +76,10 @@ def _get_elf_mem_data(elf_file: ELFFile,
             continue
 
         seg_lma = segment['p_paddr']
-        seg_top = seg_lma + segment['p_memsz']
+        # The address of the segment's last byte. Like imem_top and dmem_top,
+        # this is inclusive, so a segment that ends exactly at the top of a
+        # memory is still fully contained in it.
+        seg_top = seg_lma + segment['p_memsz'] - 1
 
         # Does this match an expected imem or dmem address?
         if imem_lma <= seg_lma <= imem_top:
