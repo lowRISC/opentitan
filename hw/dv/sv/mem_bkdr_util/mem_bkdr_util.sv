@@ -262,7 +262,7 @@ class mem_bkdr_util extends uvm_object;
     return path;
   endfunction
 
-  function string get_full_path(int unsigned tile);
+  virtual function string get_full_path(int unsigned tile);
     string base = get_path();
     string tile_suffix = "";
 
@@ -278,7 +278,7 @@ class mem_bkdr_util extends uvm_object;
 
   // Analogous to `get_full_path()` above, but for a bit slice's instance instead of an
   // address-based tile.
-  function string get_bit_slice_path(int unsigned slice);
+  virtual function string get_bit_slice_path(int unsigned slice);
     string base = get_path();
     string slice_suffix = "";
 
