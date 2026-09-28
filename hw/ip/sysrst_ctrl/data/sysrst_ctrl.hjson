@@ -16,11 +16,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_sysrst_ctrl",
-  version:            "2.0.0",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "bfd9e1884021c925ff15909c298de2d824f10712",
+    }
+    { version:            "2.1.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
+
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_aon_i", reset: "rst_aon_ni"}

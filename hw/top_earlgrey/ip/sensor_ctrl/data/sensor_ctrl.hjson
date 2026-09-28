@@ -19,6 +19,15 @@
       design_stage:       "D3",
       // block level verification not planned
       verification_stage: "N/A",
+      commit_id:          "39157f7a7ac94e42f05cde9daa8ae8cde9d900e1",
+      notes:              "Verified at the top-level."
+    }
+    {
+      version:            "2.1.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      // block level verification not planned
+      verification_stage: "N/A",
       notes:              "Verified at the top-level."
     }
   ]

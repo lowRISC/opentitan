@@ -19,15 +19,15 @@
   sw_checklist:       "/sw/device/lib/dif/dif_pwrmgr",
   revisions: [
     {
-      version:            "0.1.0",
+      version:            "1.0.1",
       life_stage:         "L1",
-      design_stage:       "D1",
-      verification_stage: "V0", // this module is not verified at the block level
-      dif_stage:          "S0",
-      commit_id:          "b2abc989498f072d9a5530f8aab9b58c1f92c9fb"
+      design_stage:       "D3",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "5fd4ecc0fc212d8296537ab65807ecf11f4aaeca",
     }
     {
-      version:            "1.0.1",
+      version:            "1.1.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2S",
