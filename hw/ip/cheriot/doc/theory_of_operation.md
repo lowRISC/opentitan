@@ -94,6 +94,12 @@ meta SRAM read per 32-bit store, and a read plus a write only when the tag actua
 The filter checks the response integrity and response data integrity of every meta SRAM response
 and separately reports `d_error`.
 
+The filter holds the state of a single operation, so it takes a new request only while no
+operation is unanswered, or in the cycle a read is answered. This keeps back-to-back reads at one
+per cycle, at the cost of a combinational path from a meta SRAM response to the acceptance of the
+next request. The meta SRAM reads and writes it issues for a write carry the requester's
+`a_source`, so every answer returns to the tag filter that sent the request.
+
 
 ### Access Checkers
 
