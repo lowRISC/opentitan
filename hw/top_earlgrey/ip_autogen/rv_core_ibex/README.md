@@ -1,10 +1,18 @@
 # Ibex RISC-V Core Wrapper Technical Specification
 
-[`rv_core_ibex`](https://ibex.reports.lowrisc.org/opentitan/latest/report.html):
-![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
-![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
-![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
-![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rv_core_ibex`](https://ibex.reports.lowrisc.org/opentitan/latest/report.html) | 3.0.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/test.svg) ![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/passing.svg) ![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/functional.svg) ![](https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan/code.svg) |
+
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rv_core_ibex/index.html).
+
+<!-- END CMDGEN -->
+
+> rv_core_ibex is currently under active development as CHERIoT support is added, the bitmanip extension is upgraded to the ratified version, and the Zc* compressed ISA extensions are included.
+> This is indicated by the development stages (see [`rv_core_ibex.hjson`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson) and [here](https://opentitan.org/book/doc/project_governance/development_stages.html)).
+> As of this the documentation can slightly differ from the current RTL implementation.
+> The documentation for the rv_core_ibex version with design stage D2S and verification stage V2S (v2.1.0) can be found under the Earl Grey v1.0.0 documentation [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rv_core_ibex/index.html).
 
 # Overview
 
