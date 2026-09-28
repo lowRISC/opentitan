@@ -1,32 +1,23 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
-// AST AON-Main Domain Communication Package
-// Defines structured communication between AON and Main power domains
-//
-//############################################################################
 
-package ast_aon_main_pkg;
-
+///////////////////////////////////////////////////////////////////////////////
+// Open-source simplified intra-IP / inter-partition communication structures
+///////////////////////////////////////////////////////////////////////////////
+package ast_intraip_pkg;
   import ast_pkg::*;
-  import ast_reg_pkg::*;
 
-
-  //////////////////////////////////////////////////////////////////////////
-  // OS Simplified Inter-domain Communication Structures
-  //////////////////////////////////////////////////////////////////////////
-
-  // Power signals: AON to Main
+  // Power signals: secondary to primary partition
   typedef struct packed {
     logic vcc_pok;
     logic vcaon_pok;
     logic vcmain_pok_h;
     logic vcmain_pok_por;
     logic vcc_pok_str;
-  } pwr_aon_to_main_t;
+  } pwr_s2p_t;
 
-  // Clock and reset signals for AON to Main domain communication
+  // Clock and reset signals for secondary to primary partition communication
   typedef struct packed {
     logic clk_aon;
     logic clk_ast_tlul;
@@ -38,41 +29,41 @@ package ast_aon_main_pkg;
     logic rst_sys_clk_n;
     logic rst_io_clk_n;
     logic rst_usb_clk_n;
-  } aon_to_main_clk_rst_t;
+  } clk_rst_s2p_t;
 
-  // Clock bypass interface: Main to AON domain
+  // Clock bypass interface: primary to secondary partition
   typedef struct packed {
     logic clk_ext_aon;        // Divided external clock for AON (from main dividers)
     logic aon_select_ext;     // AON bypass select (1=external, 0=internal)
-  } clks_byp_main_to_aon_t;
+  } clks_byp_p2s_t;
 
-  // Clock bypass interface: AON to Main domain
+  // Clock bypass interface: secondary to primary partition
   typedef struct packed {
     logic clk_src_aon_o;      // Selected AON clock output
     logic clk_src_aon_val_o;  // AON clock valid
     logic aon_clk_byp_en;     // AON bypass enabled (for ack generation)
-  } clks_byp_aon_to_main_t;
+  } clks_byp_s2p_t;
 
-  // Oscillator control: AON to Main
+  // Oscillator control: secondary to primary partition
   typedef struct packed {
     logic deep_sleep;
     logic usb_ref_pulse;
     logic usb_ref_val;
-  } clk_osc_aon_to_main_t;
+  } clk_osc_s2p_t;
 
-  // AON to Main Domain Communication Structure (OS simplified)
+  // Secondary to primary partition Communication Structure (OS simplified)
   typedef struct packed {
     // Clock bypass interface
-    clks_byp_aon_to_main_t clks_byp;
+    clks_byp_s2p_t clks_byp;
 
     // Oscillator control interface
-    clk_osc_aon_to_main_t clk_osc;
+    clk_osc_s2p_t clk_osc;
 
     // Clock and reset signals
-    aon_to_main_clk_rst_t clk_rst;
+    clk_rst_s2p_t clk_rst;
 
     // Power signals
-    pwr_aon_to_main_t pwr;
+    pwr_s2p_t pwr;
 
     // Scan signals
     logic scan_mode;
@@ -81,18 +72,17 @@ package ast_aon_main_pkg;
     // Calibration signals
     logic sys_io_osc_cal;
     logic usb_osc_cal;
-  } aon_to_main_t;
+  } s2p_t;
 
-  // Main to AON Domain Communication Structure (OS simplified)
+  // Primary to secondary partition Communication Structure (OS simplified)
   typedef struct packed {
     // Clock bypass interface
-    clks_byp_main_to_aon_t clks_byp;
+    clks_byp_p2s_t clks_byp;
 
     // Alert source from main (TLUL integrity error)
-    ast_pkg::ast_dif_t ot0_alert_src;
+    ast_dif_t ot0_alert_src;
 
     logic regal_we;
-  } main_to_aon_t;
+  } p2s_t;
 
-
-endpackage : ast_aon_main_pkg
+endpackage
