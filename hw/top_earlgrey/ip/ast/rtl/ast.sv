@@ -230,9 +230,7 @@ ast_part_secondary u_ast_part_secondary (
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .flash_bist_en_o         ( flash_bist_en_o ),
   .tpram_rm_o              ( tpram_rm ),
   .spram_rm_o              ( spram_rm ),
@@ -272,9 +270,7 @@ ast_part_primary u_ast_part_primary (
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
-`ifdef AST_BYPASS_CLK
-  .clk_osc_byp_i           ( clk_osc_byp_i ),
-`endif
+  .clk_osc_byp_i           ( clk_osc_byp ),
   .clk_src_sys_o           ( clk_src_sys_o ),
   .clk_src_sys_val_o       ( clk_src_sys_val_o ),
   .clk_src_io_o            ( clk_src_io_o ),
