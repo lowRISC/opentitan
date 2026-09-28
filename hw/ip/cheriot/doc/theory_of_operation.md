@@ -76,6 +76,11 @@ The FIFO depth sets the number of outstanding transactions the subsystem support
 matching Ibex's LSU, which never issues more than two outstanding split-access halves. Error
 responses from either the host or the meta path are merged into `d_error` towards the core.
 
+A write forks into its data write and its tag update independently. If one of them fails, the core
+receives `d_error`, but the other half is not undone: a failed data write still updates the tag, and
+a failed tag update leaves the old tag next to the new data. Software must treat a location whose
+store was answered with an error as holding a stale tag.
+
 ### RMW Filter
 
 Because tags are bit-granular, a tag write cannot be a plain TL-UL write. The RMW filter turns each
@@ -108,6 +113,7 @@ access is forwarded only if all of the following hold:
 
 - `cheriot_ena_i` is `MuBi4True`.
 - The address is inside the allowable region for the requester.
+- The address is word-aligned and the access is a full 32-bit word.
 - The opcode is `Get` or `PutFullData`.
 
 Everything else is steered to a `tlul_err_resp` instance and answered with a TL-UL error. In

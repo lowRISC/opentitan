@@ -167,17 +167,17 @@ module cheriot
     .clk_i,
     .rst_ni,
     .cheriot_ena_i,
-    .tl_d_i       (cored_tl_d_i),
-    .tag_d_i      (cored_tag_h2d_i),
-    .tl_d_o       (cored_tl_d_o),
-    .tag_d_o      (cored_tag_d2h_o),
-    .tl_m_o       (rmw_tl_h2d),
-    .tag_m_o      (rmw_tag_h2d),
-    .bit_sel_m_o  (rmw_bit_sel),
-    .tl_m_i       (rmw_tl_d2h),
-    .tag_m_i      (rmw_tag_d2h),
-    .tl_h_o       (cored_tl_h_o),
-    .tl_h_i       (cored_tl_h_i)
+    .tl_d_i     (cored_tl_d_i),
+    .tag_d_i    (cored_tag_h2d_i),
+    .tl_d_o     (cored_tl_d_o),
+    .tag_d_o    (cored_tag_d2h_o),
+    .tl_m_o     (rmw_tl_h2d),
+    .tag_m_o    (rmw_tag_h2d),
+    .bit_sel_m_o(rmw_bit_sel),
+    .tl_m_i     (rmw_tl_d2h),
+    .tag_m_i    (rmw_tag_d2h),
+    .tl_h_o     (cored_tl_h_o),
+    .tl_h_i     (cored_tl_h_i)
   );
 
   // SEC_CM: BUS.INTEGRITY
@@ -256,16 +256,16 @@ module cheriot
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
     .SkewCycles(AlertSkewCycles),
-    .IsFatal(1)
+    .IsFatal(1'b1)
   ) u_prim_alert_sender_fatal_fault (
     .clk_i,
     .rst_ni,
-    .alert_test_i  (alert_test),
-    .alert_req_i   (|cheriot_fatal_error),
-    .alert_ack_o   (),
-    .alert_state_o (),
-    .alert_rx_i    (alert_rx_i[0]),
-    .alert_tx_o    (alert_tx_o[0])
+    .alert_test_i (alert_test),
+    .alert_req_i  (|cheriot_fatal_error),
+    .alert_ack_o  (),
+    .alert_state_o(),
+    .alert_rx_i   (alert_rx_i[0]),
+    .alert_tx_o   (alert_tx_o[0])
   );
 
 
