@@ -6003,15 +6003,29 @@
           conn_type: false
         }
         {
-          name: keymgr
-          struct: keymgr_rram
-          package: rram_ctrl_pkg
+          name: keymgr_creator_seed
+          desc: Creator seed output to the key manager
+          struct: keymgr_dpe_creator_seed
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
+          default: "'0"
           inst_name: rram_ctrl
-          default: ""
-          top_signame: rram_ctrl_keymgr
+          top_signame: rram_ctrl_keymgr_creator_seed
+          index: -1
+        }
+        {
+          name: keymgr_owner_seed
+          desc: Owner seed output to the key manager
+          struct: keymgr_dpe_owner_seed
+          package: keymgr_dpe_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: rram_ctrl
+          top_signame: rram_ctrl_keymgr_owner_seed
           index: -1
         }
         {
@@ -11288,7 +11302,8 @@
       rv_dm.otp_dis_rv_dm_late_debug
       otp_ctrl.keymgr_creator_seed
       otp_ctrl.keymgr_owner_seed
-      rram_ctrl.keymgr
+      rram_ctrl.keymgr_creator_seed
+      rram_ctrl.keymgr_owner_seed
       keymgr_dpe.creator_seed
       keymgr_dpe.owner_seed
     ]
@@ -24685,15 +24700,29 @@
         conn_type: false
       }
       {
-        name: keymgr
-        struct: keymgr_rram
-        package: rram_ctrl_pkg
+        name: keymgr_creator_seed
+        desc: Creator seed output to the key manager
+        struct: keymgr_dpe_creator_seed
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
+        default: "'0"
         inst_name: rram_ctrl
-        default: ""
-        top_signame: rram_ctrl_keymgr
+        top_signame: rram_ctrl_keymgr_creator_seed
+        index: -1
+      }
+      {
+        name: keymgr_owner_seed
+        desc: Owner seed output to the key manager
+        struct: keymgr_dpe_owner_seed
+        package: keymgr_dpe_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: rram_ctrl
+        top_signame: rram_ctrl_keymgr_owner_seed
         index: -1
       }
       {
@@ -34869,14 +34898,24 @@
         default: "'0"
       }
       {
-        package: rram_ctrl_pkg
-        struct: keymgr_rram
-        signame: rram_ctrl_keymgr
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_creator_seed
+        signame: rram_ctrl_keymgr_creator_seed
         domain: Main
         width: 1
         type: uni
         end_idx: -1
-        default: ""
+        default: "'0"
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_owner_seed
+        signame: rram_ctrl_keymgr_owner_seed
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
       }
       {
         package: keymgr_dpe_pkg

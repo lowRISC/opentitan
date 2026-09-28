@@ -161,11 +161,21 @@
       act:     "req",
       package: "pwrmgr_pkg"
     },
-    { struct:  "keymgr_rram",
+    { struct:  "keymgr_dpe_creator_seed",
       type:    "uni",
-      name:    "keymgr",
+      name:    "keymgr_creator_seed",
       act:     "req",
-      package: "rram_ctrl_pkg"
+      default: "'0",
+      package: "keymgr_dpe_pkg",
+      desc:    "Creator seed output to the key manager"
+    },
+    { struct:  "keymgr_dpe_owner_seed",
+      type:    "uni",
+      name:    "keymgr_owner_seed",
+      act:     "req",
+      default: "'0",
+      package: "keymgr_dpe_pkg",
+      desc:    "Owner seed output to the key manager"
     }
   ],
 

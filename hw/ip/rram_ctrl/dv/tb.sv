@@ -83,7 +83,8 @@ module tb;
     .rma_ack_o (),
 
     // seeds for keymgr_dpe
-    .keymgr_o(),
+    .keymgr_creator_seed_o(),
+    .keymgr_owner_seed_o(),
 
     // power manager indication
     .pwrmgr_o(),

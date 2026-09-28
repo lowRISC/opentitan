@@ -19,6 +19,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:earlgrey_ip:otp_ctrl_macro_pkg:0.1
       - lowrisc:ip:rram_ctrl_pkg
       - lowrisc:ip:rram_ctrl_reg

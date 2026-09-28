@@ -1405,7 +1405,8 @@
         // Select the source of the creator / owner seed per keymgr_dpe parameter
         'otp_ctrl.keymgr_creator_seed',
         'otp_ctrl.keymgr_owner_seed',
-        'rram_ctrl.keymgr',
+        'rram_ctrl.keymgr_creator_seed',
+        'rram_ctrl.keymgr_owner_seed',
         'keymgr_dpe.creator_seed',
         'keymgr_dpe.owner_seed',
     ],

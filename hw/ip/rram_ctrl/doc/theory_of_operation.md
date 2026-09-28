@@ -154,7 +154,7 @@ It owns two functions: initialization (key requests and seed reads) and RMA wipe
 The lcmgr hardware plug exposes three external interfaces:
 
 - **OTP key interface**: Used to request address and data scrambling keys from the OTP controller during initialization.
-- **Key manager interface**: Used to forward the creator and owner seeds from the info partition to the key manager.
+- **Key manager interface**: Used to forward the creator and owner seeds from the info partition to the key manager (`keymgr_creator_seed_o` and `keymgr_owner_seed_o`), each together with a `seed_valid` bit.
 - **Life cycle controller interface**: Used to receive RMA entry requests and to signal RMA completion (or failure) back to the life cycle controller.
 
 ### Initialization
@@ -194,9 +194,12 @@ The lcmgr initialization sequence proceeds as follows.
 4. **StReadSeeds / StReadEval**: The FSM reads the creator-seed page (`CreatorInfoPage`) and the owner-seed page (`OwnerInfoPage`) from the info partition and forwards them to the key manager.
    Each seed (`SeedWidth = 256` bits, read as `SeedReads = 8` bus words) is read twice for validation.
    On the first pass, the raw seed words are stored in flip-flops.
-   On the second pass (`validate_q` set), each incoming word is AND'd with the previously stored value.
+   On the second pass (`validate_q` set), each incoming word is compared against the previously stored value, which remains unchanged.
    A discrepancy indicates a fault or media error and sets `seed_err`.
    `StReadEval` advances the seed counter after each page is fully verified.
+   A seed is only marked valid towards the key manager (`seed_valid`) if both reads of the page completed without a read error, without an integrity error and without a discrepancy.
+   The `seed_valid` bits are cleared again when the RRAM controller is disabled.
+   If the device is not provisioned, the seeds are not read and remain invalid.
    See the partition's [life cycle](../../../ip/lc_ctrl/doc/theory_of_operation.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when it is allowed to be populated.
 
 5. **StWait**: Both keys are valid and any seed reads are complete.
