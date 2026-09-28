@@ -125,13 +125,8 @@ module ast (
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   // analog test outputs
-`ifdef ANALOGSIM
-  output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output real ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`else
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
+  output ast_pkg::awire_t ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+  output ast_pkg::awire_t ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 
   // flash and external clocks
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequency is 96MHz
@@ -208,8 +203,8 @@ ast_part_secondary u_ast_part_secondary (
   .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .usb_io_pu_cal_o         ( usb_io_pu_cal_o ),
   .adc_pd_i                ( adc_pd_i ),
-  .adc_a0_ai               ( adc_a0_ai ),
-  .adc_a1_ai               ( adc_a1_ai ),
+  .adc_a0_a_i              ( adc_a0_ai ),
+  .adc_a1_a_i              ( adc_a1_ai ),
   .adc_chnsel_i            ( adc_chnsel_i ),
   .adc_d_o                 ( adc_d_o ),
   .adc_d_val_o             ( adc_d_val_o ),
@@ -225,8 +220,8 @@ ast_part_secondary u_ast_part_secondary (
   .padmux2ast_i            ( padmux2ast_i ),
   .ast2padmux_o            ( ast2padmux_o ),
   .mux_iob_sel_o           ( mux_iob_sel_o ),
-  .ast2pad_t0_ao           ( ast2pad_t0_ao ),
-  .ast2pad_t1_ao           ( ast2pad_t1_ao ),
+  .ast2pad_t0_a_o          ( ast2pad_t0_ao ),
+  .ast2pad_t1_a_o          ( ast2pad_t1_ao ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
