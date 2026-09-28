@@ -215,5 +215,12 @@ typedef struct packed {
   prim_mubi_pkg::mubi4_t obmen;
 } ast_obs_ctrl_t;
 
+typedef struct packed {
+  logic [8-1:0] fla_obs; // FLASH Observe Bus
+  logic [8-1:0] otp_obs; // OTP Observe Bus
+  logic [8-1:0] otm_obs; // OT Modules Observe Bus
+  logic usb_obs;         // USB DIFF RX Observe
+} ast_obs_bus_t;
+
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV
