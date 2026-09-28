@@ -87,6 +87,8 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv rstmgr_pkg.sv} -regexp {'sp
       -comment {This is acceptable, since these are used in different hierarchies.}
 waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'M' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
+waive -rules SAME_NAME_TYPE -location {cheriot_socket_m1.sv otbn_pkg.sv} -regexp {'M' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
+      -comment {This is acceptable, since these are used in different hierarchies.}
 
 waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "Earlgrey toplevels are auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
