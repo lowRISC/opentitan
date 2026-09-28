@@ -19,11 +19,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aon_timer",
-  version:            "2.0.0",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V3",
-  dif_stage:          "S2",
+  revisions: [
+    {
+      version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "dd7a9cd5858a6eb89e84a724620ae92c38de755b",
+    },
+    {
+      version:            "2.1.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V3",
+      dif_stage:          "S2",
+    }
+  ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_aon_i", reset: "rst_aon_ni"}
