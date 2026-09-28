@@ -389,6 +389,12 @@
     { name: "FIFO.CTR.REDUN",
       desc: "The FIFO pointers of several FIFOs are implemented with duplicate counters."
     }
+    { name: "TLUL_FIFO.LOGIC.REDUN",
+      desc: '''
+        The request and response FIFOs of the TL-UL SRAM adapter for host accesses are duplicated.
+        The outputs of both FIFO instances are constantly compared to each other.
+      '''
+    }
     { name: "MEM_TL_LC_GATE.FSM.SPARSE",
       desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
     }
