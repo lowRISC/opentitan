@@ -123,6 +123,10 @@ set_output_delay -add_delay -clock jtag_tck -max 10.0 [get_ports IOR1]
 set_output_delay -add_delay -clock jtag_tck -min -5.0 [get_ports IOR1]
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOR0 IOR2}]
+# The TAPs have no combinational path from TMS/TDI to TDO. Any port-to-port path
+# between them only exists through the pinmux (e.g. a peripheral in loopback
+# mode muxed onto these pads) and is not a JTAG timing path.
+set_false_path -from [get_ports {IOR0 IOR2}] -to [get_ports IOR1]
 
 ## SPI clocks
 set spi_dev_period 80.00
