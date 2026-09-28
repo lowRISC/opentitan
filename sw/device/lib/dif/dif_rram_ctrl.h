@@ -847,7 +847,7 @@ dif_result_t dif_rram_ctrl_clear_rd_fifo(dif_rram_ctrl_state_t *handle);
 // `spurious_done`, and `host_gnt_err`. `phy_relbl_err` in particular has no
 // accessor to read or clear it (it is `rw0c` and firmware needs to clear it
 // during firmware selection), nor is there a way to set the companion
-// `DIS.RELBL_ERR_FATAL`. `STD_FAULT_STATUS`, `HW_INFO_CFG_OVERRIDE`, and
+// `DIS.LOCAL_ESC_RELBL_ERR`. `STD_FAULT_STATUS`, `HW_INFO_CFG_OVERRIDE`, and
 // `CURR_FIFO_LVL` also have no accessors.
 typedef struct dif_rram_ctrl_faults {
   /** The lcmgr hardware interface encountered an invalid operation. */

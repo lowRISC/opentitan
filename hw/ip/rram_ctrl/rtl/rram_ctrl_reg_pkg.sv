@@ -143,7 +143,7 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } relbl_err_fatal;
+    } local_esc_relbl_err;
     struct packed {
       logic [3:0]  q;
     } sw_dis;
