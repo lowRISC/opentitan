@@ -18,15 +18,16 @@
   sw_checklist:       "sw/device/lib/dif/dif_rv_timer",
   revisions: [
     {
-      version:            "0.5.0",
-      life_stage:         "L2",
+      version:            "1.0.0",
+      life_stage:         "L1",
       design_stage:       "D3",
-      verification_stage: "V3",
-      commit_id:          "a4638684103da48c793301243759e9d1eb2cb9dc",
-      notes:              ""
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "5967df933a814f72d5212bd43d13a0041a3aaf9d",
+      notes:              "D3 Reviewed @ 2022-07-28",
     }
     {
-      version:            "1.0.0",
+      version:            "1.1.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V3",
