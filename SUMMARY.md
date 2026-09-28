@@ -343,6 +343,7 @@
     - [Theory of Operation](./hw/ip/cheriot/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/cheriot/dv/README.md)
     - [Testplan](./hw/ip/cheriot/data/cheriot_testplan.hjson)
+    - [Programmer's Guide](./hw/ip/cheriot/doc/programmers_guide.md)
     - [Hardware Interfaces](./hw/ip/cheriot/doc/interfaces.md)
     - [Registers](./hw/ip/cheriot/doc/registers.md)
     - [Checklist](./hw/ip/cheriot/doc/checklist.md)

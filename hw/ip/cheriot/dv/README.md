@@ -16,14 +16,15 @@ See the [CHERIoT Memory Subsystem HWIP technical specification](../README.md).
 `hw/ip/cheriot/dv/tb.sv` instantiates `hw/ip/cheriot/rtl/cheriot.sv` with:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md) on the `regs` CSR port
-* [Alert interface](../../../dv/sv/alert_agent/README.md)) for `fatal_fault`
+* [Alert interface](../../../dv/sv/alert_agent/README.md) for `fatal_fault`
+* [Interrupt pins interface](../../../dv/sv/common_ifs/README.md) for `intr_trbe_done_o`
 
 ## Building and running tests
 Built and run with `dvsim.py`.
 
 ```console
 $ dvsim hw/ip/cheriot/dv/cheriot_sim_cfg.hjson -i cheriot_smoke   # smoke only
-$ dvsim hw/ip/cheriot/dv/cheriot_sim_cfg.hjson                    # CSR, alert and TL-UL suites
+$ dvsim hw/ip/cheriot/dv/cheriot_sim_cfg.hjson                    # CSR, alert, interrupt and TL-UL suites
 ```
 
 ## Testplan
