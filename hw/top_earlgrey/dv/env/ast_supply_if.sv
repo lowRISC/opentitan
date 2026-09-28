@@ -61,19 +61,19 @@ interface ast_supply_if (
 
   task static force_vcmain_pok(bit value);
 `ifndef GATE_LEVEL
-    `uvm_info("ast_supply_if", $sformatf("forcing ast_pwst_o.vcmain_pok to %b", value), UVM_MEDIUM)
+    `uvm_info("ast_supply_if", $sformatf("forcing ast_pwst.vcmain_pok to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
       $assertoff(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_slow_fsm.IntRstReq_A);
     end
-    force u_ast.ast_pwst_o.main_pok = value;
+    force u_ast.u_ast_part_secondary.ast_pwst.main_pok = value;
 `endif
   endtask
 
   task static release_vcmain_pok();
 `ifndef GATE_LEVEL
-    `uvm_info("ast_supply_if", $sformatf("Releasing ast_pwst_o.main_pok"), UVM_MEDIUM)
-    release u_ast.ast_pwst_o.main_pok;
+    `uvm_info("ast_supply_if", $sformatf("Releasing ast_pwst.main_pok"), UVM_MEDIUM)
+    release u_ast.u_ast_part_secondary.ast_pwst.main_pok;
 `endif
   endtask
 
