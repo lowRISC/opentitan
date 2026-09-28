@@ -77,6 +77,9 @@ module rram_ctrl_lcmgr
   // disable access to RRAM
   output lc_tx_t rma_dis_access_o,
 
+  // disable software access to RRAM
+  output lc_tx_t rma_sw_dis_o,
+
   // scrambling keys have been read and are valid
   output logic keys_valid_o,
   // init has completed
@@ -458,6 +461,9 @@ module rram_ctrl_lcmgr
     // disable RRAM access entirely
     rma_dis_access_o = lc_ctrl_pkg::Off;
 
+    // disable software access to RRAM
+    rma_sw_dis_o = lc_ctrl_pkg::Off;
+
     state_err = 1'b0;
 
     unique case (state_q)
@@ -552,6 +558,7 @@ module rram_ctrl_lcmgr
       // Reseed entropy
       StEntropyReseed: begin
         lfsr_seed_en = 1'b1;
+        rma_sw_dis_o = lc_ctrl_pkg::On;
         state_d      = StRmaWipe;
       end
 
@@ -565,6 +572,8 @@ module rram_ctrl_lcmgr
         phase          = PhaseRma;
         lfsr_en        = 1'b1;
         rma_wipe_req_d = 1'b1;
+        // Software must not access the RRAM while it is being wiped
+        rma_sw_dis_o   = lc_ctrl_pkg::On;
 
         if (rma_wipe_idx == MaxWipeEntry[WipeIdxWidth-1:0] && rma_wipe_done) begin
           // first check for error status
@@ -583,9 +592,10 @@ module rram_ctrl_lcmgr
       // Otherwise assign output to error status;
       StRmaRsp: begin
         phase            = PhaseNone;
-        // The original idea was to disable full RRAM access after RMA, but this does not work
-        // because lc_ctrl tries to access the OTP after an RMA operation.
-        // TODO(30948): disable access only for SW
+        // RRAM access cannot be disabled entirely after a successful RMA, because lc_ctrl still
+        // accesses the OTP to program the new life cycle state. Only the software access is
+        // disabled until the next reset. On an error, the RRAM is disabled entirely in StInvalid.
+        rma_sw_dis_o     = lc_ctrl_pkg::On;
         if (lc_ctrl_pkg::lc_tx_test_false_loose(err_sts_q)) begin
           state_d = StInvalid;
         end else begin
@@ -645,6 +655,11 @@ module rram_ctrl_lcmgr
   // A seed can only become valid after both reads of it have completed without failure.
   `ASSERT(SeedValidAfterEval_A, |(seeds_valid_d & ~seeds_valid_q) |->
           state_q == StReadEval && validate_q && !seed_fail_q)
+  // Software access is only disabled from the start of the RMA wipe on.
+  `ASSERT(RmaSwDisOnlyInRma_A, rma_sw_dis_o == lc_ctrl_pkg::On |->
+          state_q inside {StEntropyReseed, StRmaWipe, StRmaRsp})
+  // lc_ctrl is never acknowledged while software can still access the RRAM.
+  `ASSERT(RmaAckWithSwDis_A, rma_ack_d == lc_ctrl_pkg::On |-> rma_sw_dis_o == lc_ctrl_pkg::On)
 
 
   ///////////////////////////////
