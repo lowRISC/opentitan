@@ -92,23 +92,14 @@ set_clock_sense -negative ${lc_jtag_tck_inv_pin}
 set_clock_sense -negative ${rv_jtag_tck_inv_pin}
 
 # Assign input and output delays.
-# Note that incidental combinatorial paths through the pinmux do not get removed
-# from timing below, but the half cycle timing for JTAG leaves a fairly generous
-# requirement. If the JTAG constraints need to be tightened and overly constrain
-# the combinational port-to-port paths,
-#   set_max_delay -datapath_only
-# may be used to apply timing exceptions for those paths.
-# However, remember that the input and output delays contribute to the path
-# delay for such a case, so the constraint value for set_max_delay must
-# accommodate them. In other words, for the constraint
-#   set_max_delay -datapath_only -from [get_ports] -through ${combo_path_pin} \
-#                 -to [get_ports] ${max_delay_value}
-# ${max_delay_value} =
-#     ${max_input_delay} + ${max_output_delay} + ${max_port_to_port_delay}
 set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports IOR1]
 set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports IOR1]
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOR0 IOR2}]
+# The TAPs have no combinational path from TMS/TDI to TDO. Any port-to-port path
+# between them only exists through the pinmux and is not a JTAG timing path.
+# The delays above still constrain the paths to and from the TAP flops.
+set_false_path -from [get_ports {IOR0 IOR2}] -to [get_ports IOR1]
 
 ## SPI clocks
 set spi_dev_period 100.0
