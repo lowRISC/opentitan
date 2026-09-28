@@ -70,11 +70,26 @@ overwrites.
 The returned tag is sticky across the two words of a capability: on a response whose FIFO entry was
 marked aligned, the tag read from the meta SRAM is presented and captured; on the following unaligned
 response the captured value is presented again and then cleared. This is what lets a 65-bit
-capability arrive over two 32-bit responses with one combined validity tag bit.
+capability arrive over two 32-bit responses with one combined validity tag bit. Only read responses
+take part: a write answered between the two words of a capability is returned untagged and leaves
+the captured value alone.
 
 The FIFO depth sets the number of outstanding transactions the subsystem supports; it is fixed to two,
 matching Ibex's LSU, which never issues more than two outstanding split-access halves. Error
 responses from either the host or the meta path are merged into `d_error` towards the core.
+
+The meta response is accepted into a buffer, and the join consumes it from there. The fork hands
+out its three streams independently, so it can issue one lookup while the metadata FIFO is full.
+At most one lookup more than the FIFO depth is therefore unjoined, and the buffer is one entry
+deeper than the FIFO, so it never refuses a response (`MetaRspAlwaysAccepted_A`). The meta path
+therefore never waits for a data response: with two tag filters sharing the RMW filter, and the
+data paths of both reaching the same in-order SRAMs, a meta response held until its data response
+arrives could wait on a data response that is itself queued behind the other tag filter's.
+
+A write forks into its data write and its tag update independently. If one of them fails, the core
+receives `d_error`, but the other half is not undone: a failed data write still updates the tag, and
+a failed tag update leaves the old tag next to the new data. Software must treat a location whose
+store was answered with an error as holding a stale tag.
 
 ### RMW Filter
 
@@ -107,6 +122,7 @@ access is forwarded only if all of the following hold:
 
 - `cheriot_ena_i` is `MuBi4True`.
 - The address is inside the allowable region for the requester.
+- The address is word-aligned and the access is a full 32-bit word.
 - The opcode is `Get` or `PutFullData`.
 
 Everything else is steered to a `tlul_err_resp` instance and answered with a TL-UL error. In
@@ -140,10 +156,9 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
-| Pointer error in the tag filter's hardened FIFO | `fatal_fault` alert |
 
 The first three are reachable by software and surface as a bus fault in the core, so they must not
-raise an alert. The last four latch the fatal alert until reset. There is no interrupt.
+raise an alert. The last three latch the fatal alert until reset. There is no interrupt.
 
 
 ## Timing
