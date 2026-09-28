@@ -163,6 +163,9 @@ ast_pkg::clks_osc_byp_t clk_osc_byp;
   assign clk_osc_byp = '0;
 `endif
 
+//////////////////////////////////////////////////////////
+// Conversion signals to keep ast.sv interface the same //
+//////////////////////////////////////////////////////////
 // Convert ADC signals to/from req/rsp
 ast_pkg::adc_ast_req_t adc_req;
 assign adc_req = '{
@@ -235,6 +238,31 @@ assign mem_cfg_secondary_rsp = '{
   sram_ctrl_ret: mem_cfg_rsp_i.sram_ctrl_ret
 };
 
+pwrmgr_pkg::pwr_ast_req_t pwrmgr_req;
+pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_rsp;
+
+assign pwrmgr_req = '{
+  main_pd_n:     main_pd_ni,
+  pwr_clamp_env: main_env_iso_en_i,
+  pwr_clamp:     1'b0, // unused
+  slow_clk_en:   1'b0, // unused
+  core_clk_en:   clk_src_sys_en_i,
+  io_clk_en:     clk_src_io_en_i,
+  usb_clk_en:    clk_src_usb_en_i
+};
+
+assign clk_src_aon_val_o = pwrmgr_rsp.slow_clk_val;
+assign clk_src_io_val_o  = pwrmgr_rsp.io_clk_val;
+assign clk_src_usb_val_o = pwrmgr_rsp.usb_clk_val;
+assign clk_src_sys_val_o = pwrmgr_rsp.core_clk_val;
+// pwrmgr_rsp.main_pok goes via ast_pwst_o.
+logic unused_rsp_main_pok;
+assign unused_rsp_main_pok = pwrmgr_rsp.main_pok;
+
+////////////////////
+// AST partitions //
+////////////////////
+
 // AON Domain instantiation
 ast_part_secondary #(
   .UsbCalibWidth   ( UsbCalibWidth ),
@@ -260,19 +288,17 @@ ast_part_secondary #(
   .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
   .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst
-  .main_pd_n_i             ( main_pd_ni ),
-  .main_env_iso_en_i       ( main_env_iso_en_i ),
+  .pwrmgr_i                ( pwrmgr_req ),
+  .pwrmgr_o                ( pwrmgr_rsp ),
   .flash_power_down_h_o    ( flash_power_down_h_o ),
   .flash_power_ready_h_o   ( flash_power_ready_h_o ),
   .otp_power_seq_i         ( otp_power_seq_i ),
   .otp_power_seq_h_o       ( otp_power_seq_h_o ),
   .clk_src_aon_o           ( clk_src_aon_o ),
-  .clk_src_aon_val_o       ( clk_src_aon_val_o ),
   .usb_ref_pulse_i         ( usb_ref_pulse_i ),
   .usb_ref_val_i           ( usb_ref_val_i ),
   .clk_ast_usb_i           ( clk_ast_usb_i ),
   .rst_ast_usb_ni          ( rst_ast_usb_ni ),
-  .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .usb_io_pu_cal_o         ( usb_io_pu_cal_o ),
   .adc_i                   ( adc_req ),
   .adc_o                   ( adc_rsp ),
@@ -325,9 +351,6 @@ ast_part_primary #(
   .intraip_p2s_o           ( intraip_p2s ),
   // Clock bypass interface
   .clk_ast_ext_i           ( clk_ast_ext_i ),
-  .clk_src_sys_en_i        ( clk_src_sys_en_i ),
-  .clk_src_io_en_i         ( clk_src_io_en_i ),
-  .clk_src_usb_en_i        ( clk_src_usb_en_i ),
   .clk_ast_usb_i           ( clk_ast_usb_i ),
   .rst_ast_usb_ni          ( rst_ast_usb_ni ),
   .io_clk_byp_req_i        ( io_clk_byp_req_i ),
@@ -335,12 +358,9 @@ ast_part_primary #(
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .clk_osc_byp_i           ( clk_osc_byp ),
   .clk_src_sys_o           ( clk_src_sys_o ),
-  .clk_src_sys_val_o       ( clk_src_sys_val_o ),
   .clk_src_io_o            ( clk_src_io_o ),
-  .clk_src_io_val_o        ( clk_src_io_val_o ),
   .clk_src_io_48m_o        ( clk_src_io_48m_o ),
   .clk_src_usb_o           ( clk_src_usb_o ),
-  .clk_src_usb_val_o       ( clk_src_usb_val_o ),
   .io_clk_byp_ack_o        ( io_clk_byp_ack_o ),
   .all_clk_byp_ack_o       ( all_clk_byp_ack_o ),
   .mem_cfg_o               ( mem_cfg_primary_req ),

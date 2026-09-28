@@ -37,9 +37,6 @@ module ast_part_primary #(
   output ast_intraip_pkg::p2s_t intraip_p2s_o,
   // Clock bypass interface
   input  logic clk_ast_ext_i,
-  input  logic clk_src_sys_en_i,
-  input  logic clk_src_io_en_i,
-  input  logic clk_src_usb_en_i,
   input  logic clk_ast_usb_i,                      // Buffered AST USB Clock
   input  logic rst_ast_usb_ni,                     // Buffered AST USB Reset
   input  prim_mubi_pkg::mubi4_t io_clk_byp_req_i,
@@ -51,12 +48,9 @@ module ast_part_primary #(
 
   // Clock outputs
   output logic clk_src_sys_o,
-  output logic clk_src_sys_val_o,
   output logic clk_src_io_o,
-  output logic clk_src_io_val_o,
   output prim_mubi_pkg::mubi4_t clk_src_io_48m_o,
   output logic clk_src_usb_o,
-  output logic clk_src_usb_val_o,
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,
 
@@ -188,7 +182,7 @@ assign clk_sys_ext = clk_osc_byp_i.sys;
 
 sys_clk u_sys_clk (
   .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
-  .clk_src_sys_en_i ( clk_src_sys_en_i ),
+  .clk_src_sys_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_sys_en ),
   .clk_sys_pd_ni ( clk_sys_pd_n ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
   .vcore_pok_h_i ( intraip_s2p_i.pwr.vcmain_pok_h ),
@@ -210,7 +204,7 @@ io_clk u_io_clk (
   .vcore_pok_h_i ( intraip_s2p_i.pwr.vcmain_pok_h ),
   .clk_io_pd_ni ( clk_io_pd_n ),
   .rst_io_clk_ni ( rst_io_clk_n ),
-  .clk_src_io_en_i ( clk_src_io_en_i ),
+  .clk_src_io_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_io_en ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
   .io_osc_cal_i ( intraip_s2p_i.sys_io_osc_cal ),
 `ifdef AST_BYPASS_CLK
@@ -229,7 +223,7 @@ usb_clk u_usb_clk (
   .vcore_pok_h_i ( intraip_s2p_i.pwr.vcmain_pok_h ),
   .clk_usb_pd_ni ( clk_usb_pd_n ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
-  .clk_src_usb_en_i ( clk_src_usb_en_i ),
+  .clk_src_usb_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_usb_en ),
   .usb_ref_val_i ( intraip_s2p_i.clk_osc.usb_ref_val ),
   .usb_ref_pulse_i ( intraip_s2p_i.clk_osc.usb_ref_pulse ),
   .clk_ast_usb_i ( clk_ast_usb_i ),
@@ -264,13 +258,13 @@ ast_clks_byp_primary u_ast_clks_byp_primary (
   .dft_clks_byp_i ( 1'b0 ),
   .dft_ext_is_96m_i ( 1'b1 ),
   .clk_src_io_pre_occ_i ( clk_osc_io ),
-  .clk_src_sys_en_i ( clk_src_sys_en_i ),
+  .clk_src_sys_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_sys_en ),
   .clk_osc_sys_i ( clk_osc_sys ),
   .clk_osc_sys_val_i ( clk_osc_sys_val ),
-  .clk_src_io_en_i ( clk_src_io_en_i ),
+  .clk_src_io_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_io_en ),
   .clk_osc_io_i ( clk_osc_io ),
   .clk_osc_io_val_i ( clk_osc_io_val ),
-  .clk_src_usb_en_i ( clk_src_usb_en_i ),
+  .clk_src_usb_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_usb_en ),
   .clk_osc_usb_i ( clk_osc_usb ),
   .clk_osc_usb_val_i ( clk_osc_usb_val ),
   .clk_ast_ext_i ( clk_ast_ext_i ),
@@ -289,12 +283,12 @@ ast_clks_byp_primary u_ast_clks_byp_primary (
   .all_clk_byp_ack_o ( all_clk_byp_ack_o ),
   .force_scan_reset_o ( ),
   .clk_src_sys_o ( clk_src_sys ),
-  .clk_src_sys_val_o ( clk_src_sys_val_o ),
+  .clk_src_sys_val_o ( intraip_p2s_o.pwrmgr_rsp.clk_src_sys_val ),
   .clk_src_io_o ( clk_src_io ),
-  .clk_src_io_val_o ( clk_src_io_val_o ),
+  .clk_src_io_val_o ( intraip_p2s_o.pwrmgr_rsp.clk_src_io_val ),
   .clk_src_io_48m_o ( clk_src_io_48m_o ),
   .clk_src_usb_o ( clk_src_usb ),
-  .clk_src_usb_val_o ( clk_src_usb_val_o )
+  .clk_src_usb_val_o ( intraip_p2s_o.pwrmgr_rsp.clk_src_usb_val )
 );
 
 
@@ -353,7 +347,7 @@ ast_entropy u_entropy (
   .rst_ast_es_ni ( rst_ast_es_ni ),
   .clk_src_sys_i ( clk_src_sys_o ),
   .rst_src_sys_ni ( rst_src_sys_n ),
-  .clk_src_sys_val_i ( clk_src_sys_val_o ),
+  .clk_src_sys_val_i ( intraip_p2s_o.pwrmgr_rsp.clk_src_sys_val ),
   .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
   .entropy_req_o ( edn_o )
 );
@@ -391,12 +385,15 @@ assign intraip_p2s_o.clks_byp = clks_byp_p2s;
 assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 
 `ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, intraip_s2p_i.pwr.vcmain_pok_h)
-`ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
+`ASSERT_KNOWN(ClkSrcIoValKnownO_A, intraip_p2s_o.pwrmgr_rsp.clk_src_io_val,
+              clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, intraip_s2p_i.pwr.vcmain_pok_h)
-`ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
+`ASSERT_KNOWN(ClkSrcSysValKnownO_A, intraip_p2s_o.pwrmgr_rsp.clk_src_sys_val,
+              clk_src_sys_o, rst_sys_clk_n)
 `ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, intraip_s2p_i.pwr.vcmain_pok_h)
-`ASSERT_KNOWN(ClkSrcUsbValKnownO_A, clk_src_usb_val_o, clk_src_usb_o, rst_usb_clk_n)
+`ASSERT_KNOWN(ClkSrcUsbValKnownO_A, intraip_p2s_o.pwrmgr_rsp.clk_src_usb_val,
+              clk_src_usb_o, rst_usb_clk_n)
 //
 // Alert assertions for reg_we onehot check
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
