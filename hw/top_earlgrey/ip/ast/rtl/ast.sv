@@ -250,7 +250,7 @@ ast_part_secondary #(
   .sprom_rm_o              ( sprom_rm ),
   .dft_scan_md_o           ( dft_scan_md_o ),
   .scan_shift_en_o         ( scan_shift_en_o ),
-  .scan_reset_no           ( scan_reset_no ),
+  .scan_reset_n_o          ( scan_reset_no ),
   .intraip_s2p_o           ( intraip_s2p ),
   .intraip_p2s_i           ( intraip_p2s )
 );
