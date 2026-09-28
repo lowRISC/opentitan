@@ -1305,6 +1305,7 @@ module flash_ctrl
 
   // SEC_CM: HOST.BUS.INTEGRITY
   // SEC_CM: MEM.ADDR_INFECTION
+  // SEC_CM: TLUL_FIFO.LOGIC.REDUN
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
@@ -1316,7 +1317,7 @@ module flash_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1),
-    .SecFifoPtr(1),
+    .SecFifo(1),
     .DataXorAddr(1)
   ) u_tl_adapter_eflash (
     .clk_i,
@@ -1477,18 +1478,19 @@ module flash_ctrl
                                                u_to_rd_fifo.gen_no_sec_u_reqfifo.u_reqfifo,
                                                alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashRspFifo,
-                                              u_tl_adapter_eflash.gen_no_sec_u_rspfifo.u_rspfifo,
-                                              alert_tx_o[1])
+  // Alert assertions for redundant FIFOs.
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(EflashRspFifo,
+                                               u_tl_adapter_eflash.gen_sec_u_rspfifo.u_rspfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashSramReqFifo,
-                                              u_tl_adapter_eflash.gen_no_sec_u_sramreqfifo
-                                                .u_sramreqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(EflashSramReqFifo,
+                                               u_tl_adapter_eflash.gen_sec_u_sramreqfifo
+                                                 .u_sramreqfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashReqFifo,
-                                              u_tl_adapter_eflash.gen_no_sec_u_reqfifo.u_reqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(EflashReqFifo,
+                                               u_tl_adapter_eflash.gen_sec_u_reqfifo.u_reqfifo,
+                                               alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
