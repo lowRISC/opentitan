@@ -58,7 +58,11 @@ module ast_part_primary #(
   output logic clk_src_usb_o,
   output logic clk_src_usb_val_o,
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,
-  output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o
+  output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,
+
+  // Memory configuration
+  output ast_pkg::ast_mem_cfg_primary_req_t mem_cfg_o,
+  input  ast_pkg::ast_mem_cfg_primary_rsp_t mem_cfg_i
 );
 
 import ast_pkg::* ;
@@ -372,6 +376,12 @@ rng #(
 );
 
 ///////////////////////////////////////
+// Memory configuration
+///////////////////////////////////////
+assign mem_cfg_o                 = intraip_s2p_i.mem_cfg_req;
+assign intraip_p2s_o.mem_cfg_rsp = mem_cfg_i;
+
+///////////////////////////////////////
 // Output Assignments
 ///////////////////////////////////////
 // Clock bypass interface to secondary partition
@@ -414,6 +424,9 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 
 // Ensure parameters defined in the hjson always match the pkg.
 `ASSERT_INIT(EntropyStreamsMatchesAstPkg_A, EntropyStreams == ast_pkg::EntropyStreams)
+
+// Memory configuration
+`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_o, clk_ast_tlul_i, intraip_s2p_i.pwr.vcaon_pok)
 
 /////////////////////
 // Unused Signals  //
