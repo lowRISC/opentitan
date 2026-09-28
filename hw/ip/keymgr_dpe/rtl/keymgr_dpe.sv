@@ -124,25 +124,6 @@ module keymgr_dpe
     .out_o  (hmac_key_o)
   );
 
-  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
-  localparam int NumOutBufBitsOtbnApp = $bits(kmac_pkg::app_req_t);
-  prim_buf #(
-    .Width  (NumOutBufBitsOtbnApp)
-  ) u_anchor_buf_app_req (
-    .in_i   ('0),
-    .out_o  (otbn_app_o)
-  );
-
-  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
-  localparam int NumInBufBitsOtbnApp = $bits(kmac_pkg::app_rsp_t);
-  kmac_pkg::app_rsp_t unused_rsp;
-  prim_buf #(
-    .Width  (NumInBufBitsOtbnApp)
-  ) u_anchor_buf_app_rsp (
-    .in_i   (otbn_app_i),
-    .out_o  (unused_rsp)
-  );
-
   // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
   localparam int NumOutBufBitsSensKey = $bits(mubi4_t);
   logic [NumOutBufBitsSensKey-1:0] sensitive_key_buf;
@@ -325,10 +306,6 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
   logic kdf_engine_mubi_err;
-
-  // Verify mubi signal is correctly encoded
-  // SEC_CM: KDF_ENGINE.CTRL.MUBI
-  assign kdf_engine_mubi_err = mubi4_test_invalid(mubi4_t'(reg2hw.kdf_engine_shadowed.q));
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
@@ -707,6 +684,10 @@ module keymgr_dpe
   //  KMAC Control
   /////////////////////////////////////
 
+  // Intermediate signal to multiplex either otbn or kmac as KDF
+  kmac_pkg::app_req_t kmac_app_req;
+  kmac_pkg::app_rsp_t kmac_app_rsp;
+
   // `invalid_data` only checks key and message data that goes into KMAC interface is valid.
   // It does not check the validity of the requested operation, with respect to other inputs
   // such as policy violation etc.
@@ -743,8 +724,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o(kmac_app_o),
-    .kmac_data_i(kmac_app_i),
+    .kmac_data_o(kmac_app_req),
+    .kmac_data_i(kmac_app_rsp),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -752,6 +733,46 @@ module keymgr_dpe
     .cmd_error_o(kmac_cmd_err)
   );
 
+  // Propagate the register `reg2hw.kdf_engine_shadowed` only when no operation is
+  // ongoing (cfg_regwen == 1'b1).
+  mubi4_t locked_kdf_selection_q, locked_kdf_selection_d;
+  assign locked_kdf_selection_d = cfg_regwen ?
+      mubi4_t'(reg2hw.kdf_engine_shadowed.q) : locked_kdf_selection_q;
+
+  logic [MuBi4Width-1:0] locked_kdf_selection_q_raw;
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_flop_kdf_selection (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(locked_kdf_selection_d)),
+    .q_o(locked_kdf_selection_q_raw)
+  );
+  assign locked_kdf_selection_q = mubi4_t'(locked_kdf_selection_q_raw);
+
+  // If the OTBN can be used as KDF (indicated by `SupportOtbnAsKdfEngine`) then the KMAC
+  // interface is muxed between the KMAC and the OTBN.
+  if (SupportOtbnAsKdfEngine) begin : gen_kmac_if_mux
+    // Mux the interface depending on locked_kdf_selection_q
+    assign kmac_app_rsp = mubi4_test_true_strict(locked_kdf_selection_q) ? otbn_app_i : kmac_app_i;
+    assign kmac_app_o   = mubi4_test_true_strict(locked_kdf_selection_q) ?
+        kmac_pkg::APP_REQ_DEFAULT : kmac_app_req;
+    assign otbn_app_o   = mubi4_test_true_strict(locked_kdf_selection_q) ?
+        kmac_app_req : kmac_pkg::APP_REQ_DEFAULT;
+  end else begin : gen_kmac_if_passthrough
+    // Directly connect the KMAC if
+    assign kmac_app_o = kmac_app_req;
+    assign kmac_app_rsp = kmac_app_i;
+    // Tie off unused otbn KDF interface
+    kmac_pkg::app_rsp_t unused_rsp;
+    assign unused_rsp = otbn_app_i;
+    assign otbn_app_o = kmac_pkg::APP_REQ_DEFAULT;
+  end
+
+  // Verify mubi signal is correctly encoded
+  // SEC_CM: KDF_ENGINE.CTRL.MUBI
+  assign kdf_engine_mubi_err = mubi4_test_invalid(locked_kdf_selection_q);
 
   /////////////////////////////////////
   //  Side load key storage
@@ -768,7 +789,7 @@ module keymgr_dpe
     .wipe_key_i(wipe_key),
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),
-    .otbn_as_kdf_engine_i(mubi4_t'(reg2hw.kdf_engine_shadowed.q)),
+    .otbn_as_kdf_engine_i(locked_kdf_selection_q),
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     .data_en_i(data_hw_en),
     .data_valid_i(data_valid),
