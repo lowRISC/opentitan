@@ -3,6 +3,9 @@
 * SPDX-License-Identifier: Apache-2.0
 */
 
+`ifndef UDP_RDL
+`define UDP_RDL
+
 /**
  * 4-bits boolean values
  */
@@ -67,6 +70,14 @@ enum MultiBitBool32 {
   False = 0x69696969;
 };
 
+/*
+ * The same as swwe, but supports multibit references.
+ */
+property mubi_swwe {
+  type = ref;
+  component = reg|field;
+};
+
 /**
  * true if hardware uses `re` signal, which is latched signal of software read pulse.
  * The standard SystemRDL property `swacc` cannot be used here because `swacc = hwre | swmod`.
@@ -77,7 +88,8 @@ property hwre {
   default = false;
 };
 
-/* If it is true, the register will be implemented using the prim_subreg_shadow module.
+/**
+ * If it is true, the register will be implemented using the prim_subreg_shadow module.
  * Shadow registers are a mechanism to guard sensitive registers against this specific
  * type of attack. They come at a cost of increased area, and a modified SW interaction.
  */
@@ -86,3 +98,95 @@ property shadowed {
   component = reg;
   default = false;
 };
+
+/*
+ * Indicates the register must cross to a different clock domain before use.
+ * The value shown here should correspond to one of the module's clocks.
+ */
+property async_clk {
+  type = ref;
+  component = reg;
+};
+property async_rst {
+  type = ref;
+  component = reg;
+};
+
+/*
+ * If true, integrity bits are passed through directly from the memory.
+ */
+property integrity_bypass {
+  type = boolean;
+  component = mem;
+  default = false;
+};
+
+/*
+ * If true, this array was originally a compacted multi-register.
+ */
+property compacted {
+  type = boolean;
+  component = reg;
+  default = false;
+};
+
+/*
+ * Defines properties to be used inside signals.
+ * These will help to model the hjson fields: 'inter_signal_list', 'available_output_list',
+ * 'interrupt_list' and 'alert_list' as rdl signals.
+ */
+enum SigType {
+  None;
+  Interrupt;     // Signal is an interrupt
+  Alert;         // Signal is an alert
+  InterModReqRsp;// Signal is an inter module, with type=req_rsp
+  InterModReq;   // Signal is an inter module, with type=uni and act=req
+  InterModRecv;  // Signal is an inter module, with type=uni and act=recv
+  Output;        // Signal is an output
+  Input;         // Signal is an input
+  InOut;         // Signal is input and/or output
+  Sync;          // Signal is used for synchonization. i.e clock, reset.
+};
+
+property sigtype {
+  type = SigType;
+  component = signal;
+  default = SigType::None;
+};
+
+/*
+ * Defines the Inter-module signal's data structure. It is generally bundled into `struct packed`
+ * type. This `struct` is used with `package` for topgen tool to define the signal.
+ */
+property inter_mod_struct {
+  type = string;
+  component = signal;
+  default = "logic";
+};
+property inter_mod_package {
+  type = string;
+  component = signal;
+};
+
+enum BusProtocol {
+  TlUl;
+};
+
+enum BusDirection {
+  Host;
+  Device;
+};
+
+struct BusInterfaceCfg {
+  BusProtocol protocol;
+  BusDirection direction;
+  boolean racl_support;
+  string hier_path;
+};
+
+property bus_interface_cfg{
+  type = BusInterfaceCfg;
+  component = addrmap;
+};
+
+`endif
