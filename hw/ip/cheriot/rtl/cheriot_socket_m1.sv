@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// TL-UL socket M:1 module
+// TL-UL socket M:1 module with CHERIoT sideband
 //
-// cheriot_socket_m1 is a copy of this module with a CHERIoT sideband; keep the two in sync.
+// Carries, next to each TL-UL port, the flat sideband of the tag filter's meta port: the tag and
+// bit select travel with the A channel request, the tag with the D channel response. They pass
+// through the host and device FIFOs in the FIFOs' spare fields and through the arbiter packed with
+// their request, so they always stay with the beat they belong to.
+//
+// Derived from tlul_socket_m1; keep the two in sync apart from the sideband.
 //
 // Verilog parameters
 //   M:             Number of host ports.
@@ -24,7 +29,7 @@
 
 `include "prim_assert.sv"
 
-module tlul_socket_m1 #(
+module cheriot_socket_m1 #(
   parameter int unsigned  M         = 4,
   parameter bit [M-1:0]   HReqPass  = {M{1'b1}},
   parameter bit [M-1:0]   HRspPass  = {M{1'b1}},
@@ -38,11 +43,17 @@ module tlul_socket_m1 #(
   input                     clk_i,
   input                     rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_h_i [M],
-  output tlul_pkg::tl_d2h_t tl_h_o [M],
+  input  tlul_pkg::tl_h2d_t tl_h_i      [M],
+  input  logic              tag_h_i     [M],
+  input  logic [4:0]        bit_sel_h_i [M],
+  output tlul_pkg::tl_d2h_t tl_h_o      [M],
+  output logic              tag_h_o     [M],
 
   output tlul_pkg::tl_h2d_t tl_d_o,
-  input  tlul_pkg::tl_d2h_t tl_d_i
+  output logic              tag_d_o,
+  output logic [4:0]        bit_sel_d_o,
+  input  tlul_pkg::tl_d2h_t tl_d_i,
+  input  logic              tag_d_i
 );
 
   `ASSERT_INIT(maxM, M < 16)
@@ -74,8 +85,24 @@ module tlul_socket_m1 #(
   localparam int unsigned IDW   = top_pkg::TL_AIW;
   localparam int unsigned STIDW = $clog2(M);
 
+  // Request sideband, and a request packed with it for the arbiter
+  typedef struct packed {
+    logic       tag;
+    logic [4:0] bit_sel;
+  } req_side_t;
+
+  typedef struct packed {
+    tlul_pkg::tl_h2d_t tl;
+    req_side_t         side;
+  } arb_req_t;
+
   tlul_pkg::tl_h2d_t hreq_fifo_o [M];
+  req_side_t         hreq_side_o [M];
+  arb_req_t          hreq_arb    [M];
   tlul_pkg::tl_d2h_t hrsp_fifo_i [M];
+
+  // Response tag out of the device FIFO, offered to every host FIFO
+  logic drsp_tag;
 
   logic [M-1:0] hrequest;
   logic [M-1:0] hgrant;
@@ -85,7 +112,7 @@ module tlul_socket_m1 #(
 
   logic arb_valid;
   logic arb_ready;
-  tlul_pkg::tl_h2d_t arb_data;
+  arb_req_t arb_data;
 
   // Host Req/Rsp FIFO
   for (genvar i = 0 ; i < M ; i++) begin : gen_host_fifo
@@ -125,7 +152,8 @@ module tlul_socket_m1 #(
       .RspPass    (HRspPass[i]),
       .ReqDepth   (HReqDepth[i*4+:4]),
       .RspDepth   (HRspDepth[i*4+:4]),
-      .SpareReqW  (1)
+      .SpareReqW  ($bits(req_side_t)),
+      .SpareRspW  (1)
     ) u_hostfifo (
       .clk_i,
       .rst_ni,
@@ -133,11 +161,13 @@ module tlul_socket_m1 #(
       .tl_h_o      (tl_h_o[i]),
       .tl_d_o      (hreq_fifo_o[i]),
       .tl_d_i      (hrsp_fifo_i[i]),
-      .spare_req_i (1'b0),
-      .spare_req_o (),
-      .spare_rsp_i (1'b0),
-      .spare_rsp_o ()
+      .spare_req_i ({tag_h_i[i], bit_sel_h_i[i]}),
+      .spare_req_o (hreq_side_o[i]),
+      .spare_rsp_i (drsp_tag),
+      .spare_rsp_o (tag_h_o[i])
     );
+
+    assign hreq_arb[i] = '{tl: hreq_fifo_o[i], side: hreq_side_o[i]};
   end
 
   // Device Req/Rsp FIFO
@@ -146,7 +176,8 @@ module tlul_socket_m1 #(
     .RspPass    (DRspPass),
     .ReqDepth   (DReqDepth),
     .RspDepth   (DRspDepth),
-    .SpareReqW  (1)
+    .SpareReqW  ($bits(req_side_t)),
+    .SpareRspW  (1)
   ) u_devicefifo (
     .clk_i,
     .rst_ni,
@@ -154,10 +185,10 @@ module tlul_socket_m1 #(
     .tl_h_o      (drsp_fifo_o),
     .tl_d_o      (tl_d_o),
     .tl_d_i      (tl_d_i),
-    .spare_req_i (1'b0),
-    .spare_req_o (),
-    .spare_rsp_i (1'b0),
-    .spare_rsp_o ()
+    .spare_req_i (arb_data.side),
+    .spare_req_o ({tag_d_o, bit_sel_d_o}),
+    .spare_rsp_i (tag_d_i),
+    .spare_rsp_o (drsp_tag)
   );
 
   // Request Arbiter
@@ -170,13 +201,13 @@ module tlul_socket_m1 #(
   if (tlul_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t))
+      .DW         ($bits(arb_req_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,
       .req_chk_i ( 1'b0        ), // TL-UL allows dropping valid without ready. See #3354.
       .req_i     ( hrequest    ),
-      .data_i    ( hreq_fifo_o ),
+      .data_i    ( hreq_arb    ),
       .gnt_o     ( hgrant      ),
       .idx_o     (             ),
       .valid_o   ( arb_valid   ),
@@ -186,13 +217,13 @@ module tlul_socket_m1 #(
   end else if (tlul_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
     prim_arbiter_tree #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t))
+      .DW         ($bits(arb_req_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,
       .req_chk_i ( 1'b0        ), // TL-UL allows dropping valid without ready. See #3354.
       .req_i     ( hrequest    ),
-      .data_i    ( hreq_fifo_o ),
+      .data_i    ( hreq_arb    ),
       .gnt_o     ( hgrant      ),
       .idx_o     (             ),
       .valid_o   ( arb_valid   ),
@@ -214,17 +245,21 @@ module tlul_socket_m1 #(
   assign dfifo_rspready_merged = |dfifo_rspready;
   assign dreq_fifo_i = '{
     a_valid:   arb_valid,
-    a_opcode:  arb_data.a_opcode,
-    a_param:   arb_data.a_param,
-    a_size:    arb_data.a_size,
-    a_source:  arb_data.a_source,
-    a_address: arb_data.a_address,
-    a_mask:    arb_data.a_mask,
-    a_data:    arb_data.a_data,
-    a_user:    arb_data.a_user,
+    a_opcode:  arb_data.tl.a_opcode,
+    a_param:   arb_data.tl.a_param,
+    a_size:    arb_data.tl.a_size,
+    a_source:  arb_data.tl.a_source,
+    a_address: arb_data.tl.a_address,
+    a_mask:    arb_data.tl.a_mask,
+    a_data:    arb_data.tl.a_data,
+    a_user:    arb_data.tl.a_user,
 
     d_ready:   dfifo_rspready_merged
   };
+
+  // The arbiter's handshakes replace those packed with the request
+  logic unused_arb_data;
+  assign unused_arb_data = ^{arb_data.tl.a_valid, arb_data.tl.d_ready};
 
   // Response ID steering
   // drsp_fifo_o --> hrsp_fifo_i[i]

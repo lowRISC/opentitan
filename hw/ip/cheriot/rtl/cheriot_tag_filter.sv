@@ -16,7 +16,10 @@ module cheriot_tag_filter #(
   parameter addr_t NvmTopAddr                = 'h3020_0000,
   // Base addresses of the corresponding tag regions in the meta SRAM
   parameter addr_t MetaMainSramTagBase       = 'h1100_8C00,
-  parameter addr_t MetaNvmTagBase            = 'h1100_0C00
+  parameter addr_t MetaNvmTagBase            = 'h1100_0C00,
+  // Writes only update the capability tag and are never forwarded to the host port; the filter
+  // answers them itself. A write that does not update a tag is answered with an error.
+  parameter bit    TagOnlyWrites             = 1'b0
 )(
   input clk_i,
   input rst_ni,
@@ -55,6 +58,17 @@ module cheriot_tag_filter #(
 
   localparam int unsigned MetaWidth = $bits(req_rsp_meta_t);
 
+  // The fields of a request the filter answers itself, kept in the meta FIFO next to the meta data
+  // with tag-only writes only
+  typedef struct packed {
+    logic                       host;
+    logic [top_pkg::TL_AIW-1:0] source;
+    logic [top_pkg::TL_SZW-1:0] size;
+  } local_meta_t;
+
+  localparam int unsigned LocalWidth = TagOnlyWrites ? $bits(local_meta_t) : 32'd0;
+  localparam int unsigned FifoWidth  = MetaWidth + LocalWidth;
+
   localparam int unsigned AddrWidth = $bits(addr_t);
 
   // The fields of an access address that locate its capability tag.
@@ -83,6 +97,19 @@ module cheriot_tag_filter #(
   logic          meta_rsp_valid;
   logic          meta_rsp_ready;
   req_rsp_meta_t meta_rsp;
+
+  // Meta FIFO contents, including the fields of requests the filter answers itself
+  logic [FifoWidth-1:0] meta_fifo_wdata;
+  logic [FifoWidth-1:0] meta_fifo_rdata;
+  local_meta_t          local_req;
+  local_meta_t          local_rsp_meta;
+
+  // Whether a request goes to the host port, and whether its response comes from there
+  logic host_fork;
+  logic host_join;
+
+  // Response the filter gives itself
+  tlul_pkg::tl_d2h_t local_rsp_intg;
 
   // Whether we need to lookup or fork into the meta memory
   logic require_lookup;
@@ -165,6 +192,9 @@ module cheriot_tag_filter #(
                             tl_d_is_write)                                     : // or write
                           1'b0;
 
+  // With tag-only writes, a write is not forwarded to the host port
+  assign host_fork = !(TagOnlyWrites && tl_d_is_write);
+
   // We only fork the meta channel if a lookup is required
   stream_fork_dynamic #(
     .N_OUP(32'd3)
@@ -173,7 +203,7 @@ module cheriot_tag_filter #(
     .rst_ni,
     .valid_i    ( tl_d_i.a_valid                                   ),
     .ready_o    ( tl_d_req_ready                                   ),
-    .sel_i      ( {1'b1, require_lookup, 1'b1}                     ),
+    .sel_i      ( {1'b1, require_lookup, host_fork}                ),
     .sel_valid_i( tl_d_i.a_valid                                   ),
     .sel_ready_o( /* NOT CONNECTED */                              ),
     .valid_o    ( {meta_req_valid, tl_m_req_valid, tl_h_req_valid} ),
@@ -192,8 +222,18 @@ module cheriot_tag_filter #(
     aligned: tl_d_is_aligned
   };
 
+  assign local_req = '{
+    host:   host_fork,
+    source: tl_d_i.a_source,
+    size:   tl_d_i.a_size
+  };
+
+  // The local fields only occupy FIFO bits with tag-only writes
+  assign meta_fifo_wdata = FifoWidth'({local_req, meta_req});
+  assign meta_rsp        = req_rsp_meta_t'(meta_fifo_rdata[MetaWidth-1:0]);
+
   prim_fifo_sync #(
-    .Width(MetaWidth),
+    .Width(FifoWidth),
     .Pass(1'b0),
     .Depth(NumOutstanding),
     .NeverClears(1'b1)
@@ -203,10 +243,10 @@ module cheriot_tag_filter #(
     .clr_i   ( 1'b0           ),
     .wvalid_i( meta_req_valid ),
     .wready_o( meta_req_ready ),
-    .wdata_i ( meta_req       ),
+    .wdata_i ( meta_fifo_wdata),
     .rvalid_o( meta_rsp_valid ),
     .rready_i( meta_rsp_ready ),
-    .rdata_o ( meta_rsp       ),
+    .rdata_o ( meta_fifo_rdata),
     .full_o  (                ),
     .depth_o (                ),
     .err_o   (                )
@@ -240,13 +280,14 @@ module cheriot_tag_filter #(
 
   // We join in exactly the transactions we forked.
   assign require_join = meta_rsp.lookup;
+  assign host_join    = local_rsp_meta.host;
 
   stream_join_dynamic #(
     .N_INP(32'd3)
   ) u_stream_join_dynamic (
     .inp_valid_i( {meta_rsp_valid, meta_buf_valid, tl_h_i.d_valid} ),
     .inp_ready_o( {meta_rsp_ready, tl_m_rsp_ready, tl_h_rsp_ready} ),
-    .sel_i      ( {1'b1, require_join, 1'b1} ),
+    .sel_i      ( {1'b1, require_join, host_join} ),
     .oup_valid_o( tl_d_rsp_valid ),
     .oup_ready_i( tl_d_i.d_ready )
   );
@@ -304,8 +345,46 @@ module cheriot_tag_filter #(
   always_comb begin: proc_connect_tl_rsp
     tl_d_o         = tl_h_i;
     tl_d_o.d_error = tl_d_o.d_error || (require_join && meta_buf_err);
+    if (!host_join) begin
+      tl_d_o = local_rsp_intg;
+    end
     tl_d_o.a_ready = tl_d_req_ready;
     tl_d_o.d_valid = tl_d_rsp_valid;
+  end
+
+  // Tag-only writes are answered by the filter itself: the meta response only carries the error,
+  // and a write without a tag update is refused.
+  if (TagOnlyWrites) begin : gen_local_rsp
+    tlul_pkg::tl_d2h_t local_rsp;
+    logic              unused_local_rsp_intg;
+
+    assign local_rsp_meta = local_meta_t'(meta_fifo_rdata[FifoWidth-1:MetaWidth]);
+
+    always_comb begin : proc_local_rsp
+      local_rsp          = tlul_pkg::TL_D2H_DEFAULT;
+      local_rsp.d_opcode = tlul_pkg::AccessAck;
+      local_rsp.d_size   = local_rsp_meta.size;
+      local_rsp.d_source = local_rsp_meta.source;
+      local_rsp.d_error  = require_join ? meta_buf_err : 1'b1;
+    end
+
+    tlul_rsp_intg_gen #(
+      .EnableRspIntgGen (1'b1),
+      .EnableDataIntgGen(1'b1)
+    ) u_tlul_rsp_intg_gen_local (
+      .tl_i(local_rsp),
+      .tl_o(local_rsp_intg)
+    );
+
+    // The handshake comes from the join
+    assign unused_local_rsp_intg = ^{local_rsp_intg.a_ready, local_rsp_intg.d_valid};
+  end else begin : gen_no_local_rsp
+    logic unused_local_meta;
+    assign unused_local_meta = ^{local_req.source, local_req.size,
+                                 local_rsp_meta.source, local_rsp_meta.size};
+
+    assign local_rsp_meta = '{host: 1'b1, default: '0};
+    assign local_rsp_intg = tlul_pkg::TL_D2H_DEFAULT;
   end
 
   // The response and data integrity is not checked, as both the RMW and the tag filter are
