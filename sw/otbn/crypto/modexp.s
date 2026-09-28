@@ -7,14 +7,17 @@
 .globl modexp
 
 /**
- * Constant-time exponentiation by e-1 = F4-1 = 2^16 = 65536.
+ * Constant-time exponentiation of the random blinding factor by e-1 = F4-1 =
+ * 2^16 = 65536, or by custom (x29 - 1) when x29 != 1.
  *
- * Calculate C = A^(e-1) mod M in constant. A is assumed to be provided in the
- * Montgomery domain, so is the result C.
+ * Calculate C = A^(e-1) mod M in constant time for Ebeid-Lambert base blinding
+ * in `modexp`. Both the input base A (sampled randomly in `modexp`) and the
+ * output C are in the Montgomery domain.
  *
  * @param[in]  x16: DMEM pointer to the modulus M
  * @param[in]  x17: DMEM pointer to the base A in the Montgomery domain.
  * @param[out] x18: DMEM pointer to the result C in the Montgomery domain.
+ * @param[in]  x29: 1 for default F4=65537 blinding, or custom odd exponent e>=3
  * @param[in]  x30: N, number of limbs per bignum
  * @param[in]   x8: pointer to temp reg, must be set to 4
  * @param[in]   x9: pointer to temp reg, must be set to 3
@@ -23,10 +26,13 @@
  * @param[in]   w1: Montgomery Constant m0'
  * @param[in]  w31: all-zero
  *
- * Clobbered registers: x2 to x4, x31, w2
+ * Clobbered registers: x2 to x13, x15, x19, x20, x22, x31, w2, w3
  * Clobbered flag groups: FG0, FG1
  */
 modexp_65536:
+  li        x2, 1
+  bne       x29, x2, modexp_e_minus_1
+
   /* Compute (N-1). x31 <= x30 - 1 = N - 1 */
   addi      x31, x30, -1
 
@@ -49,6 +55,90 @@ modexp_65536:
       bn.sid    x2, 0(x3++)
       addi      x2, x2, 1
     nop
+
+  ret
+
+/**
+ * Helper routine for constant-time 32-bit exponentiation within the
+ * Montgomery domain.
+ *
+ * Calculates C = A^x15 mod M in the Montgomery domain using a constant-time
+ * 32-bit square-and-multiply-always loop.
+ *
+ * Note: This helper operates purely inside the Montgomery domain (expecting
+ * the base A at dmem[x17] to already be in Montgomery form, and leaving the
+ * result C at dmem[x18] in Montgomery form). Mapping into and out of the
+ * Montgomery domain is handled by the callers:
+ * - In `modexp_65537` (public-key exponentiation): `modexp_65537` first maps
+ *   the input message A into the Montgomery domain via `montmul(A, RR)` before
+ *   calling `modexp_32`, and maps the output back from the Montgomery domain
+ *   via `montmul_mul1` at `_modexp_65537_done`.
+ * - In `modexp` -> `modexp_65536` -> `modexp_e_minus_1` (base blinding): the
+ *   random blinding factor R is sampled directly in the Montgomery domain and
+ *   the output R^(e-1) remains in the Montgomery domain for the subsequent
+ *   blinding multiplications in `modexp`.
+ *
+ * @param[in]  x15: 32-bit unsigned exponent (set to x29 - 1 at modexp_e_minus_1)
+ * @param[in]  x16: DMEM pointer to the modulus M
+ * @param[in]  x17: DMEM pointer to the base A in the Montgomery domain
+ * @param[out] x18: DMEM pointer to the result C in the Montgomery domain
+ * @param[in]  x30: N, number of limbs per bignum
+ * @param[in]   x8: pointer to temp reg, must be set to 4
+ * @param[in]   x9: pointer to temp reg, must be set to 3
+ * @param[in]  x10: pointer to temp reg, must be set to 4
+ * @param[in]  x11: pointer to temp reg, must be set to 2
+ * @param[in]   w1: Montgomery Constant m0'
+ * @param[in]  w31: all-zero
+ */
+modexp_e_minus_1:
+  addi      x15, x29, -1
+modexp_32:
+  /* Compute (N-1). x31 <= x30 - 1 = N - 1 */
+  addi      x31, x30, -1
+
+  /* Zeroize w2 and reset flags. */
+  bn.sub    w2, w2, w2
+
+  /* Initialize output buffer dmem[x18] with 1 in Montgomery domain (-M). */
+  addi      x3, x16, 0
+  addi      x4, x18, 0
+  loop      x30, 3
+    bn.lid    x11, 0(x3++)
+    bn.subb   w2, w31, w2
+    bn.sid    x11, 0(x4++)
+
+  /* Constant-time 32-bit square-and-multiply-always loop (MSB to LSB). */
+  loopi     32, 22
+    /* Square: [w[4+N-1]:w4] = montmul(C, C) */
+    addi      x19, x18, 0
+    addi      x20, x18, 0
+    jal       x1, montmul
+    /* Store squared result to C (dmem[x18]). */
+    addi      x2, x8, 0
+    addi      x3, x18, 0
+    loop      x30, 2
+      bn.sid    x2, 0(x3++)
+      addi      x2, x2, 1
+
+    /* Multiply: [w[4+N-1]:w4] = montmul(A, C) */
+    addi      x19, x17, 0
+    addi      x20, x18, 0
+    jal       x1, montmul
+
+    /* Extract MSB (bit 31) of x15 into FG0.C and shift x15 left by 1. */
+    srli      x2, x15, 31
+    slli      x15, x15, 1
+    csrrw     x0, FG0, x2
+
+    /* Select montmul(A, C) if FG0.C == 1, else keep squared C in dmem[x18]. */
+    addi      x2, x8, 0
+    addi      x3, x18, 0
+    loop      x30, 4
+      bn.lid    x11, 0(x3)
+      bn.movr   x9, x2++
+      bn.sel    w2, w3, w2, FG0.C
+      bn.sid    x11, 0(x3++)
+    li        x9, 3
 
   ret
 
@@ -449,14 +539,18 @@ _message_blinding_epilogue_end:
   ret
 
 /**
- * Bigint modular exponentiation with fixed exponent of 65537
+ * Bigint modular exponentiation with fixed exponent of 65537 (or custom
+ * 32-bit public exponent in `x15` when non-zero).
  *
- * Returns: C = modexp(A,65537) = A^65537 mod M
+ * Returns: C = modexp(A, e) = A^e mod M, where e = 65537 if x15 == 0,
+ *          or e = x15 otherwise.
  *
- * This implements the square and multiply algorithm for the fixed exponent
- * of E=65537. Note that this implementation (in contrast to modexp) runs the
- * multiplication step only for bits being actually set in the exponent.
- * Since the exponent is fixed, this is inherently constant-time.
+ * For the default exponent E=65537 (`x15 == 0`), this implements the
+ * square and multiply algorithm running the multiplication step only for bits
+ * actually set in E=65537. When `x15 != 0`, after converting A into
+ * the Montgomery domain via `montmul(A, RR)`, it delegates the Montgomery
+ * exponentiation to `modexp_32` and then converts the result back from the
+ * Montgomery domain via `montmul_mul1` at `_modexp_65537_done`.
  *
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
  * be precomputed and provided at the appropriate locations in dmem.
@@ -469,15 +563,16 @@ _message_blinding_epilogue_end:
  * modified during execution.
  *
  * @param[in]   x2: dptr_c, dmem pointer to buffer for output C
- * @param[in]  x14: dptr_a, dmem pointer to first linb of input A
+ * @param[in]  x14: dptr_a, dmem pointer to first limb of input A
+ * @param[in]  x15: e, custom 32-bit public exponent (0 for default 65537)
  * @param[in]  x16: dptr_M, dmem pointer to first limb of modulus M
- * @param[in]  x17: dptr_RR, dmem pointer to Montgmery constant RR
+ * @param[in]  x17: dptr_RR, dmem pointer to Montgomery constant RR
  * @param[in]  x30: N, number of limbs per bignum
  * @param[in]   w1: m0d', Montgomery constant
  * @param[in]  w31: all-zero
- * @param[out] dmem[dptr_c:dptr_c+N*32] C, A^65537 mod M
+ * @param[out] dmem[dptr_c:dptr_c+N*32] C, A^e mod M
  *
- * clobbered registers: x3 to x13, x16 to x31
+ * clobbered registers: x3 to x13, x15 to x31
  *                      w0 to w3, w24 to w30
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
@@ -494,7 +589,7 @@ modexp_65537:
   addi      x31, x30, -1
 
   /* convert to montgomery domain montmul(A,RR)
-  in = montmul(A,RR) montmul(A,RR) = C*R mod M */
+  in = montmul(A,RR) = A*R mod M */
   addi      x19, x14, 0
   addi      x20, x17, 0
   addi      x21, x14, 0
@@ -504,6 +599,18 @@ modexp_65537:
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
+  /* If a custom exponent x15 != 0 is set, compute (A*R)^x15 mod M in
+     Montgomery domain via modexp_32, then jump to _modexp_65537_done to
+     convert back from the Montgomery domain via montmul_mul1. */
+  beq       x15, x0, _modexp_65537_f4
+  li        x8, 4
+  addi      x17, x14, 0
+  addi      x18, x2, 0
+  jal       x1, modexp_32
+  addi      x2, x18, 0
+  jal       x0, _modexp_65537_done
+
+_modexp_65537_f4:
   /* pointer to out buffer */
   addi      x21, x2, 0
 
@@ -577,6 +684,7 @@ modexp_65537:
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
+_modexp_65537_done:
   /* convert back from montgomery domain */
   /* out = montmul(out,1) = out/R mod M  */
   addi      x19, x2, 0

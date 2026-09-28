@@ -344,6 +344,138 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_const_word32_buf_t *ciphertext,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen);
+
+/**
+ * Computes the digital signature on the input message data using a custom
+ * public exponent `e`.
+ *
+ * Although RSA signature generation raises the padded message `M` to the
+ * secret exponent `d` stored in `private_key`, OTBN's constant-time `modexp`
+ * uses the Ebeid-Lambert inverse-free base-blinding technique:
+ *   M^d = ((M * R^e)^(d - 1)) * (M * R^(e - 1)) mod n
+ * which avoids inverting the random blinding factor `R` by relying on
+ * `R^(e*d - 1) = 1 mod n`. Consequently, `exponent` must be the odd public
+ * exponent `e >= 3` associated with `private_key` (i.e., `e * d = 1 mod
+ * lambda(n)`).
+ *
+ * Note that this primitive is to be used at the risk of the user of choosing
+ * safe public exponents:
+ * - For FIPS 186-5 compliance and general security, choose an odd public
+ *   exponent `e > 2^16` (typically `e = 65537 = 2^16 + 1`) that is coprime
+ *   to lambda(n). Small exponents (e.g., `e = 3` or `e = 17`) are not
+ *   FIPS-approved and can weaken security if padding or key generation is not
+ *   strictly enforced.
+ * - While this function retains the boolean-shared private exponent,
+ *   Ebeid-Lambert multiplicative message blinding, and OTBN instruction-count
+ *   check of `otcrypto_rsa_sign`, the blinding step computes `R^(e - 1) mod n`
+ *   using the 32-bit square-and-multiply-always loop (`modexp_32`) rather than
+ *   the dedicated 16-squaring chain used for F4 = 65537, and has not undergone
+ *   the same physical FI evaluation and penetration testing. Prefer
+ *   `otcrypto_rsa_sign` whenever `e = 65537`.
+ *
+ * @param private_key Pointer to blinded private key struct.
+ * @param exponent RSA public exponent (e) associated with `private_key`. Must
+ *                 be odd and >= 3.
+ * @param message_digest Message digest to be signed (pre-hashed).
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param[out] signature Pointer to the generated signature struct.
+ * @return Result of the RSA signature generation.
+ */
+otcrypto_status_t otcrypto_rsa_sign_exp(
+    const otcrypto_blinded_key_t *private_key, uint32_t exponent,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature);
+
+/**
+ * Verifies the authenticity of the input signature using a custom public
+ * exponent `e`.
+ *
+ * An "OK" status code does not mean that the signature passed verification;
+ * the caller must check both the returned status and `verification_result`
+ * before trusting the signature.
+ *
+ * Note that this primitive is to be used at the risk of the user of choosing
+ * safe public exponents (see `otcrypto_rsa_sign_exp` for exponent selection
+ * and FIPS 186-5 considerations). Prefer `otcrypto_rsa_verify` whenever
+ * `e = 65537`.
+ *
+ * @param public_key Pointer to public key struct.
+ * @param exponent RSA public exponent (e). Must be odd and >= 3.
+ * @param message_digest Message digest to be verified (pre-hashed).
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param signature Pointer to the input signature to be verified.
+ * @param[out] verification_result Result of signature verification.
+ * @return Result of the RSA verify operation.
+ */
+otcrypto_status_t otcrypto_rsa_verify_exp(
+    const otcrypto_unblinded_key_t *public_key, uint32_t exponent,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result);
+
+/**
+ * Encrypts a message with RSA using a custom public exponent `e`.
+ *
+ * See `otcrypto_rsa_encrypt` for details on OAEP padding and buffer length
+ * requirements.
+ *
+ * Note that this primitive is to be used at the risk of the user of choosing
+ * safe public exponents (see `otcrypto_rsa_sign_exp` for exponent selection
+ * and FIPS 186-5 considerations). Prefer `otcrypto_rsa_encrypt` whenever
+ * `e = 65537`.
+ *
+ * @param public_key Pointer to public key struct.
+ * @param exponent RSA public exponent (e). Must be odd and >= 3.
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param message Message to encrypt.
+ * @param label Label for OAEP encoding.
+ * @param[out] ciphertext Buffer for the ciphertext.
+ * @return Result of the RSA encryption operation.
+ */
+otcrypto_status_t otcrypto_rsa_encrypt_exp(
+    const otcrypto_unblinded_key_t *public_key, uint32_t exponent,
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext);
+
+/**
+ * Decrypts a message with RSA using a custom public exponent `e`.
+ *
+ * Although RSA decryption raises the ciphertext `C` to the secret exponent `d`
+ * stored in `private_key`, OTBN's constant-time `modexp` uses the
+ * Ebeid-Lambert inverse-free base-blinding technique:
+ *   C^d = ((C * R^e)^(d - 1)) * (C * R^(e - 1)) mod n
+ * which avoids inverting the random blinding factor `R` by relying on
+ * `R^(e*d - 1) = 1 mod n`. Consequently, `exponent` must be the odd public
+ * exponent `e >= 3` associated with `private_key` (i.e., `e * d = 1 mod
+ * lambda(n)`).
+ *
+ * Note that this primitive is to be used at the risk of the user of choosing
+ * safe public exponents (see `otcrypto_rsa_sign_exp` for exponent selection
+ * and FI testing considerations). Prefer `otcrypto_rsa_decrypt` whenever
+ * `e = 65537`.
+ *
+ * See `otcrypto_rsa_decrypt` for details on OAEP padding and buffer length
+ * requirements.
+ *
+ * @param private_key Pointer to blinded private key struct.
+ * @param exponent RSA public exponent (e) associated with `private_key`. Must
+ *                 be odd and >= 3.
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param ciphertext Ciphertext to decrypt.
+ * @param label Label for OAEP encoding.
+ * @param[out] plaintext Buffer for the decrypted message.
+ * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
+ * @return Result of the RSA decryption operation.
+ */
+otcrypto_status_t otcrypto_rsa_decrypt_exp(
+    const otcrypto_blinded_key_t *private_key, uint32_t exponent,
+    const otcrypto_hash_mode_t hash_mode,
+    const otcrypto_const_word32_buf_t *ciphertext,
+    const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytelen);
+
 /**
  * Starts the asynchronous RSA key generation function.
  *

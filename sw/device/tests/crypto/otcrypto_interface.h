@@ -350,6 +350,25 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*rsa_decrypt_async_finalize)(
       const otcrypto_hash_mode_t, const otcrypto_const_byte_buf_t *,
       otcrypto_byte_buf_t *, size_t *);
+  otcrypto_status_t (*rsa_sign_exp)(const otcrypto_blinded_key_t *, uint32_t,
+                                    const otcrypto_hash_digest_t,
+                                    otcrypto_rsa_padding_t,
+                                    otcrypto_word32_buf_t *);
+  otcrypto_status_t (*rsa_verify_exp)(const otcrypto_unblinded_key_t *,
+                                      uint32_t, const otcrypto_hash_digest_t,
+                                      otcrypto_rsa_padding_t,
+                                      const otcrypto_const_word32_buf_t *,
+                                      hardened_bool_t *);
+  otcrypto_status_t (*rsa_encrypt_exp)(const otcrypto_unblinded_key_t *,
+                                       uint32_t, const otcrypto_hash_mode_t,
+                                       const otcrypto_const_byte_buf_t *,
+                                       const otcrypto_const_byte_buf_t *,
+                                       otcrypto_word32_buf_t *);
+  otcrypto_status_t (*rsa_decrypt_exp)(const otcrypto_blinded_key_t *, uint32_t,
+                                       const otcrypto_hash_mode_t,
+                                       const otcrypto_const_word32_buf_t *,
+                                       const otcrypto_const_byte_buf_t *,
+                                       otcrypto_byte_buf_t *, size_t *);
   // P-256
   otcrypto_status_t (*ecdsa_p256_keygen)(otcrypto_blinded_key_t *,
                                          otcrypto_unblinded_key_t *);

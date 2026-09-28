@@ -14,7 +14,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'e', 'n')
 
-status_t rsa_encrypt_start(rsa_size_t size, const uint32_t *n,
+status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
                            const otcrypto_hash_mode_t hash_mode,
                            const uint8_t *message, size_t message_bytelen,
                            const uint8_t *label, size_t label_bytelen) {
@@ -50,7 +50,7 @@ status_t rsa_encrypt_start(rsa_size_t size, const uint32_t *n,
 
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
-  return rsa_modexp_vartime_start(size, encoded_message, n);
+  return rsa_modexp_vartime_start(size, encoded_message, e, n);
 }
 
 status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext) {
@@ -58,10 +58,10 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext) {
 }
 
 status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, const uint32_t *n,
+                           const uint32_t *d1, uint32_t e, const uint32_t *n,
                            const uint32_t *ciphertext, uint32_t checksum) {
   // Start computing (ciphertext ^ d) mod n.
-  return rsa_modexp_consttime_start(size, ciphertext, d0, d1, n, checksum);
+  return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum);
 }
 
 status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
