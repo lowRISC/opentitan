@@ -10289,6 +10289,19 @@
           index: -1
         }
         {
+          name: trbe_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: cheriot
+          default: ""
+          domain: Main
+          top_signame: main_tl_cheriot__trbe
+          index: -1
+        }
+        {
           name: regs_tl_d
           struct: tl
           package: tlul_pkg
@@ -11055,6 +11068,10 @@
       [
         cheriot.cored_tl_h
       ]
+      main.tl_cheriot__trbe:
+      [
+        cheriot.trbe_tl_h
+      ]
       main.tl_rv_dm__sba:
       [
         rv_dm.sba_tl_h
@@ -11446,6 +11463,12 @@
           cheriot.regs
           cheriot.revbm
         ]
+        cheriot.trbe:
+        [
+          sram_ctrl_main.ram
+          sram_ctrl_sec.ram
+          rram_ctrl.host
+        ]
         rv_dm.sba:
         [
           rom_ctrl.rom
@@ -11496,6 +11519,19 @@
         }
         {
           name: cheriot.cored
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: cheriot.trbe
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -12134,7 +12170,7 @@
               {
                 hart: 0x411b0000
               }
-              size_byte: 0x4
+              size_byte: 0x40
             }
           ]
           xbar: false
@@ -12198,6 +12234,20 @@
           end_idx: -1
           top_type: one-to-one
           top_signame: main_tl_cheriot__cored
+          index: -1
+        }
+        {
+          name: tl_cheriot__trbe
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          inst_name: main
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: main_tl_cheriot__trbe
           index: -1
         }
         {
@@ -18942,6 +18992,19 @@
       plic: rv_plic
       outgoing: false
     }
+    {
+      name: cheriot_trbe_done
+      width: 1
+      type: interrupt
+      module_name: cheriot
+      desc: cheriot trbe_done interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
   ]
   outgoing_interrupt: {}
   plic_info:
@@ -18949,11 +19012,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 184
+      count_tot: 185
       count_pd:
       {
         Aon: 7
-        Main: 176
+        Main: 177
       }
     }
   }
@@ -20424,6 +20487,7 @@
     entropy_src
     edn0
     edn1
+    cheriot
   ]
   outgoing_alert_module: {}
   outgoing_interrupt_module: {}
@@ -27034,6 +27098,19 @@
         index: -1
       }
       {
+        name: trbe_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: cheriot
+        default: ""
+        domain: Main
+        top_signame: main_tl_cheriot__trbe
+        index: -1
+      }
+      {
         name: regs_tl_d
         struct: tl
         package: tlul_pkg
@@ -27225,6 +27302,20 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: main_tl_cheriot__cored
+        index: -1
+      }
+      {
+        name: tl_cheriot__trbe
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        inst_name: main
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: main_tl_cheriot__trbe
         index: -1
       }
       {
@@ -33615,6 +33706,30 @@
         struct: tl_d2h
         domain: Main
         signame: main_tl_cheriot__cored_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: main_tl_cheriot__trbe_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: main_tl_cheriot__trbe_rsp
         width: 1
         type: req_rsp
         end_idx: -1
