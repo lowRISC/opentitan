@@ -1595,33 +1595,33 @@ module otbn
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemRspFifo,
-    u_tlul_adapter_sram_dmem.u_rspfifo,
+    u_tlul_adapter_sram_dmem.gen_no_sec_u_rspfifo.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemSramReqFifo,
-    u_tlul_adapter_sram_dmem.u_sramreqfifo,
+    u_tlul_adapter_sram_dmem.gen_no_sec_u_sramreqfifo.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemReqFifo,
-    u_tlul_adapter_sram_dmem.u_reqfifo,
+    u_tlul_adapter_sram_dmem.gen_no_sec_u_reqfifo.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemRspFifo,
-    u_tlul_adapter_sram_imem.u_rspfifo,
+    u_tlul_adapter_sram_imem.gen_no_sec_u_rspfifo.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemSramReqFifo,
-    u_tlul_adapter_sram_imem.u_sramreqfifo,
+    u_tlul_adapter_sram_imem.gen_no_sec_u_sramreqfifo.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemReqFifo,
-    u_tlul_adapter_sram_imem.u_reqfifo,
+    u_tlul_adapter_sram_imem.gen_no_sec_u_reqfifo.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
