@@ -20,6 +20,8 @@ module rram_ctrl_mp
   input logic rst_ni,
 
   input mubi4_t                   rram_disable_i,
+  // Disables host reads only. Software controller operations are disabled in rram_ctrl_arb.
+  input mubi4_t                   sw_disable_i,
   // Interface selection
   input rram_sel_e                if_sel_i,
   // Configuration from sw
@@ -75,6 +77,7 @@ module rram_ctrl_mp
 );
 
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   // Page address
   logic [PageW-1:0] page_addr;
@@ -269,7 +272,7 @@ module rram_ctrl_mp
   logic txn_wr_err_d, txn_wr_err_q;
   logic no_allowed_txn;
   // If rram_disable is true, transaction is always invalid
-  assign no_allowed_txn = ((prim_mubi_pkg::mubi4_test_true_loose(rram_disable_i)) ||
+  assign no_allowed_txn = ((mubi4_test_true_loose(rram_disable_i)) ||
                            (addr_invalid | invalid_data_txn | invalid_info_txn));
 
   // return done and error the next cycle
@@ -328,13 +331,17 @@ module rram_ctrl_mp
   logic unused_host_mp;
   assign unused_host_mp = ^{host_sel_cfg.wr_en, host_sel_cfg.addr_xor_en, host_addr_i[PageW-1:0]};
 
-  assign host_data_en     = mubi4_test_true_strict(host_sel_cfg.en);
+  // If sw_disable is true, host reads are invalid.
+  logic sw_dis;
+  assign sw_dis = mubi4_test_true_loose(sw_disable_i);
+
+  assign host_data_en     = mubi4_test_true_strict(host_sel_cfg.en) & ~sw_dis;
   assign host_data_rd_en  = host_data_en & mubi4_test_true_strict(host_sel_cfg.rd_en);
   assign host_data_scr_en = host_data_en & mubi4_test_true_strict(host_sel_cfg.scramble_en);
   assign host_data_ecc_en = host_data_en & mubi4_test_true_strict(host_sel_cfg.ecc_en);
 
   assign invalid_host_txn = host_req_i & ((host_data_rd_en == 1'b0) ||
-                                          prim_mubi_pkg::mubi4_test_true_loose(rram_disable_i));
+                                          mubi4_test_true_loose(rram_disable_i));
 
   logic [BusFullWidth-1:0] inv_data;
   tlul_data_integ_enc u_bus_intg (
@@ -388,5 +395,9 @@ module rram_ctrl_mp
 
   // The phy cannot handle back pressure
   `ASSERT(IllegalBackPressure_A, (host_rd_done_i & forward_err) == 1'b0)
+
+  // If software access is disabled, host reads are not forwarded to the phy, but answered with an
+  // error.
+  `ASSERT(SwDisHostBlocked_A, sw_dis && host_req_i |-> !host_req_o && invalid_host_txn)
 
   endmodule

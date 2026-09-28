@@ -267,11 +267,28 @@ For each entry, the inner FSM takes the following steps:
 All state transitions of the inner FSM are depicted below:
 <img src="../doc/rram_rma_fsm.svg" width="800"/>
 
-After all entries are wiped, the main FSM enters `StRmaRsp`, which asserts `rma_dis_access_o = On` to disable all further RRAM access and drives `rma_ack` with the error-free status.
-If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+From the start of the RMA entry process (`StEntropyReseed` and `StRmaWipe`), the main FSM asserts `rma_sw_dis_o = On`, which disables all software access through `rram_ctrl`:
+- New software initiated controller operations are rejected by the arbiter.
+  They are not started, but completed immediately with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
+- Host reads, including instruction fetches, are answered with an error.
 
-After RMA completes, the RRAM controller is [disabled](#rram-escalation--disable).
-When disabled, the RRAM controller registers can still be accessed but the memory macro cannot be written or read anymore.
+This prevents software from reading pages that are not yet wiped, or writing pages that were already wiped.
+A software operation that is already in progress when the RMA entry process starts is not affected and completes normally, including its accesses to the write and read FIFO windows.
+The wipe only starts once the arbiter has returned to idle, i.e., after that operation has finished, see feature `RRAM_CTRL.OP.PROTOCOL_CTRL`.
+An operation that never completes (e.g., a write for which software never provides all words) blocks the RMA entry process.
+
+Software can still reach the OTP pages through the direct access interface of `otp_ctrl`, which uses the OTP hardware interface of `rram_ctrl`.
+
+After all entries are wiped, the main FSM enters `StRmaRsp` and stays there until the next reset.
+It drives `rma_ack` with the error-free status and keeps `rma_sw_dis_o = On`.
+
+The RRAM itself is not disabled, because the life cycle controller still accesses the OTP after the RMA wipe to program the new life cycle state.
+The OTP and lcmgr hardware interfaces are therefore not affected by `rma_sw_dis_o`.
+
+If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+In this case, the RRAM controller is [disabled](#rram-escalation--disable) completely and the life cycle controller does not complete the RMA transition.
+
+After a successful as well as a failed RMA entry, the RRAM controller registers can still be accessed.
 It is expected that the entire system will be rebooted after an RMA transition.
 
 

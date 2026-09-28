@@ -275,6 +275,10 @@ module rram_ctrl
 
   mubi4_t [RramDisableLast-1:0] rram_disable;
 
+  // software access disable (upon RMA entry)
+  lc_ctrl_pkg::lc_tx_t rma_sw_dis;
+  mubi4_t [RramSwDisableLast-1:0] rram_sw_disable;
+
   ///////////////////
   // RRAM_REGS_TOP //
   ///////////////////
@@ -669,6 +673,7 @@ module rram_ctrl
     .rand_data_key_o (rand_data_key),
     // Access controls and status
     .rma_dis_access_o(rma_dis_access),
+    .rma_sw_dis_o    (rma_sw_dis),
     .keys_valid_o    (lcmgr_keys_valid),
     .init_done_o     (lcmgr_init_done)
   );
@@ -716,6 +721,7 @@ module rram_ctrl
     .clk_i,
     .rst_ni,
     .disable_i        (rram_disable[ArbFsmDisableIdx]),
+    .sw_disable_i     (rram_sw_disable[SwDisArbIdx]),
     // sw ctrl interface
     .sw_ctrl_i        (reg2hw.control),
     .sw_addr_i        (reg2hw.addr.q),
@@ -970,6 +976,7 @@ module rram_ctrl
     .clk_i,
     .rst_ni,
     .rram_disable_i     (rram_disable[MpDisableIdx]),
+    .sw_disable_i       (rram_sw_disable[SwDisMpIdx]),
     // Interface selection
     .if_sel_i           (if_sel),
     // Memory protection configuration
@@ -1220,6 +1227,16 @@ module rram_ctrl
     .rst_ni,
     .mubi_i(rram_disable_in),
     .mubi_o(rram_disable)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(RramSwDisableLast)),
+    .AsyncOn(0)
+  ) u_sw_disable_buf (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(lc_ctrl_pkg::lc_to_mubi4(rma_sw_dis)),
+    .mubi_o(rram_sw_disable)
   );
 
   ////////////////

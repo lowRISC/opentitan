@@ -545,6 +545,7 @@
               - Isolated partition
               - Data partition
             This procedure is implemented to guarantee that any sensitive information previously stored in these partitions remains unrecoverable.
+            From the start of the RMA request until the next reset, new software initiated controller operations are rejected with an error and host reads are answered with an error.
             '''
     }
   ],

@@ -15,6 +15,8 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
   input logic rst_ni,
 
   input  prim_mubi_pkg::mubi4_t         disable_i,
+  // Disables the software interface
+  input  prim_mubi_pkg::mubi4_t         sw_disable_i,
   // sw ctrl interface
   input  rram_ctrl_reg2hw_control_reg_t sw_ctrl_i,
   input  logic [BusAddrByteW-1:0]       sw_addr_i,
@@ -137,8 +139,15 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
   rram_ctrl_err_t                rw_ctrl_err;
   logic                          rw_sw_req;
 
+  // Software access disable
+  logic                          sw_dis;
+
   assign sw_req    = sw_ctrl_i.start.q & (sw_ctrl_i.op.q != RramOpRewrite);
   assign rw_sw_req = sw_ctrl_i.start.q & (sw_ctrl_i.op.q == RramOpRewrite);
+
+  // Operations already in progress when sw_disable_i asserts complete normally. Only new software
+  // and Rewrite operations are rejected, see StIdle.
+  assign sw_dis = prim_mubi_pkg::mubi4_test_true_loose(sw_disable_i);
 
   // SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, arb_state_e, StReset)
@@ -204,6 +213,9 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
           wr_fifo_clr_o = 1'b1;
           // priority is given to the OTP interface
           state_d = hw_otp_req_i ? StHwOtp : StHwLcmgr;
+        end else if ((sw_req | rw_sw_req) & ctrl_init_done_i & sw_dis) begin
+          // Reject new sw operations while software access is disabled, with an error.
+          if_sel = SwErrSel;
         end else if (sw_req & ctrl_init_done_i) begin
           // clear wr_fifo upon new request
           wr_fifo_clr_o = 1'b1;
@@ -371,6 +383,13 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
 
         rd_ctrl_rready_o = wr_fifo_wready_i;
       end
+
+      // Complete a rejected software operation with an operation error
+      SwErrSel: begin
+        sw_done_o               = 1'b1;
+        sw_err_o.invalid_op_err = 1'b1;
+      end
+
       default:;
     endcase // unique case (if_sel)
   end
@@ -421,5 +440,8 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
   // Byte-offset bits of muxed_addr are not consumed (word-addressed operations only)
   logic unused_muxed_addr;
   assign unused_muxed_addr = ^muxed_addr[BusByteWidth-1:0];
+
+  // If software access is disabled, no new software or Rewrite operation is started
+  `ASSERT(SwDisNoNewSwOp_A, sw_dis && state_q == StIdle |=> !(state_q inside {StSw, StRewriteRd}))
 
 endmodule // rram_ctrl_arb
