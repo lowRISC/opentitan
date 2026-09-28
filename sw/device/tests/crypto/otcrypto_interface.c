@@ -204,6 +204,12 @@ volatile otcrypto_interface_t otcrypto = {
     .rsa_decrypt_async_start = &otcrypto_rsa_decrypt_async_start,
     .rsa_decrypt_async_finalize = &otcrypto_rsa_decrypt_async_finalize,
 
+    // RSA custom-exponent (blocking).
+    .rsa_sign_exp = &otcrypto_rsa_sign_exp,
+    .rsa_verify_exp = &otcrypto_rsa_verify_exp,
+    .rsa_encrypt_exp = &otcrypto_rsa_encrypt_exp,
+    .rsa_decrypt_exp = &otcrypto_rsa_decrypt_exp,
+
     // ECDSA P-256 (blocking).
     .ecdsa_p256_keygen = &otcrypto_ecdsa_p256_keygen,
     .ecdsa_p256_dice_keygen = &otcrypto_ecdsa_p256_dice_keygen,

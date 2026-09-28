@@ -34,36 +34,44 @@ status_t rsa_modexp_wait(size_t *num_words);
  * Start a constant-time RSA modular exponentiation.
  *
  * This construct is for secret exponents, and is much slower than the
- * variable-time version.
+ * variable-time version. It uses Ebeid-Lambert inverse-free base blinding:
+ *   base^d = ((base * R^e)^(d - 1)) * (base * R^(e - 1)) mod n
+ * which requires the public exponent `pub_exp` (`e`) associated with the
+ * secret exponent shares `d = exp0 ^ exp1`.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
  * @param base Exponentiation base.
- * @param exp0 Exponent to raise the base to (share 0).
- * @param exp1 Exponent to raise the base to (share 1).
+ * @param exp0 Secret exponent to raise the base to (share 0).
+ * @param exp1 Secret exponent to raise the base to (share 1).
+ * @param pub_exp Public exponent `e` associated with `exp0 ^ exp1` (0 for
+ *                default F4=65537, or odd >= 3).
  * @param modulus Modulus for exponentiation.
+ * @param checksum Checksum over `exp0`.
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
-                                    const uint32_t *modulus, uint32_t checksum);
+                                    uint32_t pub_exp, const uint32_t *modulus,
+                                    uint32_t checksum);
 
 /**
  * Start a variable-time RSA modular exponentiation.
  *
  * Do not use this construct with secret exponents; its timing depends on the
- * exponent.
+ * exponent (16-squaring chain for F4=65537, or 32-bit loop for custom `exp`).
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
  * @param base Exponentiation base.
+ * @param exp Public exponent e (0 for default F4=65537, or odd >= 3).
  * @param modulus Modulus for exponentiation.
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
-                                  const uint32_t *modulus);
+                                  uint32_t exp, const uint32_t *modulus);
 
 /**
  * Waits for an RSA modular exponentiation to complete.

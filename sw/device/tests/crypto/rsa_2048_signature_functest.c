@@ -475,6 +475,18 @@ static status_t run_signature_negative_tests(void) {
                             &valid_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Invalid custom public exponents (< 3 or even) must be rejected.
+  const uint32_t kBadExps[] = {0, 1, 2, 4, 65536};
+  for (size_t i = 0; i < ARRAYSIZE(kBadExps); i++) {
+    CHECK(otcrypto_rsa_sign_exp(&valid_priv, kBadExps[i], valid_digest,
+                                kOtcryptoRsaPaddingPkcs, &valid_sig)
+              .value == OTCRYPTO_BAD_ARGS.value);
+    CHECK(otcrypto_rsa_verify_exp(&valid_pub, kBadExps[i], valid_digest,
+                                  kOtcryptoRsaPaddingPkcs, &valid_const_sig,
+                                  &verify_res)
+              .value == OTCRYPTO_BAD_ARGS.value);
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -525,6 +537,182 @@ status_t all_hashes_sign_verify_test(void) {
   return OK_STATUS();
 }
 
+// Test RSA-2048 key pair with custom public exponent e = 3.
+static uint32_t kTestModulusE3[kRsa2048NumWords] = {
+    0x3a0edbcf, 0xdbb6892a, 0xbe90c222, 0xa72c285d, 0x442a16b4, 0x760b0a2f,
+    0xdcbfb450, 0x87f255c1, 0x55a4aca1, 0xc5a78419, 0x9cda964c, 0x7a5e131e,
+    0x1e7ddad0, 0xf5cf5e9f, 0x43b5f097, 0xdac45def, 0x3df1c0c9, 0xf0108b6a,
+    0x469d21bb, 0x962b70ec, 0x55033d6d, 0xdc7e602a, 0x8a21c566, 0xdc13db70,
+    0x600ffc41, 0x297437b6, 0x37669500, 0x5a74e28d, 0x35eb62b8, 0xf7a93cc3,
+    0x7bdd0548, 0xc5495f72, 0x8f52bde4, 0x80749ff9, 0x842530bf, 0x7c23ab00,
+    0x0d2f3e72, 0x5bcf274e, 0xe4bed76c, 0x427a05b5, 0x57db6b3c, 0x682aeb51,
+    0x32f0c35b, 0xd9b88030, 0xb19e36bd, 0x61c74fd9, 0xd56fdcff, 0xb5da9c83,
+    0x4fcca390, 0x32cb3c9d, 0xa304093b, 0x7fa58848, 0xae5e15d3, 0x3e664e3d,
+    0x878c6185, 0xee24bac4, 0x2f5951b3, 0x0f4b3195, 0xb0907dd9, 0xf6da23ae,
+    0xa5305c9a, 0xf84511d0, 0x1886fafa, 0xc8ddfbf6,
+};
+static uint32_t kTestPrivateExponentE3[kRsa2048NumWords] = {
+    0x30cdc15b, 0x9e3723d1, 0x405c9c18, 0xcc7f2ce9, 0xfff765ce, 0xbda009e3,
+    0x5469fcef, 0xe7d5445a, 0xa1d5390f, 0x88185187, 0x7ce90459, 0xdbe4926c,
+    0x4b2a29e7, 0x04f1719c, 0x7a0e4566, 0xc66cdb68, 0x8c11582b, 0x7e439e05,
+    0x4b022d93, 0x839788f4, 0x402247d6, 0x330b059c, 0xfe3900aa, 0x0fdd153d,
+    0xb6c0d6ed, 0xeda75ca0, 0x04f5a5e6, 0xe2335e19, 0x891da36a, 0xbd5abfaf,
+    0xe1f62b59, 0x0f7c25db, 0xed1205c1, 0xfc22907b, 0x87e218bf, 0x41d2890f,
+    0x17ac192a, 0x2991e9eb, 0x44fe0687, 0x1949840d, 0x960e6819, 0x50bb7b7e,
+    0x094d1d31, 0xa981b64f, 0xf5de01a8, 0xa5df407a, 0x7312e7aa, 0x340e61d5,
+    0xdba15a4a, 0x6e253061, 0xc6e1178d, 0x41edbe4f, 0xd6bd086b, 0x01e411e2,
+    0xe513c4e5, 0x7b9481c7, 0xd2e3ad24, 0x5d8dea3a, 0x2461782d, 0xd8ef566a,
+    0x1c47489f, 0x3dd38c2d, 0x2f49e893, 0x06163df0,
+};
+static const uint32_t kValidSignaturePkcs1v15E3[kRsa2048NumWords] = {
+    0x7f3ba00b, 0xacb1ab84, 0x31df157b, 0x94c84ff9, 0xf0adbd65, 0x16a35552,
+    0x9795e371, 0x65b3ea80, 0x9c4fd319, 0xeed2720d, 0x9b13cf69, 0x4896558a,
+    0xbfaf43f2, 0x20140b64, 0x199320e8, 0x5bc6ca71, 0xeeeef4fa, 0xebf4f0fe,
+    0xd72b09b0, 0x718c8771, 0x6b26aa5a, 0x0bb39c67, 0xafaab727, 0x487c1806,
+    0xe30fbeb2, 0x7825bbdc, 0xf9e0f750, 0x4e8ac5b9, 0x02ff705a, 0x367d9a31,
+    0xe4196e3a, 0x9ebaae2c, 0xc3ecdfb8, 0x6dbcd8c2, 0x84911d14, 0xdfdab331,
+    0x322d717b, 0x0fa9ff88, 0x936f2393, 0x32dc9e83, 0xc7decc8c, 0x44cfd107,
+    0x3ea5f9eb, 0x95434bad, 0x2d4f82d6, 0x41443ba2, 0x0303050c, 0x3c7a0b2b,
+    0x11a773f5, 0xfdb3f61f, 0x4cd40275, 0x203934a2, 0x81e3283b, 0xce324cdf,
+    0x2aea365a, 0x799ee1db, 0x7ef68115, 0xbcd7d704, 0xbc1d42b4, 0x642e1cf6,
+    0xdbeacbf8, 0x4317ed37, 0x79f68c6f, 0x58905761,
+};
+
+status_t custom_exp_sign_verify_test(void) {
+  LOG_INFO("Running RSA custom-exponent (e=3, e=65537) signature tests");
+
+  otcrypto_const_word32_buf_t modulus_e3 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulusE3, ARRAYSIZE(kTestModulusE3));
+  otcrypto_const_word32_buf_t d_share0_e3 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponentE3,
+                        ARRAYSIZE(kTestPrivateExponentE3));
+  uint32_t share1_e3[ARRAYSIZE(kTestPrivateExponentE3)] = {0};
+  otcrypto_const_word32_buf_t d_share1_e3 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1_e3, ARRAYSIZE(share1_e3));
+
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus_e3,
+                                        &public_key));
+
+  otcrypto_key_config_t private_key_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048, &modulus_e3,
+                                              &d_share0_e3, &d_share1_e3,
+                                              &private_key));
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t msg_digest_data[256 / 32];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+  };
+  TRY(compute_digest(&msg_buf, kOtcryptoHashModeSha256, &msg_digest));
+
+  uint32_t sig[kRsa2048NumWords];
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+
+  // 1. Sign with the secret exponent d (passing the associated public exponent
+  // e = 3 required for Ebeid-Lambert base blinding) and compare against the
+  // known-answer signature.
+  TRY(otcrypto_rsa_sign_exp(&private_key, 3, msg_digest,
+                            kOtcryptoRsaPaddingPkcs, &sig_buf));
+  LOG_INFO("OTBN sign_exp (e=3) instruction count: 0x%08x",
+           otbn_instruction_count_get());
+  TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15E3,
+                      ARRAYSIZE(kValidSignaturePkcs1v15E3));
+
+  // 2. Verify with public exponent e = 3.
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_verify_exp(&public_key, 3, msg_digest,
+                              kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                              &verification_result));
+  LOG_INFO("OTBN verify_exp (e=3) instruction count: 0x%08x",
+           otbn_instruction_count_get());
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // 3. Verify with wrong exponent (e = 17) must fail verification.
+  verification_result = kHardenedBoolTrue;
+  TRY(otcrypto_rsa_verify_exp(&public_key, 17, msg_digest,
+                              kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                              &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+
+  // 4. Test PSS sign/verify with the key pair for e = 3.
+  public_key.key_mode = kOtcryptoKeyModeRsaSignPss;
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+  otcrypto_key_config_t private_key_pss_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPss,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t private_key_pss = {
+      .config = private_key_pss_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  private_key_pss.checksum =
+      otcrypto_integrity_blinded_checksum(&private_key_pss);
+  otcrypto_word32_buf_t sig_buf3 =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  TRY(otcrypto_rsa_sign_exp(&private_key_pss, 3, msg_digest,
+                            kOtcryptoRsaPaddingPss, &sig_buf3));
+  otcrypto_const_word32_buf_t const_sig_buf3 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
+  verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_verify_exp(&public_key, 3, msg_digest,
+                              kOtcryptoRsaPaddingPss, &const_sig_buf3,
+                              &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // 5. Test sign_exp and verify_exp with e = 65537 against the standard KAT.
+  otcrypto_const_word32_buf_t modulus_f4 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
+  otcrypto_const_word32_buf_t d_share0_f4 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
+                        ARRAYSIZE(kTestPrivateExponent));
+  public_key.key_mode = kOtcryptoKeyModeRsaSignPkcs;
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus_f4,
+                                        &public_key));
+  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048, &modulus_f4,
+                                              &d_share0_f4, &d_share1_e3,
+                                              &private_key));
+  TRY(otcrypto_rsa_sign_exp(&private_key, 65537, msg_digest,
+                            kOtcryptoRsaPaddingPkcs, &sig_buf));
+  TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
+                      ARRAYSIZE(kValidSignaturePkcs1v15));
+  verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_verify_exp(&public_key, 65537, msg_digest,
+                              kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                              &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -537,5 +725,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, pss_verify_invalid_test);
   EXECUTE_TEST(test_result, all_hashes_sign_verify_test);
   EXECUTE_TEST(test_result, run_signature_negative_tests);
+  EXECUTE_TEST(test_result, custom_exp_sign_verify_test);
   return status_ok(test_result);
 }
