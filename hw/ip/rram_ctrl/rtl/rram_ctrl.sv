@@ -1137,12 +1137,12 @@ module rram_ctrl
 
   rram_ctrl_reg_pkg::rram_ctrl_reg2hw_fault_status_reg_t fault_status_masked;
 
-  // If reg2hw.dis.relbl_err_fatal is MuBi4False (reset state) phy_relbl_err is excluded for
+  // If reg2hw.dis.local_esc_relbl_err is MuBi4False (reset state) phy_relbl_err is excluded for
   // local escalation. An alert is generated nevertheless.
   always_comb begin
     fault_status_masked = reg2hw.fault_status;
 
-    if (prim_mubi_pkg::mubi4_test_false_strict(mubi4_t'(reg2hw.dis.relbl_err_fatal))) begin
+    if (prim_mubi_pkg::mubi4_test_false_strict(mubi4_t'(reg2hw.dis.local_esc_relbl_err))) begin
       fault_status_masked.phy_relbl_err = 1'b0;
     end
   end
@@ -1151,8 +1151,20 @@ module rram_ctrl
   logic all_fatal_esc;
   assign all_fatal_esc = fatal_std_err | (|fault_status_masked);
 
-  lc_ctrl_pkg::lc_tx_t local_esc;
-  assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(all_fatal_esc);
+  // Local escalation is sticky until reset. Otherwise clearing FAULT_STATUS.PHY_RELBL_ERR (rw0c)
+  // would revoke an escalation and re-open the RRAM. The flop is only set if all_fatal_esc is
+  // asserted and holds its value otherwise. The escalation takes effect one cycle after the fault.
+  lc_ctrl_pkg::lc_tx_t local_esc_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      local_esc_q <= lc_ctrl_pkg::Off;
+    end else begin
+      if (all_fatal_esc) begin
+        local_esc_q <= lc_ctrl_pkg::On;
+      end
+    end
+  end
 
   // Escalation from lc_ctrl
   prim_lc_sync #(
@@ -1167,7 +1179,7 @@ module rram_ctrl
   lc_ctrl_pkg::lc_tx_t escalate_en;
 
   // SEC_CM: MEM.CTRL.LOCAL_ESC
-  assign escalate_en = lc_ctrl_pkg::lc_tx_or_hi(rma_dis_access, local_esc);
+  assign escalate_en = lc_ctrl_pkg::lc_tx_or_hi(rma_dis_access, local_esc_q);
 
   // RRAM functional disable
   lc_ctrl_pkg::lc_tx_t lc_disable;
@@ -1334,6 +1346,11 @@ module rram_ctrl
   // The seeds stored in RRAM must match the seed width of the key manager.
   `ASSERT_INIT(CreatorSeedWidthMatch_A, $bits(keymgr_creator_seed_o.seed) == SeedWidth)
   `ASSERT_INIT(OwnerSeedWidthMatch_A, $bits(keymgr_owner_seed_o.seed) == SeedWidth)
+
+  // Local escalation is only set by a fatal fault and cannot be revoked until reset
+  `ASSERT(LocalEscSetByFault_A, local_esc_q != lc_ctrl_pkg::On |=>
+                                (local_esc_q == lc_ctrl_pkg::On) == $past(all_fatal_esc))
+  `ASSERT(LocalEscSticky_A, local_esc_q == lc_ctrl_pkg::On |=> local_esc_q == lc_ctrl_pkg::On)
 
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,

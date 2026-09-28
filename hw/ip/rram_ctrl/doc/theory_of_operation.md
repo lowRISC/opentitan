@@ -142,8 +142,8 @@ Software should respond to `corr_err` by issuing a `Rewrite` operation on the af
 
 Uncorrectable multi-bit errors trigger `ecc_fatal_err`, which results in a fatal alert.
 The macro marks the data as uncorrectable, and the ECC decoder cannot recover the original data.
-A fatal alert is always raised, but this fault (`FAULT_STATUS.phy_relbl_err`) only disables RRAM access once [`DIS.RELBL_ERR_FATAL`](registers.md#dis--relbl_err_fatal) has been set to any value other than `MuBi4False`, its reset default.
-Since `DIS.RELBL_ERR_FATAL` is `rw1s`, once set it cannot be reverted by software.
+A fatal alert is always raised, but this fault (`FAULT_STATUS.phy_relbl_err`) only disables RRAM access once [`DIS.LOCAL_ESC_RELBL_ERR`](registers.md#dis--local_esc_relbl_err) has been set to any value other than `MuBi4False`, its reset default.
+Since `DIS.LOCAL_ESC_RELBL_ERR` is `rw1s`, once set it cannot be reverted by software.
 
 ## LCMGR Hardware Plug
 
@@ -469,6 +469,14 @@ RRAM access can be disabled through escalation (global or local) or directly by 
 2. **Local escalation** is triggered by `all_fatal_esc = fatal_std_err | (|fault_status_masked)`, which aggregates the entire `fault_status`/`std_fault_status` register vectors, not just FSM state errors.
    This includes FIFO integrity errors, counter-redundancy errors, read/write bus-integrity errors, seed errors, spurious-done and host-grant consistency checks, and invalid/unreachable FSM states (`state_err`) across `rram_ctrl_lcmgr` and `rram_phy`.
    Any of these conditions causes an immediate transition to the invalid terminal state, which continuously asserts `rram_dis_access_o` and raises `fatal_err`.
+   All errors in `std_fault_status` and `fault_status` cause local escalation, with the exception of `fault_status.phy_relbl_err`.
+   It only causes local escalation once [`DIS.LOCAL_ESC_RELBL_ERR`](registers.md#dis--local_esc_relbl_err) has been set to any value other than `MuBi4False`, its reset default, see [Multi-Bit Error](#multi-bit-error-uncorrectable).
+   Since `DIS.LOCAL_ESC_RELBL_ERR` is `rw1s`, once set it cannot be reverted by software.
+
+   Once triggered, local escalation is latched and remains active until the next reset, even if the causing fault is cleared afterwards.
+   In particular, clearing `fault_status.phy_relbl_err` does not re-enable the RRAM once it has caused a local escalation.
+   Therefore, firmware must clear any `phy_relbl_err` left over from firmware selection before it sets `DIS.LOCAL_ESC_RELBL_ERR`.
+   The `fatal_err` alert is raised for `phy_relbl_err` regardless of `DIS.LOCAL_ESC_RELBL_ERR`.
 
 3. **Software disable** lets software kill RRAM directly, without going through escalation or fault detection: writing any value other than MuBi4False to [`DIS.SW_DIS`](registers.md#dis) asserts `rram_disable` immediately.
    Since this register is `rw1s`, this cannot be reverted by software.
