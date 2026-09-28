@@ -821,7 +821,8 @@ module earlgrey_pd_main #(
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
-  rram_ctrl_pkg::keymgr_rram_t       rram_ctrl_keymgr;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       keymgr_dpe_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_dpe_owner_seed;
 
@@ -876,12 +877,8 @@ module earlgrey_pd_main #(
   // nvm_ctrl provides the creator / owner seed
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
-  // TODO(#30965 / #31004): Connect the valid bit as soon as available.
-  // Replace rram_ctrl_keymgr.seeds output with designated seed outputs.
-  assign keymgr_dpe_creator_seed =
-      {rram_ctrl_keymgr.seeds[0], 1'b1};
-  assign keymgr_dpe_owner_seed =
-      {rram_ctrl_keymgr.seeds[1], 1'b1};
+  assign keymgr_dpe_creator_seed = rram_ctrl_keymgr_creator_seed;
+  assign keymgr_dpe_owner_seed = rram_ctrl_keymgr_owner_seed;
   assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
   assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
 
@@ -1949,7 +1946,8 @@ module earlgrey_pd_main #(
     .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
     .pwrmgr_o(pwrmgr_pwr_nvm_o),
-    .keymgr_o(rram_ctrl_keymgr),
+    .keymgr_creator_seed_o(rram_ctrl_keymgr_creator_seed),
+    .keymgr_owner_seed_o(rram_ctrl_keymgr_owner_seed),
     .core_tl_i(rram_ctrl_core_tl_req),
     .core_tl_o(rram_ctrl_core_tl_rsp),
     .host_tl_i(rram_ctrl_host_tl_req),

@@ -94,21 +94,15 @@ module ${top["name"]}_pd_${domain.lower()} #(
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
   assign keymgr_dpe_creator_seed = otp_ctrl_keymgr_creator_seed;
   assign keymgr_dpe_owner_seed = otp_ctrl_keymgr_owner_seed;
-  assign unused_keymgr_creator_seed =
-      {rram_ctrl_keymgr.seeds[0], 1'b1};
-  assign unused_keymgr_owner_seed =
-      {rram_ctrl_keymgr.seeds[1], 1'b1};
+  assign unused_keymgr_creator_seed = rram_ctrl_keymgr_creator_seed;
+  assign unused_keymgr_owner_seed = rram_ctrl_keymgr_owner_seed;
 
   % elif keymgr_dpe_seed_selector == "nvm_ctrl":
   // nvm_ctrl provides the creator / owner seed
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
-  // TODO(#30965 / #31004): Connect the valid bit as soon as available.
-  // Replace rram_ctrl_keymgr.seeds output with designated seed outputs.
-  assign keymgr_dpe_creator_seed =
-      {rram_ctrl_keymgr.seeds[0], 1'b1};
-  assign keymgr_dpe_owner_seed =
-      {rram_ctrl_keymgr.seeds[1], 1'b1};
+  assign keymgr_dpe_creator_seed = rram_ctrl_keymgr_creator_seed;
+  assign keymgr_dpe_owner_seed = rram_ctrl_keymgr_owner_seed;
   assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
   assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
 

@@ -138,17 +138,9 @@ package rram_ctrl_pkg;
   typedef logic [TotalSeedWidth-1:0] all_seeds_t;
   typedef logic [KeyWidth-1:0]       rram_key_t;
 
-  // rram_ctrl to keymgr
-  typedef struct packed {
-    logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
-  } keymgr_rram_t;
-
-  parameter keymgr_rram_t KEYMGR_RRAM_DEFAULT = '{
-    seeds:'{
-      256'h16c60598_e7d9c867_1aa74d45_6b10dfb4_309ee153_a448b2bb_438ff7ec_d09d21eb,
-      256'h9a90bd5d_b04641d6_4f18fc47_b6db3da0_cad2e288_01fec9f5_78f64a12_2f776685
-    }
-  };
+  // Seed index of the creator and owner seed provided to the key manager
+  parameter int unsigned CreatorSeedIdx = 0;
+  parameter int unsigned OwnerSeedIdx   = 1;
 
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 1294753918 --prefix ""
@@ -367,6 +359,7 @@ package rram_ctrl_pkg;
   };
 
   // which page of which info type of which bank for seed selection
+  // (ordered by CreatorSeedIdx and OwnerSeedIdx)
   parameter logic [InfoPageW-1:0] SeedInfoPageSel [NumSeeds] = '{
     CreatorInfoPage,
     OwnerInfoPage

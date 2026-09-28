@@ -55,15 +55,16 @@ module rram_ctrl
 
   // OTP/LcCtrl/Pwrmgr/Keymgr Interface
   // SEC_CM: SCRAMBLE.KEY.SIDELOAD
-  input  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_macro_i,
-  output otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_macro_o,
-  output otp_ctrl_pkg::nvm_otp_key_req_t          otp_key_o,
-  input  otp_ctrl_pkg::nvm_otp_key_rsp_t          otp_key_i,
-  input  lc_ctrl_pkg::lc_tx_t                     rma_req_i,
-  input  lc_ctrl_pkg::lc_nvm_rma_seed_t           rma_seed_i,
-  output lc_ctrl_pkg::lc_tx_t                     rma_ack_o,
-  output keymgr_rram_t                            keymgr_o,
-  output pwrmgr_pkg::pwr_nvm_t                    pwrmgr_o,
+  input  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t  otp_macro_i,
+  output otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t  otp_macro_o,
+  output otp_ctrl_pkg::nvm_otp_key_req_t           otp_key_o,
+  input  otp_ctrl_pkg::nvm_otp_key_rsp_t           otp_key_i,
+  input  lc_ctrl_pkg::lc_tx_t                      rma_req_i,
+  input  lc_ctrl_pkg::lc_nvm_rma_seed_t            rma_seed_i,
+  output lc_ctrl_pkg::lc_tx_t                      rma_ack_o,
+  output keymgr_dpe_pkg::keymgr_dpe_creator_seed_t keymgr_creator_seed_o,
+  output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t   keymgr_owner_seed_o,
+  output pwrmgr_pkg::pwr_nvm_t                     pwrmgr_o,
 
   // Interrupts
   output logic intr_corr_err_o, // Correctable errors encountered
@@ -593,6 +594,19 @@ module rram_ctrl
   rram_key_t rand_addr_key;
   rram_key_t rand_data_key;
 
+  logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
+  logic [NumSeeds-1:0]                seeds_valid;
+
+  // Seeds to the key manager
+  assign keymgr_creator_seed_o = '{
+    seed:       seeds[CreatorSeedIdx],
+    seed_valid: seeds_valid[CreatorSeedIdx]
+  };
+  assign keymgr_owner_seed_o = '{
+    seed:       seeds[OwnerSeedIdx],
+    seed_valid: seeds_valid[OwnerSeedIdx]
+  };
+
   rram_ctrl_lcmgr #(
     .RndCnstAddrKey  ( RndCnstAddrKey  ),
     .RndCnstDataKey  ( RndCnstDataKey  ),
@@ -628,7 +642,8 @@ module rram_ctrl
     .rma_seed_i      (rma_seed_i),
     .rma_ack_o       (rma_ack_o),
     // Output seeds
-    .seeds_o         (keymgr_o.seeds),
+    .seeds_o         (seeds),
+    .seeds_valid_o   (seeds_valid),
     // Error status
     .fatal_err_o     (lcmgr_err),
     .intg_err_o      (lcmgr_intg_err),
@@ -1298,7 +1313,8 @@ module rram_ctrl
   `ASSERT_KNOWN(OtpMacroOKnown_A, otp_macro_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(OtpKeyOKnown_A, otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(RmaAckOKnown_A, rma_ack_o)
-  `ASSERT_KNOWN(KeymgrOKnown_A, keymgr_o)
+  `ASSERT_KNOWN(KeymgrCreatorSeedOKnown_A, keymgr_creator_seed_o)
+  `ASSERT_KNOWN(KeymgrOwnerSeedOKnown_A, keymgr_owner_seed_o)
   `ASSERT_KNOWN(PwrmgrOKnown_A, pwrmgr_o)
   `ASSERT_KNOWN(IntrCorrErrOKnown_A, intr_corr_err_o)
   `ASSERT_KNOWN(IntrWrEmptyOKnown_A, intr_wr_empty_o)
@@ -1314,6 +1330,10 @@ module rram_ctrl
   // computed `OtpPages`.
   `ASSERT_INIT(NumOtpPagesMatch_A,
                rram_ctrl_reg_pkg::NumOtpPages == rram_ctrl_pkg::OtpPages)
+
+  // The seeds stored in RRAM must match the seed width of the key manager.
+  `ASSERT_INIT(CreatorSeedWidthMatch_A, $bits(keymgr_creator_seed_o.seed) == SeedWidth)
+  `ASSERT_INIT(OwnerSeedWidthMatch_A, $bits(keymgr_owner_seed_o.seed) == SeedWidth)
 
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
