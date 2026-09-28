@@ -41,6 +41,15 @@ EG100_TAPED_OUT_IPS = [
     "usbdev",
 ]
 
+# For some IPs the regression results are hosted outside the standard opentitan dashboard.
+# Keys are IP names; values override the report URL and badge base URL used in the table.
+CUSTOM_IP_REGRESSION_URLS = {
+    "rv_core_ibex": {
+        "report_url": "https://ibex.reports.lowrisc.org/opentitan/latest/report.html",
+        "badge_base": "https://dashboard.reports.lowrisc.org/badges/dv/ibex/opentitan",
+    },
+}
+
 # For some IPs there are multiple regressions with different naming. Any IP not listed here has one
 # regression named after its name.
 REGRESSIONS_PER_IP = {
@@ -79,6 +88,13 @@ def parse_data_file(hjson_path: str) -> Tuple[str, str, str, str]:
 
 
 def generate_links_for_regs_and_badges(ipname: str, topname: str) -> Tuple[list[str], list[str]]:
+    if ipname in CUSTOM_IP_REGRESSION_URLS:
+        custom = CUSTOM_IP_REGRESSION_URLS[ipname]
+        return (
+            [f"[`{ipname}`]({custom['report_url']})"],
+            [custom["badge_base"]],
+        )
+
     regression_base_url = f"https://dashboard.reports.lowrisc.org/opentitan/{topname}"
     # TODO: We link all regressions to the main dashboard as there are currently links to the
     # separate regression results.
