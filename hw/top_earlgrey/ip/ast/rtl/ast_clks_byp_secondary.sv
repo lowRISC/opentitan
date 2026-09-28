@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //############################################################################
-// *Name: ast_clks_byp_aon
+// *Name: ast_clks_byp_secondary
 // *Module Description: AST Clocks Bypass - AON Power Domain
 //
 // Contains AON clock mux and associated reset logic. Self-sufficient when
@@ -13,8 +13,9 @@
 
 `include "prim_assert.sv"
 
-module ast_clks_byp_aon
-  import ast_aon_main_pkg::*;
+module ast_clks_byp_secondary
+  import ast_pkg::*;
+  import ast_intraip_pkg::*;
 (
   // Power OK signals
   input  logic vcaon_pok_i,                 // VCAON POK
@@ -25,10 +26,10 @@ module ast_clks_byp_aon
   // Oscillator clock inputs
   input  logic clk_osc_aon_i,               // AON Oscillator Clock
   input  logic clk_osc_aon_val_i,           // AON Oscillator Clock Valid
-  // Interface from main domain
-  input  clks_byp_main_to_aon_t main_to_aon_i,
-  // Interface to main domain
-  output clks_byp_aon_to_main_t aon_to_main_o
+  // Interface from primary partition
+  input  clks_byp_p2s_t p2s_i,
+  // Interface to primary partition
+  output clks_byp_s2p_t s2p_o
 );
 
 ////////////////////////////////////////
@@ -70,10 +71,10 @@ gfr_clk_mux2 u_clk_src_aon_sel (
   .clk_osc_i ( clk_osc_aon_i ),
   .clk_osc_val_i ( clk_osc_aon_val_i ),
   .rst_clk_osc_ni ( rst_clk_osc_aon_n ),
-  .clk_ext_i ( main_to_aon_i.clk_ext_aon ),
+  .clk_ext_i ( p2s_i.clk_ext_aon ),
   .clk_ext_val_i ( 1'b1 ),  // Always ON clock
   .rst_clk_ext_ni ( rst_clk_ext_aon_n ),
-  .ext_sel_i ( main_to_aon_i.aon_select_ext ),
+  .ext_sel_i ( p2s_i.aon_select_ext ),
   .clk_osc_en_o ( aon_clk_osc_en ),
   .clk_ext_en_o ( aon_clk_byp_en ),
   .clk_val_o ( clk_src_aon_val ),
@@ -83,12 +84,12 @@ gfr_clk_mux2 u_clk_src_aon_sel (
 ////////////////////////////////////////
 // Output Assignments
 ////////////////////////////////////////
-assign aon_to_main_o.clk_src_aon_o = clk_src_aon;
-assign aon_to_main_o.clk_src_aon_val_o = clk_src_aon_val;
-assign aon_to_main_o.aon_clk_byp_en = aon_clk_byp_en;
+assign s2p_o.clk_src_aon_o = clk_src_aon;
+assign s2p_o.clk_src_aon_val_o = clk_src_aon_val;
+assign s2p_o.aon_clk_byp_en = aon_clk_byp_en;
 
 // Unused signal
 logic unused_aon_clk_osc_en;
 assign unused_aon_clk_osc_en = aon_clk_osc_en;
 
-endmodule : ast_clks_byp_aon
+endmodule : ast_clks_byp_secondary
