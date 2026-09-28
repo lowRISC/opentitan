@@ -44,10 +44,8 @@ module ast_part_primary (
   input  prim_mubi_pkg::mubi4_t all_clk_byp_req_i,
   input  prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,
 
-`ifdef AST_BYPASS_CLK
-  // Clocks' Oschillator bypass for OS FPGA
-  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
-`endif
+  // Clocks' Oscillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oscillator bypass for OS FPGA/VERILATOR
 
   // Clock outputs
   output logic clk_src_sys_o,
@@ -172,6 +170,10 @@ logic clk_osc_io;
 logic clk_osc_usb;
 logic clk_osc_sys_val, clk_osc_io_val, clk_osc_usb_val;
 
+`ifndef AST_BYPASS_CLK
+logic unused_clk_osc_byp;
+assign unused_clk_osc_byp = ^clk_osc_byp_i;
+`endif
 
 `ifdef AST_BYPASS_CLK
 logic clk_sys_ext;
