@@ -10,6 +10,16 @@
  * - Intentionally omitted BaseAddr in case of multiple memory maps are used in a SoC,
  *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
+ *
+ * - If RACL is disabled (EnableRacl = 0) there is no combinational path between the A channel
+ *   input signals (incl. a_valid) and a_ready within this module to prevent long timing paths
+ *   through the TL-UL interface. Similarly, integrators are advised to avoid combinationally
+ *   factoring in any of the request signals of the SRAM interface into the gnt_i signal. In case
+ *   of SRAMs, the gnt_i signal is meant to statically indicate the readiness of the memory
+ *   primitive (e.g. if the scrambling key is ready in case of scrambled memory primitives).
+ *
+ *   See tlul_adapter_sram.sv for details.
+ *
  * - At most one of EnableDataIntgGen / EnableDataIntgPt can be enabled. However it
  *   possible for both to be disabled.
  *   A module can neither generate an integrity response nor pass through any pre-existing
@@ -60,7 +70,9 @@ module tlul_adapter_sram_racl
   // SRAM interface
   output logic                 req_o,
   output mubi4_t               req_type_o,
-  input                        gnt_i,
+  input                        gnt_i, // To prevent long timing paths through the TL-UL interface,
+                                      // this should be independent of the request output signals.
+                                      // See tlul_adapter_sram.sv for details.
   output logic                 we_o,
   output logic [SramAw-1:0]    addr_o,
   output logic [DataOutW-1:0]  wdata_o,
