@@ -43,22 +43,32 @@ typedef enum rsa_signature_padding {
 /**
  * Starts generating an RSA signature; returns immediately.
  *
- * The key exponent must be F4=65537; no other exponents are supported.
+ * Although RSA signing raises the encoded message to the secret exponent
+ * `d = d0 ^ d1`, OTBN's constant-time `modexp` uses the Ebeid-Lambert
+ * inverse-free base-blinding technique:
+ *   M^d = ((M * R^e)^(d - 1)) * (M * R^(e - 1)) mod n
+ * which avoids inverting the random blinding factor `R` by relying on
+ * `R^(e*d - 1) = 1 mod n`. Consequently, the public exponent `e` associated
+ * with `(d0, d1)` must be provided.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
  * @param d0 RSA private exponent share 0.
  * @param d1 RSA private exponent share 1.
+ * @param e RSA public exponent associated with `d` (0 for default F4=65537,
+ *          or odd >= 3; note that FIPS 186-5 requires e > 2^16).
  * @param n RSA public modulus.
+ * @param checksum Checksum over `d0`.
  * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_start(
-    rsa_size_t size, const uint32_t *d0, const uint32_t *d1, const uint32_t *n,
-    uint32_t checksum, const otcrypto_hash_digest_t message_digest,
+    rsa_size_t size, const uint32_t *d0, const uint32_t *d1, uint32_t e,
+    const uint32_t *n, uint32_t checksum,
+    const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode);
 
 /**
@@ -80,12 +90,15 @@ status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature);
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
+ * @param e RSA public exponent (0 for default F4=65537, or odd >= 3; note that
+ *          FIPS 186-5 requires e > 2^16).
  * @param n RSA public modulus.
  * @param signature Signature to verify.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_verify_start(rsa_size_t size, const uint32_t *n,
+status_t rsa_signature_verify_start(rsa_size_t size, uint32_t e,
+                                    const uint32_t *n,
                                     const uint32_t *signature);
 
 /**

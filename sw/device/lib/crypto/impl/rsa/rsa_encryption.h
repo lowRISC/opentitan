@@ -20,14 +20,15 @@ extern "C" {
 /**
  * Starts encrypting a message with RSA; returns immediately.
  *
- * The key exponent must be F4=65537; no other exponents are supported.  The
- * padding scheme is OAEP, and the mask generation function (MGF) is MGF1 with
- * the hash function indicated by `hash_mode` and a salt the same length as the
- * hash function output.
+ * The padding scheme is OAEP, and the mask generation function (MGF) is MGF1
+ * with the hash function indicated by `hash_mode` and a salt the same length
+ * as the hash function output.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
+ * @param e RSA public exponent (0 for default F4=65537, or odd >= 3; note that
+ *          FIPS 186-5 requires e > 2^16).
  * @param n RSA public modulus.
  * @param hash_mode Hash function to use for message encoding.
  * @param message Message to encrypt.
@@ -37,7 +38,7 @@ extern "C" {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_encrypt_start(rsa_size_t size, const uint32_t *n,
+status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
                            const otcrypto_hash_mode_t hash_mode,
                            const uint8_t *message, size_t message_bytelen,
                            const uint8_t *label, size_t label_bytelen);
@@ -58,18 +59,29 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext);
 /**
  * Start decrypting a message with RSA; returns immediately.
  *
+ * Although RSA decryption raises the ciphertext to the secret exponent
+ * `d = d0 ^ d1`, OTBN's constant-time `modexp` uses the Ebeid-Lambert
+ * inverse-free base-blinding technique:
+ *   C^d = ((C * R^e)^(d - 1)) * (C * R^(e - 1)) mod n
+ * which avoids inverting the random blinding factor `R` by relying on
+ * `R^(e*d - 1) = 1 mod n`. Consequently, the public exponent `e` associated
+ * with `(d0, d1)` must be provided.
+ *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param size RSA size parameter (e.g. 2048, 3072, 4096).
  * @param d0 RSA private exponent share 0.
  * @param d1 RSA private exponent share 1.
+ * @param e RSA public exponent associated with `d` (0 for default F4=65537,
+ *          or odd >= 3; note that FIPS 186-5 requires e > 2^16).
  * @param n RSA public modulus.
  * @param ciphertext Encrypted message.
+ * @param checksum Checksum over `d0`.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, const uint32_t *n,
+                           const uint32_t *d1, uint32_t e, const uint32_t *n,
                            const uint32_t *ciphertext, uint32_t checksum);
 
 /**
