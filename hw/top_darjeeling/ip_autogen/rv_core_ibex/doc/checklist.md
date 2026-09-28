@@ -9,16 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../../doc/
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [RV_CORE_IBEX Design Spec](../README.md)
-Documentation | [CSR_DEFINED][]                | Not Started |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
-Code Quality  | [LINT_SETUP][]                 | Not Started |
-Security      | [SEC_CM_SCOPED][]              | Not Started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [RV_CORE_IBEX Design Spec](../README.md)
+Documentation | [CSR_DEFINED][]                | Done        | [Registers](registers.md)
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        | rv_core_ibex.sv
+RTL           | [IP_INSTANTIABLE][]            | Done        | Elaborates cleanly in EarlGrey
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        | ICache SRAMs via prim_ram_1p
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        | [Security countermeasures](interfaces.md#security-countermeasures)
 
 [SPEC_COMPLETE]:              ../../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../../doc/project_governance/checklist/README.md#csr_defined

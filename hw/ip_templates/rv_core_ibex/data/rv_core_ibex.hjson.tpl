@@ -30,9 +30,9 @@
           notes:              ""
       },
       {
-          version:            "2.2.0",
+          version:            "3.0.0",
           life_stage:         "L1",
-          design_stage:       "D0",
+          design_stage:       "D1",
           verification_stage: "V0",
           dif_stage:          "S0",
           notes:              ""
