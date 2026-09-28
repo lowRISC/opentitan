@@ -21,6 +21,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);  // Private exponent d0.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);  // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, inout);   // Input/output buffer.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, ok);      // Status of the operation.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_e);   // Custom public exponent e.
 
 // Miller-Rabin iteration counter for p.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_p);
@@ -37,10 +38,16 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_DE);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_E);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP_DE);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_MODEXP_E);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_F4);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_DE);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_E);
 
 enum {
   /**
@@ -63,12 +70,18 @@ enum {
   /**
    * Expected instruction counts for constant-time modexp operations.
    */
-  kModeRsa2048ModexpInsCnt = 16302881,
-  kModeRsa2048ModexpF4InsCnt = 108416,
-  kModeRsa3072ModexpInsCnt = 52084280,
-  kModeRsa3072ModexpF4InsCnt = 230700,
-  kModeRsa4096ModexpInsCnt = 120180621,
-  kModeRsa4096ModexpF4InsCnt = 399640,
+  kModeRsa2048ModexpInsCnt = 16302885,
+  kModeRsa2048ModexpF4InsCnt = 108418,
+  kModeRsa2048ModexpDEInsCnt = 16485117,
+  kModeRsa2048ModexpEInsCnt = 279316,
+  kModeRsa3072ModexpInsCnt = 52084284,
+  kModeRsa3072ModexpF4InsCnt = 230702,
+  kModeRsa3072ModexpDEInsCnt = 52479320,
+  kModeRsa3072ModexpEInsCnt = 601116,
+  kModeRsa4096ModexpInsCnt = 120180626,
+  kModeRsa4096ModexpF4InsCnt = 399642,
+  kModeRsa4096ModexpDEInsCnt = 120869873,
+  kModeRsa4096ModexpEInsCnt = 1045892,
 };
 
 OT_NOINLINE
@@ -100,46 +113,57 @@ status_t rsa_modexp_wait(size_t *num_words) {
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
 
   *num_words = 0;
+  uint32_t exp_insn_cnt = 0;
   const uint32_t kMode2048Modexp =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP);
   const uint32_t kMode2048ModexpF4 =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_F4);
+  const uint32_t kMode2048ModexpDE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_DE);
+  const uint32_t kMode2048ModexpE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_E);
   const uint32_t kMode3072Modexp =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP);
   const uint32_t kMode3072ModexpF4 =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_F4);
+  const uint32_t kMode3072ModexpDE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_DE);
+  const uint32_t kMode3072ModexpE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_E);
   const uint32_t kMode4096Modexp =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP);
   const uint32_t kMode4096ModexpF4 =
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_F4);
-  if (mode == kMode2048Modexp || mode == kMode2048ModexpF4) {
+  const uint32_t kMode4096ModexpDE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_DE);
+  const uint32_t kMode4096ModexpE =
+      OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_E);
+  if (mode == kMode2048Modexp || mode == kMode2048ModexpF4 ||
+      mode == kMode2048ModexpDE || mode == kMode2048ModexpE) {
     *num_words = kRsa2048NumWords;
-    if (mode == kMode2048Modexp) {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa2048ModexpInsCnt);
-    } else {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
-                        kModeRsa2048ModexpF4InsCnt);
-    }
-  } else if (mode == kMode3072Modexp || mode == kMode3072ModexpF4) {
+    exp_insn_cnt = (mode == kMode2048Modexp)     ? kModeRsa2048ModexpInsCnt
+                   : (mode == kMode2048ModexpF4) ? kModeRsa2048ModexpF4InsCnt
+                   : (mode == kMode2048ModexpDE) ? kModeRsa2048ModexpDEInsCnt
+                                                 : kModeRsa2048ModexpEInsCnt;
+  } else if (mode == kMode3072Modexp || mode == kMode3072ModexpF4 ||
+             mode == kMode3072ModexpDE || mode == kMode3072ModexpE) {
     *num_words = kRsa3072NumWords;
-    if (mode == kMode3072Modexp) {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa3072ModexpInsCnt);
-    } else {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
-                        kModeRsa3072ModexpF4InsCnt);
-    }
-  } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4) {
+    exp_insn_cnt = (mode == kMode3072Modexp)     ? kModeRsa3072ModexpInsCnt
+                   : (mode == kMode3072ModexpF4) ? kModeRsa3072ModexpF4InsCnt
+                   : (mode == kMode3072ModexpDE) ? kModeRsa3072ModexpDEInsCnt
+                                                 : kModeRsa3072ModexpEInsCnt;
+  } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4 ||
+             mode == kMode4096ModexpDE || mode == kMode4096ModexpE) {
     *num_words = kRsa4096NumWords;
-    if (mode == kMode4096Modexp) {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa4096ModexpInsCnt);
-    } else {
-      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
-                        kModeRsa4096ModexpF4InsCnt);
-    }
+    exp_insn_cnt = (mode == kMode4096Modexp)     ? kModeRsa4096ModexpInsCnt
+                   : (mode == kMode4096ModexpF4) ? kModeRsa4096ModexpF4InsCnt
+                   : (mode == kMode4096ModexpDE) ? kModeRsa4096ModexpDEInsCnt
+                                                 : kModeRsa4096ModexpEInsCnt;
   } else {
     // Unrecognized mode.
     return OTCRYPTO_FATAL_ERR;
   }
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), exp_insn_cnt);
 
   return OTCRYPTO_OK;
 }
@@ -290,7 +314,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
-                                    const uint32_t *modulus,
+                                    uint32_t pub_exp, const uint32_t *modulus,
                                     uint32_t checksum) {
   // Load the OTBN app. Fails if OTBN is not idle.
   const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
@@ -305,21 +329,27 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
       num_words = kRsa2048NumWords;
       const uint32_t kMode2048Modexp =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP);
-      mode = kMode2048Modexp;
+      const uint32_t kMode2048ModexpDE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_DE);
+      mode = (pub_exp == 0) ? kMode2048Modexp : kMode2048ModexpDE;
       break;
     case kRsaSize3072:
       HARDENED_CHECK_EQ(size, kRsaSize3072);
       num_words = kRsa3072NumWords;
       const uint32_t kMode3072Modexp =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP);
-      mode = kMode3072Modexp;
+      const uint32_t kMode3072ModexpDE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_DE);
+      mode = (pub_exp == 0) ? kMode3072Modexp : kMode3072ModexpDE;
       break;
     case kRsaSize4096:
       HARDENED_CHECK_EQ(size, kRsaSize4096);
       num_words = kRsa4096NumWords;
       const uint32_t kMode4096Modexp =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP);
-      mode = kMode4096Modexp;
+      const uint32_t kMode4096ModexpDE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_DE);
+      mode = (pub_exp == 0) ? kMode4096Modexp : kMode4096ModexpDE;
       break;
     default:
       HARDENED_TRAP();
@@ -332,9 +362,13 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
   }
   HARDENED_CHECK_EQ(checksum, crc32(exp0, num_words * sizeof(uint32_t)));
 
-  // Set mode.
+  // Set mode and (if using a custom exponent) public exponent e.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
+  if (pub_exp != 0) {
+    const otbn_addr_t kOtbnVarRsaE = OTBN_ADDR_T_INIT(run_rsa, rsa_e);
+    HARDENED_TRY(otbn_dmem_write_public(1, &pub_exp, kOtbnVarRsaE));
+  }
 
   // Set the base, the modulus n and private exponent d.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
@@ -351,7 +385,7 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
 }
 
 status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
-                                  const uint32_t *modulus) {
+                                  uint32_t exp, const uint32_t *modulus) {
   // Load the OTBN app. Fails if OTBN is not idle.
   const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
   HARDENED_TRY(otbn_load_app(kOtbnAppRsa));
@@ -365,30 +399,40 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
       num_words = kRsa2048NumWords;
       const uint32_t kMode2048ModexpF4 =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_F4);
-      mode = kMode2048ModexpF4;
+      const uint32_t kMode2048ModexpE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP_E);
+      mode = (exp == 0) ? kMode2048ModexpF4 : kMode2048ModexpE;
       break;
     case kRsaSize3072:
       HARDENED_CHECK_EQ(size, kRsaSize3072);
       num_words = kRsa3072NumWords;
       const uint32_t kMode3072ModexpF4 =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_F4);
-      mode = kMode3072ModexpF4;
+      const uint32_t kMode3072ModexpE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_MODEXP_E);
+      mode = (exp == 0) ? kMode3072ModexpF4 : kMode3072ModexpE;
       break;
     case kRsaSize4096:
       HARDENED_CHECK_EQ(size, kRsaSize4096);
       num_words = kRsa4096NumWords;
       const uint32_t kMode4096ModexpF4 =
           OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_F4);
-      mode = kMode4096ModexpF4;
+      const uint32_t kMode4096ModexpE =
+          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_E);
+      mode = (exp == 0) ? kMode4096ModexpF4 : kMode4096ModexpE;
       break;
     default:
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
 
-  // Set mode.
+  // Set mode and (if using a custom exponent) public exponent e.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
+  if (exp != 0) {
+    const otbn_addr_t kOtbnVarRsaE = OTBN_ADDR_T_INIT(run_rsa, rsa_e);
+    HARDENED_TRY(otbn_dmem_write_public(1, &exp, kOtbnVarRsaE));
+  }
 
   // Set the base and the modulus n.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
