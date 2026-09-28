@@ -263,7 +263,7 @@ ast_part_primary #(
   .tl_o                    ( tl_o ),
   .clk_ast_tlul_i          ( clk_ast_tlul_i ),
   .rst_ast_tlul_ni         ( rst_ast_tlul_ni ),
-  .ast_init_done_o         ( ast_init_done_o ),
+  .init_done_o             ( ast_init_done_o ),
   .rng_en_i                ( rng_en_i ),
   .rng_fips_i              ( rng_fips_i ),
   .rng_val_o               ( rng_val_o ),
