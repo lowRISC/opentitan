@@ -288,6 +288,7 @@ ast_part_secondary #(
   .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
   .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst
+  .io_pwr_st_o             ( ), // Unused
   .pwrmgr_i                ( pwrmgr_req ),
   .pwrmgr_o                ( pwrmgr_rsp ),
   .flash_power_down_h_o    ( flash_power_down_h_o ),
