@@ -123,153 +123,26 @@ Review        | Signoff date            | Not Started |
 
 ## Verification Checklist
 
+Ibex verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html).
+Ibex is at **V0**.
+
+The verification checklist for the previously taped-out Ibex version (verification stage V2S, v2.1.0) used in Earl Grey v1.0.0 can be found in the [Ibex documentation tagged earlgrey_1.0.0](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html).
+
+Features specific to rv_core_ibex do not have block-level verification.
+Top-level testing suffices for these, see the [rv_core_ibex DV document](../dv/README.md) for more details.
+
 ### V1
 
- Type         | Item                                  | Resolution  | Note/Collaterals
---------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [RV_CORE_IBEX DV document](../dv/README.md)
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [RV_CORE_IBEX Testplan](../dv/README.md#testplan)
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
-
-[DV_DOC_DRAFT_COMPLETED]:             ../../../../../doc/project_governance/checklist/README.md#dv_doc_draft_completed
-[TESTPLAN_COMPLETED]:                 ../../../../../doc/project_governance/checklist/README.md#testplan_completed
-[TB_TOP_CREATED]:                     ../../../../../doc/project_governance/checklist/README.md#tb_top_created
-[PRELIMINARY_ASSERTION_CHECKS_ADDED]: ../../../../../doc/project_governance/checklist/README.md#preliminary_assertion_checks_added
-[SIM_TB_ENV_CREATED]:                 ../../../../../doc/project_governance/checklist/README.md#sim_tb_env_created
-[SIM_RAL_MODEL_GEN_AUTOMATED]:        ../../../../../doc/project_governance/checklist/README.md#sim_ral_model_gen_automated
-[CSR_CHECK_GEN_AUTOMATED]:            ../../../../../doc/project_governance/checklist/README.md#csr_check_gen_automated
-[TB_GEN_AUTOMATED]:                   ../../../../../doc/project_governance/checklist/README.md#tb_gen_automated
-[SIM_SMOKE_TEST_PASSING]:             ../../../../../doc/project_governance/checklist/README.md#sim_smoke_test_passing
-[SIM_CSR_MEM_TEST_SUITE_PASSING]:     ../../../../../doc/project_governance/checklist/README.md#sim_csr_mem_test_suite_passing
-[FPV_MAIN_ASSERTIONS_PROVEN]:         ../../../../../doc/project_governance/checklist/README.md#fpv_main_assertions_proven
-[SIM_ALT_TOOL_SETUP]:                 ../../../../../doc/project_governance/checklist/README.md#sim_alt_tool_setup
-[SIM_SMOKE_REGRESSION_SETUP]:         ../../../../../doc/project_governance/checklist/README.md#sim_smoke_regression_setup
-[SIM_NIGHTLY_REGRESSION_SETUP]:       ../../../../../doc/project_governance/checklist/README.md#sim_nightly_regression_setup
-[FPV_REGRESSION_SETUP]:               ../../../../../doc/project_governance/checklist/README.md#fpv_regression_setup
-[SIM_COVERAGE_MODEL_ADDED]:           ../../../../../doc/project_governance/checklist/README.md#sim_coverage_model_added
-[TB_LINT_SETUP]:                      ../../../../../doc/project_governance/checklist/README.md#tb_lint_setup
-[PRE_VERIFIED_SUB_MODULES_V1]:        ../../../../../doc/project_governance/checklist/README.md#pre_verified_sub_modules_v1
-[DESIGN_SPEC_REVIEWED]:               ../../../../../doc/project_governance/checklist/README.md#design_spec_reviewed
-[TESTPLAN_REVIEWED]:                  ../../../../../doc/project_governance/checklist/README.md#testplan_reviewed
-[STD_TEST_CATEGORIES_PLANNED]:        ../../../../../doc/project_governance/checklist/README.md#std_test_categories_planned
-[V2_CHECKLIST_SCOPED]:                ../../../../../doc/project_governance/checklist/README.md#v2_checklist_scoped
+The V1 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v1-checklist).
 
 ### V2
 
- Type         | Item                                    | Resolution  | Note/Collaterals
---------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V2S_CHECKLIST_SCOPED][]                | Not Started |
-Review        | [V3_FUNCTIONAL_CHECKLIST_SCOPED][]      | Not Started |
-
-[DESIGN_DELTAS_CAPTURED_V2]:          ../../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
-[DV_DOC_COMPLETED]:                   ../../../../../doc/project_governance/checklist/README.md#dv_doc_completed
-[FUNCTIONAL_COVERAGE_IMPLEMENTED]:    ../../../../../doc/project_governance/checklist/README.md#functional_coverage_implemented
-[ALL_INTERFACES_EXERCISED]:           ../../../../../doc/project_governance/checklist/README.md#all_interfaces_exercised
-[ALL_ASSERTION_CHECKS_ADDED]:         ../../../../../doc/project_governance/checklist/README.md#all_assertion_checks_added
-[SIM_TB_ENV_COMPLETED]:               ../../../../../doc/project_governance/checklist/README.md#sim_tb_env_completed
-[SIM_ALL_TESTS_PASSING]:              ../../../../../doc/project_governance/checklist/README.md#sim_all_tests_passing
-[FPV_ALL_ASSERTIONS_WRITTEN]:         ../../../../../doc/project_governance/checklist/README.md#fpv_all_assertions_written
-[FPV_ALL_ASSUMPTIONS_REVIEWED]:       ../../../../../doc/project_governance/checklist/README.md#fpv_all_assumptions_reviewed
-[SIM_FW_SIMULATED]:                   ../../../../../doc/project_governance/checklist/README.md#sim_fw_simulated
-[SIM_NIGHTLY_REGRESSION_V2]:          ../../../../../doc/project_governance/checklist/README.md#sim_nightly_regression_v2
-[SIM_CODE_COVERAGE_V2]:               ../../../../../doc/project_governance/checklist/README.md#sim_code_coverage_v2
-[SIM_FUNCTIONAL_COVERAGE_V2]:         ../../../../../doc/project_governance/checklist/README.md#sim_functional_coverage_v2
-[FPV_CODE_COVERAGE_V2]:               ../../../../../doc/project_governance/checklist/README.md#fpv_code_coverage_v2
-[FPV_COI_COVERAGE_V2]:                ../../../../../doc/project_governance/checklist/README.md#fpv_coi_coverage_v2
-[PRE_VERIFIED_SUB_MODULES_V2]:        ../../../../../doc/project_governance/checklist/README.md#pre_verified_sub_modules_v2
-[NO_HIGH_PRIORITY_ISSUES_PENDING]:    ../../../../../doc/project_governance/checklist/README.md#no_high_priority_issues_pending
-[ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:../../../../../doc/project_governance/checklist/README.md#all_low_priority_issues_root_caused
-[DV_DOC_TESTPLAN_REVIEWED]:           ../../../../../doc/project_governance/checklist/README.md#dv_doc_testplan_reviewed
-[V2S_CHECKLIST_SCOPED]:               ../../../../../doc/project_governance/checklist/README.md#v2s_checklist_scoped
-[V3_FUNCTIONAL_CHECKLIST_SCOPED]:     ../../../../../doc/project_governance/checklist/README.md#v3_functional_checklist_scoped
+The V2 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v2-checklist).
 
 ### V2S
 
- Type         | Item                                    | Resolution  | Note/Collaterals
---------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
-
-[SEC_CM_TESTPLAN_COMPLETED]:          ../../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
-[FPV_SEC_CM_VERIFIED]:                ../../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
-[SIM_SEC_CM_VERIFIED]:                ../../../../../doc/project_governance/checklist/README.md#sim_sec_cm_verified
-[SIM_COVERAGE_REVIEWED]:              ../../../../../doc/project_governance/checklist/README.md#sim_coverage_reviewed
-[SEC_CM_DV_REVIEWED]:                 ../../../../../doc/project_governance/checklist/README.md#sec_cm_dv_reviewed
-[V3_CHECKLIST_SCOPED]:                ../../../../../doc/project_governance/checklist/README.md#v3_checklist_scoped
+The V2S checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v2s-checklist).
 
 ### V3
 
- Type         | Item                              | Resolution  | Note/Collaterals
---------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
-Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not Started |
-Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not Started |
-Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not Started |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Not Started |
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
-Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
-Issues        | [NO_ISSUES_PENDING][]             | Not Started |
-Review        | Reviewer(s)                       | Not Started |
-Review        | Signoff date                      | Not Started |
-
-[DESIGN_DELTAS_CAPTURED_V3]:     ../../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v3
-[X_PROP_ANALYSIS_COMPLETED]:     ../../../../../doc/project_governance/checklist/README.md#x_prop_analysis_completed
-[FPV_ASSERTIONS_PROVEN_AT_V3]:   ../../../../../doc/project_governance/checklist/README.md#fpv_assertions_proven_at_v3
-[SIM_NIGHTLY_REGRESSION_AT_V3]:  ../../../../../doc/project_governance/checklist/README.md#sim_nightly_regression_at_v3
-[SIM_CODE_COVERAGE_AT_100]:      ../../../../../doc/project_governance/checklist/README.md#sim_code_coverage_at_100
-[SIM_FUNCTIONAL_COVERAGE_AT_100]:../../../../../doc/project_governance/checklist/README.md#sim_functional_coverage_at_100
-[FPV_CODE_COVERAGE_AT_100]:      ../../../../../doc/project_governance/checklist/README.md#fpv_code_coverage_at_100
-[FPV_COI_COVERAGE_AT_100]:       ../../../../../doc/project_governance/checklist/README.md#fpv_coi_coverage_at_100
-[ALL_TODOS_RESOLVED]:            ../../../../../doc/project_governance/checklist/README.md#all_todos_resolved
-[NO_TOOL_WARNINGS_THROWN]:       ../../../../../doc/project_governance/checklist/README.md#no_tool_warnings_thrown
-[TB_LINT_COMPLETE]:              ../../../../../doc/project_governance/checklist/README.md#tb_lint_complete
-[PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../../doc/project_governance/checklist/README.md#pre_verified_sub_modules_v3
-[NO_ISSUES_PENDING]:             ../../../../../doc/project_governance/checklist/README.md#no_issues_pending
-
+The V3 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v3-checklist).
