@@ -124,17 +124,6 @@ module keymgr_dpe
     .out_o  (hmac_key_o)
   );
 
-  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
-  localparam int NumOutBufBitsSensKey = $bits(mubi4_t);
-  logic [NumOutBufBitsSensKey-1:0] sensitive_key_buf;
-  prim_buf #(
-    .Width  (NumOutBufBitsSensKey)
-  ) u_anchor_buf_sens_key (
-    .in_i   (MuBi4False),
-    .out_o  (sensitive_key_buf)
-  );
-  assign sensitive_key_o = mubi4_t'(sensitive_key_buf);
-
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
@@ -769,6 +758,12 @@ module keymgr_dpe
     assign unused_rsp = otbn_app_i;
     assign otbn_app_o = kmac_pkg::APP_REQ_DEFAULT;
   end
+
+  // The `sensitive_key_o` is true if:
+  // - `locked_kdf_selection_q` indicates OTBN as KDF
+  // - The sideload interface provides an internal key to the KDF (kmac_key.valid)
+  assign sensitive_key_o = SupportOtbnAsKdfEngine ?
+      mubi4_and_hi(locked_kdf_selection_q, mubi4_bool_to_mubi(kmac_key.valid)) : MuBi4False;
 
   // Verify mubi signal is correctly encoded
   // SEC_CM: KDF_ENGINE.CTRL.MUBI
