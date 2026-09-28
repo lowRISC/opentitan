@@ -11,7 +11,9 @@
 
 `include "prim_assert.sv"
 
-module ast_part_primary (
+module ast_part_primary #(
+  parameter int unsigned EntropyStreams = ast_pkg::EntropyStreams
+) (
   // TLUL interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -22,7 +24,7 @@ module ast_part_primary (
   input rng_en_i,
   input rng_fips_i,
   output logic rng_val_o,
-  output logic [ast_pkg::EntropyStreams-1:0] rng_b_o,
+  output logic [EntropyStreams-1:0] rng_b_o,
   // Entropy interface
   input edn_pkg::edn_rsp_t entropy_rsp_i,
   output edn_pkg::edn_req_t entropy_req_o,
@@ -356,7 +358,7 @@ ast_entropy u_entropy (
 // RNG (OS simplified - fewer ports)
 ///////////////////////////////////////
 rng #(
-  .EntropyStreams ( ast_pkg::EntropyStreams )
+  .EntropyStreams ( EntropyStreams )
 ) u_rng (
   .clk_i ( intraip_s2p_i.clk_rst.clk_ast_tlul ),
   .rst_ni ( intraip_s2p_i.clk_rst.rst_ast_tlul_n ),
@@ -409,6 +411,9 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 // TODO: This assertion must be split up so it considers each part of the intra-IP with its related
 //       clk/rst. For now we keep the TLUL clk as it wakes up late.
 `ASSERT_KNOWN(PrimaryToSecondaryKnownO_A, intraip_p2s_o, clk_ast_tlul_i, rst_ast_tlul_ni)
+
+// Ensure parameters defined in the hjson always match the pkg.
+`ASSERT_INIT(EntropyStreamsMatchesAstPkg_A, EntropyStreams == ast_pkg::EntropyStreams)
 
 /////////////////////
 // Unused Signals  //
