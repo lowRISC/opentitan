@@ -21,6 +21,8 @@ If multiple errors are logged at the same cycle, arbitration will record the one
 
 If there is more than one error reported (concurrently or over several cycles), the `error_log.overflow` field will be set.
 The log can be cleared by writing `1` to the `error_log.valid` field.
+This clears every field of `error_log` and the `error_log_address` register.
+Writing `0` to `error_log.valid` has no effect.
 During a RACL error, `error_log.valid` is set and an interrupt is raised.
 
 ${"##"} Alerts and security
