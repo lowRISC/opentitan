@@ -48,6 +48,7 @@ module cheriot_tag_filter #(
 
   // The meta data type handed between the host's request and response channel
   typedef struct packed {
+    logic read;
     logic lookup;
     logic aligned;
   } req_rsp_meta_t;
@@ -95,6 +96,12 @@ module cheriot_tag_filter #(
 
   // Unused meta response signals
   logic unused_m_rsp;
+
+  // Meta responses, always accepted into a buffer until joined
+  logic meta_buf_wready;
+  logic meta_buf_valid;
+  logic meta_buf_tag;
+  logic meta_buf_err;
 
   // Tag bit store. We only do the lookup on the lower word of a capability to save
   // bandwidth into the meta memory. For the directly following meta word, we store
@@ -180,6 +187,7 @@ module cheriot_tag_filter #(
 
   // Assemble meta data between host's request and response channel.
   assign meta_req = '{
+    read:    tl_d_is_read,
     lookup:  require_lookup,
     aligned: tl_d_is_aligned
   };
@@ -209,13 +217,34 @@ module cheriot_tag_filter #(
   // Join //
   //////////
 
+  // Unjoined lookups are bounded by the meta FIFO's entries plus the one lookup the fork can issue
+  // while that FIFO is full, so a buffer one entry deeper never refuses a response.
+  prim_fifo_sync #(
+    .Width(2),
+    .Pass(1'b1),
+    .Depth(NumOutstanding + 32'd1)
+  ) u_prim_fifo_sync_meta_rsp (
+    .clk_i,
+    .rst_ni,
+    .clr_i   ( 1'b0                        ),
+    .wvalid_i( tl_m_i.d_valid              ),
+    .wready_o( meta_buf_wready             ),
+    .wdata_i ( {tag_m_i, tl_m_i.d_error}   ),
+    .rvalid_o( meta_buf_valid              ),
+    .rready_i( tl_m_rsp_ready              ),
+    .rdata_o ( {meta_buf_tag, meta_buf_err}),
+    .full_o  (                             ),
+    .depth_o (                             ),
+    .err_o   (                             )
+  );
+
   // We join in exactly the transactions we forked.
   assign require_join = meta_rsp.lookup;
 
   stream_join_dynamic #(
     .N_INP(32'd3)
   ) u_stream_join_dynamic (
-    .inp_valid_i( {meta_rsp_valid, tl_m_i.d_valid, tl_h_i.d_valid} ),
+    .inp_valid_i( {meta_rsp_valid, meta_buf_valid, tl_h_i.d_valid} ),
     .inp_ready_o( {meta_rsp_ready, tl_m_rsp_ready, tl_h_rsp_ready} ),
     .sel_i      ( {1'b1, require_join, 1'b1} ),
     .oup_valid_o( tl_d_rsp_valid ),
@@ -229,13 +258,15 @@ module cheriot_tag_filter #(
 
   assign tag_m_o = tag_d_i;
 
+  // Only read responses carry a tag; a write answered between the two words of a capability leaves
+  // the stored tag alone.
   always_comb begin: proc_sticky_tag_d_o
     tag_d_d = tag_d_q;
-    tag_d_o = tag_d_q;
-    if(tl_d_o.d_valid && tl_d_i.d_ready) begin
-      if(meta_rsp.aligned) begin
-        tag_d_o = require_join && tag_m_i;
-        tag_d_d = require_join && tag_m_i;
+    tag_d_o = !meta_rsp.read  ? 1'b0 :
+              (meta_rsp.aligned ? (require_join && meta_buf_tag) : tag_d_q);
+    if (tl_d_o.d_valid && tl_d_i.d_ready && meta_rsp.read) begin
+      if (meta_rsp.aligned) begin
+        tag_d_d = require_join && meta_buf_tag;
       end else begin
         tag_d_d = 1'b0;
       end
@@ -266,13 +297,13 @@ module cheriot_tag_filter #(
     tl_m_o.a_address       = meta_addr;
     tl_m_o.a_user.cmd_intg = tlul_pkg::get_cmd_intg(tl_m_o);
     tl_m_o.a_valid         = tl_m_req_valid;
-    tl_m_o.d_ready         = tl_m_rsp_ready;
+    tl_m_o.d_ready         = meta_buf_wready;
   end
 
   // We disregard all of the meta SRAM response except for the tag bit and the error bit
   always_comb begin: proc_connect_tl_rsp
     tl_d_o         = tl_h_i;
-    tl_d_o.d_error = tl_d_o.d_error || (require_join && tl_m_i.d_error);
+    tl_d_o.d_error = tl_d_o.d_error || (require_join && meta_buf_err);
     tl_d_o.a_ready = tl_d_req_ready;
     tl_d_o.d_valid = tl_d_rsp_valid;
   end
@@ -294,5 +325,8 @@ module cheriot_tag_filter #(
 
   // Meta FIFO has to be valid when device port handshakes its response
   `ASSERT(MetaRspValidOnDHs_A, (tl_d_o.d_valid && tl_d_i.d_ready) |-> meta_rsp_valid)
+
+  // The meta path never waits on a join
+  `ASSERT(MetaRspAlwaysAccepted_A, tl_m_i.d_valid |-> meta_buf_wready)
 
 endmodule
