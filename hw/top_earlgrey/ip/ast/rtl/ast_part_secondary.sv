@@ -49,6 +49,7 @@ module ast_part_secondary #(
   output ast_pkg::ast_pwst_t ast_pwst_o,      // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @1.1V
   output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @3.3V
   output logic [rstmgr_pkg::PowerDomains-1:0] rstmgr_por_n_o, // Per-power-domain POR
+  output ast_pkg::ast_status_t io_pwr_st_o,   // Power status of IO towards sensor_ctrl
 
   // Pwrmgr connection
   input pwrmgr_pkg::pwr_ast_req_t  pwrmgr_i,
@@ -180,6 +181,7 @@ assign ast_pwst_o   = ast_pwst;
 assign ast_pwst_h_o = ast_pwst_h;
 
 assign rstmgr_por_n_o = {ast_pwst.main_pok, ast_pwst.aon_pok};
+assign io_pwr_st_o    = ast_pwst.io_pok;
 
 ///////////////////////////////////////
 // VCC POK (Always ON)
@@ -744,6 +746,7 @@ assign intraip_s2p_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_n_i)
 `ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_n_i)
 `ASSERT_KNOWN(RstmgrPorKnowO_A, rstmgr_por_n_o, clk_src_aon_o, por_n_i)
+`ASSERT_KNOWN(IoPwrStateKnownO_A, io_pwr_st_o, clk_src_aon_o, por_n_i)
 // FLASH/OTP
 `ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst.main_pok)
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst.main_pok)
