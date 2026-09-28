@@ -45,3 +45,12 @@ set_toggle_includex
 
 // For ternary operator in default SOP mode
 set_expr_scoring -vlog_short_circuit
+
+// Enable Constant Object Marking (COM) so that coverage items which can never be exercised because
+// they are driven by constants inside the DUT are automatically detected during elaboration, marked
+// IGN, and omitted from the coverage figures. It prevents statically-tied inputs (e.g. reinit
+// inputs on generated register blocks that are tied to zero at integration) from showing up as
+// false coverage holes. When the testbench is built, we pass -covdut, which ensures genuine DUT ports
+// are considered variable. This avoids any inferred constant variables from undriven ports.
+// `-log` writes the list of marked items to `icc.com` for auditing.
+set_com -on -log
