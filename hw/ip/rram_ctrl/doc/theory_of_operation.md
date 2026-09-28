@@ -244,11 +244,23 @@ For each entry, the inner FSM takes the following steps:
 All state transitions of the inner FSM are depicted below:
 <img src="../doc/rram_rma_fsm.svg" width="800"/>
 
-After all entries are wiped, the main FSM enters `StRmaRsp`, which asserts `rma_dis_access_o = On` to disable all further RRAM access and drives `rma_ack` with the error-free status.
-If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+From the start of the RMA entry process (`StEntropyReseed` and `StRmaWipe`), the main FSM asserts `rma_sw_dis_o = On`, which disables all software access to the RRAM:
+- Software initiated controller operations (including rewrite operations) are rejected by the memory protection with an error.
+  An operation that is still ongoing when the RMA entry process starts is terminated with an error.
+- Host reads, including instruction fetches, are answered with an error.
+- Accesses to the write and read FIFO windows are answered with an error.
 
-After RMA completes, the RRAM controller is [disabled](#rram-escalation--disable).
-When disabled, the RRAM controller registers can still be accessed but the memory macro cannot be written or read anymore.
+This prevents software from reading pages that are not yet wiped, or writing pages that were already wiped.
+After all entries are wiped, the main FSM enters `StRmaRsp` and stays there until the next reset.
+It drives `rma_ack` with the error-free status and keeps `rma_sw_dis_o = On`.
+
+The RRAM itself is not disabled, because the life cycle controller still accesses the OTP after the RMA wipe to program the new life cycle state.
+The OTP and lcmgr hardware interfaces are therefore not affected by `rma_sw_dis_o`.
+
+If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+In this case, the RRAM controller is [disabled](#rram-escalation--disable) completely and the life cycle controller does not complete the RMA transition.
+
+After a successful as well as a failed RMA entry, the RRAM controller registers can still be accessed.
 It is expected that the entire system will be rebooted after an RMA transition.
 
 

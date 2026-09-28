@@ -70,6 +70,14 @@ package rram_ctrl_pkg;
     RramDisableLast
   } rram_disable_pos_e;
 
+  // RRAM software access disable usage (from the start of the RMA wipe until reset)
+  typedef enum logic [1:0] {
+    SwDisMpIdx,
+    SwDisRdFifoIdx,
+    SwDisWrFifoIdx,
+    RramSwDisableLast
+  } rram_sw_disable_pos_e;
+
   // RRAM Operations Supported
   typedef enum logic [1:0] {
     RramOpRead    = 2'h0,

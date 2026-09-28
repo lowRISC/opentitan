@@ -20,6 +20,8 @@ module rram_ctrl_mp
   input logic rst_ni,
 
   input mubi4_t                   rram_disable_i,
+  // Disables the software access only (controller operations and host)
+  input mubi4_t                   sw_disable_i,
   // Interface selection
   input rram_sel_e                if_sel_i,
   // Configuration from sw
@@ -67,6 +69,7 @@ module rram_ctrl_mp
 );
 
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   // Page address
   logic [PageW-1:0] page_addr;
@@ -142,14 +145,21 @@ module rram_ctrl_mp
     .page_cfg_o  (hw_lcmgr_sel_cfg)
   );
 
+  // If sw_disable is true, all software accesses are invalid: controller operations initiated by
+  // software (SwSel and HwLoopBack) as well as host reads. The resulting transactions are neither
+  // forwarded to the phy nor granted, but answered with an error. The hardware interfaces (OTP and
+  // lcmgr) are not affected.
+  logic sw_dis;
+  assign sw_dis = mubi4_test_true_loose(sw_disable_i);
+
   // Select between hardware and software interfaces
   page_cfg_t data_region_cfg;
   always_comb begin
     data_region_cfg = CfgDisable;
 
     unique case (if_sel_i)
-      HwLoopBack: data_region_cfg = CfgRw;
-      SwSel:      data_region_cfg = sw_sel_cfg;
+      HwLoopBack: data_region_cfg = sw_dis ? CfgDisable : CfgRw;
+      SwSel:      data_region_cfg = sw_dis ? CfgDisable : sw_sel_cfg;
       HwOtpSel:   data_region_cfg = hw_otp_sel_cfg;
       HwLcMgrSel: data_region_cfg = hw_lcmgr_sel_cfg;
       default: ;
@@ -213,8 +223,8 @@ module rram_ctrl_mp
     info_page_cfg = CfgDisable;
 
     unique case (if_sel_i)
-      HwLoopBack: info_page_cfg = CfgRw;
-      SwSel:      info_page_cfg = info_page_cfgs_i[info_page_addr].cfg;
+      HwLoopBack: info_page_cfg = sw_dis ? CfgDisable : CfgRw;
+      SwSel:      info_page_cfg = sw_dis ? CfgDisable : info_page_cfgs_i[info_page_addr].cfg;
       HwLcMgrSel: info_page_cfg = hw_lcmgr_info_page_cfg;
       default: ;
     endcase
@@ -258,7 +268,7 @@ module rram_ctrl_mp
   logic txn_wr_err_d, txn_wr_err_q;
   logic no_allowed_txn;
   // If rram_disable is true, transaction is always invalid
-  assign no_allowed_txn = ((prim_mubi_pkg::mubi4_test_true_loose(rram_disable_i)) ||
+  assign no_allowed_txn = ((mubi4_test_true_loose(rram_disable_i)) ||
                            (addr_invalid | invalid_data_txn | invalid_info_txn));
 
   // return done and error the next cycle
@@ -317,13 +327,13 @@ module rram_ctrl_mp
   logic unused_host_mp;
   assign unused_host_mp = ^{host_sel_cfg.wr_en, host_sel_cfg.addr_xor_en, host_addr_i[PageW-1:0]};
 
-  assign host_data_en     = mubi4_test_true_strict(host_sel_cfg.en);
+  assign host_data_en     = mubi4_test_true_strict(host_sel_cfg.en) & ~sw_dis;
   assign host_data_rd_en  = host_data_en & mubi4_test_true_strict(host_sel_cfg.rd_en);
   assign host_data_scr_en = host_data_en & mubi4_test_true_strict(host_sel_cfg.scramble_en);
   assign host_data_ecc_en = host_data_en & mubi4_test_true_strict(host_sel_cfg.ecc_en);
 
   assign invalid_host_txn = host_req_i & ((host_data_rd_en == 1'b0) ||
-                                          prim_mubi_pkg::mubi4_test_true_loose(rram_disable_i));
+                                          mubi4_test_true_loose(rram_disable_i));
 
   logic [BusFullWidth-1:0] inv_data;
   tlul_data_integ_enc u_bus_intg (
@@ -377,5 +387,14 @@ module rram_ctrl_mp
 
   // The phy cannot handle back pressure
   `ASSERT(IllegalBackPressure_A, (host_rd_done_i & forward_err) == 1'b0)
+
+  // If software access is disabled, software initiated controller operations are neither forwarded
+  // to the phy nor completed successfully.
+  `ASSERT(SwDisCtrlBlocked_A, sw_dis && ctrl_req && (if_sel_i inside {SwSel, HwLoopBack}) |->
+          !ctrl_req_o ##1 ctrl_mp_err_o)
+
+  // If software access is disabled, host reads are neither forwarded to the phy nor granted by it,
+  // but answered with an error.
+  `ASSERT(SwDisHostBlocked_A, sw_dis && host_req_i |-> !host_req_o && invalid_host_txn)
 
   endmodule

@@ -93,6 +93,7 @@ module rram_ctrl
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////
   // Localparam definitions //
@@ -272,6 +273,10 @@ module rram_ctrl
 
   mubi4_t [RramDisableLast-1:0] rram_disable;
 
+  // software access disable (upon RMA entry)
+  lc_ctrl_pkg::lc_tx_t rma_sw_dis;
+  mubi4_t [RramSwDisableLast-1:0] rram_sw_disable;
+
   ///////////////////
   // RRAM_REGS_TOP //
   ///////////////////
@@ -426,6 +431,11 @@ module rram_ctrl
   tlul_pkg::tl_h2d_t wr_tl_h2d;
   tlul_pkg::tl_d2h_t wr_tl_d2h;
 
+  // The write FIFO window is disabled if the RRAM or its software access is disabled.
+  mubi4_t wr_fifo_disable;
+  assign wr_fifo_disable = prim_mubi_pkg::mubi4_or_hi(rram_disable[WrFifoIdx],
+                                                      rram_sw_disable[SwDisWrFifoIdx]);
+
   // The write path also needs an lc gate to error back when the RRAM is disabled.
   // This is because tlul_adapter_sram does not actually have a way of signaling
   // write errors, only read errors.
@@ -440,7 +450,7 @@ module rram_ctrl
     .flush_req_i   ('0),
     .flush_ack_o   (),
     .resp_pending_o(),
-    .lc_en_i       (lc_ctrl_pkg::mubi4_to_lc_inv(rram_disable[WrFifoIdx])),
+    .lc_en_i       (lc_ctrl_pkg::mubi4_to_lc_inv(wr_fifo_disable)),
     .err_o         (tl_wr_gate_intg_err)
   );
 
@@ -504,6 +514,11 @@ module rram_ctrl
   logic rd_fifo_adapter_req;
   logic rd_fifo_adapter_req_d, rd_fifo_adapter_req_q;
 
+  // The read FIFO window is disabled if the RRAM or its software access is disabled.
+  mubi4_t rd_fifo_disable;
+  assign rd_fifo_disable = prim_mubi_pkg::mubi4_or_hi(rram_disable[RdFifoIdx],
+                                                      rram_sw_disable[SwDisRdFifoIdx]);
+
   // A read request is seen from software but a read operation is not enabled
   // AND there are no pending entries to read from the fifo.
   // This indicates software has issued a read when it should not have.
@@ -512,10 +527,10 @@ module rram_ctrl
   assign ctrl_rd_op = reg2hw.control.start.q & (reg2hw.control.op.q == RramOpRead);
 
   // If software ever attempts to read when the FIFO is empty AND if it has never
-  // initiated a transaction, OR when RRAM is disabled, then it is a read that
-  // can never complete, error back immediately.
+  // initiated a transaction, OR when RRAM or its software access is disabled, then it
+  // is a read that can never complete, error back immediately.
   assign rd_no_op_d = rd_fifo_adapter_req & ((~ctrl_rd_op & ~rd_fifo_rvalid) |
-                      (prim_mubi_pkg::mubi4_test_true_loose(rram_disable[RdFifoIdx])));
+                      mubi4_test_true_loose(rd_fifo_disable));
 
   assign rd_fifo_adapter_req_d = rd_fifo_adapter_req & rd_fifo_rvalid;
 
@@ -657,6 +672,7 @@ module rram_ctrl
     .rand_data_key_o (rand_data_key),
     // Access controls and status
     .rma_dis_access_o(rma_dis_access),
+    .rma_sw_dis_o    (rma_sw_dis),
     .keys_valid_o    (lcmgr_keys_valid),
     .init_done_o     (lcmgr_init_done)
   );
@@ -952,6 +968,7 @@ module rram_ctrl
     .clk_i,
     .rst_ni,
     .rram_disable_i     (rram_disable[MpDisableIdx]),
+    .sw_disable_i       (rram_sw_disable[SwDisMpIdx]),
     // Interface selection
     .if_sel_i           (if_sel),
     // Memory protection configuration
@@ -1200,6 +1217,16 @@ module rram_ctrl
     .rst_ni,
     .mubi_i(rram_disable_in),
     .mubi_o(rram_disable)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(RramSwDisableLast)),
+    .AsyncOn(0)
+  ) u_sw_disable_buf (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(lc_ctrl_pkg::lc_to_mubi4(rma_sw_dis)),
+    .mubi_o(rram_sw_disable)
   );
 
   ////////////////
