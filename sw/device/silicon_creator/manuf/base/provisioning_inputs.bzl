@@ -95,6 +95,7 @@ EARLGREY_SKUS = {
         "ecdsa_key": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
         "spx_key": {},
         "signature_prefix": None,
+        "scrambling_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_flash_scramble_sival",
         "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:sival",
         "offline": True,
