@@ -661,6 +661,8 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_hmac_key;
@@ -816,12 +818,6 @@ module earlgrey_pd_main #(
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       sram_ctrl_sec_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       keymgr_dpe_creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_dpe_owner_seed;
 
   // Create mixed connections to ports
   assign alert_handler_esc_rx[3] = alert_handler_esc_rx_i;
@@ -870,14 +866,6 @@ module earlgrey_pd_main #(
   assign rv_core_ibex_hart_id = '0;
 
   assign rv_core_ibex_boot_addr = tl_main_pkg::ADDR_SPACE_ROM_CTRL__ROM;
-
-  // nvm_ctrl provides the creator / owner seed
-  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t unused_keymgr_creator_seed;
-  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t unused_keymgr_owner_seed;
-  assign keymgr_dpe_creator_seed = rram_ctrl_keymgr_creator_seed;
-  assign keymgr_dpe_owner_seed = rram_ctrl_keymgr_owner_seed;
-  assign unused_keymgr_creator_seed = otp_ctrl_keymgr_creator_seed;
-  assign unused_keymgr_owner_seed = otp_ctrl_keymgr_owner_seed;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -1538,8 +1526,8 @@ module earlgrey_pd_main #(
     .lc_rma_state_i(lc_ctrl_lc_rma_state),
     .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
     .keymgr_creator_root_key_o(otp_ctrl_keymgr_creator_root_key),
-    .keymgr_creator_seed_o(otp_ctrl_keymgr_creator_seed),
-    .keymgr_owner_seed_o(otp_ctrl_keymgr_owner_seed),
+    .keymgr_creator_seed_o(),
+    .keymgr_owner_seed_o(),
     .nvm_otp_key_i(rram_ctrl_otp_key_req),
     .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -2269,8 +2257,8 @@ module earlgrey_pd_main #(
     .kmac_data_o(kmac_app_req[0]),
     .kmac_data_i(kmac_app_rsp[0]),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
-    .creator_seed_i(keymgr_dpe_creator_seed),
-    .owner_seed_i(keymgr_dpe_owner_seed),
+    .creator_seed_i(rram_ctrl_keymgr_creator_seed),
+    .owner_seed_i(rram_ctrl_keymgr_owner_seed),
     .device_id_i(keymgr_dpe_device_id),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
