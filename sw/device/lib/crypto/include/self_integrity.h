@@ -18,7 +18,10 @@ extern "C" {
  * Check the cryptolib's self-integrity by verifying the hash of its binary
  * blob.
  *
- * @returns Whether the cryptolib's self-integrity check passed.
+ * @return Result of the self-integrity check. Returns
+ * `kOtcryptoStatusValueOk` if the cryptolib's self-integrity check passed, or
+ * `kOtcryptoStatusValueFatalError` if the integrity check or internal state
+ * check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_integrity_check(void);

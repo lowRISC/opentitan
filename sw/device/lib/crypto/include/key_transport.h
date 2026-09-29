@@ -127,7 +127,9 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
  *
  * @param config Key configuration.
  * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
- * @return Result of the operation.
+ * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or key configuration are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
@@ -253,7 +255,10 @@ otcrypto_status_t otcrypto_export_blinded_key(
  *
  * @param old_key The blinded key to migrate.
  * @param[out] new_key The migrated blinded key.
- * @return Result of the operation.
+ * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * keyblob lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_blinded_key_migrate(
