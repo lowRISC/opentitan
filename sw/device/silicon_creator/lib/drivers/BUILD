@@ -342,6 +342,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
@@ -355,6 +356,7 @@ cc_test(
     deps = [
         ":keymgr_dpe",
         "//hw/top/dt",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
