@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
@@ -13,6 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -29,6 +32,25 @@ enum {
 };
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static uint32_t compute_ticks_per_ms(uint64_t hz) {
+  const uint64_t kTicksPerMs = udiv64_slow(hz, 1000, NULL);
+  CHECK(kTicksPerMs <= UINT32_MAX, "kTicksPerMs exceeds UINT32_MAX");
+  return (uint32_t)kTicksPerMs;
+}
+
+static status_t trigger_watchdog_reset(void) {
+  uint32_t bite_threshold = 5 * compute_ticks_per_ms(kClockFreqAonHz);
+  uint32_t bark_threshold = 9 * bite_threshold / 8;
+  watchdog_configure((watchdog_config_t){
+      .bite_threshold = bite_threshold,
+      .bark_threshold = bark_threshold,
+      .enable = kHardenedBoolTrue,
+  });
+  busy_spin_micros(6 * 1000);
+  watchdog_disable();
+  return INTERNAL();
+}
 
 static bool is_flash_page_empty(void) {
   uint32_t data[8];
@@ -77,14 +99,30 @@ static status_t test_on_demand_refresh(void) {
 
     LOG_INFO(
         "Saved Key IDs to scratchpad. Requesting cert generation and "
-        "rebooting...");
+        "triggering watchdog reset...");
+    msg->hdr.type = kDiceCertGenRequest;
+    msg->hdr.version = 0;
+    return trigger_watchdog_reset();
+  }
+
+  if (bitfield_bit32_read(retram->creator.reset_reasons,
+                          kRstmgrReasonWatchdog)) {
+    LOG_INFO(
+        "Second boot (Watchdog): verifying certificates are NOT generated on "
+        "watchdog reset");
+
+    // Watchdog reset must suppress DICE certificate regeneration.
+    TRY(is_flash_page_empty() ? OK_STATUS() : INTERNAL());
+    TRY(msg->hdr.type == kDiceCertGenIds ? OK_STATUS() : INTERNAL());
+
+    LOG_INFO("Requesting cert generation and rebooting via software reset...");
     msg->hdr.type = kDiceCertGenRequest;
     msg->hdr.version = 0;
     rstmgr_reset();
     return INTERNAL();  // Should not reach here.
   }
 
-  LOG_INFO("Second boot (Warm): verifying certificates ARE generated");
+  LOG_INFO("Third boot (Warm): verifying certificates ARE generated");
 
   // Flash page should NOT be empty now.
   TRY(!is_flash_page_empty() ? OK_STATUS() : INTERNAL());
