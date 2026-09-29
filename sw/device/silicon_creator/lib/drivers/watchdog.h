@@ -29,6 +29,7 @@ enum {
   kWatchdogSecMmioInit = 4,
   kWatchdogSecMmioConfigure = 4,
   kWatchdogSecMmioDisable = 1,
+  kWatchdogSecMmioSetBiteThreshold = 2,
 };
 
 /**
@@ -95,6 +96,15 @@ void watchdog_pet(void);
  */
 OT_WARN_UNUSED_RESULT
 uint32_t watchdog_get(void);
+
+/**
+ * Set the watchdog bite and bark thresholds in cycles.
+ *
+ * Bark threshold is automatically set to (9 * threshold) / 8.
+ *
+ * @param threshold New bite threshold value.
+ */
+void watchdog_bite_threshold_set(uint32_t threshold);
 
 #ifdef __cplusplus
 }

@@ -4,6 +4,14 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_hex",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+)
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load(
     "//rules/opentitan:defs.bzl",
@@ -289,6 +297,60 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/cert:ram_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+otp_json(
+    name = "otp_json_watchdog_250ms",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                # 0.25s * 200000Hz = 50000
+                "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(50000),
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_img_secret2_locked_watchdog_250ms_prod",
+    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+        ":otp_json_watchdog_250ms",
+    ],
+)
+
+opentitan_test(
+    name = "watchdog_mldsa_test",
+    srcs = ["watchdog_mldsa_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        otp = ":otp_img_secret2_locked_watchdog_250ms_prod",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
+    ),
+    qemu = qemu_params(
+        otp = ":otp_img_secret2_locked_watchdog_250ms_prod",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+    ),
+    slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    deps = [
+        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
