@@ -605,6 +605,11 @@ def _offline_fake_rsa_sign(ctx):
         # Skip the presigning script.
         if file.basename.endswith(".json"):
             continue
+
+        # If using SPHINCS+ / SLH-DSA in the Pure domain, a separate message will
+        # be produced. Unlike the regular digests, we don't want to sign this.
+        if file.basename.endswith(".spx-message") or file.basename.endswith(".slh_dsa-message"):
+            continue
         _, sig, _ = _local_sign(ctx, tool, file, None, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
@@ -631,6 +636,11 @@ def _offline_fake_ecdsa_sign(ctx):
     for file in ctx.files.srcs:
         # Skip the presigning script.
         if file.basename.endswith(".json"):
+            continue
+
+        # If using SPHINCS+ / SLH-DSA in the Pure domain, a separate SPX message will
+        # be produced. Unlike the regular digests, we don't want to sign this.
+        if file.basename.endswith(".spx-message") or file.basename.endswith(".slh_dsa-message"):
             continue
         sig, _, _ = _local_sign(ctx, tool, file, ecdsa_key, None)
         outputs.append(sig)
