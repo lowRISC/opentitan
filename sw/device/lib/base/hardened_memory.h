@@ -94,6 +94,24 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len);
 
 /**
+ * Compare a 32-bit aligned region of memory against a two-share Boolean-masked
+ * region (`rhs_share0 ^ rhs_share1`) for equality without unmasking the shares.
+ *
+ * The unmasked `lhs` buffer is masked on-the-fly with fresh randomness as each
+ * word is loaded, and intermediate equality accumulators are combined in two
+ * Boolean shares using first-order ISW AND gates.
+ *
+ * @param lhs The unmasked buffer to compare.
+ * @param rhs_share0 The first Boolean share of the second buffer.
+ * @param rhs_share1 The second Boolean share of the second buffer.
+ * @param word_len The number of words to compare.
+ */
+hardened_bool_t hardened_memeq_masked_rhs(const uint32_t *lhs,
+                                          const uint32_t *rhs_share0,
+                                          const uint32_t *rhs_share1,
+                                          size_t word_len);
+
+/**
  * Constant time memeq implementation that can also handle non 32-bit aligned
  * buffers.
  *

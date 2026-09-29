@@ -190,6 +190,21 @@ rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
                                size_t rate_words);
 
 /**
+ * Squeeze arbitrary number of words from the Keccak state into two Boolean
+ * shares (`share0` and `share1`). If `share1` is NULL, the two hardware shares
+ * are XORed into `share0`.
+ *
+ * @param share0 First Boolean share (or unmasked) output buffer.
+ * @param share1 Second Boolean share output buffer, or NULL.
+ * @param out_words Desired length of output in 32-bit words.
+ * @param rate_words Keccak rate in 32-bit words.
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_squeeze_words_masked(uint32_t *share0, uint32_t *share1,
+                                      size_t out_words, size_t rate_words);
+
+/**
  * End the squeeze phase and release the KMAC hardware block.
  *
  * @return Error code indicating if the operation succeeded.
@@ -252,6 +267,19 @@ inline void kmac_kmac256_absorb(const void *data, size_t len) {
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen);
+
+/**
+ * Finalize the KMAC-256 operation, outputting the result as two Boolean shares
+ * (`share0 ^ share1`) read directly from the KMAC hardware state shares.
+ *
+ * @param share0 Buffer to hold the first Boolean share of the KMAC result.
+ * @param share1 Buffer to hold the second Boolean share of the KMAC result.
+ * @param rlen Length of each result share buffer in words.
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_kmac256_final_masked(uint32_t *share0, uint32_t *share1,
+                                      size_t rlen);
 
 #ifdef __cplusplus
 }  // extern "C"

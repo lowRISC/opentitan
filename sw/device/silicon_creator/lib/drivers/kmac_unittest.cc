@@ -400,5 +400,66 @@ TEST_F(SqueezeTest, LongOutput) {
   EXPECT_THAT(out, ElementsAreArray(test_data));
 }
 
+TEST_F(ConfigureTest, SuccessKmac256Hw) {
+  const uint32_t kPrefixRegs[KMAC_PREFIX_MULTIREG_COUNT] = {
+      0x4D4B2001,
+      0x00014341,
+  };
+  for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; ++i) {
+    EXPECT_ABS_WRITE32(base_ + KMAC_PREFIX_0_REG_OFFSET + i * sizeof(uint32_t),
+                       kPrefixRegs[i]);
+  }
+
+  ExpectPollState(KMAC_STATUS_SHA3_IDLE_BIT, /*err=*/false);
+
+  EXPECT_ABS_WRITE32(base_ + KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                     (KMAC_ENTROPY_PERIOD_WAIT_TIMER_MASK
+                      << KMAC_ENTROPY_PERIOD_WAIT_TIMER_OFFSET) |
+                         (KMAC_ENTROPY_PERIOD_PRESCALER_MASK
+                          << KMAC_ENTROPY_PERIOD_PRESCALER_OFFSET));
+
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
+      (KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_MASK
+       << KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_OFFSET));
+
+  uint32_t cfg =
+      (KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256
+       << KMAC_CFG_SHADOWED_KSTRENGTH_OFFSET) |
+      (KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << KMAC_CFG_SHADOWED_MODE_OFFSET) |
+      (KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE
+       << KMAC_CFG_SHADOWED_ENTROPY_MODE_OFFSET) |
+      (1 << KMAC_CFG_SHADOWED_ENTROPY_READY_BIT) |
+      (1 << KMAC_CFG_SHADOWED_MSG_MASK_BIT) |
+      (1 << KMAC_CFG_SHADOWED_SIDELOAD_BIT) |
+      (1 << KMAC_CFG_SHADOWED_KMAC_EN_BIT);
+
+  EXPECT_ABS_WRITE32_SHADOWED(base_ + KMAC_CFG_SHADOWED_REG_OFFSET, cfg);
+
+  EXPECT_EQ(kmac_kmac256_hw_configure(), kErrorOk);
+}
+
+TEST_F(SqueezeTest, SuccessMasked) {
+  std::array<uint32_t, 3> test_share0 = {0xabcdef01, 0x02030405, 0x11223344};
+  std::array<uint32_t, 3> test_share1 = {0x12345678, 0xdeadbeef, 0x55667788};
+
+  ASSERT_LE(test_share0.size(), shake256_rate_words_);
+
+  ExpectPollState(KMAC_STATUS_SHA3_SQUEEZE_BIT, /*err=*/false);
+
+  for (size_t i = 0; i < test_share0.size(); i++) {
+    EXPECT_ABS_READ32(share0_addr_ + (i * sizeof(uint32_t)), test_share0[i]);
+    EXPECT_ABS_READ32(share1_addr_ + (i * sizeof(uint32_t)), test_share1[i]);
+  }
+
+  uint32_t out_share0[test_share0.size()];
+  uint32_t out_share1[test_share1.size()];
+  EXPECT_EQ(kmac_squeeze_words_masked(out_share0, out_share1,
+                                      test_share0.size(), shake256_rate_words_),
+            kErrorOk);
+  EXPECT_THAT(out_share0, ElementsAreArray(test_share0));
+  EXPECT_THAT(out_share1, ElementsAreArray(test_share1));
+}
+
 }  // namespace
 }  // namespace kmac_unittest

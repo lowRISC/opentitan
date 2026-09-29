@@ -266,7 +266,7 @@ rom_error_t kmac_kmac256_hw_configure(void) {
   kmac_kmac256_set_prefix(NULL, 0);
   return kmac_configure((kmac_config_t){
       .entropy_fast_process = false,
-      .msg_mask = false,
+      .msg_mask = true,
       .sideload = true,
       .kmac_en = true,
       .mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
@@ -370,8 +370,8 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
   return kmac_done();
 }
 
-rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
-                               size_t rate_words) {
+rom_error_t kmac_squeeze_words_masked(uint32_t *share0, uint32_t *share1,
+                                      size_t out_words, size_t rate_words) {
   size_t idx = 0;
   while (launder32(idx) < out_words) {
     // Since we always read in increments of the rate, the index at the start
@@ -385,11 +385,16 @@ rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
     // number of words available).
     size_t offset = 0;
     for (; launder32(idx) < out_words && offset < rate_words; ++offset) {
-      uint32_t share0 =
+      uint32_t s0 =
           abs_mmio_read32(kAddrStateShare0 + offset * sizeof(uint32_t));
-      uint32_t share1 =
+      uint32_t s1 =
           abs_mmio_read32(kAddrStateShare1 + offset * sizeof(uint32_t));
-      out[idx] = share0 ^ share1;
+      if (share1 == NULL) {
+        share0[idx] = s0 ^ s1;
+      } else {
+        share0[idx] = s0;
+        share1[idx] = s1;
+      }
       ++idx;
     }
 
@@ -402,6 +407,11 @@ rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
   }
   HARDENED_CHECK_EQ(idx, out_words);
   return kErrorOk;
+}
+
+rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
+                               size_t rate_words) {
+  return kmac_squeeze_words_masked(out, NULL, out_words, rate_words);
 }
 
 rom_error_t kmac_done(void) {
@@ -470,7 +480,8 @@ void kmac_kmac256_set_prefix(const void *prefix, size_t len) {
   }
 }
 
-rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen) {
+rom_error_t kmac_kmac256_final_masked(uint32_t *share0, uint32_t *share1,
+                                      size_t rlen) {
   // To finalize a kmac operation, we need to right-pad the bit-length of the
   // result buffer and absorb that padded length value into the sponge.
   uint8_t buffer[sizeof(size_t) + 1];
@@ -487,7 +498,13 @@ rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen) {
 
   // Now, squeeze out the result.
   kmac_shake256_squeeze_start();
-  return kmac_shake256_squeeze_end(result, rlen);
+  HARDENED_RETURN_IF_ERROR(kmac_squeeze_words_masked(share0, share1, rlen,
+                                                     kShake256KeccakRateWords));
+  return kmac_done();
+}
+
+rom_error_t kmac_kmac256_final(uint32_t *result, size_t rlen) {
+  return kmac_kmac256_final_masked(result, NULL, rlen);
 }
 
 // Provide link locations for the inline functions in the header file.

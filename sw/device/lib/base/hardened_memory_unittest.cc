@@ -56,6 +56,33 @@ TEST(HardenedMemory, MemEq) {
             kHardenedBoolFalse);
 }
 
+TEST(HardenedMemory, MemEqMaskedRhs) {
+  std::vector<uint32_t> xs = {1, 2, 3, 4, 5, 6, 7, 8};
+  std::vector<uint32_t> share0 = {0xa5a5a5a5, 0x5a5a5a5a, 0x12345678,
+                                  0x87654321, 0xdeadbeef, 0xfeedface,
+                                  0x0f0f0f0f, 0xf0f0f0f0};
+  std::vector<uint32_t> share1(xs.size());
+  for (size_t i = 0; i < xs.size(); ++i) {
+    share1[i] = xs[i] ^ share0[i];
+  }
+
+  EXPECT_EQ(hardened_memeq_masked_rhs(xs.data(), share0.data(), share1.data(),
+                                      xs.size()),
+            kHardenedBoolTrue);
+
+  // Flip single bits across different positions and words to verify masked
+  // folding catches all bit differences.
+  for (size_t word = 0; word < xs.size(); ++word) {
+    for (uint32_t bit = 0; bit < 32; ++bit) {
+      share1[word] ^= (1u << bit);
+      EXPECT_EQ(hardened_memeq_masked_rhs(xs.data(), share0.data(),
+                                          share1.data(), xs.size()),
+                kHardenedBoolFalse);
+      share1[word] ^= (1u << bit);
+    }
+  }
+}
+
 TEST(HardenedMemory, XorReversibility) {
   std::vector<uint32_t> xs = {0x11111111, 0x22222222, 0x33333333, 0x44444444};
   std::vector<uint32_t> ys = {0x55555555, 0x66666666, 0x77777777, 0x88888888};

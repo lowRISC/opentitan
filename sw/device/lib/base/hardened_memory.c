@@ -75,53 +75,92 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len) {
   return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
-hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
-                               size_t word_len) {
+/**
+ * 2-share first-order masked ISW AND gate: updates `(*x0, *x1)` in-place with
+ * the 2-share Boolean representation of `(*x0 ^ *x1) & (y0 ^ y1)`.
+ */
+static inline void masked_and32(uint32_t *x0, uint32_t *x1, uint32_t y0,
+                                uint32_t y1) {
+  uint32_t r = random_order_random_word();
+  uint32_t a0 = *x0;
+  uint32_t a1 = *x1;
+  barrier32(a0);
+  barrier32(a1);
+  barrier32(y0);
+  barrier32(y1);
+
+  uint32_t t = launder32(a0 & y1) ^ r;
+  barrier32(t);
+  t = launder32(t) ^ launder32(a1 & y0);
+  barrier32(t);
+
+  uint32_t z0 = launder32(a0 & y0) ^ launder32(t);
+  uint32_t z1 = launder32(a1 & y1) ^ launder32(r);
+  barrier32(z0);
+  barrier32(z1);
+
+  *x0 = z0;
+  *x1 = z1;
+}
+
+hardened_bool_t hardened_memeq_masked_rhs(const uint32_t *lhs,
+                                          const uint32_t *rhs_share0,
+                                          const uint32_t *rhs_share1,
+                                          size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);
 
   size_t count = 0;
 
   uintptr_t lhs_addr = (uintptr_t)lhs;
-  uintptr_t rhs_addr = (uintptr_t)rhs;
+  uintptr_t rhs0_addr = (uintptr_t)rhs_share0;
+  uintptr_t rhs1_addr = (uintptr_t)rhs_share1;
 
-  uint32_t zeros = 0;
-  uint32_t ones = UINT32_MAX;
+  // Two-share masked accumulator where `zeros ^ ones` holds the bitwise AND of
+  // `~(a ^ b)` across all words (so `zeros == ~ones` iff all words are equal).
+  uint32_t zeros = random_order_random_word();
+  uint32_t ones = launder32(~zeros);
 
-  // The loop is almost token-for-token the one above, but the copy is
-  // replaced with something else.
   for (; count < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
     barrierw(byte_idx);
 
-    // Calculate pointers.
     void *av = (void *)launderw(lhs_addr + byte_idx);
-    void *bv = (void *)launderw(rhs_addr + byte_idx);
+    void *b0v = (void *)launderw(rhs0_addr + byte_idx);
 
-    uint32_t a = read_32(av);
-    uint32_t b = read_32(bv);
+    uint32_t mask = random_order_random_word();
 
-    // Launder one of the operands, so that the compiler cannot cache the result
-    // of the xor for use in the next operation.
-    //
-    // We launder `zeroes` so that compiler cannot learn that `zeroes` has
-    // strictly more bits set at the end of the loop.
-    zeros = launder32(zeros) | (launder32(a) ^ b);
+    // Interleave the load of `a` between `b0` and `b1` and mask `b0` with
+    // `mask` before XORing `a` so neither `a ^ b` nor `b0 ^ b1` transitions
+    // directly in registers.
+    uint32_t d0 = launder32(read_32(b0v)) ^ mask;
+    barrier32(d0);
+    d0 = launder32(d0) ^ read_32(av);
+    uint32_t d1 = mask;
+    if (rhs_share1 != NULL) {
+      void *b1v = (void *)launderw(rhs1_addr + byte_idx);
+      d1 = launder32(read_32(b1v)) ^ mask;
+    }
 
-    // Same as above. The compiler can cache the value of `a[offset]`, but it
-    // has no chance to strength-reduce this operation.
-    ones = launder32(ones) & (launder32(a) ^ ~b);
+    // 2-share ISW AND with `~(d0 ^ d1) = (~d0) ^ d1`.
+    uint32_t nd0 = launder32(~d0);
+    masked_and32(&zeros, &ones, nd0, d1);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, word_len);
-  if (launder32(zeros) == 0) {
-    HARDENED_CHECK_EQ(ones, UINT32_MAX);
+  if (launder32(zeros) == launder32(~ones)) {
+    HARDENED_CHECK_EQ(launder32(zeros), launder32(~ones));
     return kHardenedBoolTrue;
   }
 
-  HARDENED_CHECK_NE(ones, UINT32_MAX);
+  HARDENED_CHECK_NE(launder32(zeros), launder32(~ones));
   return kHardenedBoolFalse;
+}
+
+hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
+                               size_t word_len) {
+  return hardened_memeq_masked_rhs(lhs, rhs, NULL, word_len);
 }
 
 hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
