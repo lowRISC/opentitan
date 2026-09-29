@@ -100,25 +100,6 @@ module otbn
   input  prim_mubi_pkg::mubi4_t keymgr_sensitive_key_i
 );
 
-  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
-  localparam int NumOutBufBitsKeymgrApp = $bits(kmac_pkg::app_rsp_t);
-  prim_buf #(
-    .Width  (NumOutBufBitsKeymgrApp)
-  ) u_anchor_buf_app_rsp (
-    .in_i   ('0),
-    .out_o  (keymgr_app_o)
-  );
-
-  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
-  localparam int NumInBufBitsKeymgrApp = $bits(kmac_pkg::app_req_t);
-  kmac_pkg::app_req_t unused_req;
-  prim_buf #(
-    .Width  (NumInBufBitsKeymgrApp)
-  ) u_anchor_buf_app_req (
-    .in_i   (keymgr_app_i),
-    .out_o  (unused_req)
-  );
-
   // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
   localparam int NumInBufBitsSensKey = $bits(prim_mubi_pkg::mubi4_t);
   logic [NumInBufBitsSensKey-1:0] unused_key;
@@ -1278,7 +1259,10 @@ module otbn
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
 
     .kmac_app_req_o              (kmac_app_o),
-    .kmac_app_rsp_i              (kmac_app_i)
+    .kmac_app_rsp_i              (kmac_app_i),
+
+    .keymgr_app_i                (keymgr_app_i),
+    .keymgr_app_o                (keymgr_app_o)
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -1509,7 +1493,6 @@ module otbn
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
-  `ASSERT_KNOWN(KeymgrAppRspKnownO_A, keymgr_app_o)
   // The data part of the request directly originates from WSRs. These are non resettable flops.
   // When a simulation starts, these are still X as only a secure wipe will set a value. We thus
   // only check whether the data is known when the valid is set.
@@ -1517,6 +1500,11 @@ module otbn
                                  kmac_app_o.rsp_ready, kmac_app_o.strb})
   `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_app_o.data_s0, kmac_app_o.data_s1},
                    kmac_app_o.req_valid)
+  // Similar to the KMAC IF, the response for the Keymgr IF originates also from WSRs.
+  `ASSERT_KNOWN(KeymgrRspKnown_A, {keymgr_app_o.req_ready, keymgr_app_o.rsp_valid,
+                                   keymgr_app_o.rsp_finish, keymgr_app_o.error})
+  `ASSERT_KNOWN_IF(KeymgrRspDataKnown_A, {keymgr_app_o.digest_s0, keymgr_app_o.digest_s1},
+                   keymgr_app_o.rsp_valid)
 
   // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
   `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
@@ -1585,6 +1573,12 @@ module otbn
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnKmacFsmCheck_A,
     u_otbn_core.u_otbn_kmac_if.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnKeymgrFsmCheck_A,
+    u_otbn_core.u_otbn_keymgr_if.u_state_regs,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
