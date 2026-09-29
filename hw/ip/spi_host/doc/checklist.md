@@ -9,16 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not started | [SPI_HOST Design Spec](../README.md)
-Documentation | [CSR_DEFINED][]                | Not started |
-RTL           | [CLKRST_CONNECTED][]           | Not started |
-RTL           | [IP_TOP][]                     | Not started |
-RTL           | [IP_INSTANTIABLE][]            | Not started |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not started |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not started |
-Code Quality  | [LINT_SETUP][]                 | Not started |
-Security      | [SEC_CM_SCOPED][]              | Not started |
+Documentation | [SPEC_COMPLETE][]              | Done        | [SPI_HOST Design Spec](../README.md)
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        | This block only contains the bus-integrity CM.
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
