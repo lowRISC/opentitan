@@ -125,7 +125,7 @@ Review        | [REVIEW_SW_ERRATA][]    | Not Started |
 
 ## Verification Checklist
 
-Ibex verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html).
+Ibex verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html).
 Ibex is at **V2S**.
 
 Features specific to rv_core_ibex do not have block-level verification.
@@ -133,16 +133,16 @@ Top-level testing suffices for these, see the [rv_core_ibex DV document](../dv/R
 
 ### V1
 
-The V1 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v1-checklist).
+The V1 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html#v1-checklist).
 
 ### V2
 
-The V2 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v2-checklist).
+The V2 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html#v2-checklist).
 
 ### V2S
 
-The V2S checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v2s-checklist).
+The V2S checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html#v2s-checklist).
 
 ### V3
 
-The V3 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html#v3-checklist).
+The V3 checklist may be found in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html#v3-checklist).
