@@ -1,10 +1,5 @@
 # SPI_HOST Checklist
 
-<!--
-NOTE: This is a template checklist document that is required to be copied over to the 'doc'
-directory for a new design that transitions from L0 (Specification) to L1 (Development)
-stage, and updated as needed. Once done, please remove this comment before checking it in.
--->
 This checklist is for [Hardware Stage](../../../../doc/project_governance/development_stages.md) transitions for the [SPI_HOST peripheral.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../doc/project_governance/checklist/README.md)
 
@@ -14,15 +9,16 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [SPI_HOST Design Spec](../README.md)
-Documentation | [CSR_DEFINED][]                | Done        |
-RTL           | [CLKRST_CONNECTED][]           | Done        |
-RTL           | [IP_TOP][]                     | Done        |
-RTL           | [IP_INSTANTIABLE][]            | Done        |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
-RTL           | [FUNC_IMPLEMENTED][]           | Done        |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
-Code Quality  | [LINT_SETUP][]                 | Done        |
+Documentation | [SPEC_COMPLETE][]              | Not started | [SPI_HOST Design Spec](../README.md)
+Documentation | [CSR_DEFINED][]                | Not started |
+RTL           | [CLKRST_CONNECTED][]           | Not started |
+RTL           | [IP_TOP][]                     | Not started |
+RTL           | [IP_INSTANTIABLE][]            | Not started |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not started |
+RTL           | [FUNC_IMPLEMENTED][]           | Not started |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Not started |
+Code Quality  | [LINT_SETUP][]                 | Not started |
+Security      | [SEC_CM_SCOPED][]              | Not started |
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
@@ -33,34 +29,35 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 [FUNC_IMPLEMENTED]:           ../../../../doc/project_governance/checklist/README.md#func_implemented
 [ASSERT_KNOWN_ADDED]:         ../../../../doc/project_governance/checklist/README.md#assert_known_added
 [LINT_SETUP]:                 ../../../../doc/project_governance/checklist/README.md#lint_setup
+[SEC_CM_SCOPED]:              ../../../../doc/project_governance/checklist/README.md#sec_cm_scoped
 
 ### D2
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Done        |
-Documentation | [BLOCK_DIAGRAM][]         | Done        |
-Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
-Documentation | [MISSING_FUNC][]          | Done        |
-Documentation | [FEATURE_FROZEN][]        | Done        |
-RTL           | [FEATURE_COMPLETE][]      | Done        |
-RTL           | [PORT_FROZEN][]           | Done        |
-RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
-RTL           | [REVIEW_TODO][]           | Done        |
-RTL           | [STYLE_X][]               | Done        |
-RTL           | [CDC_SYNCMACRO][]         | N/A         |
-Code Quality  | [LINT_PASS][]             | Done        |
-Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [AREA_CHECK][]            | Done        |
-Code Quality  | [TIMING_CHECK][]          | Done        |
-Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
+Documentation | [NEW_FEATURES][]          | Not Started |
+Documentation | [BLOCK_DIAGRAM][]         | Not Started |
+Documentation | [DOC_INTERFACE][]         | Not Started |
+Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
+Documentation | [MISSING_FUNC][]          | Not Started |
+Documentation | [FEATURE_FROZEN][]        | Not Started |
+RTL           | [FEATURE_COMPLETE][]      | Not Started |
+RTL           | [PORT_FROZEN][]           | Not Started |
+RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
+RTL           | [REVIEW_TODO][]           | Not Started |
+RTL           | [STYLE_X][]               | Not Started |
+RTL           | [CDC_SYNCMACRO][]         | Not Started |
+Code Quality  | [LINT_PASS][]             | Not Started |
+Code Quality  | [CDC_SETUP][]             | Not Started |
+Code Quality  | [RDC_SETUP][]             | Not Started |
+Code Quality  | [AREA_CHECK][]            | Not Started |
+Code Quality  | [TIMING_CHECK][]          | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         ../../../../doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: ../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    ../../../../doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          ../../../../doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        ../../../../doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      ../../../../doc/project_governance/checklist/README.md#feature_complete
@@ -80,13 +77,13 @@ Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
-Security      | [SEC_CM_RND_CNST][]          | N/A         |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | N/A         |
-Security      | [SEC_CM_SHADOW_REGS][]       | N/A         |
-Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
+Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
+Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
@@ -101,6 +98,7 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [DOC_INTEGRATION_D3][]  | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
@@ -113,6 +111,7 @@ Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
+[DOC_INTEGRATION_D3]:   ../../../../doc/project_governance/checklist/README.md#doc_integration_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
 [LINT_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#lint_complete
 [CDC_COMPLETE]:         ../../../../doc/project_governance/checklist/README.md#cdc_complete
@@ -128,27 +127,27 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | DONE        | [SPI_HOST DV document](../dv/README.md)
-Documentation | [TESTPLAN_COMPLETED][]                | DONE        | [SPI_HOST Testplan](../dv/README.md#testplan)
-Testbench     | [TB_TOP_CREATED][]                    | DONE        |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| DONE        |
-Testbench     | [SIM_TB_ENV_CREATED][]                | DONE        |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | DONE        |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | DONE        |
-Testbench     | [TB_GEN_AUTOMATED][]                  | DONE        |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | DONE        |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | DONE        |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | DONE        | Xcelium (signoff), VCS (alt)
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | DONE        |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | DONE        |
-Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | DONE        |
-Code Quality  | [TB_LINT_SETUP][]                     | DONE        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
-Review        | [DESIGN_SPEC_REVIEWED][]              | DONE        |
-Review        | [TESTPLAN_REVIEWED][]                 | DONE        |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | DONE        |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [SPI_HOST DV document](../dv/README.md)
+Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [SPI_HOST Testplan](../dv/README.md#testplan)
+Testbench     | [TB_TOP_CREATED][]                    | Not Started |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
+Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
+Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
+Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
+Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
 [DV_DOC_DRAFT_COMPLETED]:             ../../../../doc/project_governance/checklist/README.md#dv_doc_draft_completed
@@ -178,26 +177,27 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | DONE        | [SPI_HOST DV document](../dv/README.md)
-Documentation | [DV_DOC_COMPLETED][]                    | DONE        | [SPI_HOST Testplan](../dv/README.md#testplan)
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | DONE        |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | DONE        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | DONE        |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | DONE        |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | DONE        |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | DONE        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | DONE        |  FSM coverage (69.57) to be improved in V3 as those uncovered transitions all require to reset during the transaction (active states -> idle state)
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | DONE        |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | DONE        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | DONE        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | DONE        |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
+Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
+Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [V2S_CHECKLIST_SCOPED][]                | Not Started |
+Review        | [V3_FUNCTIONAL_CHECKLIST_SCOPED][]      | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/project_governance/checklist/README.md#dv_doc_completed
@@ -218,7 +218,8 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    ../../../../doc/project_governance/checklist/README.md#no_high_priority_issues_pending
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:../../../../doc/project_governance/checklist/README.md#all_low_priority_issues_root_caused
 [DV_DOC_TESTPLAN_REVIEWED]:           ../../../../doc/project_governance/checklist/README.md#dv_doc_testplan_reviewed
-[V3_CHECKLIST_SCOPED]:                ../../../../doc/project_governance/checklist/README.md#v3_checklist_scoped
+[V2S_CHECKLIST_SCOPED]:               ../../../../doc/project_governance/checklist/README.md#v2s_checklist_scoped
+[V3_FUNCTIONAL_CHECKLIST_SCOPED]:     ../../../../doc/project_governance/checklist/README.md#v3_functional_checklist_scoped
 
 ### V2S
 
@@ -229,12 +230,14 @@ Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
 Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
 Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
 [SIM_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#sim_sec_cm_verified
 [SIM_COVERAGE_REVIEWED]:              ../../../../doc/project_governance/checklist/README.md#sim_coverage_reviewed
 [SEC_CM_DV_REVIEWED]:                 ../../../../doc/project_governance/checklist/README.md#sec_cm_dv_reviewed
+[V3_CHECKLIST_SCOPED]:                ../../../../doc/project_governance/checklist/README.md#v3_checklist_scoped
 
 ### V3
 
