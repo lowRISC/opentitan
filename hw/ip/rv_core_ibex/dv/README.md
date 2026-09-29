@@ -16,14 +16,14 @@ For more information please see the [Ibex RISC-V Core Wrapper Technical Specific
 
 ## Current Status
 
-* Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)
+* Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification_stages.html)
   * Verification follows the OpenTitan [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Nightly regression results](https://ibex.reports.lowrisc.org/opentitan/latest/report.html)
 
 ## Verification strategy
 
 The main Ibex testbench is not contained in the OpenTitan repository.
-Verification is primarily done by the testbench in the Ibex repository, see the [Ibex Testplan](https://ibex-core.readthedocs.io/en/latest/03_reference/testplan.html) for more details.
+Verification is primarily done by the testbench in the Ibex repository, see the [Ibex Testplan](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/testplan.html) for more details.
 
 The additional features provided by the RISC-V Core Wrapper are verified at a chip level only (See the [Earlgrey Chip DV testplan](../../../top_earlgrey/dv/README.md).
 As they are simple features chip level only verification suffices to meet our goals.

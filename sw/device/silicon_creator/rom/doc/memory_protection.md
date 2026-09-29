@@ -29,7 +29,7 @@ This flexibility also means that the ROM extension is free to use a different PM
 
 # Implementation
 
-Ibex's [enhanced Physical Memory Protection (ePMP)](https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html) feature consists of 16 PMP entries each of which may be individually configured to allow or disallow different types of access (read, write and/or execute) to a specified memory region.
+Ibex's [enhanced Physical Memory Protection (ePMP)](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/pmp.html) feature consists of 16 PMP entries each of which may be individually configured to allow or disallow different types of access (read, write and/or execute) to a specified memory region.
 The entry with the lowest index that matches any part of an access is solely responsible for determining whether that access succeeds or not.
 A Machine Security Configuration (`mseccfg`) register is also provided that exposes some additional configuration options that apply to all of the PMP entries.
 
