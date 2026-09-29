@@ -44,7 +44,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         // sized integers using python's `int` constructor and then writes
         // the values into the OTP image as little-endian values.
         //
-        // We want to store into OTP the natuaral representaion of the
+        // We want to store into OTP the natural representaion of the
         // SPHINCS+ key.  Since the value is parsed by the `int` constructor
         // is interpreted as a big-endian integer, but written into OTP in
         // little-endian byte order, we want to reverse the byte representation
@@ -187,7 +187,7 @@ impl CommandDispatch for SpxVerifyCommand {
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
-/// SPHICS+ commands.
+/// SPHINCS+ commands.
 #[allow(clippy::large_enum_variant)]
 pub enum Spx {
     #[command(subcommand)]
