@@ -50,8 +50,6 @@ module i3c_core
   output i3c_hw2reg_t       hw2reg_o,
 
   // Software resets for the registers.
-  // TODO(#31295): This is a tricky problem because our reggen tooling has no concept of a
-  // synchronous reset and the TL-UL components are intertwined with the register instantiations.
   output                    hci_soft_rst_o,  // Host Controller Interface (HCI) registers.
   output                    tti_soft_rst_o,  // Target Transaction Interface (TTI) registers.
   output                    sc_soft_rst_o,   // Standby Controller registers.
@@ -1052,28 +1050,35 @@ module i3c_core
 
   // FIFO software reset signals.
   // - when first enabling one or more FIFO use cases, `i3c_buffer` needs to initialize pointers.
-  wire buffer_clear = (reg2hw_i.buffer_ctrl.clear.qe & reg2hw_i.buffer_ctrl.clear.q) | enabling;
-  assign fifo_rst[FIFO_CmdQ]   = (reg2hw_i.reset_control.cmd_queue_rst.qe &
-                                  reg2hw_i.reset_control.cmd_queue_rst.q) | buffer_clear;
-  assign fifo_rst[FIFO_RspQ]   = (reg2hw_i.reset_control.resp_queue_rst.qe &
-                                  reg2hw_i.reset_control.resp_queue_rst.q) | buffer_clear;
-  assign fifo_rst[FIFO_IBIQ]   = (reg2hw_i.reset_control.ibi_queue_rst.qe &
-                                  reg2hw_i.reset_control.ibi_queue_rst.q) | buffer_clear;
-  assign fifo_rst[FIFO_IBIStD] = fifo_rst[FIFO_IBIQ];
-  assign fifo_rst[FIFO_TxBuf]  = (reg2hw_i.reset_control.tx_fifo_rst.qe &
-                                  reg2hw_i.reset_control.tx_fifo_rst.q) | buffer_clear;
-  assign fifo_rst[FIFO_RxBuf]  = (reg2hw_i.reset_control.rx_fifo_rst.qe &
-                                  reg2hw_i.reset_control.rx_fifo_rst.q) | buffer_clear;
+  // - there is also a global reset (`BUFFER_CTRL.CLEAR`) for software use _when the IP block is
+  //   disabled_.
+  // - both the HCI and the TTI require that their associated FIFOs be cleared when the software
+  //   reset is asserted (`RESET_CONTROL.SOFT_RST` and `TARG_CONTROL.RESET`).
+  wire buffer_clear  = (reg2hw_i.buffer_ctrl.clear.qe & reg2hw_i.buffer_ctrl.clear.q) | enabling;
+  wire hci_buf_clear = ctrl_sw_reset | buffer_clear;
+  wire tti_buf_clear = targ_sw_reset | buffer_clear;
 
-  assign fifo_rst[FIFO_RxTarg]    = buffer_clear;
-  assign fifo_rst[FIFO_IBITarg]   = buffer_clear;
-  assign fifo_rst[FIFO_RxDTarg]   = buffer_clear;
-  assign fifo_rst[FIFO_IBIDTarg]  = buffer_clear;
-  assign fifo_rst[FIFO_AsyncTarg] = buffer_clear | async_evt_rst;
+  assign fifo_rst[FIFO_CmdQ]   = (reg2hw_i.reset_control.cmd_queue_rst.qe &
+                                  reg2hw_i.reset_control.cmd_queue_rst.q) | hci_buf_clear;
+  assign fifo_rst[FIFO_RspQ]   = (reg2hw_i.reset_control.resp_queue_rst.qe &
+                                  reg2hw_i.reset_control.resp_queue_rst.q) | hci_buf_clear;
+  assign fifo_rst[FIFO_IBIQ]   = (reg2hw_i.reset_control.ibi_queue_rst.qe &
+                                  reg2hw_i.reset_control.ibi_queue_rst.q) | hci_buf_clear;
+  assign fifo_rst[FIFO_IBIStD] = fifo_rst[FIFO_IBIQ];  // As above.
+  assign fifo_rst[FIFO_TxBuf]  = (reg2hw_i.reset_control.tx_fifo_rst.qe &
+                                  reg2hw_i.reset_control.tx_fifo_rst.q) | hci_buf_clear;
+  assign fifo_rst[FIFO_RxBuf]  = (reg2hw_i.reset_control.rx_fifo_rst.qe &
+                                  reg2hw_i.reset_control.rx_fifo_rst.q) | hci_buf_clear;
+
+  assign fifo_rst[FIFO_RxTarg]    = tti_buf_clear;
+  assign fifo_rst[FIFO_IBITarg]   = tti_buf_clear;
+  assign fifo_rst[FIFO_RxDTarg]   = tti_buf_clear;
+  assign fifo_rst[FIFO_IBIDTarg]  = tti_buf_clear;
+  assign fifo_rst[FIFO_AsyncTarg] = tti_buf_clear | async_evt_rst;
 
   for (genvar t = 0; t < MaxTargets; t++) begin : gen_targ_fifo_rst
-    assign fifo_rst[FIFO_TxTarg0  + t] = buffer_clear;
-    assign fifo_rst[FIFO_TxDTarg0 + t] = buffer_clear;
+    assign fifo_rst[FIFO_TxTarg0  + t] = tti_buf_clear;
+    assign fifo_rst[FIFO_TxDTarg0 + t] = tti_buf_clear;
   end
 
   // Diagnostic information about the virtual FIFOs is presented in the register API.
@@ -1157,11 +1162,13 @@ module i3c_core
   assign ibi_read  = ibi_status_desc ? fifo_in[FIFO_IBIStD].rready   : fifo_in[FIFO_IBIQ].rready;
 
   // Diagnostic indicators reporting invalid queue access; implies a driver error.
+  // - clear them in response to a software reset, but since they share a register and registers
+  //   support only a single `reinit` signal, we must do this manually; diagnostic, not critical.
   logic hciq_access_err, ttiq_access_err;
-  assign hw2reg_o.buffer_status.hciq_err.de = hciq_access_err;
-  assign hw2reg_o.buffer_status.hciq_err.d  = 1'b1;
-  assign hw2reg_o.buffer_status.ttiq_err.de = ttiq_access_err;
-  assign hw2reg_o.buffer_status.ttiq_err.d  = 1'b1;
+  assign hw2reg_o.buffer_status.hciq_err.de = hciq_access_err | ctrl_sw_reset;
+  assign hw2reg_o.buffer_status.hciq_err.d  = ~ctrl_sw_reset;
+  assign hw2reg_o.buffer_status.ttiq_err.de = ttiq_access_err | targ_sw_reset;
+  assign hw2reg_o.buffer_status.ttiq_err.d  = ~targ_sw_reset;
 
   logic hci_wvalid[HCI_Count], tti_wvalid[TTI_Count];
   logic hci_rready[HCI_Count], tti_rready[TTI_Count];
@@ -1380,7 +1387,29 @@ module i3c_core
     .DirTx     (FIFO_Count'((1 << FIFO_CmdQ)    | (1 << FIFO_TxBuf)    |
                             (1 << FIFO_TxTarg0) | (1 << FIFO_TxDTarg0) |
                             (1 << FIFO_TxTarg1) | (1 << FIFO_TxDTarg1) |
-                            (1 << FIFO_IBITarg) | (1 << FIFO_IBIDTarg)))
+                            (1 << FIFO_IBITarg) | (1 << FIFO_IBIDTarg))),
+    // Presenting the default FIFO configuration permits the message buffer to initialize the write
+    // and read pointers for each FIFO such that they match the register descriptions even before
+    // any of the logic is enabled; this helps with CSR tests.
+    .DefMin    ('{FIFO_TxTarg0:   I3C_TARG_TXBUF_STATE_0_WPTR_0_RESVAL,
+                  FIFO_TxTarg1:   I3C_TARG_TXBUF_STATE_1_WPTR_1_RESVAL,
+                  FIFO_TxTarg2:   I3C_TARG_TXBUF_STATE_2_WPTR_2_RESVAL,
+                  FIFO_TxTarg3:   I3C_TARG_TXBUF_STATE_3_WPTR_3_RESVAL,
+                  FIFO_TxBuf:     I3C_CTRL_TXBUF_STATE_WPTR_RESVAL,
+                  FIFO_IBITarg:   I3C_TARG_IBI_STATE_WPTR_RESVAL,
+                  FIFO_RxTarg:    I3C_TARG_RXBUF_STATE_WPTR_RESVAL,
+                  FIFO_RxBuf:     I3C_CTRL_RXBUF_STATE_WPTR_RESVAL,
+                  FIFO_IBIQ:      I3C_IBI_STATE_WPTR_RESVAL,
+                  FIFO_IBIStD:    I3C_IBI_STAT_STATE_WPTR_RESVAL,
+                  FIFO_RspQ:      I3C_RESPONSE_QUEUE_STATE_WPTR_RESVAL,
+                  FIFO_CmdQ:      I3C_COMMAND_QUEUE_STATE_WPTR_RESVAL,
+                  FIFO_TxDTarg0:  I3C_TARG_TXDESC_STATE_0_WPTR_0_RESVAL,
+                  FIFO_TxDTarg1:  I3C_TARG_TXDESC_STATE_1_WPTR_1_RESVAL,
+                  FIFO_TxDTarg2:  I3C_TARG_TXDESC_STATE_2_WPTR_2_RESVAL,
+                  FIFO_TxDTarg3:  I3C_TARG_TXDESC_STATE_3_WPTR_3_RESVAL,
+                  FIFO_RxDTarg:   I3C_TARG_RXDESC_STATE_WPTR_RESVAL,
+                  FIFO_IBIDTarg:  I3C_TARG_IBIDESC_STATE_WPTR_RESVAL,
+                  FIFO_AsyncTarg: I3C_TARG_ASYNC_STATE_WPTR_RESVAL})
   ) u_buf (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),

@@ -24,10 +24,13 @@ module i3c_buffer
 #(
   parameter int unsigned BufAddrW = 9,
   parameter int unsigned DataWidth = 32,
-  parameter int unsigned NumFifos = 7,
+  parameter int unsigned NumFifos = 19,
   // Indicates, for each FIFO in turn, whether the FIFO is used to transmit data over the I3C.
   // - Tx FIFOs shall prioritize read prefetching over software writes into the FIFO.
-  parameter bit [NumFifos-1:0] DirTx = 0
+  parameter bit [NumFifos-1:0] DirTx = 0,
+  // The default FIFO configuration; when reset each FIFO shall be empty, with both its write
+  // pointer and its read pointer set to the configured minimum address.
+  parameter logic [BufAddrW-1:0] DefMin[NumFifos] = '{0}
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -190,9 +193,9 @@ module i3c_buffer
     // FIFO state.
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        wptr <= '0;
-        pptr <= '0;
-        rptr <= '0;
+        wptr <= DefMin[f];
+        pptr <= DefMin[f];
+        rptr <= DefMin[f];
         full <= 1'b0;
       end else if (sw_reset_i[f]) begin
         // Empty the FIFO.
@@ -222,7 +225,11 @@ module i3c_buffer
       preq = pe & (!we |  DirTx[f]);
       wreq = we & (!pe | !DirTx[f]);
       // Request to memory.
-      req[f]       = we | pe;
+      //
+      // Note: we suppress a read/write request that occurs at the end of a software reset because
+      // otherwise we would capture the returned data for a read; suppressing the request as
+      // opposed to the response is both less expensive and permits another request to proceed.
+      req[f]       = (we | pe) & !sw_reset_i[f];
       arb[f].write = wreq;
       arb[f].min   = cfg_i[f].min;
       arb[f].max   = cfg_i[f].max;
@@ -267,10 +274,9 @@ module i3c_buffer
 
   // Return the read data.
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      mem_ridx    <= '0;
-    end else begin
-      if (mem_req & ~mem_data.write) mem_ridx <= idx;  // Assumes single-cycle latency to read data.
+    if (!rst_ni) mem_ridx <= '0;
+    else if (mem_req & !mem_data.write) begin
+      mem_ridx <= idx;  // Assumes single-cycle latency to read data.
     end
   end
 

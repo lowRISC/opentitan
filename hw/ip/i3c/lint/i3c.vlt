@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Verilator waiver file for i3c
+// Waiver file for the I3C block and Verilator.
 
 `verilator_config
 

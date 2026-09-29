@@ -104,8 +104,8 @@ module i3c
   input                                     scan_rst_ni,
   input prim_mubi_pkg::mubi4_t              scanmode_i
 
-  // TODO(#31336): Dummy ports for top-level integration. These are presently required because `topgen`
-  // creates enables for all output signals.
+  // TODO(#31336): Dummy ports for top-level integration. These are presently required because
+  // `topgen` creates enables for all output signals.
   ,
   output cio_ctrl_bus_drv_en_o,
   output cio_targ_bus_drv_en_o
@@ -127,9 +127,14 @@ module i3c
 
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  // TODO(#31336): These drivers should not exist, because the ports should not exist, but it's adding noise
-  // to synthesis logs.
+  // TODO(#31336): These drivers should not exist, because the ports should not exist, but it's
+  // adding noise to synthesis logs.
   assign {cio_ctrl_bus_drv_en_o, cio_targ_bus_drv_en_o} = 'b0;
+
+  // Register reinitialization.
+  logic hci_soft_rst;  // Host Controller Interface (HCI) registers.
+  logic tti_soft_rst;  // Target Transaction Interface (TTI) registers.
+  logic sc_soft_rst;   // Standby Controller registers.
 
   // Registers.
   i3c_reg2hw_t reg2hw;
@@ -147,6 +152,12 @@ module i3c
     .rst_ni         (rst_ni),
     .clk_aon_i      (clk_aon_i),
     .rst_aon_ni     (rst_aon_ni),
+
+    // Software reinitialization of the registers.
+    .hci_sw_reinit_i(hci_soft_rst),
+    .tti_sw_reinit_i(tti_soft_rst),
+    .sc_sw_reinit_i (sc_soft_rst),
+
     .tl_i           (tl_i),
     .tl_o           (tl_o),
 
@@ -395,10 +406,10 @@ module i3c
     .reg2hw_i        (reg2hw),
     .hw2reg_o        (hw2reg),
 
-    // Software resets for the Controller registers.
-    .hci_soft_rst_o  (),  // Host Controller Interface (HCI) registers.
-    .tti_soft_rst_o  (),  // Target Transaction Interface (TTI) registers.
-    .sc_soft_rst_o   (),  // Standby Controller registers.
+    // Software reinitialization of registers.
+    .hci_soft_rst_o  (hci_soft_rst),  // Host Controller Interface (HCI) registers.
+    .tti_soft_rst_o  (tti_soft_rst),  // Target Transaction Interface (TTI) registers.
+    .sc_soft_rst_o   (sc_soft_rst),   // Standby Controller registers.
 
     // HCI Command Queue Port access.
     // HCI Response Queue Port access.
