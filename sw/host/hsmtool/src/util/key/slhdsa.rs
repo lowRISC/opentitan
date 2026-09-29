@@ -11,7 +11,7 @@ use rsa::pkcs8::{
     DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, Error, LineEnding,
 };
 use slh_dsa::{SigningKey, VerifyingKey};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::path::Path;
 
 use crate::error::HsmError;
@@ -61,8 +61,10 @@ fn _save_private_key(path: &Path, key: &SlhDsaPrivateKey, enc: KeyEncoding) -> R
 
 fn _save_public_key(path: &Path, key: &SlhDsaPublicKey, enc: KeyEncoding) -> Result<()> {
     match enc {
-        KeyEncoding::Der => key.write_public_key_der_file(path)?,
-        KeyEncoding::Pem => key.write_public_key_pem_file(path, LineEnding::LF)?,
+        KeyEncoding::Der | KeyEncoding::Pkcs8Der => key.write_public_key_der_file(path)?,
+        KeyEncoding::Pem | KeyEncoding::Pkcs8 | KeyEncoding::Pkcs8Pem => {
+            key.write_public_key_pem_file(path, LineEnding::LF)?
+        }
         _ => Err(HsmError::Unsupported("Unsupported output format".into()))?,
     };
     Ok(())
@@ -553,21 +555,19 @@ pub trait SlhDsaMechanism {
     fn slh_dsa_mechanism(&self) -> Mechanism<'_>;
 }
 
-impl SlhDsaMechanism for SpxDomain {
+impl SlhDsaMechanism for SpxSignatureMode {
     fn slh_dsa_mechanism(&self) -> Mechanism<'_> {
         match self {
-            SpxDomain::None | SpxDomain::Pure => {
+            SpxSignatureMode::Pure => {
                 Mechanism::SlhDsa(SignAdditionalContext::new(HedgeType::Preferred, None))
             }
             // In PKCS#11, there are separate CKM_HASH_SLH_DSA and CKM_HASH_SLH_DSA_*
             // mechanisms, where the latter expect the full message and perform the hashing
             // on token. Since our data is pre-hashed for this domain, use the former
             // and specify SHA-256 as the hash already used.
-            SpxDomain::PreHashedSha256 => Mechanism::HashSlhDsa(HashSignAdditionalContext::new(
-                HedgeType::Preferred,
-                None,
-                MechanismType::SHA256,
-            )),
+            SpxSignatureMode::PreHashedSha256 => Mechanism::HashSlhDsa(
+                HashSignAdditionalContext::new(HedgeType::Preferred, None, MechanismType::SHA256),
+            ),
         }
     }
 }
