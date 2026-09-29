@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "signature_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules:files.bzl", "output_groups")
 load("//rules:const.bzl", "CONST", "hex")
@@ -18,7 +19,6 @@ load(
     "TEST_OWNER_CONFIGS",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("//rules:signing.bzl", "signature_test")
 load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])

@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "signing_tool")
 load("@nonhermetic//:env.bzl", "HOME")
-load("//rules:signing.bzl", "signing_tool")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,7 +22,7 @@ signing_tool(
         "HSMTOOL_SPX_MODULE": "pkcs11-ef",
     },
     location = "token",
-    tool = "//sw/host/hsmtool",
+    tool = "@opentitan_signing_infra//hsmtool",
 )
 
 signing_tool(
@@ -39,5 +39,5 @@ signing_tool(
         "KMS_PKCS11_CONFIG": "$(location ot-earlgrey-a1-sival.yaml)",
     },
     location = "token",
-    tool = "//sw/host/hsmtool",
+    tool = "@opentitan_signing_infra//hsmtool",
 )

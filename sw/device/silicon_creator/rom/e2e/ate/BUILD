@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@opentitan_signing_infra//signing:defs.bzl", "offline_signature_attach")
+load("//rules:signing.bzl", "offline_presigning_artifacts")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(
     "//rules/opentitan:defs.bzl",

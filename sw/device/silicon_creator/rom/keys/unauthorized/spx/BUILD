@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:signing.bzl", "keyset")
+load("@opentitan_signing_infra//signing:defs.bzl", "keyset")
 
 keyset(
     name = "spx_keyset",

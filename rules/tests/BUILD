@@ -2,13 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@opentitan_signing_infra//signing:defs.bzl", "signature_test")
 load("//rules/tests:const_unittest.bzl", "const_test_suite")
 load("//rules/tests:otp_unittest.bzl", "otp_test_suite")
-load("//rules:signing.bzl", "signature_test")
 
 const_test_suite()
 
 otp_test_suite()
+
+# Test that external signing rules remain working with the latest OpenTitanTool
 
 signature_test(
     name = "corrupt_signature_test",
