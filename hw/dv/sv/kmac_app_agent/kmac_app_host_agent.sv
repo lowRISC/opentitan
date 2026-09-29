@@ -11,6 +11,7 @@ class kmac_app_host_agent extends dv_base_agent #(.CFG_T       (kmac_app_agent_c
 
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
 endclass
 
 function kmac_app_host_agent::new(string name, uvm_component parent);
@@ -27,4 +28,12 @@ function void kmac_app_host_agent::build_phase(uvm_phase phase);
 
   // Configure the interface to match the agent.
   cfg.vif.if_mode = cfg.is_active ? Host : Monitor;
+endfunction
+
+function void kmac_app_host_agent::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+
+  if (cfg.is_active) begin
+    driver.m_rsp_port.connect(sequencer.m_rsp_fifo.analysis_export);
+  end
 endfunction
