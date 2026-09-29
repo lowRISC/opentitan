@@ -25,7 +25,9 @@ extern "C" {
  * for FIPS-compliant continuous operation.
  *
  * @return Result of the initialization operation. Returns
- * `kOtcryptoStatusValueOk` on success.
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueInternalError` if
+ * entropy initialization times out, or `kOtcryptoStatusValueFatalError` if a
+ * hardware or health check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_entropy_init(void);
@@ -42,7 +44,9 @@ otcrypto_status_t otcrypto_entropy_init(void);
  * The test also verifies the health checks of the generated randomness
  * providing a status error if a health test jumped.
  *
- * @return Operation status in `otcrypto_status_t` format.
+ * @return Operation status in `otcrypto_status_t` format. Returns
+ * `kOtcryptoStatusValueOk` on success, or `kOtcryptoStatusValueFatalError` if
+ * the entropy complex configuration or health check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_entropy_check(void);
@@ -56,7 +60,9 @@ otcrypto_status_t otcrypto_entropy_check(void);
  * This function does not return a status error, and will simply assert the chip
  * is in the correct configuration.
  *
- * @return Operation status in `otcrypto_status_t` format.
+ * @return Operation status in `otcrypto_status_t` format. Returns
+ * `kOtcryptoStatusValueOk` on success, or `kOtcryptoStatusValueFatalError` if
+ * a register configuration check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_entropy_health_test_config_check(void);

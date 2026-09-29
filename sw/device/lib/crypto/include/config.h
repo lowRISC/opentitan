@@ -21,7 +21,9 @@ extern "C" {
  * independent timing is enabled.
  *
  * @param security_level Security level of the used key.
- * @returns OK when the security check passed.
+ * @return Result of the security configuration check. Returns
+ * `kOtcryptoStatusValueOk` when the security check passes, or
+ * `kOtcryptoStatusValueFatalError` if the security configuration check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_security_config_check(
@@ -37,7 +39,10 @@ otcrypto_status_t otcrypto_security_config_check(
  * This function writes to Ibex registers. Hence, it is only usable in M mode.
  *
  * @param security_level Security level of the used key.
- * @returns OK when the configuration is correctly set.
+ * @return Result of setting the security configuration. Returns
+ * `kOtcryptoStatusValueOk` when the configuration is correctly set, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or state check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_set_security_config(
@@ -52,7 +57,10 @@ otcrypto_status_t otcrypto_set_security_config(
  *
  * @param[out] icache_enabled kHardenedBoolTrue if the iCache was enabled before
  * we disabled it.
- * @return Error status.
+ * @return Error status. Returns `kOtcryptoStatusValueOk` on success,
+ * `kOtcryptoStatusValueBadArgs` if arguments are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or state check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled);
@@ -65,7 +73,8 @@ otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled);
  * It is only usable in M mode.
  *
  * @param icache_enabled kHardenedBoolTrue to enable the iCache.
- * @return Error status.
+ * @return Error status. Returns `kOtcryptoStatusValueOk` on success, or
+ * `kOtcryptoStatusValueFatalError` if an internal state check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled);
@@ -79,7 +88,8 @@ otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled);
  * the registers in the alert manager.
  *
  * @param icache_enabled kHardenedBoolTrue to enable the iCache.
- * @return Error status.
+ * @return Error status. Returns `kOtcryptoStatusValueOk` on success, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_clear_alerts(void);
@@ -113,8 +123,9 @@ otcrypto_status_t otcrypto_clear_alerts(void);
  * @param state          Pointer to a stable 32-bit memory location (e.g., in
  * `.bss` or Retention SRAM) used to continuously track KAT execution.
  * @return Result of the initialization operation. Returns
- * `kOtcryptoStatusValueOk` on success, or an appropriate error code if any
- * check or test fails.
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, or `kOtcryptoStatusValueFatalError` if any
+ * initialization step, hardware check, or self-test fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
@@ -127,7 +138,10 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
  * This function checks whether any alert or sensor was fired.
  *
  * @param status The status returned by the cryptolib operation.
- * @returns OK when the security check passed.
+ * @return Result of the exit evaluation. Returns the input `status` (such as
+ * `kOtcryptoStatusValueOk`) when the security check passes, or
+ * `kOtcryptoStatusValueFatalError` if an alert, sensor, or entropy health
+ * check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status);

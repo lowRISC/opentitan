@@ -54,7 +54,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen(
  * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
@@ -100,7 +104,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or signature
+ * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
@@ -151,7 +159,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
  * @param hash_mode Hash algorithm to use for message hashing (must be 384-bit).
  * @param message Message data to be hashed and signed.
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, hash mode, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or signature
+ * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
@@ -171,7 +183,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
  * @param message Message data to be hashed and verified.
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of the ECDSA verification operation.
+ * @return Result of the ECDSA verification operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, hash mode, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
@@ -207,7 +223,11 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
- * @return Result of ECDH shared secret generation.
+ * @return Result of ECDH shared secret generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
@@ -220,7 +240,11 @@ otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
  * See `otcrypto_ecdsa_p384_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
- * @return Result of asynchronous ECDSA keygen start operation.
+ * @return Result of asynchronous ECDSA keygen start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if key
+ * configuration or keyblob length is invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
@@ -238,7 +262,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of asynchronous ECDSA keygen finalize operation.
+ * @return Result of asynchronous ECDSA keygen finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or keyblob length are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
@@ -254,7 +283,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
- * @return Result of async ECDSA start operation.
+ * @return Result of async ECDSA start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
@@ -269,7 +302,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
- * @return Result of async ECDSA start operation.
+ * @return Result of async ECDSA start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
@@ -284,7 +321,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
  * May block until the operation is complete.
  *
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of async ECDSA finalize operation.
+ * @return Result of async ECDSA finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments or
+ * signature buffer length are invalid, or `kOtcryptoStatusValueFatalError` if
+ * an internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
@@ -298,7 +339,10 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
- * @return Result of async ECDSA verify start function.
+ * @return Result of async ECDSA verify start function. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
@@ -320,7 +364,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
  *
  * @param signature Pointer to the signature being verified.
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of async ECDSA verify finalize operation.
+ * @return Result of async ECDSA verify finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments or
+ * signature buffer length are invalid, or `kOtcryptoStatusValueFatalError` if
+ * an internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
@@ -333,7 +381,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
  * See `otcrypto_ecdh_p384_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
- * @return Result of asynchronous ECDH keygen start operation.
+ * @return Result of asynchronous ECDH keygen start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if key
+ * configuration or keyblob length is invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
@@ -351,7 +403,12 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of asynchronous ECDH keygen finalize operation.
+ * @return Result of asynchronous ECDH keygen finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or keyblob length are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
@@ -364,7 +421,11 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of async ECDH start operation.
+ * @return Result of async ECDH start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_async_start(
@@ -379,7 +440,12 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
  * May block until the operation is complete.
  *
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
- * @return Result of async ECDH finalize operation.
+ * @return Result of async ECDH finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
@@ -416,7 +482,10 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
  *               448 bits).
  * @param[out] private_key Blinded private key struct, partially populated by
  *             the caller as described above.
- * @return Result of the P-384 private key import operation.
+ * @return Result of the P-384 private key import operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or share lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_private_key_import(
@@ -446,7 +515,10 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_import(
  *             words / 448 bits).
  * @param[out] share1 Second share of the private key (must be exactly 14
  *             words / 448 bits).
- * @return Result of the P-384 private key export operation.
+ * @return Result of the P-384 private key export operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or share buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_private_key_export(
@@ -477,7 +549,10 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
  * @param y Affine y-coordinate of the public key (must be exactly 12 words).
  * @param[out] public_key Unblinded public key struct (Q), partially populated
  *             by the caller as described above.
- * @return Result of the P-384 public key import operation.
+ * @return Result of the P-384 public key import operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key mode, or coordinate buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_public_key_import(
@@ -501,7 +576,10 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_import(
  *             words).
  * @param[out] y Affine y-coordinate of the public key (must be exactly 8
  *             words).
- * @return Result of the P-384 public key export operation.
+ * @return Result of the P-384 public key export operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key mode, or coordinate buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_public_key_export(
@@ -514,7 +592,10 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_export(
  * @param point Point in the affine coordinates representation that should be
  * checked.
  * @param[out] check_result True if point is valid, false otherwise.
- * @return Result of the point valid check operation.
+ * @return Result of the point valid check operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or key lengths are invalid, or `kOtcryptoStatusValueFatalError` if
+ * an internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
     const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
@@ -527,7 +608,11 @@ otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
  *
  * @param private_key The private key to be multiplied with the base point.
  * @param public_key The resulting public key of the base point multiplication.
- * @return Result of the base point multiplication.
+ * @return Result of the base point multiplication. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or key lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 status_t otcrypto_ecc_p384_base_point_mult(
     const otcrypto_blinded_key_t *private_key,
@@ -552,7 +637,10 @@ status_t otcrypto_ecc_p384_base_point_mult(
  * @param bool_private_key_share0 First Boolean share of the private key.
  * @param bool_private_key_share1 Second Boolean share of the private key.
  * @param[out] arith_private_key The resulting arithmetically shared key.
- * @return Result of the sharing operation.
+ * @return Result of the sharing operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * share buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
     const otcrypto_const_word32_buf_t *bool_private_key_share0,

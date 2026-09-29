@@ -71,7 +71,9 @@ typedef enum otcrypto_aes_padding {
  * @param plaintext_len Plaintext data length in bytes.
  * @param aes_padding Padding scheme to be used for the data.
  * @param[out] padded_len Size of the padded input or ciphertext.
- * @return Result of the operation.
+ * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success or `kOtcryptoStatusValueBadArgs` if the padding mode or length is
+ * invalid.
  */
 otcrypto_status_t otcrypto_aes_padded_plaintext_length(
     size_t plaintext_len, otcrypto_aes_padding_t aes_padding,
@@ -94,7 +96,9 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
  * @param padded_plaintext Decrypted data buffer, including padding bytes.
  * @param aes_padding Padding scheme that was used during encryption.
  * @param[out] plaintext_len Number of real (non-padding) bytes in the buffer.
- * @return Result of the operation.
+ * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or padding are invalid,
+ * or `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
  */
 otcrypto_status_t otcrypto_aes_padding_strip(
     otcrypto_byte_buf_t *padded_plaintext, otcrypto_aes_padding_t aes_padding,
