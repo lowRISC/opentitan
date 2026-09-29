@@ -37,7 +37,8 @@ extern "C" {
  * `sw/device/lib/crypto`.
  * @param[out] build_hash_high The high portion of the git commit hash of
  * `sw/device/lib/crypto`.
- * @return Status of the operation.
+ * @return Status of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success.
  */
 otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
                                       uint32_t *build_hash_low,
@@ -46,7 +47,8 @@ otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
 /**
  * Return the current version of the cryptolib.
  *
- * @return The current crypto library version.
+ * @return The current crypto library version (`otcrypto_lib_version_t`); does
+ * not return an `otcrypto_status_t` error code.
  */
 otcrypto_lib_version_t otcrypto_lib_version(void);
 
@@ -60,6 +62,7 @@ otcrypto_lib_version_t otcrypto_lib_version(void);
  * @param[out] major Decoded major version.
  * @param[out] minor Decoded minor version.
  * @param[out] patch Decoded patch version.
+ * @return None (`void`); does not return an `otcrypto_status_t` error code.
  */
 void otcrypto_version_decode(uint32_t version, uint32_t *major, uint32_t *minor,
                              uint32_t *patch);

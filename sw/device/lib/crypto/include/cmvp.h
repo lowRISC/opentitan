@@ -25,7 +25,8 @@ extern "C" {
  * After each call the service indicator is reset to `kOtcryptoCmvpNoService`.
  *
  * @param[out] indicator Pointer to receive the indicator status.
- * @return Result of the operation.
+ * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on success
+ * or `kOtcryptoStatusValueBadArgs` if `indicator` is NULL.
  */
 otcrypto_status_t otcrypto_cmvp_service_indicator(
     otcrypto_cmvp_service_indicator_t *indicator);
