@@ -31,11 +31,11 @@ For more details, see later sections (links in the "category" column).
 |-----------------|---------------------------|
 | [**AES**](#aes) | AES-{ECB,CBC,CFB,OFB,CTR}<br>AES-KWP<br>AES-GCM |
 | [**Hash functions**](#hash-functions) | SHA2-{256,384,512}<br>SHA3-{224,256,384,512}<br>SHAKE{128,256} (XOF)<br>cSHAKE{128,256} (XOF) |
-| [**Message authentication**](#message-authentication) | HMAC-SHA256<br>KMAC{128,256} |
+| [**Message authentication**](#message-authentication) | HMAC-SHA{256,384,512}<br>KMAC{128,256}<br>AES-CMAC |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
-| [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
+| [**Key derivation**](#key-derivation) | HKDF<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
 ## Cryptolib Initialization
 
@@ -55,7 +55,9 @@ Please note that this function only can be called from the machine (M) mode priv
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_clear_alerts }}
 {{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_init }}
 {{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_check }}
+{{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_health_test_config_check }}
 {{#header-snippet sw/device/lib/crypto/include/self_integrity.h otcrypto_integrity_check }}
+{{#header-snippet sw/device/lib/crypto/include/cmvp.h otcrypto_cmvp_service_indicator }}
 
 ## Cryptolib Exit
 
@@ -75,8 +77,6 @@ You can activate these settings during the build process by passing `--define=<s
 Additionally, building with the Bazel `--stamp` option is required to include the actual Git commit hash in the build info.
 Building with `--stamp` also automatically marks the build as a release build (setting `released` to `true`).
 
-{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
-
 | Configuration Setting | Internal Define | Description |
 |---|---|---|
 | `crypto_status_debug` | `OTCRYPTO_STATUS_DEBUG` | Embeds the module ID and line number directly into `otcrypto_status_t` error codes. This significantly aids debugging but increases the footprint and alters standard error structures. |
@@ -87,7 +87,7 @@ Building with `--stamp` also automatically marks the build as a release build (s
 
 The cryptolib provides functions to query the library version and build information (such as the Git commit hash of `sw/device/lib/crypto`).
 
-Callers can check the current library version using `otcrypto_lib_version`:
+Callers can check the current library version using the `otcrypto_lib_version` API function (which returns the `otcrypto_lib_version_t` enum value):
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_lib_version }}
 
@@ -562,6 +562,8 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_sign_verify }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_verify }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor }}
@@ -631,14 +633,21 @@ The two curves are birationally equivalent, in mathematical terms, so it is poss
 For ECDSA, the cryptography library supports keypair generation, signing, and signature verification.
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_dice_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_config_k }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_sign_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_verify }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_config_k }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_sign_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_verify }}
 
 #### ECDH
 
@@ -675,8 +684,15 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_finalize }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_dice_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_dice_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_config_k_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_dice_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_dice_sign_async_finalize }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_finalize }}
@@ -684,6 +700,7 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_finalize }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_config_k_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_finalize }}
 
