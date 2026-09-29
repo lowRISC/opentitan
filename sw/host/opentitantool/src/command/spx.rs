@@ -81,7 +81,7 @@ pub struct SpxKeyFileInfo {
 #[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
     /// SPHINCS+ / SLH-DSA parameter set (SHA2-128s-simple, SHAKE-128s-simple)
-    #[arg(long, default_value = "SHAKE-128s-simple")]
+    #[arg(long, default_value = "SHA2-128s-simple")]
     algorithm: SphincsPlus,
     /// Key encoding format
     #[arg(long, default_value_t = SpxKeyFormat::default())]
