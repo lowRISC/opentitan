@@ -557,4 +557,49 @@ mod test {
         loaded_public_key.verify(SpxDomain::Pure, &signature, message)?;
         Ok(())
     }
+
+    // SLH-DSA keys stored as PEM-format PKCS#8/SPKI encoded objects that
+    // contain RFC 9909 HashSLH-DSA OIDs. These keys are standard forms
+    // that are recognized by e.g. `openssl asn1parse`.
+    const HASH_SHA2_PKCS8_PRIVATE_PEM: &str = "-----BEGIN PRIVATE KEY-----\n\
+    MFICAQAwCwYJYIZIAWUDBAMjBEBIjB3ttV/OvD4/9yf9LHHaYVECrox1YCuhMF8r\n\
+    yHcCQmPlPkBjhfLuvc55qcfTg9r036qsYPgjUyPpQue7ertQ\n\
+    -----END PRIVATE KEY-----\n";
+    const HASH_SHA2_SPKI_PUBLIC_PEM: &str = "-----BEGIN PUBLIC KEY-----\n\
+    MDAwCwYJYIZIAWUDBAMjAyEAY+U+QGOF8u69znmpx9OD2vTfqqxg+CNTI+lC57t6\n\
+    u1A=\n\
+    -----END PUBLIC KEY-----\n";
+    const HASH_SHAKE_PKCS8_PRIVATE_PEM: &str = "-----BEGIN PRIVATE KEY-----\n\
+    MFICAQAwCwYJYIZIAWUDBAMpBEBTh10ZwA4dsSd8FBx0MqPoVm7VTOwSmWtQd/Gv\n\
+    5hKAck1mpOA63mf9xmxOsRCV50omE0OYXv2bqZCny/1W3qkb\n\
+    -----END PRIVATE KEY-----\n";
+    const HASH_SHAKE_SPKI_PUBLIC_PEM: &str = "-----BEGIN PUBLIC KEY-----\n\
+    MDAwCwYJYIZIAWUDBAMpAyEATWak4DreZ/3GbE6xEJXnSiYTQ5he/ZupkKfL/Vbe\n\
+    qRs=\n\
+    -----END PUBLIC KEY-----\n";
+
+    #[test]
+    fn test_hash_slh_dsa_oids() -> Result<()> {
+        // The HashSLH-DSA-SHA2-128S-WITH-SHA-256 OID in the Public Key (SPKI
+        // object) case is handled by the fallback in SPHINCS+ parsing.
+        assert!(
+            load_spx_public_key_from_bytes(
+                HASH_SHA2_SPKI_PUBLIC_PEM.as_bytes(),
+                SpxKeyLoadingMode::PublicOnly,
+            )
+            .is_ok()
+        );
+
+        // FIXME: the other three HashSLH-DSA OIDs are not currently supported.
+        assert!(
+            load_spx_public_key_from_bytes(
+                HASH_SHAKE_SPKI_PUBLIC_PEM.as_bytes(),
+                SpxKeyLoadingMode::PublicOnly,
+            )
+            .is_err()
+        );
+        assert!(load_spx_private_key_from_bytes(HASH_SHA2_PKCS8_PRIVATE_PEM.as_bytes()).is_err());
+        assert!(load_spx_private_key_from_bytes(HASH_SHAKE_PKCS8_PRIVATE_PEM.as_bytes()).is_err());
+        Ok(())
+    }
 }
