@@ -6,6 +6,7 @@
 
 #include <assert.h>
 
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "hw/top/keymgr_dpe_regs.h"  // Generated.
@@ -465,6 +466,53 @@ dif_result_t dif_keymgr_dpe_configure(const dif_keymgr_dpe_t *keymgr_dpe,
   mmio_region_write32_shadowed(keymgr_dpe->base_addr,
                                KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                                reg_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_set_kdf_engine(const dif_keymgr_dpe_t *keymgr_dpe,
+                                           dif_keymgr_dpe_kdf_engine_t engine) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  multi_bit_bool_t sel;
+  switch (engine) {
+    case kDifKeymgrDpeKdfEngineKmac:
+      sel = kMultiBitBool4False;
+      break;
+    case kDifKeymgrDpeKdfEngineOtbn:
+      sel = kMultiBitBool4True;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  // Verify if the register is unlocked
+  uint32_t kdf_engine_regwen = mmio_region_read32(
+      keymgr_dpe->base_addr, KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET);
+  if (!bitfield_bit32_read(kdf_engine_regwen,
+                           KEYMGR_DPE_KDF_ENGINE_REGWEN_EN_BIT)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg_val =
+      bitfield_field32_write(0, KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_FIELD, sel);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+                               reg_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_lock_kdf_engine(
+    const dif_keymgr_dpe_t *keymgr_dpe) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(keymgr_dpe->base_addr,
+                      KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
 
   return kDifOk;
 }

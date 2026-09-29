@@ -252,6 +252,26 @@ void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval) {
 }
 
 /**
+ * Selects the engine used by the key manager dpe for key derivation.
+ */
+void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineSet, 1);
+  uint32_t reg = bitfield_field32_write(
+      0, KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_FIELD, engine);
+  sec_mmio_write32_shadowed(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET, reg);
+}
+
+/**
+ * Locks the KDF engine selection until the next reset.
+ */
+void sc_keymgr_dpe_kdf_engine_lock(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineLock, 1);
+  sec_mmio_write32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
+}
+
+/**
  * Sets the key manager dpe software binding input.
  */
 void sc_keymgr_dpe_sw_binding_set(
