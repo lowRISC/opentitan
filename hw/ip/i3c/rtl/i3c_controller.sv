@@ -196,9 +196,6 @@ module i3c_controller
     .clk_i       (clk_i),
     .rst_ni      (rst_ni),
 
-    // Control inputs.
-    .sw_reset_i  (sw_reset_i),
-
     // Configuration settings; software-initiated state changes.
     .reg2hw_i    (reg2hw_i),
 
@@ -494,6 +491,7 @@ module i3c_controller
   logic [7:0] ce2_error_cnt;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) ce2_error_cnt <= 'b0;  // CE2 (4.3.8.2.3) count.
+    else if (reg2hw_i.mx_error_counters.reinit) ce2_error_cnt <= 'b0;
     else if (reg2hw_i.mx_error_counters.re | ctrl_error_o[2]) begin
       // Reading from the CE2_ERROR_COUNT field clears this saturating counter of CE2 errors.
       // - the sw read data path is combinational w.r.t. 're' assertion; cleared in the next cycle.

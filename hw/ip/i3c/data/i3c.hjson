@@ -37,6 +37,11 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", racl_support: true }
   ],
+  reinit_list: [
+    { name: "hci_sw_reinit_i", desc: "Software reinitialization of the HCI registers" }
+    { name: "tti_sw_reinit_i", desc: "Software reinitialization of the TTI registers" }
+    { name: "sc_sw_reinit_i",  desc: "Software reinitialization of the Standby Controller registers" }
+  ],
   available_inout_list: [
   ],
   available_input_list: [
@@ -244,6 +249,7 @@
       desc: "Controller Error counts."
       swaccess: "rw1c",
       hwaccess: "hrw",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "15:12",
           name:   "CE3",
@@ -267,8 +273,9 @@
         }
       ]
     }
-    { name: "TARG_CONTROL",
-      desc: "Target Control register.",
+    { name:   "TARG_CONTROL",
+      desc:   "Target Control register.",
+      reinit: "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "RESET",
@@ -409,6 +416,7 @@
     { name:     "TARG_SINK_CONTROL",
       desc:     "Target data sink control.",
       swaccess: "rw",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "START",
@@ -924,6 +932,7 @@
       desc:     "PHY configuration",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "31",
           name:   "CTRL_DIRECT_DRIVE_EN",
@@ -1758,6 +1767,7 @@
       swaccess: "rw",
       hwaccess: "hrw",
       hwext:    "true",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "BUS_ENABLE",
@@ -1973,6 +1983,7 @@
       desc:     "Interrupt Status.",
       swaccess: "rw1c",
       hwaccess: "hrw",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "14",
           name:   "SCHED_CMD_MISSED_TICK_STAT",
@@ -2005,6 +2016,7 @@
       desc:     "Interrupt Status Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "14",
           name:   "SCHED_CMD_MISSED_TICK_STAT_EN",
@@ -2037,6 +2049,7 @@
       desc:     "Interrupt Signal Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "14",
           name:   "SCHED_CMD_MISSED_TICK_SIGNAL_EN",
@@ -2071,6 +2084,7 @@
       hwaccess: "hro",
       hwext:    "true",
       hwqe:     "true",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "14",
           name:   "SCHED_CMD_MISSED_TICK_FORCE",
@@ -2216,6 +2230,7 @@
       desc:     "IBI Notify Control.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "3",
           name:   "NOTIFY_IBI_REJECTED",
@@ -2237,6 +2252,7 @@
     { name:     "IBI_DATA_ABORT_CTRL",
       desc:     "IBI Data Abort Control.",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "IBI_DATA_ABORT_MON",
@@ -2334,6 +2350,7 @@
       desc:     "Queue Threshold Control.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "31:24",
           name:   "IBI_STATUS_THLD",
@@ -2361,6 +2378,7 @@
       desc:     "Transfer Data Buffer Threshold Control.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "26:24",
           name:   "RX_START_THLD",
@@ -2447,6 +2465,7 @@
       desc:     "PIO Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:     "9",
           name:     "TRANSFER_ERR_STAT",
@@ -2491,6 +2510,7 @@
       desc:     "PIO Interrupt Status Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "9",
           name:   "TRANSFER_ERR_STAT_EN",
@@ -2533,6 +2553,7 @@
       desc:     "PIO Interrupt Signal Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "9",
           name:   "TRANSFER_ERR_SIGNAL_EN",
@@ -2576,6 +2597,7 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "9",
           name:   "TRANSFER_ERR_FORCE",
@@ -2618,6 +2640,7 @@
       desc:     "PIO Control.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "2",
           name:   "ABORT",
@@ -2892,6 +2915,7 @@
       hwaccess: "hrw",
       hwext:    "true",
       hwre:     "true",
+      reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "7:0",
           name:   "CE2_ERROR_COUNT",
@@ -2944,6 +2968,10 @@
     // Note: a number of the registers/fields within this Extended Capability cannot be fully
     // described within this format, so their specified behavior is implemented by marking them
     // as `hwext` and using custom logic, e.g. conditional writing `R/cW`.
+    //
+    // Since a number of the registers are implemented externally in this manner, we opt not to
+    // describe the `reinit` signals explicitly for those registers here. Rather, the logic that
+    // implements those registers uses the single reinit signal directly.
     { name:     "STBY_CR_EXTCAP_HEADER",
       desc:     "Standby Controller Extended Capability Header",
       swaccess: "ro",
@@ -3184,6 +3212,7 @@
       desc:     "Standby Controller Interrupt Status",
       swaccess: "rw1c",
       hwaccess: "hrw",
+      reinit:   "sc_sw_reinit_i",
       fields: [
         { bits:   "19",
           name:   "CCC_FATAL_RSTDAA_ERR_STAT",
@@ -3257,6 +3286,7 @@
       desc:     "Standby Controller Interrupt Signal Enable",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "sc_sw_reinit_i",
       fields: [
         { bits:   "19",
           name:   "CCC_FATAL_RSTDAA_ERR_SIGNAL_EN",
@@ -3331,6 +3361,7 @@
       hwaccess: "hro",
       hwext:    "true",
       hwqe:     "true",
+      reinit:   "sc_sw_reinit_i",
       fields: [
         { bits:   "19",
           name:   "CCC_FATAL_RSTDAA_ERR_FORCE",
@@ -3459,6 +3490,7 @@
       desc:     "Target Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "TE_STAT",
@@ -3562,6 +3594,7 @@
       desc:     "Target Interrupt Status Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "31",
           name:   "TE_STAT_EN",
@@ -3649,6 +3682,7 @@
       desc:     "Target Interrupt Signal Enable.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "31",
           name:   "TE_SIGNAL_EN",
@@ -3737,6 +3771,7 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "31",
           name:   "TE_FORCE",
@@ -3824,6 +3859,7 @@
       desc:     "Target PIO mode Control register.",
       hwaccess: "hrw",
       hwqe:     "true",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "27:24",
           name:     "ABORT",
@@ -3869,6 +3905,7 @@
       desc:     "Target Asynchronous Event Queue Control.",
       hwaccess: "hro",
       hwqe:     "true",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "RESET",
@@ -3930,6 +3967,7 @@
       desc:     "Target Error counts.",
       swaccess: "rw1c",
       hwaccess: "hrw",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "31:28",
           name:   "DBR",
@@ -3993,6 +4031,7 @@
       desc:     "Target-side control register for setting queue interrupt thresholds.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "31:24",
           name:   "IBI_STATUS_THLD",
@@ -4034,6 +4073,7 @@
       desc:     "Target-side control register for setting buffer interrupt thresholds.",
       swaccess: "rw",
       hwaccess: "hro",
+      reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:   "30:28",
           name:   "RX_START_THLD",
@@ -4075,6 +4115,7 @@
         cname:    "TARGET",
         swaccess: "rw",
         hwaccess: "hrw",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "31:16",
             name:   "MWL",
@@ -4095,6 +4136,7 @@
         count:    "MaxTargets",
         cname:    "TARGET",
         hwaccess: "hrw",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:     "7:0",
             name:     "IBI_LEN",
@@ -4112,6 +4154,7 @@
         cname:    "TARGET",
         swaccess: "ro",
         hwaccess: "hrw",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:     "2",
             name:     "ENHJ",
@@ -4182,6 +4225,7 @@
         desc:     "Enable signals for individual virtual targets.",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "0",
             name:   "ENABLE",
@@ -4200,6 +4244,7 @@
         desc:     "Group addressing configuration.",
         swaccess: "ro",
         hwaccess: "hrw",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "11:8",
             name:   "TARGETS",
@@ -4225,6 +4270,7 @@
         cname:    "TARGET",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "31:28",
             name:   "TX_START_THLD",
@@ -4280,6 +4326,7 @@
         count:    "MaxTargets",
         cname:    "TARGET",
         swaccess: "rw",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:     "31",
             name:     "DYNAMIC_ADDR_VALID",
@@ -4315,6 +4362,7 @@
         cname:    "TARGET",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "31:24",
             name:   "BCR",
@@ -4341,6 +4389,7 @@
         cname:    "TARGET",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "31:0",
             name:   "PID_LO",
@@ -4357,6 +4406,7 @@
         cname:    "TARGET",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:     "12:11",
             name:     "VTCAP2_BUS_CTX",
@@ -4397,6 +4447,7 @@
         count:    "MaxTargets",
         cname:    "TARGET",
         swaccess: "ro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:     "13",
             name:     "ENDXFER_CAND_CRC_EARLY",
@@ -4450,6 +4501,7 @@
         cname:    "MAX_RDWR",
         swaccess: "rw",
         hwaccess: "hro",
+        reinit:   "tti_sw_reinit_i",
         fields: [
           { bits:   "31:28",
             name:   "RDTURN_SCALE",

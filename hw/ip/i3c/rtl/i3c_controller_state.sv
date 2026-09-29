@@ -20,9 +20,6 @@ module i3c_controller_state
   input                     clk_i,
   input                     rst_ni,
 
-  // Control inputs.
-  input                     sw_reset_i,
-
   // Configuration settings; software-initiated state changes.
   input  i3c_reg2hw_t       reg2hw_i,
 
@@ -87,8 +84,9 @@ module i3c_controller_state
   // - BUS_ENABLE, RESUME, SUSPEND, ABORT
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) gstate_q <= GState_Disabled;
-    else if (sw_reset_i) gstate_q <= GState_Disabled;  // Software reset shall be a last resort.
-    else if (enabled_o || enable_now) begin
+    else if (reg2hw_i.hc_control.reinit) begin
+      gstate_q <= GState_Disabled;  // Software reset shall be a last resort.
+    end else if (enabled_o || enable_now) begin
       gstate_q  <= gstate_d;
     end
   end
@@ -108,7 +106,7 @@ module i3c_controller_state
       i2c_dev_present         <= I3C_HC_CONTROL_I2C_DEV_PRESENT_RESVAL;
       autocmd_data_rpt        <= I3C_HC_CONTROL_AUTOCMD_DATA_RPT_RESVAL;
       iba_include             <= I3C_HC_CONTROL_IBA_INCLUDE_RESVAL;
-    end else if (sw_reset_i) begin
+    end else if (reg2hw_i.hc_control.reinit) begin
       halt_on_cmd_seq_timeout <= I3C_HC_CONTROL_HALT_ON_CMD_SEQ_TIMEOUT_RESVAL;
       hot_join_ctrl           <= I3C_HC_CONTROL_HOT_JOIN_CTRL_RESVAL;
       i2c_dev_present         <= I3C_HC_CONTROL_I2C_DEV_PRESENT_RESVAL;
