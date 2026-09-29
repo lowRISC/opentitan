@@ -423,71 +423,83 @@ package otbn_pkg;
     CsrKmacCfg     = 12'h7dd,
     CsrKmacStrb    = 12'h7de,
     CsrMaiCtrl     = 12'h7e0,
+    CsrKeymgrCtrl  = 12'h7e2,
 
     // 0xFC0-0xFFF Custom read-only
-    CsrRnd         = 12'hFC0,
-    CsrUrnd        = 12'hFC1,
-    CsrUrndStatus  = 12'hFC2,
-    CsrInsnCnt     = 12'hFC3,
-    CsrMaiStatus   = 12'hFCA
+    CsrRnd          = 12'hFC0,
+    CsrUrnd         = 12'hFC1,
+    CsrUrndStatus   = 12'hFC2,
+    CsrInsnCnt      = 12'hFC3,
+    CsrMaiStatus    = 12'hFCA,
+    CsrKeymgrStatus = 12'hFCC
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 17; // Number of WSRs
+  parameter int NWsr = 21; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
-    WsrMod        = 'd0,
-    WsrRnd        = 'd1,
-    WsrUrnd       = 'd2,
-    WsrAcc        = 'd3,
-    WsrKeyS0L     = 'd4,
-    WsrKeyS0H     = 'd5,
-    WsrKeyS1L     = 'd6,
-    WsrKeyS1H     = 'd7,
-    WsrKmacDataS0 = 'd8,
-    WsrKmacDataS1 = 'd9,
-    WsrMaiResS0   = 'd10,
-    WsrMaiResS1   = 'd11,
-    WsrMaiIn0S0   = 'd12,
-    WsrMaiIn0S1   = 'd13,
-    WsrMaiIn1S0   = 'd14,
-    WsrMaiIn1S1   = 'd15,
-    WsrUrndState  = 'd16
+    WsrMod          = 'd0,
+    WsrRnd          = 'd1,
+    WsrUrnd         = 'd2,
+    WsrAcc          = 'd3,
+    WsrKeyS0L       = 'd4,
+    WsrKeyS0H       = 'd5,
+    WsrKeyS1L       = 'd6,
+    WsrKeyS1H       = 'd7,
+    WsrKmacDataS0   = 'd8,
+    WsrKmacDataS1   = 'd9,
+    WsrMaiResS0     = 'd10,
+    WsrMaiResS1     = 'd11,
+    WsrMaiIn0S0     = 'd12,
+    WsrMaiIn0S1     = 'd13,
+    WsrMaiIn1S0     = 'd14,
+    WsrMaiIn1S1     = 'd15,
+    WsrUrndState    = 'd16,
+    WsrKeymgrMsgS0L = 'd17,
+    WsrKeymgrMsgS0H = 'd18,
+    WsrKeymgrMsgS1L = 'd19,
+    WsrKeymgrMsgS1H = 'd20
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 27;
+  parameter int NIspr = 33;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
-    IsprMod        = 'd0,
-    IsprRnd        = 'd1,
-    IsprAcc        = 'd2,
-    IsprFlags      = 'd3,
-    IsprUrnd       = 'd4,
-    IsprKeyS0L     = 'd5,
-    IsprKeyS0H     = 'd6,
-    IsprKeyS1L     = 'd7,
-    IsprKeyS1H     = 'd8,
-    IsprMaiResS0   = 'd9,
-    IsprMaiResS1   = 'd10,
-    IsprMaiIn0S0   = 'd11,
-    IsprMaiIn0S1   = 'd12,
-    IsprMaiIn1S0   = 'd13,
-    IsprMaiIn1S1   = 'd14,
-    IsprMaiCtrl    = 'd15,
-    IsprMaiStatus  = 'd16,
-    IsprKmacDataS0 = 'd17,
-    IsprKmacDataS1 = 'd18,
-    IsprKmacStatus = 'd19,
-    IsprKmacCtrl   = 'd20,
-    IsprKmacCfg    = 'd21,
-    IsprKmacStrb   = 'd22,
-    IsprInsnCnt    = 'd23,
-    IsprUrndState  = 'd24,
-    IsprUrndCtrl   = 'd25,
-    IsprUrndStatus = 'd26
+    IsprMod            = 'd0,
+    IsprRnd            = 'd1,
+    IsprAcc            = 'd2,
+    IsprFlags          = 'd3,
+    IsprUrnd           = 'd4,
+    IsprKeyS0L         = 'd5,
+    IsprKeyS0H         = 'd6,
+    IsprKeyS1L         = 'd7,
+    IsprKeyS1H         = 'd8,
+    IsprMaiResS0       = 'd9,
+    IsprMaiResS1       = 'd10,
+    IsprMaiIn0S0       = 'd11,
+    IsprMaiIn0S1       = 'd12,
+    IsprMaiIn1S0       = 'd13,
+    IsprMaiIn1S1       = 'd14,
+    IsprMaiCtrl        = 'd15,
+    IsprMaiStatus      = 'd16,
+    IsprKmacDataS0     = 'd17,
+    IsprKmacDataS1     = 'd18,
+    IsprKmacStatus     = 'd19,
+    IsprKmacCtrl       = 'd20,
+    IsprKmacCfg        = 'd21,
+    IsprKmacStrb       = 'd22,
+    IsprInsnCnt        = 'd23,
+    IsprUrndState      = 'd24,
+    IsprUrndCtrl       = 'd25,
+    IsprUrndStatus     = 'd26,
+    IsprKeymgrStatus   = 'd27,
+    IsprKeymgrCtrl     = 'd28,
+    IsprKeymgrMsgS0L   = 'd29,
+    IsprKeymgrMsgS0H   = 'd30,
+    IsprKeymgrMsgS1L   = 'd31,
+    IsprKeymgrMsgS1H   = 'd32
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
