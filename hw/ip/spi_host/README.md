@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/spi_host/data/spi_host.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`spi_host`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D0, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/code.svg) |
+ [`spi_host`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/spi_host/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/spi_host/index.html).
 
