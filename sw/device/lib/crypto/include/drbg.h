@@ -71,7 +71,10 @@ otcrypto_status_t otcrypto_drbg_reseed(
  *
  * @param entropy Pointer to the user defined entropy value.
  * @param perso_string Pointer to personalization bitstring.
- * @return Result of the DRBG manual instantiation.
+ * @return Result of the DRBG manual instantiation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or lengths are invalid, or `kOtcryptoStatusValueFatalError` if a
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
     const otcrypto_const_byte_buf_t *entropy,
@@ -86,7 +89,10 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  *
  * @param entropy Pointer to the user defined entropy value.
  * @param additional_input Pointer to the additional input for DRBG.
- * @return Result of the manual DRBG reseed operation.
+ * @return Result of the manual DRBG reseed operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or lengths are invalid, or `kOtcryptoStatusValueFatalError` if a
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_manual_reseed(
     const otcrypto_const_byte_buf_t *entropy,
@@ -133,7 +139,10 @@ otcrypto_status_t otcrypto_drbg_generate(
  *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
- * @return Result of the DRBG generate operation.
+ * @return Result of the DRBG generate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or output length are invalid, or `kOtcryptoStatusValueFatalError`
+ * if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_manual_generate(
     const otcrypto_const_byte_buf_t *additional_input,

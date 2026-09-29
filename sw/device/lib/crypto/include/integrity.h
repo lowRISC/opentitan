@@ -30,7 +30,8 @@ extern "C" {
  * blinded key material (e.g. for re-masking).
  *
  * @param key Unblinded key.
- * @returns Checksum value.
+ * @return Computed 32-bit checksum value (`uint32_t`); does not return an
+ * `otcrypto_status_t` error code.
  */
 uint32_t otcrypto_integrity_unblinded_checksum(
     const otcrypto_unblinded_key_t *key);
@@ -42,7 +43,8 @@ uint32_t otcrypto_integrity_unblinded_checksum(
  * blinded key material (e.g. for re-masking).
  *
  * @param key Blinded key.
- * @returns Checksum value.
+ * @return Computed 32-bit checksum value (`uint32_t`); does not return an
+ * `otcrypto_status_t` error code.
  */
 uint32_t otcrypto_integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
 
@@ -53,7 +55,9 @@ uint32_t otcrypto_integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
  * otherwise.
  *
  * @param key Unblinded key.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_integrity_unblinded_key_check(
@@ -66,7 +70,9 @@ hardened_bool_t otcrypto_integrity_unblinded_key_check(
  * otherwise.
  *
  * @param key Blinded key.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_integrity_blinded_key_check(
@@ -95,6 +101,11 @@ hardened_bool_t otcrypto_integrity_blinded_key_check(
 
 /**
  * Helper function to verify the checksum of secure buffers.
+ *
+ * @param buf The generic buffer to check.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
@@ -124,7 +135,8 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf);
  *
  * @param data Byte data buffer.
  * @param len Length of the buffer in bytes.
- * @returns otcrypto_byte_buf_t with integrity.
+ * @return Initialized `otcrypto_byte_buf_t` with pointer checksum; does not
+ * return an `otcrypto_status_t` error code.
  */
 otcrypto_byte_buf_t otcrypto_make_byte_buf(uint8_t *data, size_t len);
 
@@ -134,7 +146,8 @@ otcrypto_byte_buf_t otcrypto_make_byte_buf(uint8_t *data, size_t len);
  *
  * @param data Byte data buffer.
  * @param len Length of the buffer in bytes.
- * @returns otcrypto_const_byte_buf_t with integrity.
+ * @return Initialized `otcrypto_const_byte_buf_t` with pointer checksum; does
+ * not return an `otcrypto_status_t` error code.
  */
 otcrypto_const_byte_buf_t otcrypto_make_const_byte_buf(const uint8_t *data,
                                                        size_t len);
@@ -145,7 +158,8 @@ otcrypto_const_byte_buf_t otcrypto_make_const_byte_buf(const uint8_t *data,
  *
  * @param data Word data buffer.
  * @param len Length of the buffer in words.
- * @returns otcrypto_word32_buf_t with integrity.
+ * @return Initialized `otcrypto_word32_buf_t` with pointer checksum; does not
+ * return an `otcrypto_status_t` error code.
  */
 otcrypto_word32_buf_t otcrypto_make_word32_buf(uint32_t *data, size_t len);
 
@@ -155,7 +169,8 @@ otcrypto_word32_buf_t otcrypto_make_word32_buf(uint32_t *data, size_t len);
  *
  * @param data Word data buffer.
  * @param len Length of the buffer in words.
- * @returns otcrypto_const_word32_buf_t with integrity.
+ * @return Initialized `otcrypto_const_word32_buf_t` with pointer checksum;
+ * does not return an `otcrypto_status_t` error code.
  */
 otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
                                                            size_t len);
@@ -165,7 +180,9 @@ otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
  * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
  *
  * @param buf The buffer to check.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_check_byte_buf(const otcrypto_byte_buf_t *buf);
@@ -175,7 +192,9 @@ hardened_bool_t otcrypto_check_byte_buf(const otcrypto_byte_buf_t *buf);
  * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
  *
  * @param buf The buffer to check.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_check_const_byte_buf(
@@ -186,7 +205,9 @@ hardened_bool_t otcrypto_check_const_byte_buf(
  * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
  *
  * @param buf The buffer to check.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_check_word32_buf(const otcrypto_word32_buf_t *buf);
@@ -196,7 +217,9 @@ hardened_bool_t otcrypto_check_word32_buf(const otcrypto_word32_buf_t *buf);
  * Serves as a wrapper for the OTCRYPTO_CHECK_BUF macro.
  *
  * @param buf The buffer to check.
- * @returns Whether the integrity check passed.
+ * @return `kHardenedBoolTrue` if the integrity check passed, or
+ * `kHardenedBoolFalse` otherwise; does not return an `otcrypto_status_t` error
+ * code.
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t otcrypto_check_const_word32_buf(

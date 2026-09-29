@@ -128,7 +128,10 @@ otcrypto_status_t otcrypto_sha2_update(
  *
  * @param ctx Initialized context object.
  * @param[out] digest Resulting digest.
- * @return OK or error.
+ * @return Result of the SHA2 final operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,

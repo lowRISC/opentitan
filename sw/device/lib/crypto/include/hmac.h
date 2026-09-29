@@ -104,7 +104,10 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
  *
  * @param ctx Pointer to the generic HMAC context struct.
  * @param input_message Input message to be hashed.
- * @return Result of the HMAC update operation.
+ * @return Result of the HMAC update operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_update(

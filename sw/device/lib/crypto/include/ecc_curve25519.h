@@ -108,7 +108,11 @@ otcrypto_status_t otcrypto_ed25519_verify(
  * @param input_message Message digest to be signed.
  * @param sign_mode EdDSA signature hashing mode.
  * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
- * @return Result of the Ed25519 signature generation.
+ * @return Result of the Ed25519 signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or signature
+ * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_verify(
@@ -125,7 +129,11 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
  *
  * @param private_key Pointer to the blinded private key struct which is shared
  * into d0, d1 such that d = d0 + d1 mod 2^256.
- * @return Result of asynchronous Ed25519 keygen start operation.
+ * @return Result of asynchronous Ed25519 keygen start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if key
+ * configuration or keyblob length is invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
@@ -140,7 +148,11 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
  * May block until the operation is complete.
  *
  * @param[out] public_key Pointer to the unblinded public key struct.
- * @return Result of asynchronous ed25519 keygen finalize operation.
+ * @return Result of asynchronous ed25519 keygen finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments or key
+ * length are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
@@ -159,7 +171,11 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
  * @param[out] s1 Pointer to the second arithmetic share of s.
  * @param[out] r0 Pointer to the first arithmetic share of r.
  * @param[out] r1 Pointer to the second arithmetic share of r.
- * @return Result of async Ed25519 start operation.
+ * @return Result of async Ed25519 start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
@@ -183,7 +199,12 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  * @param s1 Pointer to the second arithmetic share of s.
  * @param r0 Pointer to the first arithmetic share of r.
  * @param r1 Pointer to the second arithmetic share of r.
- * @return Result of async Ed25519 start operation.
+ * @return Result of async Ed25519 start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
@@ -202,7 +223,11 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
  *
  * @param[inout] signature Pointer to the EdDSA signature containing (R) to get
  * (s) value.
- * @return Result of async Ed25519 finalize operation.
+ * @return Result of async Ed25519 finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments or
+ * signature buffer length are invalid, or `kOtcryptoStatusValueFatalError` if
+ * an internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
@@ -218,7 +243,10 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
  * verification.
  * @param sign_mode EdDSA signature hashing mode.
  * @param signature Pointer to the signature to be verified.
- * @return Result of async Ed25519 verification start operation.
+ * @return Result of async Ed25519 verification start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
@@ -240,7 +268,11 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
  * encountered, and may return OK even when the signature is invalid.
  *
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of async Ed25519 verification finalize operation.
+ * @return Result of async Ed25519 verification finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware or
+ * integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
@@ -290,7 +322,11 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
  * See `otcrypto_x25519_keygen` for requirements on input values.
  *
  * @param private_key Pointer to the blinded private key struct.
- * @return Result of asynchronous X25519 keygen start operation.
+ * @return Result of asynchronous X25519 keygen start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if key
+ * configuration or keyblob length is invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_keygen_async_start(
@@ -305,7 +341,11 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
  *
  * @param private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
- * @return Result of asynchronous X25519 keygen finalize operation.
+ * @return Result of asynchronous X25519 keygen finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments or key
+ * lengths are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
@@ -318,7 +358,11 @@ otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
  *
  * @param private_key Pointer to the blinded private key struct.
  * @param public_key Pointer to the unblinded public key struct.
- * @return Result of asynchronous X25519 start operation.
+ * @return Result of asynchronous X25519 start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_async_start(
@@ -333,7 +377,12 @@ otcrypto_status_t otcrypto_x25519_async_start(
  * May block until the operation is complete.
  *
  * @param[out] shared_secret Pointer to the blinded shared secret struct.
- * @return Result of asynchronous X25519 finalize operation.
+ * @return Result of asynchronous X25519 finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_async_finalize(

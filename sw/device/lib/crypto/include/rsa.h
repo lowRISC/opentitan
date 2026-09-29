@@ -114,7 +114,10 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
  * @param[out] public_key Destination public key struct.
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key construction. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
@@ -135,7 +138,10 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @param d_share0 First share of the RSA private exponent d.
  * @param d_share1 Second share of the RSA private exponent d.
  * @param[out] private_key Destination private key struct.
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key construction. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
@@ -157,7 +163,10 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @param[out] public_key Destination public key struct.
  * @param[out] private_key Destination private key struct.
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key construction. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
@@ -221,7 +230,11 @@ otcrypto_status_t otcrypto_rsa_verify(
  * @param message Message data to be hashed and signed.
  * @param padding_mode Padding scheme to be used for the data.
  * @param[out] signature Pointer to the generated signature struct.
- * @return The result of the RSA signature generation.
+ * @return The result of the RSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or signature
+ * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_hash_sign_verify(
@@ -239,7 +252,10 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
  * @param padding_mode Padding scheme to be used for the data.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification.
- * @return Result of the RSA verify operation.
+ * @return Result of the RSA verify operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware or
+ * integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_rsa_hash_verify(
@@ -335,7 +351,10 @@ otcrypto_status_t otcrypto_rsa_decrypt(
  * private key (d), RSA public key exponent (e) and modulus (n).
  *
  * @param size RSA size parameter.
- * @return Result of async RSA keygen start operation.
+ * @return Result of async RSA keygen start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if size is
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size);
 
@@ -347,7 +366,12 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size);
  *
  * @param[out] public_key Pointer to public key struct.
  * @param[out] private_key Pointer to blinded private key struct.
- * @return Result of asynchronous RSA keygen finalize operation.
+ * @return Result of asynchronous RSA keygen finalize operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
+ * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
+ * configuration, or keyblob length are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
@@ -362,7 +386,10 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @param modulus RSA modulus (n).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key construction. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware or
+ * integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
@@ -383,7 +410,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
  *
  * @param[out] public_key Destination public key struct.
  * @param[out] private_key Destination private key struct.
- * @return Result of the RSA key construction.
+ * @return Result of the RSA key construction. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueAsyncIncomplete` if OTBN is still
+ * processing, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
@@ -397,7 +428,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param private_key Pointer to blinded private key struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
- * @return Result of async RSA sign start operation.
+ * @return Result of async RSA sign start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
@@ -427,7 +462,10 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
  *
  * @param public_key Pointer to public key struct.
  * @param signature Pointer to the input signature to be verified.
- * @return Result of async RSA verify start operation.
+ * @return Result of async RSA verify start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
@@ -500,7 +538,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
  *
  * @param private_key Pointer to blinded private key struct.
  * @param ciphertext Ciphertext to decrypt.
- * @return Result of the RSA decryption start operation.
+ * @return Result of the RSA decryption start operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware or integrity check
+ * fails.
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
