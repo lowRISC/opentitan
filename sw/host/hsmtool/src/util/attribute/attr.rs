@@ -373,7 +373,7 @@ impl AttributeMap {
             }
         });
 
-        // Finally, regardles of the above, if any attribute info explicitly marks
+        // Finally, regardless of the above, if any attribute info explicitly marks
         // an attribute as sensitive, redact it.
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
