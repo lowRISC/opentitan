@@ -32,6 +32,9 @@
  * @param[out] state_s1   : Share 1 of final hash state (256 bits)
  */
 sha256_masked:
+  /* Snapshot instruction counter for fault-injection check at exit */
+  csrrs    x29, INSN_CNT, x0
+
   /* Initialize zero register and 32-bit lane mask w20 <= 0x00...00ffffffff */
   bn.xor   w31, w31, w31
   bn.not   w20, w31
@@ -56,7 +59,7 @@ sha256_masked:
   li       x6,  24
 
   /* Process each 512-bit message block */
-  beq      x30, x0, .L_done
+  beq      x30, x0, _fault
   loop     x30, 13
     /* Load and byte-swap Share 0 (2 WDRs -> w21, w22) */
     li       x5, 21
@@ -78,16 +81,30 @@ sha256_masked:
     nop
     /* End of block loop */
 
-.L_done:
+  /* Verify instruction count: delta == 28 + x30 * (17840 + 1) */
+  li       x3, 17841 /* change this if the code above changes */
+  /* OTBN does not have a mul for GPRs, but x30 is max ~20 */
+  loop     x30, 1
+    add      x29, x29, x3
+  add      x29, x29, x21
+  add      x29, x29, x23
+  add      x29, x29, x6
+  addi     x29, x29, -66
+  csrrs    x2, INSN_CNT, x0
+  bne      x2, x29, _fault   /* SCA_TEST_REPLACE: nop */
+
   /* Write back final state shares */
   la       x3, state_s0
   li       x2, 30
   bn.sid   x2, 0(x3)
   la       x3, state_s1
-  li       x2, 29
-  bn.sid   x2, 0(x3)
+  li       x18, 29
+  bn.sid   x18, 0(x3)
 
   ret
+
+_fault:
+  unimp
 
 /**
  * Byte-swaps all eight 32-bit words in w23 into w24.
@@ -496,6 +513,7 @@ sha256_process_block_masked:
   bn.mov   w29, w1
 
   ret
+  unimp
 
 .data
 .balign 32
