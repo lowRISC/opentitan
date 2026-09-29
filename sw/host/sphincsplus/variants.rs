@@ -228,7 +228,7 @@ macro_rules! algorithms {
 
 // NOTE: The algorithm variant "stem" (the word after `=>`) needs to correspond to
 // the bindgen library name and `NAMESPACE` preprocessor symbol used to construct
-// that libarary.
+// that library.
 algorithms! {
     #[derive(EnumString, Display, Serialize, Deserialize)]
     #[strum(ascii_case_insensitive)]
