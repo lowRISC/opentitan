@@ -490,8 +490,8 @@ module keymgr_dpe
   localparam int GenLfsrCopies = GenDataWidth / 32;
 
   // input checking
-  logic creator_seed_vld;
-  logic owner_seed_vld;
+  logic creator_seed_chk_vld, creator_seed_vld;
+  logic owner_seed_chk_vld, owner_seed_vld;
   logic devid_vld;
   logic health_state_vld;
 
@@ -509,17 +509,18 @@ module keymgr_dpe
   end
 
   // Advance to creator_root_key
-  // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
+  // The values coming from the seed provider (otp_ctrl / rram_ctrl) / lc_ctrl are treated as
+  // quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
-  logic unused_creator_seed;
-  assign unused_creator_seed = ^{creator_seed_i.seed_valid};
   assign creator_seed = creator_seed_i.seed;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
-  logic unused_owner_seed;
-  assign unused_owner_seed = ^{owner_seed_i.seed_valid};
   assign owner_seed = owner_seed_i.seed;
+
+  // A seed is only valid if its provider marks it as valid and it passes the input checks.
+  assign creator_seed_vld = creator_seed_i.seed_valid & creator_seed_chk_vld;
+  assign owner_seed_vld   = owner_seed_i.seed_valid & owner_seed_chk_vld;
 
   // If the system support only two boot stages then the creator seed is
   // consumed in BootStageCreator.
@@ -608,8 +609,8 @@ module keymgr_dpe
     .key_i(curr_active_key),
     .devid_i(device_id_i),
     .health_state_i(lc_keymgr_div_i),
-    .creator_seed_vld_o(creator_seed_vld),
-    .owner_seed_vld_o(owner_seed_vld),
+    .creator_seed_vld_o(creator_seed_chk_vld),
+    .owner_seed_vld_o(owner_seed_chk_vld),
     .devid_vld_o(devid_vld),
     .health_state_vld_o(health_state_vld),
     // In keymgr_dpe, key version comparison is handled by the ctrl logic.
