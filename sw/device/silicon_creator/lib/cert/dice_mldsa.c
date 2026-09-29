@@ -57,6 +57,12 @@ enum {
   kDiceSlotSize = 936,
 };
 
+enum {
+  // Minimum watchdog timer for MLDSA operations.
+  // 2.4s x 200000Hz = 480000
+  kWdogMinBiteThreshold = 480000,
+};
+
 const dice_storage_slot_t kDiceStorageCdi0Ecdsa = DICE_STORAGE_SLOT(
     "CDI_0", &kFlashCtrlInfoPageDiceCerts,
     /*offset_val=*/0,
@@ -615,6 +621,7 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
 /* Public CDI 0 API declared in dice.h */
 rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
                               const manifest_t *rom_ext_manifest) {
+  watchdog_bite_threshold_set(kWdogMinBiteThreshold);
   retention_sram_t *retram = retention_sram_get();
   dice_cert_gen_msg_t *msg = &retram->creator.dice_cert_gen;
   HARDENED_RETURN_IF_ERROR(dice_chain_init());

@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -120,4 +121,12 @@ void watchdog_pet(void) {
 
 uint32_t watchdog_get(void) {
   return abs_mmio_read32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET);
+}
+
+void watchdog_bite_threshold_set(uint32_t threshold) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioSetBiteThreshold, 2);
+  abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
+  abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
+                   (9 * threshold) / 8);
+  sec_mmio_write32(kBase + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET, threshold);
 }
