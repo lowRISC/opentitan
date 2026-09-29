@@ -683,18 +683,18 @@ misbehaves.
 {"reg": [{"name": "INVALID_CREATOR_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_OWNER_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DEV_ID", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_HEALTH_STATE", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY_VERSION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DIGEST", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_ROOT_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INACTIVE_LC_EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                          |
-|:------:|:------:|:-------:|:---------------------|:-----------------------------------------------------|
-|  31:9  |        |         |                      | Reserved                                             |
-|   8    |  rw0c  |   0x0   | INACTIVE_LC_EN       | Enable signal from LC ctrl is deactivated            |
-|   7    |  rw0c  |   0x0   | INVALID_ROOT_KEY     | OTP root key was invalid during the first advance    |
-|   6    |  rw0c  |   0x0   | INVALID_DIGEST       | ROM digest failed input checks during operation      |
-|   5    |  rw0c  |   0x0   | INVALID_KEY          | Key fed to kmac failed input checks during operation |
-|   4    |  rw0c  |   0x0   | INVALID_KEY_VERSION  | Key version failed input checks during operation     |
-|   3    |  rw0c  |   0x0   | INVALID_HEALTH_STATE | Health state failed input checks during operation    |
-|   2    |  rw0c  |   0x0   | INVALID_DEV_ID       | Device ID failed input checks during operation       |
-|   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED   | Owner seed failed input checks during operation      |
-|   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED | Creator seed failed input checks during operation    |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                               |
+|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------|
+|  31:9  |        |         |                      | Reserved                                                                  |
+|   8    |  rw0c  |   0x0   | INACTIVE_LC_EN       | Enable signal from LC ctrl is deactivated                                 |
+|   7    |  rw0c  |   0x0   | INVALID_ROOT_KEY     | OTP root key was invalid during the first advance                         |
+|   6    |  rw0c  |   0x0   | INVALID_DIGEST       | ROM digest failed input checks during operation                           |
+|   5    |  rw0c  |   0x0   | INVALID_KEY          | Key fed to kmac failed input checks during operation                      |
+|   4    |  rw0c  |   0x0   | INVALID_KEY_VERSION  | Key version failed input checks during operation                          |
+|   3    |  rw0c  |   0x0   | INVALID_HEALTH_STATE | Health state failed input checks during operation                         |
+|   2    |  rw0c  |   0x0   | INVALID_DEV_ID       | Device ID failed input checks during operation                            |
+|   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED   | Owner seed was not marked valid or failed input checks during operation   |
+|   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED | Creator seed was not marked valid or failed input checks during operation |
 
 ## LOAD_KEY_LOCK
 Register write lock for the LOAD_KEY command

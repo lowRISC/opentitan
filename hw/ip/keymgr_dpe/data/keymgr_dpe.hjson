@@ -1148,12 +1148,12 @@ countermeasures: [
         { bits: "0",
           name: "INVALID_CREATOR_SEED",
           resval: "0x0"
-          desc: "Creator seed failed input checks during operation",
+          desc: "Creator seed was not marked valid or failed input checks during operation",
         },
         { bits: "1",
           name: "INVALID_OWNER_SEED",
           resval: "0x0"
-          desc: "Owner seed failed input checks during operation",
+          desc: "Owner seed was not marked valid or failed input checks during operation",
         },
         { bits: "2",
           name: "INVALID_DEV_ID",
