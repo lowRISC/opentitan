@@ -10241,11 +10241,10 @@ module i3c_reg_top
     .d      (hw2reg.stby_cr_device_char.bcr_fixed.d),
     .qre    (),
     .qe     (stby_cr_device_char_flds_we[3]),
-    .q      (reg2hw.stby_cr_device_char.bcr_fixed.q),
+    .q      (),
     .ds     (),
     .qs     (stby_cr_device_char_bcr_fixed_qs)
   );
-  assign reg2hw.stby_cr_device_char.bcr_fixed.qe = stby_cr_device_char_qe;
 
 
   // R[stby_cr_device_pid_lo]: V(True)
