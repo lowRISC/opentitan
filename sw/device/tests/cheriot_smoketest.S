@@ -16,8 +16,8 @@
 
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top/rv_core_ibex_regs.h"  // Generated.
+#include "hw/top/top_memory.h" // Generated.
 #include "hw/top/uart_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 
 #if !defined(CHERIOT_MODE)
 #error "CHERIOT_MODE must be 1 (boot into CHERIoT) or 0 (stay in ePMP)."
@@ -88,7 +88,7 @@ _trap_handler:
   bnez t0, .L_trap_cheriot
 
   // RV32: an integer base is all the store needs.
-  lui  t1, %hi(TOP_EARLGREY_UART0_BASE_ADDR)
+  lui  t1, %hi(TOP_UART0_BASE_ADDR)
   addi t2, x0, 'R'
   j    .L_trap_mark
 
@@ -96,7 +96,7 @@ _trap_handler:
   // CHERIoT: the store needs a capability. `mtdc` is still the memory root, so
   // narrow a copy of it onto the UART register window.
   cspecialr t1, mtdc
-  lui       t2, %hi(TOP_EARLGREY_UART0_BASE_ADDR)
+  lui       t2, %hi(TOP_UART0_BASE_ADDR)
   csetaddr  t1, t1, t2
   csetboundsimm t1, t1, 0x40
   addi      t2, x0, 'C'
@@ -162,8 +162,8 @@ _ottf_start:
 
   // Integer MMIO bases. They stay valid for as long as the core is in RV32
   // mode; a CHERIoT build re-derives them as capabilities after the switch.
-  li s0, TOP_EARLGREY_UART0_BASE_ADDR
-  li s1, TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+  li s0, TOP_UART0_BASE_ADDR
+  li s1, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
 
   // Install the diagnostic trap handler first, in direct mode, so that it is
   // already armed if the switch itself faults.
@@ -191,10 +191,10 @@ _ottf_start:
   // MMIO now needs capabilities. `mtdc` still holds the memory root: nothing
   // in the RV32 boot stages writes it.
   cspecialr ct1, mtdc
-  li        t2, TOP_EARLGREY_UART0_BASE_ADDR
+  li        t2, TOP_UART0_BASE_ADDR
   csetaddr  cs0, ct1, t2
   csetboundsimm cs0, cs0, 0x40
-  li        t2, TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+  li        t2, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
   csetaddr  cs1, ct1, t2
   csetboundsimm cs1, cs1, 0xa0
 #endif
