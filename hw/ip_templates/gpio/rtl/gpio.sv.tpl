@@ -56,6 +56,18 @@ module ${module_instance_name}
 
   logic [NumIOs-1:0] cio_gpio_q;
   logic [NumIOs-1:0] cio_gpio_en_q;
+% if per_pin_view:
+  logic [NumIOs-1:0] intr_ctrl_en_rising_q, intr_ctrl_en_falling_q;
+  logic [NumIOs-1:0] intr_ctrl_en_lvlhigh_q, intr_ctrl_en_lvllow_q;
+  logic [NumIOs-1:0] ctrl_en_input_filter_q;
+
+  // Per-pin register views, gathered into one vector per field
+  logic [NumIOs-1:0] per_pin_out_qe, per_pin_out_q;
+  logic [NumIOs-1:0] per_pin_oe_qe, per_pin_oe_q;
+  logic [NumIOs-1:0] per_pin_intr_ctrl_qe;
+  logic [NumIOs-1:0] per_pin_rising_q, per_pin_falling_q, per_pin_lvlhigh_q, per_pin_lvllow_q;
+  logic [NumIOs-1:0] per_pin_filter_q;
+% endif
 
   // possibly filter the input based upon register configuration
   logic [NumIOs-1:0] data_in_d;
@@ -67,7 +79,11 @@ module ${module_instance_name}
     ) u_filter (
       .clk_i,
       .rst_ni,
+% if per_pin_view:
+      .enable_i(ctrl_en_input_filter_q[i]),
+% else:
       .enable_i(reg2hw.ctrl_en_input_filter.q[i]),
+% endif
       .filter_i(cio_gpio_i[i]),
       .thresh_i({CntWidth{1'b1}}),
       .filter_o(data_in_d[i])
@@ -291,6 +307,49 @@ module ${module_instance_name}
   assign hw2reg.data_in.de = 1'b1;
   assign hw2reg.data_in.d  = data_in_d;
 
+% if per_pin_view:
+  // Per-pin views
+  for (genvar i = 0; i < NumIOs; i++) begin : gen_per_pin_io
+    assign per_pin_out_qe[i] = reg2hw.per_pin_io[i].data_out.qe;
+    assign per_pin_out_q[i]  = reg2hw.per_pin_io[i].data_out.q;
+
+    assign hw2reg.per_pin_io[i].data_out.d = cio_gpio_q[i];
+    assign hw2reg.per_pin_io[i].data_in.d  = data_in_d[i];
+  end
+
+  if (NumIOs != 32) begin : gen_per_pin_view_num_ios_check
+    $error("The per-pin register view requires NumIOs == 32.");
+  end
+
+  // The interleaved PER_PIN_OE and PER_PIN_INTR_CTRL registers are not multiregs. All fields of a
+  // register are written together, so the qe of its first field is used for the whole register.
+  logic [NumIOs-1:0] unused_per_pin_intr_ctrl_qe;
+% for i in range(32):
+
+  assign per_pin_oe_qe[${i}]      = reg2hw.per_pin_oe_${i}.qe;
+  assign per_pin_oe_q[${i}]       = reg2hw.per_pin_oe_${i}.q;
+  assign hw2reg.per_pin_oe_${i}.d = cio_gpio_en_q[${i}];
+
+  assign per_pin_intr_ctrl_qe[${i}] = reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[${i}]     = reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[${i}]    = reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[${i}]    = reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[${i}]     = reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[${i}]     = reg2hw.per_pin_intr_ctrl_${i}.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[${i}] = ^{
+      reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_${i}.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_${i}.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[${i}];
+  assign hw2reg.per_pin_intr_ctrl_${i}.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[${i}];
+  assign hw2reg.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[${i}];
+  assign hw2reg.per_pin_intr_ctrl_${i}.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[${i}];
+  assign hw2reg.per_pin_intr_ctrl_${i}.ctrl_en_input_filter.d = ctrl_en_input_filter_q[${i}];
+% endfor
+
+% endif
   // GPIO_OUT
   assign cio_gpio_o                     = cio_gpio_q;
   assign cio_gpio_en_o                  = cio_gpio_en_q;
@@ -314,6 +373,10 @@ module ${module_instance_name}
       cio_gpio_q[15:0] <=
         ( reg2hw.masked_out_lower.mask.q & reg2hw.masked_out_lower.data.q) |
         (~reg2hw.masked_out_lower.mask.q & cio_gpio_q[15:0]);
+% if per_pin_view:
+    end else if (|per_pin_out_qe) begin
+      cio_gpio_q <= (per_pin_out_qe & per_pin_out_q) | (~per_pin_out_qe & cio_gpio_q);
+% endif
     end
   end
 
@@ -337,9 +400,59 @@ module ${module_instance_name}
       cio_gpio_en_q[15:0] <=
         ( reg2hw.masked_oe_lower.mask.q & reg2hw.masked_oe_lower.data.q) |
         (~reg2hw.masked_oe_lower.mask.q & cio_gpio_en_q[15:0]);
+% if per_pin_view:
+    end else if (|per_pin_oe_qe) begin
+      cio_gpio_en_q <= (per_pin_oe_qe & per_pin_oe_q) | (~per_pin_oe_qe & cio_gpio_en_q);
+% endif
     end
   end
 
+% if per_pin_view:
+  // Interrupt control and input filter
+  assign hw2reg.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q;
+  assign hw2reg.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q;
+  assign hw2reg.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q;
+  assign hw2reg.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q;
+  assign hw2reg.ctrl_en_input_filter.d = ctrl_en_input_filter_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intr_ctrl_en_rising_q  <= '0;
+      intr_ctrl_en_falling_q <= '0;
+      intr_ctrl_en_lvlhigh_q <= '0;
+      intr_ctrl_en_lvllow_q  <= '0;
+      ctrl_en_input_filter_q <= '0;
+    end else if (|per_pin_intr_ctrl_qe) begin
+      intr_ctrl_en_rising_q  <= (per_pin_intr_ctrl_qe & per_pin_rising_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_rising_q);
+      intr_ctrl_en_falling_q <= (per_pin_intr_ctrl_qe & per_pin_falling_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_falling_q);
+      intr_ctrl_en_lvlhigh_q <= (per_pin_intr_ctrl_qe & per_pin_lvlhigh_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_lvlhigh_q);
+      intr_ctrl_en_lvllow_q  <= (per_pin_intr_ctrl_qe & per_pin_lvllow_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_lvllow_q);
+      ctrl_en_input_filter_q <= (per_pin_intr_ctrl_qe & per_pin_filter_q) |
+                                (~per_pin_intr_ctrl_qe & ctrl_en_input_filter_q);
+    end else begin
+      if (reg2hw.intr_ctrl_en_rising.qe) begin
+        intr_ctrl_en_rising_q <= reg2hw.intr_ctrl_en_rising.q;
+      end
+      if (reg2hw.intr_ctrl_en_falling.qe) begin
+        intr_ctrl_en_falling_q <= reg2hw.intr_ctrl_en_falling.q;
+      end
+      if (reg2hw.intr_ctrl_en_lvlhigh.qe) begin
+        intr_ctrl_en_lvlhigh_q <= reg2hw.intr_ctrl_en_lvlhigh.q;
+      end
+      if (reg2hw.intr_ctrl_en_lvllow.qe) begin
+        intr_ctrl_en_lvllow_q <= reg2hw.intr_ctrl_en_lvllow.q;
+      end
+      if (reg2hw.ctrl_en_input_filter.qe) begin
+        ctrl_en_input_filter_q <= reg2hw.ctrl_en_input_filter.q;
+      end
+    end
+  end
+
+% endif
   logic [NumIOs-1:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
   logic [NumIOs-1:0] event_intr_combined;
 
@@ -358,10 +471,17 @@ module ${module_instance_name}
   );
 
   // detect four possible individual interrupts
+% if per_pin_view:
+  assign event_intr_rise    = event_rise & intr_ctrl_en_rising_q;
+  assign event_intr_fall    = event_fall & intr_ctrl_en_falling_q;
+  assign event_intr_acthigh =  data_in_d & intr_ctrl_en_lvlhigh_q;
+  assign event_intr_actlow  = ~data_in_d & intr_ctrl_en_lvllow_q;
+% else:
   assign event_intr_rise    = event_rise & reg2hw.intr_ctrl_en_rising.q;
   assign event_intr_fall    = event_fall & reg2hw.intr_ctrl_en_falling.q;
   assign event_intr_acthigh =  data_in_d & reg2hw.intr_ctrl_en_lvlhigh.q;
   assign event_intr_actlow  = ~data_in_d & reg2hw.intr_ctrl_en_lvllow.q;
+% endif
 
   assign event_intr_combined = event_intr_rise   |
                                event_intr_fall   |

@@ -9,6 +9,7 @@
     module_instance_name: gpio
     topname: darjeeling
     uniquified_modules: {}
+    per_pin_view: false
   }
   dtgen:
   {

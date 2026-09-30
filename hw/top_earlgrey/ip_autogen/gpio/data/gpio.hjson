@@ -82,9 +82,7 @@
       type:    "int",
       default: "32",
       desc:    '''Number of I/Os.
-                  If you change this, also change the width of `gpio` in `available_inout_list` and `interrupt_list`.
-                  Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
-                  Values outside that range would likely require significant RTL changes.
+                  The per-pin register view requires 32.
                '''
       local:   "true",
     },
@@ -359,7 +357,9 @@
             enables rising-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -371,7 +371,9 @@
             enables falling-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -383,7 +385,9 @@
             enables level high interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -395,7 +399,9 @@
             enables level low interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -407,7 +413,9 @@
             must be stable for 16 cycles before transitioning.
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -448,6 +456,1867 @@
           resval: "0"
         }
       ],
+    },
+    // The per-pin ranges at 0x100 and 0x200 have room for up to 64 GPIOs, each range aligned to its
+    // size. More GPIOs need larger offsets.
+    { skipto: "0x100" },
+    { multireg:
+      { name: "PER_PIN_IO",
+        cname: "PER_PIN_IO",
+        desc: '''Per-pin view of the output and input data of one GPIO.
+
+              This register aliases bit i of !!DIRECT_OUT and !!DATA_IN for GPIO[i].
+              Writing it updates only DATA_OUT[i], without affecting the other GPIOs.
+              ''',
+        count: "NumIOs",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwqe: "true",
+        tags: [// read value of per_pin_* registers depends on other registers and the inputs
+               // avoid writing to per_pin_io* registers as they affect direct_out value
+               "excl:CsrNonInitTests:CsrExclAll"],
+        fields: [
+          { bits: "0",
+            name: "data_out",
+            desc: "Output data value of GPIO[i], alias of DATA_OUT[i]."
+          },
+          { bits: "8",
+            name: "data_in",
+            desc: "Input data value of GPIO[i], alias of !!DATA_IN[i].",
+            swaccess: "ro",
+            hwaccess: "hwo",
+            resval: "x"
+          },
+        ]
+      },
+    },
+    { skipto: "0x200" },
+    // The PER_PIN_OE and PER_PIN_INTR_CTRL registers of each GPIO are interleaved, which a multireg
+    // cannot express. Generate one pair of registers for each of the NumIOs GPIOs instead.
+    { name: "PER_PIN_OE_0",
+      desc: '''Per-pin view of the output enable of GPIO[0].
+
+            This register aliases bit 0 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[0], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[0], alias of DATA_OE[0]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_0",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[0].
+
+            This register aliases bit 0 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[0], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_0, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[0], alias of !!INTR_CTRL_EN_RISING[0]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[0], alias of !!INTR_CTRL_EN_FALLING[0]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[0], alias of !!INTR_CTRL_EN_LVLHIGH[0]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[0], alias of !!INTR_CTRL_EN_LVLLOW[0]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[0], alias of !!CTRL_EN_INPUT_FILTER[0]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_1",
+      desc: '''Per-pin view of the output enable of GPIO[1].
+
+            This register aliases bit 1 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[1], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[1], alias of DATA_OE[1]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_1",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[1].
+
+            This register aliases bit 1 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[1], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_1, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[1], alias of !!INTR_CTRL_EN_RISING[1]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[1], alias of !!INTR_CTRL_EN_FALLING[1]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[1], alias of !!INTR_CTRL_EN_LVLHIGH[1]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[1], alias of !!INTR_CTRL_EN_LVLLOW[1]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[1], alias of !!CTRL_EN_INPUT_FILTER[1]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_2",
+      desc: '''Per-pin view of the output enable of GPIO[2].
+
+            This register aliases bit 2 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[2], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[2], alias of DATA_OE[2]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_2",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[2].
+
+            This register aliases bit 2 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[2], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_2, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[2], alias of !!INTR_CTRL_EN_RISING[2]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[2], alias of !!INTR_CTRL_EN_FALLING[2]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[2], alias of !!INTR_CTRL_EN_LVLHIGH[2]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[2], alias of !!INTR_CTRL_EN_LVLLOW[2]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[2], alias of !!CTRL_EN_INPUT_FILTER[2]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_3",
+      desc: '''Per-pin view of the output enable of GPIO[3].
+
+            This register aliases bit 3 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[3], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[3], alias of DATA_OE[3]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_3",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[3].
+
+            This register aliases bit 3 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[3], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_3, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[3], alias of !!INTR_CTRL_EN_RISING[3]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[3], alias of !!INTR_CTRL_EN_FALLING[3]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[3], alias of !!INTR_CTRL_EN_LVLHIGH[3]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[3], alias of !!INTR_CTRL_EN_LVLLOW[3]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[3], alias of !!CTRL_EN_INPUT_FILTER[3]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_4",
+      desc: '''Per-pin view of the output enable of GPIO[4].
+
+            This register aliases bit 4 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[4], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[4], alias of DATA_OE[4]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_4",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[4].
+
+            This register aliases bit 4 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[4], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_4, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[4], alias of !!INTR_CTRL_EN_RISING[4]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[4], alias of !!INTR_CTRL_EN_FALLING[4]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[4], alias of !!INTR_CTRL_EN_LVLHIGH[4]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[4], alias of !!INTR_CTRL_EN_LVLLOW[4]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[4], alias of !!CTRL_EN_INPUT_FILTER[4]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_5",
+      desc: '''Per-pin view of the output enable of GPIO[5].
+
+            This register aliases bit 5 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[5], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[5], alias of DATA_OE[5]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_5",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[5].
+
+            This register aliases bit 5 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[5], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_5, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[5], alias of !!INTR_CTRL_EN_RISING[5]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[5], alias of !!INTR_CTRL_EN_FALLING[5]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[5], alias of !!INTR_CTRL_EN_LVLHIGH[5]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[5], alias of !!INTR_CTRL_EN_LVLLOW[5]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[5], alias of !!CTRL_EN_INPUT_FILTER[5]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_6",
+      desc: '''Per-pin view of the output enable of GPIO[6].
+
+            This register aliases bit 6 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[6], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[6], alias of DATA_OE[6]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_6",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[6].
+
+            This register aliases bit 6 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[6], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_6, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[6], alias of !!INTR_CTRL_EN_RISING[6]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[6], alias of !!INTR_CTRL_EN_FALLING[6]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[6], alias of !!INTR_CTRL_EN_LVLHIGH[6]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[6], alias of !!INTR_CTRL_EN_LVLLOW[6]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[6], alias of !!CTRL_EN_INPUT_FILTER[6]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_7",
+      desc: '''Per-pin view of the output enable of GPIO[7].
+
+            This register aliases bit 7 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[7], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[7], alias of DATA_OE[7]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_7",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[7].
+
+            This register aliases bit 7 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[7], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_7, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[7], alias of !!INTR_CTRL_EN_RISING[7]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[7], alias of !!INTR_CTRL_EN_FALLING[7]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[7], alias of !!INTR_CTRL_EN_LVLHIGH[7]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[7], alias of !!INTR_CTRL_EN_LVLLOW[7]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[7], alias of !!CTRL_EN_INPUT_FILTER[7]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_8",
+      desc: '''Per-pin view of the output enable of GPIO[8].
+
+            This register aliases bit 8 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[8], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[8], alias of DATA_OE[8]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_8",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[8].
+
+            This register aliases bit 8 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[8], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_8, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[8], alias of !!INTR_CTRL_EN_RISING[8]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[8], alias of !!INTR_CTRL_EN_FALLING[8]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[8], alias of !!INTR_CTRL_EN_LVLHIGH[8]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[8], alias of !!INTR_CTRL_EN_LVLLOW[8]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[8], alias of !!CTRL_EN_INPUT_FILTER[8]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_9",
+      desc: '''Per-pin view of the output enable of GPIO[9].
+
+            This register aliases bit 9 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[9], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[9], alias of DATA_OE[9]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_9",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[9].
+
+            This register aliases bit 9 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[9], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_9, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[9], alias of !!INTR_CTRL_EN_RISING[9]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[9], alias of !!INTR_CTRL_EN_FALLING[9]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[9], alias of !!INTR_CTRL_EN_LVLHIGH[9]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[9], alias of !!INTR_CTRL_EN_LVLLOW[9]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[9], alias of !!CTRL_EN_INPUT_FILTER[9]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_10",
+      desc: '''Per-pin view of the output enable of GPIO[10].
+
+            This register aliases bit 10 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[10], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[10], alias of DATA_OE[10]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_10",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[10].
+
+            This register aliases bit 10 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[10], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_10, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[10], alias of !!INTR_CTRL_EN_RISING[10]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[10], alias of !!INTR_CTRL_EN_FALLING[10]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[10], alias of !!INTR_CTRL_EN_LVLHIGH[10]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[10], alias of !!INTR_CTRL_EN_LVLLOW[10]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[10], alias of !!CTRL_EN_INPUT_FILTER[10]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_11",
+      desc: '''Per-pin view of the output enable of GPIO[11].
+
+            This register aliases bit 11 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[11], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[11], alias of DATA_OE[11]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_11",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[11].
+
+            This register aliases bit 11 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[11], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_11, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[11], alias of !!INTR_CTRL_EN_RISING[11]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[11], alias of !!INTR_CTRL_EN_FALLING[11]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[11], alias of !!INTR_CTRL_EN_LVLHIGH[11]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[11], alias of !!INTR_CTRL_EN_LVLLOW[11]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[11], alias of !!CTRL_EN_INPUT_FILTER[11]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_12",
+      desc: '''Per-pin view of the output enable of GPIO[12].
+
+            This register aliases bit 12 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[12], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[12], alias of DATA_OE[12]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_12",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[12].
+
+            This register aliases bit 12 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[12], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_12, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[12], alias of !!INTR_CTRL_EN_RISING[12]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[12], alias of !!INTR_CTRL_EN_FALLING[12]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[12], alias of !!INTR_CTRL_EN_LVLHIGH[12]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[12], alias of !!INTR_CTRL_EN_LVLLOW[12]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[12], alias of !!CTRL_EN_INPUT_FILTER[12]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_13",
+      desc: '''Per-pin view of the output enable of GPIO[13].
+
+            This register aliases bit 13 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[13], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[13], alias of DATA_OE[13]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_13",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[13].
+
+            This register aliases bit 13 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[13], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_13, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[13], alias of !!INTR_CTRL_EN_RISING[13]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[13], alias of !!INTR_CTRL_EN_FALLING[13]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[13], alias of !!INTR_CTRL_EN_LVLHIGH[13]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[13], alias of !!INTR_CTRL_EN_LVLLOW[13]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[13], alias of !!CTRL_EN_INPUT_FILTER[13]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_14",
+      desc: '''Per-pin view of the output enable of GPIO[14].
+
+            This register aliases bit 14 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[14], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[14], alias of DATA_OE[14]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_14",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[14].
+
+            This register aliases bit 14 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[14], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_14, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[14], alias of !!INTR_CTRL_EN_RISING[14]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[14], alias of !!INTR_CTRL_EN_FALLING[14]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[14], alias of !!INTR_CTRL_EN_LVLHIGH[14]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[14], alias of !!INTR_CTRL_EN_LVLLOW[14]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[14], alias of !!CTRL_EN_INPUT_FILTER[14]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_15",
+      desc: '''Per-pin view of the output enable of GPIO[15].
+
+            This register aliases bit 15 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[15], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[15], alias of DATA_OE[15]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_15",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[15].
+
+            This register aliases bit 15 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[15], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_15, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[15], alias of !!INTR_CTRL_EN_RISING[15]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[15], alias of !!INTR_CTRL_EN_FALLING[15]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[15], alias of !!INTR_CTRL_EN_LVLHIGH[15]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[15], alias of !!INTR_CTRL_EN_LVLLOW[15]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[15], alias of !!CTRL_EN_INPUT_FILTER[15]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_16",
+      desc: '''Per-pin view of the output enable of GPIO[16].
+
+            This register aliases bit 16 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[16], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[16], alias of DATA_OE[16]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_16",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[16].
+
+            This register aliases bit 16 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[16], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_16, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[16], alias of !!INTR_CTRL_EN_RISING[16]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[16], alias of !!INTR_CTRL_EN_FALLING[16]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[16], alias of !!INTR_CTRL_EN_LVLHIGH[16]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[16], alias of !!INTR_CTRL_EN_LVLLOW[16]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[16], alias of !!CTRL_EN_INPUT_FILTER[16]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_17",
+      desc: '''Per-pin view of the output enable of GPIO[17].
+
+            This register aliases bit 17 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[17], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[17], alias of DATA_OE[17]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_17",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[17].
+
+            This register aliases bit 17 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[17], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_17, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[17], alias of !!INTR_CTRL_EN_RISING[17]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[17], alias of !!INTR_CTRL_EN_FALLING[17]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[17], alias of !!INTR_CTRL_EN_LVLHIGH[17]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[17], alias of !!INTR_CTRL_EN_LVLLOW[17]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[17], alias of !!CTRL_EN_INPUT_FILTER[17]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_18",
+      desc: '''Per-pin view of the output enable of GPIO[18].
+
+            This register aliases bit 18 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[18], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[18], alias of DATA_OE[18]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_18",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[18].
+
+            This register aliases bit 18 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[18], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_18, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[18], alias of !!INTR_CTRL_EN_RISING[18]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[18], alias of !!INTR_CTRL_EN_FALLING[18]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[18], alias of !!INTR_CTRL_EN_LVLHIGH[18]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[18], alias of !!INTR_CTRL_EN_LVLLOW[18]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[18], alias of !!CTRL_EN_INPUT_FILTER[18]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_19",
+      desc: '''Per-pin view of the output enable of GPIO[19].
+
+            This register aliases bit 19 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[19], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[19], alias of DATA_OE[19]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_19",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[19].
+
+            This register aliases bit 19 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[19], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_19, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[19], alias of !!INTR_CTRL_EN_RISING[19]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[19], alias of !!INTR_CTRL_EN_FALLING[19]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[19], alias of !!INTR_CTRL_EN_LVLHIGH[19]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[19], alias of !!INTR_CTRL_EN_LVLLOW[19]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[19], alias of !!CTRL_EN_INPUT_FILTER[19]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_20",
+      desc: '''Per-pin view of the output enable of GPIO[20].
+
+            This register aliases bit 20 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[20], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[20], alias of DATA_OE[20]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_20",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[20].
+
+            This register aliases bit 20 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[20], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_20, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[20], alias of !!INTR_CTRL_EN_RISING[20]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[20], alias of !!INTR_CTRL_EN_FALLING[20]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[20], alias of !!INTR_CTRL_EN_LVLHIGH[20]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[20], alias of !!INTR_CTRL_EN_LVLLOW[20]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[20], alias of !!CTRL_EN_INPUT_FILTER[20]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_21",
+      desc: '''Per-pin view of the output enable of GPIO[21].
+
+            This register aliases bit 21 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[21], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[21], alias of DATA_OE[21]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_21",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[21].
+
+            This register aliases bit 21 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[21], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_21, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[21], alias of !!INTR_CTRL_EN_RISING[21]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[21], alias of !!INTR_CTRL_EN_FALLING[21]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[21], alias of !!INTR_CTRL_EN_LVLHIGH[21]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[21], alias of !!INTR_CTRL_EN_LVLLOW[21]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[21], alias of !!CTRL_EN_INPUT_FILTER[21]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_22",
+      desc: '''Per-pin view of the output enable of GPIO[22].
+
+            This register aliases bit 22 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[22], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[22], alias of DATA_OE[22]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_22",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[22].
+
+            This register aliases bit 22 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[22], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_22, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[22], alias of !!INTR_CTRL_EN_RISING[22]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[22], alias of !!INTR_CTRL_EN_FALLING[22]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[22], alias of !!INTR_CTRL_EN_LVLHIGH[22]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[22], alias of !!INTR_CTRL_EN_LVLLOW[22]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[22], alias of !!CTRL_EN_INPUT_FILTER[22]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_23",
+      desc: '''Per-pin view of the output enable of GPIO[23].
+
+            This register aliases bit 23 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[23], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[23], alias of DATA_OE[23]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_23",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[23].
+
+            This register aliases bit 23 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[23], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_23, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[23], alias of !!INTR_CTRL_EN_RISING[23]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[23], alias of !!INTR_CTRL_EN_FALLING[23]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[23], alias of !!INTR_CTRL_EN_LVLHIGH[23]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[23], alias of !!INTR_CTRL_EN_LVLLOW[23]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[23], alias of !!CTRL_EN_INPUT_FILTER[23]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_24",
+      desc: '''Per-pin view of the output enable of GPIO[24].
+
+            This register aliases bit 24 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[24], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[24], alias of DATA_OE[24]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_24",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[24].
+
+            This register aliases bit 24 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[24], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_24, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[24], alias of !!INTR_CTRL_EN_RISING[24]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[24], alias of !!INTR_CTRL_EN_FALLING[24]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[24], alias of !!INTR_CTRL_EN_LVLHIGH[24]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[24], alias of !!INTR_CTRL_EN_LVLLOW[24]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[24], alias of !!CTRL_EN_INPUT_FILTER[24]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_25",
+      desc: '''Per-pin view of the output enable of GPIO[25].
+
+            This register aliases bit 25 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[25], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[25], alias of DATA_OE[25]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_25",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[25].
+
+            This register aliases bit 25 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[25], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_25, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[25], alias of !!INTR_CTRL_EN_RISING[25]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[25], alias of !!INTR_CTRL_EN_FALLING[25]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[25], alias of !!INTR_CTRL_EN_LVLHIGH[25]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[25], alias of !!INTR_CTRL_EN_LVLLOW[25]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[25], alias of !!CTRL_EN_INPUT_FILTER[25]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_26",
+      desc: '''Per-pin view of the output enable of GPIO[26].
+
+            This register aliases bit 26 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[26], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[26], alias of DATA_OE[26]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_26",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[26].
+
+            This register aliases bit 26 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[26], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_26, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[26], alias of !!INTR_CTRL_EN_RISING[26]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[26], alias of !!INTR_CTRL_EN_FALLING[26]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[26], alias of !!INTR_CTRL_EN_LVLHIGH[26]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[26], alias of !!INTR_CTRL_EN_LVLLOW[26]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[26], alias of !!CTRL_EN_INPUT_FILTER[26]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_27",
+      desc: '''Per-pin view of the output enable of GPIO[27].
+
+            This register aliases bit 27 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[27], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[27], alias of DATA_OE[27]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_27",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[27].
+
+            This register aliases bit 27 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[27], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_27, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[27], alias of !!INTR_CTRL_EN_RISING[27]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[27], alias of !!INTR_CTRL_EN_FALLING[27]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[27], alias of !!INTR_CTRL_EN_LVLHIGH[27]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[27], alias of !!INTR_CTRL_EN_LVLLOW[27]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[27], alias of !!CTRL_EN_INPUT_FILTER[27]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_28",
+      desc: '''Per-pin view of the output enable of GPIO[28].
+
+            This register aliases bit 28 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[28], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[28], alias of DATA_OE[28]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_28",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[28].
+
+            This register aliases bit 28 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[28], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_28, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[28], alias of !!INTR_CTRL_EN_RISING[28]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[28], alias of !!INTR_CTRL_EN_FALLING[28]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[28], alias of !!INTR_CTRL_EN_LVLHIGH[28]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[28], alias of !!INTR_CTRL_EN_LVLLOW[28]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[28], alias of !!CTRL_EN_INPUT_FILTER[28]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_29",
+      desc: '''Per-pin view of the output enable of GPIO[29].
+
+            This register aliases bit 29 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[29], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[29], alias of DATA_OE[29]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_29",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[29].
+
+            This register aliases bit 29 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[29], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_29, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[29], alias of !!INTR_CTRL_EN_RISING[29]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[29], alias of !!INTR_CTRL_EN_FALLING[29]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[29], alias of !!INTR_CTRL_EN_LVLHIGH[29]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[29], alias of !!INTR_CTRL_EN_LVLLOW[29]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[29], alias of !!CTRL_EN_INPUT_FILTER[29]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_30",
+      desc: '''Per-pin view of the output enable of GPIO[30].
+
+            This register aliases bit 30 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[30], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[30], alias of DATA_OE[30]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_30",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[30].
+
+            This register aliases bit 30 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[30], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_30, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[30], alias of !!INTR_CTRL_EN_RISING[30]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[30], alias of !!INTR_CTRL_EN_FALLING[30]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[30], alias of !!INTR_CTRL_EN_LVLHIGH[30]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[30], alias of !!INTR_CTRL_EN_LVLLOW[30]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[30], alias of !!CTRL_EN_INPUT_FILTER[30]."
+        },
+      ]
+    },
+    { name: "PER_PIN_OE_31",
+      desc: '''Per-pin view of the output enable of GPIO[31].
+
+            This register aliases bit 31 of !!DIRECT_OE.
+            Writing it updates only DATA_OE[31], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[31], alias of DATA_OE[31]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_31",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[31].
+
+            This register aliases bit 31 of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[31], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_31, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[31], alias of !!INTR_CTRL_EN_RISING[31]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[31], alias of !!INTR_CTRL_EN_FALLING[31]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[31], alias of !!INTR_CTRL_EN_LVLHIGH[31]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[31], alias of !!INTR_CTRL_EN_LVLLOW[31]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[31], alias of !!CTRL_EN_INPUT_FILTER[31]."
+        },
+      ]
     },
   ],
 }

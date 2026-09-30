@@ -118,6 +118,33 @@ printf("0b%b", *GPIO_INTR_STATE);       // 0b00001100
 
 ```
 
+## Per-Pin Register View
+
+Use the per-pin register view when individual GPIOs belong to different software components, for example CHERIoT compartments.
+Grant each component access to only the per-pin registers of its GPIOs, and keep using the 32-bit registers in software that manages all GPIOs, for example during initialization.
+The per-pin registers of GPIO i are:
+
+- `PER_PIN_IO_i` at offset `0x100 + 4 * i`: `data_out` in bit 0 and the read-only `data_in` in bit 8.
+- `PER_PIN_OE_i` at offset `0x200 + 8 * i`: `oe` in bit 0.
+- `PER_PIN_INTR_CTRL_i` at offset `0x204 + 8 * i`: the rising-edge, falling-edge, level-high and level-low interrupt enables in bits 0 to 3, and the input filter enable in bit 4.
+
+`PER_PIN_IO_i` has fields in bytes 0 and 1, so a write to it must cover both bytes, i.e., be at least 16 bits wide.
+A byte write returns an error and has no effect, so a capability for `PER_PIN_IO_i` must cover at least these two bytes.
+`PER_PIN_OE_i` and `PER_PIN_INTR_CTRL_i` also accept byte writes.
+
+The interrupt registers `INTR_STATE`, `INTR_ENABLE` and `INTR_TEST` have no per-pin view.
+They are expected to be managed by a trusted component, which handles the GPIO interrupts on behalf of the components owning the GPIOs.
+
+```cpp
+// GPIO 5: drive a 1
+*GPIO_PER_PIN_OE_5 = 0x1;
+*GPIO_PER_PIN_IO_5 = 0x1;                     // 16- or 32-bit write, a byte write errors
+
+// GPIO 9: filtered input with a rising-edge interrupt
+*GPIO_PER_PIN_INTR_CTRL_9 = 0x11;             // bit 4: filter, bit 0: rising edge
+printf("%d", (*GPIO_PER_PIN_IO_9 >> 8) & 0x1); // data_in of GPIO 9
+```
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_gpio.h)

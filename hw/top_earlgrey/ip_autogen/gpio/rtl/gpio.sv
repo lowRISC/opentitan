@@ -52,6 +52,16 @@ module gpio
 
   logic [NumIOs-1:0] cio_gpio_q;
   logic [NumIOs-1:0] cio_gpio_en_q;
+  logic [NumIOs-1:0] intr_ctrl_en_rising_q, intr_ctrl_en_falling_q;
+  logic [NumIOs-1:0] intr_ctrl_en_lvlhigh_q, intr_ctrl_en_lvllow_q;
+  logic [NumIOs-1:0] ctrl_en_input_filter_q;
+
+  // Per-pin register views, gathered into one vector per field
+  logic [NumIOs-1:0] per_pin_out_qe, per_pin_out_q;
+  logic [NumIOs-1:0] per_pin_oe_qe, per_pin_oe_q;
+  logic [NumIOs-1:0] per_pin_intr_ctrl_qe;
+  logic [NumIOs-1:0] per_pin_rising_q, per_pin_falling_q, per_pin_lvlhigh_q, per_pin_lvllow_q;
+  logic [NumIOs-1:0] per_pin_filter_q;
 
   // possibly filter the input based upon register configuration
   logic [NumIOs-1:0] data_in_d;
@@ -63,7 +73,7 @@ module gpio
     ) u_filter (
       .clk_i,
       .rst_ni,
-      .enable_i(reg2hw.ctrl_en_input_filter.q[i]),
+      .enable_i(ctrl_en_input_filter_q[i]),
       .filter_i(cio_gpio_i[i]),
       .thresh_i({CntWidth{1'b1}}),
       .filter_o(data_in_d[i])
@@ -115,6 +125,727 @@ module gpio
   assign hw2reg.data_in.de = 1'b1;
   assign hw2reg.data_in.d  = data_in_d;
 
+  // Per-pin views
+  for (genvar i = 0; i < NumIOs; i++) begin : gen_per_pin_io
+    assign per_pin_out_qe[i] = reg2hw.per_pin_io[i].data_out.qe;
+    assign per_pin_out_q[i]  = reg2hw.per_pin_io[i].data_out.q;
+
+    assign hw2reg.per_pin_io[i].data_out.d = cio_gpio_q[i];
+    assign hw2reg.per_pin_io[i].data_in.d  = data_in_d[i];
+  end
+
+  if (NumIOs != 32) begin : gen_per_pin_view_num_ios_check
+    $error("The per-pin register view requires NumIOs == 32.");
+  end
+
+  // The interleaved PER_PIN_OE and PER_PIN_INTR_CTRL registers are not multiregs. All fields of a
+  // register are written together, so the qe of its first field is used for the whole register.
+  logic [NumIOs-1:0] unused_per_pin_intr_ctrl_qe;
+
+  assign per_pin_oe_qe[0]      = reg2hw.per_pin_oe_0.qe;
+  assign per_pin_oe_q[0]       = reg2hw.per_pin_oe_0.q;
+  assign hw2reg.per_pin_oe_0.d = cio_gpio_en_q[0];
+
+  assign per_pin_intr_ctrl_qe[0] = reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[0]     = reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[0]    = reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[0]    = reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[0]     = reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[0]     = reg2hw.per_pin_intr_ctrl_0.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[0] = ^{
+      reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_0.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_0.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_0.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[0];
+  assign hw2reg.per_pin_intr_ctrl_0.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[0];
+  assign hw2reg.per_pin_intr_ctrl_0.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[0];
+  assign hw2reg.per_pin_intr_ctrl_0.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[0];
+  assign hw2reg.per_pin_intr_ctrl_0.ctrl_en_input_filter.d = ctrl_en_input_filter_q[0];
+
+  assign per_pin_oe_qe[1]      = reg2hw.per_pin_oe_1.qe;
+  assign per_pin_oe_q[1]       = reg2hw.per_pin_oe_1.q;
+  assign hw2reg.per_pin_oe_1.d = cio_gpio_en_q[1];
+
+  assign per_pin_intr_ctrl_qe[1] = reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[1]     = reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[1]    = reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[1]    = reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[1]     = reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[1]     = reg2hw.per_pin_intr_ctrl_1.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[1] = ^{
+      reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_1.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_1.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_1.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[1];
+  assign hw2reg.per_pin_intr_ctrl_1.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[1];
+  assign hw2reg.per_pin_intr_ctrl_1.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[1];
+  assign hw2reg.per_pin_intr_ctrl_1.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[1];
+  assign hw2reg.per_pin_intr_ctrl_1.ctrl_en_input_filter.d = ctrl_en_input_filter_q[1];
+
+  assign per_pin_oe_qe[2]      = reg2hw.per_pin_oe_2.qe;
+  assign per_pin_oe_q[2]       = reg2hw.per_pin_oe_2.q;
+  assign hw2reg.per_pin_oe_2.d = cio_gpio_en_q[2];
+
+  assign per_pin_intr_ctrl_qe[2] = reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[2]     = reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[2]    = reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[2]    = reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[2]     = reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[2]     = reg2hw.per_pin_intr_ctrl_2.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[2] = ^{
+      reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_2.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_2.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_2.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[2];
+  assign hw2reg.per_pin_intr_ctrl_2.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[2];
+  assign hw2reg.per_pin_intr_ctrl_2.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[2];
+  assign hw2reg.per_pin_intr_ctrl_2.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[2];
+  assign hw2reg.per_pin_intr_ctrl_2.ctrl_en_input_filter.d = ctrl_en_input_filter_q[2];
+
+  assign per_pin_oe_qe[3]      = reg2hw.per_pin_oe_3.qe;
+  assign per_pin_oe_q[3]       = reg2hw.per_pin_oe_3.q;
+  assign hw2reg.per_pin_oe_3.d = cio_gpio_en_q[3];
+
+  assign per_pin_intr_ctrl_qe[3] = reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[3]     = reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[3]    = reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[3]    = reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[3]     = reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[3]     = reg2hw.per_pin_intr_ctrl_3.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[3] = ^{
+      reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_3.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_3.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_3.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[3];
+  assign hw2reg.per_pin_intr_ctrl_3.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[3];
+  assign hw2reg.per_pin_intr_ctrl_3.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[3];
+  assign hw2reg.per_pin_intr_ctrl_3.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[3];
+  assign hw2reg.per_pin_intr_ctrl_3.ctrl_en_input_filter.d = ctrl_en_input_filter_q[3];
+
+  assign per_pin_oe_qe[4]      = reg2hw.per_pin_oe_4.qe;
+  assign per_pin_oe_q[4]       = reg2hw.per_pin_oe_4.q;
+  assign hw2reg.per_pin_oe_4.d = cio_gpio_en_q[4];
+
+  assign per_pin_intr_ctrl_qe[4] = reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[4]     = reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[4]    = reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[4]    = reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[4]     = reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[4]     = reg2hw.per_pin_intr_ctrl_4.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[4] = ^{
+      reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_4.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_4.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_4.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[4];
+  assign hw2reg.per_pin_intr_ctrl_4.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[4];
+  assign hw2reg.per_pin_intr_ctrl_4.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[4];
+  assign hw2reg.per_pin_intr_ctrl_4.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[4];
+  assign hw2reg.per_pin_intr_ctrl_4.ctrl_en_input_filter.d = ctrl_en_input_filter_q[4];
+
+  assign per_pin_oe_qe[5]      = reg2hw.per_pin_oe_5.qe;
+  assign per_pin_oe_q[5]       = reg2hw.per_pin_oe_5.q;
+  assign hw2reg.per_pin_oe_5.d = cio_gpio_en_q[5];
+
+  assign per_pin_intr_ctrl_qe[5] = reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[5]     = reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[5]    = reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[5]    = reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[5]     = reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[5]     = reg2hw.per_pin_intr_ctrl_5.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[5] = ^{
+      reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_5.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_5.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_5.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[5];
+  assign hw2reg.per_pin_intr_ctrl_5.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[5];
+  assign hw2reg.per_pin_intr_ctrl_5.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[5];
+  assign hw2reg.per_pin_intr_ctrl_5.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[5];
+  assign hw2reg.per_pin_intr_ctrl_5.ctrl_en_input_filter.d = ctrl_en_input_filter_q[5];
+
+  assign per_pin_oe_qe[6]      = reg2hw.per_pin_oe_6.qe;
+  assign per_pin_oe_q[6]       = reg2hw.per_pin_oe_6.q;
+  assign hw2reg.per_pin_oe_6.d = cio_gpio_en_q[6];
+
+  assign per_pin_intr_ctrl_qe[6] = reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[6]     = reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[6]    = reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[6]    = reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[6]     = reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[6]     = reg2hw.per_pin_intr_ctrl_6.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[6] = ^{
+      reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_6.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_6.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_6.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[6];
+  assign hw2reg.per_pin_intr_ctrl_6.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[6];
+  assign hw2reg.per_pin_intr_ctrl_6.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[6];
+  assign hw2reg.per_pin_intr_ctrl_6.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[6];
+  assign hw2reg.per_pin_intr_ctrl_6.ctrl_en_input_filter.d = ctrl_en_input_filter_q[6];
+
+  assign per_pin_oe_qe[7]      = reg2hw.per_pin_oe_7.qe;
+  assign per_pin_oe_q[7]       = reg2hw.per_pin_oe_7.q;
+  assign hw2reg.per_pin_oe_7.d = cio_gpio_en_q[7];
+
+  assign per_pin_intr_ctrl_qe[7] = reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[7]     = reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[7]    = reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[7]    = reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[7]     = reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[7]     = reg2hw.per_pin_intr_ctrl_7.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[7] = ^{
+      reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_7.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_7.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_7.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[7];
+  assign hw2reg.per_pin_intr_ctrl_7.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[7];
+  assign hw2reg.per_pin_intr_ctrl_7.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[7];
+  assign hw2reg.per_pin_intr_ctrl_7.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[7];
+  assign hw2reg.per_pin_intr_ctrl_7.ctrl_en_input_filter.d = ctrl_en_input_filter_q[7];
+
+  assign per_pin_oe_qe[8]      = reg2hw.per_pin_oe_8.qe;
+  assign per_pin_oe_q[8]       = reg2hw.per_pin_oe_8.q;
+  assign hw2reg.per_pin_oe_8.d = cio_gpio_en_q[8];
+
+  assign per_pin_intr_ctrl_qe[8] = reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[8]     = reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[8]    = reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[8]    = reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[8]     = reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[8]     = reg2hw.per_pin_intr_ctrl_8.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[8] = ^{
+      reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_8.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_8.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_8.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[8];
+  assign hw2reg.per_pin_intr_ctrl_8.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[8];
+  assign hw2reg.per_pin_intr_ctrl_8.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[8];
+  assign hw2reg.per_pin_intr_ctrl_8.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[8];
+  assign hw2reg.per_pin_intr_ctrl_8.ctrl_en_input_filter.d = ctrl_en_input_filter_q[8];
+
+  assign per_pin_oe_qe[9]      = reg2hw.per_pin_oe_9.qe;
+  assign per_pin_oe_q[9]       = reg2hw.per_pin_oe_9.q;
+  assign hw2reg.per_pin_oe_9.d = cio_gpio_en_q[9];
+
+  assign per_pin_intr_ctrl_qe[9] = reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[9]     = reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[9]    = reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[9]    = reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[9]     = reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[9]     = reg2hw.per_pin_intr_ctrl_9.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[9] = ^{
+      reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_9.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_9.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_9.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[9];
+  assign hw2reg.per_pin_intr_ctrl_9.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[9];
+  assign hw2reg.per_pin_intr_ctrl_9.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[9];
+  assign hw2reg.per_pin_intr_ctrl_9.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[9];
+  assign hw2reg.per_pin_intr_ctrl_9.ctrl_en_input_filter.d = ctrl_en_input_filter_q[9];
+
+  assign per_pin_oe_qe[10]      = reg2hw.per_pin_oe_10.qe;
+  assign per_pin_oe_q[10]       = reg2hw.per_pin_oe_10.q;
+  assign hw2reg.per_pin_oe_10.d = cio_gpio_en_q[10];
+
+  assign per_pin_intr_ctrl_qe[10] = reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[10]     = reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[10]    = reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[10]    = reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[10]     = reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[10]     = reg2hw.per_pin_intr_ctrl_10.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[10] = ^{
+      reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_10.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_10.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_10.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[10];
+  assign hw2reg.per_pin_intr_ctrl_10.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[10];
+  assign hw2reg.per_pin_intr_ctrl_10.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[10];
+  assign hw2reg.per_pin_intr_ctrl_10.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[10];
+  assign hw2reg.per_pin_intr_ctrl_10.ctrl_en_input_filter.d = ctrl_en_input_filter_q[10];
+
+  assign per_pin_oe_qe[11]      = reg2hw.per_pin_oe_11.qe;
+  assign per_pin_oe_q[11]       = reg2hw.per_pin_oe_11.q;
+  assign hw2reg.per_pin_oe_11.d = cio_gpio_en_q[11];
+
+  assign per_pin_intr_ctrl_qe[11] = reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[11]     = reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[11]    = reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[11]    = reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[11]     = reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[11]     = reg2hw.per_pin_intr_ctrl_11.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[11] = ^{
+      reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_11.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_11.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_11.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[11];
+  assign hw2reg.per_pin_intr_ctrl_11.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[11];
+  assign hw2reg.per_pin_intr_ctrl_11.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[11];
+  assign hw2reg.per_pin_intr_ctrl_11.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[11];
+  assign hw2reg.per_pin_intr_ctrl_11.ctrl_en_input_filter.d = ctrl_en_input_filter_q[11];
+
+  assign per_pin_oe_qe[12]      = reg2hw.per_pin_oe_12.qe;
+  assign per_pin_oe_q[12]       = reg2hw.per_pin_oe_12.q;
+  assign hw2reg.per_pin_oe_12.d = cio_gpio_en_q[12];
+
+  assign per_pin_intr_ctrl_qe[12] = reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[12]     = reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[12]    = reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[12]    = reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[12]     = reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[12]     = reg2hw.per_pin_intr_ctrl_12.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[12] = ^{
+      reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_12.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_12.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_12.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[12];
+  assign hw2reg.per_pin_intr_ctrl_12.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[12];
+  assign hw2reg.per_pin_intr_ctrl_12.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[12];
+  assign hw2reg.per_pin_intr_ctrl_12.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[12];
+  assign hw2reg.per_pin_intr_ctrl_12.ctrl_en_input_filter.d = ctrl_en_input_filter_q[12];
+
+  assign per_pin_oe_qe[13]      = reg2hw.per_pin_oe_13.qe;
+  assign per_pin_oe_q[13]       = reg2hw.per_pin_oe_13.q;
+  assign hw2reg.per_pin_oe_13.d = cio_gpio_en_q[13];
+
+  assign per_pin_intr_ctrl_qe[13] = reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[13]     = reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[13]    = reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[13]    = reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[13]     = reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[13]     = reg2hw.per_pin_intr_ctrl_13.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[13] = ^{
+      reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_13.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_13.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_13.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[13];
+  assign hw2reg.per_pin_intr_ctrl_13.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[13];
+  assign hw2reg.per_pin_intr_ctrl_13.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[13];
+  assign hw2reg.per_pin_intr_ctrl_13.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[13];
+  assign hw2reg.per_pin_intr_ctrl_13.ctrl_en_input_filter.d = ctrl_en_input_filter_q[13];
+
+  assign per_pin_oe_qe[14]      = reg2hw.per_pin_oe_14.qe;
+  assign per_pin_oe_q[14]       = reg2hw.per_pin_oe_14.q;
+  assign hw2reg.per_pin_oe_14.d = cio_gpio_en_q[14];
+
+  assign per_pin_intr_ctrl_qe[14] = reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[14]     = reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[14]    = reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[14]    = reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[14]     = reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[14]     = reg2hw.per_pin_intr_ctrl_14.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[14] = ^{
+      reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_14.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_14.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_14.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[14];
+  assign hw2reg.per_pin_intr_ctrl_14.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[14];
+  assign hw2reg.per_pin_intr_ctrl_14.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[14];
+  assign hw2reg.per_pin_intr_ctrl_14.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[14];
+  assign hw2reg.per_pin_intr_ctrl_14.ctrl_en_input_filter.d = ctrl_en_input_filter_q[14];
+
+  assign per_pin_oe_qe[15]      = reg2hw.per_pin_oe_15.qe;
+  assign per_pin_oe_q[15]       = reg2hw.per_pin_oe_15.q;
+  assign hw2reg.per_pin_oe_15.d = cio_gpio_en_q[15];
+
+  assign per_pin_intr_ctrl_qe[15] = reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[15]     = reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[15]    = reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[15]    = reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[15]     = reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[15]     = reg2hw.per_pin_intr_ctrl_15.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[15] = ^{
+      reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_15.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_15.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_15.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[15];
+  assign hw2reg.per_pin_intr_ctrl_15.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[15];
+  assign hw2reg.per_pin_intr_ctrl_15.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[15];
+  assign hw2reg.per_pin_intr_ctrl_15.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[15];
+  assign hw2reg.per_pin_intr_ctrl_15.ctrl_en_input_filter.d = ctrl_en_input_filter_q[15];
+
+  assign per_pin_oe_qe[16]      = reg2hw.per_pin_oe_16.qe;
+  assign per_pin_oe_q[16]       = reg2hw.per_pin_oe_16.q;
+  assign hw2reg.per_pin_oe_16.d = cio_gpio_en_q[16];
+
+  assign per_pin_intr_ctrl_qe[16] = reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[16]     = reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[16]    = reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[16]    = reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[16]     = reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[16]     = reg2hw.per_pin_intr_ctrl_16.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[16] = ^{
+      reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_16.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_16.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_16.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[16];
+  assign hw2reg.per_pin_intr_ctrl_16.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[16];
+  assign hw2reg.per_pin_intr_ctrl_16.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[16];
+  assign hw2reg.per_pin_intr_ctrl_16.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[16];
+  assign hw2reg.per_pin_intr_ctrl_16.ctrl_en_input_filter.d = ctrl_en_input_filter_q[16];
+
+  assign per_pin_oe_qe[17]      = reg2hw.per_pin_oe_17.qe;
+  assign per_pin_oe_q[17]       = reg2hw.per_pin_oe_17.q;
+  assign hw2reg.per_pin_oe_17.d = cio_gpio_en_q[17];
+
+  assign per_pin_intr_ctrl_qe[17] = reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[17]     = reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[17]    = reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[17]    = reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[17]     = reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[17]     = reg2hw.per_pin_intr_ctrl_17.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[17] = ^{
+      reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_17.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_17.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_17.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[17];
+  assign hw2reg.per_pin_intr_ctrl_17.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[17];
+  assign hw2reg.per_pin_intr_ctrl_17.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[17];
+  assign hw2reg.per_pin_intr_ctrl_17.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[17];
+  assign hw2reg.per_pin_intr_ctrl_17.ctrl_en_input_filter.d = ctrl_en_input_filter_q[17];
+
+  assign per_pin_oe_qe[18]      = reg2hw.per_pin_oe_18.qe;
+  assign per_pin_oe_q[18]       = reg2hw.per_pin_oe_18.q;
+  assign hw2reg.per_pin_oe_18.d = cio_gpio_en_q[18];
+
+  assign per_pin_intr_ctrl_qe[18] = reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[18]     = reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[18]    = reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[18]    = reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[18]     = reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[18]     = reg2hw.per_pin_intr_ctrl_18.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[18] = ^{
+      reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_18.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_18.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_18.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[18];
+  assign hw2reg.per_pin_intr_ctrl_18.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[18];
+  assign hw2reg.per_pin_intr_ctrl_18.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[18];
+  assign hw2reg.per_pin_intr_ctrl_18.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[18];
+  assign hw2reg.per_pin_intr_ctrl_18.ctrl_en_input_filter.d = ctrl_en_input_filter_q[18];
+
+  assign per_pin_oe_qe[19]      = reg2hw.per_pin_oe_19.qe;
+  assign per_pin_oe_q[19]       = reg2hw.per_pin_oe_19.q;
+  assign hw2reg.per_pin_oe_19.d = cio_gpio_en_q[19];
+
+  assign per_pin_intr_ctrl_qe[19] = reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[19]     = reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[19]    = reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[19]    = reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[19]     = reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[19]     = reg2hw.per_pin_intr_ctrl_19.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[19] = ^{
+      reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_19.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_19.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_19.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[19];
+  assign hw2reg.per_pin_intr_ctrl_19.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[19];
+  assign hw2reg.per_pin_intr_ctrl_19.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[19];
+  assign hw2reg.per_pin_intr_ctrl_19.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[19];
+  assign hw2reg.per_pin_intr_ctrl_19.ctrl_en_input_filter.d = ctrl_en_input_filter_q[19];
+
+  assign per_pin_oe_qe[20]      = reg2hw.per_pin_oe_20.qe;
+  assign per_pin_oe_q[20]       = reg2hw.per_pin_oe_20.q;
+  assign hw2reg.per_pin_oe_20.d = cio_gpio_en_q[20];
+
+  assign per_pin_intr_ctrl_qe[20] = reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[20]     = reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[20]    = reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[20]    = reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[20]     = reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[20]     = reg2hw.per_pin_intr_ctrl_20.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[20] = ^{
+      reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_20.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_20.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_20.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[20];
+  assign hw2reg.per_pin_intr_ctrl_20.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[20];
+  assign hw2reg.per_pin_intr_ctrl_20.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[20];
+  assign hw2reg.per_pin_intr_ctrl_20.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[20];
+  assign hw2reg.per_pin_intr_ctrl_20.ctrl_en_input_filter.d = ctrl_en_input_filter_q[20];
+
+  assign per_pin_oe_qe[21]      = reg2hw.per_pin_oe_21.qe;
+  assign per_pin_oe_q[21]       = reg2hw.per_pin_oe_21.q;
+  assign hw2reg.per_pin_oe_21.d = cio_gpio_en_q[21];
+
+  assign per_pin_intr_ctrl_qe[21] = reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[21]     = reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[21]    = reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[21]    = reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[21]     = reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[21]     = reg2hw.per_pin_intr_ctrl_21.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[21] = ^{
+      reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_21.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_21.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_21.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[21];
+  assign hw2reg.per_pin_intr_ctrl_21.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[21];
+  assign hw2reg.per_pin_intr_ctrl_21.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[21];
+  assign hw2reg.per_pin_intr_ctrl_21.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[21];
+  assign hw2reg.per_pin_intr_ctrl_21.ctrl_en_input_filter.d = ctrl_en_input_filter_q[21];
+
+  assign per_pin_oe_qe[22]      = reg2hw.per_pin_oe_22.qe;
+  assign per_pin_oe_q[22]       = reg2hw.per_pin_oe_22.q;
+  assign hw2reg.per_pin_oe_22.d = cio_gpio_en_q[22];
+
+  assign per_pin_intr_ctrl_qe[22] = reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[22]     = reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[22]    = reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[22]    = reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[22]     = reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[22]     = reg2hw.per_pin_intr_ctrl_22.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[22] = ^{
+      reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_22.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_22.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_22.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[22];
+  assign hw2reg.per_pin_intr_ctrl_22.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[22];
+  assign hw2reg.per_pin_intr_ctrl_22.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[22];
+  assign hw2reg.per_pin_intr_ctrl_22.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[22];
+  assign hw2reg.per_pin_intr_ctrl_22.ctrl_en_input_filter.d = ctrl_en_input_filter_q[22];
+
+  assign per_pin_oe_qe[23]      = reg2hw.per_pin_oe_23.qe;
+  assign per_pin_oe_q[23]       = reg2hw.per_pin_oe_23.q;
+  assign hw2reg.per_pin_oe_23.d = cio_gpio_en_q[23];
+
+  assign per_pin_intr_ctrl_qe[23] = reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[23]     = reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[23]    = reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[23]    = reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[23]     = reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[23]     = reg2hw.per_pin_intr_ctrl_23.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[23] = ^{
+      reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_23.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_23.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_23.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[23];
+  assign hw2reg.per_pin_intr_ctrl_23.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[23];
+  assign hw2reg.per_pin_intr_ctrl_23.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[23];
+  assign hw2reg.per_pin_intr_ctrl_23.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[23];
+  assign hw2reg.per_pin_intr_ctrl_23.ctrl_en_input_filter.d = ctrl_en_input_filter_q[23];
+
+  assign per_pin_oe_qe[24]      = reg2hw.per_pin_oe_24.qe;
+  assign per_pin_oe_q[24]       = reg2hw.per_pin_oe_24.q;
+  assign hw2reg.per_pin_oe_24.d = cio_gpio_en_q[24];
+
+  assign per_pin_intr_ctrl_qe[24] = reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[24]     = reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[24]    = reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[24]    = reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[24]     = reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[24]     = reg2hw.per_pin_intr_ctrl_24.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[24] = ^{
+      reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_24.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_24.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_24.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[24];
+  assign hw2reg.per_pin_intr_ctrl_24.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[24];
+  assign hw2reg.per_pin_intr_ctrl_24.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[24];
+  assign hw2reg.per_pin_intr_ctrl_24.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[24];
+  assign hw2reg.per_pin_intr_ctrl_24.ctrl_en_input_filter.d = ctrl_en_input_filter_q[24];
+
+  assign per_pin_oe_qe[25]      = reg2hw.per_pin_oe_25.qe;
+  assign per_pin_oe_q[25]       = reg2hw.per_pin_oe_25.q;
+  assign hw2reg.per_pin_oe_25.d = cio_gpio_en_q[25];
+
+  assign per_pin_intr_ctrl_qe[25] = reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[25]     = reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[25]    = reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[25]    = reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[25]     = reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[25]     = reg2hw.per_pin_intr_ctrl_25.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[25] = ^{
+      reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_25.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_25.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_25.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[25];
+  assign hw2reg.per_pin_intr_ctrl_25.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[25];
+  assign hw2reg.per_pin_intr_ctrl_25.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[25];
+  assign hw2reg.per_pin_intr_ctrl_25.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[25];
+  assign hw2reg.per_pin_intr_ctrl_25.ctrl_en_input_filter.d = ctrl_en_input_filter_q[25];
+
+  assign per_pin_oe_qe[26]      = reg2hw.per_pin_oe_26.qe;
+  assign per_pin_oe_q[26]       = reg2hw.per_pin_oe_26.q;
+  assign hw2reg.per_pin_oe_26.d = cio_gpio_en_q[26];
+
+  assign per_pin_intr_ctrl_qe[26] = reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[26]     = reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[26]    = reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[26]    = reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[26]     = reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[26]     = reg2hw.per_pin_intr_ctrl_26.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[26] = ^{
+      reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_26.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_26.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_26.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[26];
+  assign hw2reg.per_pin_intr_ctrl_26.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[26];
+  assign hw2reg.per_pin_intr_ctrl_26.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[26];
+  assign hw2reg.per_pin_intr_ctrl_26.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[26];
+  assign hw2reg.per_pin_intr_ctrl_26.ctrl_en_input_filter.d = ctrl_en_input_filter_q[26];
+
+  assign per_pin_oe_qe[27]      = reg2hw.per_pin_oe_27.qe;
+  assign per_pin_oe_q[27]       = reg2hw.per_pin_oe_27.q;
+  assign hw2reg.per_pin_oe_27.d = cio_gpio_en_q[27];
+
+  assign per_pin_intr_ctrl_qe[27] = reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[27]     = reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[27]    = reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[27]    = reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[27]     = reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[27]     = reg2hw.per_pin_intr_ctrl_27.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[27] = ^{
+      reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_27.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_27.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_27.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[27];
+  assign hw2reg.per_pin_intr_ctrl_27.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[27];
+  assign hw2reg.per_pin_intr_ctrl_27.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[27];
+  assign hw2reg.per_pin_intr_ctrl_27.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[27];
+  assign hw2reg.per_pin_intr_ctrl_27.ctrl_en_input_filter.d = ctrl_en_input_filter_q[27];
+
+  assign per_pin_oe_qe[28]      = reg2hw.per_pin_oe_28.qe;
+  assign per_pin_oe_q[28]       = reg2hw.per_pin_oe_28.q;
+  assign hw2reg.per_pin_oe_28.d = cio_gpio_en_q[28];
+
+  assign per_pin_intr_ctrl_qe[28] = reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[28]     = reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[28]    = reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[28]    = reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[28]     = reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[28]     = reg2hw.per_pin_intr_ctrl_28.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[28] = ^{
+      reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_28.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_28.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_28.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[28];
+  assign hw2reg.per_pin_intr_ctrl_28.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[28];
+  assign hw2reg.per_pin_intr_ctrl_28.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[28];
+  assign hw2reg.per_pin_intr_ctrl_28.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[28];
+  assign hw2reg.per_pin_intr_ctrl_28.ctrl_en_input_filter.d = ctrl_en_input_filter_q[28];
+
+  assign per_pin_oe_qe[29]      = reg2hw.per_pin_oe_29.qe;
+  assign per_pin_oe_q[29]       = reg2hw.per_pin_oe_29.q;
+  assign hw2reg.per_pin_oe_29.d = cio_gpio_en_q[29];
+
+  assign per_pin_intr_ctrl_qe[29] = reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[29]     = reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[29]    = reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[29]    = reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[29]     = reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[29]     = reg2hw.per_pin_intr_ctrl_29.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[29] = ^{
+      reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_29.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_29.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_29.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[29];
+  assign hw2reg.per_pin_intr_ctrl_29.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[29];
+  assign hw2reg.per_pin_intr_ctrl_29.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[29];
+  assign hw2reg.per_pin_intr_ctrl_29.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[29];
+  assign hw2reg.per_pin_intr_ctrl_29.ctrl_en_input_filter.d = ctrl_en_input_filter_q[29];
+
+  assign per_pin_oe_qe[30]      = reg2hw.per_pin_oe_30.qe;
+  assign per_pin_oe_q[30]       = reg2hw.per_pin_oe_30.q;
+  assign hw2reg.per_pin_oe_30.d = cio_gpio_en_q[30];
+
+  assign per_pin_intr_ctrl_qe[30] = reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[30]     = reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[30]    = reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[30]    = reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[30]     = reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[30]     = reg2hw.per_pin_intr_ctrl_30.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[30] = ^{
+      reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_30.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_30.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_30.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[30];
+  assign hw2reg.per_pin_intr_ctrl_30.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[30];
+  assign hw2reg.per_pin_intr_ctrl_30.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[30];
+  assign hw2reg.per_pin_intr_ctrl_30.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[30];
+  assign hw2reg.per_pin_intr_ctrl_30.ctrl_en_input_filter.d = ctrl_en_input_filter_q[30];
+
+  assign per_pin_oe_qe[31]      = reg2hw.per_pin_oe_31.qe;
+  assign per_pin_oe_q[31]       = reg2hw.per_pin_oe_31.q;
+  assign hw2reg.per_pin_oe_31.d = cio_gpio_en_q[31];
+
+  assign per_pin_intr_ctrl_qe[31] = reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_rising.qe;
+  assign per_pin_rising_q[31]     = reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_rising.q;
+  assign per_pin_falling_q[31]    = reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_falling.q;
+  assign per_pin_lvlhigh_q[31]    = reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_lvlhigh.q;
+  assign per_pin_lvllow_q[31]     = reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_lvllow.q;
+  assign per_pin_filter_q[31]     = reg2hw.per_pin_intr_ctrl_31.ctrl_en_input_filter.q;
+  assign unused_per_pin_intr_ctrl_qe[31] = ^{
+      reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_falling.qe,
+      reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_lvlhigh.qe,
+      reg2hw.per_pin_intr_ctrl_31.intr_ctrl_en_lvllow.qe,
+      reg2hw.per_pin_intr_ctrl_31.ctrl_en_input_filter.qe};
+
+  assign hw2reg.per_pin_intr_ctrl_31.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q[31];
+  assign hw2reg.per_pin_intr_ctrl_31.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q[31];
+  assign hw2reg.per_pin_intr_ctrl_31.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q[31];
+  assign hw2reg.per_pin_intr_ctrl_31.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q[31];
+  assign hw2reg.per_pin_intr_ctrl_31.ctrl_en_input_filter.d = ctrl_en_input_filter_q[31];
+
   // GPIO_OUT
   assign cio_gpio_o                     = cio_gpio_q;
   assign cio_gpio_en_o                  = cio_gpio_en_q;
@@ -138,6 +869,8 @@ module gpio
       cio_gpio_q[15:0] <=
         ( reg2hw.masked_out_lower.mask.q & reg2hw.masked_out_lower.data.q) |
         (~reg2hw.masked_out_lower.mask.q & cio_gpio_q[15:0]);
+    end else if (|per_pin_out_qe) begin
+      cio_gpio_q <= (per_pin_out_qe & per_pin_out_q) | (~per_pin_out_qe & cio_gpio_q);
     end
   end
 
@@ -161,6 +894,52 @@ module gpio
       cio_gpio_en_q[15:0] <=
         ( reg2hw.masked_oe_lower.mask.q & reg2hw.masked_oe_lower.data.q) |
         (~reg2hw.masked_oe_lower.mask.q & cio_gpio_en_q[15:0]);
+    end else if (|per_pin_oe_qe) begin
+      cio_gpio_en_q <= (per_pin_oe_qe & per_pin_oe_q) | (~per_pin_oe_qe & cio_gpio_en_q);
+    end
+  end
+
+  // Interrupt control and input filter
+  assign hw2reg.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q;
+  assign hw2reg.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q;
+  assign hw2reg.intr_ctrl_en_lvlhigh.d = intr_ctrl_en_lvlhigh_q;
+  assign hw2reg.intr_ctrl_en_lvllow.d  = intr_ctrl_en_lvllow_q;
+  assign hw2reg.ctrl_en_input_filter.d = ctrl_en_input_filter_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intr_ctrl_en_rising_q  <= '0;
+      intr_ctrl_en_falling_q <= '0;
+      intr_ctrl_en_lvlhigh_q <= '0;
+      intr_ctrl_en_lvllow_q  <= '0;
+      ctrl_en_input_filter_q <= '0;
+    end else if (|per_pin_intr_ctrl_qe) begin
+      intr_ctrl_en_rising_q  <= (per_pin_intr_ctrl_qe & per_pin_rising_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_rising_q);
+      intr_ctrl_en_falling_q <= (per_pin_intr_ctrl_qe & per_pin_falling_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_falling_q);
+      intr_ctrl_en_lvlhigh_q <= (per_pin_intr_ctrl_qe & per_pin_lvlhigh_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_lvlhigh_q);
+      intr_ctrl_en_lvllow_q  <= (per_pin_intr_ctrl_qe & per_pin_lvllow_q) |
+                                (~per_pin_intr_ctrl_qe & intr_ctrl_en_lvllow_q);
+      ctrl_en_input_filter_q <= (per_pin_intr_ctrl_qe & per_pin_filter_q) |
+                                (~per_pin_intr_ctrl_qe & ctrl_en_input_filter_q);
+    end else begin
+      if (reg2hw.intr_ctrl_en_rising.qe) begin
+        intr_ctrl_en_rising_q <= reg2hw.intr_ctrl_en_rising.q;
+      end
+      if (reg2hw.intr_ctrl_en_falling.qe) begin
+        intr_ctrl_en_falling_q <= reg2hw.intr_ctrl_en_falling.q;
+      end
+      if (reg2hw.intr_ctrl_en_lvlhigh.qe) begin
+        intr_ctrl_en_lvlhigh_q <= reg2hw.intr_ctrl_en_lvlhigh.q;
+      end
+      if (reg2hw.intr_ctrl_en_lvllow.qe) begin
+        intr_ctrl_en_lvllow_q <= reg2hw.intr_ctrl_en_lvllow.q;
+      end
+      if (reg2hw.ctrl_en_input_filter.qe) begin
+        ctrl_en_input_filter_q <= reg2hw.ctrl_en_input_filter.q;
+      end
     end
   end
 
@@ -182,10 +961,10 @@ module gpio
   );
 
   // detect four possible individual interrupts
-  assign event_intr_rise    = event_rise & reg2hw.intr_ctrl_en_rising.q;
-  assign event_intr_fall    = event_fall & reg2hw.intr_ctrl_en_falling.q;
-  assign event_intr_acthigh =  data_in_d & reg2hw.intr_ctrl_en_lvlhigh.q;
-  assign event_intr_actlow  = ~data_in_d & reg2hw.intr_ctrl_en_lvllow.q;
+  assign event_intr_rise    = event_rise & intr_ctrl_en_rising_q;
+  assign event_intr_fall    = event_fall & intr_ctrl_en_falling_q;
+  assign event_intr_acthigh =  data_in_d & intr_ctrl_en_lvlhigh_q;
+  assign event_intr_actlow  = ~data_in_d & intr_ctrl_en_lvllow_q;
 
   assign event_intr_combined = event_intr_rise   |
                                event_intr_fall   |

@@ -998,6 +998,10 @@
         GpioAsHwStrapsEn: "0"
         GpioAsyncOn: "1"
       }
+      ipgen_params:
+      {
+        per_pin_view: true
+      }
       attr: ipgen
       domain: Main
       clock_connections:
@@ -12856,7 +12860,7 @@
               {
                 hart: 0x40040000
               }
-              size_byte: 0x80
+              size_byte: 0x400
             }
           ]
           xbar: false

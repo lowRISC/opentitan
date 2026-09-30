@@ -345,6 +345,9 @@
         GpioAsHwStrapsEn: "0",
         GpioAsyncOn: "1"
       },
+      ipgen_params: {
+        per_pin_view: true
+      }
       attr: "ipgen"
     },
     { name: "spi_device",

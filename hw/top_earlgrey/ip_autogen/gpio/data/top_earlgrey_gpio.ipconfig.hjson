@@ -5,6 +5,7 @@
   instance_name: top_earlgrey_gpio
   param_values:
   {
+    per_pin_view: true
     module_instance_name: gpio
     topname: earlgrey
     uniquified_modules: {}

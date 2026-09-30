@@ -22,6 +22,8 @@ level system.
 - Configurable interrupt per GPIO for detecting rising edge, falling edge,
   or active low/high input
 - Two ways to update GPIO output: direct-write and masked (thread-safe) update
+- Second, per-pin register view to assign individual GPIOs to different software
+  components, e.g., CHERIoT compartments
 
 ## Description
 

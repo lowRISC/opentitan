@@ -8,6 +8,7 @@
     module_instance_name: gpio
     topname: englishbreakfast
     uniquified_modules: {}
+    per_pin_view: false
     num_inp_period_counters: 0
   }
   dtgen:
