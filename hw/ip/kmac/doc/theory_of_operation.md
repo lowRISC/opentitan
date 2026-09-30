@@ -322,7 +322,7 @@ If `EnMasking` is not active, the second share is set to `'0`.
 The app interface follows the same command order (START, PROCESS, RUN, DONE) as software but commands are implicitly send with message requests.
 An FSM inside the app interface controls the hashing operation.
 Its state diagram is shown below and the following text explains how an app can use the interface.
-The transitions into error states from an invalid key or a hashing engine error (SHA3 error) are not drawn: see error handling section.
+The transitions into error states from an invalid key are not drawn: see error handling section.
 
 Any app starts a session by placing its first request.
 More than one app can have a session request active at a particular time.
@@ -421,16 +421,12 @@ StErrorNotify --> StErrorAwaitTermination: DYN && error rsp sent
 StErrorNotify --> StErrorFinish: STATIC && error rsp sent
 StErrorAwaitTermination --> StErrorFinish: termination req
 
-StErrorFinish --> StIdle: (finish rsp sent || STATIC) && ServiceRejected && !SHA3 error
-StErrorFinish --> StErrorAwaitSw: (finish rsp sent || STATIC) && (!ServiceRejected || SHA3 error)
+StErrorFinish --> StIdle: (finish rsp sent || STATIC) && ServiceRejected
+StErrorFinish --> StErrorAwaitSw: (finish rsp sent || STATIC) && !ServiceRejected
 
 StErrorAwaitSw --> StErrorAwaitAbsorb: err_processed
 
 StErrorAwaitAbsorb --> StIdle: absorbed
-
-StAppPushDigest --> StErrorPush: DYN && SHA3 error
-
-StErrorPush --> StAppFinish: termination req
 
 ```
 
@@ -526,6 +522,7 @@ The reason is that it is planned to rework when the entropy engine places EDN re
 ##### Terminal state error
 This error occurs if an FSM in the interface entered its terminal error state because one of the following is true:
 - A life cycle escalation request was received, see [Reaction to Life Cycle Escalation Requests](#reaction-to-life-cycle-escalation-requests).
+- A SHA3 error occurred whilst an app was active, see [below](#sha3-engine-internal-error) for more details.
 - The FSM itself entered an invalid state.
 
 The terminal error state leads to a fatal alert which will result in a chip reset.
@@ -640,60 +637,13 @@ The following wave shows an example (case 2) where the key invalid error occurs 
 ```
 
 ##### SHA3 engine internal error
-This error arises if an invalid command sequence is sent to the hashing engine or one of these control signals is manipulated.
-Usually this error cannot occur during an app session.
-However, if the control signals are faulted, this error occurs and any digest value should be considered as invalid.
+This error condition arises if an invalid command sequence is sent to the hashing engine or an internal control signal is manipulated.
+As an invalid command sequence should never be issued by the app interface, this error will result in a fatal alert by bringing the FSM into the terminal state.
+The behaviour of the interface is not defined in this case.
 
-This error must be handled in two cases, namely:
-- The error occurs in the message phase.
-- The error occurs after the complete message is received.
-
-The first case is simple and is handled the same way as a key invalid error.
-Once the error occurs, the message data is voided.
-As soon as the complete message is received the hashing engine is brought back to idle by issuing a process and done command.
-There is only one error response sent and a dynamic interface waits for the termination request.
-It then waits for SW to acknowledge the error.
-
-If the error occurs after the complete message is received, the behavior depends on the interface type.
-A static interface continues to process the message and simply sets the error flag for the digest response.
-Once the digest response is sent it then waits for SW to acknowledge the error.
-
-A dynamic interface begins to continuously send error responses once the message is processed.
-It continues to send error responses until a termination request arrives.
-The interface then sends a finish response with the error flag set (= 1) and returns back to idle without waiting for SW to process the error.
-The finish response must have set the error flag so that errors occurred during the last digest handshake are still propagated.
-
-The following wave shows an example for a dynamic interface where the error occurs in cycle 4 / after the complete message is received.
-```wavejson
-{
-  signal: [
-    {name: 'App state',  wave: '2222.2..22', data: ["AppMsg","AppProcess","AppWait","AppPushDigest","ErrorPush","AppFinish","Idle"]},
-    {},
-    ['Request',
-    {name: 'req_valid',  wave: '10.....10.'},
-    {name: 'data_s0',    wave: '2x........', data: [""]},
-    {name: 'data_s1',    wave: '2x........'},
-    {name: 'strb',       wave: '2x........', data: ["0x03"]},
-    {name: 'req_last',   wave: '1x.....1x.'},
-    {name: 'req_ready',  wave: '10.....10.'},
-    ],
-    {},
-    ['Response',
-    {name: 'rsp_valid',  wave: '0..1.....0'},
-    {name: 'digest_s0',  wave: 'x..22x..2x'},
-    {name: 'digest_s1',  wave: 'x..22x..2x'},
-    {name: 'error',      wave: 'x..0.1...x'},
-    {name: 'rsp_finish', wave: 'x..0....1x'},
-    {name: 'rsp_ready',  wave: '1.........'},
-    ],
-  ],
-  edge: [],
-  foot:{
-   tock:0
- },
- config:{hscale:2},
-}
-```
+Note, that this error is not treated as a fatal alert if KMAC HWIP is controlled by SW.
+If controlled by SW, it is not possible to distinguish between a wrong command sequence or a fault injection.
+The error is then only reported to SW via the register interface.
 
 ### Entropy Generator
 
