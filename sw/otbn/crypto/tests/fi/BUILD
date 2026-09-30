@@ -604,3 +604,183 @@ otbn_fi_sim_test(
         "mldsa87_verify_mu": "unmasked:64:0x3a8119e4805ee48dbf8614312c78bcf08d561b85242e20a7c49d599759aec80acbfc2606f1a7c9d960a8cc88199d64c9d7f1b4a621e198874c7cefa29416fff8",
     },
 )
+
+# Look for collisions in masked SHA-256 output state between two different messages
+otbn_fi_sim_test(
+    name = "sha256_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 32,
+    collision_symbol = "state_s0,state_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "num_msg_chunks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_sha256",
+    target_a_secrets = {
+        "num_msg_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:32:0x6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19",
+        "msg_s0,msg_s1": "boolean:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    target_b_secrets = {
+        "num_msg_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:32:0x6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19",
+        "msg_s0,msg_s1": "boolean:64:0x998877665544332211aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+# Look for collisions in masked SHA-384 output state between two different messages
+otbn_fi_sim_test(
+    name = "sha384_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 64,
+    collision_symbol = "state_s0,state_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "n_chunks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_sha384",
+    target_a_secrets = {
+        "n_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:64:0xcbbb9d5dc1059ed8629a292a367cd5079159015a3070dd17152fecd8f70e593967332667ffc00b318eb44a8768581511db0c2e0d64f98fa747b5481dbefa4fa4",
+        "msg_s0,msg_s1": "boolean:128:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    target_b_secrets = {
+        "n_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:64:0xcbbb9d5dc1059ed8629a292a367cd5079159015a3070dd17152fecd8f70e593967332667ffc00b318eb44a8768581511db0c2e0d64f98fa747b5481dbefa4fa4",
+        "msg_s0,msg_s1": "boolean:128:0x998877665544332211aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+# Look for collisions in masked SHA-512 output state between two different messages
+otbn_fi_sim_test(
+    name = "sha512_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 64,
+    collision_symbol = "state_s0,state_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "n_chunks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_sha512",
+    target_a_secrets = {
+        "n_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:64:0x6a09e667f3bcc908bb67ae8584caa73b3c6ef372fe94f82ba54ff53a5f1d36f1510e527fade682d19b05688c2b3e6c1f1f83d9abfb41bd6b5be0cd19137e2179",
+        "msg_s0,msg_s1": "boolean:128:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+    target_b_secrets = {
+        "n_chunks": "unmasked:4:0x1",
+        "state_s0,state_s1": "boolean:64:0x6a09e667f3bcc908bb67ae8584caa73b3c6ef372fe94f82ba54ff53a5f1d36f1510e527fade682d19b05688c2b3e6c1f1f83d9abfb41bd6b5be0cd19137e2179",
+        "msg_s0,msg_s1": "boolean:128:0x998877665544332211aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+    },
+)
+
+# Look for collisions in masked HKDF-SHA256 OKM between two different secret IKMs
+otbn_fi_sim_test(
+    name = "hkdf_sha256_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 32,
+    collision_symbol = "okm_s0,okm_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "num_okm_blocks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_hkdf_sha256",
+    target_a_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:64:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:96:0x0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+    },
+    target_b_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:64:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:96:0x99999999999999999999999999999999999999999999",
+    },
+)
+
+# Look for collisions in masked HKDF-SHA384 OKM between two different secret IKMs
+otbn_fi_sim_test(
+    name = "hkdf_sha384_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 48,
+    collision_symbol = "okm_s0,okm_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "num_okm_blocks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_hkdf_sha384",
+    target_a_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:128:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:128:0x0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+    },
+    target_b_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:128:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:128:0x99999999999999999999999999999999999999999999",
+    },
+)
+
+# Look for collisions in masked HKDF-SHA512 OKM between two different secret IKMs
+otbn_fi_sim_test(
+    name = "hkdf_sha512_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_mode = "boolean",
+    collision_size = 64,
+    collision_symbol = "okm_s0,okm_s1",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "num_okm_blocks",
+    ok_value = "0x1",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto/sha2:run_hkdf_sha512",
+    target_a_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:128:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:128:0x0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+    },
+    target_b_secrets = {
+        "ikm_len": "unmasked:4:0x00000016",
+        "info": "unmasked:96:0xf0f1f2f3f4f5f6f7f8f9",
+        "info_len": "unmasked:4:0x0000000a",
+        "num_okm_blocks": "unmasked:4:0x00000001",
+        "salt": "unmasked:128:0x000102030405060708090a0b0c",
+        "ikm_s0,ikm_s1": "boolean:128:0x99999999999999999999999999999999999999999999",
+    },
+)
