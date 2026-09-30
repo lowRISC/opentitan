@@ -52,7 +52,7 @@ dif_result_t dif_csrng_configure(const dif_csrng_t *csrng) {
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
                                kMultiBitBool4True);
-  reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_INT_STATE_ENABLE_FIELD,
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);

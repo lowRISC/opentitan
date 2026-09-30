@@ -12559,7 +12559,7 @@
               {
                 hart: 0x21150000
               }
-              size_byte: 0x80
+              size_byte: 0x100
             }
           ]
           xbar: false
@@ -20036,6 +20036,19 @@
       outgoing: false
     }
     {
+      name: csrng_cs_int_state_stopped
+      width: 1
+      type: interrupt
+      module_name: csrng
+      desc: csrng cs_int_state_stopped interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
       name: entropy_src_es_entropy_valid
       width: 1
       type: interrupt
@@ -20601,11 +20614,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 132
+      count_tot: 133
       count_pd:
       {
         Aon: 3
-        Main: 128
+        Main: 129
       }
     }
   }

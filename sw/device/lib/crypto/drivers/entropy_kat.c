@@ -123,9 +123,9 @@ static status_t check_internal_state(
 }
 
 status_t entropy_csrng_kat(void) {
-  // If CSRNG internal state reading is already locked, we cannot run the KAT.
-  if (abs_mmio_read32(csrng_base() +
-                      CSRNG_INT_STATE_READ_ENABLE_REGWEN_REG_OFFSET) == 0) {
+  // If CSRNG internal state access is already locked, we cannot run the KAT.
+  if (abs_mmio_read32(csrng_base() + CSRNG_INT_STATE_CMD_REGWEN_REG_OFFSET) ==
+      0) {
     return OTCRYPTO_OK;
   }
 
@@ -181,10 +181,8 @@ status_t entropy_csrng_kat(void) {
       0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
   };
 
-  // Disable CSRNG internal state reading and lock the register.
-  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET, 0);
-  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_READ_ENABLE_REGWEN_REG_OFFSET,
-                   0);
+  // Lock out further internal state import/export commands until reset.
+  abs_mmio_write32(csrng_base() + CSRNG_INT_STATE_CMD_REGWEN_REG_OFFSET, 0);
 
   if (!memcmp(got, kExpectedOutput, sizeof(kExpectedOutput))) {
     return OTCRYPTO_OK;
