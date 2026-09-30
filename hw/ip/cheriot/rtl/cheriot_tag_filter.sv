@@ -130,6 +130,9 @@ module cheriot_tag_filter #(
   logic meta_buf_tag;
   logic meta_buf_err;
 
+  // A failed lookup turns the host response into an error
+  logic host_rsp_meta_err;
+
   // Tag bit store. We only do the lookup on the lower word of a capability to save
   // bandwidth into the meta memory. For the directly following meta word, we store
   // the capability
@@ -341,10 +344,18 @@ module cheriot_tag_filter #(
     tl_m_o.d_ready         = meta_buf_wready;
   end
 
+  assign host_rsp_meta_err = require_join && meta_buf_err;
+
   // We disregard all of the meta SRAM response except for the tag bit and the error bit
   always_comb begin: proc_connect_tl_rsp
-    tl_d_o         = tl_h_i;
-    tl_d_o.d_error = tl_d_o.d_error || (require_join && meta_buf_err);
+    tl_d_o = tl_h_i;
+    // The response integrity is linear, so it is updated by the difference the new d_error makes: a
+    // correct integrity stays correct, a broken one stays broken.
+    if (host_rsp_meta_err) begin
+      tl_d_o.d_error         = 1'b1;
+      tl_d_o.d_user.rsp_intg = tl_h_i.d_user.rsp_intg ^ tlul_pkg::get_rsp_intg(tl_d_o) ^
+                               tlul_pkg::get_rsp_intg(tl_h_i);
+    end
     if (!host_join) begin
       tl_d_o = local_rsp_intg;
     end
