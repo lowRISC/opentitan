@@ -10,6 +10,7 @@
 module keymgr_dpe
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
+  import prim_mubi_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
@@ -103,8 +104,6 @@ module keymgr_dpe
   localparam int NumMaxHwSlotWidth = prim_util_pkg::vbits(NumMaxHwSlot);
   typedef logic [NumInstHwSlotWidth-1:0] keymgr_dpe_slot_idx_e;
 
-  import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_false_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
@@ -265,7 +264,7 @@ module keymgr_dpe
   //  Key Manager Control
   /////////////////////////////////////
 
-  prim_mubi_pkg::mubi4_t hw_key_sel;
+  mubi4_t hw_key_sel;
   logic adv_en, id_en, gen_en;
   logic wipe_key;
   hw_key_req_t kmac_key;
@@ -740,7 +739,7 @@ module keymgr_dpe
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
 
-    prim_mubi_pkg::mubi4_t [1:0] hw_key_sel_buf;
+    mubi4_t [1:0] hw_key_sel_buf;
     prim_mubi4_sync #(
       .NumCopies(2),
       .AsyncOn(0)
