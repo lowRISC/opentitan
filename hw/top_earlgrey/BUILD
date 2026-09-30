@@ -106,7 +106,14 @@ fpga_cw310(
         "--interface={interface}",
         "--drop-reset",
     ] + select({
-        "//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+        "//ci:lowrisc_fpga_cw310": [
+            "--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0",
+            # The CW310 board has a small design problem where the USB transceiver has its
+            # SOFTCONN pin directly connected to the FPGA without any pull down. When the
+            # bitstream is not loaded, the pin is left floating which can cause the transceiver
+            # to random connect to the bus and confuse the host.
+            "--cw-usb-port-workaround=4",
+        ],
         "//conditions:default": [],
     }),
     base = ":fpga_cw310",
