@@ -262,6 +262,14 @@ package keymgr_dpe_pkg;
     keymgr_dpe_policy_t key_policy;
   } keymgr_dpe_slot_t;
 
+  // Internal metadata for each slot
+  typedef struct packed {
+    keymgr_dpe_policy_t key_policy;
+    keymgr_dpe_boot_stage_e boot_stage;
+    logic valid;
+    logic [KeyVersionWidth-1:0] max_key_version;
+  } keymgr_dpe_metadata_slot_t;
+
   typedef enum logic [2:0] {
     SlotUpdateIdle,
     SlotDestRandomize,
@@ -404,6 +412,18 @@ package keymgr_dpe_pkg;
   // checks for all 0's or all 1's of value
   function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
     return |value & ~&value;
+  endfunction
+
+  // extract all metadata from a slot
+  function automatic keymgr_dpe_metadata_slot_t extract_metadata_from_slot (keymgr_dpe_slot_t slot);
+    // read unused signal to avoid linter warnings
+    logic [Shares-1:0][KeyWidth-1:0] unused_key = slot.key;
+    return keymgr_dpe_metadata_slot_t'{
+      slot.key_policy,
+      slot.boot_stage,
+      slot.valid,
+      slot.max_key_version
+    };
   endfunction
 
 endpackage : keymgr_dpe_pkg

@@ -145,6 +145,39 @@ typedef struct sc_keymgr_dpe_advance_data {
 } sc_keymgr_dpe_advance_data_t;
 
 /**
+ * Boot stage associated with a DPE context.
+ * Mirrors `keymgr_dpe_boot_stage_e` in keymgr_dpe_pkg.sv.
+ */
+typedef enum sc_keymgr_dpe_boot_stage {
+  kScKeymgrDPEBootStageCreator = 0,
+  kScKeymgrDPEBootStageOwnerInt = 1,
+  kScKeymgrDPEBootStageOwner = 2,
+  kScKeymgrDPEBootStageRuntime = 3,
+} sc_keymgr_dpe_boot_stage_t;
+
+/**
+ * Output metadata from one HW slot.
+ */
+typedef struct sc_keymgr_dpe_metadata {
+  /**
+   * Maximum allowed version for keys to be generated from this DPE context.
+   */
+  uint32_t max_key_version;
+  /**
+   * The current boot_stage of this DPE context.
+   */
+  sc_keymgr_dpe_boot_stage_t boot_stage;
+  /**
+   * The current slot policy bits for this DPE context.
+   */
+  sc_keymgr_dpe_policies_t slot_policy;
+  /**
+   * Validity of this DPE context.
+   */
+  uint32_t valid;
+} sc_keymgr_dpe_metadata_t;
+
+/**
  * Destination for key generation.
  */
 typedef enum sc_keymgr_dpe_dest {
@@ -479,6 +512,36 @@ rom_error_t sc_keymgr_dpe_advance_owner(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot);
+
+/**
+ * Reads back the metadata of a keymgr_dpe HW slot.
+ *
+ * @param slot Index of the HW slot to read metadata from.
+ * @param[out] metadata The maximum key version, boot stage, slot policy and
+ * validity of the DPE context held in `slot`.
+ */
+void sc_keymgr_dpe_get_metadata(uint32_t slot,
+                                sc_keymgr_dpe_metadata_t *metadata);
+
+/**
+ * Checks that a keymgr_dpe HW slot holds a valid DPE context with the
+ * expected maximum key version, boot stage and slot policy.
+ *
+ * @param slot Index of the HW slot to check.
+ * @param expected_max_key_version Expected maximum key version for the DPE
+ * context held in `slot`.
+ * @param expected_boot_stage Expected boot stage for the DPE context held in
+ * `slot`.
+ * @param expected_policy Expected policy for the DPE context held in `slot`.
+ * @return `kErrorOk` if `slot` is valid and matches
+ * `expected_max_key_version`, `expected_boot_stage` and `expected_policy`,
+ * `kErrorKeymgrInternal` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_dpe_check_metadata(
+    uint32_t slot, uint32_t expected_max_key_version,
+    sc_keymgr_dpe_boot_stage_t expected_boot_stage,
+    const sc_keymgr_dpe_policies_t *expected_policy);
 
 /**
  * Advances the keymgr dpe into the disable state.

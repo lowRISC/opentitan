@@ -383,7 +383,7 @@ pub const KEYMGR_DPE_BASE_ADDR: usize = 0x21140000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #KEYMGR_DPE_BASE_ADDR and
 /// `KEYMGR_DPE_BASE_ADDR + KEYMGR_DPE_SIZE_BYTES`.
-pub const KEYMGR_DPE_SIZE_BYTES: usize = 0x100;
+pub const KEYMGR_DPE_SIZE_BYTES: usize = 0x200;
 
 /// Peripheral base address for csrng in top darjeeling.
 ///

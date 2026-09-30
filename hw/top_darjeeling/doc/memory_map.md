@@ -39,7 +39,7 @@ The main address space, shared between the CPU and DM
 | hmac           | default     | `0x21110000`   | `0x2000`       | `0x800`        | hmac                          |
 | kmac           | default     | `0x21120000`   | `0x1000`       | `0x400`        | kmac                          |
 | otbn           | default     | `0x21130000`   | `0x10000`      | `0x4000`       | otbn                          |
-| keymgr_dpe     | default     | `0x21140000`   | `0x100`        | `0x40`         | keymgr_dpe                    |
+| keymgr_dpe     | default     | `0x21140000`   | `0x200`        | `0x80`         | keymgr_dpe                    |
 | csrng          | default     | `0x21150000`   | `0x80`         | `0x20`         | csrng                         |
 | entropy_src    | default     | `0x21160000`   | `0x100`        | `0x40`         | entropy_src                   |
 | edn0           | default     | `0x21170000`   | `0x80`         | `0x20`         | edn0                          |
