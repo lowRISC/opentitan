@@ -30,7 +30,7 @@ package i3c_tti_pkg;
     logic        notify;  // Must be 1 -> Pending Read Notification.
     logic  [4:0] lsbs;    // The LSBs of the Pending Read Notification MDB.
     logic  [1:0] len;     // Number of additional data bytes (0-3).
-    logic [23:0] data;    // Additional data bytes.
+    logic [23:0] data;    // Additional data bytes; first byte is in LSBs.
   } i3c_tti_prn_t;
 
   // Description of data for a Controller-initiated Read Transfer; single DWORD.
