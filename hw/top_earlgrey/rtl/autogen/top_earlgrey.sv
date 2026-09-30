@@ -23,6 +23,10 @@ module top_earlgrey #(
   parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
   parameter int I2c2InputDelayCycles = 0,
+  // parameters for i3c0
+  parameter int I3c0ClkFreq = 96000000,
+  // parameters for i3c1
+  parameter int I3c1ClkFreq = 96000000,
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter bit LcCtrlUseDmiInterface = 0,
@@ -349,6 +353,8 @@ module top_earlgrey #(
   .I2c0InputDelayCycles(I2c0InputDelayCycles),
   .I2c1InputDelayCycles(I2c1InputDelayCycles),
   .I2c2InputDelayCycles(I2c2InputDelayCycles),
+  .I3c0ClkFreq(I3c0ClkFreq),
+  .I3c1ClkFreq(I3c1ClkFreq),
   .SecLcCtrlVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
   .LcCtrlUseDmiInterface(LcCtrlUseDmiInterface),
   .LcCtrlSiliconCreatorId(LcCtrlSiliconCreatorId),
