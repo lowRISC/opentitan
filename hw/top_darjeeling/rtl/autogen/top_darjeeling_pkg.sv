@@ -27,7 +27,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for gpio in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_GPIO_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_GPIO_SIZE_BYTES = 32'h400;
 
   /**
    * Peripheral base address for spi_device in top darjeeling.

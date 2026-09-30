@@ -23,6 +23,70 @@
 | gpio.[`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter)       | 0x3c     |        4 | filter enable for GPIO input bits.                                                |
 | gpio.[`HW_STRAPS_DATA_IN_VALID`](#hw_straps_data_in_valid) | 0x40     |        4 | Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid. |
 | gpio.[`HW_STRAPS_DATA_IN`](#hw_straps_data_in)             | 0x44     |        4 | GPIO input data that was sampled as straps at most once after the block           |
+| gpio.[`PER_PIN_IO_0`](#per_pin_io)                         | 0x100    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_1`](#per_pin_io)                         | 0x104    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_2`](#per_pin_io)                         | 0x108    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_3`](#per_pin_io)                         | 0x10c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_4`](#per_pin_io)                         | 0x110    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_5`](#per_pin_io)                         | 0x114    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_6`](#per_pin_io)                         | 0x118    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_7`](#per_pin_io)                         | 0x11c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_8`](#per_pin_io)                         | 0x120    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_9`](#per_pin_io)                         | 0x124    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_10`](#per_pin_io)                        | 0x128    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_11`](#per_pin_io)                        | 0x12c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_12`](#per_pin_io)                        | 0x130    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_13`](#per_pin_io)                        | 0x134    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_14`](#per_pin_io)                        | 0x138    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_15`](#per_pin_io)                        | 0x13c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_16`](#per_pin_io)                        | 0x140    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_17`](#per_pin_io)                        | 0x144    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_18`](#per_pin_io)                        | 0x148    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_19`](#per_pin_io)                        | 0x14c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_20`](#per_pin_io)                        | 0x150    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_21`](#per_pin_io)                        | 0x154    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_22`](#per_pin_io)                        | 0x158    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_23`](#per_pin_io)                        | 0x15c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_24`](#per_pin_io)                        | 0x160    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_25`](#per_pin_io)                        | 0x164    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_26`](#per_pin_io)                        | 0x168    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_27`](#per_pin_io)                        | 0x16c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_28`](#per_pin_io)                        | 0x170    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_29`](#per_pin_io)                        | 0x174    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_30`](#per_pin_io)                        | 0x178    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_IO_31`](#per_pin_io)                        | 0x17c    |        4 | Per-pin view of the output and input data of one GPIO.                            |
+| gpio.[`PER_PIN_CFG_0`](#per_pin_cfg)                       | 0x200    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_1`](#per_pin_cfg)                       | 0x204    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_2`](#per_pin_cfg)                       | 0x208    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_3`](#per_pin_cfg)                       | 0x20c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_4`](#per_pin_cfg)                       | 0x210    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_5`](#per_pin_cfg)                       | 0x214    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_6`](#per_pin_cfg)                       | 0x218    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_7`](#per_pin_cfg)                       | 0x21c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_8`](#per_pin_cfg)                       | 0x220    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_9`](#per_pin_cfg)                       | 0x224    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_10`](#per_pin_cfg)                      | 0x228    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_11`](#per_pin_cfg)                      | 0x22c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_12`](#per_pin_cfg)                      | 0x230    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_13`](#per_pin_cfg)                      | 0x234    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_14`](#per_pin_cfg)                      | 0x238    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_15`](#per_pin_cfg)                      | 0x23c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_16`](#per_pin_cfg)                      | 0x240    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_17`](#per_pin_cfg)                      | 0x244    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_18`](#per_pin_cfg)                      | 0x248    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_19`](#per_pin_cfg)                      | 0x24c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_20`](#per_pin_cfg)                      | 0x250    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_21`](#per_pin_cfg)                      | 0x254    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_22`](#per_pin_cfg)                      | 0x258    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_23`](#per_pin_cfg)                      | 0x25c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_24`](#per_pin_cfg)                      | 0x260    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_25`](#per_pin_cfg)                      | 0x264    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_26`](#per_pin_cfg)                      | 0x268    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_27`](#per_pin_cfg)                      | 0x26c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_28`](#per_pin_cfg)                      | 0x270    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_29`](#per_pin_cfg)                      | 0x274    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_30`](#per_pin_cfg)                      | 0x278    |        4 | Per-pin view of the configuration of one GPIO.                                    |
+| gpio.[`PER_PIN_CFG_31`](#per_pin_cfg)                      | 0x27c    |        4 | Per-pin view of the configuration of one GPIO.                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -262,7 +326,7 @@ enables rising-edge interrupt detection on GPIO[i].
 
 |  Bits  |  Type  |  Reset  | Name                | Description   |
 |:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_RISING |               |
+|  31:0  |   rw   |    x    | INTR_CTRL_EN_RISING |               |
 
 ## INTR_CTRL_EN_FALLING
 GPIO interrupt enable for GPIO, falling edge.
@@ -281,7 +345,7 @@ enables falling-edge interrupt detection on GPIO[i].
 
 |  Bits  |  Type  |  Reset  | Name                 | Description   |
 |:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_FALLING |               |
+|  31:0  |   rw   |    x    | INTR_CTRL_EN_FALLING |               |
 
 ## INTR_CTRL_EN_LVLHIGH
 GPIO interrupt enable for GPIO, level high.
@@ -300,7 +364,7 @@ enables level high interrupt detection on GPIO[i].
 
 |  Bits  |  Type  |  Reset  | Name                 | Description   |
 |:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_LVLHIGH |               |
+|  31:0  |   rw   |    x    | INTR_CTRL_EN_LVLHIGH |               |
 
 ## INTR_CTRL_EN_LVLLOW
 GPIO interrupt enable for GPIO, level low.
@@ -319,7 +383,7 @@ enables level low interrupt detection on GPIO[i].
 
 |  Bits  |  Type  |  Reset  | Name                | Description   |
 |:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_LVLLOW |               |
+|  31:0  |   rw   |    x    | INTR_CTRL_EN_LVLLOW |               |
 
 ## CTRL_EN_INPUT_FILTER
 filter enable for GPIO input bits.
@@ -338,7 +402,7 @@ must be stable for 16 cycles before transitioning.
 
 |  Bits  |  Type  |  Reset  | Name                 | Description   |
 |:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | CTRL_EN_INPUT_FILTER |               |
+|  31:0  |   rw   |    x    | CTRL_EN_INPUT_FILTER |               |
 
 ## HW_STRAPS_DATA_IN_VALID
 Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid.
@@ -379,6 +443,129 @@ sampled data is then stored in this register.
 |  Bits  |  Type  |  Reset  | Name              | Description   |
 |:------:|:------:|:-------:|:------------------|:--------------|
 |  31:0  |   ro   |   0x0   | HW_STRAPS_DATA_IN |               |
+
+## PER_PIN_IO
+Per-pin view of the output and input data of one GPIO.
+
+This register aliases bit i of [`DIRECT_OUT`](#direct_out) and [`DATA_IN`](#data_in) for GPIO[i].
+Writing it updates only DATA_OUT[i], without affecting the other GPIOs.
+- Reset default: `0x0`
+- Reset mask: `0x101`
+
+### Instances
+
+| Name          | Offset   |
+|:--------------|:---------|
+| PER_PIN_IO_0  | 0x100    |
+| PER_PIN_IO_1  | 0x104    |
+| PER_PIN_IO_2  | 0x108    |
+| PER_PIN_IO_3  | 0x10c    |
+| PER_PIN_IO_4  | 0x110    |
+| PER_PIN_IO_5  | 0x114    |
+| PER_PIN_IO_6  | 0x118    |
+| PER_PIN_IO_7  | 0x11c    |
+| PER_PIN_IO_8  | 0x120    |
+| PER_PIN_IO_9  | 0x124    |
+| PER_PIN_IO_10 | 0x128    |
+| PER_PIN_IO_11 | 0x12c    |
+| PER_PIN_IO_12 | 0x130    |
+| PER_PIN_IO_13 | 0x134    |
+| PER_PIN_IO_14 | 0x138    |
+| PER_PIN_IO_15 | 0x13c    |
+| PER_PIN_IO_16 | 0x140    |
+| PER_PIN_IO_17 | 0x144    |
+| PER_PIN_IO_18 | 0x148    |
+| PER_PIN_IO_19 | 0x14c    |
+| PER_PIN_IO_20 | 0x150    |
+| PER_PIN_IO_21 | 0x154    |
+| PER_PIN_IO_22 | 0x158    |
+| PER_PIN_IO_23 | 0x15c    |
+| PER_PIN_IO_24 | 0x160    |
+| PER_PIN_IO_25 | 0x164    |
+| PER_PIN_IO_26 | 0x168    |
+| PER_PIN_IO_27 | 0x16c    |
+| PER_PIN_IO_28 | 0x170    |
+| PER_PIN_IO_29 | 0x174    |
+| PER_PIN_IO_30 | 0x178    |
+| PER_PIN_IO_31 | 0x17c    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_out", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "data_in", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description                                                     |
+|:------:|:------:|:-------:|:---------|:----------------------------------------------------------------|
+|  31:9  |        |         |          | Reserved                                                        |
+|   8    |   ro   |    x    | data_in  | Input data value of GPIO[i], alias of [`DATA_IN`](#data_in)[i]. |
+|  7:1   |        |         |          | Reserved                                                        |
+|   0    |   rw   |    x    | data_out | Output data value of GPIO[i], alias of DATA_OUT[i].             |
+
+## PER_PIN_CFG
+Per-pin view of the configuration of one GPIO.
+
+This register aliases bit i of [`DIRECT_OE`](#direct_oe), [`INTR_CTRL_EN_RISING`](#intr_ctrl_en_rising), [`INTR_CTRL_EN_FALLING`](#intr_ctrl_en_falling), [`INTR_CTRL_EN_LVLHIGH`](#intr_ctrl_en_lvlhigh), [`INTR_CTRL_EN_LVLLOW`](#intr_ctrl_en_lvllow) and [`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter) for GPIO[i].
+Writing it updates only the configuration of GPIO[i], without affecting the other GPIOs.
+It is placed in a separate address range from [`PER_PIN_IO`](#per_pin_io), so access to the data and to the configuration of a GPIO can be controlled independently.
+- Reset default: `0x0`
+- Reset mask: `0x1f01`
+
+### Instances
+
+| Name           | Offset   |
+|:---------------|:---------|
+| PER_PIN_CFG_0  | 0x200    |
+| PER_PIN_CFG_1  | 0x204    |
+| PER_PIN_CFG_2  | 0x208    |
+| PER_PIN_CFG_3  | 0x20c    |
+| PER_PIN_CFG_4  | 0x210    |
+| PER_PIN_CFG_5  | 0x214    |
+| PER_PIN_CFG_6  | 0x218    |
+| PER_PIN_CFG_7  | 0x21c    |
+| PER_PIN_CFG_8  | 0x220    |
+| PER_PIN_CFG_9  | 0x224    |
+| PER_PIN_CFG_10 | 0x228    |
+| PER_PIN_CFG_11 | 0x22c    |
+| PER_PIN_CFG_12 | 0x230    |
+| PER_PIN_CFG_13 | 0x234    |
+| PER_PIN_CFG_14 | 0x238    |
+| PER_PIN_CFG_15 | 0x23c    |
+| PER_PIN_CFG_16 | 0x240    |
+| PER_PIN_CFG_17 | 0x244    |
+| PER_PIN_CFG_18 | 0x248    |
+| PER_PIN_CFG_19 | 0x24c    |
+| PER_PIN_CFG_20 | 0x250    |
+| PER_PIN_CFG_21 | 0x254    |
+| PER_PIN_CFG_22 | 0x258    |
+| PER_PIN_CFG_23 | 0x25c    |
+| PER_PIN_CFG_24 | 0x260    |
+| PER_PIN_CFG_25 | 0x264    |
+| PER_PIN_CFG_26 | 0x268    |
+| PER_PIN_CFG_27 | 0x26c    |
+| PER_PIN_CFG_28 | 0x270    |
+| PER_PIN_CFG_29 | 0x274    |
+| PER_PIN_CFG_30 | 0x278    |
+| PER_PIN_CFG_31 | 0x27c    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "oe", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "intr_ctrl_en_rising", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "intr_ctrl_en_falling", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "intr_ctrl_en_lvlhigh", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "intr_ctrl_en_lvllow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ctrl_en_input_filter", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                            |
+|:------:|:------:|:-------:|:---------------------|:-------------------------------------------------------------------------------------------------------|
+| 31:13  |        |         |                      | Reserved                                                                                               |
+|   12   |   rw   |    x    | ctrl_en_input_filter | Input filter enable of GPIO[i], alias of [`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter)[i].           |
+|   11   |   rw   |    x    | intr_ctrl_en_lvllow  | Level-low interrupt enable of GPIO[i], alias of [`INTR_CTRL_EN_LVLLOW`](#intr_ctrl_en_lvllow)[i].      |
+|   10   |   rw   |    x    | intr_ctrl_en_lvlhigh | Level-high interrupt enable of GPIO[i], alias of [`INTR_CTRL_EN_LVLHIGH`](#intr_ctrl_en_lvlhigh)[i].   |
+|   9    |   rw   |    x    | intr_ctrl_en_falling | Falling-edge interrupt enable of GPIO[i], alias of [`INTR_CTRL_EN_FALLING`](#intr_ctrl_en_falling)[i]. |
+|   8    |   rw   |    x    | intr_ctrl_en_rising  | Rising-edge interrupt enable of GPIO[i], alias of [`INTR_CTRL_EN_RISING`](#intr_ctrl_en_rising)[i].    |
+|  7:1   |        |         |                      | Reserved                                                                                               |
+|   0    |   rw   |    x    | oe                   | Output enable of GPIO[i], alias of DATA_OE[i].                                                         |
 
 
 <!-- END CMDGEN -->

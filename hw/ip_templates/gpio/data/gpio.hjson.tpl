@@ -359,7 +359,9 @@
             enables rising-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -371,7 +373,9 @@
             enables falling-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -383,7 +387,9 @@
             enables level high interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -395,7 +401,9 @@
             enables level low interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -407,7 +415,9 @@
             must be stable for 16 cycles before transitioning.
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0" }
       ],
@@ -550,5 +560,83 @@
       },
     }
 % endif
+    { skipto: "0x100" },
+    { multireg:
+      { name: "PER_PIN_IO",
+        cname: "PER_PIN_IO",
+        desc: '''Per-pin view of the output and input data of one GPIO.
+
+              This register aliases bit i of !!DIRECT_OUT and !!DATA_IN for GPIO[i].
+              Writing it updates only DATA_OUT[i], without affecting the other GPIOs.
+              ''',
+        count: "NumIOs",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwqe: "true",
+        tags: [// read value of per_pin_* registers depends on other registers and the inputs
+               // avoid writing to per_pin_io* registers as they affect direct_out value
+               "excl:CsrNonInitTests:CsrExclAll"],
+        fields: [
+          { bits: "0",
+            name: "data_out",
+            desc: "Output data value of GPIO[i], alias of DATA_OUT[i]."
+          },
+          { bits: "8",
+            name: "data_in",
+            desc: "Input data value of GPIO[i], alias of !!DATA_IN[i].",
+            swaccess: "ro",
+            hwaccess: "hwo",
+            resval: "x"
+          },
+        ]
+      },
+    },
+    { skipto: "0x200" },
+    { multireg:
+      { name: "PER_PIN_CFG",
+        cname: "PER_PIN_CFG",
+        desc: '''Per-pin view of the configuration of one GPIO.
+
+              This register aliases bit i of !!DIRECT_OE, !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER for GPIO[i].
+              Writing it updates only the configuration of GPIO[i], without affecting the other GPIOs.
+              It is placed in a separate address range from !!PER_PIN_IO, so access to the data and to the configuration of a GPIO can be controlled independently.
+              ''',
+        count: "NumIOs",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwqe: "true",
+        tags: [// read value of per_pin_* registers depends on other registers
+               // avoid writing to per_pin_cfg* registers as they affect the aliased registers
+               "excl:CsrNonInitTests:CsrExclAll"],
+        fields: [
+          { bits: "0",
+            name: "oe",
+            desc: "Output enable of GPIO[i], alias of DATA_OE[i]."
+          },
+          { bits: "8",
+            name: "intr_ctrl_en_rising",
+            desc: "Rising-edge interrupt enable of GPIO[i], alias of !!INTR_CTRL_EN_RISING[i]."
+          },
+          { bits: "9",
+            name: "intr_ctrl_en_falling",
+            desc: "Falling-edge interrupt enable of GPIO[i], alias of !!INTR_CTRL_EN_FALLING[i]."
+          },
+          { bits: "10",
+            name: "intr_ctrl_en_lvlhigh",
+            desc: "Level-high interrupt enable of GPIO[i], alias of !!INTR_CTRL_EN_LVLHIGH[i]."
+          },
+          { bits: "11",
+            name: "intr_ctrl_en_lvllow",
+            desc: "Level-low interrupt enable of GPIO[i], alias of !!INTR_CTRL_EN_LVLLOW[i]."
+          },
+          { bits: "12",
+            name: "ctrl_en_input_filter",
+            desc: "Input filter enable of GPIO[i], alias of !!CTRL_EN_INPUT_FILTER[i]."
+          },
+        ]
+      },
+    },
   ],
 }

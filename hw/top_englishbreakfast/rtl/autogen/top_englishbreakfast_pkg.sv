@@ -37,7 +37,7 @@ package top_englishbreakfast_pkg;
   /**
    * Peripheral size in bytes for gpio in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_GPIO_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_GPIO_SIZE_BYTES = 32'h400;
 
   /**
    * Peripheral base address for spi_device in top englishbreakfast.

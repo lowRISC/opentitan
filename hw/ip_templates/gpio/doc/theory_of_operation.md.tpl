@@ -48,6 +48,16 @@ For GPIO outputs that are not used (either not wired to a pin output or
 not selected for pin multiplexing), the output values are disconnected
 and have no effect on the GPIO input, regardless of output enable values.
 
+<%text>### Per-Pin Register Views</%text>
+
+In addition to the 32-bit registers, the state of each GPIO is accessible through two per-pin register views.
+[`PER_PIN_IO`](registers.md#per_pin_io) holds one register per GPIO with bit i of `DATA_OUT` and of [`DATA_IN`](registers.md#data_in).
+[`PER_PIN_CFG`](registers.md#per_pin_cfg) holds one register per GPIO with bit i of `DATA_OE` and of the interrupt control and input filter registers.
+Both views alias the same state as the 32-bit registers, and a write to a per-pin register only affects the GPIO it belongs to.
+
+The two views are placed in separate, aligned address ranges.
+This allows granting a software component access to the data of some GPIOs without also granting access to their configuration, for example through separate ePMP regions.
+
 <%text>### GPIO Input</%text>
 
 The [`DATA_IN`](registers.md#data_in) register returns the contents as seen on the
