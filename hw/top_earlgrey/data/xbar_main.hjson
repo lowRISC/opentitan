@@ -102,6 +102,22 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    { name:      "i3c0",
+      type:      "device",
+      // TODO: Stealing clock and reset signals for now.
+      clock:     "clk_spi_host0_i",
+      reset:     "rst_spi_host0_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "i3c1",
+      type:      "device",
+      // TODO: Stealing clock and reset signals for now.
+      clock:     "clk_spi_host0_i",
+      reset:     "rst_spi_host0_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
     { name:      "usbdev",
       type:      "device",
       clock:     "clk_usb_i",
@@ -261,7 +277,7 @@
     ],
     cheriot_mem_sys.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev", "i3c0", "i3c1",
       "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",
@@ -275,7 +291,7 @@
     // the location it overwrites. SBA accesses in CHERIoT mode are not supported.
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "sram_ctrl_main.ram", "sram_ctrl_sec.ram", "peri", "spi_host0", "spi_host1", "usbdev", "i3c0", "i3c1",
       "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs", "sram_ctrl_sec.regs",

@@ -172,6 +172,8 @@
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true },
       { name: "i2c1",           gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true },
       { name: "i2c2",           gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true },
+      { name: "i3c0",           gen: true,  type: "top", parent: "lc_src", clock: "io",      sw: true },
+      { name: "i3c1",           gen: true,  type: "top", parent: "lc_src", clock: "io",      sw: true },
     ]
   },
   // The reset requests: peripherals are deduced, but internal and debug need
@@ -232,6 +234,8 @@
             "i2c0",
             "i2c1",
             "i2c2",
+            "i3c0",
+            "i3c1",
             "rv_timer"
             "otp_ctrl",
             "lc_ctrl.regs",
@@ -408,6 +412,32 @@
       reset_connections: {rst_ni: "i2c2"},
       base_addr: {
         hart: "0x400A0000",
+      },
+    },
+    { name: "i3c0",
+      type: "i3c",
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", scan_clk_i: "io_div2"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "i3c0", rst_aon_ni: "lc_aon"},
+      base_addr: {
+        hart: "0x40330000",
+      },
+      param_decl: {
+        ClkFreq: "96000000",
+        HalfCycleScl: "1"
+      },
+    },
+    { name: "i3c1",
+      type: "i3c",
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", scan_clk_i: "io_div2"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "i3c1", rst_aon_ni: "lc_aon"},
+      base_addr: {
+        hart: "0x40340000",
+      },
+      param_decl: {
+        ClkFreq: "96000000",
+        HalfCycleScl: "1"
       },
     },
     { name: "rv_timer",
@@ -1727,6 +1757,8 @@
       { instance: "i2c0",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c1",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c2",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "i3c0",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "i3c1",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_device",  port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",   port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "rram_macro",  port: '',               connection: 'muxed' , pad: ''             , desc: ''},
