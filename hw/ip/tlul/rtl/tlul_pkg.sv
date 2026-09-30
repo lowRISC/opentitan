@@ -181,6 +181,17 @@ package tlul_pkg;
    return cmd_intg;
   endfunction  // get_cmd_intg
 
+  // calculate ecc for response checking
+  function automatic logic [D2HRspIntgWidth-1:0] get_rsp_intg(tl_d2h_t tl);
+    logic [D2HRspIntgWidth-1:0] rsp_intg;
+    logic [D2HRspMaxWidth-1:0] unused_rsp_payload;
+    tl_d2h_rsp_intg_t rsp;
+    rsp = extract_d2h_rsp_intg(tl);
+    {rsp_intg, unused_rsp_payload} =
+        prim_secded_pkg::prim_secded_inv_64_57_enc(D2HRspMaxWidth'(rsp));
+    return rsp_intg;
+  endfunction  // get_rsp_intg
+
   // calculate ecc for data checking
   function automatic logic [DataIntgWidth-1:0] get_data_intg(logic [top_pkg::TL_DW-1:0] data);
     logic [DataIntgWidth-1:0] data_intg;
