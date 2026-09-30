@@ -7,6 +7,8 @@
 package i3c_reg_pkg;
 
   // Param list
+  parameter int unsigned NumTargets = 2;
+  parameter int unsigned NumSDALanes = 1;
   parameter int unsigned NumDATWords = 64;
   parameter int unsigned NumDCTWords = 128;
   parameter int unsigned MaxTargets = 4;

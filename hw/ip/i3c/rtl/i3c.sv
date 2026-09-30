@@ -28,7 +28,7 @@ module i3c
   // Whether to include direct software access to the message buffer?
   parameter bit                     SWDirectMsgBuf   = 1'b1,
   // Whether the direct message buffer access supports execution.
-  parameter prim_mubi_pkg::mubi4_t  SWDirEnIFetch    = prim_mubi_pkg::MuBi4False,
+  parameter bit                     SWDirEnIFetch    = 1'b0,
   // Hardware Identification Extended Capability.
   parameter int unsigned            CompManufacturer = i3c_pkg::CompManufacturer,
   parameter int unsigned            CompVersion      = i3c_pkg::CompVersion,
@@ -75,7 +75,9 @@ module i3c
   output logic                              cio_sda_en_o,
 
   // Pull-up enables for open drain intervals.
+  output logic                              cio_ctrl_scl_pu_o,
   output logic                              cio_ctrl_scl_pu_en_o,
+  output logic                              cio_ctrl_sda_pu_o,
   output logic                              cio_ctrl_sda_pu_en_o,
 
   // High-keeper enables.
@@ -86,8 +88,8 @@ module i3c
 
   // Target Reset Detector request/response.
   output                                    rstdet_enable_o,
-  output i3c_rstdet_req_t                   rstdet_req_o,
-  input  i3c_rstdet_rsp_t                   rstdet_rsp_i,
+  output i3c_rstdet_req_t                   rstdet_o,
+  input  i3c_rstdet_rsp_t                   rstdet_i,
 
   // Interrupts.
   // - HCI-global interrupt, asserted when any HCI interrupt is asserted.
@@ -123,6 +125,15 @@ module i3c
   localparam int unsigned SWDirAddrW = $clog2(I3C_BUFFER_SIZE * 8 / DataWidth);
 
   logic [NumAlerts-1:0] alert_test, alerts;
+
+  // Pull-up and high-keeper "data" signals. These are tied-high; the actual dynamic control is
+  // done through the corresponding enable signals which connect to the output-enable inputs of the
+  // corresponding pads.
+  assign cio_ctrl_scl_pu_o = 1'b1;
+  assign cio_ctrl_sda_pu_o = 1'b1;
+
+  assign cio_scl_hk_o = 1'b1;
+  assign cio_sda_hk_o = 1'b1;
 
   // Register reinitialization.
   logic hci_soft_rst;  // Host Controller Interface (HCI) registers.
@@ -200,6 +211,7 @@ module i3c
     .racl_error_o   (racl_error_o),
 
     // Integrity checking.
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o     (alerts[0])
   );
 
@@ -376,7 +388,7 @@ module i3c
 
       .tl_i                      (tl_win_h2d[TL_SwBuf]),
       .tl_o                      (tl_win_d2h[TL_SwBuf]),
-      .en_ifetch_i               (SWDirEnIFetch),
+      .en_ifetch_i               (prim_mubi_pkg::mubi4_bool_to_mubi(SWDirEnIFetch)),
       .req_o                     (sw_buf_req),
       .req_type_o                (),
       .gnt_i                     (sw_buf_gnt),
@@ -498,8 +510,8 @@ module i3c
 
     // Target Reset Detector request/response.
     .rstdet_enable_o (rstdet_enable_o),
-    .rstdet_o        (rstdet_req_o),
-    .rstdet_i        (rstdet_rsp_i),
+    .rstdet_o        (rstdet_o),
+    .rstdet_i        (rstdet_i),
 
     // Interrupts.
     .intr_hci_o      (intr_hci_o),
@@ -517,11 +529,6 @@ module i3c
     .scan_rst_ni     (scan_rst_ni),
     .scanmode_i      (scanmode_i)
   );
-
-  // We are only interested in the enable signals. The high-keeper pins should either pull up or
-  // stay tristate.
-  assign cio_scl_hk_o = 1'b1;
-  assign cio_sda_hk_o = 1'b1;
 
   // Alerts
   assign alert_test = {

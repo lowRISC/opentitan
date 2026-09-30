@@ -310,6 +310,10 @@ package i3c_pkg;
     logic     targ_rst_det;  // Whole Target Reset detected.
   } i3c_rstdet_rsp_t;
 
+  // Default connectivity, when there is no Target Reset detector.
+  parameter i3c_rstdet_req_t I3C_RSTDET_REQ_DEFAULT = '0;
+  parameter i3c_rstdet_rsp_t I3C_RSTDET_RSP_DEFAULT = '0;
+
   // --- TL-UL interface to FIFOs/buffers ---
 
   // TL-UL windows.

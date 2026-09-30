@@ -17,12 +17,12 @@ filesets:
     files:
       - rtl/i3c_tti_pkg.sv
       - rtl/i3c_async_event_pkg.sv
-      - rtl/i3c_ctrl_ccc_pkg.sv
       - rtl/i3c_fifo_pkg.sv
-      - rtl/i3c_targ_ccc_pkg.sv
       - rtl/i3c_target_pkg.sv
       - rtl/i3c_timing_pkg.sv
       - rtl/i3c_controller_pkg.sv
+      - rtl/i3c_ctrl_ccc_pkg.sv
+      - rtl/i3c_targ_ccc_pkg.sv
       - rtl/i3c_targ_ext_pkg.sv
       - rtl/i3c_buf_en.sv
       - rtl/i3c_buffer.sv
