@@ -48,6 +48,25 @@ For GPIO outputs that are not used (either not wired to a pin output or
 not selected for pin multiplexing), the output values are disconnected
 and have no effect on the GPIO input, regardless of output enable values.
 
+% if per_pin_view:
+<%text>### Per-Pin Register View</%text>
+
+In addition to the 32-bit registers, which group the GPIOs by function, the GPIO module provides a second register view that groups them by pin.
+This view allows assigning individual GPIOs to different software components, for example to CHERIoT compartments, by granting each component access to only the registers of its GPIOs.
+Both views alias the same state, and a write to a per-pin register only affects the GPIO it belongs to.
+
+The per-pin view consists of two separate, aligned address ranges, so access to the data of a GPIO can be granted without access to its configuration:
+
+- [`PER_PIN_IO`](registers.md#per_pin_io) holds one register per GPIO with bit i of `DATA_OUT` and of [`DATA_IN`](registers.md#data_in).
+- The configuration range holds two registers per GPIO, which directly follow one another: [`PER_PIN_OE_0`](registers.md#per_pin_oe_0) with bit 0 of `DATA_OE`, [`PER_PIN_INTR_CTRL_0`](registers.md#per_pin_intr_ctrl_0) with bit 0 of the interrupt control and input filter registers, then `PER_PIN_OE_1`, `PER_PIN_INTR_CTRL_1`, and so on.
+
+A register write must cover all bytes of the register that hold a field, so access cannot be granted to only some fields of a register.
+The output enable and the interrupt configuration of a GPIO are therefore in separate registers, so access to one can be granted without the other.
+
+The interrupt registers [`INTR_STATE`](registers.md#intr_state), [`INTR_ENABLE`](registers.md#intr_enable) and [`INTR_TEST`](registers.md#intr_test) have no per-pin view.
+Like the interrupt controller, they are expected to be managed by a trusted software component, for example a trusted CHERIoT compartment, which handles the GPIO interrupts on behalf of the components owning the GPIOs.
+
+% endif
 <%text>### GPIO Input</%text>
 
 The [`DATA_IN`](registers.md#data_in) register returns the contents as seen on the

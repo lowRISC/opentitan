@@ -22,6 +22,12 @@
       default: "gpio"
     }
     {
+      name: "per_pin_view"
+      desc: "Add a second, per-pin register view, e.g., to assign individual GPIOs to CHERIoT compartments"
+      type: "bool"
+      default: false
+    }
+    {
       name: "num_inp_period_counters"
       desc: "number of input period counters"
       type: "int"
