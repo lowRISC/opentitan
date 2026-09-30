@@ -435,12 +435,10 @@
     {
       name: clkmgr_clk_io_infra
       desc: '''Verify clkmgr's `clk_io_infra` is connected to the following blocks' clock inputs:
-             - xbar_main's clk_spi_host0_i
-             - xbar_main's clk_spi_host1_i
+             - xbar_main's clk_io_i, shared by its spi_host0, spi_host1, i3c0 and i3c1 nodes
             '''
       stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk",
-              "clkmgr_infra_clk_xbar_main_spi_host1_clk"]
+      tests: ["clkmgr_infra_clk_xbar_main_io_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -479,22 +477,30 @@
     }
     {
       name: clkmgr_clk_io_div2_peri
-      desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following block's clock
+      desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following blocks' clock
             input:
             - spi_device's scan_clk_i
+            - i3c0's scan_clk_i
+            - i3c1's scan_clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_device_scan_clk"]
+      tests: ["clkmgr_peri_clk_spi_device_scan_clk",
+              "clkmgr_peri_clk_i3c0_scan_clk",
+              "clkmgr_peri_clk_i3c1_scan_clk"]
       si_stage: NA
       tags: ["conn"]
     }
     {
       name: clkmgr_clk_io_peri
-      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following block's clock input:
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock input:
             - spi_host0's clk_i
+            - i3c0's clk_i
+            - i3c1's clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_host0_clk"]
+      tests: ["clkmgr_peri_clk_spi_host0_clk",
+              "clkmgr_peri_clk_i3c0_clk",
+              "clkmgr_peri_clk_i3c1_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -522,9 +528,13 @@
       name: clkmgr_clk_aon_peri
       desc: '''Verify clkmgr's `clk_aon_peri` is connected to the following blocks' clock input:
             - usbdev clk_aon_i
+            - i3c0 clk_aon_i
+            - i3c1 clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_usbdev_aon_clk"]
+      tests: ["clkmgr_peri_clk_usbdev_aon_clk",
+              "clkmgr_peri_clk_i3c0_aon_clk",
+              "clkmgr_peri_clk_i3c1_aon_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -929,6 +939,34 @@
       tags: ["conn"]
     }
     {
+      name: rst_i3c0_n_d0
+      desc: '''Verify rstmgr's rst_i3c0_n[1] is connected to i3c0's rst_ni.'''
+      stage: V2
+      tests: ["rstmgr_i3c0_d0_i3c0_rst_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: rst_i3c1_n_d0
+      desc: '''Verify rstmgr's rst_i3c1_n[1] is connected to i3c1's rst_ni.'''
+      stage: V2
+      tests: ["rstmgr_i3c1_d0_i3c1_rst_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: rst_lc_aon_d0
+      desc: '''Verify rstmgr's rst_lc_aon_n[1] is connected to:
+            - i3c0's rst_aon_ni
+            - i3c1's rst_aon_ni
+            '''
+      stage: V2
+      tests: ["rstmgr_lc_aon_d0_i3c0_rst_aon_ni",
+              "rstmgr_lc_aon_d0_i3c1_rst_aon_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
       name: rst_lc_aon_aon
       desc: '''Verify rstmgr's rst_lc_aon_n[0] is connected to the following:
             - aon_timer's rst_aon_ni
@@ -1140,12 +1178,10 @@
     {
       name: rst_lc_io_d0
       desc: '''Verify rstmgr's rst_lc_io_n[1] is connected to:
-            - xbar_main's rst_spi_host0_ni
-            - xbar_main's rst_spi_host1_ni
+            - xbar_main's rst_io_ni, shared by its spi_host0, spi_host1, i3c0 and i3c1 nodes
             '''
       stage: V2
-      tests: ["rstmgr_lc_io_d0_xbar_main_rst_spi_host0_ni",
-              "rstmgr_lc_io_d0_xbar_main_rst_spi_host1_ni"]
+      tests: ["rstmgr_lc_io_d0_xbar_main_rst_io_ni"]
       si_stage: NA
       tags: ["conn"]
     }
