@@ -82,6 +82,7 @@
       iii) Errors in the message, round, or key counter.
       iv) Any internal FSM entering an invalid state.
       v) An error in the redundant lfsr.
+      vi) A SHA3 core error occurs when an app interface is active.
       The KMAC unit cannot recover from such an error and needs to be reset.
       '''
     }
