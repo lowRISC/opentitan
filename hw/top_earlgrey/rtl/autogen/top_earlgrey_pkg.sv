@@ -377,7 +377,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for csrng in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for entropy_src in top earlgrey.
@@ -836,14 +836,15 @@ package top_earlgrey_pkg;
     TopEarlgreyPlicIrqIdCsrngCsEntropyReq = 173,
     TopEarlgreyPlicIrqIdCsrngCsHwInstExc = 174,
     TopEarlgreyPlicIrqIdCsrngCsFatalErr = 175,
-    TopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 176,
-    TopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 177,
-    TopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 178,
-    TopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 179,
-    TopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 180,
-    TopEarlgreyPlicIrqIdEdn0EdnFatalErr = 181,
-    TopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 182,
-    TopEarlgreyPlicIrqIdEdn1EdnFatalErr = 183,
+    TopEarlgreyPlicIrqIdCsrngCsIntStateStopped = 176,
+    TopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 177,
+    TopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 178,
+    TopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 179,
+    TopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 180,
+    TopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 181,
+    TopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182,
+    TopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183,
+    TopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184,
     TopEarlgreyPlicIrqIdCount
   } interrupt_rv_plic_id_e;
 
