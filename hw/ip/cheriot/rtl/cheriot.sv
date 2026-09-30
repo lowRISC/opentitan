@@ -117,6 +117,7 @@ module cheriot
     logic tbre_revbm_intg;
     logic tbre_revbm_data_intg;
     logic tbre_revbm_error;
+    logic wtrc_error;
   } cheriot_fatal_error_t;
 
   /////////////
@@ -249,7 +250,8 @@ module cheriot
     .NvmBaseAddr(NvmBaseAddr),
     .NvmTopAddr(NvmTopAddr),
     .MetaMainSramTagBase(MetaMainSramTagBase),
-    .MetaNvmTagBase(MetaNvmTagBase)
+    .MetaNvmTagBase(MetaNvmTagBase),
+    .NvmCapStores(1'b1)
   ) u_cheriot_tag_filter (
     .clk_i,
     .rst_ni,
@@ -264,7 +266,8 @@ module cheriot
     .tl_m_i     (tag_mux_in_tl_d2h[32'd0]),
     .tag_m_i    (tag_mux_in_tag_d2h[32'd0]),
     .tl_h_o     (cored_tl_h_o),
-    .tl_h_i     (cored_tl_h_i)
+    .tl_h_i     (cored_tl_h_i),
+    .wtrc_err_o (cheriot_fatal_error.wtrc_error)
   );
 
   // Arbitrates the tag traffic of the core's and the revocation engine's tag filters onto the

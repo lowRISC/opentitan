@@ -47,9 +47,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                       |
-|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, or when the revocation engine reports a fault. |
+| Alert Name   | Description                                                                                                                                                                                                                                                                  |
+|:-------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, when the revocation engine reports a fault, when a capability store to the NVM is partial, or when a request breaks the core's capability store sequence. |
 
 ## Security Countermeasures
 

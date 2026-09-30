@@ -19,7 +19,10 @@ module cheriot_tag_filter #(
   parameter addr_t MetaNvmTagBase            = 'h1100_0C00,
   // Writes only update the capability tag and are never forwarded to the host port; the filter
   // answers them itself. A write that does not update a tag is answered with an error.
-  parameter bit    TagOnlyWrites             = 1'b0
+  parameter bit    TagOnlyWrites             = 1'b0,
+  // A capability store to the NVM is verified against the NVM contents instead of written, and sets
+  // the tag if they match (cheriot_wtrc).
+  parameter bit    NvmCapStores              = 1'b0
 )(
   input clk_i,
   input rst_ni,
@@ -42,7 +45,10 @@ module cheriot_tag_filter #(
 
   // Host port
   output tlul_pkg::tl_h2d_t tl_h_o,
-  input  tlul_pkg::tl_d2h_t tl_h_i
+  input  tlul_pkg::tl_d2h_t tl_h_i,
+
+  // A capability store to the NVM did something the core cannot do
+  output logic              wtrc_err_o
 );
 
   ///////////
@@ -86,7 +92,19 @@ module cheriot_tag_filter #(
   // Request handshaking signals
   logic tl_d_req_ready;
   logic tl_m_req_valid;
+  logic tl_m_req_ready;
   logic tl_h_req_valid;
+
+  // Host port of the filter, in front of the NVM capability stores
+  tlul_pkg::tl_h2d_t host_req;
+  tlul_pkg::tl_d2h_t host_rsp;
+
+  // The request is a capability store to the NVM
+  logic              cap_store;
+  // Tag write of a verified capability store, and whether the oldest request waits for it
+  tlul_pkg::tl_h2d_t cap_tag_req;
+  logic [4:0]        cap_tag_bit_sel;
+  logic              cap_tag_wr;
 
   // Input port of the meta FIFO
   logic          meta_req_valid;
@@ -124,6 +142,9 @@ module cheriot_tag_filter #(
   // Unused meta response signals
   logic unused_m_rsp;
 
+  // The meta port's response handshake is the filter's, not the tag write's
+  logic unused_cap_tag_req;
+
   // Meta responses, always accepted into a buffer until joined
   logic meta_buf_wready;
   logic meta_buf_valid;
@@ -146,6 +167,8 @@ module cheriot_tag_filter #(
   meta_addr_t addr_stem;
   addr_t      meta_addr;
   logic       addr_tagged;
+  // Whether the access goes to the NVM
+  logic       addr_nvm;
 
   // Unused address signals
   logic unused_addr;
@@ -170,6 +193,7 @@ module cheriot_tag_filter #(
     addr_stem   = '0;
     meta_addr   = '0;
     addr_tagged = 1'b0;
+    addr_nvm    = 1'b0;
 
     if(tl_d_i.a_address >= MainSramBaseAddr && tl_d_i.a_address < MainSramTopAddr) begin
       addr_stem   = tl_d_i.a_address - MainSramBaseAddr;
@@ -179,16 +203,18 @@ module cheriot_tag_filter #(
       addr_stem   = tl_d_i.a_address - NvmBaseAddr;
       meta_addr   = MetaNvmTagBase + (addr_t'(addr_stem.meta_word) << 32'd2);
       addr_tagged = 1'b1;
+      addr_nvm    = 1'b1;
     end
   end
 
-  assign bit_sel_m_o = addr_stem.bit_sel;
+  assign bit_sel_m_o = cap_tag_req.a_valid ? cap_tag_bit_sel : addr_stem.bit_sel;
   assign unused_addr = ^addr_stem.rsvd;
 
   // We need to perform a lookup on 64-bit-aligned reads where the host hints
   // us a valid capability load or on any write. A lookup is only required if CHERIoT is enabled.
   assign require_lookup = prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i) ?
                           addr_tagged       &&                                   // CHERIoT dev,
+                          !cap_store        &&                                   // no NVM cap,
                           ((tl_d_is_read    &&                                   // and: Read,
                             tl_d_is_aligned &&                                   // 64-bit-aligned,
                             tag_d_i)        ||                                   // hinted cap
@@ -210,7 +236,7 @@ module cheriot_tag_filter #(
     .sel_valid_i( tl_d_i.a_valid                                   ),
     .sel_ready_o( /* NOT CONNECTED */                              ),
     .valid_o    ( {meta_req_valid, tl_m_req_valid, tl_h_req_valid} ),
-    .ready_i    ( {meta_req_ready, tl_m_i.a_ready, tl_h_i.a_ready} )
+    .ready_i    ( {meta_req_ready, tl_m_req_ready, host_rsp.a_ready} )
   );
 
 
@@ -282,13 +308,13 @@ module cheriot_tag_filter #(
   );
 
   // We join in exactly the transactions we forked.
-  assign require_join = meta_rsp.lookup;
+  assign require_join = meta_rsp.lookup || cap_tag_wr;
   assign host_join    = local_rsp_meta.host;
 
   stream_join_dynamic #(
     .N_INP(32'd3)
   ) u_stream_join_dynamic (
-    .inp_valid_i( {meta_rsp_valid, meta_buf_valid, tl_h_i.d_valid} ),
+    .inp_valid_i( {meta_rsp_valid, meta_buf_valid, host_rsp.d_valid} ),
     .inp_ready_o( {meta_rsp_ready, tl_m_rsp_ready, tl_h_rsp_ready} ),
     .sel_i      ( {1'b1, require_join, host_join} ),
     .oup_valid_o( tl_d_rsp_valid ),
@@ -300,7 +326,7 @@ module cheriot_tag_filter #(
   // Stick Capability Tag //
   //////////////////////////
 
-  assign tag_m_o = tag_d_i;
+  assign tag_m_o = cap_tag_req.a_valid || tag_d_i;
 
   // Only read responses carry a tag; a write answered between the two words of a capability leaves
   // the stored tag alone.
@@ -332,9 +358,9 @@ module cheriot_tag_filter #(
 
   // We forward the host requests to both endpoints
   always_comb begin: proc_connect_tl_req
-    tl_h_o         = tl_d_i;
-    tl_h_o.a_valid = tl_h_req_valid;
-    tl_h_o.d_ready = tl_h_rsp_ready;
+    host_req         = tl_d_i;
+    host_req.a_valid = tl_h_req_valid;
+    host_req.d_ready = tl_h_rsp_ready;
 
     // We inject the meta address here
     tl_m_o                 = tl_d_i;
@@ -342,19 +368,27 @@ module cheriot_tag_filter #(
     tl_m_o.a_user.cmd_intg = tlul_pkg::get_cmd_intg(tl_m_o);
     tl_m_o.a_valid         = tl_m_req_valid;
     tl_m_o.d_ready         = meta_buf_wready;
+
+    // The tag write of a verified capability store goes first: it is older than any lookup.
+    if (cap_tag_req.a_valid) begin
+      tl_m_o         = cap_tag_req;
+      tl_m_o.d_ready = meta_buf_wready;
+    end
   end
+
+  assign tl_m_req_ready = tl_m_i.a_ready && !cap_tag_req.a_valid;
 
   assign host_rsp_meta_err = require_join && meta_buf_err;
 
   // We disregard all of the meta SRAM response except for the tag bit and the error bit
   always_comb begin: proc_connect_tl_rsp
-    tl_d_o = tl_h_i;
+    tl_d_o = host_rsp;
     // The response integrity is linear, so it is updated by the difference the new d_error makes: a
     // correct integrity stays correct, a broken one stays broken.
     if (host_rsp_meta_err) begin
       tl_d_o.d_error         = 1'b1;
-      tl_d_o.d_user.rsp_intg = tl_h_i.d_user.rsp_intg ^ tlul_pkg::get_rsp_intg(tl_d_o) ^
-                               tlul_pkg::get_rsp_intg(tl_h_i);
+      tl_d_o.d_user.rsp_intg = host_rsp.d_user.rsp_intg ^ tlul_pkg::get_rsp_intg(tl_d_o) ^
+                               tlul_pkg::get_rsp_intg(host_rsp);
     end
     if (!host_join) begin
       tl_d_o = local_rsp_intg;
@@ -398,6 +432,46 @@ module cheriot_tag_filter #(
     assign local_rsp_intg = tlul_pkg::TL_D2H_DEFAULT;
   end
 
+  // Capability stores to the NVM sit on the host port. They are verified, so they need no lookup.
+  if (NvmCapStores) begin : gen_wtrc
+    assign cap_store = prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i) &&
+                       addr_nvm && tl_d_is_write && tag_d_i;
+
+    cheriot_wtrc #(
+      .NumOutstanding(NumOutstanding),
+      .addr_t        (addr_t),
+      .NvmBaseAddr   (NvmBaseAddr),
+      .MetaNvmTagBase(MetaNvmTagBase)
+    ) u_cheriot_wtrc (
+      .clk_i,
+      .rst_ni,
+      .cap_store_i(cap_store),
+      .req_done_i (tl_d_i.a_valid && tl_d_req_ready),
+      .tl_d_i     (host_req),
+      .tl_d_o     (host_rsp),
+      .tl_h_i,
+      .tl_h_o,
+      .tl_m_o     (cap_tag_req),
+      .bit_sel_m_o(cap_tag_bit_sel),
+      .m_ready_i  (tl_m_i.a_ready),
+      .tag_wr_o   (cap_tag_wr),
+      .err_o      (wtrc_err_o)
+    );
+  end else begin : gen_no_wtrc
+    logic unused_addr_nvm;
+    assign unused_addr_nvm = addr_nvm;
+
+    assign cap_store       = 1'b0;
+    assign tl_h_o          = host_req;
+    assign host_rsp        = tl_h_i;
+    assign cap_tag_req     = tlul_pkg::TL_H2D_DEFAULT;
+    assign cap_tag_bit_sel = '0;
+    assign cap_tag_wr      = 1'b0;
+    assign wtrc_err_o   = 1'b0;
+  end
+
+  assign unused_cap_tag_req = cap_tag_req.d_ready;
+
   // The response and data integrity is not checked, as both the RMW and the tag filter are
   // lock-stepped.
   assign unused_m_rsp = ^{tl_m_i.d_data,
@@ -418,5 +492,8 @@ module cheriot_tag_filter #(
 
   // The meta path never waits on a join
   `ASSERT(MetaRspAlwaysAccepted_A, tl_m_i.d_valid |-> meta_buf_wready)
+
+  // A filter that answers writes itself never forwards a capability store
+  `ASSERT_INIT(NvmCapStoresNeedHostWrites_A, !(TagOnlyWrites && NvmCapStores))
 
 endmodule

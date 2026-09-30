@@ -66,7 +66,8 @@ holding capabilities, and either:
 - the access is a write, of any kind.
 
 Writes always look up because a non-capability store must clear the tag of the location it
-overwrites.
+overwrites. The exception is a capability store to the NVM, which the WTRC verifies (below): it is
+not looked up, and only its second word writes the tag, once the store is verified.
 
 The returned tag is sticky across the two words of a capability: on a response whose FIFO entry was
 marked aligned, the tag read from the meta SRAM is presented and captured; on the following unaligned
@@ -78,7 +79,10 @@ the captured value alone.
 The FIFO depth sets the number of outstanding transactions the filter supports. It is two for the
 core's tag filter, matching Ibex's LSU, which never issues more than two outstanding split-access
 halves, and the revocation engine's number of words in flight for its tag filter. Error
-responses from either the host or the meta path are merged into `d_error` towards the core.
+responses from either the host or the meta path are merged into `d_error` towards the core. A
+meta error on an error-free host response sets `d_error` and updates the response integrity by the
+difference that makes; the code is linear, so a correct integrity stays correct and a broken one
+stays broken.
 
 The meta response is accepted into a buffer, and the join consumes it from there. The fork hands
 out its three streams independently, so it can issue one lookup while the metadata FIFO is full.
@@ -91,7 +95,52 @@ arrives could wait on a data response that is itself queued behind the other tag
 A write forks into its data write and its tag update independently. If one of them fails, the core
 receives `d_error`, but the other half is not undone: a failed data write still updates the tag, and
 a failed tag update leaves the old tag next to the new data. Software must treat a location whose
-store was answered with an error as holding a stale tag.
+store was answered with an error as holding a stale tag. A capability store to the NVM is the
+exception: its tag is only written once the store is verified.
+
+### Write-to-Read-and-Compare Filter (WTRC)
+
+The NVM cannot be written through the interconnect, but a capability held in the NVM must be able to
+carry a valid tag. The core's tag filter is therefore built with `NvmCapStores`, which places
+`cheriot_wtrc` on its host port. A capability store to the NVM - a write in strict CHERIoT mode to
+the NVM with the tag sideband set, is not written: it is turned into a `Get` of the word it targets,
+with recomputed command integrity, and succeeds only if the NVM already holds its data and data
+integrity. It does no lookup. Every other access passes through the WTRC unchanged and with
+unchanged timing; the revocation engine's tag filter has no WTRC.
+
+The core stores a capability as two words, W0 at the lower and then W1 at the upper address, and
+issues nothing else until W1 is answered. The WTRC keeps each request's data and data integrity in
+an expect FIFO, which is written when the tag filter takes the request, and compares them with the
+NVM's response:
+
+| Word | Answer |
+|------|--------|
+| W0 | `AccessAck`; `d_error` if the NVM read failed, the store is not a full-word `PutFullData`, is out of sequence, or its data or data integrity differ from the NVM's. |
+| W1 | If W1 and W0 both matched, W1's NVM response turns into the capability's tag write towards the meta port (ahead of any lookup); the tag filter joins a local `AccessAck` with the tag write's response, so W1 carries its error. Otherwise `AccessAck` with `d_error`, and no tag write. |
+
+A capability store that fails leaves the tag as it was and changes nothing else. Its answer is a
+bus error, never an alert: software can store anything to the NVM.
+
+A four-state FSM tracks the capability being stored and its address, so that W1 is only verified
+together with the W0 of the same capability:
+
+| State | Meaning | Out of sequence |
+|-------|---------|-----------------|
+| `CapIdle`  | no capability open | a W1 |
+| `CapW0`    | W0 taken, waiting for its W1 | anything but the W1 of the same capability |
+| `CapW1`    | W1 taken, neither answered nor turned into a tag write yet | a W1, or any request before W1 is answered |
+| `CapTagWr` | W1's tag write issued, waiting for its answer | a W1, or a W0 before W1 is answered |
+
+A W0 taken always opens a capability, and W1's answer closes it; the next W0 may be taken in the
+cycle W1 is answered.
+
+The WTRC raises `fatal_fault` only for what the core cannot produce: a bad command or data
+integrity of a capability store (checked before the WTRC recomputes the command integrity), a bad
+response integrity of the NVM's answer to one (checked before the WTRC builds its own answer), a
+partial capability store, and a request out of the capability sequence. In `CapW1` a request is
+out of sequence as soon as it is presented: the tag filter hands its lookup to the meta port when it
+is presented, so the lookup could reach the meta port before W1's tag write. Ibex cannot present
+one, and `NoReqBeforeTagWr_A` asserts it.
 
 ### RMW Filter
 
@@ -213,15 +262,19 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
+| Capability store to the NVM that does not match the NVM contents, or whose NVM read fails | `d_error` towards the core, tag unchanged |
+| Capability store to the NVM with a bad command or data integrity, a bad NVM response integrity, not a full-word `PutFullData`, or out of the W0-W1 sequence | `d_error` towards the core, tag unchanged, and `fatal_fault` alert |
+| Any other request out of the W0-W1 sequence of a capability store to the NVM | `fatal_fault` alert |
 | Error response to a read of the revocation engine | Word not cleared, `TBRE_STATUS.sweep_err` |
 | Any other error, or an integrity fault, on a response to the revocation engine | `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
 | Error, integrity fault or malformed response on a revocation engine bitmap lookup | Capability counted as revoked, `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
 | RMW filter fault while the revocation engine is active | `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
 
-The first three are reachable by software and surface as a bus fault in the core, and an error
-response to a read of the revocation engine, e.g. of a read-protected NVM page, only fails the
-sweep; none of them raises an alert. The others latch the fatal alert until reset; a sweep that
-could not be completed correctly must not look successful.
+The first three, and a capability store to the NVM that does not match or whose NVM read fails,
+are reachable by software and surface as a bus fault in the core, and an error response to a read
+of the revocation engine, e.g. of a read-protected NVM page, only fails the sweep; none of them
+raises an alert. The others latch the fatal alert until reset; a sweep that could not be completed
+correctly must not look successful.
 
 
 ## Timing
@@ -236,3 +289,7 @@ but places the meta SRAM path on the critical path.
 
 The design provisions optional pipeline cuts in front of the access checkers to break that path, at
 the cost of two extra cycles per meta SRAM access. They are not implemented yet.
+
+A capability store to the NVM takes longer than one to the SRAM: W1's tag write is only issued once
+W1's NVM read has returned, instead of in parallel with the data write, so W1 is answered one NVM
+read latency later.
