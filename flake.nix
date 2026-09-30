@@ -36,6 +36,13 @@
 
     # Provides mkEdaShell (the EDA devshell builder)
     lowrisc-nix.url = "github:lowRISC/lowrisc-nix";
+
+    # Fetched via git (not github:) so the abc/slang/... submodules are included.
+    yosys = {
+      url = "git+https://github.com/YosysHQ/yosys?ref=refs/tags/v0.69&submodules=1";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   nixConfig = {
@@ -50,6 +57,7 @@
     uv2nix,
     pyproject-build-systems,
     lowrisc-nix,
+    yosys,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -153,10 +161,10 @@
       });
 
       # elab: the eda shell extended with synthesis and implementation tools
-      # (`nix develop .#elab`). Yosys and PDK are added in subsequent commits.
+      # (`nix develop .#elab`). IHP PDK is added in the next commit.
       elab = lowrisc-nix.lib.mkEdaShell (edaShellArgs // {
         name = "opentitan-elab";
-        extraPkgs = edaPkgs;
+        extraPkgs = edaPkgs ++ [yosys.packages.${system}.yosys];
       });
     in {
       packages.pythonEnv = pythonEnv;
