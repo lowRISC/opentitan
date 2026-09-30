@@ -1564,7 +1564,7 @@ Controller Device Address.
 ## HC_CAPABILITIES
 Host Controller Capabilities.
 - Offset: `0x18c`
-- Reset default: `0x440`
+- Reset default: `0x448`
 - Reset mask: `0x70303cec`
 
 ### Fields
@@ -1591,7 +1591,7 @@ Host Controller Capabilities.
 |   6    |   ro   |   0x1   | HDR_DDR_EN            | Defines whether the Host Controller supports HDR-DDR transfers.                                        |
 |   5    |   ro   |   0x0   | STANDBY_CR_CAP        | Defines whether the Host Controller supports handoff of the Active Controller role.                    |
 |   4    |        |         |                       | Reserved                                                                                               |
-|   3    |   ro   |   0x0   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
+|   3    |   ro   |   0x1   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
 |   2    |   ro   |   0x0   | COMBO_COMMAND         | Defines whether the Host Controller supports Combo Transfer Command transfers.                         |
 |  1:0   |        |         |                       | Reserved                                                                                               |
 
@@ -1816,7 +1816,7 @@ Extended Capabilities Section Offset.
 ## INT_CTRL_CMDS_EN
 Internal Control Command Subtype Support.
 - Offset: `0x1cc`
-- Reset default: `0x61`
+- Reset default: `0x20f5`
 - Reset mask: `0xffff`
 
 ### Fields
@@ -1828,7 +1828,7 @@ Internal Control Command Subtype Support.
 |  Bits  |  Type  |  Reset  | Name                | Description                          |
 |:------:|:------:|:-------:|:--------------------|:-------------------------------------|
 | 31:16  |        |         |                     | Reserved                             |
-|  15:1  |   ro   |  0x30   | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
+|  15:1  |   ro   | 0x107a  | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
 |   0    |   ro   |   0x1   | ICC_SUPPORT         | Internal Control Commands Supported. |
 
 ## IBI_NOTIFY_CTRL
@@ -1980,7 +1980,7 @@ Transfer Data Buffer Threshold Control.
 ## QUEUE_SIZE
 Queue Size.
 - Offset: `0x218`
-- Reset default: `0x6061408`
+- Reset default: `0x6061410`
 - Reset mask: `0xffffffff`
 
 ### Fields
@@ -1994,7 +1994,7 @@ Queue Size.
 | 31:24  |   ro   |   0x6   | TX_DATA_BUFFER_SIZE | Transmit Data Buffer Size.   |
 | 23:16  |   ro   |   0x6   | RX_DATA_BUFFER_SIZE | Receive Data Buffer Size.    |
 |  15:8  |   ro   |  0x14   | IBI_STATUS_SIZE     | IBI Queue Size.              |
-|  7:0   |   ro   |   0x8   | CR_QUEUE_SIZE       | Command/Response Queue Size. |
+|  7:0   |   ro   |  0x10   | CR_QUEUE_SIZE       | Command/Response Queue Size. |
 
 ## ALT_QUEUE_SIZE
 Alternate Queue Size.

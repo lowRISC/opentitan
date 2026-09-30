@@ -72,11 +72,25 @@ module i3c_stby_cr_regs
   };
 
   // STBY_CR_DEVICE_CHAR.
-  localparam i3c_hw2reg_stby_cr_device_char_reg_t RstStbyCrDeviceChar = '{
+  // - BCR_FIXED reports the fixed part of the Bus Characteristics Register. Hardware holds it at
+  //   its reset value and software cannot write it, so it is a constant rather than register
+  //   state; only the writable fields below are flopped.
+  typedef struct packed {
+    logic  [4:0] bcr_var;
+    logic  [7:0] dcr;
+    logic [14:0] pid_hi;
+  } stby_cr_device_char_t;
+  localparam stby_cr_device_char_t RstStbyCrDeviceChar = '{
+    bcr_var: I3C_STBY_CR_DEVICE_CHAR_BCR_VAR_RESVAL,
+    dcr:     I3C_STBY_CR_DEVICE_CHAR_DCR_RESVAL,
+    pid_hi:  I3C_STBY_CR_DEVICE_CHAR_PID_HI_RESVAL
+  };
+  stby_cr_device_char_t stby_cr_device_char_q;
+  assign stby_cr_device_char_o = '{
     bcr_fixed: '{d: I3C_STBY_CR_DEVICE_CHAR_BCR_FIXED_RESVAL},
-    bcr_var:   '{d: I3C_STBY_CR_DEVICE_CHAR_BCR_VAR_RESVAL},
-    dcr:       '{d: I3C_STBY_CR_DEVICE_CHAR_DCR_RESVAL},
-    pid_hi:    '{d: I3C_STBY_CR_DEVICE_CHAR_PID_HI_RESVAL}
+    bcr_var:   '{d: stby_cr_device_char_q.bcr_var},
+    dcr:       '{d: stby_cr_device_char_q.dcr},
+    pid_hi:    '{d: stby_cr_device_char_q.pid_hi}
   };
 
   // STBY_CR_DEVICE_PID_LO.
@@ -102,14 +116,14 @@ module i3c_stby_cr_regs
     if (!rst_ni) begin
       stby_cr_control_o        <= RstStbyCrControl;
       stby_cr_device_addr_o    <= RstStbyCrDeviceAddr;
-      stby_cr_device_char_o    <= RstStbyCrDeviceChar;
+      stby_cr_device_char_q    <= RstStbyCrDeviceChar;
       stby_cr_device_pid_lo_o  <= RstStbyCrDevicePidLo;
       stby_cr_config_getcaps_o <= RstStbyCrConfigGetcaps;
       stby_cr_config_rstact_o  <= RstStbyCrConfigRstact;
     end else if (sw_reset_i) begin
       stby_cr_control_o        <= RstStbyCrControl;
       stby_cr_device_addr_o    <= RstStbyCrDeviceAddr;
-      stby_cr_device_char_o    <= RstStbyCrDeviceChar;
+      stby_cr_device_char_q    <= RstStbyCrDeviceChar;
       stby_cr_device_pid_lo_o  <= RstStbyCrDevicePidLo;
       stby_cr_config_getcaps_o <= RstStbyCrConfigGetcaps;
       stby_cr_config_rstact_o  <= RstStbyCrConfigRstact;
@@ -183,11 +197,6 @@ module i3c_stby_cr_regs
         stby_cr_device_addr_o.dynamic_addr.d <= stby_cr_dynaddr_d_i[6:0];
       end
 
-      // ----- STBY_CR_DEVICE_CHAR register (Table 123) -----
-      if (reg2hw_i.stby_cr_device_char.bcr_fixed.qe) begin
-        stby_cr_device_char_o.bcr_fixed.d <= reg2hw_i.stby_cr_device_char.bcr_fixed.q;
-      end
-
       // ----- STBY_CR_CCC_CONFIG_RSTACT_PARAMS register (Table 129) -----
       // - RO to software, written by hardware when RSTACT CCC accepted.
       if (rstact_de_i) stby_cr_config_rstact_o.rst_action.d <= rstact_d_i;
@@ -211,13 +220,13 @@ module i3c_stby_cr_regs
         // ----- STBY_CR_DEVICE_CHAR register (Table 123) -----
         // - BCR_FIXED is read only.
         if (reg2hw_i.stby_cr_device_char.bcr_var.qe) begin
-          stby_cr_device_char_o.bcr_var.d <= reg2hw_i.stby_cr_device_char.bcr_var.q;
+          stby_cr_device_char_q.bcr_var <= reg2hw_i.stby_cr_device_char.bcr_var.q;
         end
         if (reg2hw_i.stby_cr_device_char.dcr.qe) begin
-          stby_cr_device_char_o.dcr.d <= reg2hw_i.stby_cr_device_char.dcr.q;
+          stby_cr_device_char_q.dcr <= reg2hw_i.stby_cr_device_char.dcr.q;
         end
         if (reg2hw_i.stby_cr_device_char.pid_hi.qe) begin
-          stby_cr_device_char_o.pid_hi.d <= reg2hw_i.stby_cr_device_char.pid_hi.q;
+          stby_cr_device_char_q.pid_hi <= reg2hw_i.stby_cr_device_char.pid_hi.q;
         end
 
         // ----- STBY_CR_DEVICE_PID_LO register (Table 124) -----

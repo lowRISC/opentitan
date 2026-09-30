@@ -49,10 +49,7 @@
   available_input_list: [
   ],
   available_output_list: [
-    { name: "ctrl_scl_pu_en", desc: "I3C Controller clock Pullup enable output" }
-    { name: "ctrl_sda_pu_en", desc: "I3C Controller data Pullup enable output" }
-    { name: "scl_hk", desc: "I3C Controller clock High-keeper enable output" }
-    { name: "sda_hk", desc: "I3C Controller data High-keeper enable output" }
+    { name: "ctrl_sda_pu", desc: "I3C Controller data Pullup enable output" }
   ],
   interrupt_list: [
     // Global HCI interrupt, asserted when any HCI interrupt is pending.
@@ -80,42 +77,57 @@
       name:    "rstdet_enable",
       act:     "req"
     }
-    // TODO: Combine the following two entries to become a `req_rsp?`
-    { struct:  "i3c_rstdet_req"
-      package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_req"
+    { struct:  "i3c_rstdet",
+      package: "i3c_pkg",
+      type:    "req_rsp",
+      name:    "rstdet",
       act:     "req"
     }
-    { struct:  "i3c_rstdet_rsp"
-      package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_rsp"
+    { struct:  "logic",
+      package: "",
+      type:    "uni",
+      name:    "mbist_en",
       act:     "rcv"
     }
-    { struct:  "logic"
-      package: ""
-      type:    "uni"
-      name:    "mbist_en"
-      act:     "rcv"
+    // High-keepers and pull-ups
+    { struct:  "logic",
+      package: "",
+      type:    "uni",
+      name:    "scl_hk_en",
+      act:     "req",
+      desc:    "I3C Controller clock High-keeper enable output"
+    }
+    { struct:  "logic",
+      package: "",
+      type:    "uni",
+      name:    "sda_hk_en",
+      act:     "req",
+      desc:    "I3C Controller data High-keeper enable output"
+    }
+    { struct:  "logic",
+      package: "",
+      type:    "uni",
+      name:    "ctrl_scl_pu_en",
+      act:     "req",
+      desc:    "I3C Controller clock Pullup enable output"
     }
     // RAM configuration
-    { struct:  "ram_1p_cfg"
-      package: "prim_ram_1p_pkg"
-      type:    "req_rsp"
-      name:    "ram_cfg"
+    { struct:  "ram_1p_cfg",
+      package: "prim_ram_1p_pkg",
+      type:    "req_rsp",
+      name:    "ram_cfg",
       act:     "rsp"
     }
-    { struct:  "ram_1p_cfg"
-      package: "prim_ram_1p_pkg"
-      type:    "req_rsp"
-      name:    "dat_cfg"
+    { struct:  "ram_1p_cfg",
+      package: "prim_ram_1p_pkg",
+      type:    "req_rsp",
+      name:    "dat_cfg",
       act:     "rsp"
     }
-    { struct:  "ram_1p_cfg"
-      package: "prim_ram_1p_pkg"
-      type:    "req_rsp"
-      name:    "dct_cfg"
+    { struct:  "ram_1p_cfg",
+      package: "prim_ram_1p_pkg",
+      type:    "req_rsp",
+      name:    "dct_cfg",
       act:     "rsp"
     }
     { struct:  "racl_policy_vec",
@@ -139,6 +151,95 @@
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
+    // Main IP block clock frequency; this allows the design to set the default time intervals appropriately.
+    { name:    "ClkFreq",
+      type:    "int unsigned",
+      default: "50000000",
+      desc:    "The frequency of the main clock, in Hz.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "PrimaryCtrl",
+      type:    "bit",
+      default: "1'b1",
+      desc:    "Disable(0) or enable(1) Primary Controller role.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "SecondaryCtrl",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) Secondary Controller role.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "Target",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''Disable(0) or enable(1) Target functionality even in the absence of a role as
+               Secondary Controller.
+               ''',
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "NumTargets",
+      type:    "int unsigned",
+      default: "2",
+      desc:    '''Number of target(s) or target group(s) presented simultaneously on the I3C bus,
+               including the Secondary Controller Role on (Virtual) Target 0.
+               ''',
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "SWDirectMsgBuf",
+      type:    "bit",
+      default: "1'b1",
+      desc:    "Disable(0) or enable(1) direct software access to the message buffer.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "SWDirEnIFetch",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) software execution through direct message buffer access.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompManufacturer",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompManufacturer",
+      desc:    "Hardware Identification Extended Capability: Component manufacturer.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompVersion",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompVersion",
+      desc:    "Hardware Identification Extended Capability: Component version.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompType",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompType",
+      desc:    "Hardware Identification Extended Capability: Component type.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "HalfCycleScl",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) half-cycle SCL extension for additional IP clock frequency support.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "TargetExt",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) Target-side Extension hardware.",
+      local:   "false",
+      expose:  "true"
+    }
     // Device Address Table size in bus words; each entry consumes 8 bytes of address space.
     { name:    "NumDATWords",
       type:    "int unsigned",
@@ -266,7 +367,9 @@
           hwqe:     "true",
           swaccess: "wo",
           hwaccess: "hro",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Writing 1 resets all Target registers, invalidating the RAL mirror.
+                   "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits:     "30",
           name:     "HJ_REQUEST",
@@ -338,13 +441,17 @@
           name:     "ACTIVE",
           desc:     "Indicates whether the Target logic is presently active, as opposed to under reset.",
           hwaccess: "hwo",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Live reset state of the Target transceiver; not at its reset value once out of reset.
+                   "excl:CsrAllTests:CsrExclCheck"]
         }
         { bits:     "29",
           name:     "CONNECTED",
           desc:     "Indicates whether the Target logic is connected to the bus and monitoring traffic.",
           hwaccess: "hwo",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Live bus-connection state of the Target transceiver.
+                   "excl:CsrAllTests:CsrExclCheck"]
         }
         { bits:     "28",
           name:     "PROTOCOL_ERROR",
@@ -387,7 +494,9 @@
           swaccess: "rw",
           hwaccess: "hrw",
           hwqe:     "true",
-          resval:   "0"
+          resval:   "0",
+          tags:     [// Hardwired to 0 unless the Target extension (TargetExt) is configured in.
+                     "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     }
@@ -433,6 +542,9 @@
       ]
     }
     { name:     "TARG_SINK_STATUS",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target data sink status.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1086,6 +1198,9 @@
       ]
     }
     { name:     "CTRL_TXBUF_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Controller TX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1139,6 +1254,9 @@
       ]
     }
     { name:     "CTRL_RXBUF_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Controller RX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1192,6 +1310,9 @@
       ]
     }
     { name:     "COMMAND_QUEUE_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Command Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1244,6 +1365,9 @@
       ]
     }
     { name:     "RESPONSE_QUEUE_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Response Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1299,6 +1423,9 @@
       ]
     }
     { name:     "IBI_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "In-Band Interrupt Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1345,6 +1472,9 @@
       ]
     }
     { name:     "IBI_STAT_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "In-Band Status Descriptor FIFO State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1410,6 +1540,9 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
+        tags:     [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+                   // Exclude from init and write-checks.
+                   "excl:CsrAllTests:CsrExclCheck"],
         // This default configuration using `multireg_idx` apportions the space among all of the
         // supported targets, rather than the number that are configured and supported by the IP.
         fields: [
@@ -1455,6 +1588,9 @@
       ]
     }
     { name:     "TARG_RXBUF_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target RX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1501,6 +1637,9 @@
       ]
     }
     { name:     "TARG_IBI_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target In-Band Interrupt Payload Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1560,6 +1699,9 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
+        tags:     [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+                   // Exclude from init and write-checks.
+                   "excl:CsrAllTests:CsrExclCheck"],
         // This default configuration using `multireg_idx` apportions the space among all of the
         // supported targets, rather than the number that are configured and supported by the IP.
         fields: [
@@ -1605,6 +1747,9 @@
       ]
     }
     { name:     "TARG_RXDESC_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target Reception Descriptor Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1651,6 +1796,9 @@
       ]
     }
     { name:     "TARG_IBIDESC_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target In-Band Interrupt Descriptor Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1697,6 +1845,9 @@
       ]
     }
     { name:     "TARG_ASYNC_STATE",
+      tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target Asynchronous Event Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1757,13 +1908,19 @@
           name:     "RESUME",
           desc:     "Host Controller Resume.",
           hwqe:     "true",
-          resval:   "0"
+          resval:   "0",
+          tags:     [// Reads back the controller state, not the written value; ABORT takes effect only
+                     // while enabled, and RESUME only while Suspended.
+                     "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits:     "29",
           name:     "ABORT",
           desc:     "Host Controller Abort.",
           hwqe:     "true",
-          resval:   "0"
+          resval:   "0",
+          tags:     [// Reads back the controller state, not the written value; ABORT takes effect only
+                     // while enabled, and RESUME only while Suspended.
+                     "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits:     "12",
           name:     "HALT_ON_CMD_SEQ_TIMEOUT",
@@ -1821,12 +1978,18 @@
         { bits:   "31",
           name:   "DYNAMIC_ADDR_VALID",
           desc:   "Dynamic Address is Valid.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Software writes are accepted only while this is the Active Controller; otherwise
+                   // the field reflects the Dynamic Address assigned by the Active Controller.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:   "22:16",
           name:   "DYNAMIC_ADDR",
           desc:   "Device Dynamic Address.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Software writes are accepted only while this is the Active Controller; otherwise
+                   // the field reflects the Dynamic Address assigned by the Active Controller.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     },
@@ -1894,7 +2057,7 @@
         { bits:   "3",
           name:   "AUTO_COMMAND",
           desc:   "Defines whether the Host Controller supports Auto-Command functionality.",
-          resval: "0"
+          resval: "1"
         }
         { bits:   "2",
           name:   "COMBO_COMMAND",
@@ -1939,7 +2102,9 @@
         { bits:   "0",
           name:   "SOFT_RST",
           desc:   "Core Software Reset.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Writing 1 resets all HCI registers, invalidating the RAL mirror.
+                   "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
     },
@@ -1952,12 +2117,17 @@
         { bits:   "2",
           name:   "AC_CURRENT_OWN",
           desc:   "Active Controller.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Live state; set when the Controller is enabled via HC_CONTROL.BUS_ENABLE.
+                   "excl:CsrAllTests:CsrExclCheck"]
         }
       ]
     },
     { reserved: "2" },
     { name:     "INTR_STATUS",
+      tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Interrupt Status.",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -2194,7 +2364,7 @@
         { bits:     "15:1",
           name:     "MIPI_CMDS_SUPPORTED",
           desc:     "MIPI Alliance Commands Supported.",
-          resval:   "0x30"
+          resval:   "0x107a"
         }
         { bits:     "0",
           name:     "ICC_SUPPORT",
@@ -2393,6 +2563,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:   "true",
+      tags:     [// Sizes mirror the *_CONFIG registers, which the CSR tests randomize.
+                 // Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "31:24",
           name:   "TX_DATA_BUFFER_SIZE",
@@ -2412,7 +2585,7 @@
         { bits:   "7:0",
           name:   "CR_QUEUE_SIZE",
           desc:   "Command/Response Queue Size.",
-          resval: "8"
+          resval: "16"
         }
       ]
     }
@@ -2421,6 +2594,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags:     [// Sizes mirror the *_CONFIG registers, which the CSR tests randomize.
+                 // Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "28",
           name:   "EXT_IBI_QUEUE_EN",
@@ -2440,6 +2616,9 @@
       ]
     }
     { name:     "PIO_INTR_STATUS",
+      tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "PIO Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
@@ -2811,6 +2990,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags:     [// Free levels reflect the live queue depths, which differ from the generic reset values.
+                 // Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "28:24",
           name:   "IBI_STATUS_CNT",
@@ -2840,6 +3022,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags:     [// Free levels reflect the live buffer depths, which differ from the generic reset values.
+                 // Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "15:8",
           name:   "RX_BUF_LVL",
@@ -2886,6 +3071,9 @@
           resval: "1"
         }
       ]
+      tags: [// Reflects the live SDA/SCL pin levels, which are not driven in the chip-level sim.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name:     "MX_ERROR_COUNTERS",
       desc:     "Controller Error Counters.",
@@ -3008,7 +3196,9 @@
         { bits:     "12",
           name:     "TARGET_XACT_ENABLE",
           desc:     "Target Transaction Interface Servicing Enable.",
-          resval:   "1"
+          resval:   "1",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:     "10:8",
           name:     "BCAST_CCC_IBI_RING",
@@ -3024,7 +3214,9 @@
         { bits:     "4",
           name:     "HANDOFF_DEEP_SLEEP",
           desc:     "Handoff Deep Sleep."
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Sticky; software cannot clear it once set.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:     "3",
           name:     "PRIME_ACCEPT_GETACCCR",
@@ -3074,14 +3266,18 @@
           desc:     "Static Address is Valid.",
           swaccess: "rw",
           hwaccess: "hrw",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:     "6:0",
           name:     "STATIC_ADDR",
           desc:     "Device Static Address.",
           swaccess: "rw",
           hwaccess: "hrw",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     }
@@ -3153,22 +3349,29 @@
           name:     "BCR_FIXED",
           desc:     "Bus Characteristics Register Fixed.",
           swaccess: "ro",
+          hwaccess: "hwo",
           resval:   "3"
         }
         { bits:   "28:24",
           name:   "BCR_VAR",
           desc:   "Bus Characteristics Register Variable.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:   "23:16",
           name:   "DCR",
           desc:   "Device Characteristics Register.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
         { bits:   "15:1",
           name:   "PID_HI",
           desc:   "Device Provisioned ID High.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
     }
@@ -3178,6 +3381,8 @@
       hwaccess: "hrw",
       hwext:    "true",
       hwqe:     "true",
+      tags:     [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"],
       fields: [
         { bits:   "31:0",
           name:   "PID_LO",
@@ -3187,6 +3392,9 @@
       ]
     }
     { name:     "STBY_CR_INTR_STATUS",
+      tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Standby Controller Interrupt Status",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -3394,6 +3602,8 @@
       hwaccess: "hrw",
       hwext:    "true",
       hwqe:     "true",
+      tags:     [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"],
       fields: [
         { bits:   "11:8",
           name:   "F2_CRCAP2_DEV_INTERACT",
@@ -3413,6 +3623,8 @@
       hwaccess: "hrw",
       hwext:    "true",
       hwqe:     "true",
+      tags:     [// Writable only while the Standby Controller is disabled (STBY_CR_ENABLE_INIT == 0).
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"],
       fields: [
         { bits:     "31",
           name:     "RESET_DYNAMIC_ADDR",
@@ -3465,6 +3677,9 @@
       ]
     }
     { name:     "TARG_INTR_STATUS",
+      tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"],
       desc:     "Target Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
@@ -4075,6 +4290,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags:     [// IBI_FREE_LVL reports the live free space of the IBI FIFO, which is non-zero after reset.
+                 // Exclude from init and write-checks.
+                 "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits:   "27:16",
           name:   "IBI_FREE_LVL",
@@ -4194,6 +4412,9 @@
           resval: "1"
         }
       ]
+      tags: [// Reflects the live SDA/SCL pin levels, which are not driven in the chip-level sim.
+             // Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { multireg: {
         name:     "TARG_ENABLE",
@@ -4284,6 +4505,9 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
+        tags:     [// Reports live free levels of the Tx FIFOs, which are non-zero after reset.
+                   // Exclude from init and write-checks.
+                   "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits:   "23:16",
             name:   "TX_DESC_FREE_LVL",

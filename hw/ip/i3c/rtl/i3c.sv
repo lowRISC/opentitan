@@ -28,7 +28,7 @@ module i3c
   // Whether to include direct software access to the message buffer?
   parameter bit                     SWDirectMsgBuf   = 1'b1,
   // Whether the direct message buffer access supports execution.
-  parameter prim_mubi_pkg::mubi4_t  SWDirEnIFetch    = prim_mubi_pkg::MuBi4False,
+  parameter bit                     SWDirEnIFetch    = 1'b0,
   // Hardware Identification Extended Capability.
   parameter int unsigned            CompManufacturer = i3c_pkg::CompManufacturer,
   parameter int unsigned            CompVersion      = i3c_pkg::CompVersion,
@@ -75,19 +75,18 @@ module i3c
   output logic                              cio_sda_en_o,
 
   // Pull-up enables for open drain intervals.
-  output logic                              cio_ctrl_scl_pu_en_o,
+  output logic                              ctrl_scl_pu_en_o,
+  output logic                              cio_ctrl_sda_pu_o,
   output logic                              cio_ctrl_sda_pu_en_o,
 
   // High-keeper enables.
-  output logic                              cio_scl_hk_o,
-  output logic                              cio_scl_hk_en_o,
-  output logic                              cio_sda_hk_o,
-  output logic                              cio_sda_hk_en_o,
+  output logic                              scl_hk_en_o,
+  output logic                              sda_hk_en_o,
 
   // Target Reset Detector request/response.
   output                                    rstdet_enable_o,
-  output i3c_rstdet_req_t                   rstdet_req_o,
-  input  i3c_rstdet_rsp_t                   rstdet_rsp_i,
+  output i3c_rstdet_req_t                   rstdet_o,
+  input  i3c_rstdet_rsp_t                   rstdet_i,
 
   // Interrupts.
   // - HCI-global interrupt, asserted when any HCI interrupt is asserted.
@@ -123,6 +122,10 @@ module i3c
   localparam int unsigned SWDirAddrW = $clog2(I3C_BUFFER_SIZE * 8 / DataWidth);
 
   logic [NumAlerts-1:0] alert_test, alerts;
+
+  // CIO SDA pull-up "data" signal. Tied-high; the actual dynamic control is done through the
+  // corresponding enable signal which connects to the output-enable input of the pad.
+  assign cio_ctrl_sda_pu_o = 1'b1;
 
   // Register reinitialization.
   logic hci_soft_rst;  // Host Controller Interface (HCI) registers.
@@ -201,6 +204,7 @@ module i3c
     .racl_error_o   (racl_error_o),
 
     // Integrity checking.
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o     (alerts[0])
   );
 
@@ -377,7 +381,7 @@ module i3c
 
       .tl_i                      (tl_win_h2d[TL_SwBuf]),
       .tl_o                      (tl_win_d2h[TL_SwBuf]),
-      .en_ifetch_i               (SWDirEnIFetch),
+      .en_ifetch_i               (prim_mubi_pkg::mubi4_bool_to_mubi(SWDirEnIFetch)),
       .req_o                     (sw_buf_req),
       .req_type_o                (),
       .gnt_i                     (sw_buf_gnt),
@@ -486,12 +490,12 @@ module i3c
     .ctrl_bus_obs_i  (cio_ctrl_bus_obs),
 
     // Pull-up enables for open drain intervals.
-    .ctrl_scl_pu_en_o(cio_ctrl_scl_pu_en_o),
+    .ctrl_scl_pu_en_o(ctrl_scl_pu_en_o),
     .ctrl_sda_pu_en_o(cio_ctrl_sda_pu_en_o),
 
     // High-keeper enables.
-    .scl_hk_en_o     (cio_scl_hk_en_o),
-    .sda_hk_en_o     (cio_sda_hk_en_o),
+    .scl_hk_en_o     (scl_hk_en_o),
+    .sda_hk_en_o     (sda_hk_en_o),
 
     // I3C Target I/O signaling.
     .targ_bus_drv_o  (cio_targ_bus_drv),
@@ -499,8 +503,8 @@ module i3c
 
     // Target Reset Detector request/response.
     .rstdet_enable_o (rstdet_enable_o),
-    .rstdet_o        (rstdet_req_o),
-    .rstdet_i        (rstdet_rsp_i),
+    .rstdet_o        (rstdet_o),
+    .rstdet_i        (rstdet_i),
 
     // Interrupts.
     .intr_hci_o      (intr_hci_o),
@@ -518,11 +522,6 @@ module i3c
     .scan_rst_ni     (scan_rst_ni),
     .scanmode_i      (scanmode_i)
   );
-
-  // We are only interested in the enable signals. The high-keeper pins should either pull up or
-  // stay tristate.
-  assign cio_scl_hk_o = 1'b1;
-  assign cio_sda_hk_o = 1'b1;
 
   // Alerts
   assign alert_test = {
@@ -567,12 +566,12 @@ module i3c
   end
 
   // Assert Known for Controller-driven pull-up enables.
-  `ASSERT_KNOWN(CtrlSCLPUEnKnown_A, cio_ctrl_scl_pu_en_o)
+  `ASSERT_KNOWN(CtrlSCLPUEnKnown_A, ctrl_scl_pu_en_o)
   `ASSERT_KNOWN(CtrlSDAPUEnKnown_A, cio_ctrl_sda_pu_en_o)
 
   // Assert Known for Controller-driven high-keeper enables.
-  `ASSERT_KNOWN(SCLHKEnKnown_A, cio_scl_hk_en_o)
-  `ASSERT_KNOWN(SDAHKEnKnown_A, cio_sda_hk_en_o)
+  `ASSERT_KNOWN(SCLHKEnKnown_A, scl_hk_en_o)
+  `ASSERT_KNOWN(SDAHKEnKnown_A, sda_hk_en_o)
 
   // Assert Known for I3C Target outputs
   if (DrvSeparatedEn) begin : gen_targ_sep_asserts
