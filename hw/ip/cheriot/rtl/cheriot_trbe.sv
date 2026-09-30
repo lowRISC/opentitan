@@ -203,7 +203,8 @@ module cheriot_trbe #(
     .tl_m_i,
     .tag_m_i,
     .tl_h_o,
-    .tl_h_i
+    .tl_h_i,
+    .wtrc_err_o()
   );
 
 endmodule

@@ -1,6 +1,6 @@
 # Programmer's Guide
 
-This section details how software drives the background revocation engine (TRBE) of the CHERIoT memory subsystem.
+This section details how software drives the background revocation engine (TRBE) of the CHERIoT memory subsystem, and how capabilities are stored in the NVM.
 The tag store and the rest of the meta SRAM are not software-visible; software only writes the revocation bitmap through the `revbm` window and controls the engine through the registers below.
 
 ## Revoking Capabilities
@@ -34,6 +34,13 @@ A sweep that ends with an error does not advance the epoch, so the waiting alloc
 
 The `trbe_done` interrupt is a level interrupt: `INTR_STATE` stays set until software writes 1 to it.
 Clear it on every wake before completing the interrupt, and re-check completion after enabling the interrupt, since a sweep ending in the cycle `INTR_STATE` is cleared does not set it again.
+
+## Storing Capabilities in the NVM
+
+The NVM is not written through the interconnect, so a capability store (`csc`) to it cannot write data.
+It sets the capability's tag if the NVM already holds exactly the 64 bits being stored, so software first programs the capability's two words through the NVM controller and then stores the same capability with `csc` to give it its tag.
+A `csc` of other data to the NVM is answered with a bus error, a store access fault in the core, and leaves the tag as it was.
+A plain store to the NVM is refused by the NVM and clears the tag of the capability it targets.
 
 ## Errors
 
