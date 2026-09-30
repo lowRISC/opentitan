@@ -103,7 +103,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
                 <li>vendor-implemented ECC</li>
                 <li>scrambling of address and data with XEX tweakable block cipher</li>
                 <li>OTP emulation</li>
-                <li>CHERIoT support: full address range usable to store CHERIoT capabilities that cannot be revoked</li>
+                <li>CHERIoT support: full address range usable to store CHERIoT capabilities that cannot be revoked; a capability store sets the tag of a capability the RRAM already holds</li>
                 <li>CHERIoT implementation: tag bits (32 KiB) stored in the CHERIoT meta SRAM</li>
               </ul>
             </li>

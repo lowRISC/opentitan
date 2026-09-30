@@ -28,6 +28,9 @@ SRAM are stored using a `sram_ctrl`.
   towards the meta SRAM, and joins their responses.
 - Read-modify-write access to implement bit-granular access to capability bits.
 - Clears any capability tag of any location written by a non-capability store.
+- Lets a capability store to the read-only NVM set the capability's tag when the NVM already holds
+  the stored capability (write-to-read-and-compare, WTRC), and answers any other capability store
+  to the NVM with an error.
 - Exposes the revocation bitmap into the core's address map and serves the core's TRVK filter.
 - A background revocation engine that sweeps a range of capabilities within a tagged region
   and clears the tag of every capability whose base is revoked, leaves capabilities the core writes
@@ -36,7 +39,8 @@ SRAM are stored using a `sram_ctrl`.
 - Per-port access checking: each of the four requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
 - Fatal alert on a CSR bus integrity fault, a meta SRAM response integrity fault, a meta SRAM
-  device error, or a fault the revocation engine reports.
+  device error, a fault the revocation engine reports, or what the core cannot produce around a
+  capability store to the NVM (an integrity fault, a partial store, or a request out of sequence).
 
 ## Description
 

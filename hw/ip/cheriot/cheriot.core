@@ -16,6 +16,7 @@ filesets:
       - rtl/cheriot_reg_pkg.sv
       - rtl/cheriot_regs_reg_top.sv
       - rtl/cheriot_rmw_filter.sv
+      - rtl/cheriot_wtrc.sv
       - rtl/cheriot_tag_filter.sv
       - rtl/cheriot_access_check.sv
       - rtl/cheriot_socket_m1.sv
