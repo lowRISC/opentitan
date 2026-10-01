@@ -137,7 +137,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
  * Set the control register of the keymgr dpe.
  *
  * It is not supported to use additional hw binding (used by the Creator /
- * OwnerInt / Owner Key generation).
+ * CreatorInt / OwnerInt / Owner Key generation).
  *
  * @param dest (NONE, AES, OTBN, KMAC or HMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
