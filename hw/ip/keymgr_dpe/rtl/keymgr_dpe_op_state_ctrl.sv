@@ -19,6 +19,7 @@ module keymgr_dpe_op_state_ctrl
   input erase_req_i,
   input dis_req_i,
   input load_req_i,
+  input load_secondary_req_i,
 
   // `op_ack_o` signals to the top module that the requested operation is completed
   output logic op_ack_o,
@@ -92,6 +93,8 @@ module keymgr_dpe_op_state_ctrl
         end else if (erase_req_i) begin
           state_d = StSingleCycle;
         end else if (load_req_i) begin
+          state_d = StSingleCycle;
+        end else if (load_secondary_req_i) begin
           state_d = StSingleCycle;
         end
       end
