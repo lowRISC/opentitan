@@ -20,7 +20,7 @@
 /**
  * KMAC cleanup guard.
  */
-static void kmac_wipe_guard(uint32_t *dummy) {
+static void kmac_flush_guard(uint32_t *dummy) {
   (void)dummy;
   (void)kmac_fifo_flush();
 }
@@ -63,7 +63,7 @@ otcrypto_status_t otcrypto_kmac(
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
-  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_flush_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
   // Ensure that tag buffer length and `required_output_len` match each other.

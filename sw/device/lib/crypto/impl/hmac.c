@@ -21,7 +21,7 @@
 /**
  * HMAC cleanup guard.
  */
-static void hmac_wipe_guard(uint32_t *dummy) {
+static void hmac_flush_guard(uint32_t *dummy) {
   (void)dummy;
   (void)hmac_fifo_flush();
 }
@@ -221,7 +221,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
-  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_flush_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
   // Preload the tag with randomness.
@@ -349,7 +349,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
-  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_flush_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
   OTCRYPTO_HEALTH_CHECK(key->config.key_mode == kOtcryptoKeyModeHmacSha256
@@ -450,7 +450,7 @@ otcrypto_status_t otcrypto_hmac_update(
   }
 #endif
 
-  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_flush_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
   otcrypto_key_security_level_t security_level =
@@ -502,7 +502,7 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   }
 #endif
 
-  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_flush_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
   otcrypto_key_security_level_t security_level =
