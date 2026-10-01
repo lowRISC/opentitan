@@ -58,6 +58,47 @@
       stage: V2
       tests: []
     }
+    {
+      name: local_esc_relbl_err
+      desc: '''
+            Verify local escalation caused by reliability errors.
+
+            **Stimulus**:
+            - Inject an uncorrectable reliability ECC error with DIS.LOCAL_ESC_RELBL_ERR at its reset
+              value, clear FAULT_STATUS.PHY_RELBL_ERR afterwards and access the RRAM again.
+            - Set DIS.LOCAL_ESC_RELBL_ERR, inject an uncorrectable reliability ECC error, clear
+              FAULT_STATUS.PHY_RELBL_ERR afterwards and access the RRAM again.
+
+            **Checks**:
+            - The fatal_err alert is raised in both cases.
+            - Without DIS.LOCAL_ESC_RELBL_ERR, the RRAM remains accessible.
+            - With DIS.LOCAL_ESC_RELBL_ERR, the RRAM is disabled and remains disabled after
+              FAULT_STATUS.PHY_RELBL_ERR has been cleared, until the next reset.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rma_sw_dis
+      desc: '''
+            Verify that software access through rram_ctrl is disabled from the start of the RMA
+            entry process until the next reset.
+
+            **Stimulus**:
+            - Request RMA entry and issue random software operations during and after the RMA wipe.
+
+            **Checks**:
+            - Host reads are answered with an error.
+            - New controller operations are not started and complete with OP_STATUS.err and
+              ERR_CODE.op_err set.
+            - An operation in progress when RMA entry starts completes normally, and the RMA wipe
+              only starts afterwards.
+            - RMA entry completes successfully and rma_ack is returned with the error-free status.
+            - The OTP hardware interface remains accessible after the RMA wipe.
+            '''
+      stage: V2
+      tests: []
+    }
   ]
 
   covergroups: [
