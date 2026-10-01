@@ -1384,10 +1384,11 @@ otcrypto_status_t otcrypto_rsa_sign_exp(
     const otcrypto_blinded_key_t *private_key, uint32_t exponent,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_SIGN_EXP);
   HARDENED_TRY(public_exponent_check(exponent));
   HARDENED_TRY(rsa_sign_exp_async_start(private_key, exponent, message_digest,
                                         padding_mode));
-  return otcrypto_rsa_sign_async_finalize(signature);
+  return otcrypto_eval_exit(otcrypto_rsa_sign_async_finalize(signature));
 }
 
 otcrypto_status_t otcrypto_rsa_verify_exp(
@@ -1396,10 +1397,11 @@ otcrypto_status_t otcrypto_rsa_verify_exp(
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_VERIFY_EXP);
   HARDENED_TRY(public_exponent_check(exponent));
   HARDENED_TRY(rsa_verify_exp_async_start(public_key, exponent, signature));
-  return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
-                                            verification_result);
+  return otcrypto_eval_exit(otcrypto_rsa_verify_async_finalize(
+      message_digest, padding_mode, verification_result));
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_exp(
@@ -1407,10 +1409,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_exp(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *message,
     const otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_ENCRYPT_EXP);
   HARDENED_TRY(public_exponent_check(exponent));
   HARDENED_TRY(rsa_encrypt_exp_async_start(public_key, exponent, hash_mode,
                                            message, label));
-  return otcrypto_rsa_encrypt_async_finalize(ciphertext);
+  return otcrypto_eval_exit(otcrypto_rsa_encrypt_async_finalize(ciphertext));
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt_exp(
@@ -1419,8 +1422,9 @@ otcrypto_status_t otcrypto_rsa_decrypt_exp(
     const otcrypto_const_word32_buf_t *ciphertext,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_DECRYPT_EXP);
   HARDENED_TRY(public_exponent_check(exponent));
   HARDENED_TRY(rsa_decrypt_exp_async_start(private_key, exponent, ciphertext));
-  return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
-                                             plaintext_bytelen);
+  return otcrypto_eval_exit(otcrypto_rsa_decrypt_async_finalize(
+      hash_mode, label, plaintext, plaintext_bytelen));
 }
