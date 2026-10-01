@@ -108,7 +108,7 @@
             Individual config settings that will be covered include:
             - otp_en_cs_sw_app_read
             - sw_app_enable
-            - read_int_state
+            - int_state_enable
             - enable
             - regwen has been true and false
             - intr_state has had each bit set and unset at least once (handled in comportable ip coverage)
