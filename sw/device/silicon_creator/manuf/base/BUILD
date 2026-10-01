@@ -450,5 +450,9 @@ offline_signature_attach(
         for sku, data in EARLGREY_SKUS.items()
         if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
-    tags = ["manual"],
+    tags = [
+        "manual",
+        # This requires some signatures to be manually provided, so it should not be built in CI.
+        "skip_build_in_ci",
+    ],
 )
