@@ -45,6 +45,8 @@ status_t test_setup(void) {
   // After startup the keymgr dpe state should be available
   TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
                                        kDifKeymgrDpeStateAvailable));
+  // Generate Creator Int Key (Only one key).
+  TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kCreatorIntKeyParams));
   // Generate Owner Int Key (Only one key).
   TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntKeyParams));
   // Generate Owner Key (Only one key).
