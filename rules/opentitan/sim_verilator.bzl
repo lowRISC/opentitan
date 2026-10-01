@@ -166,7 +166,7 @@ def _test_dispatch(ctx, exec_env, firmware):
         # args for a verilator based test will contain an argument with the
         # firmware substitution.  For a ROM test, we eliminate this arg because
         # we don't want to load any firmware.
-        args = [a for a in args if "{firmware}" not in a]
+        args = [a for a in args if "{firmware" not in a]
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
