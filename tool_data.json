@@ -40,5 +40,11 @@
         "vendor": "Cadence",
         "version": "24.03-s007",
         "comment": "Provides xrun for simulations and is used to run our full UVM verification environment."
+    },
+    {
+        "name": "vManager",
+        "vendor": "Cadence",
+        "version": "24.03-s002",
+        "comment": "Provides imc, which DVSim uses to merge and report Xcelium coverage."
     }
 ]
