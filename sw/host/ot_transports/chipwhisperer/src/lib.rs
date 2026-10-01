@@ -64,6 +64,10 @@ impl<B: Board> ChipWhisperer<B> {
         Ok(board)
     }
 
+    pub fn backend(&self) -> Rc<RefCell<usb::Backend<B>>> {
+        self.device.clone()
+    }
+
     fn open_uart(&self, instance: u32) -> Result<SoftwareFlowControl<SerialPortUart>> {
         if self.uart_override.is_empty() {
             let usb = self.device.borrow();
