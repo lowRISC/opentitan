@@ -68,6 +68,7 @@ module tb;
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
     .creator_root_key_i   (keymgr_dpe_if.creator_root_key),
+    .secondary_root_key_i (keymgr_dpe_if.secondary_root_key),
     .creator_seed_i       (keymgr_dpe_if.creator_seed),
     .owner_seed_i         (keymgr_dpe_if.owner_seed),
     .device_id_i          (keymgr_dpe_if.otp_device_id),
