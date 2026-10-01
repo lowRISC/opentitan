@@ -4,11 +4,11 @@
 
 use anyhow::{Context, Result};
 use der::{Encode, Reader, SliceReader, asn1::OctetStringRef};
-use ecdsa::elliptic_curve::pkcs8::{
-    self, AssociatedOid, DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey,
-};
 use p256::NistP256;
 use p256::ecdsa::{SigningKey, VerifyingKey};
+use pkcs8::{
+    self, AssociatedOid, DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey,
+};
 
 use std::convert::{AsRef, TryFrom};
 use std::path::Path;

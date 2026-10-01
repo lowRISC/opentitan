@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -23,9 +23,9 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, default_value = "plain-text", help=SignData::HELP)]
     format: SignData,
-    /// The SPHINCS+ signing domain.
+    /// The SPHINCS+ signing mode (Pure / Pre-Hash).
     #[arg(short = 'd', long, default_value = "pure")]
-    domain: SpxDomain,
+    domain: SpxSignatureMode,
     input: PathBuf,
     signature: PathBuf,
 }
