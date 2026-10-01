@@ -952,7 +952,7 @@
       },
       param_decl: {
         NumInstHwSlot: "4",
-        NumBootStages: "3",
+        NumBootStages: "4",
         NumRomDigestInputs: "1",
       },
     },

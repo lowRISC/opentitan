@@ -16,7 +16,7 @@ module keymgr_dpe_ctrl
   parameter int unsigned NumInstHwSlot = 4,
   parameter int unsigned NumInstHwSlotWidth = 2,
   // Number of available boot stages
-  parameter int unsigned NumBootStages = 3
+  parameter int unsigned NumBootStages = 4
 ) (
   input clk_i,
   input rst_ni,
@@ -298,15 +298,16 @@ module keymgr_dpe_ctrl
   assign destination_slot_valid = key_slots_q[slot_dst_sel_i].valid;
 
   // Determine the boot stage for the next DPE context derivation.
-  // If there are only two boot stages, BootStageOwnerInt will be omitted
+  // If there are only two boot stages, BootStageCreatorInt and BootStageOwnerInt will be omitted
   keymgr_dpe_boot_stage_e next_boot_stage;
   if (NumBootStages == 2) begin : gen_two_boot_stage
     assign next_boot_stage =
         (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwner :
         BootStageRuntime;
-  end else begin : gen_three_boot_stage
+  end else begin : gen_four_boot_stage
     assign next_boot_stage =
-        (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageOwnerInt :
+        (active_key_slot_o.boot_stage == BootStageCreator) ? BootStageCreatorInt :
+        (active_key_slot_o.boot_stage == BootStageCreatorInt) ? BootStageOwnerInt :
         (active_key_slot_o.boot_stage == BootStageOwnerInt) ? BootStageOwner :
         BootStageRuntime;
   end
@@ -788,8 +789,17 @@ module keymgr_dpe_ctrl
                              (SyncFaultLastIdx + AsyncFaultLastIdx))
 
   // verify supported number of boot stage
-  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 4})
 
+  // Verify no invalid values on the boot_stage counter
+  for (genvar i = 0; i < NumInstHwSlot; i++) begin : gen_boot_stage_asserts
+    `ASSERT(ValidBootStage_A, key_slots_q[i].boot_stage <= BootStageRuntime)
+    // BootStageCreatorInt and BootStageOwnerInt are omitted in the two-stage configuration
+    if (NumBootStages == 2) begin : gen_two_boot_stage_asserts
+      `ASSERT(ValidBootStageTwoStage_A,
+              !(key_slots_q[i].boot_stage inside {BootStageCreatorInt, BootStageOwnerInt}))
+    end
+  end
 
   // // stage select should always be Disable whenever it is not enabled
   // `ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)

@@ -27,10 +27,11 @@ module keymgr_dpe
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
   parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
+  parameter seed_t RndCnstFieldEntropySeed     = RndCnstFieldEntropySeedDefault,
   // Number of instantiated HW slots
   parameter int unsigned NumInstHwSlot         = 4,
   // Number of available boot stages
-  parameter int unsigned NumBootStages         = 3,
+  parameter int unsigned NumBootStages         = 4,
   // Number of ROM digest inputs
   parameter int unsigned NumRomDigestInputs    = 1
 ) (
@@ -68,6 +69,7 @@ module keymgr_dpe
   input keymgr_dpe_creator_seed_t creator_seed_i,
   input keymgr_dpe_owner_seed_t owner_seed_i,
   input keymgr_dpe_device_id_t device_id_i,
+  input keymgr_dpe_field_entropy_t field_entropy_i,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -89,7 +91,7 @@ module keymgr_dpe
   //   - OTP device ID
   //   - LC keymgr diversification value
   //   - ROM digests
-  //   - Creator seed (only if boot stage equals two)
+  //   - Creator seed (only if NumBootStages == 2)
   localparam int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
       lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth * NumRomDigestInputs +
       KeyWidth * (NumBootStages == 2);
@@ -112,7 +114,7 @@ module keymgr_dpe
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 8;
+  localparam int TotalSeedWidth = KeyWidth * 9;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
@@ -120,6 +122,7 @@ module keymgr_dpe
   seed_t otbn_seed;
   seed_t kmac_seed;
   seed_t hmac_seed;
+  seed_t field_entropy_seed;
   seed_t none_seed;
 
   localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
@@ -129,6 +132,7 @@ module keymgr_dpe
                                                         RndCnstOtbnSeed,
                                                         RndCnstKmacSeed,
                                                         RndCnstHmacSeed,
+                                                        RndCnstFieldEntropySeed,
                                                         RndCnstNoneSeed};
 
   prim_sec_anchor_const #(
@@ -142,6 +146,7 @@ module keymgr_dpe
             otbn_seed,
             kmac_seed,
             hmac_seed,
+            field_entropy_seed,
             none_seed})
   );
 
@@ -312,6 +317,8 @@ module keymgr_dpe
   hw_key_req_t root_key;
   assign root_key.key = '{creator_root_key_i.share1,
                           creator_root_key_i.share0};
+  keymgr_dpe_field_entropy_t field_entropy;
+  assign field_entropy.secret = field_entropy_i.secret;
 
   prim_flop_2sync # (
     .Width(1)
@@ -321,6 +328,15 @@ module keymgr_dpe
     .d_i(creator_root_key_i.share0_valid &
          creator_root_key_i.share1_valid),
     .q_o(root_key.valid)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_field_entropy_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(field_entropy_i.secret_valid),
+    .q_o(field_entropy.secret_valid)
   );
 
   keymgr_dpe_slot_t active_key_slot;
@@ -511,6 +527,7 @@ module keymgr_dpe
   // input checking
   logic creator_seed_chk_vld, creator_seed_vld;
   logic owner_seed_chk_vld, owner_seed_vld;
+  logic field_entropy_chk_vld;
   logic devid_vld;
   logic health_state_vld;
 
@@ -527,13 +544,20 @@ module keymgr_dpe
     end
   end
 
-  // Advance to creator_root_key
+  // Consumed during the CreatorIntKey derivation
+  // If the field entropy is provisioned then the secret is selected automatically.
+  // Otherwise use the netlist constant `field_entropy_seed`.
+  logic [KeyWidth-1:0] field_entropy_binding;
+  assign field_entropy_binding = (field_entropy.secret_valid) ?
+      field_entropy.secret : field_entropy_seed;
+
+  // Consumed during the OwnerIntKey derivation
   // The values coming from the seed provider (otp_ctrl / rram_ctrl) / lc_ctrl are treated as
   // quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = creator_seed_i.seed;
 
-  // Advance to owner_intermediate_key
+  // Consumed during the OwnerKey derivation
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = owner_seed_i.seed;
 
@@ -545,6 +569,8 @@ module keymgr_dpe
   // consumed in BootStageCreator.
   logic [DpeAdvDataWidth-1:0] adv_data_creator;
   logic adv_data_creator_valid;
+  logic [DpeAdvDataWidth-1:0] adv_data_creator_int;
+  logic adv_data_creator_int_valid;
   logic [DpeAdvDataWidth-1:0] adv_data_owner_int;
   logic adv_data_owner_int_valid;
   if (NumBootStages == 2) begin : gen_adv_matrix_for_two_boot_stages
@@ -560,7 +586,9 @@ module keymgr_dpe
                                     creator_seed_vld;
     assign adv_data_owner_int = '0;
     assign adv_data_owner_int_valid = '0;
-  end else begin : gen_adv_matrix_for_three_boot_stages
+    assign adv_data_creator_int = '0;
+    assign adv_data_creator_int_valid = '0;
+  end else begin : gen_adv_matrix_for_four_boot_stages
     assign adv_data_creator = DpeAdvDataWidth'({sw_binding,
                                                 device_id_i,
                                                 lc_keymgr_div_i,
@@ -569,6 +597,9 @@ module keymgr_dpe
     assign adv_data_creator_valid = devid_vld &
                                     health_state_vld &
                                     rom_digest_vld;
+    assign adv_data_creator_int = DpeAdvDataWidth'({sw_binding,
+                                                    field_entropy_binding});
+    assign adv_data_creator_int_valid = field_entropy_chk_vld;
     assign adv_data_owner_int = DpeAdvDataWidth'({sw_binding,
                                                   creator_seed});
     assign adv_data_owner_int_valid = creator_seed_vld;
@@ -581,9 +612,15 @@ module keymgr_dpe
 
     if ((reg2hw.control_shadowed.sw_binding_only.q == 1'b0) &&
         mubi4_test_false_strict(mubi4_t'(reg2hw.enforce_sw_binding.q))) begin
-      // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
+      // Assign additional hw binding value for the following bootstages:
+      // - 0 = Creator
+      // - 1 = CreatorInt (NumBootStages == 4 only)
+      // - 2 = OwnerInt (NumBootStages == 4 only)
+      // - 3 = Owner
       adv_matrix[BootStageCreator] = adv_data_creator;
       adv_dvalid[BootStageCreator] = adv_data_creator_valid;
+      adv_matrix[BootStageCreatorInt] = adv_data_creator_int;
+      adv_dvalid[BootStageCreatorInt] = adv_data_creator_int_valid;
       adv_matrix[BootStageOwnerInt] = adv_data_owner_int;
       adv_dvalid[BootStageOwnerInt] = adv_data_owner_int_valid;
       adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding, owner_seed});
@@ -669,11 +706,13 @@ module keymgr_dpe
     .key_version_i('0),
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
+    .field_entropy_i(field_entropy_binding),
     .key_i(curr_active_key),
     .devid_i(device_id_i),
     .health_state_i(lc_keymgr_div_i),
     .creator_seed_vld_o(creator_seed_chk_vld),
     .owner_seed_vld_o(owner_seed_chk_vld),
+    .field_entropy_vld_o(field_entropy_chk_vld),
     .devid_vld_o(devid_vld),
     .health_state_vld_o(health_state_vld),
     // In keymgr_dpe, key version comparison is handled by the ctrl logic.
@@ -690,6 +729,7 @@ module keymgr_dpe
   assign hw2reg.debug.invalid_key.d           = ~key_vld;
   assign hw2reg.debug.invalid_digest.d        = ~rom_digest_vld;
   assign hw2reg.debug.invalid_root_key.d      = ~root_key.valid;
+  assign hw2reg.debug.invalid_field_entropy.d = ~field_entropy_chk_vld;
   assign hw2reg.debug.inactive_lc_en.d        = lc_tx_test_false_loose(
                                                   lc_keymgr_en[KeymgrDpeEnDebug]);
 
@@ -699,23 +739,30 @@ module keymgr_dpe
   assign is_owner_boot_stage     = active_key_slot.boot_stage == BootStageOwner;
 
   // dev_id, health_state and rom digest is used when boot_stage is incremented
-  // from 0 (= Creator) to 1 (= OwnerInt)
+  // from 0 (= Creator) to either 1 (= CreatorInt) in the four-stage configuration
+  // or 3 (= Owner) in the two-stage configuration.
   assign hw2reg.debug.invalid_dev_id.de       = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_health_state.de = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_digest.de       = adv_en & is_creator_boot_stage;
 
-  // creator_seed is consumed when boot_stage is incremented from 1 (= OwnerInt)
-  // to 2 (= Owner) in the three-stage configuration, or from 0 (= Creator) to
-  // 2 (= Owner) in the two-stage configuration (where OwnerInt is omitted).
-  if (NumBootStages == 2) begin : gen_invalid_creator_seed_for_2_boot_stages
+  // creator_seed is consumed when boot_stage is incremented from 2 (= OwnerInt)
+  // to 3 (= Owner) in the four-stage configuration, or from 0 (= Creator) to
+  // 3 (= Owner) in the two-stage configuration (where CreatorInt / OwnerInt is
+  // omitted).
+  // field_entropy is consumed when boot_stage is incremented from 1 (= CreatorInt)
+  // to 2 (= OwnerInt) in the four-stage configuration only.
+  if (NumBootStages == 2) begin : gen_invalid_seed_de_for_2_boot_stages
     assign hw2reg.debug.invalid_creator_seed.de =
         adv_en & is_creator_boot_stage;
-  end else begin : gen_invalid_creator_seed_for_3_boot_stages
+    assign hw2reg.debug.invalid_field_entropy.de = 1'b0;
+  end else begin : gen_invalid_seed_de_for_4_boot_stages
     assign hw2reg.debug.invalid_creator_seed.de =
         adv_en & (active_key_slot.boot_stage == BootStageOwnerInt);
+    assign hw2reg.debug.invalid_field_entropy.de =
+        adv_en & (active_key_slot.boot_stage == BootStageCreatorInt);
   end
 
-  // owner_seed is used when boot_stage is incremented from 2 (= Owner) to 3 (= Runtime).
+  // owner_seed is used when boot_stage is incremented from 3 (= Owner) to 4 (= Runtime).
   assign hw2reg.debug.invalid_owner_seed.de    = adv_en & is_owner_boot_stage;
 
   // key validity and versions are checked regardless of the boot stage, when there is an ongoing
@@ -989,7 +1036,7 @@ module keymgr_dpe
   assign unused_active_key_version = active_key_slot.max_key_version;
 
   // Verify supported number of boot stage
-  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 4})
 
   // Verify the metadata do not exceed the width of the sw registers
   `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
