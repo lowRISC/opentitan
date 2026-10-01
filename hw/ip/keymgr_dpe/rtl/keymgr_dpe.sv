@@ -65,6 +65,7 @@ module keymgr_dpe
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input keymgr_dpe_creator_root_key_t creator_root_key_i,
+  input keymgr_dpe_creator_root_key_t secondary_root_key_i,
   input keymgr_dpe_creator_seed_t creator_seed_i,
   input keymgr_dpe_owner_seed_t owner_seed_i,
   input keymgr_dpe_device_id_t device_id_i,
@@ -148,10 +149,6 @@ module keymgr_dpe
   // Register module
   keymgr_dpe_reg2hw_t reg2hw;
   keymgr_dpe_hw2reg_t hw2reg;
-
-  // TODO: Assign unused signal to prevent linter error
-  logic unused_lock;
-  assign unused_lock = reg2hw.load_secondary_root_key_lock.q;
 
   logic regfile_intg_err;
   logic shadowed_storage_err;
@@ -315,6 +312,10 @@ module keymgr_dpe
   assign root_key.key = '{creator_root_key_i.share1,
                           creator_root_key_i.share0};
 
+  hw_key_req_t secondary_root_key;
+  assign secondary_root_key.key = '{secondary_root_key_i.share1,
+                                    secondary_root_key_i.share0};
+
   prim_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
@@ -323,6 +324,16 @@ module keymgr_dpe
     .d_i(creator_root_key_i.share0_valid &
          creator_root_key_i.share1_valid),
     .q_o(root_key.valid)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_secondary_key_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(secondary_root_key_i.share0_valid &
+         secondary_root_key_i.share1_valid),
+    .q_o(secondary_root_key.valid)
   );
 
   keymgr_dpe_slot_t active_key_slot;
@@ -374,6 +385,7 @@ module keymgr_dpe
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
     .load_root_key_lock_i(reg2hw.load_root_key_lock.q),
+    .load_secondary_root_key_lock_i(reg2hw.load_secondary_root_key_lock.q),
     // TODO(#384): Add assertions to check that we are not losing some bits by casting
     // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(slot_src_sel_trunc),
@@ -396,6 +408,7 @@ module keymgr_dpe
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(root_key),
+    .secondary_root_key_i(secondary_root_key),
     .hw_sel_o(hw_key_sel),
     .wipe_key_o(wipe_key),
     .adv_en_o(adv_en),
