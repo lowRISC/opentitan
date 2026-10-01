@@ -49,7 +49,8 @@ module csrng
   output logic intr_cs_cmd_req_done_o,
   output logic intr_cs_entropy_req_o,
   output logic intr_cs_hw_inst_exc_o,
-  output logic intr_cs_fatal_err_o
+  output logic intr_cs_fatal_err_o,
+  output logic intr_cs_int_state_stopped_o
 );
 
   csrng_reg2hw_t reg2hw;
@@ -106,7 +107,8 @@ module csrng
     .intr_cs_cmd_req_done_o,
     .intr_cs_entropy_req_o,
     .intr_cs_hw_inst_exc_o,
-    .intr_cs_fatal_err_o
+    .intr_cs_fatal_err_o,
+    .intr_cs_int_state_stopped_o
   );
 
 
@@ -156,6 +158,7 @@ module csrng
   `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
   `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
+  `ASSERT_KNOWN(IntrCsIntStateStoppedKnownO_A, intr_cs_int_state_stopped_o)
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
     u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
