@@ -1216,7 +1216,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_GPR_TOGGLE_CROSS(grs2)
   endgroup
 
-  covergroup enc_ecall_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
+  covergroup enc_fixed_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
     // Used by the ECALL and WFI instructions. Although they use the I encoding in the tooling, they
     // have no immediate or register operands so we give them a separate covergroup here.
     mnemonic_cp: coverpoint mnemonic {
@@ -2315,7 +2315,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     enc_bns_cg = new;
     enc_bnxid_cg = new;
     enc_b_cg = new;
-    enc_ecall_cg = new;
+    enc_fixed_cg = new;
     enc_i_cg = new;
     enc_is_cg = new;
     enc_j_cg = new;
@@ -2383,8 +2383,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_encodings[mnem_jalr]          = "I";
     insn_encodings[mnem_csrrs]         = "I";
     insn_encodings[mnem_csrrw]         = "I";
-    insn_encodings[mnem_ecall]         = "ecall";
-    insn_encodings[mnem_wfi]           = "ecall";
+    insn_encodings[mnem_ecall]         = "fixed";
+    insn_encodings[mnem_wfi]           = "fixed";
     insn_encodings[mnem_loop]          = "loop";
     insn_encodings[mnem_loopi]         = "loopi";
     insn_encodings[mnem_bn_add]        = "bnaf";
@@ -2700,8 +2700,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_bnxid_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
       "B":
         enc_b_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
-      "ecall":
-        enc_ecall_cg.sample(mnem, insn_data);
+      "fixed":
+        enc_fixed_cg.sample(mnem, insn_data);
       "I":
         enc_i_cg.sample(mnem, insn_data, rtl_item.gpr_operand_a);
       "Is":
