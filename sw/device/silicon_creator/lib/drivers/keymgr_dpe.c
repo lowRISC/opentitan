@@ -53,7 +53,8 @@ static inline uint32_t sc_keymgr_dpe_base(void) {
  *
  * @param exl_sw_binding Should additional hw bindings be used during the
  * next advance call. Only impact DPE context generation if either the
- * creator root key / owner int key / owner key is being generated.
+ * creator root key / creator int key / owner int key / owner key is being
+ * generated.
  * @param ops The type of operation to execute next.
  * @param sel_src_slot Source slot when either advancing a DPE context inside
  * the slot or if an HW / SW key is being generated.
@@ -541,7 +542,35 @@ rom_error_t sc_keymgr_dpe_advance_creator(
 
 /**
  * Sets the binding registers / key version registers and advances the
- * creator keys into the owner int keys (sealing and attestation).
+ * creator keys into the creator int keys (sealing and attestation).
+ */
+rom_error_t sc_keymgr_dpe_advance_creator_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+  // Sanity checks
+  if ((adv_data_sealing.sel_src_slot != adv_data_sealing.sel_dst_slot) ||
+      (adv_data_attestation.sel_src_slot !=
+       adv_data_attestation.sel_dst_slot) ||
+      (adv_data_sealing.policy.parent != kScKeymgrDPESlotPolEraseParent) ||
+      (adv_data_attestation.policy.parent != kScKeymgrDPESlotPolEraseParent)) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
+  // Advance the sealing key
+  sc_keymgr_dpe_advance(kScKeymgrDPEUseAdditionalHwBinding, adv_data_sealing);
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
+
+  // Advance the attestation key
+  sc_keymgr_dpe_advance(kScKeymgrDPEUseAdditionalHwBinding,
+                        adv_data_attestation);
+
+  return sc_keymgr_dpe_wait_until_done();
+}
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator int keys into the owner int keys (sealing and attestation).
  */
 rom_error_t sc_keymgr_dpe_advance_owner_int(
     sc_keymgr_dpe_advance_data_t adv_data_sealing,

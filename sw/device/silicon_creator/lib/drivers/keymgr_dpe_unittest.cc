@@ -597,6 +597,63 @@ TEST_F(KeymgrDpeTest, AdvanceCreatorBadPolicy) {
             kErrorKeymgrInternal);
 }
 
+TEST_F(KeymgrDpeTest, AdvanceCreatorInt) {
+  sc_keymgr_dpe_advance_data_t adv_data_sealing = {
+      .binding_value = &binding_value_sealing_,
+      .policy = policy_erase_parent_,
+      .sel_src_slot = 1,
+      .sel_dst_slot = 1,
+      .version = 0xA5A5A5A5,
+  };
+  sc_keymgr_dpe_advance_data_t adv_data_attestation = {
+      .binding_value = &binding_value_attestation_,
+      .policy = policy_erase_parent_,
+      .sel_src_slot = 3,
+      .sel_dst_slot = 3,
+      .version = 0xA5A5A5A5,
+  };
+
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_sealing);
+  ExpectWaitUntilDone(/*busy_cycles=*/1,
+                      KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation);
+  ExpectWaitUntilDone(/*busy_cycles=*/1,
+                      KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+
+  EXPECT_EQ(
+      sc_keymgr_dpe_advance_creator_int(adv_data_sealing, adv_data_attestation),
+      kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, AdvanceCreatorIntBadArguments) {
+  sc_keymgr_dpe_advance_data_t adv_data = {
+      .binding_value = &binding_value_sealing_,
+      .policy = policy_erase_parent_,
+      .sel_src_slot = 1,
+      .sel_dst_slot = 1,
+      .version = 0xA5A5A5A5,
+  };
+
+  // The source and destination slots have to be equal.
+  sc_keymgr_dpe_advance_data_t adv_data_bad_slot = adv_data;
+  adv_data_bad_slot.sel_dst_slot = 2;
+  EXPECT_EQ(sc_keymgr_dpe_advance_creator_int(adv_data_bad_slot, adv_data),
+            kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_dpe_advance_creator_int(adv_data, adv_data_bad_slot),
+            kErrorKeymgrInternal);
+
+  // The retain parent policy is rejected.
+  sc_keymgr_dpe_advance_data_t adv_data_bad_policy = adv_data;
+  adv_data_bad_policy.policy.parent = kScKeymgrDPESlotPolRetainParent;
+  EXPECT_EQ(sc_keymgr_dpe_advance_creator_int(adv_data_bad_policy, adv_data),
+            kErrorKeymgrInternal);
+  EXPECT_EQ(sc_keymgr_dpe_advance_creator_int(adv_data, adv_data_bad_policy),
+            kErrorKeymgrInternal);
+}
+
 TEST_F(KeymgrDpeTest, AdvanceOwnerInt) {
   sc_keymgr_dpe_advance_data_t adv_data_sealing = {
       .binding_value = &binding_value_sealing_,
