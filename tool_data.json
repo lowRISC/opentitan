@@ -1,0 +1,20 @@
+[
+    {
+        "name": "VCS",
+        "vendor": "Synopsys",
+        "version": "U-2023.03-SP2",
+        "comment": "RTL simulator."
+    },
+    {
+        "name": "Xcelium",
+        "vendor": "Cadence",
+        "version": "21.09-s006",
+        "comment": "RTL simulator."
+    },
+    {
+        "name": "vManager",
+        "vendor": "Cadence",
+        "version": "21.09.005",
+        "comment": "Provides imc for Xcelium coverage merging and reporting."
+    }
+]
