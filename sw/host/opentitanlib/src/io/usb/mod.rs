@@ -6,10 +6,11 @@ pub mod desc;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 
 use crate::impl_serializable_error;
+use crate::transport::TransportError;
 
 /// Errors related to the GPIO interface.
 #[derive(Debug, Error, Serialize, Deserialize)]
@@ -220,6 +221,17 @@ fn look_for_device<T: UsbContext + ?Sized>(
 
 /// A trait which represents a USB context.
 pub trait UsbContext {
+    /// Scan the USB bus for devices matching VID/PID, and optionally also matching a serial
+    /// number. This method always returns immediately with the list of currently plugged
+    /// devices matching the requested criteria.
+    fn scan(
+        &self,
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_protocol: Option<(u8, u8, u8)>,
+        usb_serial: Option<&str>,
+    ) -> Result<Vec<Box<dyn UsbDevice>>>;
+
     /// Find a device by VID:PID, and optionally disambiguate by serial number.
     ///
     /// If no device matches, this function returns immediately and does not wait.
@@ -233,13 +245,25 @@ pub trait UsbContext {
     }
 
     /// Find a device by VID:PID, and optionally disambiguate by serial number.
+    ///
+    /// If no device matches, this function will keep trying until the provided timeout expires.
     fn device_by_id_with_timeout(
         &self,
         usb_vid: u16,
         usb_pid: u16,
         usb_serial: Option<&str>,
         timeout: Duration,
-    ) -> Result<Box<dyn UsbDevice>>;
+    ) -> Result<Box<dyn UsbDevice>> {
+        look_for_device(
+            self,
+            Some(usb_vid),
+            Some(usb_pid),
+            None,
+            usb_serial,
+            timeout,
+            &format!("vid:pid=0x{:04x}:0x{:04x}", usb_vid, usb_pid),
+        )
+    }
 
     /// Find a device with a specific interface, and optionally disambiguate by serial number.
     ///
@@ -254,6 +278,9 @@ pub trait UsbContext {
         self.device_by_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
     }
 
+    /// Find a device with a specific interface, and optionally disambiguate by serial number.
+    ///
+    /// If no device matches, this function will keep trying until the provided timeout expires.
     fn device_by_interface_with_timeout(
         &self,
         class: u8,
@@ -261,5 +288,18 @@ pub trait UsbContext {
         protocol: u8,
         usb_serial: Option<&str>,
         timeout: Duration,
-    ) -> Result<Box<dyn UsbDevice>>;
+    ) -> Result<Box<dyn UsbDevice>> {
+        look_for_device(
+            self,
+            None,
+            None,
+            Some((class, subclass, protocol)),
+            usb_serial,
+            timeout,
+            &format!(
+                "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}",
+                class, subclass, protocol
+            ),
+        )
+    }
 }
