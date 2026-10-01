@@ -330,6 +330,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       12'hfc8: return 11;  // RND_PREFETCH
       12'hfc0: return 12;  // RND
       12'hfc1: return 13;  // URND
+      12'hfc3: return 14;  // INSN_CNT
       default: return -1;  // (invalid)
     endcase
   endfunction
@@ -350,6 +351,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     bins rnd_prefetch = {11};          \
     bins rnd          = {12};          \
     bins urnd         = {13};          \
+    bins insn_cnt     = {14};          \
     bins invalid      = {-1};          \
     illegal_bins bad  = default;       \
   }
