@@ -325,56 +325,56 @@ module keymgr_dpe_reg_top (
   logic [31:0] metadata_low_7_qs;
   logic metadata_high_0_re;
   logic metadata_high_0_valid_0_qs;
-  logic [1:0] metadata_high_0_boot_stage_0_qs;
+  logic [2:0] metadata_high_0_boot_stage_0_qs;
   logic metadata_high_0_allow_child_policy_0_qs;
   logic metadata_high_0_exportable_policy_0_qs;
   logic metadata_high_0_retain_parent_policy_0_qs;
   logic metadata_high_0_allow_keygen_policy_0_qs;
   logic metadata_high_1_re;
   logic metadata_high_1_valid_1_qs;
-  logic [1:0] metadata_high_1_boot_stage_1_qs;
+  logic [2:0] metadata_high_1_boot_stage_1_qs;
   logic metadata_high_1_allow_child_policy_1_qs;
   logic metadata_high_1_exportable_policy_1_qs;
   logic metadata_high_1_retain_parent_policy_1_qs;
   logic metadata_high_1_allow_keygen_policy_1_qs;
   logic metadata_high_2_re;
   logic metadata_high_2_valid_2_qs;
-  logic [1:0] metadata_high_2_boot_stage_2_qs;
+  logic [2:0] metadata_high_2_boot_stage_2_qs;
   logic metadata_high_2_allow_child_policy_2_qs;
   logic metadata_high_2_exportable_policy_2_qs;
   logic metadata_high_2_retain_parent_policy_2_qs;
   logic metadata_high_2_allow_keygen_policy_2_qs;
   logic metadata_high_3_re;
   logic metadata_high_3_valid_3_qs;
-  logic [1:0] metadata_high_3_boot_stage_3_qs;
+  logic [2:0] metadata_high_3_boot_stage_3_qs;
   logic metadata_high_3_allow_child_policy_3_qs;
   logic metadata_high_3_exportable_policy_3_qs;
   logic metadata_high_3_retain_parent_policy_3_qs;
   logic metadata_high_3_allow_keygen_policy_3_qs;
   logic metadata_high_4_re;
   logic metadata_high_4_valid_4_qs;
-  logic [1:0] metadata_high_4_boot_stage_4_qs;
+  logic [2:0] metadata_high_4_boot_stage_4_qs;
   logic metadata_high_4_allow_child_policy_4_qs;
   logic metadata_high_4_exportable_policy_4_qs;
   logic metadata_high_4_retain_parent_policy_4_qs;
   logic metadata_high_4_allow_keygen_policy_4_qs;
   logic metadata_high_5_re;
   logic metadata_high_5_valid_5_qs;
-  logic [1:0] metadata_high_5_boot_stage_5_qs;
+  logic [2:0] metadata_high_5_boot_stage_5_qs;
   logic metadata_high_5_allow_child_policy_5_qs;
   logic metadata_high_5_exportable_policy_5_qs;
   logic metadata_high_5_retain_parent_policy_5_qs;
   logic metadata_high_5_allow_keygen_policy_5_qs;
   logic metadata_high_6_re;
   logic metadata_high_6_valid_6_qs;
-  logic [1:0] metadata_high_6_boot_stage_6_qs;
+  logic [2:0] metadata_high_6_boot_stage_6_qs;
   logic metadata_high_6_allow_child_policy_6_qs;
   logic metadata_high_6_exportable_policy_6_qs;
   logic metadata_high_6_retain_parent_policy_6_qs;
   logic metadata_high_6_allow_keygen_policy_6_qs;
   logic metadata_high_7_re;
   logic metadata_high_7_valid_7_qs;
-  logic [1:0] metadata_high_7_boot_stage_7_qs;
+  logic [2:0] metadata_high_7_boot_stage_7_qs;
   logic metadata_high_7_allow_child_policy_7_qs;
   logic metadata_high_7_exportable_policy_7_qs;
   logic metadata_high_7_retain_parent_policy_7_qs;
@@ -421,6 +421,8 @@ module keymgr_dpe_reg_top (
   logic debug_inactive_lc_en_wd;
   logic debug_invalid_secondary_root_key_qs;
   logic debug_invalid_secondary_root_key_wd;
+  logic debug_invalid_field_entropy_qs;
+  logic debug_invalid_field_entropy_wd;
   logic load_root_key_lock_we;
   logic load_root_key_lock_qs;
   logic load_root_key_lock_wd;
@@ -2382,9 +2384,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_valid_0_qs)
   );
 
-  //   F[boot_stage_0]: 2:1
+  //   F[boot_stage_0]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_0_boot_stage_0 (
     .re     (metadata_high_0_re),
     .we     (1'b0),
@@ -2397,7 +2399,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_boot_stage_0_qs)
   );
 
-  //   F[allow_child_policy_0]: 3:3
+  //   F[allow_child_policy_0]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_0_allow_child_policy_0 (
@@ -2412,7 +2414,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_allow_child_policy_0_qs)
   );
 
-  //   F[exportable_policy_0]: 4:4
+  //   F[exportable_policy_0]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_0_exportable_policy_0 (
@@ -2427,7 +2429,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_exportable_policy_0_qs)
   );
 
-  //   F[retain_parent_policy_0]: 5:5
+  //   F[retain_parent_policy_0]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_0_retain_parent_policy_0 (
@@ -2442,7 +2444,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_retain_parent_policy_0_qs)
   );
 
-  //   F[allow_keygen_policy_0]: 6:6
+  //   F[allow_keygen_policy_0]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_0_allow_keygen_policy_0 (
@@ -2475,9 +2477,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_1_valid_1_qs)
   );
 
-  //   F[boot_stage_1]: 2:1
+  //   F[boot_stage_1]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_1_boot_stage_1 (
     .re     (metadata_high_1_re),
     .we     (1'b0),
@@ -2490,7 +2492,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_1_boot_stage_1_qs)
   );
 
-  //   F[allow_child_policy_1]: 3:3
+  //   F[allow_child_policy_1]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_1_allow_child_policy_1 (
@@ -2505,7 +2507,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_1_allow_child_policy_1_qs)
   );
 
-  //   F[exportable_policy_1]: 4:4
+  //   F[exportable_policy_1]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_1_exportable_policy_1 (
@@ -2520,7 +2522,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_1_exportable_policy_1_qs)
   );
 
-  //   F[retain_parent_policy_1]: 5:5
+  //   F[retain_parent_policy_1]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_1_retain_parent_policy_1 (
@@ -2535,7 +2537,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_1_retain_parent_policy_1_qs)
   );
 
-  //   F[allow_keygen_policy_1]: 6:6
+  //   F[allow_keygen_policy_1]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_1_allow_keygen_policy_1 (
@@ -2568,9 +2570,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_valid_2_qs)
   );
 
-  //   F[boot_stage_2]: 2:1
+  //   F[boot_stage_2]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_2_boot_stage_2 (
     .re     (metadata_high_2_re),
     .we     (1'b0),
@@ -2583,7 +2585,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_boot_stage_2_qs)
   );
 
-  //   F[allow_child_policy_2]: 3:3
+  //   F[allow_child_policy_2]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_2_allow_child_policy_2 (
@@ -2598,7 +2600,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_allow_child_policy_2_qs)
   );
 
-  //   F[exportable_policy_2]: 4:4
+  //   F[exportable_policy_2]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_2_exportable_policy_2 (
@@ -2613,7 +2615,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_exportable_policy_2_qs)
   );
 
-  //   F[retain_parent_policy_2]: 5:5
+  //   F[retain_parent_policy_2]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_2_retain_parent_policy_2 (
@@ -2628,7 +2630,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_retain_parent_policy_2_qs)
   );
 
-  //   F[allow_keygen_policy_2]: 6:6
+  //   F[allow_keygen_policy_2]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_2_allow_keygen_policy_2 (
@@ -2661,9 +2663,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_3_valid_3_qs)
   );
 
-  //   F[boot_stage_3]: 2:1
+  //   F[boot_stage_3]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_3_boot_stage_3 (
     .re     (metadata_high_3_re),
     .we     (1'b0),
@@ -2676,7 +2678,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_3_boot_stage_3_qs)
   );
 
-  //   F[allow_child_policy_3]: 3:3
+  //   F[allow_child_policy_3]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_3_allow_child_policy_3 (
@@ -2691,7 +2693,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_3_allow_child_policy_3_qs)
   );
 
-  //   F[exportable_policy_3]: 4:4
+  //   F[exportable_policy_3]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_3_exportable_policy_3 (
@@ -2706,7 +2708,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_3_exportable_policy_3_qs)
   );
 
-  //   F[retain_parent_policy_3]: 5:5
+  //   F[retain_parent_policy_3]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_3_retain_parent_policy_3 (
@@ -2721,7 +2723,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_3_retain_parent_policy_3_qs)
   );
 
-  //   F[allow_keygen_policy_3]: 6:6
+  //   F[allow_keygen_policy_3]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_3_allow_keygen_policy_3 (
@@ -2754,9 +2756,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_valid_4_qs)
   );
 
-  //   F[boot_stage_4]: 2:1
+  //   F[boot_stage_4]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_4_boot_stage_4 (
     .re     (metadata_high_4_re),
     .we     (1'b0),
@@ -2769,7 +2771,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_boot_stage_4_qs)
   );
 
-  //   F[allow_child_policy_4]: 3:3
+  //   F[allow_child_policy_4]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_4_allow_child_policy_4 (
@@ -2784,7 +2786,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_allow_child_policy_4_qs)
   );
 
-  //   F[exportable_policy_4]: 4:4
+  //   F[exportable_policy_4]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_4_exportable_policy_4 (
@@ -2799,7 +2801,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_exportable_policy_4_qs)
   );
 
-  //   F[retain_parent_policy_4]: 5:5
+  //   F[retain_parent_policy_4]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_4_retain_parent_policy_4 (
@@ -2814,7 +2816,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_retain_parent_policy_4_qs)
   );
 
-  //   F[allow_keygen_policy_4]: 6:6
+  //   F[allow_keygen_policy_4]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_4_allow_keygen_policy_4 (
@@ -2847,9 +2849,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_5_valid_5_qs)
   );
 
-  //   F[boot_stage_5]: 2:1
+  //   F[boot_stage_5]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_5_boot_stage_5 (
     .re     (metadata_high_5_re),
     .we     (1'b0),
@@ -2862,7 +2864,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_5_boot_stage_5_qs)
   );
 
-  //   F[allow_child_policy_5]: 3:3
+  //   F[allow_child_policy_5]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_5_allow_child_policy_5 (
@@ -2877,7 +2879,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_5_allow_child_policy_5_qs)
   );
 
-  //   F[exportable_policy_5]: 4:4
+  //   F[exportable_policy_5]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_5_exportable_policy_5 (
@@ -2892,7 +2894,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_5_exportable_policy_5_qs)
   );
 
-  //   F[retain_parent_policy_5]: 5:5
+  //   F[retain_parent_policy_5]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_5_retain_parent_policy_5 (
@@ -2907,7 +2909,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_5_retain_parent_policy_5_qs)
   );
 
-  //   F[allow_keygen_policy_5]: 6:6
+  //   F[allow_keygen_policy_5]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_5_allow_keygen_policy_5 (
@@ -2940,9 +2942,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_valid_6_qs)
   );
 
-  //   F[boot_stage_6]: 2:1
+  //   F[boot_stage_6]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_6_boot_stage_6 (
     .re     (metadata_high_6_re),
     .we     (1'b0),
@@ -2955,7 +2957,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_boot_stage_6_qs)
   );
 
-  //   F[allow_child_policy_6]: 3:3
+  //   F[allow_child_policy_6]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_6_allow_child_policy_6 (
@@ -2970,7 +2972,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_allow_child_policy_6_qs)
   );
 
-  //   F[exportable_policy_6]: 4:4
+  //   F[exportable_policy_6]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_6_exportable_policy_6 (
@@ -2985,7 +2987,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_exportable_policy_6_qs)
   );
 
-  //   F[retain_parent_policy_6]: 5:5
+  //   F[retain_parent_policy_6]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_6_retain_parent_policy_6 (
@@ -3000,7 +3002,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_retain_parent_policy_6_qs)
   );
 
-  //   F[allow_keygen_policy_6]: 6:6
+  //   F[allow_keygen_policy_6]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_6_allow_keygen_policy_6 (
@@ -3033,9 +3035,9 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_7_valid_7_qs)
   );
 
-  //   F[boot_stage_7]: 2:1
+  //   F[boot_stage_7]: 3:1
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_metadata_high_7_boot_stage_7 (
     .re     (metadata_high_7_re),
     .we     (1'b0),
@@ -3048,7 +3050,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_7_boot_stage_7_qs)
   );
 
-  //   F[allow_child_policy_7]: 3:3
+  //   F[allow_child_policy_7]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_7_allow_child_policy_7 (
@@ -3063,7 +3065,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_7_allow_child_policy_7_qs)
   );
 
-  //   F[exportable_policy_7]: 4:4
+  //   F[exportable_policy_7]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_7_exportable_policy_7 (
@@ -3078,7 +3080,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_7_exportable_policy_7_qs)
   );
 
-  //   F[retain_parent_policy_7]: 5:5
+  //   F[retain_parent_policy_7]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_7_retain_parent_policy_7 (
@@ -3093,7 +3095,7 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_7_retain_parent_policy_7_qs)
   );
 
-  //   F[allow_keygen_policy_7]: 6:6
+  //   F[allow_keygen_policy_7]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_metadata_high_7_allow_keygen_policy_7 (
@@ -3870,6 +3872,34 @@ module keymgr_dpe_reg_top (
     .qs     (debug_invalid_secondary_root_key_qs)
   );
 
+  //   F[invalid_field_entropy]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_debug_invalid_field_entropy (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_field_entropy_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_field_entropy.de),
+    .d      (hw2reg.debug.invalid_field_entropy.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_field_entropy_qs)
+  );
+
 
   // R[load_root_key_lock]: V(False)
   prim_subreg #(
@@ -4328,6 +4358,8 @@ module keymgr_dpe_reg_top (
   assign debug_inactive_lc_en_wd = reg_wdata[8];
 
   assign debug_invalid_secondary_root_key_wd = reg_wdata[9];
+
+  assign debug_invalid_field_entropy_wd = reg_wdata[10];
   assign load_root_key_lock_we = addr_hit[69] & reg_we & !reg_error;
 
   assign load_root_key_lock_wd = reg_wdata[0];
@@ -4661,74 +4693,74 @@ module keymgr_dpe_reg_top (
 
       addr_hit[58]: begin
         reg_rdata_next[0] = metadata_high_0_valid_0_qs;
-        reg_rdata_next[2:1] = metadata_high_0_boot_stage_0_qs;
-        reg_rdata_next[3] = metadata_high_0_allow_child_policy_0_qs;
-        reg_rdata_next[4] = metadata_high_0_exportable_policy_0_qs;
-        reg_rdata_next[5] = metadata_high_0_retain_parent_policy_0_qs;
-        reg_rdata_next[6] = metadata_high_0_allow_keygen_policy_0_qs;
+        reg_rdata_next[3:1] = metadata_high_0_boot_stage_0_qs;
+        reg_rdata_next[4] = metadata_high_0_allow_child_policy_0_qs;
+        reg_rdata_next[5] = metadata_high_0_exportable_policy_0_qs;
+        reg_rdata_next[6] = metadata_high_0_retain_parent_policy_0_qs;
+        reg_rdata_next[7] = metadata_high_0_allow_keygen_policy_0_qs;
       end
 
       addr_hit[59]: begin
         reg_rdata_next[0] = metadata_high_1_valid_1_qs;
-        reg_rdata_next[2:1] = metadata_high_1_boot_stage_1_qs;
-        reg_rdata_next[3] = metadata_high_1_allow_child_policy_1_qs;
-        reg_rdata_next[4] = metadata_high_1_exportable_policy_1_qs;
-        reg_rdata_next[5] = metadata_high_1_retain_parent_policy_1_qs;
-        reg_rdata_next[6] = metadata_high_1_allow_keygen_policy_1_qs;
+        reg_rdata_next[3:1] = metadata_high_1_boot_stage_1_qs;
+        reg_rdata_next[4] = metadata_high_1_allow_child_policy_1_qs;
+        reg_rdata_next[5] = metadata_high_1_exportable_policy_1_qs;
+        reg_rdata_next[6] = metadata_high_1_retain_parent_policy_1_qs;
+        reg_rdata_next[7] = metadata_high_1_allow_keygen_policy_1_qs;
       end
 
       addr_hit[60]: begin
         reg_rdata_next[0] = metadata_high_2_valid_2_qs;
-        reg_rdata_next[2:1] = metadata_high_2_boot_stage_2_qs;
-        reg_rdata_next[3] = metadata_high_2_allow_child_policy_2_qs;
-        reg_rdata_next[4] = metadata_high_2_exportable_policy_2_qs;
-        reg_rdata_next[5] = metadata_high_2_retain_parent_policy_2_qs;
-        reg_rdata_next[6] = metadata_high_2_allow_keygen_policy_2_qs;
+        reg_rdata_next[3:1] = metadata_high_2_boot_stage_2_qs;
+        reg_rdata_next[4] = metadata_high_2_allow_child_policy_2_qs;
+        reg_rdata_next[5] = metadata_high_2_exportable_policy_2_qs;
+        reg_rdata_next[6] = metadata_high_2_retain_parent_policy_2_qs;
+        reg_rdata_next[7] = metadata_high_2_allow_keygen_policy_2_qs;
       end
 
       addr_hit[61]: begin
         reg_rdata_next[0] = metadata_high_3_valid_3_qs;
-        reg_rdata_next[2:1] = metadata_high_3_boot_stage_3_qs;
-        reg_rdata_next[3] = metadata_high_3_allow_child_policy_3_qs;
-        reg_rdata_next[4] = metadata_high_3_exportable_policy_3_qs;
-        reg_rdata_next[5] = metadata_high_3_retain_parent_policy_3_qs;
-        reg_rdata_next[6] = metadata_high_3_allow_keygen_policy_3_qs;
+        reg_rdata_next[3:1] = metadata_high_3_boot_stage_3_qs;
+        reg_rdata_next[4] = metadata_high_3_allow_child_policy_3_qs;
+        reg_rdata_next[5] = metadata_high_3_exportable_policy_3_qs;
+        reg_rdata_next[6] = metadata_high_3_retain_parent_policy_3_qs;
+        reg_rdata_next[7] = metadata_high_3_allow_keygen_policy_3_qs;
       end
 
       addr_hit[62]: begin
         reg_rdata_next[0] = metadata_high_4_valid_4_qs;
-        reg_rdata_next[2:1] = metadata_high_4_boot_stage_4_qs;
-        reg_rdata_next[3] = metadata_high_4_allow_child_policy_4_qs;
-        reg_rdata_next[4] = metadata_high_4_exportable_policy_4_qs;
-        reg_rdata_next[5] = metadata_high_4_retain_parent_policy_4_qs;
-        reg_rdata_next[6] = metadata_high_4_allow_keygen_policy_4_qs;
+        reg_rdata_next[3:1] = metadata_high_4_boot_stage_4_qs;
+        reg_rdata_next[4] = metadata_high_4_allow_child_policy_4_qs;
+        reg_rdata_next[5] = metadata_high_4_exportable_policy_4_qs;
+        reg_rdata_next[6] = metadata_high_4_retain_parent_policy_4_qs;
+        reg_rdata_next[7] = metadata_high_4_allow_keygen_policy_4_qs;
       end
 
       addr_hit[63]: begin
         reg_rdata_next[0] = metadata_high_5_valid_5_qs;
-        reg_rdata_next[2:1] = metadata_high_5_boot_stage_5_qs;
-        reg_rdata_next[3] = metadata_high_5_allow_child_policy_5_qs;
-        reg_rdata_next[4] = metadata_high_5_exportable_policy_5_qs;
-        reg_rdata_next[5] = metadata_high_5_retain_parent_policy_5_qs;
-        reg_rdata_next[6] = metadata_high_5_allow_keygen_policy_5_qs;
+        reg_rdata_next[3:1] = metadata_high_5_boot_stage_5_qs;
+        reg_rdata_next[4] = metadata_high_5_allow_child_policy_5_qs;
+        reg_rdata_next[5] = metadata_high_5_exportable_policy_5_qs;
+        reg_rdata_next[6] = metadata_high_5_retain_parent_policy_5_qs;
+        reg_rdata_next[7] = metadata_high_5_allow_keygen_policy_5_qs;
       end
 
       addr_hit[64]: begin
         reg_rdata_next[0] = metadata_high_6_valid_6_qs;
-        reg_rdata_next[2:1] = metadata_high_6_boot_stage_6_qs;
-        reg_rdata_next[3] = metadata_high_6_allow_child_policy_6_qs;
-        reg_rdata_next[4] = metadata_high_6_exportable_policy_6_qs;
-        reg_rdata_next[5] = metadata_high_6_retain_parent_policy_6_qs;
-        reg_rdata_next[6] = metadata_high_6_allow_keygen_policy_6_qs;
+        reg_rdata_next[3:1] = metadata_high_6_boot_stage_6_qs;
+        reg_rdata_next[4] = metadata_high_6_allow_child_policy_6_qs;
+        reg_rdata_next[5] = metadata_high_6_exportable_policy_6_qs;
+        reg_rdata_next[6] = metadata_high_6_retain_parent_policy_6_qs;
+        reg_rdata_next[7] = metadata_high_6_allow_keygen_policy_6_qs;
       end
 
       addr_hit[65]: begin
         reg_rdata_next[0] = metadata_high_7_valid_7_qs;
-        reg_rdata_next[2:1] = metadata_high_7_boot_stage_7_qs;
-        reg_rdata_next[3] = metadata_high_7_allow_child_policy_7_qs;
-        reg_rdata_next[4] = metadata_high_7_exportable_policy_7_qs;
-        reg_rdata_next[5] = metadata_high_7_retain_parent_policy_7_qs;
-        reg_rdata_next[6] = metadata_high_7_allow_keygen_policy_7_qs;
+        reg_rdata_next[3:1] = metadata_high_7_boot_stage_7_qs;
+        reg_rdata_next[4] = metadata_high_7_allow_child_policy_7_qs;
+        reg_rdata_next[5] = metadata_high_7_exportable_policy_7_qs;
+        reg_rdata_next[6] = metadata_high_7_retain_parent_policy_7_qs;
+        reg_rdata_next[7] = metadata_high_7_allow_keygen_policy_7_qs;
       end
 
       addr_hit[66]: begin
@@ -4765,6 +4797,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = debug_invalid_root_key_qs;
         reg_rdata_next[8] = debug_inactive_lc_en_qs;
         reg_rdata_next[9] = debug_invalid_secondary_root_key_qs;
+        reg_rdata_next[10] = debug_invalid_field_entropy_qs;
       end
 
       addr_hit[69]: begin

@@ -157,26 +157,36 @@ package keymgr_dpe_pkg;
   // for every seed.
   // util/design/gen-lfsr-seed.py --width 256 --seed 7535190 --prefix ""
   typedef logic [KeyWidth-1:0] seed_t;
+  // seed argument: --seed 7535190
   parameter seed_t RndCnstRevisionSeedDefault =
     256'h69802e51_bacf8874_e650d692_e3d8a646_2d3f158f_0bf7961d_d346f880_b4d52170;
+  // seed argument: --seed 7535194
   parameter seed_t RndCnstSoftOutputSeedDefault =
     256'h23cbe85e_62e39992_4ab8d6a6_acbf12f0_0ca6f488_63eaa428_ffb11b26_c5282b14;
+  // seed argument: --seed 7535195
   parameter seed_t RndCnstHardOutputSeedDefault =
-    256'h877ef0b9_aceaefc5_693b1aa7_e43a7f3d_ee7d63b6_4e73e182_b49cbf87_2872f2c;
+    256'h0877ef0b_9aceaefc_5693b1aa_7e43a7f3_dee7d63b_64e73e18_2b49cbf8_72872f2c;
 
   // Target based deriviation seeds
   // These are used during the generation stages for sideload
+  // seed argument: --seed 7535196
   parameter seed_t RndCnstNoneSeedDefault =
     256'h6013ba4d_8d04fe4f_80cb0472_536c9679_08b82f1d_98a4e405_cb4680ec_3a4a8d7a;
+  // seed argument: --seed 7535197
   parameter seed_t RndCnstAesSeedDefault =
     256'he16a8fa9_5b613cd5_fb9ad23f_bd8347e1_64e45dac_5d08a41b_e83caa37_e03d9482;
+  // seed argument: --seed 7535198
   parameter seed_t RndCnstKmacSeedDefault =
     256'hc57f4c0b_b308e83f_3fc4bc63_d87dd67d_9071dc1c_e19484c8_3c94fb97_dd634369;
+  // seed argument: --seed 7535199
   parameter seed_t RndCnstOtbnSeedDefault =
     256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
   // seed argument: --seed 7535201
   parameter seed_t RndCnstHmacSeedDefault =
     256'h64812715_c6be53f9_e159a531_3e2e534c_af6357aa_68dbd6a0_852693ca_490f6810;
+  // seed argument: --seed 7535202
+  parameter seed_t RndCnstFieldEntropySeedDefault =
+    256'h19669f9d_6d107781_779533fd_58546820_b8339f55_694f5a36_ee23e819_00f8fc6b;
 
 
   //////////////////////////////////////
@@ -190,6 +200,11 @@ package keymgr_dpe_pkg;
     logic [KeyWidth-1:0]  share1;
     logic                 share1_valid;
   } keymgr_dpe_creator_root_key_t;
+
+  typedef struct packed {
+    logic [KeyWidth-1:0]  secret;
+    logic                 secret_valid;
+  } keymgr_dpe_field_entropy_t;
 
   typedef struct packed {
     logic [KeyWidth-1:0]  seed;
@@ -213,6 +228,11 @@ package keymgr_dpe_pkg;
     share0_valid : 1'b0,
     share1       : 256'h258cb510c30b142de90df495810d0a62bd679b7961061a9b7273b5215c010058,
     share1_valid : 1'b0
+  };
+
+  parameter keymgr_dpe_field_entropy_t KEYMGR_DPE_FIELD_ENTROPY_DEFAULT = '{
+    secret       : 256'h3b7828287b9f2de22908788d726f352f5b116ea077166140f5581458f7ac74b7,
+    secret_valid : 1'b1
   };
 
   parameter keymgr_dpe_creator_seed_t KEYMGR_DPE_CREATOR_SEED_DEFAULT = '{
@@ -259,12 +279,13 @@ package keymgr_dpe_pkg;
 
   // Enumeration for boot stage. In the BootStageRuntime stage, there is no limit on the number of
   // advance calls.
-  parameter int DpeBootStagesWidth = 2;
+  parameter int DpeBootStagesWidth = 3;
   typedef enum logic [DpeBootStagesWidth-1:0] {
-    BootStageCreator  = 0,
-    BootStageOwnerInt = 1,
-    BootStageOwner    = 2,
-    BootStageRuntime  = 3
+    BootStageCreator    = 0,
+    BootStageCreatorInt = 1,
+    BootStageOwnerInt   = 2,
+    BootStageOwner      = 3,
+    BootStageRuntime    = 4
   } keymgr_dpe_boot_stage_e;
 
   // An internal secret key slot

@@ -251,7 +251,7 @@ package keymgr_dpe_reg_pkg;
       logic        d;
     } allow_child_policy;
     struct packed {
-      logic [1:0]  d;
+      logic [2:0]  d;
     } boot_stage;
     struct packed {
       logic        d;
@@ -336,6 +336,10 @@ package keymgr_dpe_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } invalid_field_entropy;
+    struct packed {
+      logic        d;
+      logic        de;
     } invalid_secondary_root_key;
     struct packed {
       logic        d;
@@ -401,21 +405,21 @@ package keymgr_dpe_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [907:906]
-    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [905:905]
-    keymgr_dpe_hw2reg_start_reg_t start; // [904:903]
-    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [902:902]
-    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [901:901]
-    keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t max_key_ver_regwen; // [900:900]
-    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [899:636]
-    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [635:372]
-    keymgr_dpe_hw2reg_working_state_reg_t working_state; // [371:369]
-    keymgr_dpe_hw2reg_op_status_reg_t op_status; // [368:366]
-    keymgr_dpe_hw2reg_metadata_low_mreg_t [7:0] metadata_low; // [365:110]
-    keymgr_dpe_hw2reg_metadata_high_mreg_t [7:0] metadata_high; // [109:54]
-    keymgr_dpe_hw2reg_err_code_reg_t err_code; // [53:48]
-    keymgr_dpe_hw2reg_fault_status_reg_t fault_status; // [47:20]
-    keymgr_dpe_hw2reg_debug_reg_t debug; // [19:0]
+    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [917:916]
+    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [915:915]
+    keymgr_dpe_hw2reg_start_reg_t start; // [914:913]
+    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [912:912]
+    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [911:911]
+    keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t max_key_ver_regwen; // [910:910]
+    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [909:646]
+    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [645:382]
+    keymgr_dpe_hw2reg_working_state_reg_t working_state; // [381:379]
+    keymgr_dpe_hw2reg_op_status_reg_t op_status; // [378:376]
+    keymgr_dpe_hw2reg_metadata_low_mreg_t [7:0] metadata_low; // [375:120]
+    keymgr_dpe_hw2reg_metadata_high_mreg_t [7:0] metadata_high; // [119:56]
+    keymgr_dpe_hw2reg_err_code_reg_t err_code; // [55:50]
+    keymgr_dpe_hw2reg_fault_status_reg_t fault_status; // [49:22]
+    keymgr_dpe_hw2reg_debug_reg_t debug; // [21:0]
   } keymgr_dpe_hw2reg_t;
 
   // Register offsets
@@ -523,58 +527,58 @@ package keymgr_dpe_reg_pkg;
   parameter logic [31:0] KEYMGR_DPE_METADATA_LOW_6_MAX_KEY_VERSION_6_RESVAL = 32'h 0;
   parameter logic [31:0] KEYMGR_DPE_METADATA_LOW_7_RESVAL = 32'h 0;
   parameter logic [31:0] KEYMGR_DPE_METADATA_LOW_7_MAX_KEY_VERSION_7_RESVAL = 32'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_0_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_0_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_0_VALID_0_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_0_ALLOW_CHILD_POLICY_0_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_0_ALLOW_KEYGEN_POLICY_0_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_1_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_1_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_1_VALID_1_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_1_BOOT_STAGE_1_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_1_BOOT_STAGE_1_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_1_ALLOW_CHILD_POLICY_1_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_1_EXPORTABLE_POLICY_1_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_1_RETAIN_PARENT_POLICY_1_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_1_ALLOW_KEYGEN_POLICY_1_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_2_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_2_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_2_VALID_2_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_2_BOOT_STAGE_2_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_2_BOOT_STAGE_2_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_2_ALLOW_CHILD_POLICY_2_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_2_EXPORTABLE_POLICY_2_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_2_RETAIN_PARENT_POLICY_2_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_2_ALLOW_KEYGEN_POLICY_2_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_3_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_3_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_3_VALID_3_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_3_BOOT_STAGE_3_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_3_BOOT_STAGE_3_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_3_ALLOW_CHILD_POLICY_3_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_3_EXPORTABLE_POLICY_3_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_3_RETAIN_PARENT_POLICY_3_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_3_ALLOW_KEYGEN_POLICY_3_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_4_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_4_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_4_VALID_4_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_4_BOOT_STAGE_4_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_4_BOOT_STAGE_4_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_4_ALLOW_CHILD_POLICY_4_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_4_EXPORTABLE_POLICY_4_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_4_RETAIN_PARENT_POLICY_4_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_4_ALLOW_KEYGEN_POLICY_4_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_5_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_5_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_5_VALID_5_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_5_BOOT_STAGE_5_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_5_BOOT_STAGE_5_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_5_ALLOW_CHILD_POLICY_5_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_5_EXPORTABLE_POLICY_5_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_5_RETAIN_PARENT_POLICY_5_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_5_ALLOW_KEYGEN_POLICY_5_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_6_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_6_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_6_VALID_6_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_6_BOOT_STAGE_6_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_6_BOOT_STAGE_6_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_6_ALLOW_CHILD_POLICY_6_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_6_EXPORTABLE_POLICY_6_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_6_RETAIN_PARENT_POLICY_6_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_6_ALLOW_KEYGEN_POLICY_6_RESVAL = 1'h 0;
-  parameter logic [6:0] KEYMGR_DPE_METADATA_HIGH_7_RESVAL = 7'h 0;
+  parameter logic [7:0] KEYMGR_DPE_METADATA_HIGH_7_RESVAL = 8'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_7_VALID_7_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_METADATA_HIGH_7_BOOT_STAGE_7_RESVAL = 2'h 0;
+  parameter logic [2:0] KEYMGR_DPE_METADATA_HIGH_7_BOOT_STAGE_7_RESVAL = 3'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_7_ALLOW_CHILD_POLICY_7_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_7_EXPORTABLE_POLICY_7_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_METADATA_HIGH_7_RETAIN_PARENT_POLICY_7_RESVAL = 1'h 0;

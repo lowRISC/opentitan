@@ -83,9 +83,10 @@ typedef struct keymgr_dpe_policy {
  */
 typedef enum keymgr_dpe_boot_stage {
   kKeymgrDPEBootStageCreator = 0,
-  kKeymgrDPEBootStageOwnerInt = 1,
-  kKeymgrDPEBootStageOwner = 2,
-  kKeymgrDPEBootStageRuntime = 3,
+  kKeymgrDPEBootStageCreatorInt = 1,
+  kKeymgrDPEBootStageOwnerInt = 2,
+  kKeymgrDPEBootStageOwner = 3,
+  kKeymgrDPEBootStageRuntime = 4,
 } keymgr_dpe_boot_stage_t;
 
 /**

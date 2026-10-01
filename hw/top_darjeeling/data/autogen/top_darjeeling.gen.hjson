@@ -5878,7 +5878,7 @@
         }
         {
           name: NumBootStages
-          desc: Number of available boot stage
+          desc: Number of available boot stages. Supported values are 2 and 4.
           type: int
           default: "2"
           local: "true"
@@ -6065,6 +6065,16 @@
           inst_name: keymgr_dpe
           default: ""
           top_signame: keymgr_dpe_device_id
+          index: -1
+        }
+        {
+          name: field_entropy
+          struct: keymgr_dpe_field_entropy
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr_dpe
           index: -1
         }
         {
@@ -26077,6 +26087,16 @@
         inst_name: keymgr_dpe
         default: ""
         top_signame: keymgr_dpe_device_id
+        index: -1
+      }
+      {
+        name: field_entropy
+        struct: keymgr_dpe_field_entropy
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr_dpe
         index: -1
       }
       {
