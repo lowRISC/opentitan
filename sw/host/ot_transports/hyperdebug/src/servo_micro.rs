@@ -23,6 +23,12 @@ impl ServoMicroFlavor {
 }
 
 impl Flavor for ServoMicroFlavor {
+    type FlavorData = ();
+
+    fn get_default_flavor_data() -> Self::FlavorData {
+        ()
+    }
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         if pinname == "IO_EXP_16" {
             return Ok(Rc::new(ServoMicroResetPin::open(inner)?));
