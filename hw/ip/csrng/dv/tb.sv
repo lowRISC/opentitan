@@ -42,6 +42,7 @@ module tb;
   wire   intr_entropy_req;
   wire   intr_hw_inst_exc;
   wire   intr_cs_fatal_err;
+  wire   intr_cs_int_state_stopped;
   wire[NUM_MAX_INTERRUPTS-1:0]          interrupts;
   wire[MuBi8Width - 1:0]                otp_en_cs_sw_app_read;
   wire[MuBi4Width - 1:0]                lc_hw_debug_en;
@@ -96,7 +97,8 @@ module tb;
     .intr_cs_cmd_req_done_o     (intr_cmd_req_done),
     .intr_cs_entropy_req_o      (intr_entropy_req),
     .intr_cs_hw_inst_exc_o      (intr_hw_inst_exc),
-    .intr_cs_fatal_err_o        (intr_cs_fatal_err)
+    .intr_cs_fatal_err_o        (intr_cs_fatal_err),
+    .intr_cs_int_state_stopped_o(intr_cs_int_state_stopped)
   );
 
   for (genvar i = 0; i < NumHwApps; i++) begin : gen_csrng_if
@@ -108,10 +110,11 @@ module tb;
     end
   end
 
-  assign interrupts[CmdReqDone] = intr_cmd_req_done;
-  assign interrupts[EntropyReq] = intr_entropy_req;
-  assign interrupts[HwInstExc]  = intr_hw_inst_exc;
-  assign interrupts[FifoErr]    = intr_cs_fatal_err;
+  assign interrupts[CmdReqDone]      = intr_cmd_req_done;
+  assign interrupts[EntropyReq]      = intr_entropy_req;
+  assign interrupts[HwInstExc]       = intr_hw_inst_exc;
+  assign interrupts[FifoErr]         = intr_cs_fatal_err;
+  assign interrupts[IntStateStopped] = intr_cs_int_state_stopped;
 
   initial begin
     uvm_config_db#(int unsigned)::set(null, "uvm_test_top", "num_hw_apps", dut.NumHwApps);

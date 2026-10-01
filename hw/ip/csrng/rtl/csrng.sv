@@ -49,7 +49,8 @@ module csrng
   output logic intr_cs_cmd_req_done_o,
   output logic intr_cs_entropy_req_o,
   output logic intr_cs_hw_inst_exc_o,
-  output logic intr_cs_fatal_err_o
+  output logic intr_cs_fatal_err_o,
+  output logic intr_cs_int_state_stopped_o
 );
 
   csrng_reg2hw_t reg2hw;
@@ -106,7 +107,8 @@ module csrng
     .intr_cs_cmd_req_done_o,
     .intr_cs_entropy_req_o,
     .intr_cs_hw_inst_exc_o,
-    .intr_cs_fatal_err_o
+    .intr_cs_fatal_err_o,
+    .intr_cs_int_state_stopped_o
   );
 
 
@@ -156,9 +158,18 @@ module csrng
   `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
   `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
+  `ASSERT_KNOWN(IntrCsIntStateStoppedKnownO_A, intr_cs_int_state_stopped_o)
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
     u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgAdataPtrAlertCheck_A,
+    u_csrng_core.u_csrng_ctr_drbg.u_prim_count_int_state_adata_ptr,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(StateDbRegRdPtrAlertCheck_A,
+    u_csrng_core.u_csrng_state_db.u_prim_count_reg_rd_ptr,
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts

@@ -43,7 +43,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
-    `uvm_info(`gfn, $sformatf("Testing [enable/sw_app_enable/read_int_state]_field_alert"),
+    `uvm_info(`gfn, $sformatf("Testing [enable/sw_app_enable/int_state_enable]_field_alert"),
         UVM_MEDIUM)
 
     // Initiate with invalid mubi data.
@@ -72,7 +72,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Write valid values
     ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
     ral.ctrl.sw_app_enable.set(prim_mubi_pkg::MuBi4True);
-    ral.ctrl.read_int_state.set(prim_mubi_pkg::MuBi4True);
+    ral.ctrl.int_state_enable.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
 
     // Clear recov_alert_sts register.
