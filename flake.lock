@@ -36,6 +36,23 @@
         "type": "github"
       }
     },
+    "ihp-pdk": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790774059,
+        "narHash": "sha256-fAk0ruleboIPfA7iZmC4EBw7ruLVU2frHZU4G8c+xOU=",
+        "owner": "IHP-GmbH",
+        "repo": "IHP-Open-PDK",
+        "rev": "c702f87d2a6de6256ea38a0f281355e302981ba9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "IHP-GmbH",
+        "ref": "dev",
+        "repo": "IHP-Open-PDK",
+        "type": "github"
+      }
+    },
     "lowrisc-nix": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -136,6 +153,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "ihp-pdk": "ihp-pdk",
         "lowrisc-nix": "lowrisc-nix",
         "nixpkgs": "nixpkgs_2",
         "pyproject-build-systems": "pyproject-build-systems",

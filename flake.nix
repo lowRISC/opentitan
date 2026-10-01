@@ -43,6 +43,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    ihp-pdk = {
+      url = "github:IHP-GmbH/IHP-Open-PDK/dev";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -58,6 +62,7 @@
     pyproject-build-systems,
     lowrisc-nix,
     yosys,
+    ihp-pdk,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -160,11 +165,12 @@
         extraPkgs = edaPkgs;
       });
 
-      # elab: the eda shell extended with synthesis and implementation tools
-      # (`nix develop .#elab`). IHP PDK is added in the next commit.
       elab = lowrisc-nix.lib.mkEdaShell (edaShellArgs // {
         name = "opentitan-elab";
         extraPkgs = edaPkgs ++ [yosys.packages.${system}.yosys];
+        profile = edaShellArgs.profile + ''
+          export IHP_PDK_ROOT=${ihp-pdk}/ihp-sg13cmos5l
+        '';
       });
     in {
       packages.pythonEnv = pythonEnv;
