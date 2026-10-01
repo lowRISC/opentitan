@@ -730,7 +730,7 @@ static rom_error_t rom_boot(const manifest_t *manifest,
                                     kScKeymgrDPESecMmioMaxVerSet +
                                     kScKeymgrDPESecMmioSlotPolicy));
       // The driver verifies the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
-      // keys with boot stage set to BootStageOwnerInt (1).
+      // keys with boot stage set to BootStageCreatorInt (1).
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
           adv_sealing_data, adv_attestation_data));
 

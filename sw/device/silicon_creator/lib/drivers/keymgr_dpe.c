@@ -53,7 +53,8 @@ static inline uint32_t sc_keymgr_dpe_base(void) {
  *
  * @param exl_sw_binding Should additional hw bindings be used during the
  * next advance call. Only impact DPE context generation if either the
- * creator root key / owner int key / owner key is being generated.
+ * creator root key / creator int key / owner int key / owner key is being
+ * generated.
  * @param ops The type of operation to execute next.
  * @param sel_src_slot Source slot when either advancing a DPE context inside
  * the slot or if an HW / SW key is being generated.
@@ -566,24 +567,34 @@ rom_error_t sc_keymgr_dpe_advance_creator(
                         adv_data_attestation);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  // Verify both keys hold the expected metadata and boot stage OwnerInt (1).
-  // Note: The expected boot stages assume a keymgr_dpe with three boot stages
-  // (`NumBootStages == 3`).
+  // Verify both keys hold the expected metadata and boot stage CreatorInt (1).
+  // Note: The expected boot stages assume a keymgr_dpe with four boot stages
+  // (`NumBootStages == 4`).
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
       adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-      kScKeymgrDPEBootStageOwnerInt, &adv_data_sealing.policy));
+      kScKeymgrDPEBootStageCreatorInt, &adv_data_sealing.policy));
   return sc_keymgr_dpe_check_metadata(
       adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
-      kScKeymgrDPEBootStageOwnerInt, &adv_data_attestation.policy);
+      kScKeymgrDPEBootStageCreatorInt, &adv_data_attestation.policy);
 }
 
 /**
  * Sets the binding registers / key version registers and advances the
- * creator keys into the owner int keys (sealing and attestation).
+ * sealing and attestation keys into the next intermediate keys.
+ *
+ * Shared by `sc_keymgr_dpe_advance_creator_int()` and
+ * `sc_keymgr_dpe_advance_owner_int()`, which only differ in the boot stage
+ * the advanced keys have to report.
+ *
+ * @param adv_data_sealing All required data for the sealing key.
+ * @param adv_data_attestation All required data for the attestation key.
+ * @param expected_boot_stage Boot stage both slots must hold after the advance.
+ * @return The result of the advance call.
  */
-rom_error_t sc_keymgr_dpe_advance_owner_int(
+static rom_error_t sc_keymgr_dpe_advance_int_keys(
     sc_keymgr_dpe_advance_data_t adv_data_sealing,
-    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+    sc_keymgr_dpe_advance_data_t adv_data_attestation,
+    sc_keymgr_dpe_boot_stage_t expected_boot_stage) {
   // Sanity checks
   if ((adv_data_sealing.sel_src_slot != adv_data_sealing.sel_dst_slot) ||
       (adv_data_attestation.sel_src_slot !=
@@ -603,13 +614,37 @@ rom_error_t sc_keymgr_dpe_advance_owner_int(
                         adv_data_attestation);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  // Verify both keys hold the expected metadata and boot stage Owner (2).
+  // Verify keys hold the expected metadata and boot stage.
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
       adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-      kScKeymgrDPEBootStageOwner, &adv_data_sealing.policy));
+      expected_boot_stage, &adv_data_sealing.policy));
   return sc_keymgr_dpe_check_metadata(
       adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
-      kScKeymgrDPEBootStageOwner, &adv_data_attestation.policy);
+      expected_boot_stage, &adv_data_attestation.policy);
+}
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator keys into the creator int keys (sealing and attestation).
+ */
+rom_error_t sc_keymgr_dpe_advance_creator_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+  // The creator int keys report boot stage OwnerInt (2).
+  return sc_keymgr_dpe_advance_int_keys(adv_data_sealing, adv_data_attestation,
+                                        kScKeymgrDPEBootStageOwnerInt);
+}
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator int keys into the owner int keys (sealing and attestation).
+ */
+rom_error_t sc_keymgr_dpe_advance_owner_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+  // The owner int keys report boot stage Owner (3).
+  return sc_keymgr_dpe_advance_int_keys(adv_data_sealing, adv_data_attestation,
+                                        kScKeymgrDPEBootStageOwner);
 }
 
 /**
@@ -636,7 +671,7 @@ rom_error_t sc_keymgr_dpe_advance_owner(
                         adv_data_attestation);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  // Verify both keys hold the expected metadata and boot stage Runtime (3).
+  // Verify both keys hold the expected metadata and boot stage Runtime (4).
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
       adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
       kScKeymgrDPEBootStageRuntime, &adv_data_sealing.policy));

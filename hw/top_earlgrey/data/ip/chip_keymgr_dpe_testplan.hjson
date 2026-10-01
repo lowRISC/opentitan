@@ -17,13 +17,17 @@
             - Verify the correctness of the generated `CreatorRootKey`.
             - Generate keys for OTBN / AES / KMAC / HMAC / SW and verify each of the generated
               keys.
-            - Derive the `OwnerIntKey` from `CreatorRootKey`.
-            - In the SV sequence, backdoor the creator seed.
+            - Derive the `CreatorIntKey` from `CreatorRootKey`.
+            - In the SV sequence, backdoor read the field entropy.
+            - Verify the correctness of the generated `CreatorIntKey`.
+            - Generate keys for OTBN / AES / KMAC / HMAC / SW and verify each of the generated keys.
+            - Derive the `OwnerIntKey` from `CreatorIntKey`.
+            - In the SV sequence, backdoor read the creator seed.
             - Verify the correctness of the generated `OwnerIntKey`.
             - Generate keys for OTBN / AES / KMAC / HMAC / SW and verify each of the generated
               keys.
             - Derive the `OwnerKey` from `OwnerIntKey`.
-            - In the SV sequence, backdoor the owner seed.
+            - In the SV sequence, backdoor read the owner seed.
             - Verify the correctness of the generated `OwnerKey`.
             - Generate keys for OTBN / AES / KMAC / HMAC / SW and verify each of the generated
               keys.

@@ -18,10 +18,12 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
   input [31:0] key_version_i,
   input [KeyWidth-1:0] creator_seed_i,
   input [KeyWidth-1:0] owner_seed_i,
+  input [KeyWidth-1:0] field_entropy_i,
   input [DeviceIdWidth-1:0] devid_i,
   input lc_ctrl_pkg::lc_keymgr_div_t health_state_i,
   output logic creator_seed_vld_o,
   output logic owner_seed_vld_o,
+  output logic field_entropy_vld_o,
   output logic devid_vld_o,
   output logic health_state_vld_o,
   output logic key_version_vld_o,
@@ -45,6 +47,7 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 
   // general data check
   logic [MaxWidth-1:0] creator_seed_padded, owner_seed_padded, devid_padded, health_state_padded;
+  logic [MaxWidth-1:0] field_entropy_padded;
 
   prim_msb_extend #(
     .InWidth(KeyWidth),
@@ -60,6 +63,14 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
   ) u_owner_seed (
     .in_i(owner_seed_i),
     .out_o(owner_seed_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(KeyWidth),
+    .OutWidth(MaxWidth)
+  ) u_field_entropy (
+    .in_i(field_entropy_i),
+    .out_o(field_entropy_padded)
   );
 
   prim_msb_extend #(
@@ -80,6 +91,7 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 
   assign creator_seed_vld_o = valid_chk(creator_seed_padded);
   assign owner_seed_vld_o = valid_chk(owner_seed_padded);
+  assign field_entropy_vld_o = valid_chk(field_entropy_padded);
   assign devid_vld_o = valid_chk(devid_padded);
   assign health_state_vld_o = valid_chk(health_state_padded);
 

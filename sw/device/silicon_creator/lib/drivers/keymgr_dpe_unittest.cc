@@ -654,13 +654,13 @@ TEST_F(KeymgrDpeTest, AdvanceCreator) {
   ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation);
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  // Both keys have to reach the OwnerInt boot stage.
+  // Both keys have to reach the CreatorInt boot stage.
   ExpectGetMetadata(adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
+                    /*valid=*/true, kScKeymgrDPEBootStageCreatorInt,
                     adv_data_sealing.policy);
   ExpectGetMetadata(adv_data_attestation.sel_dst_slot,
                     adv_data_attestation.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
+                    /*valid=*/true, kScKeymgrDPEBootStageCreatorInt,
                     adv_data_attestation.policy);
 
   EXPECT_EQ(
@@ -695,12 +695,13 @@ TEST_F(KeymgrDpeTest, AdvanceCreatorBadMetadata) {
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
   ExpectGetMetadata(adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
+                    /*valid=*/true, kScKeymgrDPEBootStageCreatorInt,
                     adv_data_sealing.policy);
   // The attestation key reports an unexpected boot stage.
-  ExpectGetMetadata(
-      adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
-      /*valid=*/true, kScKeymgrDPEBootStageOwner, adv_data_attestation.policy);
+  ExpectGetMetadata(adv_data_attestation.sel_dst_slot,
+                    adv_data_attestation.version,
+                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
+                    adv_data_attestation.policy);
 
   EXPECT_EQ(
       sc_keymgr_dpe_advance_creator(adv_data_sealing, adv_data_attestation),
@@ -726,108 +727,119 @@ TEST_F(KeymgrDpeTest, AdvanceCreatorBadPolicy) {
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrDpeTest, AdvanceOwnerInt) {
-  sc_keymgr_dpe_advance_data_t adv_data_sealing = {
+struct AdvanceIntKeysTestCase {
+  /**
+   * Driver function under test.
+   */
+  rom_error_t (*advance)(sc_keymgr_dpe_advance_data_t,
+                         sc_keymgr_dpe_advance_data_t);
+  /**
+   * Boot stage both slots have to report after the advance.
+   */
+  sc_keymgr_dpe_boot_stage_t boot_stage;
+  /**
+   * Boot stage reported by a slot that was not advanced.
+   */
+  sc_keymgr_dpe_boot_stage_t prev_boot_stage;
+};
+
+class AdvanceIntKeysTest
+    : public KeymgrDpeTest,
+      public testing::WithParamInterface<AdvanceIntKeysTestCase> {
+ protected:
+  sc_keymgr_dpe_advance_data_t adv_data_sealing_ = {
       .binding_value = &binding_value_sealing_,
       .policy = policy_erase_parent_,
       .sel_src_slot = 1,
       .sel_dst_slot = 1,
       .version = 0xA5A5A5A5,
   };
-  sc_keymgr_dpe_advance_data_t adv_data_attestation = {
+  sc_keymgr_dpe_advance_data_t adv_data_attestation_ = {
       .binding_value = &binding_value_attestation_,
       .policy = policy_erase_parent_,
       .sel_src_slot = 3,
       .sel_dst_slot = 3,
       .version = 0xA5A5A5A5,
   };
+};
 
+TEST_P(AdvanceIntKeysTest, Advance) {
   ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
                     /*err_code=*/0u);
-  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_sealing);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_sealing_);
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation_);
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  // Both keys have to reach the Owner boot stage.
-  ExpectGetMetadata(adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwner,
-                    adv_data_sealing.policy);
+  // Both keys have to reach the next boot stage.
+  ExpectGetMetadata(adv_data_sealing_.sel_dst_slot, adv_data_sealing_.version,
+                    /*valid=*/true, GetParam().boot_stage,
+                    adv_data_sealing_.policy);
   ExpectGetMetadata(
-      adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
-      /*valid=*/true, kScKeymgrDPEBootStageOwner, adv_data_attestation.policy);
+      adv_data_attestation_.sel_dst_slot, adv_data_attestation_.version,
+      /*valid=*/true, GetParam().boot_stage, adv_data_attestation_.policy);
 
-  EXPECT_EQ(
-      sc_keymgr_dpe_advance_owner_int(adv_data_sealing, adv_data_attestation),
-      kErrorOk);
+  EXPECT_EQ(GetParam().advance(adv_data_sealing_, adv_data_attestation_),
+            kErrorOk);
 }
 
-TEST_F(KeymgrDpeTest, AdvanceOwnerIntBadMetadata) {
-  sc_keymgr_dpe_advance_data_t adv_data_sealing = {
-      .binding_value = &binding_value_sealing_,
-      .policy = policy_erase_parent_,
-      .sel_src_slot = 1,
-      .sel_dst_slot = 1,
-      .version = 0xA5A5A5A5,
-  };
-  sc_keymgr_dpe_advance_data_t adv_data_attestation = {
-      .binding_value = &binding_value_attestation_,
-      .policy = policy_erase_parent_,
-      .sel_src_slot = 3,
-      .sel_dst_slot = 3,
-      .version = 0xA5A5A5A5,
-  };
-
+TEST_P(AdvanceIntKeysTest, BadMetadata) {
   ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
                     /*err_code=*/0u);
-  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_sealing);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_sealing_);
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation);
+  ExpectAdvanceWrapper(/*sw_binding_only=*/false, adv_data_attestation_);
   ExpectWaitUntilDone(/*busy_cycles=*/1,
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  ExpectGetMetadata(adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwner,
-                    adv_data_sealing.policy);
+  ExpectGetMetadata(adv_data_sealing_.sel_dst_slot, adv_data_sealing_.version,
+                    /*valid=*/true, GetParam().boot_stage,
+                    adv_data_sealing_.policy);
   // The attestation key reports an unexpected boot stage.
-  ExpectGetMetadata(adv_data_attestation.sel_dst_slot,
-                    adv_data_attestation.version,
-                    /*valid=*/true, kScKeymgrDPEBootStageOwnerInt,
-                    adv_data_attestation.policy);
+  ExpectGetMetadata(
+      adv_data_attestation_.sel_dst_slot, adv_data_attestation_.version,
+      /*valid=*/true, GetParam().prev_boot_stage, adv_data_attestation_.policy);
 
-  EXPECT_EQ(
-      sc_keymgr_dpe_advance_owner_int(adv_data_sealing, adv_data_attestation),
-      kErrorKeymgrInternal);
+  EXPECT_EQ(GetParam().advance(adv_data_sealing_, adv_data_attestation_),
+            kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrDpeTest, AdvanceOwnerIntBadArguments) {
-  sc_keymgr_dpe_advance_data_t adv_data = {
-      .binding_value = &binding_value_sealing_,
-      .policy = policy_erase_parent_,
-      .sel_src_slot = 1,
-      .sel_dst_slot = 1,
-      .version = 0xA5A5A5A5,
-  };
-
+TEST_P(AdvanceIntKeysTest, BadArguments) {
   // The source and destination slots have to be equal.
-  sc_keymgr_dpe_advance_data_t adv_data_bad_slot = adv_data;
+  sc_keymgr_dpe_advance_data_t adv_data_bad_slot = adv_data_sealing_;
   adv_data_bad_slot.sel_dst_slot = 2;
-  EXPECT_EQ(sc_keymgr_dpe_advance_owner_int(adv_data_bad_slot, adv_data),
+  EXPECT_EQ(GetParam().advance(adv_data_bad_slot, adv_data_sealing_),
             kErrorKeymgrInternal);
-  EXPECT_EQ(sc_keymgr_dpe_advance_owner_int(adv_data, adv_data_bad_slot),
+  EXPECT_EQ(GetParam().advance(adv_data_sealing_, adv_data_bad_slot),
             kErrorKeymgrInternal);
 
   // The retain parent policy is rejected.
-  sc_keymgr_dpe_advance_data_t adv_data_bad_policy = adv_data;
+  sc_keymgr_dpe_advance_data_t adv_data_bad_policy = adv_data_sealing_;
   adv_data_bad_policy.policy.parent = kScKeymgrDPESlotPolRetainParent;
-  EXPECT_EQ(sc_keymgr_dpe_advance_owner_int(adv_data_bad_policy, adv_data),
+  EXPECT_EQ(GetParam().advance(adv_data_bad_policy, adv_data_sealing_),
             kErrorKeymgrInternal);
-  EXPECT_EQ(sc_keymgr_dpe_advance_owner_int(adv_data, adv_data_bad_policy),
+  EXPECT_EQ(GetParam().advance(adv_data_sealing_, adv_data_bad_policy),
             kErrorKeymgrInternal);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    AllIntKeys, AdvanceIntKeysTest,
+    testing::Values(
+        // CreatorRootKey > CreatorIntKey
+        AdvanceIntKeysTestCase{
+            .advance = sc_keymgr_dpe_advance_creator_int,
+            .boot_stage = kScKeymgrDPEBootStageOwnerInt,
+            .prev_boot_stage = kScKeymgrDPEBootStageCreatorInt,
+        },
+        // CreatorIntKey > OwnerIntKey
+        AdvanceIntKeysTestCase{
+            .advance = sc_keymgr_dpe_advance_owner_int,
+            .boot_stage = kScKeymgrDPEBootStageOwner,
+            .prev_boot_stage = kScKeymgrDPEBootStageOwnerInt,
+        }));
 
 TEST_F(KeymgrDpeTest, AdvanceOwner) {
   sc_keymgr_dpe_advance_data_t adv_data_sealing = {
