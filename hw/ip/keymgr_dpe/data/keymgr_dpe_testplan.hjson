@@ -26,6 +26,8 @@
               and advancing to it from slot x (x = y is also allowed).
             - Use fixed values for max_key_version = 0 and policy.allow_child = 1, during advance calls.
             - Use default/fixed values for HW/SW inputs. Use key_version = 0 during key generation.
+            - During some erase and disable operations, hold the decoy data of the KMAC interface at
+              all zeros or all ones.
 
             Checks:
             - Check STATUS reg for each operation.
@@ -34,6 +36,7 @@
             - Check that valid bit is set to 1 in the destination slot.
             - Check that policy field is correctly updated from POLICY_SLOT CSR.
             - Check KMAC key, KMAC data and output SW data for correctness.
+            - Check that constant decoy data does not raise the `KMAC_OUT` fault.
             '''
       stage: V1
       tests: ["keymgr_dpe_smoke"]
