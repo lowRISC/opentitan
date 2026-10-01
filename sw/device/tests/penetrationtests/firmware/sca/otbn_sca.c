@@ -5,6 +5,8 @@
 #include "sw/device/tests/penetrationtests/firmware/sca/otbn_sca.h"
 
 #include "ecc256_keygen_sca.h"
+#include "hkdf_otbn_sca.h"
+#include "sha2_otbn_sca.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -797,6 +799,18 @@ status_t handle_otbn_sca(ujson_t *uj) {
       return handle_otbn_sca_key_sideload_fvsr(uj);
     case kOtbnScaSubcommandRsa512Decrypt:
       return handle_otbn_sca_rsa512_decrypt(uj);
+    case kOtbnScaSubcommandSha2Single:
+      return handle_otbn_sca_sha2_single(uj);
+    case kOtbnScaSubcommandSha2BatchFvsr:
+      return handle_otbn_sca_sha2_batch_fvsr(uj);
+    case kOtbnScaSubcommandSha2BatchRandom:
+      return handle_otbn_sca_sha2_batch_random(uj);
+    case kOtbnScaSubcommandHkdfSingle:
+      return handle_otbn_sca_hkdf_single(uj);
+    case kOtbnScaSubcommandHkdfBatchFvsr:
+      return handle_otbn_sca_hkdf_batch_fvsr(uj);
+    case kOtbnScaSubcommandHkdfBatchRandom:
+      return handle_otbn_sca_hkdf_batch_random(uj);
     default:
       LOG_ERROR("Unrecognized OTBN SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();

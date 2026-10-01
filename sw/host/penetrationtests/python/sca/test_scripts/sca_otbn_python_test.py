@@ -7,6 +7,8 @@ from sw.host.penetrationtests.python.sca.communication.sca_otbn_commands import 
 from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import utils
+import hashlib
+import hmac
 import json
 import random
 import unittest
@@ -352,6 +354,103 @@ class OtbnScaTest(unittest.TestCase):
             utils.compare_json_data(
                 actual_result_json, expected_result_json, ignored_keys_set
             )
+
+    def test_sha2_otbn(self):
+        test_msg = list(b"abc" + b"\x00" * 61)
+        msg_len = 3
+        modes = [
+            (0, hashlib.sha256, 32),
+            (1, hashlib.sha384, 48),
+            (2, hashlib.sha512, 64),
+        ]
+        for mode, hash_fn, digest_len in modes:
+            expected_digest = list(hash_fn(bytes(test_msg[:msg_len])).digest())
+            for en_masks in [False, True]:
+                resp = sca_otbn_functions.sha2_single(
+                    target, test_msg, msg_len, mode=mode, en_masks=en_masks
+                )
+                resp_json = json.loads(resp)
+                self.assertEqual(resp_json["digest"][:digest_len], expected_digest)
+
+        resp_fvsr = sca_otbn_functions.sha2_batch_fvsr(
+            target, 1, 4, test_msg, msg_len, mode=0, en_masks=True
+        )
+        self.assertIn("digest", json.loads(resp_fvsr))
+
+        resp_rand = sca_otbn_functions.sha2_batch_random(
+            target, 1, 4, msg_len, mode=0, en_masks=True
+        )
+        self.assertIn("digest", json.loads(resp_rand))
+
+    def test_hkdf_otbn(self):
+        ikm_bytes = bytes([0x0B] * 22)
+        salt_bytes = bytes(range(0x00, 0x0D))
+        info_bytes = bytes(range(0xF0, 0xFA))
+
+        ikm = list(ikm_bytes) + [0] * (64 - len(ikm_bytes))
+        salt = list(salt_bytes) + [0] * (64 - len(salt_bytes))
+        info = list(info_bytes) + [0] * (64 - len(info_bytes))
+
+        modes = [
+            (0, hashlib.sha256, 32),
+            (1, hashlib.sha384, 48),
+            (2, hashlib.sha512, 64),
+        ]
+        for mode, hash_fn, digest_len in modes:
+            expected_prk = hmac.new(salt_bytes, ikm_bytes, hash_fn).digest()
+            expected_okm = hmac.new(
+                expected_prk, info_bytes + b"\x01", hash_fn
+            ).digest()
+            for en_masks in [False, True]:
+                resp = sca_otbn_functions.hkdf_single(
+                    target,
+                    ikm,
+                    len(ikm_bytes),
+                    salt,
+                    len(salt_bytes),
+                    info,
+                    len(info_bytes),
+                    okm_blocks=1,
+                    mode=mode,
+                    en_masks=en_masks,
+                )
+                resp_json = json.loads(resp)
+                self.assertEqual(
+                    resp_json["prk"][:digest_len], list(expected_prk)
+                )
+                self.assertEqual(
+                    resp_json["okm"][:digest_len], list(expected_okm)
+                )
+
+        resp_fvsr = sca_otbn_functions.hkdf_batch_fvsr(
+            target,
+            1,
+            4,
+            ikm,
+            len(ikm_bytes),
+            salt,
+            len(salt_bytes),
+            info,
+            len(info_bytes),
+            okm_blocks=1,
+            mode=0,
+            en_masks=True,
+        )
+        self.assertIn("okm", json.loads(resp_fvsr))
+
+        resp_rand = sca_otbn_functions.hkdf_batch_random(
+            target,
+            1,
+            4,
+            len(ikm_bytes),
+            len(salt_bytes),
+            info,
+            len(info_bytes),
+            okm_blocks=1,
+            mode=0,
+            en_masks=True,
+        )
+        self.assertIn("okm", json.loads(resp_rand))
 
 
 if __name__ == "__main__":
