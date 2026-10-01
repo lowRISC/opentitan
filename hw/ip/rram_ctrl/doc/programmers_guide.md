@@ -18,7 +18,7 @@ Software must write `1` to [`INIT.VAL`](registers.md#init) to start the controll
 During this initialization, the address and data scrambling keys are requested from OTP and, if provisioning is enabled (`lc_seed_hw_rd_en`), the creator and owner seed pages are read and forwarded to the key manager.
 
 Software should then poll [`STATUS.init_done`](registers.md#status) and wait until it reads `1` before issuing any read or write operation.
-Until `STATUS.init_done` is set, all software-initiated RRAM operations are blocked by the arbiter.
+Until `STATUS.init_done` is set, all software-initiated RRAM operations are rejected by the arbiter with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
 
 ## Memory-Mapped Reads via `host_tl`
 

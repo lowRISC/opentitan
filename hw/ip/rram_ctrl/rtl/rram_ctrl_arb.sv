@@ -138,12 +138,18 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
   logic                          rw_ctrl_done;
   rram_ctrl_err_t                rw_ctrl_err;
   logic                          rw_sw_req;
+  logic                          sw_inv_req;
 
   // Software access disable
   logic                          sw_dis;
 
-  assign sw_req    = sw_ctrl_i.start.q & (sw_ctrl_i.op.q != RramOpRewrite);
+  assign sw_req    = sw_ctrl_i.start.q & (sw_ctrl_i.op.q inside {RramOpRead, RramOpWrite});
   assign rw_sw_req = sw_ctrl_i.start.q & (sw_ctrl_i.op.q == RramOpRewrite);
+  // A software operation is rejected with an error if it is undefined or if the controller has not
+  // completed its initialization yet
+  assign sw_inv_req = sw_ctrl_i.start.q &
+                      (~ctrl_init_done_i |
+                       ~(sw_ctrl_i.op.q inside {RramOpRead, RramOpWrite, RramOpRewrite}));
 
   // Operations already in progress when sw_disable_i asserts complete normally. Only new software
   // and Rewrite operations are rejected, see StIdle.
@@ -213,14 +219,15 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
           wr_fifo_clr_o = 1'b1;
           // priority is given to the OTP interface
           state_d = hw_otp_req_i ? StHwOtp : StHwLcmgr;
-        end else if ((sw_req | rw_sw_req) & ctrl_init_done_i & sw_dis) begin
-          // Reject new sw operations while software access is disabled, with an error.
+        end else if (sw_inv_req | (sw_dis & (sw_req | rw_sw_req))) begin
+          // Reject undefined operations and operations before the initialization has completed,
+          // as well as new sw operations while software access is disabled, with an error.
           if_sel = SwErrSel;
-        end else if (sw_req & ctrl_init_done_i) begin
+        end else if (sw_req) begin
           // clear wr_fifo upon new request
           wr_fifo_clr_o = 1'b1;
           state_d       = StSw;
-        end else if (rw_sw_req & ctrl_init_done_i) begin
+        end else if (rw_sw_req) begin
           // Clear wr_fifo upon new request
           wr_fifo_clr_o = 1'b1;
           rw_addr_d     = sw_addr_i;
@@ -353,21 +360,24 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
       end
 
       SwSel: begin
-        muxed_ctrl  = sw_ctrl_i;
-        muxed_addr  = sw_addr_i;
         sw_done_o   = ctrl_done;
         sw_err_o    = ctrl_err;
         sw_rvalid_o = rd_ctrl_rvalid_i;
         sw_rdata_o  = rd_ctrl_rdata_i;
+        sw_wready_o = wr_fifo_wready_i;
 
-        // fifo related muxing
-        sw_wready_o      = wr_fifo_wready_i;
-        // wr_fifo may only be programmed once a write is active (state_q == StSw);
-        // drop all writes instead of stalling the bus on wr_fifo_wready_i.
-        wr_fifo_wvalid_o = sw_wvalid_i & (state_q == StSw);
-        wr_fifo_wdata_o  = sw_wdata_i;
+        // The software operation only reaches the rd/wr handlers once the arbiter has committed
+        // to it (StSw).
+        if (state_q == StSw) begin
+          muxed_ctrl  = sw_ctrl_i;
+          muxed_addr  = sw_addr_i;
 
-        rd_ctrl_rready_o = sw_rready_i;
+          // fifo related muxing
+          wr_fifo_wvalid_o = sw_wvalid_i;
+          wr_fifo_wdata_o  = sw_wdata_i;
+
+          rd_ctrl_rready_o = sw_rready_i;
+        end
       end
 
       HwLoopBack: begin
