@@ -60,6 +60,7 @@ module dmi_jtag #(
   logic tdi;
 
   logic dtmcs_select;
+
   dm::dtmcs_t dtmcs_d, dtmcs_q;
 
   assign dmi_clear = jtag_dmi_clear || (dtmcs_select && update && dtmcs_q.dmihardreset);
