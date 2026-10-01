@@ -114,6 +114,12 @@
       act:     "rcv",
       package: "keymgr_dpe_pkg",
     },
+    { struct:  "keymgr_dpe_field_entropy",
+      type:    "uni",
+      name:    "field_entropy",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+    },
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_keymgr_en",
@@ -218,6 +224,13 @@
       randtype:  "data",
     },
 
+    { name:      "RndCnstFieldEntropySeed",
+      desc:      "Compile-time random bits as a field entropy alternative seed",
+      type:      "keymgr_dpe_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
       type:      "keymgr_dpe_pkg::seed_t"
@@ -267,7 +280,7 @@
     { name: "NumBootStages",
       desc: "Number of available boot stage",
       type: "int",
-      default: "3",
+      default: "4",
       expose:  "true"
     },
     { name: "NumRomDigestInputs",
@@ -1377,6 +1390,14 @@
           name: "INVALID_SECONDARY_ROOT_KEY",
           resval: "0x0"
           desc: "Secondary root key was invalid during a `load secondary root key` operation",
+        },
+        { bits: "10",
+          name: "INVALID_FIELD_ENTROPY",
+          resval: "0x0"
+          desc: '''
+            Field entropy (or, if not marked valid, the netlist constant substitute) failed input checks.
+            Only evaluated when `NumBootStages` equals 4, as the field entropy is not consumed otherwise.
+          ''',
         },
       ]
     },
