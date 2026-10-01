@@ -1,0 +1,37 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_HKDF_OTBN_SCA_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_HKDF_OTBN_SCA_H_
+
+#include "sw/device/lib/base/status.h"
+#include "sw/device/lib/ujson/ujson.h"
+
+/**
+ * Runs a single masked/unmasked OTBN HKDF (HKDF-SHA-256/384/512) operation.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_hkdf_single(ujson_t *uj);
+
+/**
+ * Runs masked/unmasked OTBN HKDF (HKDF-SHA-256/384/512) in Fixed-vs-Random
+ * batch mode (fixed vs random IKM).
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_hkdf_batch_fvsr(ujson_t *uj);
+
+/**
+ * Runs masked/unmasked OTBN HKDF (HKDF-SHA-256/384/512) in Random batch mode
+ * (random IKM and random salt).
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_hkdf_batch_random(ujson_t *uj);
+
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_HKDF_OTBN_SCA_H_

@@ -5,6 +5,8 @@
 #include "sw/device/tests/penetrationtests/firmware/sca/otbn_sca.h"
 
 #include "ecc256_keygen_sca.h"
+#include "hkdf_otbn_sca.h"
+#include "sha2_otbn_sca.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -85,6 +87,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
 
+extern const uint8_t *otbn_sca_loaded_app_imem;
+
 /**
  * Clears the OTBN DMEM and IMEM.
  *
@@ -94,6 +98,7 @@ static status_t clear_otbn(void) {
   // Clear OTBN memory.
   TRY(otbn_dmem_sec_wipe());
   TRY(otbn_imem_sec_wipe());
+  otbn_sca_loaded_app_imem = NULL;
 
   return OK_STATUS();
 }
@@ -768,6 +773,23 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
 status_t handle_otbn_sca(ujson_t *uj) {
   otbn_sca_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_sca_subcommand_t(uj, &cmd));
+  switch (cmd) {
+    case kOtbnScaSubcommandSha2Single:
+      return handle_otbn_sca_sha2_single(uj);
+    case kOtbnScaSubcommandSha2BatchFvsr:
+      return handle_otbn_sca_sha2_batch_fvsr(uj);
+    case kOtbnScaSubcommandSha2BatchRandom:
+      return handle_otbn_sca_sha2_batch_random(uj);
+    case kOtbnScaSubcommandHkdfSingle:
+      return handle_otbn_sca_hkdf_single(uj);
+    case kOtbnScaSubcommandHkdfBatchFvsr:
+      return handle_otbn_sca_hkdf_batch_fvsr(uj);
+    case kOtbnScaSubcommandHkdfBatchRandom:
+      return handle_otbn_sca_hkdf_batch_random(uj);
+    default:
+      otbn_sca_loaded_app_imem = NULL;
+      break;
+  }
   switch (cmd) {
     case kOtbnScaSubcommandEcc256EcdsaKeygenFvsrKeyBatch:
       return handle_otbn_sca_ecc256_ecdsa_keygen_fvsr_key_batch(uj);
