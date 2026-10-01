@@ -21,12 +21,46 @@ from sim.trace import Trace
 from typing import Any, Dict, List, Optional, TextIO, Tuple
 
 
+# Precompute butterfly masks and byte offsets for 128x256 bit-matrix transpose.
+_TRANSPOSE_MASKS: List[Tuple[int, int]] = []
+for _k in range(7):
+    _shift = (1 << (_k + 8)) - (1 << _k)
+    _m = sum(
+        1 << _a
+        for _a in range(32768)
+        if not (_a & (1 << _k)) and (_a & (1 << (_k + 8)))
+    )
+    _TRANSPOSE_MASKS.append((_m >> _shift, _shift))
+
+_TRANSPOSE_OFFSETS: List[int] = [
+    (((i & 0x7F) << 1) | (i >> 7)) * 16 for i in range(256)
+]
+
+
+def transpose_128x256(vals: List[int]) -> List[int]:
+    """Transposes up to 128 256-bit integers into 256 N-bit integer bit-slices."""
+    x = int.from_bytes(b"".join(v.to_bytes(32, "little") for v in vals), "little")
+    for m_shifted, shift in _TRANSPOSE_MASKS:
+        d = ((x >> shift) ^ x) & m_shifted
+        x ^= d | (d << shift)
+    out = x.to_bytes(4096, "little")
+    return [int.from_bytes(out[off: off + 16], "little") for off in _TRANSPOSE_OFFSETS]
+
+
 class TVLASim(StandaloneSim):
     def __init__(self, trace_hw_file: Optional[TextIO] = None) -> None:
         super().__init__()
         self.trace_hw_file = trace_hw_file
+        self.port_pairs: Dict[Tuple[int, int, str], Tuple[List[int], List[int]]] = (
+            defaultdict(lambda: ([], []))
+        )
         if self.trace_hw_file is not None:
             self._tvla_init()
+
+    def _record_pair(self, pc: int, occ: int, tag: str, a: int, b: int) -> None:
+        pair = self.port_pairs[(pc, occ, tag)]
+        pair[0].append(a)
+        pair[1].append(b)
 
     def _on_retire(self, verbose: bool, insn: OTBNInsn) -> List[Trace]:
         if self.trace_hw_file is not None:
@@ -58,6 +92,8 @@ class TVLASim(StandaloneSim):
                 for i in range(32):
                     self.state.gprs.get_reg(i).write_unsigned(0)
                     self.state.wdrs.get_reg(i).write_unsigned(0)
+                self.state.gprs.commit()
+                self.state.wdrs.commit()
                 self.state.wsrs.ACC.write_unsigned(0)
                 self.state.csrs.flags[0].write_unsigned(0)
                 self.state.csrs.flags[1].write_unsigned(0)
@@ -123,6 +159,9 @@ class TVLASim(StandaloneSim):
             "in_wide": 0,
             "in_gp": 0,
         }
+        self._tvla_in_wide_a: Optional[int] = None
+        self._tvla_in_wide_b: Optional[int] = None
+        self._tvla_out_wide: Optional[int] = None
 
     def _tvla_pre_step(self, current_pc: int) -> None:
         self._tvla_wdrs_before = self.state.wdrs.peek_unsigned_values()
@@ -139,6 +178,8 @@ class TVLASim(StandaloneSim):
                 wrs1_idx = op_vals["wrs1"]
             elif "wrs" in op_vals:
                 wrs1_idx = op_vals["wrs"]
+            elif mnemonic == "bn.movr" and "grs" in op_vals:
+                wrs1_idx = self._tvla_gprs_before[op_vals["grs"]] & 0x1F
             if "wrs2" in op_vals:
                 wrs2_idx = op_vals["wrs2"]
 
@@ -149,7 +190,7 @@ class TVLASim(StandaloneSim):
                 gpr_sources.append(op_vals["grs"])
             if "grs2" in op_vals:
                 gpr_sources.append(op_vals["grs2"])
-            if "grd" in op_vals and mnemonic == 'bn.lid':
+            if "grd" in op_vals and mnemonic in ("bn.lid", "bn.movr"):
                 gpr_sources.append(op_vals["grd"])
 
             if len(gpr_sources) > 0:
@@ -159,11 +200,10 @@ class TVLASim(StandaloneSim):
         except Exception:
             pass
 
-        self._tvla_in_hw, self._tvla_in_hd = (
-            0,
-            0,
-        )
+        self._tvla_in_hw, self._tvla_in_hd = 0, 0
+        self._tvla_curr_wrs = (wrs1_idx, wrs2_idx)
 
+        occ = self._tvla_hits.get(current_pc, 0)
         if wrs1_idx is not None or wrs2_idx is not None:
             val1 = self._tvla_wdrs_before[wrs1_idx] if wrs1_idx is not None else 0
             val2 = self._tvla_wdrs_before[wrs2_idx] if wrs2_idx is not None else 0
@@ -171,7 +211,20 @@ class TVLASim(StandaloneSim):
             self._tvla_in_hw = bin(val).count("1")
             self._tvla_in_hd = bin(self._tvla_latches["in_wide"] ^ val).count("1")
             self._tvla_latches["in_wide"] = val
-            self._tvla_latches["in_gp"] = 0
+            if wrs1_idx is not None and wrs2_idx is not None:
+                self._record_pair(current_pc, occ, "XBit", val1, val2)
+            if wrs1_idx is not None and self._tvla_in_wide_a is not None:
+                self._record_pair(
+                    current_pc, occ, "XBit-InA", self._tvla_in_wide_a, val1
+                )
+            if wrs2_idx is not None and self._tvla_in_wide_b is not None:
+                self._record_pair(
+                    current_pc, occ, "XBit-InB", self._tvla_in_wide_b, val2
+                )
+            if wrs1_idx is not None:
+                self._tvla_in_wide_a = val1
+            if wrs2_idx is not None:
+                self._tvla_in_wide_b = val2
         elif grs1_idx is not None or grs2_idx is not None:
             val1 = self._tvla_gprs_before[grs1_idx] if grs1_idx is not None else 0
             val2 = self._tvla_gprs_before[grs2_idx] if grs2_idx is not None else 0
@@ -179,27 +232,35 @@ class TVLASim(StandaloneSim):
             self._tvla_in_hw = bin(val).count("1")
             self._tvla_in_hd = bin(self._tvla_latches["in_gp"] ^ val).count("1")
             self._tvla_latches["in_gp"] = val
-            self._tvla_latches["in_wide"] = 0
-        else:
-            self._tvla_latches["in_wide"] = 0
-            self._tvla_latches["in_gp"] = 0
+            if grs1_idx is not None and grs2_idx is not None:
+                self._record_pair(current_pc, occ, "XBit", val1, val2)
 
     def _tvla_post_step(self, current_pc: int, trace_hw_file: TextIO) -> None:
         wdrs_after = self.state.wdrs.peek_unsigned_values()
         acc_after = self.state.wsrs.ACC.read_unsigned()
         fg0_after = self.state.csrs.flags[0].read_unsigned()
         fg1_after = self.state.csrs.flags[1].read_unsigned()
+        occ = self._tvla_hits.get(current_pc, 0)
 
         curr_alu_out = None
         out_hd = 0
-        if self._tvla_acc_before != acc_after:
+        if self._tvla_pending_wdrs:
+            idx = sorted(self._tvla_pending_wdrs)[0]
+            curr_alu_out = wdrs_after[idx]
+            wdr_before = self._tvla_wdrs_before[idx]
+            out_hd = bin(wdr_before ^ curr_alu_out).count("1")
+            if idx not in self._tvla_curr_wrs:
+                self._record_pair(
+                    current_pc, occ, "XBit-Ovr", wdr_before, curr_alu_out
+                )
+            if self._tvla_out_wide is not None:
+                self._record_pair(
+                    current_pc, occ, "XBit-Out", self._tvla_out_wide, curr_alu_out
+                )
+            self._tvla_out_wide = curr_alu_out
+        elif self._tvla_acc_before != acc_after:
             curr_alu_out = acc_after
             out_hd = bin(self._tvla_acc_before ^ acc_after).count("1")
-        else:
-            if self._tvla_pending_wdrs:
-                idx = sorted(self._tvla_pending_wdrs)[0]
-                curr_alu_out = wdrs_after[idx]
-                out_hd = bin(self._tvla_wdrs_before[idx] ^ curr_alu_out).count("1")
 
         out_hw = bin(curr_alu_out).count("1") if curr_alu_out is not None else 0
 
@@ -240,6 +301,10 @@ class TVLAAccumulator:
         self.sum_sqs = defaultdict(
             lambda: defaultdict(lambda: [[0.0] * NUM_MODELS, [0.0] * NUM_MODELS])
         )
+        self.port_tags = defaultdict(lambda: defaultdict(set))
+        self.port_bit_counts = defaultdict(lambda: [0, 0])
+        self.port_slices_a = defaultdict(lambda: [[0] * 256, [0] * 256])
+        self.port_slices_b = defaultdict(lambda: [[0] * 256, [0] * 256])
 
     def add_trace_hws(
         self, pc: int, occ: int, set_idx: int, hws: List[int]
@@ -249,6 +314,28 @@ class TVLAAccumulator:
             hw = hws[i]
             self.sums[pc][occ][set_idx][i] += hw
             self.sum_sqs[pc][occ][set_idx][i] += hw**2
+
+    def add_port_slices(
+        self,
+        pc: int,
+        occ: int,
+        tag: str,
+        set_idx: int,
+        count: int,
+        sa: List[int],
+        sb: List[int],
+    ) -> None:
+        key = (pc, occ, tag)
+        self.port_tags[pc][occ].add(tag)
+        shift = self.port_bit_counts[key][set_idx]
+        dst_a = self.port_slices_a[key][set_idx]
+        dst_b = self.port_slices_b[key][set_idx]
+        for i in range(256):
+            if sa[i]:
+                dst_a[i] |= sa[i] << shift
+            if sb[i]:
+                dst_b[i] |= sb[i] << shift
+        self.port_bit_counts[key][set_idx] = shift + count
 
     def compute_t_test(self, pc: int, occ: int, model_idx: int) -> float:
         n0 = self.counts[pc][occ][0]
@@ -273,6 +360,58 @@ class TVLAAccumulator:
 
         t_stat = (mean0 - mean1) / math.sqrt((var0 / n0) + (var1 / n1))
         return t_stat
+
+    def compute_cross_bit_t_test(
+        self, pc: int, occ: int, tag: str = "XBit"
+    ) -> Tuple[float, int, int]:
+        """Computes max 1st-order t-stat across all 256x256 (Port A, Port B) bit pairs."""
+        key = (pc, occ, tag)
+        if key not in self.port_bit_counts:
+            return 0.0, -1, -1
+
+        n0, n1 = self.port_bit_counts[key]
+        if n0 < 2 or n1 < 2:
+            return 0.0, -1, -1
+
+        af, ar = self.port_slices_a[key]
+        bf, br = self.port_slices_b[key]
+        mask0, mask1 = (1 << n0) - 1, (1 << n1) - 1
+
+        active_a = [
+            i
+            for i in range(256)
+            if not ((af[i] == 0 and ar[i] == 0) or (af[i] == mask0 and ar[i] == mask1))
+        ]
+        active_b = [
+            j
+            for j in range(256)
+            if not ((bf[j] == 0 and br[j] == 0) or (bf[j] == mask0 and br[j] == mask1))
+        ]
+        if not active_a or not active_b:
+            return 0.0, -1, -1
+
+        mean0 = [c / n0 for c in range(n0 + 1)]
+        mean1 = [c / n1 for c in range(n1 + 1)]
+        se0 = [((c - (c * c) / n0) / (n0 - 1)) / n0 for c in range(n0 + 1)]
+        se1 = [((c - (c * c) / n1) / (n1 - 1)) / n1 for c in range(n1 + 1)]
+
+        best_abs_t, best_t, best_i, best_j = 0.0, 0.0, -1, -1
+        min_diff = int(0.5 * math.sqrt(n0)) if n0 == n1 else 0
+
+        for i in active_a:
+            afi, ari = af[i], ar[i]
+            for j in active_b:
+                cf = (afi ^ bf[j]).bit_count()
+                cr = (ari ^ br[j]).bit_count()
+                if -min_diff <= (cf - cr) <= min_diff:
+                    continue
+                denom = se0[cf] + se1[cr]
+                if denom > 0.0:
+                    t_val = (mean0[cf] - mean1[cr]) / math.sqrt(denom)
+                    if abs(t_val) > best_abs_t:
+                        best_abs_t, best_t, best_i, best_j = abs(t_val), t_val, i, j
+
+        return best_t, best_i, best_j
 
 
 def build_pc_to_line_map(elf_path: str) -> Dict[int, Tuple[str, int]]:
@@ -394,7 +533,12 @@ def generate_shares(
 
 def run_experiment(
     task: Tuple[str, str, int, int, int, Dict[str, Any]]
-) -> Tuple[int, int, Dict[Tuple[int, int], List[Any]]]:
+) -> Tuple[
+    int,
+    int,
+    Dict[Tuple[int, int], List[Any]],
+    Dict[Tuple[int, int, str], Tuple[int, List[int], List[int]]],
+]:
     """Runs a batched simulation."""
     _, elf_path, set_idx, batch_num, batch_size, cfg = task
     random.seed()
@@ -406,6 +550,7 @@ def run_experiment(
     trace_path = trace_hw.name
 
     local_stats = {}
+    local_port_slices: Dict[Tuple[int, int, str], Tuple[int, List[int], List[int]]] = {}
 
     try:
         batch_dmem = []
@@ -490,6 +635,14 @@ def run_experiment(
             verbose=False, batch_size=batch_size, dmem_batch_data=parsed_batch_dmem
         )
 
+        for key, (vals_a, vals_b) in sim.port_pairs.items():
+            if any(vals_a) and any(vals_b) and (key[2] == "XBit" or vals_a != vals_b):
+                local_port_slices[key] = (
+                    len(vals_a),
+                    transpose_128x256(vals_a),
+                    transpose_128x256(vals_b),
+                )
+
         trace_hw.flush()
         trace_hw.seek(0)
 
@@ -531,7 +684,7 @@ def run_experiment(
         if os.path.exists(trace_path):
             os.remove(trace_path)
 
-    return batch_num, set_idx, local_stats
+    return batch_num, set_idx, local_stats, local_port_slices
 
 
 def generate_reference_trace(
@@ -711,13 +864,18 @@ def main() -> int:
             )
 
             try:
-                batch_num, set_idx, local_stats = future.result()
+                batch_num, set_idx, local_stats, local_port_slices = future.result()
 
                 for (pc, occ), (count, sums, sqs) in local_stats.items():
                     accumulator.counts[pc][occ][set_idx] += count
                     for i in range(NUM_MODELS):
                         accumulator.sums[pc][occ][set_idx][i] += sums[i]
                         accumulator.sum_sqs[pc][occ][set_idx][i] += sqs[i]
+
+                for (pc, occ, tag), (p_cnt, sa, sb) in local_port_slices.items():
+                    accumulator.add_port_slices(
+                        pc, occ, tag, set_idx, p_cnt, sa, sb
+                    )
 
             except Exception as e:
                 print(f"Process crashed: {e}", flush=True)
@@ -740,16 +898,26 @@ def main() -> int:
 
     for pc in sorted(accumulator.counts.keys()):
         for occ in accumulator.counts[pc].keys():
-            for model_idx in range(NUM_MODELS):
-                t_val = accumulator.compute_t_test(pc, occ, model_idx)
+            models = [
+                (
+                    MODEL_NAMES.get(model_idx, f"M{model_idx}"),
+                    accumulator.compute_t_test(pc, occ, model_idx),
+                )
+                for model_idx in range(NUM_MODELS)
+            ]
+            for tag in sorted(accumulator.port_tags[pc][occ]):
+                xbit_t, bit_a, bit_b = accumulator.compute_cross_bit_t_test(
+                    pc, occ, tag
+                )
+                models.append((f"{tag}({bit_a},{bit_b})", xbit_t))
+
+            for model_name, t_val in models:
                 abs_t = abs(t_val)
 
                 if abs_t > max_t_score:
                     max_t_score = abs_t
 
                 if abs_t > args.t_threshold:
-                    model_name = MODEL_NAMES.get(model_idx, f"M{model_idx}")
-
                     dwarf_str = "Unknown source"
                     if pc in dwarf_map:
                         filepath, lineno = dwarf_map[pc]
@@ -757,7 +925,7 @@ def main() -> int:
 
                     print(
                         f"Leakage | PC: {hex(pc):<6} | Occ: {occ} | "
-                        f"Model: {model_name:<8} | t-value: {t_val:>7.2f} | "
+                        f"Model: {model_name:<16} | t-value: {t_val:>7.2f} | "
                         f"Source: {dwarf_str}",
                         flush=True,
                     )
