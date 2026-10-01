@@ -121,6 +121,10 @@ impl<B: Board> Backend<B> {
         })
     }
 
+    pub fn usb_device(&self) -> &dyn UsbDevice {
+        &*self.usb
+    }
+
     /// Send a control write transaction to the Chip Whisperer board.
     pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
         log::debug!(
