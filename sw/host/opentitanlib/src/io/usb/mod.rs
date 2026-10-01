@@ -157,6 +157,27 @@ pub trait UsbDevice {
     }
 }
 
+impl std::fmt::Debug for dyn UsbDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "{}-{} [vid={:x},pid={:x},address={},serial={}]",
+            self.bus_number(),
+            self.port_numbers()
+                .map(|ports| ports
+                    .iter()
+                    .map(|x| format!("{x}"))
+                    .collect::<Vec<_>>()
+                    .join("."))
+                .unwrap_or("<ports unavailable>".into()),
+            self.get_vendor_id(),
+            self.get_product_id(),
+            self.address(),
+            self.get_serial_number().unwrap_or("<not available>"),
+        )
+    }
+}
+
 /// A trait which represents a USB context.
 pub trait UsbContext {
     /// Find a device by VID:PID, and optionally disambiguate by serial number.
