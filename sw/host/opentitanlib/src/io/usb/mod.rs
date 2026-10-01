@@ -150,6 +150,11 @@ pub trait UsbDevice {
     fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
         self.write_bulk_timeout(endpoint, data, self.get_timeout())
     }
+
+    /// Test whether two instances refer to the same underlying USB device.
+    fn eq(&self, other: &dyn UsbDevice) -> bool {
+        self.bus_number() == other.bus_number() && self.address() == other.address()
+    }
 }
 
 /// A trait which represents a USB context.
