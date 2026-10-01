@@ -69,7 +69,9 @@ sim_verilator(
         "--verilator-bin=$(rootpath //hw:verilator)",
         "--verilator-rom={rom}",
         "--verilator-otp={otp}",
-        "--verilator-ctn-ram={firmware}",
+        # The CTN RAM model stores the bus integrity bits, which the
+        # testbench can compute from an ELF file but not from a VMEM.
+        "--verilator-ctn-ram={firmware:elf}",
     ],
     base = ":sim_verilator_base",
     data = [
