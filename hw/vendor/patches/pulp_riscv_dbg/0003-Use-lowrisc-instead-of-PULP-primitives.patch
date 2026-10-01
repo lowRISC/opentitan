@@ -1,15 +1,21 @@
-From 9323ea206e15381283e67a780aac8ffbb5a5d19b Mon Sep 17 00:00:00 2001
+From eb5b7f87f5592c5be9e394a06c60cf9d22064e62 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:27:27 -0700
-Subject: [PATCH 3/7] Use lowrisc instead of PULP primitives
+Subject: [PATCH 3/4] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
+---
+ src/dm_csrs.sv      |  45 +++++++---------
+ src/dmi_cdc.sv      | 123 ++++++++++++++++++++++++--------------------
+ src/dmi_jtag.sv     |   8 ++-
+ src/dmi_jtag_tap.sv |  21 ++++----
+ 4 files changed, 101 insertions(+), 96 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 59d1c90..259f3fc 100644
+index a945a70..e5427bc 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
-@@ -79,6 +79,7 @@ module dm_csrs #(
+@@ -81,6 +81,7 @@ module dm_csrs #(
    input  logic                              sberror_valid_i, // bus error occurred
    input  logic [2:0]                        sberror_i // bus error occurred
  );
@@ -17,7 +23,7 @@ index 59d1c90..259f3fc 100644
    // the amount of bits we need to represent all harts
    localparam int unsigned HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
    localparam int unsigned NrHartsAligned = 2**HartSelLen;
-@@ -86,10 +87,6 @@ module dm_csrs #(
+@@ -88,10 +89,6 @@ module dm_csrs #(
    dm::dtm_op_e dtm_op;
    assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
  
@@ -28,7 +34,7 @@ index 59d1c90..259f3fc 100644
  
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
    localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
-@@ -180,9 +177,6 @@ module dm_csrs #(
+@@ -182,9 +179,6 @@ module dm_csrs #(
  
    dm::dmi_resp_t resp_queue_inp;
  
@@ -38,7 +44,7 @@ index 59d1c90..259f3fc 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -579,28 +573,29 @@ module dm_csrs #(
+@@ -585,28 +579,29 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -87,7 +93,7 @@ index 59d1c90..259f3fc 100644
  
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 diff --git a/src/dmi_cdc.sv b/src/dmi_cdc.sv
-index f9d66fd..ef9e57c 100644
+index f9d66fd..e31ae88 100644
 --- a/src/dmi_cdc.sv
 +++ b/src/dmi_cdc.sv
 @@ -17,6 +17,10 @@
@@ -235,7 +241,7 @@ index f9d66fd..ef9e57c 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
-index 24edad0..f8b8483 100644
+index bd5cb3f..36e3235 100644
 --- a/src/dmi_jtag.sv
 +++ b/src/dmi_jtag.sv
 @@ -22,9 +22,10 @@ module dmi_jtag #(
@@ -251,7 +257,7 @@ index 24edad0..f8b8483 100644
    output logic         dmi_rst_no,
    output dm::dmi_req_t dmi_req_o,
    output logic         dmi_req_valid_o,
-@@ -327,6 +328,9 @@ module dmi_jtag #(
+@@ -328,6 +329,9 @@ module dmi_jtag #(
    // CDC
    // ---------
    dmi_cdc i_dmi_cdc (
@@ -262,7 +268,7 @@ index 24edad0..f8b8483 100644
      .tck_i                ( tck              ),
      .trst_ni              ( trst_ni          ),
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index 53f0fa9..3f91356 100644
+index d627cef..b198c2f 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
 @@ -185,18 +185,15 @@ module dmi_jtag_tap #(
@@ -293,3 +299,6 @@ index 53f0fa9..3f91356 100644
    );
  
    // TDO changes state at negative edge of TCK
+-- 
+2.43.0
+

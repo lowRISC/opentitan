@@ -1,9 +1,13 @@
-From d2fe1d8aa26b8d6c03ada39962bdf779d0c43efd Mon Sep 17 00:00:00 2001
+From da0cd283d9ccb12aacbc275ec885a4cb5a0d55ae Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:49 -0700
-Subject: [PATCH 2/7] Add access error signal to dm_mem
+Subject: [PATCH 2/4] Add access error signal to dm_mem
 
 Signed-off-by: Michael Schaffner <msf@google.com>
+---
+ src/dm_mem.sv | 68 +++++++++++++++++++++++++++++++++++++++++++++------
+ src/dm_top.sv |  4 ++-
+ 2 files changed, 63 insertions(+), 9 deletions(-)
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
 index 62cdf02..f7a5f7d 100755
@@ -127,10 +131,10 @@ index 62cdf02..f7a5f7d 100755
      if (!rst_ni) begin
        fwd_rom_q       <= 1'b0;
 diff --git a/src/dm_top.sv b/src/dm_top.sv
-index c21e58d..6188b28 100644
+index 799602f..87b480a 100644
 --- a/src/dm_top.sv
 +++ b/src/dm_top.sv
-@@ -44,6 +44,7 @@ module dm_top #(
+@@ -51,6 +51,7 @@ module dm_top #(
    input  logic [BusWidth/8-1:0] slave_be_i,
    input  logic [BusWidth-1:0]   slave_wdata_i,
    output logic [BusWidth-1:0]   slave_rdata_o,
@@ -138,7 +142,7 @@ index c21e58d..6188b28 100644
  
    output logic                  master_req_o,
    output logic [BusWidth-1:0]   master_add_o,
-@@ -224,7 +225,8 @@ module dm_top #(
+@@ -233,7 +234,8 @@ module dm_top #(
      .addr_i                  ( slave_addr_i          ),
      .wdata_i                 ( slave_wdata_i         ),
      .be_i                    ( slave_be_i            ),
@@ -148,3 +152,6 @@ index c21e58d..6188b28 100644
    );
  
  endmodule : dm_top
+-- 
+2.43.0
+
