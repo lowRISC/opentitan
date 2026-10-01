@@ -20,17 +20,15 @@ static inline uintptr_t rv_core_ibex_base(void) {
 
 /**
  * @file
- * @brief Device-specific symbol definitions for the Verilator device.
- *
- * Clock frequencies below are for Earlgrey and EnglishBreakfast; see
- * `device_sim_verilator_darjeeling.c` for Darjeeling.
+ * @brief Device-specific symbol definitions for the Darjeeling Verilator
+ * device.
  */
 
 const device_type_t kDeviceType = kDeviceSimVerilator;
 
 // Changes to the clock frequency or UART baud rate must also be reflected at
-// `hw/top_earlgrey/rtl/chip_earlgrey_verilator.sv` and
-// `test/systemtest/earlgrey/test_sim_verilator.py`.
+// `hw/top_darjeeling/templates/chiplevel.sv.tpl` and
+// `hw/top_darjeeling/dv/verilator/chip_sim_tb.sv`.
 #define CPU_FREQ_HZ 500 * 1000
 const uint64_t kClockFreqCpuHz = CPU_FREQ_HZ;  // 500kHz
 
@@ -42,11 +40,14 @@ uint64_t to_cpu_cycles(uint64_t usec) {
   return (usec + 1) / 2;
 }
 
+// Darjeeling has no derived IO clocks: the IO peripherals run on the
+// undivided io clock, which the Verilator model drives from clk_i.
 const uint64_t kClockFreqHiSpeedPeripheralHz = 500 * 1000;  // 500kHz
 
-const uint64_t kClockFreqPeripheralHz = 125 * 1000;  // 125kHz
+const uint64_t kClockFreqPeripheralHz = 500 * 1000;  // 500kHz
 
-const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
+// Darjeeling has no USB clock.
+const uint64_t kClockFreqUsbHz = 0;
 
 const uint64_t kClockFreqAonHz = 125 * 1000;  // 125kHz
 
