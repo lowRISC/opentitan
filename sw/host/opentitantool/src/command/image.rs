@@ -19,13 +19,15 @@ use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::crypto::spx;
+use opentitanlib::crypto::spx::SpxKeyLoadingMode;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
-use sphincsplus::{DecodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature, SpxSecretKey};
+use sphincsplus::{SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSecretKey, SpxSignatureMode};
 
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
@@ -132,9 +134,9 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     spx_key: Option<PathBuf>,
-    /// The signature domain (None, Pure, PreHashedSha256)
-    #[arg(long, default_value_t = SpxDomain::default())]
-    domain: SpxDomain,
+    /// The SPHINCS+ signing mode, if applicable (Pure or PreHashedSha256)
+    #[arg(long)]
+    domain: Option<SpxSignatureMode>,
     /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
     #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
     spx_algorithm: SphincsPlus,
@@ -201,10 +203,13 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Load / write SPX+ public key.
         let mut spx_private_key: Option<SpxSecretKey> = None;
         if let Some(key) = &self.spx_key {
-            let (pk, sk) = if let Ok(sk) = SpxSecretKey::read_pem_file(key) {
+            let (pk, sk) = if let Ok(sk) = spx::load_spx_private_key(key) {
                 (SpxPublicKey::from(&sk), Some(sk))
             } else {
-                (SpxPublicKey::read_pem_file(key)?, None)
+                (
+                    spx::load_spx_public_key(key, SpxKeyLoadingMode::PublicOnly)?,
+                    None,
+                )
             };
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;
@@ -266,18 +271,21 @@ impl CommandDispatch for ManifestUpdateCommand {
             }
             // Sign with SPX+.
             if let Some(key) = spx_private_key {
-                let sig_bytes = match self.domain {
-                    SpxDomain::None | SpxDomain::Pure => {
-                        image.map_signed_region(|buf| key.sign(self.domain, buf))??
+                let domain = self
+                    .domain
+                    .context("A SPX+ signing mode must be specified when signing with SPX+")?;
+                let sig_bytes = match domain {
+                    SpxSignatureMode::Pure => {
+                        image.map_signed_region(|buf| key.sign(domain.into(), buf))??
                     }
-                    SpxDomain::PreHashedSha256 => {
+                    SpxSignatureMode::PreHashedSha256 => {
                         let digest = image.compute_digest()?;
                         let digest = if self.spx_hash_reversal_bug {
                             digest.to_vec_rev()
                         } else {
                             digest.to_vec()
                         };
-                        key.sign(self.domain, &digest)?
+                        key.sign(domain.into(), &digest)?
                     }
                 };
                 image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
@@ -313,9 +321,9 @@ pub struct ManifestVerifyCommand {
     /// Run verification for SPHINCS+.
     #[arg(short, long)]
     spx: bool,
-    /// The SPX signature domain (None, Pure, PreHashedSha256)
-    #[arg(long, default_value_t = SpxDomain::default())]
-    domain: SpxDomain,
+    /// The SPHINCS+ signing mode, if applicable (Pure or PreHashedSha256)
+    #[arg(long)]
+    domain: Option<SpxSignatureMode>,
     /// The SPX signature was created with a reversed hash.
     #[arg(long, default_value_t = false)]
     spx_hash_reversal_bug: bool,
@@ -337,15 +345,13 @@ impl CommandDispatch for ManifestVerifyCommand {
         sigverify_params.verify(&digest)?;
 
         if self.spx {
+            let domain = self
+                .domain
+                .context("A SPX+ signing mode must be specified when verifying with SPX+")?;
             image.map_signed_region(|b| {
-                sigverify_params
-                    .spx_verify(b, self.domain)
-                    .inspect_err(|_| {
-                        eprintln!(
-                            "SPX+ signature verification for domain '{}' failed",
-                            self.domain
-                        );
-                    })
+                sigverify_params.spx_verify(b, domain).inspect_err(|_| {
+                    eprintln!("SPX+ signature verification for domain '{}' failed", domain);
+                })
             })??;
         }
 
