@@ -17,7 +17,7 @@ status_t ujcmd_mem_read32(ujson_t *uj) {
   if ((op.address % sizeof(uint32_t)) != 0) {
     return INVALID_ARGUMENT();
   }
-  resp.value = read_32((void *)op.address);
+  resp.value = read_32((void *)(uintptr_t)op.address);
   return RESP_OK(ujson_serialize_mem_read32_resp_t, uj, &resp);
 }
 
@@ -28,7 +28,7 @@ status_t ujcmd_mem_read(ujson_t *uj) {
   if (op.data_len > sizeof(resp.data)) {
     return INVALID_ARGUMENT();
   }
-  memcpy(resp.data, (void *)op.address, op.data_len);
+  memcpy(resp.data, (void *)(uintptr_t)op.address, op.data_len);
   resp.data_len = op.data_len;
   return RESP_OK(ujson_serialize_mem_read_resp_t, uj, &resp);
 }
@@ -39,7 +39,7 @@ status_t ujcmd_mem_write32(ujson_t *uj) {
   if ((op.address % sizeof(uint32_t)) != 0) {
     return INVALID_ARGUMENT();
   }
-  write_32(op.value, (void *)op.address);
+  write_32(op.value, (void *)(uintptr_t)op.address);
   return RESP_OK_STATUS(uj);
 }
 
@@ -49,6 +49,6 @@ status_t ujcmd_mem_write(ujson_t *uj) {
   if (op.data_len > sizeof(op.data)) {
     return INVALID_ARGUMENT();
   }
-  memcpy((void *)op.address, op.data, op.data_len);
+  memcpy((void *)(uintptr_t)op.address, op.data, op.data_len);
   return RESP_OK_STATUS(uj);
 }
