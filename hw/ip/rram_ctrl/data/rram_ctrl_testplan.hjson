@@ -26,9 +26,36 @@
       tests: ["rram_ctrl_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      stage: V1
+      name: seed_read_validation
+      desc: '''
+            Verify the double-read validation of the creator and owner seeds.
+
+            After the address and data scrambling keys are obtained and provisioning
+            is enabled, the lifecycle manager reads each seed twice from its info
+            page. The first read stores the seed, the second read is compared word
+            by word against the stored value.
+
+            **Stimulus**:
+            - Backdoor-load random creator and owner seeds into their info pages.
+            - Randomly select none, one or both seeds to corrupt and, for each
+              selected seed, corrupt a random word on the second (validation) read
+              only, e.g. by flipping a bit in the RRAM read data or by modifying
+              the page contents via backdoor between the two reads.
+            - Also cover the case where a seed word returns an integrity error.
+            - Run with provisioning both enabled and disabled.
+
+            **Checks**:
+            - For an uncorrupted seed, the seed value on `keymgr_creator_seed_o` /
+              `keymgr_owner_seed_o` matches the backdoor-loaded value and
+              `seed_valid` is set.
+            - For a seed with a read mismatch, `FAULT_STATUS.SEED_ERR` is set.
+            - For a seed with an integrity error, `STD_FAULT_STATUS.LCMGR_INTG_ERR` is set.
+            - In both cases, a `fatal_err` / `fatal_std_err` alert is raised, the controller is
+              locally escalated, and `seed_valid` of *both* seeds is low.
+            - With provisioning disabled, no seed reads are issued and both
+              `seed_valid` outputs stay low.
+            '''
+      stage: V2
       tests: []
     }
   ]
