@@ -74,7 +74,12 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   function automatic bit edn_under_reset();
-    return cfg.m_edn_agent_cfg[0].in_reset;
+    foreach(cfg.m_edn_agent_cfg[i]) begin
+      if (cfg.m_edn_agent_cfg[i].in_reset) return 1;
+    end
+
+    // This function return value is a type bit. Hence we don't need to explicitly return 0 here if
+    // EDN is not in reset.
   endfunction
 
   // Wait for a CSR to contain an expected value or EDN to be reset, whichever happens first.  This
