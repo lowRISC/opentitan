@@ -193,7 +193,7 @@ Until then, no RRAM accesses (including hardware interfaces) are possible.
 #### Stage 2 - lcmgr initialization
 
 Software writes `1` to `INIT.VAL` to start the lcmgr initialization sequence, which requests scrambling keys from OTP and, if the device is already provisioned, reads the creator and owner seeds.
-The arbiter gates all software-initiated operations until both `lcmgr_init_done` and `lcmgr_keys_valid` are asserted, which happens once this completes.
+The arbiter rejects all software-initiated controller operations with [`ERR_CODE.op_err`](registers.md#err_code) until both `lcmgr_init_done` and `lcmgr_keys_valid` are asserted.
 `lcmgr_init_done` and `lcmgr_keys_valid` are observable in [`STATUS.init_done`](registers.md#status) and [`STATUS.keys_valid`](registers.md#status) respectively.
 See [Controller initialization](programmers_guide.md#controller-initialization---trigger-controller-initialization) in the programmer's guide for the software-facing procedure.
 

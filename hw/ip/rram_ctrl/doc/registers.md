@@ -1020,13 +1020,34 @@ Note, all errors in this register are considered recoverable errors, i.e., error
 {"reg": [{"name": "op_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "mp_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "wr_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                     |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                                                                                                                                                                                        |
-|   3    |  rw1c  |   0x0   | wr_err | RRAM write has an error. This could be a write integrity error, see [`STD_FAULT_STATUS.`](#std_fault_status) This is a synchronous error.                                                                                                                       |
-|   2    |  rw1c  |   0x0   | rd_err | RRAM read has an error. This could be a reliability ECC error or integrity error encountered during a software issued controller read, see [`STD_FAULT_STATUS.`](#std_fault_status) See [`ERR_ADDR`](#err_addr) for exact address. This is a synchronous error. |
-|   1    |  rw1c  |   0x0   | mp_err | RRAM access has encountered an access permission error. Please see [`ERR_ADDR`](#err_addr) for exact address. This is a synchronous error.                                                                                                                      |
-|   0    |  rw1c  |   0x0   | op_err | Software has supplied an undefined operation. See [`CONTROL.OP`](#control) for list of valid operations.                                                                                                                                                        |
+|  Bits  |  Type  |  Reset  | Name                        |
+|:------:|:------:|:-------:|:----------------------------|
+|  31:4  |        |         | Reserved                    |
+|   3    |  rw1c  |   0x0   | [wr_err](#err_code--wr_err) |
+|   2    |  rw1c  |   0x0   | [rd_err](#err_code--rd_err) |
+|   1    |  rw1c  |   0x0   | [mp_err](#err_code--mp_err) |
+|   0    |  rw1c  |   0x0   | [op_err](#err_code--op_err) |
+
+### ERR_CODE . wr_err
+RRAM write has an error.
+This could be a write integrity error, see [`STD_FAULT_STATUS.`](#std_fault_status)
+This is a synchronous error.
+
+### ERR_CODE . rd_err
+RRAM read has an error.
+This could be a reliability ECC error or integrity error encountered during a software issued controller read, see [`STD_FAULT_STATUS.`](#std_fault_status)
+See [`ERR_ADDR`](#err_addr) for exact address.
+This is a synchronous error.
+
+### ERR_CODE . mp_err
+RRAM access has encountered an access permission error.
+Please see [`ERR_ADDR`](#err_addr) for exact address.
+This is a synchronous error.
+
+### ERR_CODE . op_err
+Software has supplied an undefined operation.
+See [`CONTROL.OP`](#control) for list of valid operations.
+This error is also set if a software operation is started before the initialization has completed, see [`STATUS.INIT_DONE`](#status) and [`STATUS.KEYS_VALID`](#status), or while software access is disabled from the start of the RMA entry process.
 
 ## STD_FAULT_STATUS
 This register tabulates standard fault status of the RRAM.

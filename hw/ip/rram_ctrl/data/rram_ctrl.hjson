@@ -1305,6 +1305,7 @@
             desc: '''
                   Software has supplied an undefined operation.
                   See !!CONTROL.OP for list of valid operations.
+                  This error is also set if a software operation is started before the initialization has completed, see !!STATUS.INIT_DONE and !!STATUS.KEYS_VALID, or while software access is disabled from the start of the RMA entry process.
                   '''
           },
           { bits: "1",
