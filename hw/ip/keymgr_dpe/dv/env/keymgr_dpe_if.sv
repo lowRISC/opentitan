@@ -21,6 +21,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t         creator_root_key;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t             creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t               owner_seed;
+  keymgr_dpe_pkg::keymgr_dpe_field_entropy_t            field_entropy;
   rom_ctrl_pkg::keymgr_data_t[DvNumRomDigestInputs-1:0] rom_digests;
 
   keymgr_dpe_pkg::hw_key_req_t kmac_key;
@@ -107,10 +108,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // current value of the keyslots in the dut.
   keymgr_dpe_pkg::keymgr_dpe_slot_t [DvNumInstHwSlot-1:0] internal_key_slots;
 
-  task automatic init(bit rand_otp_key, bit invalid_otp_key);
+  task automatic init(bit rand_otp_key, bit invalid_otp_key,
+                      bit rand_field_entropy, bit invalid_field_entropy);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
     keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t local_creator_root_key;
+    keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    local_field_entropy;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
@@ -123,6 +126,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
     // Load the default value for all seed's
     local_creator_root_key = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT;
+    local_field_entropy = keymgr_dpe_pkg::KEYMGR_DPE_FIELD_ENTROPY_DEFAULT;
     creator_seed = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_SEED_DEFAULT;
     owner_seed = keymgr_dpe_pkg::KEYMGR_DPE_OWNER_SEED_DEFAULT;
     // If requested randomize the creator_root_key
@@ -139,6 +143,18 @@ interface keymgr_dpe_if(input clk, input rst_n);
       local_creator_root_key.share1_valid = 0;
     end
     creator_root_key = local_creator_root_key;
+
+    // If requested randomize the field_entropy.
+    if (rand_field_entropy) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_field_entropy,
+                                         local_field_entropy.secret_valid == 1;
+                                         !(local_field_entropy.secret inside {0, '1});
+                                         , , msg_id)
+    end
+    if (invalid_field_entropy) begin
+      local_field_entropy.secret_valid = 0;
+    end
+    field_entropy = local_field_entropy;
   endtask
 
   // reset local exp variables when reset is issued
