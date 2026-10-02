@@ -63,6 +63,7 @@ NR_IRQ_PERIPH_TESTS = 3
             "//sw/device/lib/dif/autogen:adc_ctrl",
             "//sw/device/lib/dif/autogen:alert_handler",
             "//sw/device/lib/dif/autogen:aon_timer",
+            "//sw/device/lib/dif/autogen:cheriot",
             "//sw/device/lib/dif/autogen:csrng",
             "//sw/device/lib/dif/autogen:edn",
             "//sw/device/lib/dif/autogen:entropy_src",

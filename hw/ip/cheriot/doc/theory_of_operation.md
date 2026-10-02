@@ -8,6 +8,7 @@
 |------|-----------|------|---------|
 | `cored_tl_d`   | device | `rv_core_ibex`   | Core data accesses with the capability tag support. |
 | `cored_tl_h`   | host   | `xbar_main`      | The data half of the access, forwarded to SRAM, NVM and peripherals. |
+| `trbe_tl_h`    | host   | `xbar_main`      | Read-only port of the revocation engine towards the memories holding capabilities, the SRAMs and the NVM. |
 | `corerevbm_tl` | device | `rv_core_ibex`   | Revocation bitmap reads from the core's TRVK filter. |
 | `revbm_tl_d`   | device | `xbar_main`      | Memory window through which software reads and writes the revocation bitmap. |
 | `regs_tl_d`    | device | `xbar_main`      | CSR interface. |
@@ -34,7 +35,7 @@ For Earl Grey - 192 KiB main SRAM at `0x1000_0000`, 2 MiB NVM at `0x3000_0000`, 
 
 | Offset  | Size   | Region                             | Reachable from |
 |---------|--------|------------------------------------|----------------|
-| `0x0000` | 3 KiB  | Main SRAM revocation bitmap        | `revbm_tl_d`, `corerevbm_tl` |
+| `0x0000` | 3 KiB  | Main SRAM revocation bitmap        | `revbm_tl_d`, `corerevbm_tl`, revocation engine |
 | `0x0C00` | 32 KiB | NVM capability tags                | RMW filter |
 | `0x8C00` | 3 KiB  | Main SRAM capability tags          | RMW filter |
 | `0x9800` | -      | top                                | - |
@@ -70,11 +71,27 @@ overwrites.
 The returned tag is sticky across the two words of a capability: on a response whose FIFO entry was
 marked aligned, the tag read from the meta SRAM is presented and captured; on the following unaligned
 response the captured value is presented again and then cleared. This is what lets a 65-bit
-capability arrive over two 32-bit responses with one combined validity tag bit.
+capability arrive over two 32-bit responses with one combined validity tag bit. Only read responses
+take part: a write answered between the two words of a capability is returned untagged and leaves
+the captured value alone.
 
-The FIFO depth sets the number of outstanding transactions the subsystem supports; it is fixed to two,
-matching Ibex's LSU, which never issues more than two outstanding split-access halves. Error
+The FIFO depth sets the number of outstanding transactions the filter supports. It is two for the
+core's tag filter, matching Ibex's LSU, which never issues more than two outstanding split-access
+halves, and the revocation engine's number of words in flight for its tag filter. Error
 responses from either the host or the meta path are merged into `d_error` towards the core.
+
+The meta response is accepted into a buffer, and the join consumes it from there. The fork hands
+out its three streams independently, so it can issue one lookup while the metadata FIFO is full.
+At most one lookup more than the FIFO depth is therefore unjoined, and the buffer is one entry
+deeper than the FIFO, so it never refuses a response (`MetaRspAlwaysAccepted_A`). The meta path
+therefore never waits for a data response: with two tag filters sharing the RMW filter, and the
+data paths of both reaching the same in-order SRAMs, a meta response held until its data response
+arrives could wait on a data response that is itself queued behind the other tag filter's.
+
+A write forks into its data write and its tag update independently. If one of them fails, the core
+receives `d_error`, but the other half is not undone: a failed data write still updates the tag, and
+a failed tag update leaves the old tag next to the new data. Software must treat a location whose
+store was answered with an error as holding a stale tag.
 
 ### RMW Filter
 
@@ -94,23 +111,81 @@ meta SRAM read per 32-bit store, and a read plus a write only when the tag actua
 The filter checks the response integrity and response data integrity of every meta SRAM response
 and separately reports `d_error`.
 
+The filter holds the state of a single operation, so it takes a new request only while no
+operation is unanswered, including in the cycle an answer is handed over. The meta SRAM reads and
+writes it issues for a write carry the requester's `a_source`, so every answer returns to the tag
+filter that sent the request.
+
+The RMW filter serves two tag filters, the core's and the revocation engine's: a `cheriot_socket_m1`
+arbitrates their meta ports, carrying the tag and bit select sideband, onto the single RMW filter,
+so every tag update of the subsystem goes through one read-modify-write.
+
+### Revocation Engine
+
+A write of 1 to `TRBE_START` starts a sweep over `TRBE_NUM_CAPS` capabilities from
+`TRBE_BASE_ADDR`, if `TRBE_NUM_CAPS` is not zero, `TRBE_BASE_ADDR` lies in a tagged region
+(`MainSramBaseAddr` up to `MainSramTopAddr`, or `NvmBaseAddr` up to `NvmTopAddr`), and the subsystem
+is in CHERIoT mode (a strict
+`MuBi4True` on `cheriot_ena_i`). Any other start is ignored and leaves `TRBE_STATUS.busy` and
+`TRBE_REGWEN` unchanged and sets `TRBE_STATUS.start_err`, which stays set until software writes 1 to
+it.
+While the engine is active, from the cycle after a taken start until every capability of the sweep
+is resolved, `TRBE_REGWEN` is low and locks the three registers; `TRBE_STATUS.busy` follows one
+cycle later. The register interface takes a request at most every other cycle, so a read issued
+right after a start already sees the sweep in both. When the engine stops being active, the
+`trbe_done` interrupt is raised.
+
+`TRBE_EPOCH`: bit 0 is set while the engine is active, in the same cycle as `TRBE_REGWEN` is low,
+and bits 31:1 count the sweeps that ended without an error, incremented in the cycle bit 0 clears,
+so the epoch goes straight from the odd value to the next even one. A sweep during which any error sets `TRBE_STATUS.sweep_err` is not counted, so the
+epoch returns to the even value it had before that start: software that releases memory once the
+epoch shows a completed sweep never does so on a sweep that may have left a revoked capability tagged.
+Ignored starts and starts written while the engine is active leave the epoch unchanged.
+
+The engine reads both words of every capability with the capability-load hint, through a TRVK
+filter of its own and a tag filter of its own, over `trbe_tl_h`. Up to two words are in flight,
+each read with a source ID of its own. The TRVK filter only sees these reads: a socket merges its
+downstream port with the engine's tag clears in front of the tag filter. The TRVK filter
+applies the load barrier: a tagged capability that is not a sealing capability and whose base has
+its revocation bit set is revoked, and so is one whose bitmap lookup fails. For every revoked
+capability the engine clears the tag through its tag filter, which never forwards a write to
+`trbe_tl_h`: the engine does not modify memory data.
+
+The core may write a capability while the engine resolves it. The subsystem watches every write the
+core presents on `cored_tl_d`, and every write it accepted there until the write is answered, as the
+data of an accepted write may still be on its way to memory. It compares them with the capabilities
+the engine has in flight, at capability granularity; a clear for a capability the core wrote in the
+meantime would remove the tag of what the core wrote. The watch starts when the engine presents the read of the capability's
+lower word, and a capability written from then on until its clear is presented is not cleared.
+From the presentation of the clear until it reaches the RMW filter, a core write to the same
+capability marks the clear stale, and the RMW filter then only reads the tag word instead of
+clearing the tag. Once the clear is at the RMW filter, the socket in front of the RMW filter holds
+it there, so no core write reaches the RMW filter before it. Writes of other crossbar hosts, such as
+the debug module's system bus access, are not watched.
+
+A sweep that would reach past the top of its region ends there: the engine sweeps
+`min(TRBE_NUM_CAPS, (top - TRBE_BASE_ADDR) / 8)` capabilities, with `top` the `MainSramTopAddr` or
+`NvmTopAddr` of the region `TRBE_BASE_ADDR` lies in, and `TRBE_NUM_CAPS` keeps the value software
+wrote. A sweep therefore never leaves the tagged region it starts in.
+
 
 ### Access Checkers
 
-Each of the three requesters passes an access checker parameterized with the region it owns. An
+Each of the four requesters passes an access checker parameterized with the region it owns. An
 access is forwarded only if all of the following hold:
 
 - `cheriot_ena_i` is `MuBi4True`.
 - The address is inside the allowable region for the requester.
+- The address is word-aligned and the access is a full 32-bit word.
 - The opcode is `Get` or `PutFullData`.
 
 Everything else is steered to a `tlul_err_resp` instance and answered with a TL-UL error. In
 particular, any `cheriot_ena_i` value other than a strict `MuBi4True` - including a strict
-`MuBi4False` - makes the entire meta SRAM inaccessible from all three ports.
+`MuBi4False` - makes the entire meta SRAM inaccessible from all four ports.
 
 ### Arbitration
 
-A `tlul_socket_m1` arbitrates the three checked streams onto `meta_sram_tl`. Arbitration sits behind
+A `tlul_socket_m1` arbitrates the four checked streams onto `meta_sram_tl`. Arbitration sits behind
 the checkers, on transactions that are already integrity-protected end to end.
 
 ## System Bus Access
@@ -135,17 +210,22 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
-| Pointer error in the tag filter's hardened FIFO | `fatal_fault` alert |
+| Error or integrity fault on a response to the revocation engine | `TRBE_STATUS.sweep_err` and `fatal_fault` alert |
+| Error, integrity fault or malformed response on a revocation engine bitmap lookup | Capability counted as revoked, `TRBE_STATUS.sweep_err` and `fatal_fault` alert |
+| RMW filter fault while the revocation engine is active | `TRBE_STATUS.sweep_err` and `fatal_fault` alert |
 
 The first three are reachable by software and surface as a bus fault in the core, so they must not
-raise an alert. The last four latch the fatal alert until reset. There is no interrupt.
+raise an alert. The others latch the fatal alert until reset; a sweep that could not be completed
+correctly must not look successful.
 
 
 ## Timing
 
 All internal sockets and the socket towards the meta SRAM are instantiated with zero-depth FIFOs, so
-a request propagates combinationally from `cored_tl_d` through the tag filter, RMW filter, access
-checker and arbiter to `meta_sram_tl`, and the response propagates back the same way. This keeps the
+a request propagates combinationally from `cored_tl_d` through the tag filter, the `cheriot_socket_m1`
+in front of the RMW filter, the RMW filter, access checker and arbiter to `meta_sram_tl`, and the
+response propagates back the same way. The revocation engine's tag filter joins the same path at the
+`cheriot_socket_m1`, and its TRVK filter reaches `meta_sram_tl` through its own access checker. This keeps the
 latency overhead of CHERIoT mode at zero cycles for reads, but places the meta SRAM path on the
 critical path.
 

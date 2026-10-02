@@ -34,6 +34,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
             <li>3-stage pipeline: instruction fetch, decode and execute, writeback</li>
             <li>RV32I base ISA: version 2.1, active after reset</li>
             <li>CHERIoT base ISA: version v1.0, can be switched to once (i.e., no way back to RV32I until reset)</li>
+            <li>CHERIoT background revocation engine: sweeps the Main SRAM and the Secondary SRAM and clears the tag of every revoked capability</li>
             <li>M (integer multiplication and division) extension: version 2.0, single-cycle multiplier</li>
             <li>C (compressed instructions) extension: version 2.0</li>
             <li>ZcbZcmp (code size reduction) extensions: version 1.0.0</li>

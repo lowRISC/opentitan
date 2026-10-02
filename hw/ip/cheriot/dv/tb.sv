@@ -14,10 +14,12 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
 
   `DV_ALERT_IF_CONNECT()
 
@@ -29,6 +31,9 @@ module tb;
     // Bus interface (device) for CSRs
     .regs_tl_d_i          (tl_if.h2d),
     .regs_tl_d_o          (tl_if.d2h),
+
+    // Interrupts
+    .intr_trbe_done_o     (interrupts[0]),
 
     // Alerts
     .alert_rx_i           (alert_rx ),
@@ -54,6 +59,9 @@ module tb;
     // Host port towards the interconnect
     .cored_tl_h_o         (),
     .cored_tl_h_i         (tlul_pkg::TL_D2H_DEFAULT),
+    // The revocation engine is not exercised in this environment yet
+    .trbe_tl_h_o          (),
+    .trbe_tl_h_i          (tlul_pkg::TL_D2H_DEFAULT),
 
     // Host port towards the meta SRAM
     .meta_sram_tl_o       (),
@@ -65,6 +73,7 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

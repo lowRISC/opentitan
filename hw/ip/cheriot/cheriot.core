@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ibex:ibex_pkg
       - pulp-platform:common_cells:common_cells
     files:
       - rtl/cheriot_reg_pkg.sv
@@ -17,6 +18,11 @@ filesets:
       - rtl/cheriot_rmw_filter.sv
       - rtl/cheriot_tag_filter.sv
       - rtl/cheriot_access_check.sv
+      - rtl/cheriot_socket_m1.sv
+      - rtl/cheriot_trbe_mover.sv
+      - rtl/cheriot_trvk_core.sv
+      - rtl/cheriot_trvk_tlul.sv
+      - rtl/cheriot_trbe.sv
       - rtl/cheriot.sv
     file_type: systemVerilogSource
 

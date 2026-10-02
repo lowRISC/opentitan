@@ -27,19 +27,25 @@
   bus_interfaces: [
     {protocol: "tlul", direction: "device", name: "regs"},
     {protocol: "tlul", direction: "device", name: "revbm"},
-    {protocol: "tlul", direction: "host", name: "cored"}
+    {protocol: "tlul", direction: "host", name: "cored"},
+    {protocol: "tlul", direction: "host", name: "trbe"}
   ],
 
   ///////////////////////////
   // Interrupts and Alerts //
   ///////////////////////////
 
+  interrupt_list: [
+    { name: "trbe_done",
+      desc: "Raised when the revocation engine has resolved every capability of a sweep.",
+    }
+  ],
+
   alert_list: [
     { name: "fatal_fault",
       desc: '''
             This fatal alert is triggered when an integrity fault is detected, when the meta
-            SRAM path returns a device error, or when the tag filter's transaction FIFO reports
-            a pointer error.
+            SRAM path returns a device error, or when the revocation engine reports an error.
             '''
     }
   ],
@@ -101,6 +107,26 @@
       type:    "int",
       default: "3072"
     },
+
+    /////////////////////
+    // Register widths //
+    /////////////////////
+
+    { name:    "TrbeNumCapsW",
+      desc:    '''
+               Width of TRBE_NUM_CAPS. A sweep reads two words per capability, and that word count
+               fits the TL-UL address width.
+               ''',
+      type:    "int unsigned",
+      default: "31",
+      local:   "true"
+    },
+    { name:    "TrbeEpochW",
+      desc:    "Width of TRBE_EPOCH.count, the sweep count above the active bit.",
+      type:    "int unsigned",
+      default: "31",
+      local:   "true"
+    },
   ],
 
   //////////////
@@ -147,8 +173,28 @@
     },
     { name: "CHERIOT.MODE_GATING",
       desc: '''
-        In ePMP mode the entire meta SRAM is inaccessible through all three ports of the
+        In ePMP mode the entire meta SRAM is inaccessible through all four ports of the
         subsystem. No tag lookups are issued.
+      '''
+    },
+    { name: "CHERIOT.TRBE_SWEEP",
+      desc: '''
+        The background revocation engine sweeps a range of capabilities in the main SRAM or the NVM
+        region and clears the tag of every tagged, non-sealing capability whose base has its
+        revocation bit set, without modifying memory data.
+      '''
+    },
+    { name: "CHERIOT.TRBE_CORE_WRITE_SNOOP",
+      desc: '''
+        A capability the core writes while the revocation engine resolves it keeps the tag the
+        core wrote.
+      '''
+    },
+    { name: "CHERIOT.TRBE_STATUS",
+      desc: '''
+        The revocation engine reports a sweep in progress, flags ignored starts and errors during a
+        sweep until software clears them, raises an interrupt when a sweep completes, and keeps an
+        epoch, odd while a sweep runs, that counts the sweeps that ended without an error.
       '''
     },
   ],
@@ -239,11 +285,6 @@
         The CHERIoT mode enable is multi-bit encoded.
       '''
     },
-    { name: "CTR.REDUN",
-      desc: '''
-        The tag filter's outstanding-transaction FIFO uses redundantly encoded read and write pointers.
-      '''
-    },
   ],
 
   ///////////
@@ -260,7 +301,141 @@
 
   regwidth: "32",
   registers: {
-    // No additional registers
-    regs: []
+    regs: [
+      { name: "TRBE_REGWEN",
+        desc: "Write enable for the revocation engine registers.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "en",
+            desc: '''
+              Low while the revocation engine is active, locking !!TRBE_BASE_ADDR, !!TRBE_NUM_CAPS
+              and !!TRBE_START. !!TRBE_STATUS.busy follows the same state one cycle later.
+            ''',
+            resval: "1"
+          }
+        ]
+      },
+      { name: "TRBE_BASE_ADDR",
+        desc: "Address of the first capability the revocation engine sweeps.",
+        regwen: "TRBE_REGWEN",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:3",
+            name: "addr",
+            desc: '''
+              Bits 31:3 of the address. The sweep starts at a capability boundary; bits 2:0 read as
+              zero. The address must lie in a tagged region, the main SRAM or the NVM; the sweep
+              stops at the top of that region.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TRBE_NUM_CAPS",
+        desc: "Number of capabilities the revocation engine sweeps, each of them two 32-bit words.",
+        regwen: "TRBE_REGWEN",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "TrbeNumCapsW-1:0",
+            name: "num",
+            desc: '''
+              Number of capabilities. A sweep reaching past the top of its tagged region ends at its
+              top; the register keeps the value written.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TRBE_START",
+        desc: '''
+          Starts a sweep over the capabilities !!TRBE_BASE_ADDR and !!TRBE_NUM_CAPS describe.
+          !!TRBE_STATUS.busy reflects the sweep in progress. A start outside CHERIoT mode, with
+          !!TRBE_NUM_CAPS zero, or with !!TRBE_BASE_ADDR outside the tagged regions, is ignored and
+          sets !!TRBE_STATUS.start_err.
+        ''',
+        regwen: "TRBE_REGWEN",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        // Writing it starts a sweep over whatever the other registers hold.
+        tags: ["excl:CsrAllTests:CsrExclWrite"],
+        fields: [
+          { bits: "0",
+            name: "start",
+            desc: "Write 1 to start a sweep.",
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TRBE_STATUS",
+        desc: "Status of the revocation engine.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "busy",
+            desc: '''
+              The revocation engine is sweeping; it is low once every capability of the sweep is
+              resolved.
+            ''',
+            resval: "0"
+          },
+          { bits: "8",
+            name: "start_err",
+            swaccess: "rw1c",
+            desc: '''
+              A start was ignored because the subsystem was not in CHERIoT mode, !!TRBE_NUM_CAPS was
+              zero or !!TRBE_BASE_ADDR was outside the tagged regions. Stays set until software
+              writes 1 to it.
+            ''',
+            resval: "0"
+          },
+          { bits: "9",
+            name: "sweep_err",
+            swaccess: "rw1c",
+            desc: '''
+              A response to the revocation engine was an error, failed its integrity check or was
+              malformed, or the RMW filter reported a fault, during a sweep; the fatal_fault alert is
+              raised as well. Stays set until
+              software writes 1 to it.
+            ''',
+            resval: "0"
+          }
+        ]
+      }
+      { name: "TRBE_EPOCH",
+        desc: '''
+          Sweep epoch, twice the number of sweeps that ended without an error, plus one while the
+          revocation engine is active. It is odd from the cycle a start is taken, when !!TRBE_REGWEN
+          falls, until the engine is inactive again, and even otherwise. A sweep that ends with an
+          error (see !!TRBE_STATUS.sweep_err) is not counted, so the epoch returns to the even value
+          it had before that start, and no software waiting for a completed sweep proceeds on it.
+        ''',
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "active",
+            desc: "The revocation engine is active; the inverse of !!TRBE_REGWEN.",
+            resval: "0"
+          },
+          { bits: "TrbeEpochW:1",
+            name: "count",
+            desc: '''
+              Sweeps that ended without an error, modulo 2^31; a sweep counts in the cycle
+              !!TRBE_EPOCH.active clears.
+            ''',
+            resval: "0"
+          }
+        ]
+      }
+    ]
   }
 }

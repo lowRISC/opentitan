@@ -18,6 +18,12 @@ module xbar_main_bind;
     .h2d    (tl_cheriot__cored_i),
     .d2h    (tl_cheriot__cored_o)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot__trbe (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_cheriot__trbe_i),
+    .d2h    (tl_cheriot__trbe_o)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_dm__sba (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
