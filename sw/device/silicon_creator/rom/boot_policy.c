@@ -49,25 +49,46 @@ rom_error_t boot_policy_choose_slot(boot_policy_t *boot_policy) {
   return kErrorOk;
 }
 
-const void *boot_policy_load_image(boot_slot_t boot_slot) {
+static nvm_data_id_t get_data_id_of_boot_slot(boot_slot_t boot_slot) {
   switch (launder32(boot_slot)) {
     case kBootSlotA:
       HARDENED_CHECK_EQ(boot_slot, kBootSlotA);
-      return boot_policy_manifest_a_load();
+      return kNvmDataIdRomExtSlotA;
     case kBootSlotB:
       HARDENED_CHECK_EQ(boot_slot, kBootSlotB);
-      return boot_policy_manifest_b_load();
+      return kNvmDataIdRomExtSlotB;
     default:
       break;
   }
-  return NULL;
+  return kNvmDataIdInvalid;
+}
+
+const void *boot_policy_load_image(boot_slot_t boot_slot) {
+  nvm_data_id_t data_id = get_data_id_of_boot_slot(boot_slot);
+  if (nvm_data_load(data_id) != kErrorOk) {
+    return NULL;
+  }
+  void *data_ptr = NULL;
+  if (nvm_data_get(data_id, &data_ptr, NULL) != kErrorOk) {
+    return NULL;
+  }
+  return data_ptr;
 }
 
 const void *boot_policy_get_image(boot_slot_t boot_slot) {
-  return boot_policy_load_image(boot_slot);
+  void *data_ptr = NULL;
+  nvm_data_id_t data_id = get_data_id_of_boot_slot(boot_slot);
+  rom_error_t error = nvm_data_get(data_id, &data_ptr, NULL);
+  if (error != kErrorOk) {
+    return NULL;
+  }
+  return data_ptr;
 }
 
-void boot_policy_unload_image(boot_slot_t boot_slot) {}
+void boot_policy_unload_image(boot_slot_t boot_slot) {
+  nvm_data_id_t data_id = get_data_id_of_boot_slot(boot_slot);
+  nvm_data_unload(data_id);
+}
 
 rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
                                        const boot_data_t *boot_data) {

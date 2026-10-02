@@ -402,6 +402,82 @@ rom_error_t nvm_ctrl_info_page_lookup(uint8_t bank, uint8_t page,
 // Data partition I/O
 // ---------------------------------------------------------------------------
 
+/**
+ * Identifier for a block of data loadable via nvm_data_load().
+ *
+ * This enum identifies the location of firmware images in the system (RomExt,
+ * BL0, ...). Note that manifests are stored at the beginning of the larger
+ * images. The entry kNvmDataId{fw}Manifest{slot} should be used to load just
+ * the initial part of the image up to the end of the manifest.
+ * kNvmDataId{fw}{slot} should instead be used to load the whole image, manifest
+ * included.
+ *
+ * Note that blocks with distinct nvm_data_id_t may be physically stored
+ * in different NVM memory devices. Similarly, blocks with distinct
+ * nvm_data_id_t may be loaded into different destination memory devices.
+ * The destination memory may be important for the execution of the image.
+ * This is also the main reason we have separate APIs for info pages and for
+ * firmware images.
+ */
+typedef enum nvm_data_id {
+  kNvmDataIdInvalid,
+  kNvmDataIdRomExtManifestSlotA,
+  kNvmDataIdRomExtSlotA,
+  kNvmDataIdRomExtManifestSlotB,
+  kNvmDataIdRomExtSlotB,
+  kNvmDataIdBl0ManifestSlotA,
+  kNvmDataIdBl0SlotA,
+  kNvmDataIdBl0ManifestSlotB,
+  kNvmDataIdBl0SlotB,
+} nvm_data_id_t;
+
+/**
+ * Load NVM data to its intended destination.
+ *
+ * Make sure the specified NVM data is accessible from the location in memory
+ * where it is intended to be used. For some top implementations, this may
+ * require the data to be copied. For some other tops, this function may be
+ * a no-op
+ *
+ * It is invalid to load the data again unless it is first unloaded with
+ * nvm_data_unload(), which undoes any action performed during loading,
+ * possibly including releasing acquired resources.
+ *
+ * This function blocks until the data is accessible from its final location.
+ *
+ * @param data_id Identifier for the data to load.
+ * @return The success/error state of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_data_load(nvm_data_id_t data_id);
+
+/**
+ * Undo a NVM data acquisition done via nvm_data_load().
+ *
+ * Release resources acquired in the corresponding call to nvm_data_load().
+ * The pointer returned by nvm_data_get() should be considered invalid
+ * after this function returns.
+ *
+ * @param data_id A memory data block loaded via nvm_data_load().
+ */
+void nvm_data_unload(nvm_data_id_t data_id);
+
+/**
+ * Get the pointer of previously loaded NVM data.
+ *
+ * @param data_id Identifier previously used with nvm_data_load().
+ * @param data_ptr If not NULL and if the operation succeeds, this is written
+ *   with the pointer to the data. This lies in Ibex's address space.
+ * @param data_size If not NULL and if the operation succeeds, this is written
+ *   with the size of the data.
+ * @return The success/error state of the operation. On success, the @p data_ptr
+ *   and @p data_size are written with valid data. It is an error to call this
+ *   function if nvm_data_load() wasn't called before for @p data_id.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_data_get(nvm_data_id_t data_id, void **data_ptr,
+                         uint32_t *data_size);
+
 OT_WARN_UNUSED_RESULT
 rom_error_t nvm_ctrl_data_read(uint32_t addr, uint32_t word_count, void *data);
 
