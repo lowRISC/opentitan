@@ -6,6 +6,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "flash_ctrl_regs.h"
@@ -15,6 +16,14 @@ OTTF_DEFINE_TEST_CONFIG();
 
 status_t flash_contents_print(boot_log_t *boot_log) {
   TRY(boot_log_check(boot_log));
+  // ROM_EXT only maps the verified active images in ePMP. Map the entire flash
+  // read-only so this test can inspect the contents of Slot A while running
+  // from Slot B.
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
   uint32_t *data = (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
                                 boot_log->rom_ext_size);
   uint32_t *end = (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +

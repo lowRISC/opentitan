@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/dice_storage.h"
 #include "sw/device/silicon_creator/lib/cert/ram_msg.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -230,6 +231,11 @@ static status_t verify_handover(void) {
   }
 
   if (flash_storage_mode) {
+    epmp_set_napot(12,
+                   (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                   .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                          TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                   kEpmpPermReadOnly);
     perso_tlv_cert_obj_view_t cdi0_obj = {0};
     perso_tlv_cert_obj_view_t cdi1_obj = {0};
     uint8_t *slot0_hdr = (uint8_t *)dice_storage_slot_v1_header(&cdi0_slot);
