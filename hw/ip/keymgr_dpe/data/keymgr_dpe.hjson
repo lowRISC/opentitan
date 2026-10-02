@@ -562,7 +562,7 @@
               value: "5",
               name: "Load root key",
               desc: '''
-                Loads the root key into the key manager.
+                Loads the root key into the key manager. Can be disabled by !!LOAD_ROOT_KEY_LOCK.
                 '''
             }
           ],
@@ -1335,8 +1335,8 @@
       ]
     },
 
-    { name: "LOAD_KEY_LOCK",
-      desc: "Register write lock for the LOAD_KEY command",
+    { name: "LOAD_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
@@ -1344,10 +1344,7 @@
           name: "LOCK",
           resval: "0"
           desc: '''
-            Load key register write lock.
-
-            Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
-            Once locked, the LOAD_KEY command is disabled.
+            Write 1 to disable the `load root key` operation until the next reset.
           '''
         },
       ]

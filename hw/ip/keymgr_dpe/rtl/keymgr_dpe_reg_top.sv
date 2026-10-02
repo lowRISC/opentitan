@@ -409,9 +409,9 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_root_key_wd;
   logic debug_inactive_lc_en_qs;
   logic debug_inactive_lc_en_wd;
-  logic load_key_lock_we;
-  logic load_key_lock_qs;
-  logic load_key_lock_wd;
+  logic load_root_key_lock_we;
+  logic load_root_key_lock_qs;
+  logic load_root_key_lock_wd;
   logic enforce_sw_binding_we;
   logic [3:0] enforce_sw_binding_qs;
   logic [3:0] enforce_sw_binding_wd;
@@ -3680,20 +3680,20 @@ module keymgr_dpe_reg_top (
   );
 
 
-  // R[load_key_lock]: V(False)
+  // R[load_root_key_lock]: V(False)
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_load_key_lock (
+  ) u_load_root_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (load_key_lock_we),
-    .wd     (load_key_lock_wd),
+    .we     (load_root_key_lock_we),
+    .wd     (load_root_key_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3701,11 +3701,11 @@ module keymgr_dpe_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.load_key_lock.q),
+    .q      (reg2hw.load_root_key_lock.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (load_key_lock_qs)
+    .qs     (load_root_key_lock_qs)
   );
 
 
@@ -3810,7 +3810,7 @@ module keymgr_dpe_reg_top (
     addr_hit[66] = (reg_addr == KEYMGR_DPE_ERR_CODE_OFFSET);
     addr_hit[67] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
     addr_hit[68] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
-    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET);
+    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
     addr_hit[70] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
   end
 
@@ -4102,9 +4102,9 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_root_key_wd = reg_wdata[7];
 
   assign debug_inactive_lc_en_wd = reg_wdata[8];
-  assign load_key_lock_we = addr_hit[69] & reg_we & !reg_error;
+  assign load_root_key_lock_we = addr_hit[69] & reg_we & !reg_error;
 
-  assign load_key_lock_wd = reg_wdata[0];
+  assign load_root_key_lock_wd = reg_wdata[0];
   assign enforce_sw_binding_we = addr_hit[70] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
@@ -4180,7 +4180,7 @@ module keymgr_dpe_reg_top (
     reg_we_check[66] = err_code_we;
     reg_we_check[67] = 1'b0;
     reg_we_check[68] = debug_we;
-    reg_we_check[69] = load_key_lock_we;
+    reg_we_check[69] = load_root_key_lock_we;
     reg_we_check[70] = enforce_sw_binding_we;
   end
 
@@ -4528,7 +4528,7 @@ module keymgr_dpe_reg_top (
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[0] = load_key_lock_qs;
+        reg_rdata_next[0] = load_root_key_lock_qs;
       end
 
       addr_hit[70]: begin
