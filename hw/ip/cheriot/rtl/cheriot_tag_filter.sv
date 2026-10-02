@@ -39,9 +39,7 @@ module cheriot_tag_filter #(
 
   // Host port
   output tlul_pkg::tl_h2d_t tl_h_o,
-  input  tlul_pkg::tl_d2h_t tl_h_i,
-
-  output logic fifo_err_o
+  input  tlul_pkg::tl_d2h_t tl_h_i
 );
 
   ///////////
@@ -186,13 +184,11 @@ module cheriot_tag_filter #(
     aligned: tl_d_is_aligned
   };
 
-  // SEC_CM: CTR.REDUN
   prim_fifo_sync #(
     .Width(MetaWidth),
     .Pass(1'b0),
     .Depth(NumOutstanding),
-    .NeverClears(1'b1),
-    .Secure(1'b1)
+    .NeverClears(1'b1)
   ) u_prim_fifo_sync_align (
     .clk_i,
     .rst_ni,
@@ -205,7 +201,7 @@ module cheriot_tag_filter #(
     .rdata_o ( meta_rsp       ),
     .full_o  (                ),
     .depth_o (                ),
-    .err_o   ( fifo_err_o     )
+    .err_o   (                )
   );
 
 
