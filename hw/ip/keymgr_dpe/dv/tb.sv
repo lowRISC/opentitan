@@ -49,9 +49,10 @@ module tb;
   // TODO(opentitan-integrated/issues/332):
   // need to model the OTP seed input
   keymgr_dpe # (
-    .NumInstHwSlot        (keymgr_dpe_env_pkg::DvNumInstHwSlot),
-    .NumBootStages        (keymgr_dpe_env_pkg::DvBootStages),
-    .NumRomDigestInputs   (keymgr_dpe_env_pkg::DvNumRomDigestInputs)
+    .NumInstHwSlot          (keymgr_dpe_env_pkg::DvNumInstHwSlot),
+    .NumBootStages          (keymgr_dpe_env_pkg::DvBootStages),
+    .NumRomDigestInputs     (keymgr_dpe_env_pkg::DvNumRomDigestInputs),
+    .SupportOtbnAsKdfEngine (1'b1)
   ) dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
@@ -61,8 +62,11 @@ module tb;
     .aes_key_o            (keymgr_dpe_if.aes_key),
     .otbn_key_o           (keymgr_dpe_if.otbn_key),
     .kmac_key_o           (keymgr_dpe_if.kmac_key),
-    .kmac_data_o          (kmac_req),
-    .kmac_data_i          (kmac_rsp),
+    .kmac_app_o           (kmac_req),
+    .kmac_app_i           (kmac_rsp),
+    .otbn_app_o           (),
+    .otbn_app_i           (kmac_pkg::APP_RSP_DEFAULT),
+    .sensitive_key_o      (),
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
