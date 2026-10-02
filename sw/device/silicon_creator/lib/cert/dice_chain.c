@@ -365,6 +365,48 @@ rom_error_t dice_chain_attestation_creator_keygen(void) {
                                         *kDiceKeyUds.keymgr_dpe_diversifier);
 }
 
+// TODO(#31823): Verify these static sw binding values for the CreatorIntKey.
+// Duplicated in `sw/device/silicon_creator/lib/drivers/keymgr_dpe_functest.c`.
+const keymgr_dpe_binding_value_t kDiceChainCreatorIntSealBindingValue = {
+    .data = {0x84794d9a, 0x8f8dbc8f, 0x983c982c, 0x9a1c6781, 0xcb547343,
+             0x92b7cd91, 0xcb2cfb9d, 0xd1224a62}};
+const keymgr_dpe_binding_value_t kDiceChainCreatorIntAttestBindingValue = {
+    .data = {0x09a1dd87, 0x67acaa58, 0x33f0d0df, 0xddb8e842, 0xa18ac2e0,
+             0x004207d0, 0x40f41d3c, 0x5b4a9a20}};
+
+rom_error_t dice_chain_attestation_creator_int(
+    const manifest_t *rom_ext_manifest) {
+  // Prepare the data to derive the sealing CreatorIntKey.
+  const sc_keymgr_dpe_advance_data_t adv_sealing_data = {
+      .sel_src_slot = kKeymgrDPESealSlot,
+      .sel_dst_slot = kKeymgrDPESealSlot,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .binding_value = &kDiceChainCreatorIntSealBindingValue,
+      .version = rom_ext_manifest->max_key_version,
+  };
+
+  // Prepare the data to derive the attestation CreatorIntKey.
+  const sc_keymgr_dpe_advance_data_t adv_attestation_data = {
+      .sel_src_slot = kKeymgrDPEAttestSlot,
+      .sel_dst_slot = kKeymgrDPEAttestSlot,
+      .policy = kKeymgrDPEDefaultPolicy,
+      .binding_value = &kDiceChainCreatorIntAttestBindingValue,
+      .version = rom_ext_manifest->max_key_version,
+  };
+
+  // Derive the CreatorIntKeys from the CreatorRootKeys
+  SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
+                                kScKeymgrDPESecMmioMaxVerSet +
+                                kScKeymgrDPESecMmioSlotPolicy));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator_int(
+      adv_sealing_data, adv_attestation_data));
+
+  // TODO(#31823): Generate / Verify the UDS_1 certificate from the
+  // CreatorIntKey
+
+  return kErrorOk;
+}
+
 rom_error_t dice_chain_attestation_owner_int(
     const keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
@@ -390,7 +432,7 @@ rom_error_t dice_chain_attestation_owner_int(
       .version = rom_ext_manifest->max_key_version,
   };
 
-  // Derive the OwnerIntKeys from the CreatorRootKeys
+  // Derive the OwnerIntKeys from the CreatorIntKeys
   SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
                                 kScKeymgrDPESecMmioMaxVerSet +
                                 kScKeymgrDPESecMmioSlotPolicy));

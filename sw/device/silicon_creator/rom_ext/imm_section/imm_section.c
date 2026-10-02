@@ -106,13 +106,20 @@ static rom_error_t imm_section_start(void) {
       HARDENED_RETURN_IF_ERROR(dice_chain_init());
       HARDENED_RETURN_IF_ERROR(dice_chain_immutable_section_check());
 
-      // The keymgr_dpe has loaded the attestation and sealing CreatorRootKey
-      // inside the designated slots
+      // Derive the attestation and sealing CreatorIntKey from the
+      // CreatorRootKey
+      HARDENED_RETURN_IF_ERROR(dice_chain_attestation_creator_int(rom_ext));
+
+      // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
+      // hold keys with boot stage set to BootStageOwnerInt (2). (Note: Current
+      // bootstage + 1)
+
+      // Derive the attestation and sealing OwnerIntKey from the CreatorIntKey
       HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner_int(
           &boot_measurements.rom_ext, rom_ext));
 
       // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwner (2). (Note: Current
+      // hold keys with boot stage set to BootStageOwner (3). (Note: Current
       // bootstage + 1)
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
@@ -126,9 +133,11 @@ static rom_error_t imm_section_start(void) {
     // 1. Start the entropy complex
     // 2. load the UDS
     // 3. Generate the attestation Creator Root Key
-    // 4. Generate the attestation Owner Int Key
-    // 5. Generate the sealing Owner Int Key (Base: either att. Creator Root Key
-    // or UDS)
+    // 4. Generate the attestation Creator Int Key
+    // 5. Generate the attestation Owner Int Key
+    // 6. Generate the sealing Creator Int Key (Base: either att. Creator Root
+    // Key or UDS)
+    // 7. Generate the sealing Owner Int Key
   }
 
   // Make mutable part executable.

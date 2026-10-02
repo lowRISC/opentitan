@@ -167,6 +167,10 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // Advance keymgr dpe to the next stage.
   // Keys are in state CreatorRootKey
   if (num_keymgr_dpe_advances == 0) {
+    // Derive the CreatorIntKey from the CreatorRootKey
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kCreatorIntKeyParams));
+    // Derive the OwnerIntKey from the CreatorIntKey
     CHECK_STATUS_OK(
         keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntKeyParams));
     num_keymgr_dpe_advances++;
