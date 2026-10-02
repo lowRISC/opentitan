@@ -72,7 +72,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   }
 
   function void post_randomize();
-    calib_rdy = get_rand_mubi4_val(6, 2, 2);
+    // Without a calib_rdy_i input the clocks are always calibrated.
+    calib_rdy = MuBi4True;
     `uvm_info(`gfn, $sformatf("randomize: calib_rdy=0x%x", calib_rdy), UVM_MEDIUM)
     super.post_randomize();
   endfunction
