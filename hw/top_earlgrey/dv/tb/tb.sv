@@ -865,6 +865,12 @@ module tb;
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
+  // An injected OTP fault moves the otp_ctrl partitions to their error state, which drops
+  // otp_lc_data.valid and with it lc_init_done until the LC FSM reaches EscalateSt. Let the
+  // fault-injecting vseqs turn this check off, as the lc_ctrl block-level tb does.
+  `DV_ASSERT_CTRL("LcInitDoneSticky_A",
+                  tb.dut.top_earlgrey.earlgrey_pd_main.u_lc_ctrl.LcInitDoneSticky_A)
+
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"
 
