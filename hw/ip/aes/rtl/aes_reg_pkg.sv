@@ -100,6 +100,9 @@ package aes_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } keep_start_trigger_high;
+    struct packed {
+      logic        q;
     } force_masks;
     struct packed {
       logic        q;
@@ -252,14 +255,14 @@ package aes_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    aes_reg2hw_alert_test_reg_t alert_test; // [972:969]
-    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [968:705]
-    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [704:441]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [440:309]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [308:177]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [176:45]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [44:23]
-    aes_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [22:21]
+    aes_reg2hw_alert_test_reg_t alert_test; // [973:970]
+    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [969:706]
+    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [705:442]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [441:310]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [309:178]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [177:46]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [45:24]
+    aes_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [23:21]
     aes_reg2hw_trigger_reg_t trigger; // [20:17]
     aes_reg2hw_status_reg_t status; // [16:13]
     aes_reg2hw_ctrl_gcm_shadowed_reg_t ctrl_gcm_shadowed; // [12:0]

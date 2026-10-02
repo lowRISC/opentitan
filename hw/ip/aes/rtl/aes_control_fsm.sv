@@ -31,6 +31,7 @@ module aes_control_fsm
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    keep_start_trigger_high_i,
   input  logic                                    ctrl_gcm_qe_i,
   output logic                                    ctrl_gcm_we_o,
   input  logic                                    ctrl_gcm_phase_i,
@@ -517,7 +518,7 @@ module aes_control_fsm
           doing_gcm_restore_d = start_gcm_restore;
           doing_gcm_aad_d     = start_gcm_aad;
           doing_gcm_tag_d     = start_gcm_tag;
-          start_we            = 1'b1;
+          start_we            = ~keep_start_trigger_high_i;
           aes_ctrl_ns         = CTRL_LOAD;
 
         end else if (start_gcm_save) begin
@@ -525,7 +526,7 @@ module aes_control_fsm
           // PRNG (to clear the internal state after saving it) and advance.
           prng_update_o    = 1'b1;
           doing_gcm_save_d = 1'b1;
-          start_we         = 1'b1;
+          start_we         = ~keep_start_trigger_high_i;
           aes_ctrl_ns      = CTRL_GHASH_READY;
 
         end else if (start) begin
@@ -576,7 +577,7 @@ module aes_control_fsm
           if (cipher_in_ready_i) begin
             // Do not yet clear a possible start trigger if we are just starting the generation of
             // the start key for decryption.
-            start_we    = ~cipher_dec_key_gen_o;
+            start_we    = ~cipher_dec_key_gen_o & ~keep_start_trigger_high_i;
             aes_ctrl_ns = CTRL_LOAD;
           end
         end

@@ -50,6 +50,7 @@ static dif_aes_transaction_t transaction = {
     .mask_reseeding = kDifAesReseedPerBlock,
     .manual_operation = kDifAesManualOperationAuto,
     .reseed_on_key_change = true,
+    .keep_start_trigger_high = false,
     .ctrl_aux_lock = false,
 };
 

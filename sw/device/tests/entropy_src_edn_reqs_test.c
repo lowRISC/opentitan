@@ -77,6 +77,7 @@ static void aes_test(const dif_aes_t *aes) {
       .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = false,
+      .keep_start_trigger_high = false,
       .ctrl_aux_lock = false,
   };
   CHECK_DIF_OK(dif_aes_start(aes, &transaction, /*key=*/NULL, /*iv=*/NULL));

@@ -66,6 +66,7 @@ status_t execute_test(void) {
       .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationAuto,
       .reseed_on_key_change = true,
+      .keep_start_trigger_high = false,
       .force_masks = true,
       .ctrl_aux_lock = false,
   };

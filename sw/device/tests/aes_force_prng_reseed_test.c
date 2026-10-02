@@ -104,6 +104,7 @@ status_t execute_test(void) {
       .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = true,
       .force_masks = true,
+      .keep_start_trigger_high = false,
       .ctrl_aux_lock = false,
   };
 

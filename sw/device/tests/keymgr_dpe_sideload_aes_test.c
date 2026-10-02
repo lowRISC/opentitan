@@ -49,6 +49,7 @@ status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
       .mask_reseeding = kDifAesReseedPer64Block,
       .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = false,
+      .keep_start_trigger_high = false,
       .ctrl_aux_lock = false,
   };
 
