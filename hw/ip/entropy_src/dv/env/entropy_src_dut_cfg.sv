@@ -32,7 +32,7 @@ class entropy_src_dut_cfg extends uvm_object;
   uint          preconfig_disable_pct;
 
   // Constraint knob for SW-accessible REGWEN-related fields
-  uint          me_regwen_pct, sw_regupd_pct;
+  uint          sw_regupd_pct;
 
   // Constraint knobs for Boolean fields in CONF register
   // (RNG_BIT_SEL is always uniform)
@@ -80,7 +80,7 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand bit [NumEntropySrcIntr-1:0] en_intr;
 
-  rand bit                      sw_regupd, me_regwen;
+  rand bit                      sw_regupd;
   rand bit                      preconfig_disable;
   rand bit [1:0]                rng_bit_sel;
 
@@ -155,10 +155,6 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint sw_regupd_c {sw_regupd dist {
       1 :/ sw_regupd_pct,
       0 :/ (100 - sw_regupd_pct) };}
-
-  constraint me_regwen_c {me_regwen dist {
-      1 :/ me_regwen_pct,
-      0 :/ (100 - me_regwen_pct) };}
 
   constraint fw_read_enable_c {fw_read_enable dist {
       prim_mubi_pkg::MuBi4True  :/ fw_read_pct,
@@ -571,7 +567,6 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(en_intr_pct <= 100);
     `DV_CHECK(module_enable_pct <= 100);
     `DV_CHECK(preconfig_disable_pct <= 100);
-    `DV_CHECK(me_regwen_pct <= 100);
     `DV_CHECK(sw_regupd_pct <= 100);
     `DV_CHECK(fips_enable_pct <= 100);
     `DV_CHECK(entropy_data_reg_enable_pct <= 100);
