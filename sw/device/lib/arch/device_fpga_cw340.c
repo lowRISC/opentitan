@@ -54,5 +54,3 @@ const uint32_t kAstCheckPollCpuCycles =
 uintptr_t device_test_status_address(void) { return 0; }
 
 uintptr_t device_log_bypass_uart_address(void) { return 0; }
-
-const bool kJitterEnabled = false;
