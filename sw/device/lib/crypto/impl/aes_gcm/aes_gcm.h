@@ -300,6 +300,17 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
                                otcrypto_byte_buf_t *output,
                                size_t *bytes_written, hardened_bool_t *success);
 
+/**
+ * Overwrite an AES-GCM context with random data.
+ *
+ * The context holds the GHASH tables derived from the hash subkey shares, so
+ * it must not outlive the operation. Meant to be used as a cleanup guard on
+ * stack-allocated contexts.
+ *
+ * @param ctx AES-GCM context object.
+ */
+void aes_gcm_context_shred(aes_gcm_context_t *ctx);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
