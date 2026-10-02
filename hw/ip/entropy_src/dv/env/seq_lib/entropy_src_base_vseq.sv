@@ -287,11 +287,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     pause_until_reset_or_flag(pause, stop_early);
     if (stop_early || cfg.under_reset) return;
 
-    ral.me_regwen.set(newcfg.me_regwen);
-    csr_update(.csr(ral.me_regwen));
-    pause_until_reset_or_flag(pause, stop_early);
-    if (stop_early || cfg.under_reset) return;
-
     if (do_interrupt) begin
       ral.intr_enable.set(newcfg.en_intr);
       csr_update(ral.intr_enable);

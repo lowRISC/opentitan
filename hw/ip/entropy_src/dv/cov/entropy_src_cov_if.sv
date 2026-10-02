@@ -566,20 +566,16 @@ interface entropy_src_cov_if
 
   endgroup : sw_update_cg
 
-  covergroup sw_disable_cg with function sample(bit me_regwen,
-                                                bit module_enable,
+  covergroup sw_disable_cg with function sample(bit module_enable,
                                                 entropy_src_main_sm_pkg::state_e main_sm_state);
 
     option.name         = "sw_disable_cg";
     option.per_instance = 1;
 
     // Cross SW attempting to disable entropy_src with the state of its main FSM.
-    cr_disable_main_sm_state: cross me_regwen, module_enable, main_sm_state {
+    cr_disable_main_sm_state: cross module_enable, main_sm_state {
       // This cross is about disabling, so ignore enables.
       ignore_bins enable = binsof(module_enable) intersect {1'b1};
-      // Ignore writes to module_enable when that register is locked because they won't disable
-      // entropy_src.
-      ignore_bins locked = binsof(me_regwen) intersect {1'b0};
     }
 
   endgroup : sw_disable_cg
@@ -1105,10 +1101,9 @@ interface entropy_src_cov_if
 
   endfunction
 
-  function automatic void cg_sw_disable_sample(bit me_regwen,
-                                               bit module_enable,
+  function automatic void cg_sw_disable_sample(bit module_enable,
                                                entropy_src_main_sm_pkg::state_e main_sm_state);
-    sw_disable_cg_inst.sample(me_regwen, module_enable, main_sm_state);
+    sw_disable_cg_inst.sample(module_enable, main_sm_state);
 
   endfunction
 

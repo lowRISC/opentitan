@@ -45,7 +45,6 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.otp_en_es_fw_over_pct          = 100;
     cfg.otp_en_es_fw_over_inval_pct    = 0;
     cfg.dut_cfg.en_intr_pct            = 75;
-    cfg.dut_cfg.me_regwen_pct          = 100;
     cfg.dut_cfg.sw_regupd_pct          = 100;
 
     cfg.dut_cfg.module_enable_pct      = 100;
