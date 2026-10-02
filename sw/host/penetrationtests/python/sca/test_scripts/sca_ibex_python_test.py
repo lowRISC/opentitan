@@ -4,8 +4,11 @@
 
 from sw.host.penetrationtests.python.sca.host_scripts import sca_ibex_functions
 from sw.host.penetrationtests.python.sca.communication.sca_ibex_commands import OTIbex
+from sw.host.penetrationtests.python.sca.communication.sca_trigger_commands import OTTRIGGER
 from python.runfiles import Runfiles
+from sw.host.penetrationtests.python.util import common_library
 from sw.host.penetrationtests.python.util import targets
+from sw.host.penetrationtests.python.util import tvla
 from sw.host.penetrationtests.python.util import utils
 import json
 import random
@@ -32,6 +35,149 @@ BOOTSTRAP = args.bootstrap
 
 
 class IbexScaTest(unittest.TestCase):
+
+    def test_00_trigger_sensor_ibex_div_timing_leak(self):
+        triggersca = OTTRIGGER(target)
+        tvla_iterations = 2
+        tvla_segments = 30
+        trigger = 4096  # kCombiOpsTriggerDivSensor (pentest_set_trigger_high / low)
+        fixed_data1 = 11
+        fixed_data2 = 0
+
+        # Seed the synchronized randomness with the same seed as in the chip which is 1
+        random.seed(1)
+        fvsr_labels = []
+        for _ in range(tvla_iterations):
+            sample_fixed = 1
+            for __ in range(tvla_segments):
+                if sample_fixed != 1:
+                    random.getrandbits(32)
+                sample_fixed = random.getrandbits(32) & 0x1
+
+            sample_fixed = 1
+            for __ in range(tvla_segments):
+                fvsr_labels.append(sample_fixed)
+                if sample_fixed != 1:
+                    random.getrandbits(32)
+                sample_fixed = random.getrandbits(32) & 0x1
+
+        # 1. Vulnerable configuration: Data-Independent Timing (DIT) disabled
+        sca_ibex_functions.char_combi_operations_batch_fvsr(
+            target,
+            tvla_iterations,
+            tvla_segments,
+            trigger,
+            fixed_data1,
+            fixed_data2,
+            core_config=common_library.disabled_core_config,
+        )
+        tvla_vuln = tvla.compute_fvsr_tvla(
+            triggersca.read_sensor_batch(), fvsr_labels
+        )
+        print(
+            f"\n[Ibex DIV Trigger Sensor - DIT=OFF (Leaking)] "
+            f"captured={tvla_vuln['num_samples']}/{tvla_vuln['total_captured']} "
+            f"t_stats={tvla_vuln['t_stats']} "
+            f"mcycle[0..3]={tvla_vuln['mcycle_deltas'][:4]}",
+            flush=True,
+        )
+        self.assertEqual(
+            tvla_vuln["total_captured"], tvla_iterations * tvla_segments
+        )
+        self.assertEqual(
+            tvla_vuln["num_samples"], tvla_iterations * tvla_segments
+        )
+        self.assertGreater(abs(tvla_vuln["t_stats"]["mcycle_deltas"]), 4.5)
+
+        # 2. Mitigated configuration: Data-Independent Timing (DIT) enabled
+        mitigated_cfg = dict(common_library.disabled_core_config)
+        mitigated_cfg["enable_data_ind_timing"] = True
+        sca_ibex_functions.char_combi_operations_batch_fvsr(
+            target,
+            tvla_iterations,
+            tvla_segments,
+            trigger,
+            fixed_data1,
+            fixed_data2,
+            core_config=mitigated_cfg,
+        )
+        tvla_mit = tvla.compute_fvsr_tvla(
+            triggersca.read_sensor_batch(), fvsr_labels
+        )
+        print(
+            f"[Ibex DIV Trigger Sensor - DIT=ON (Mitigated)] "
+            f"captured={tvla_mit['num_samples']}/{tvla_mit['total_captured']} "
+            f"t_stats={tvla_mit['t_stats']} "
+            f"mcycle[0..3]={tvla_mit['mcycle_deltas'][:4]}",
+            flush=True,
+        )
+        self.assertEqual(
+            tvla_mit["total_captured"], tvla_iterations * tvla_segments
+        )
+        self.assertEqual(
+            tvla_mit["num_samples"], tvla_iterations * tvla_segments
+        )
+        self.assertLess(abs(tvla_mit["t_stats"]["mcycle_deltas"]), 4.5)
+
+    def test_01_trigger_sensor_ibex_power_droop_leak(self):
+        triggersca = OTTRIGGER(target)
+        tvla_iterations = 2
+        tvla_segments = 220
+        trigger = 8192  # kCombiOpsTriggerPowerDroop (pentest_set_trigger_high / low)
+        fixed_data1 = 0
+        fixed_data2 = 11
+
+        # Seed the synchronized randomness with the same seed as in the chip which is 1
+        random.seed(1)
+        fvsr_labels = []
+        for _ in range(tvla_iterations):
+            sample_fixed = 1
+            for __ in range(tvla_segments):
+                fvsr_labels.append(sample_fixed)
+                if sample_fixed != 1:
+                    random.getrandbits(32)
+                sample_fixed = random.getrandbits(32) & 0x1
+
+            sample_fixed = 1
+            for __ in range(tvla_segments):
+                if sample_fixed != 1:
+                    random.getrandbits(32)
+                sample_fixed = random.getrandbits(32) & 0x1
+
+        droop_cfg = dict(common_library.disabled_core_config)
+        droop_cfg["enable_icache"] = True
+        droop_cfg["enable_data_ind_timing"] = True
+        sca_ibex_functions.char_combi_operations_batch_fvsr(
+            target,
+            tvla_iterations,
+            tvla_segments,
+            trigger,
+            fixed_data1,
+            fixed_data2,
+            core_config=droop_cfg,
+        )
+
+        tvla_droop = tvla.compute_fvsr_tvla(
+            triggersca.read_sensor_batch(), fvsr_labels
+        )
+        print(
+            f"[Ibex Power-Droop Trigger Sensor] "
+            f"captured={tvla_droop['num_samples']}/{tvla_droop['total_captured']} "
+            f"t_stats={tvla_droop['t_stats']} "
+            f"sample[0]=(mcycle={tvla_droop['mcycle_deltas'][0]}, "
+            f"clock_drift={tvla_droop['clock_drift'][0]})",
+            flush=True,
+        )
+        self.assertEqual(
+            tvla_droop["total_captured"], tvla_iterations * tvla_segments
+        )
+        self.assertEqual(
+            tvla_droop["num_samples"], tvla_iterations * tvla_segments
+        )
+        # Verify execution cycle count passes TVLA (|t| < 4.5)
+        self.assertLess(abs(tvla_droop["t_stats"]["mcycle_deltas"]), 4.5)
+        # Verify on-chip clock-drift sensor detects the power leakage (|t| > 4.5)
+        self.assertGreater(abs(tvla_droop["t_stats"]["clock_drift"]), 4.5)
 
     def test_init(self):
         ibexsca = OTIbex(target)

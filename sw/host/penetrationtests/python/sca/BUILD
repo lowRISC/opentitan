@@ -17,6 +17,7 @@ py_binary(
         "//sw/host/penetrationtests/python/sca:sca_ibex_commands",
         "//sw/host/penetrationtests/python/sca:sca_ibex_functions",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:tvla",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
         requirement("pycryptodome"),
@@ -34,6 +35,7 @@ py_binary(
         "//sw/host/penetrationtests/python/sca:sca_aes_commands",
         "//sw/host/penetrationtests/python/sca:sca_aes_functions",
         "//sw/host/penetrationtests/python/util:targets",
+        "//sw/host/penetrationtests/python/util:tvla",
         "//sw/host/penetrationtests/python/util:utils",
         "@rules_python//python/runfiles",
         requirement("pycryptodome"),
@@ -148,6 +150,7 @@ py_library(
     deps = [
         ":sca_ibex_commands",
         ":sca_prng_commands",
+        ":sca_trigger_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )
@@ -169,6 +172,7 @@ py_library(
     deps = [
         ":sca_hmac_commands",
         ":sca_prng_commands",
+        ":sca_trigger_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )
@@ -189,6 +193,7 @@ py_library(
     srcs = ["host_scripts/sca_otbn_functions.py"],
     deps = [
         ":sca_otbn_commands",
+        ":sca_trigger_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )
@@ -210,6 +215,7 @@ py_library(
     deps = [
         ":sca_prng_commands",
         ":sca_sym_cryptolib_commands",
+        ":sca_trigger_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )
@@ -220,6 +226,7 @@ py_library(
     deps = [
         ":sca_asym_cryptolib_commands",
         ":sca_prng_commands",
+        ":sca_trigger_commands",
         "//sw/host/penetrationtests/python/util:targets",
     ],
 )

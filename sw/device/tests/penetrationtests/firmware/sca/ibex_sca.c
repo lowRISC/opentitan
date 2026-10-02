@@ -51,6 +51,8 @@ typedef enum combi_operations_trigger_t {
   kCombiOpsTriggerAes = 512,
   kCombiOpsTriggerHmac = 1024,
   kCombiOpsTriggerOtbn = 2048,
+  kCombiOpsTriggerDivSensor = 4096,
+  kCombiOpsTriggerPowerDroop = 8192,
   kCombiOpsNumResults = 12,
 } combi_operations_trigger_t;
 
@@ -393,6 +395,49 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
     TRY(otbn_dmem_write(8, msg, kOtbnVarMsg));
     pentest_set_trigger_low();
     result[11] = value1;
+  }
+
+  if (trigger & kCombiOpsTriggerDivSensor) {
+    pentest_set_trigger_high();
+    asm volatile(
+        "div x30, %[v1], %[v2]\n"
+        "div x31, %[v1], %[v2]\n"
+        :
+        : [v1] "r"(value1), [v2] "r"(value2)
+        : "x30", "x31");
+    pentest_set_trigger_low();
+    result[5] = value1;
+  }
+
+  if (trigger & kCombiOpsTriggerPowerDroop) {
+    uint32_t mask = (value1 != 0u) ? 0xFFFFFFFFu : 0x00000000u;
+    uint32_t v_a = 0x55555555u & mask;
+    uint32_t v_b = ((value1 | 0x33333333u) & 0xF3F3F3F3u) & mask;
+    uint32_t inv_a = (~v_a) & mask;
+    uint32_t inv_b = (~v_b) & mask;
+    uint32_t loops = 32000;
+    pentest_set_trigger_high();
+    asm volatile(
+        "mv x6, %[va]\n"
+        "mv x7, %[vb]\n"
+        "mv x28, %[ia]\n"
+        "mv x29, %[ib]\n"
+        "1:\n"
+        "mul x30, x6, x7\n"
+        "mul x31, x28, x7\n"
+        "mul x30, x6, x29\n"
+        "mul x31, x28, x29\n"
+        "mul x30, x6, x7\n"
+        "mul x31, x28, x7\n"
+        "mul x30, x6, x29\n"
+        "mul x31, x28, x29\n"
+        "addi %[loops], %[loops], -1\n"
+        "bnez %[loops], 1b\n"
+        : [loops] "+r"(loops)
+        : [va] "r"(v_a), [vb] "r"(v_b), [ia] "r"(inv_a), [ib] "r"(inv_b)
+        : "x6", "x7", "x28", "x29", "x30", "x31", "cc");
+    pentest_set_trigger_low();
+    result[0] = value1;
   }
   return OK_STATUS();
 }

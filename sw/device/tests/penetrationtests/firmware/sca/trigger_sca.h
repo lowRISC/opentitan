@@ -9,6 +9,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 status_t handle_trigger_sca_select_source(ujson_t *uj);
+status_t handle_trigger_sca_sensor_config(ujson_t *uj);
+status_t handle_trigger_sca_sensor_read_batch(ujson_t *uj);
 status_t handle_trigger_sca(ujson_t *uj);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_TRIGGER_SCA_H_
