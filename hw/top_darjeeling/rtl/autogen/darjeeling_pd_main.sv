@@ -330,6 +330,7 @@ module darjeeling_pd_main #(
   localparam int KeymgrDpeNumInstHwSlot = 8;
   localparam int KeymgrDpeNumBootStages = 2;
   localparam int KeymgrDpeNumRomDigestInputs = 2;
+  localparam bit KeymgrDpeSupportOtbnAsKdfEngine = 1;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
@@ -578,6 +579,9 @@ module darjeeling_pd_main #(
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
+  kmac_pkg::app_req_t       otbn_keymgr_app_req;
+  kmac_pkg::app_rsp_t       otbn_keymgr_app_rsp;
+  prim_mubi_pkg::mubi4_t       otbn_keymgr_sensitive_key;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -1674,8 +1678,11 @@ module darjeeling_pd_main #(
     .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .lc_rma_ack_o(otbn_lc_rma_ack),
     .keymgr_key_i(keymgr_dpe_otbn_key),
-    .kmac_data_o(),
-    .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),
+    .kmac_app_o(),
+    .kmac_app_i(kmac_pkg::APP_RSP_DEFAULT),
+    .keymgr_app_i(otbn_keymgr_app_req),
+    .keymgr_app_o(otbn_keymgr_app_rsp),
+    .keymgr_sensitive_key_i(otbn_keymgr_sensitive_key),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
@@ -1696,7 +1703,8 @@ module darjeeling_pd_main #(
     .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
     .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
     .NumBootStages(KeymgrDpeNumBootStages),
-    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs)
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs),
+    .SupportOtbnAsKdfEngine(KeymgrDpeSupportOtbnAsKdfEngine)
   ) u_keymgr_dpe (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_secure),
@@ -1720,8 +1728,11 @@ module darjeeling_pd_main #(
     .kmac_key_o(keymgr_dpe_kmac_key),
     .hmac_key_o(keymgr_dpe_hmac_key),
     .otbn_key_o(keymgr_dpe_otbn_key),
-    .kmac_data_o(kmac_app_req[0]),
-    .kmac_data_i(kmac_app_rsp[0]),
+    .kmac_app_o(kmac_app_req[0]),
+    .kmac_app_i(kmac_app_rsp[0]),
+    .otbn_app_o(otbn_keymgr_app_req),
+    .otbn_app_i(otbn_keymgr_app_rsp),
+    .sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
     .creator_seed_i(otp_ctrl_keymgr_creator_seed),
     .owner_seed_i(otp_ctrl_keymgr_owner_seed),

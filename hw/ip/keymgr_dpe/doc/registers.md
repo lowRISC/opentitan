@@ -15,50 +15,52 @@
 | keymgr_dpe.[`SIDELOAD_CLEAR`](#sideload_clear)                     | 0x1c     |        4 | sideload key slots clear                                                   |
 | keymgr_dpe.[`RESEED_INTERVAL_REGWEN`](#reseed_interval_regwen)     | 0x20     |        4 | regwen for reseed interval                                                 |
 | keymgr_dpe.[`RESEED_INTERVAL_SHADOWED`](#reseed_interval_shadowed) | 0x24     |        4 | Reseed interval for key manager entropy reseed                             |
-| keymgr_dpe.[`SLOT_POLICY_REGWEN`](#slot_policy_regwen)             | 0x28     |        4 | Register write enable for SLOT_POLICY                                      |
-| keymgr_dpe.[`SLOT_POLICY`](#slot_policy)                           | 0x2c     |        4 | Policy bits for the child DPE context                                      |
-| keymgr_dpe.[`SW_BINDING_REGWEN`](#sw_binding_regwen)               | 0x30     |        4 | Register write enable for SOFTWARE_BINDING                                 |
-| keymgr_dpe.[`SW_BINDING_0`](#sw_binding)                           | 0x34     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_1`](#sw_binding)                           | 0x38     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_2`](#sw_binding)                           | 0x3c     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_3`](#sw_binding)                           | 0x40     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_4`](#sw_binding)                           | 0x44     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_5`](#sw_binding)                           | 0x48     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_6`](#sw_binding)                           | 0x4c     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SW_BINDING_7`](#sw_binding)                           | 0x50     |        4 | Software binding input of the key manager.                                 |
-| keymgr_dpe.[`SALT_0`](#salt)                                       | 0x54     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_1`](#salt)                                       | 0x58     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_2`](#salt)                                       | 0x5c     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_3`](#salt)                                       | 0x60     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_4`](#salt)                                       | 0x64     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_5`](#salt)                                       | 0x68     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_6`](#salt)                                       | 0x6c     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`SALT_7`](#salt)                                       | 0x70     |        4 | Salt value used as part of output generation                               |
-| keymgr_dpe.[`KEY_VERSION`](#key_version)                           | 0x74     |        4 | Version used as part of output generation                                  |
-| keymgr_dpe.[`MAX_KEY_VER_REGWEN`](#max_key_ver_regwen)             | 0x78     |        4 | Register write enable for MAX_KEY_VERSION                                  |
-| keymgr_dpe.[`MAX_KEY_VER_SHADOWED`](#max_key_ver_shadowed)         | 0x7c     |        4 | Max key version                                                            |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_0`](#sw_share0_output)               | 0x80     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_1`](#sw_share0_output)               | 0x84     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_2`](#sw_share0_output)               | 0x88     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_3`](#sw_share0_output)               | 0x8c     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_4`](#sw_share0_output)               | 0x90     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_5`](#sw_share0_output)               | 0x94     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_6`](#sw_share0_output)               | 0x98     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE0_OUTPUT_7`](#sw_share0_output)               | 0x9c     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_0`](#sw_share1_output)               | 0xa0     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_1`](#sw_share1_output)               | 0xa4     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_2`](#sw_share1_output)               | 0xa8     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_3`](#sw_share1_output)               | 0xac     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_4`](#sw_share1_output)               | 0xb0     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_5`](#sw_share1_output)               | 0xb4     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_6`](#sw_share1_output)               | 0xb8     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_7`](#sw_share1_output)               | 0xbc     |        4 | Key manager software output.                                               |
-| keymgr_dpe.[`WORKING_STATE`](#working_state)                       | 0xc0     |        4 | Key manager working state.                                                 |
-| keymgr_dpe.[`OP_STATUS`](#op_status)                               | 0xc4     |        4 | Key manager status.                                                        |
-| keymgr_dpe.[`ERR_CODE`](#err_code)                                 | 0xc8     |        4 | Key manager error code.                                                    |
-| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                         | 0xcc     |        4 | This register represents both synchronous and asynchronous fatal faults.   |
-| keymgr_dpe.[`DEBUG`](#debug)                                       | 0xd0     |        4 | The register holds some debug information that may be convenient if keymgr |
-| keymgr_dpe.[`LOAD_KEY_LOCK`](#load_key_lock)                       | 0xd4     |        4 | Register write lock for the LOAD_KEY command                               |
+| keymgr_dpe.[`KDF_ENGINE_REGWEN`](#kdf_engine_regwen)               | 0x28     |        4 | Register write enable for KDF_ENGINE                                       |
+| keymgr_dpe.[`KDF_ENGINE_SHADOWED`](#kdf_engine_shadowed)           | 0x2c     |        4 | Selects the engine used to perform key derivation                          |
+| keymgr_dpe.[`SLOT_POLICY_REGWEN`](#slot_policy_regwen)             | 0x30     |        4 | Register write enable for SLOT_POLICY                                      |
+| keymgr_dpe.[`SLOT_POLICY`](#slot_policy)                           | 0x34     |        4 | Policy bits for the child DPE context                                      |
+| keymgr_dpe.[`SW_BINDING_REGWEN`](#sw_binding_regwen)               | 0x38     |        4 | Register write enable for SOFTWARE_BINDING                                 |
+| keymgr_dpe.[`SW_BINDING_0`](#sw_binding)                           | 0x3c     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_1`](#sw_binding)                           | 0x40     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_2`](#sw_binding)                           | 0x44     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_3`](#sw_binding)                           | 0x48     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_4`](#sw_binding)                           | 0x4c     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_5`](#sw_binding)                           | 0x50     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_6`](#sw_binding)                           | 0x54     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SW_BINDING_7`](#sw_binding)                           | 0x58     |        4 | Software binding input of the key manager.                                 |
+| keymgr_dpe.[`SALT_0`](#salt)                                       | 0x5c     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_1`](#salt)                                       | 0x60     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_2`](#salt)                                       | 0x64     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_3`](#salt)                                       | 0x68     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_4`](#salt)                                       | 0x6c     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_5`](#salt)                                       | 0x70     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_6`](#salt)                                       | 0x74     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`SALT_7`](#salt)                                       | 0x78     |        4 | Salt value used as part of output generation                               |
+| keymgr_dpe.[`KEY_VERSION`](#key_version)                           | 0x7c     |        4 | Version used as part of output generation                                  |
+| keymgr_dpe.[`MAX_KEY_VER_REGWEN`](#max_key_ver_regwen)             | 0x80     |        4 | Register write enable for MAX_KEY_VERSION                                  |
+| keymgr_dpe.[`MAX_KEY_VER_SHADOWED`](#max_key_ver_shadowed)         | 0x84     |        4 | Max key version                                                            |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_0`](#sw_share0_output)               | 0x88     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_1`](#sw_share0_output)               | 0x8c     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_2`](#sw_share0_output)               | 0x90     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_3`](#sw_share0_output)               | 0x94     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_4`](#sw_share0_output)               | 0x98     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_5`](#sw_share0_output)               | 0x9c     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_6`](#sw_share0_output)               | 0xa0     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_7`](#sw_share0_output)               | 0xa4     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_0`](#sw_share1_output)               | 0xa8     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_1`](#sw_share1_output)               | 0xac     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_2`](#sw_share1_output)               | 0xb0     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_3`](#sw_share1_output)               | 0xb4     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_4`](#sw_share1_output)               | 0xb8     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_5`](#sw_share1_output)               | 0xbc     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_6`](#sw_share1_output)               | 0xc0     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_7`](#sw_share1_output)               | 0xc4     |        4 | Key manager software output.                                               |
+| keymgr_dpe.[`WORKING_STATE`](#working_state)                       | 0xc8     |        4 | Key manager working state.                                                 |
+| keymgr_dpe.[`OP_STATUS`](#op_status)                               | 0xcc     |        4 | Key manager status.                                                        |
+| keymgr_dpe.[`ERR_CODE`](#err_code)                                 | 0xd0     |        4 | Key manager error code.                                                    |
+| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                         | 0xd4     |        4 | This register represents both synchronous and asynchronous fatal faults.   |
+| keymgr_dpe.[`DEBUG`](#debug)                                       | 0xd8     |        4 | The register holds some debug information that may be convenient if keymgr |
+| keymgr_dpe.[`LOAD_KEY_LOCK`](#load_key_lock)                       | 0xdc     |        4 | Register write lock for the LOAD_KEY command                               |
 
 ## INTR_STATE
 Interrupt State Register
@@ -304,9 +306,44 @@ Reseed interval for key manager entropy reseed
 | 31:16  |        |         |        | Reserved                                                      |
 |  15:0  |   rw   |  0x100  | VAL    | Number of internal PRNG updates before a reseed is requested. |
 
+## KDF_ENGINE_REGWEN
+Register write enable for KDF_ENGINE
+- Offset: `0x28`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                          |
+|:------:|:------:|:-------:|:-------|:-------------------------------------|
+|  31:1  |        |         |        | Reserved                             |
+|   0    |  rw0c  |   0x1   | EN     | Configuration enable for KDF_ENGINE. |
+
+## KDF_ENGINE_SHADOWED
+Selects the engine used to perform key derivation
+- Offset: `0x2c`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`KDF_ENGINE_REGWEN`](#kdf_engine_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SEL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                               |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                  |
+|  3:0   |   rw   |   0x9   | SEL    | Selects the engine used for key derivation. kMultiBitBool4True selects OTBN using HKDF. kMultiBitBool4False selects KMAC. |
+
 ## SLOT_POLICY_REGWEN
 Register write enable for SLOT_POLICY
-- Offset: `0x28`
+- Offset: `0x30`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -323,7 +360,7 @@ Register write enable for SLOT_POLICY
 
 ## SLOT_POLICY
 Policy bits for the child DPE context
-- Offset: `0x2c`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`SLOT_POLICY_REGWEN`](#slot_policy_regwen)
@@ -343,7 +380,7 @@ Policy bits for the child DPE context
 
 ## SW_BINDING_REGWEN
 Register write enable for SOFTWARE_BINDING
-- Offset: `0x30`
+- Offset: `0x38`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -372,14 +409,14 @@ The software binding is locked by software and unlocked by hardware upon a succe
 
 | Name         | Offset   |
 |:-------------|:---------|
-| SW_BINDING_0 | 0x34     |
-| SW_BINDING_1 | 0x38     |
-| SW_BINDING_2 | 0x3c     |
-| SW_BINDING_3 | 0x40     |
-| SW_BINDING_4 | 0x44     |
-| SW_BINDING_5 | 0x48     |
-| SW_BINDING_6 | 0x4c     |
-| SW_BINDING_7 | 0x50     |
+| SW_BINDING_0 | 0x3c     |
+| SW_BINDING_1 | 0x40     |
+| SW_BINDING_2 | 0x44     |
+| SW_BINDING_3 | 0x48     |
+| SW_BINDING_4 | 0x4c     |
+| SW_BINDING_5 | 0x50     |
+| SW_BINDING_6 | 0x54     |
+| SW_BINDING_7 | 0x58     |
 
 
 ### Fields
@@ -402,14 +439,14 @@ Salt value used as part of output generation
 
 | Name   | Offset   |
 |:-------|:---------|
-| SALT_0 | 0x54     |
-| SALT_1 | 0x58     |
-| SALT_2 | 0x5c     |
-| SALT_3 | 0x60     |
-| SALT_4 | 0x64     |
-| SALT_5 | 0x68     |
-| SALT_6 | 0x6c     |
-| SALT_7 | 0x70     |
+| SALT_0 | 0x5c     |
+| SALT_1 | 0x60     |
+| SALT_2 | 0x64     |
+| SALT_3 | 0x68     |
+| SALT_4 | 0x6c     |
+| SALT_5 | 0x70     |
+| SALT_6 | 0x74     |
+| SALT_7 | 0x78     |
 
 
 ### Fields
@@ -432,7 +469,7 @@ Version used as part of output generation
 
 | Name        | Offset   |
 |:------------|:---------|
-| KEY_VERSION | 0x74     |
+| KEY_VERSION | 0x7c     |
 
 
 ### Fields
@@ -447,7 +484,7 @@ Version used as part of output generation
 
 ## MAX_KEY_VER_REGWEN
 Register write enable for MAX_KEY_VERSION
-- Offset: `0x78`
+- Offset: `0x80`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -464,7 +501,7 @@ Register write enable for MAX_KEY_VERSION
 
 ## MAX_KEY_VER_SHADOWED
 Max key version
-- Offset: `0x7c`
+- Offset: `0x84`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`MAX_KEY_VER_REGWEN`](#max_key_ver_regwen)
@@ -491,14 +528,14 @@ here.
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| SW_SHARE0_OUTPUT_0 | 0x80     |
-| SW_SHARE0_OUTPUT_1 | 0x84     |
-| SW_SHARE0_OUTPUT_2 | 0x88     |
-| SW_SHARE0_OUTPUT_3 | 0x8c     |
-| SW_SHARE0_OUTPUT_4 | 0x90     |
-| SW_SHARE0_OUTPUT_5 | 0x94     |
-| SW_SHARE0_OUTPUT_6 | 0x98     |
-| SW_SHARE0_OUTPUT_7 | 0x9c     |
+| SW_SHARE0_OUTPUT_0 | 0x88     |
+| SW_SHARE0_OUTPUT_1 | 0x8c     |
+| SW_SHARE0_OUTPUT_2 | 0x90     |
+| SW_SHARE0_OUTPUT_3 | 0x94     |
+| SW_SHARE0_OUTPUT_4 | 0x98     |
+| SW_SHARE0_OUTPUT_5 | 0x9c     |
+| SW_SHARE0_OUTPUT_6 | 0xa0     |
+| SW_SHARE0_OUTPUT_7 | 0xa4     |
 
 
 ### Fields
@@ -523,14 +560,14 @@ here.
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| SW_SHARE1_OUTPUT_0 | 0xa0     |
-| SW_SHARE1_OUTPUT_1 | 0xa4     |
-| SW_SHARE1_OUTPUT_2 | 0xa8     |
-| SW_SHARE1_OUTPUT_3 | 0xac     |
-| SW_SHARE1_OUTPUT_4 | 0xb0     |
-| SW_SHARE1_OUTPUT_5 | 0xb4     |
-| SW_SHARE1_OUTPUT_6 | 0xb8     |
-| SW_SHARE1_OUTPUT_7 | 0xbc     |
+| SW_SHARE1_OUTPUT_0 | 0xa8     |
+| SW_SHARE1_OUTPUT_1 | 0xac     |
+| SW_SHARE1_OUTPUT_2 | 0xb0     |
+| SW_SHARE1_OUTPUT_3 | 0xb4     |
+| SW_SHARE1_OUTPUT_4 | 0xb8     |
+| SW_SHARE1_OUTPUT_5 | 0xbc     |
+| SW_SHARE1_OUTPUT_6 | 0xc0     |
+| SW_SHARE1_OUTPUT_7 | 0xc4     |
 
 
 ### Fields
@@ -547,7 +584,7 @@ here.
 Key manager working state.
 
 This is a readout of the current key manager working state
-- Offset: `0xc0`
+- Offset: `0xc8`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -579,7 +616,7 @@ Key manager status.
 Hardware sets the status based on software initiated operations.
 This register must be explicitly cleared by software.
 Software clears by writing back whatever it reads.
-- Offset: `0xc4`
+- Offset: `0xcc`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -614,7 +651,7 @@ errors.
 
 Synchronous errors refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to errors that can happen at any time.
-- Offset: `0xc8`
+- Offset: `0xd0`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
@@ -637,7 +674,7 @@ This register represents both synchronous and asynchronous fatal faults.
 Synchronous faults refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to faults that can happen at any time.
 
-- Offset: `0xcc`
+- Offset: `0xd4`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
 
@@ -668,7 +705,7 @@ invoked, while asynchronous refers to faults that can happen at any time.
 ## DEBUG
 The register holds some debug information that may be convenient if keymgr
 misbehaves.
-- Offset: `0xd0`
+- Offset: `0xd8`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 
@@ -693,7 +730,7 @@ misbehaves.
 
 ## LOAD_KEY_LOCK
 Register write lock for the LOAD_KEY command
-- Offset: `0xd4`
+- Offset: `0xdc`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 

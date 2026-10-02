@@ -32,6 +32,7 @@ module keymgr_dpe_ctrl
   input reseed_cnt_err_i,
   input sideload_sel_err_i,
   input sideload_fsm_err_i,
+  input kdf_engine_mubi_err_i,
 
   // Software interface
   input op_start_i,
@@ -416,6 +417,7 @@ module keymgr_dpe_ctrl
   logic invalid_erase;
   logic invalid_gen;
   logic invalid_load;
+  logic invalid_kdf_engine;
   // TODO(#384): Make sure that:
   // 1) inv_state is correctly computed
   // 2) inv_state is correctly consumed by FSM
@@ -535,10 +537,11 @@ module keymgr_dpe_ctrl
         op_req = op_start_i;
 
         // This is the operational state, most operations are valid (modulo policy violations).
-        invalid_op = invalid_advance |
-                     invalid_erase   |
-                     invalid_gen     |
-                     invalid_load    |
+        invalid_op = invalid_advance    |
+                     invalid_erase      |
+                     invalid_gen        |
+                     invalid_load       |
+                     invalid_kdf_engine |
                      (~en_i & op_start_i);
 
         // Given that the root key was latched by an earlier FSM state, we need to take care of
@@ -698,6 +701,9 @@ module keymgr_dpe_ctrl
   assign invalid_load = load_req & (~root_key_i.valid      |
                                     destination_slot_valid |
                                     load_key_lock_i);
+
+  // Reject advance and generate if SW committed an invalid mubi value to KDF_ENGINE_SHADOWED.
+  assign invalid_kdf_engine = (adv_req | gen_req) & kdf_engine_mubi_err_i;
 
   // This is similar to `invalid_advance` except that it does not depend on a incoming request.
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance
