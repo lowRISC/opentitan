@@ -98,28 +98,45 @@ package csrng_pkg;
   //------------------------------------------
 
   typedef struct packed {
-    logic                   fips;
-    logic  [RsCtrWidth-1:0] rs_ctr;
-    logic     [SeedLen-1:0] pdata;
-    logic   [NumAppsLg-1:0] inst_id;
-    acmd_e                  cmd;
-    logic      [KeyLen-1:0] key;
-    logic      [BlkLen-1:0] v;
-  } csrng_core_data_t;
-
-  typedef struct packed {
     logic [KeyLen-1:0] key;
     logic [BlkLen-1:0] v;
   } csrng_key_v_t;
 
+  typedef struct packed {
+    logic                       gen_adata_vld;
+    logic         [SeedLen-1:0] gen_adata;
+    logic                       gen_flag;
+    logic [GenBitsCtrWidth-1:0] gen_ctr;
+    logic                       fips;
+    logic      [RsCtrWidth-1:0] rs_ctr;
+    logic         [SeedLen-1:0] pdata;
+    logic       [NumAppsLg-1:0] inst_id;
+    acmd_e                      cmd;
+    csrng_key_v_t               key_v;
+  } csrng_core_data_t;
+
   // Do not reorder these fields - software expects them in this order when doing the raw
   // state readout through the register interface.
   typedef struct packed {
-    logic                  fips;
-    logic                  inst_state;
-    logic     [KeyLen-1:0] key;
-    logic     [BlkLen-1:0] v;
-    logic [RsCtrWidth-1:0] rs_ctr;
+    // adata flops for each app interface, plus one valid bit for each
+    // This rather large bank of flops is unfortunately required due to the way that we handle
+    // GENerate commands with more than one block of generated output bits: Instead of generating
+    // all blocks in one go, we always generate one block and then allow the arbiter to give
+    // another app interface access to the data path. However, on the last generated block, we
+    // require the adata that are supplied at the very beginning of the GENerate command for the
+    // final update() step (compare NIST specification). Since all app interfaces share a single
+    // packer for adata, its content can get overwritten after the first block of generated bits,
+    // and hence we must buffer adata for each app interface locally for the full "lifetime" of a
+    // multi-block GENerate command.
+    // TODO(#28153) Find a smaller solution (giving each app interface an unpacker does not help)
+    logic                       gen_adata_vld;
+    logic         [SeedLen-1:0] gen_adata;
+    logic                       gen_flag;
+    logic [GenBitsCtrWidth-1:0] gen_ctr;
+    logic                       fips;
+    logic                       inst_state;
+    csrng_key_v_t               key_v;
+    logic      [RsCtrWidth-1:0] rs_ctr;
   } csrng_state_t;
 
   parameter int unsigned StateWidth    = $bits(csrng_state_t);
