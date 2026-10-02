@@ -126,26 +126,29 @@ rom_error_t ownership_seal_clear(void) {
   return sc_keymgr_sideload_clear(kScKeymgrDestKmac);
 }
 
-static rom_error_t seal_generate(const owner_block_t *page, uint32_t *seal) {
+static rom_error_t seal_generate(const owner_block_t *page,
+                                 uint32_t *seal_share0, uint32_t *seal_share1) {
   size_t sealed_len = offsetof(owner_block_t, seal);
   HARDENED_RETURN_IF_ERROR(kmac_kmac256_hw_configure());
   kmac_kmac256_set_prefix("Ownership", 9);
   HARDENED_RETURN_IF_ERROR(kmac_kmac256_start());
   kmac_kmac256_absorb(page, sealed_len);
-  return kmac_kmac256_final(seal, ARRAYSIZE(page->seal));
+  return kmac_kmac256_final_masked(seal_share0, seal_share1,
+                                   ARRAYSIZE(page->seal));
 }
 
 rom_error_t ownership_seal_page(size_t page) {
   owner_block_t *data = &owner_page[page];
-  return seal_generate(data, data->seal);
+  return seal_generate(data, data->seal, NULL);
 }
 
 rom_error_t ownership_seal_check(size_t page) {
   owner_block_t *data = &owner_page[page];
-  uint32_t check[ARRAYSIZE(data->seal)];
-  HARDENED_RETURN_IF_ERROR(seal_generate(data, check));
-  hardened_bool_t result =
-      hardened_memeq(data->seal, check, ARRAYSIZE(data->seal));
+  uint32_t check_share0[ARRAYSIZE(data->seal)];
+  uint32_t check_share1[ARRAYSIZE(data->seal)];
+  HARDENED_RETURN_IF_ERROR(seal_generate(data, check_share0, check_share1));
+  hardened_bool_t result = hardened_memeq_masked_rhs(
+      data->seal, check_share0, check_share1, ARRAYSIZE(data->seal));
   if (result == kHardenedBoolTrue) {
     // Translate to kErrorOk.  A cast is sufficient because kHardenedBoolTrue
     // and kErrorOk have the same bit pattern.
