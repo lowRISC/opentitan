@@ -425,6 +425,18 @@ static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
 }
 
 /**
+ * Sets the attestation and sealing binding to the static CreatorInt binding
+ * values used by the immutable ROM_EXT section (see `dice_chain.c`).
+ */
+static void compute_keymgr_dpe_creator_int_binding(void) {
+  memcpy(attestation_binding_value.data,
+         kDiceChainCreatorIntAttestBindingValue.data,
+         kDiceMeasurementSizeInBytes);
+  memcpy(sealing_binding_value.data, kDiceChainCreatorIntSealBindingValue.data,
+         kDiceMeasurementSizeInBytes);
+}
+
+/**
  * Sets the attestation and sealing binding to all zeros.
  *
  * The attestation binding (and subsequently CDI_0) will be updated later when
@@ -663,11 +675,18 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // can initialize and seal the ownership block.
   ownership_seal_init();
 
+  // Mirror the immutable ROM_EXT section: derive the CreatorIntKeys with the
+  // same static binding values before deriving the OwnerIntKeys.
+  sc_keymgr_dpe_advance_data_t adv_sealing_data;
+  sc_keymgr_dpe_advance_data_t adv_attestation_data;
+  compute_keymgr_dpe_creator_int_binding();
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_creator_int(adv_sealing_data,
+                                        adv_attestation_data));
+
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_dpe_owner_int_binding();
-  sc_keymgr_dpe_advance_data_t adv_sealing_data;
-  sc_keymgr_dpe_advance_data_t adv_attestation_data;
   keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
   TRY(sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,

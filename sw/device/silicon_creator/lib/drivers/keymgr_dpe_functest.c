@@ -52,6 +52,23 @@ static const keymgr_dpe_binding_value_t kBindingValueRomExt = {
 };
 
 /**
+ * Software binding values associated with the CreatorIntKey. Programmed by the
+ * immutable ROM_EXT section.
+ *
+ * Must match `kDiceChainCreatorIntSealBindingValue` and
+ * `kDiceChainCreatorIntAttestBindingValue` in
+ * `sw/device/silicon_creator/lib/cert/dice_chain.c`.
+ */
+static const keymgr_dpe_binding_value_t kBindingValueCreatorIntSealing = {
+    .data = {0x84794d9a, 0x8f8dbc8f, 0x983c982c, 0x9a1c6781, 0xcb547343,
+             0x92b7cd91, 0xcb2cfb9d, 0xd1224a62},
+};
+static const keymgr_dpe_binding_value_t kBindingValueCreatorIntAttestation = {
+    .data = {0x09a1dd87, 0x67acaa58, 0x33f0d0df, 0xddb8e842, 0xa18ac2e0,
+             0x004207d0, 0x40f41d3c, 0x5b4a9a20},
+};
+
+/**
  * Software binding value associated with BL0. Programmed by ROM_EXT.
  */
 static const keymgr_dpe_binding_value_t kBindingValueBl0Attestation = {
@@ -171,13 +188,10 @@ rom_error_t keymgr_dpe_rom_test(void) {
                                      &kDefaultPolicy) == kErrorOk);
 
   // ------ CreatorIntKey Stage ------------------------
-  // Derive both the attestation and sealing CreatorIntKey. Same as in the
-  // immutable ROM_EXT section.
-  // TODO(rroth): The CreatorIntKeys currently reuse the binding values and the
-  // max key version of the OwnerIntKeys. Define dedicated values.
-  attestation_key.binding_value = &kBindingValueRomExt;
+  // Derive both the attestation and sealing CreatorIntKey.
+  attestation_key.binding_value = &kBindingValueCreatorIntAttestation;
   attestation_key.version = kMaxVerRomExt;
-  sealing_key.binding_value = &kBindingValueRomExt;
+  sealing_key.binding_value = &kBindingValueCreatorIntSealing;
   sealing_key.version = kMaxVerRomExt;
 
   SEC_MMIO_WRITE_INCREMENT(
