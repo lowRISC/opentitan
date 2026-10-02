@@ -25,6 +25,14 @@ package csrng_pkg;
   // Width of the counter in the command stages to count the amount of generated random bits
   parameter int unsigned GenBitsCtrWidth = 12;
 
+  // Width of the state fields readable via the register interface (up to and including fips)
+  parameter int unsigned StateDbRegStateWidth = RsCtrWidth + BlkLen + KeyLen + 2;
+  // Number of registers per state with synthesis-friendly $ceil(StateDbRegStateWidth / TL_DW)
+  parameter int unsigned StateDbNumRegState =
+      (StateDbRegStateWidth + top_pkg::TL_DW - 1) / top_pkg::TL_DW;
+  // Width of the word pointer used to read out a state via the register interface
+  parameter int unsigned StateDbRegPtrWidth = $clog2(StateDbNumRegState);
+
   // Commonly used internal signal widths
   parameter int unsigned CmdWidth = 3;
   parameter int unsigned InstIdWidth = 4;
