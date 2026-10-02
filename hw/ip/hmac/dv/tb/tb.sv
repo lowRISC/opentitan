@@ -40,6 +40,8 @@ module tb;
     .alert_rx_i         ( alert_rx       ),
     .alert_tx_o         ( alert_tx       ),
 
+    .keymgr_key_i       ( '0             ),
+
     .intr_hmac_done_o   ( intr_hmac_done ),
     .intr_fifo_empty_o  ( intr_fifo_empty),
     .intr_hmac_err_o    ( intr_hmac_err  ),

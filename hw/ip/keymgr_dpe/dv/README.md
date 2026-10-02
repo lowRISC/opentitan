@@ -92,7 +92,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 #### Assertions
 * TLUL assertions: The `tb/keymgr_dpe_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* Check(Kmac|Aes|Otbn)Key: Check keys on the 3 sideload interfaces.
+* Check(Kmac|Aes|Otbn|Hmac)Key: Check keys on the 4 sideload interfaces.
 * CheckEdn1stReq / CheckEdn2ndReq: Check KEYMGR_DPE sends 2 EDN request periodically based on the CSR `reseed_interval`.
 
 ## Building and running tests

@@ -107,6 +107,19 @@ status_t keymgr_dpe_generate_key_otbn(
     keymgr_dpe_diversification_t diversification);
 
 /**
+ * Derive a key manager dpe key for the HMAC block.
+ *
+ * Calls the key manager dpe to sideload a key into the HMAC hardware block and
+ * waits until the operation is complete before returning.
+ *
+ * @param diversification Diversification input for the key derivation.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_generate_key_hmac(
+    keymgr_dpe_diversification_t diversification);
+
+/**
  * Clear the sideloaded AES key.
  *
  * @return OK or error.
@@ -129,6 +142,14 @@ status_t keymgr_dpe_sideload_clear_kmac(void);
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_dpe_sideload_clear_otbn(void);
+
+/**
+ * Clear the sideloaded HMAC key.
+ *
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_sideload_clear_hmac(void);
 
 #ifdef __cplusplus
 }
