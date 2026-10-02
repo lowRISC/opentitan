@@ -392,19 +392,20 @@ Other values are reserved.
 KMAC/SHA3 Status register.
 - Offset: `0x1c`
 - Reset default: `0x4001`
-- Reset mask: `0x3df1f`
+- Reset mask: `0x3000df1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_stopped", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "state_write", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_stopped", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "state_write", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 12}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                |
 |:------:|:------:|:-------:|:--------------------------------------------------------------------|
-| 31:18  |        |         | Reserved                                                            |
-|   17   |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err) |
-|   16   |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                     |
+| 31:30  |        |         | Reserved                                                            |
+|   29   |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err) |
+|   28   |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                     |
+| 27:16  |        |         | Reserved                                                            |
 |   15   |   ro   |    x    | [fifo_full](#status--fifo_full)                                     |
 |   14   |   ro   |   0x1   | [fifo_empty](#status--fifo_empty)                                   |
 |   13   |        |         | Reserved                                                            |

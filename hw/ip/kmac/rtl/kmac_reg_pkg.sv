@@ -342,7 +342,7 @@ package kmac_reg_pkg;
   parameter logic [0:0] KMAC_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [10:0] KMAC_CMD_RESVAL = 11'h 0;
-  parameter logic [17:0] KMAC_STATUS_RESVAL = 18'h 4001;
+  parameter logic [29:0] KMAC_STATUS_RESVAL = 30'h 4001;
   parameter logic [0:0] KMAC_STATUS_SHA3_IDLE_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_STATUS_ALERT_FATAL_FAULT_RESVAL = 1'h 0;
@@ -459,7 +459,7 @@ package kmac_reg_pkg;
     4'b 0001, // index[ 4] KMAC_CFG_REGWEN
     4'b 1111, // index[ 5] KMAC_CFG_SHADOWED
     4'b 0011, // index[ 6] KMAC_CMD
-    4'b 0111, // index[ 7] KMAC_STATUS
+    4'b 1111, // index[ 7] KMAC_STATUS
     4'b 1111, // index[ 8] KMAC_ENTROPY_PERIOD
     4'b 0011, // index[ 9] KMAC_ENTROPY_REFRESH_HASH_CNT
     4'b 0011, // index[10] KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED

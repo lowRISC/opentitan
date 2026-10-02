@@ -819,7 +819,7 @@
           name: "fifo_full"
           desc: "Message FIFO Full indicator"
         }
-        { bits: "16",
+        { bits: "28",
           name: "ALERT_FATAL_FAULT",
           resval: "0",
           desc: '''
@@ -833,7 +833,7 @@
             v) an error in the redundant lfsr
           '''
         }
-        { bits: "17",
+        { bits: "29",
           name: "ALERT_RECOV_CTRL_UPDATE_ERR",
           resval: "0",
           desc: '''
