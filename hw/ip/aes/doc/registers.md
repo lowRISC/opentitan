@@ -344,20 +344,27 @@ If the two write operations try to set a different value, a recoverable alert is
 A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
 - Offset: `0x78`
 - Reset default: `0x1`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 - Register enable: [`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "KEY_TOUCH_FORCES_RESEED", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "FORCE_MASKS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "KEY_TOUCH_FORCES_RESEED", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "FORCE_MASKS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "KEEP_START_TRIGGER_HIGH", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                   |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------|
-|  31:2  |        |         | Reserved                                                               |
+|  31:3  |        |         | Reserved                                                               |
+|   2    |   rw   |   0x0   | [KEEP_START_TRIGGER_HIGH](#ctrl_aux_shadowed--keep_start_trigger_high) |
 |   1    |   rw   |   0x0   | [FORCE_MASKS](#ctrl_aux_shadowed--force_masks)                         |
 |   0    |   rw   |   0x1   | [KEY_TOUCH_FORCES_RESEED](#ctrl_aux_shadowed--key_touch_forces_reseed) |
+
+### CTRL_AUX_SHADOWED . KEEP_START_TRIGGER_HIGH
+Setting the START bit in the Trigger Register triggers at most one encryption/decryption (0) or causes the module to continuously run encryption/decryption when configured with MANUAL_OPERATION=1 and with a valid MODE value (1).
+Continuously performing encryption/decryption can be useful for power virus testing.
+To maximize power consumption, it is recommended to set PRNG_RESEED_RATE to PER_1 (See Control Register).
+If support for GCM has been enabled at compile time, it is recommended to enable this bit in the GCM_TEXT phase.
 
 ### CTRL_AUX_SHADOWED . FORCE_MASKS
 Allow the internal masking PRNG to advance (0) or force its internal state (1) leading to constant masks.

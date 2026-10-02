@@ -36,6 +36,7 @@ module aes_control_fsm_n
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    keep_start_trigger_high_i,
   input  logic                                    ctrl_gcm_qe_i,
   output logic                                    ctrl_gcm_we_o,
   input  logic                                    ctrl_gcm_phase_i,
@@ -148,6 +149,7 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    keep_start_trigger_high_i,
     ctrl_gcm_qe_i,
     ctrl_gcm_phase_i,
     gcm_phase_i,
@@ -192,6 +194,7 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    keep_start_trigger_high_i,
     ctrl_gcm_qe_i,
     ctrl_gcm_phase_i,
     gcm_phase_i,
@@ -243,6 +246,7 @@ module aes_control_fsm_n
   prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;
   logic                                    key_touch_forces_reseed;
+  logic                                    keep_start_trigger_high;
   logic                                    ctrl_gcm_qe;
   logic                                    ctrl_gcm_phase;
   gcm_phase_e                              gcm_phase;
@@ -284,6 +288,7 @@ module aes_control_fsm_n
           prng_reseed_rate,
           manual_operation,
           key_touch_forces_reseed,
+          keep_start_trigger_high,
           ctrl_gcm_qe,
           ctrl_gcm_phase,
           gcm_phase_raw,
@@ -390,6 +395,7 @@ module aes_control_fsm_n
     .prng_reseed_rate_i        ( prng_reseed_rate              ),
     .manual_operation_i        ( manual_operation              ),
     .key_touch_forces_reseed_i ( key_touch_forces_reseed       ),
+    .keep_start_trigger_high_i ( keep_start_trigger_high       ),
     .ctrl_gcm_qe_i             ( ctrl_gcm_qe                   ),
     .ctrl_gcm_we_o             ( ctrl_gcm_we                   ),
     .ctrl_gcm_phase_i          ( ctrl_gcm_phase                ),

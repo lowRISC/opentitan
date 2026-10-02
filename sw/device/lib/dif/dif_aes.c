@@ -143,7 +143,10 @@ static dif_result_t configure_aux(const dif_aes_t *aes,
             reg_val, AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT) !=
             transaction->reseed_on_key_change ||
         bitfield_bit32_read(reg_val, AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT) !=
-            transaction->force_masks) {
+            transaction->force_masks ||
+        bitfield_bit32_read(
+            reg_val, AES_CTRL_AUX_SHADOWED_KEEP_START_TRIGGER_HIGH_BIT) !=
+            transaction->keep_start_trigger_high) {
       return kDifError;
     }
     return kDifOk;
@@ -154,6 +157,9 @@ static dif_result_t configure_aux(const dif_aes_t *aes,
                            transaction->reseed_on_key_change);
   reg_val = bitfield_bit32_write(reg_val, AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT,
                                  transaction->force_masks);
+  reg_val = bitfield_bit32_write(
+      reg_val, AES_CTRL_AUX_SHADOWED_KEEP_START_TRIGGER_HIGH_BIT,
+      transaction->keep_start_trigger_high);
   aes_shadowed_write(aes->base_addr, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg_val);
 
   reg_val = transaction->ctrl_aux_lock == false;

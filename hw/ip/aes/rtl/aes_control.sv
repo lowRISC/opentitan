@@ -31,6 +31,7 @@ module aes_control
   input  prs_rate_e                 prng_reseed_rate_i,
   input  logic                      manual_operation_i,
   input  logic                      key_touch_forces_reseed_i,
+  input  logic                      keep_start_trigger_high_i,
   input  logic                      ctrl_gcm_qe_i,
   output logic                      ctrl_gcm_we_o,
   input  logic                      ctrl_gcm_phase_i,
@@ -291,6 +292,7 @@ module aes_control
         .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
+        .keep_start_trigger_high_i ( keep_start_trigger_high_i     ),
         .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
         .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
         .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),
@@ -395,6 +397,7 @@ module aes_control
         .prng_reseed_rate_i        ( prng_reseed_rate_i            ),
         .manual_operation_i        ( manual_operation_i            ),
         .key_touch_forces_reseed_i ( key_touch_forces_reseed_i     ),
+        .keep_start_trigger_high_i ( keep_start_trigger_high_i     ),
         .ctrl_gcm_qe_i             ( ctrl_gcm_qe_i                 ),
         .ctrl_gcm_we_o             ( mr_ctrl_gcm_we[i]             ), // AND-combine
         .ctrl_gcm_phase_i          ( ctrl_gcm_phase_i              ),

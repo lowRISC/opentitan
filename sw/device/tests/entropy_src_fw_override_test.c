@@ -431,6 +431,7 @@ status_t firmware_override_extract_insert(
       .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationAuto,
       .reseed_on_key_change = true,
+      .keep_start_trigger_high = false,
       .ctrl_aux_lock = false,
   };
 

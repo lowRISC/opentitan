@@ -198,6 +198,7 @@ status_t test_and_verify_aes_operation(void) {
       .mask_reseeding = kDifAesReseedPer8kBlock,
       .manual_operation = kDifAesManualOperationAuto,
       .reseed_on_key_change = false,
+      .keep_start_trigger_high = false,
       .ctrl_aux_lock = false,
   };
 

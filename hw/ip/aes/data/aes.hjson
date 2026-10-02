@@ -871,6 +871,16 @@
                 '''
         resval: "0"
       }
+      { bits:   "2",
+        name:   "KEEP_START_TRIGGER_HIGH",
+        desc:   '''
+                Setting the START bit in the Trigger Register triggers at most one encryption/decryption (0) or causes the module to continuously run encryption/decryption when configured with MANUAL_OPERATION=1 and with a valid MODE value (1).
+                Continuously performing encryption/decryption can be useful for power virus testing.
+                To maximize power consumption, it is recommended to set PRNG_RESEED_RATE to PER_1 (See Control Register).
+                If support for GCM has been enabled at compile time, it is recommended to enable this bit in the GCM_TEXT phase.
+                '''
+        resval: "0"
+      }
     ]
   },
   { name:     "CTRL_AUX_REGWEN",

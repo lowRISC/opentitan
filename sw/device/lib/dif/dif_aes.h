@@ -258,7 +258,7 @@ typedef struct dif_aes_transaction {
   dif_aes_key_provider_t key_provider;
   dif_aes_mask_reseeding_t mask_reseeding;
   /**
-   * If true the internal pseudo-random number generators used for clearing and
+   * If true, the internal pseudo-random number generators used for clearing and
    * masking will be reseeded every time the key changes.
    */
   bool reseed_on_key_change;
@@ -271,8 +271,15 @@ typedef struct dif_aes_transaction {
    */
   bool force_masks;
   /**
-   * If true `reseed_on_key_change` and `force_masks` will be locked until the
-   * device is reset.
+   * If true, the module will continuously run encryption/decryption when
+   * configured in manual mode.
+   *
+   * NOTE: This should only be used for power virus testing.
+   */
+  bool keep_start_trigger_high;
+  /**
+   * If true, `reseed_on_key_change`, `force_masks` and
+   * `keep_start_trigger_high` will be locked until the device is reset.
    */
   bool ctrl_aux_lock;
 } dif_aes_transaction_t;
