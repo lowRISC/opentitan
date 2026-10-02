@@ -564,7 +564,14 @@
               desc: '''
                 Loads the root key into the key manager. Can be disabled by !!LOAD_ROOT_KEY_LOCK.
                 '''
-            }
+            },
+            {
+              value: "6",
+              name: "Load secondary root key",
+              desc: '''
+                Loads the secondary root key into the key manager. Can be disabled by !!LOAD_SECONDARY_ROOT_KEY_LOCK.
+                '''
+            },
           ],
         },
 
@@ -1345,6 +1352,24 @@
           resval: "0"
           desc: '''
             Write 1 to disable the `load root key` operation until the next reset.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "LOAD_SECONDARY_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load secondary root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "LOCK",
+          resval: "0"
+          desc: '''
+            Write 1 to disable the `load secondary root key` operation until the next reset.
           '''
         },
       ]

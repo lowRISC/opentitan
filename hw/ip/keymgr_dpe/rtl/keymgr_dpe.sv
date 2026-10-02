@@ -149,6 +149,10 @@ module keymgr_dpe
   keymgr_dpe_reg2hw_t reg2hw;
   keymgr_dpe_hw2reg_t hw2reg;
 
+  // TODO: Assign unused signal to prevent linter error
+  logic unused_lock;
+  assign unused_lock = reg2hw.load_secondary_root_key_lock.q;
+
   logic regfile_intg_err;
   logic shadowed_storage_err;
   logic shadowed_update_err;
