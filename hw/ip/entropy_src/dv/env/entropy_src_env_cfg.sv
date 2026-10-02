@@ -16,8 +16,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // Additional reset interface for the csrng.
   virtual clk_rst_if    csrng_rst_vif;
-  virtual pins_if#(8)   otp_en_es_fw_read_vif;
-  virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
   // Configuration for DUT CSRs (held in a separate object for easy re-randomization)
   entropy_src_dut_cfg dut_cfg;
@@ -86,10 +84,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Knob to inject entropy even if the DUT is configured to not accept it
   uint          spurious_inject_entropy_pct;
 
-  // Constraint knobs for OTP-driven inputs
-  uint          otp_en_es_fw_read_pct, otp_en_es_fw_read_inval_pct,
-                otp_en_es_fw_over_pct, otp_en_es_fw_over_inval_pct;
-
   // Behavioral constraint knob: dictates how often each sequence
   // performs a survey of the health test diagnostics.
   // (100% corresponds to a full diagnostic check after every HT alert,
@@ -124,10 +118,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Randomized fields //
   ///////////////////////
 
-  // OTP variables.
-  rand logic [7:0]              otp_en_es_fw_read, otp_en_es_fw_over;
-
-  rand bit                      spurious_inject_entropy;
+  rand bit spurious_inject_entropy;
 
   // Random values for interrupt, alert and error tests
   rand fatal_err_e      which_fatal_err;
@@ -165,18 +156,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       StartupFail1  :/ 25,
       ContHTRunning :/ 25
     };
-  }
-
-  constraint otp_en_es_fw_read_c {
-    `DV_MUBI8_DIST(otp_en_es_fw_read, otp_en_es_fw_read_pct,
-                                      100 - otp_en_es_fw_read_pct - otp_en_es_fw_read_inval_pct,
-                                      otp_en_es_fw_read_inval_pct)
-  }
-
-  constraint otp_en_es_fw_over_c {
-    `DV_MUBI8_DIST(otp_en_es_fw_over, otp_en_es_fw_over_pct,
-                                      100 - otp_en_es_fw_over_pct - otp_en_es_fw_over_inval_pct,
-                                      otp_en_es_fw_over_inval_pct)
   }
 
   constraint spurious_inject_entropy_c {spurious_inject_entropy dist {
@@ -280,10 +259,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
     str = {
         str,
-        $sformatf("\n\t |***** otp_en_es_fw_read           :         'h%02h *****| \t",
-                  otp_en_es_fw_read),
-        $sformatf("\n\t |***** otp_en_es_fw_over           :         'h%02h *****| \t",
-                  otp_en_es_fw_over),
         $sformatf("\n\t |***** seed_cnt                    : %12d *****| \t",
                   seed_cnt),
         $sformatf("\n\t |***** sim_duration                : %9.2f ms *****| \t",
@@ -291,19 +266,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     };
 
     str = {str, "\n\t |----------------- knobs ------------------------------| \t"};
-
-    str = {
-        str,
-        $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t",
-                  otp_en_es_fw_read_pct),
-        $sformatf("\n\t |***** otp_en_es_fw_read_inval_pct : %12d *****| \t",
-                  otp_en_es_fw_read_inval_pct),
-        $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t",
-                  otp_en_es_fw_over_pct),
-        $sformatf("\n\t |***** otp_en_es_fw_over_inval_pct : %12d *****| \t",
-                  otp_en_es_fw_over_inval_pct)
-    };
-
     str = {str, "\n\t |******************************************************| \t"};
     str = {str, dut_cfg.convert2string()};
 
@@ -323,12 +285,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   function void check_knob_vals();
     `DV_CHECK(spurious_inject_entropy_pct <= 100);
-    `DV_CHECK(otp_en_es_fw_read_pct <= 100);
-    `DV_CHECK(otp_en_es_fw_read_inval_pct <= 100);
-    `DV_CHECK((otp_en_es_fw_read_pct + otp_en_es_fw_read_inval_pct) <= 100);
-    `DV_CHECK(otp_en_es_fw_over_inval_pct <= 100);
-    `DV_CHECK((otp_en_es_fw_over_pct + otp_en_es_fw_over_inval_pct) <= 100);
-    `DV_CHECK(otp_en_es_fw_over_pct <= 100);
     `DV_CHECK(do_check_ht_diag_pct <= 100);
     `DV_CHECK(induce_targeted_transition_pct <= 100);
   endfunction
@@ -338,7 +294,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // to get more coverage in a given run.
   function bit generates_seeds(mubi4_t route_software, mubi4_t entropy_data_reg_enable);
     if (route_software == MuBi4True) begin
-      return (otp_en_es_fw_read == MuBi8True) && (entropy_data_reg_enable == MuBi4True);
+      return entropy_data_reg_enable == MuBi4True;
     end
     return 1;
   endfunction
@@ -346,7 +302,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Similar to generates_seeds(), returns true if a configuration should be able to
   // generate observe_data
   function bit generates_observe_data(mubi4_t fw_read_enable);
-     return (otp_en_es_fw_over == MuBi8True) && (fw_read_enable == MuBi4True);
+     return fw_read_enable == MuBi4True;
   endfunction
 
 endclass

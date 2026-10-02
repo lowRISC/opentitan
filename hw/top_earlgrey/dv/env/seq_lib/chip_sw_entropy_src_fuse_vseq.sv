@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This class is used for the testes `chip_sw_entropy_src_fuse_en_fw_read_test` and
-// `chip_sw_csrng_fuse_en_sw_app_read_test`. Please refer to the testplan for more
- // details regarding the OTP initialization values.
+// This class is used for the test `chip_sw_csrng_fuse_en_sw_app_read_test`.
+// Please refer to the testplan for more details regarding the OTP initialization values.
 class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_entropy_src_fuse_vseq)
 

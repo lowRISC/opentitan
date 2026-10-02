@@ -29,12 +29,6 @@ module entropy_src
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // OTP Interface
-  // SEC_CM: INTERSIG.MUBI
-  input  mubi8_t otp_en_entropy_src_fw_read_i,
-  // SEC_CM: INTERSIG.MUBI
-  input  mubi8_t otp_en_entropy_src_fw_over_i,
-
   // RNG Interface
   output logic rng_fips_o,
 
@@ -176,8 +170,6 @@ module entropy_src
     .reg2hw,
     .hw2reg(core_hw2reg),
 
-    .otp_en_entropy_src_fw_read_i(otp_en_entropy_src_fw_read_i),
-    .otp_en_entropy_src_fw_over_i(otp_en_entropy_src_fw_over_i),
     .rng_fips_o,
 
     .entropy_src_hw_if_o(core_entropy_hw_if),
