@@ -564,7 +564,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // SoftwareBinding must match the value passed in SW. (Ideally, we would backdoor-load it into
     // SW to remove the redundancy, but that's no immediate priority.)
     // Values are currently stored under:
-    // ./sw/device/lib/testing/keymgr_dpe_testutils.h:kCreatorParams
+    // ./sw/device/lib/testing/keymgr_dpe_testutils.h:kCreatorRootKeyParams
     // Reversed order as otherwise the bindings value do not match
     creator_data.SoftwareBinding = {
         32'h4ec9c6d6, 32'h19f5cff7, 32'h426dc745, 32'hb8a8379d,
@@ -640,7 +640,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // SoftwareBinding must match the value passed in SW. (Ideally, we would backdoor-load it into
     // SW to remove the redundancy, but that's no immediate priority.)
     // Values are currently stored under:
-    // ./sw/device/lib/testing/keymgr_dpe_testutils.h:kOwnerIntParams
+    // ./sw/device/lib/testing/keymgr_dpe_testutils.h:kOwnerIntKeyParams
     owner_int_data.SoftwareBinding = {
         32'h1940ceeb, 32'hf1394d28, 32'hb012ae5e, 32'h23fb480c,
         32'h3195dbfa, 32'hc2f3bbaf, 32'h3f83d390, 32'he4987b39
