@@ -97,18 +97,11 @@
       name:    "rstdet_enable",
       act:     "req"
     }
-    // TODO: Combine the following two entries to become a `req_rsp?`
-    { struct:  "i3c_rstdet_req"
+    { struct:  "i3c_rstdet"
       package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_req"
+      type:    "req_rsp",
+      name:    "rstdet"
       act:     "req"
-    }
-    { struct:  "i3c_rstdet_rsp"
-      package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_rsp"
-      act:     "rcv"
     }
     { struct:  "logic"
       package: ""
@@ -156,6 +149,14 @@
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
+    // Main IP block clock frequency; this allows the design to set the default time intervals appropriately.
+    { name:    "ClkFreq",
+      type:    "int",
+      default: "50000000",
+      desc:    "The frequency of the main clock, in Hz.",
+      local:   "false",
+      expose:  "true"
+    }
     // Device Address Table size in bus words; each entry consumes 8 bytes of address space.
     { name:    "NumDATWords",
       type:    "int unsigned",

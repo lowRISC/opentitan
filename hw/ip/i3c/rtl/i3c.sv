@@ -83,8 +83,8 @@ module i3c
 
   // Target Reset Detector request/response.
   output                                    rstdet_enable_o,
-  output i3c_rstdet_req_t                   rstdet_req_o,
-  input  i3c_rstdet_rsp_t                   rstdet_rsp_i,
+  output i3c_rstdet_req_t                   rstdet_o,
+  input  i3c_rstdet_rsp_t                   rstdet_i,
 
   // Interrupts.
   // - HCI-global interrupt, asserted when any HCI interrupt is asserted.
@@ -103,12 +103,6 @@ module i3c
   input                                     scan_clk_i,
   input                                     scan_rst_ni,
   input prim_mubi_pkg::mubi4_t              scanmode_i
-
-  // TODO(#31336): Dummy ports for top-level integration. These are presently required because `topgen`
-  // creates enables for all output signals.
-  ,
-  output cio_ctrl_bus_drv_en_o,
-  output cio_targ_bus_drv_en_o
 );
 
   localparam int unsigned DataWidth = top_pkg::TL_DW;
@@ -126,10 +120,6 @@ module i3c
   localparam int unsigned SWDirAddrW = $clog2(I3C_BUFFER_SIZE * 8 / DataWidth);
 
   logic [NumAlerts-1:0] alert_test, alerts;
-
-  // TODO(#31336): These drivers should not exist, because the ports should not exist, but it's adding noise
-  // to synthesis logs.
-  assign {cio_ctrl_bus_drv_en_o, cio_targ_bus_drv_en_o} = 'b0;
 
   // Registers.
   i3c_reg2hw_t reg2hw;
@@ -461,8 +451,8 @@ module i3c
 
     // Target Reset Detector request/response.
     .rstdet_enable_o (rstdet_enable_o),
-    .rstdet_o        (rstdet_req_o),
-    .rstdet_i        (rstdet_rsp_i),
+    .rstdet_o        (rstdet_o),
+    .rstdet_i        (rstdet_i),
 
     // Interrupts.
     .intr_hci_o      (intr_hci_o),
@@ -549,7 +539,7 @@ module i3c
 
   // Assert Known for Target-driven Reset Detector outputs.
   `ASSERT_KNOWN(RstDetEnKnown_A, rstdet_enable_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RstDetReqKnown_A, rstdet_req_o, clk_i, !rst_ni)
+  `ASSERT_KNOWN(RstDetReqKnown_A, rstdet_o, clk_i, !rst_ni)
 
   // Assert Known for alerts.
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
@@ -560,10 +550,6 @@ module i3c
   // Assert Known for interrupts.
   `ASSERT_KNOWN(IntrHCIKnown_A, intr_hci_o)
   `ASSERT_KNOWN(IntrTargKnown_A, intr_targ_o)
-
-  // Assert Known for the driver-enable outputs.
-  `ASSERT_KNOWN(CtrlBusDrvEnKnown_A, cio_ctrl_bus_drv_en_o)
-  `ASSERT_KNOWN(TargBusDrvEnKnown_A, cio_targ_bus_drv_en_o)
 
   // Check that the bus width meets the requirements of the message buffer, DAT and DCT tables.
   if (DataWidth != 32) $fatal(1, "This design presently supports only 32-bit system buses.");

@@ -187,12 +187,12 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   // consistency check errors
-  logic [20:0][PowerDomains-1:0] cnsty_chk_errs;
-  logic [20:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+  logic [22:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [22:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
   // consistency sparse fsm errors
-  logic [20:0][PowerDomains-1:0] fsm_errs;
-  logic [20:0][PowerDomains-1:0] shadow_fsm_errs;
+  logic [22:0][PowerDomains-1:0] fsm_errs;
+  logic [22:0][PowerDomains-1:0] shadow_fsm_errs;
 
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
@@ -1171,6 +1171,34 @@ module rstmgr
   end
   assign shadow_cnsty_chk_errs[20] = '0;
   assign shadow_fsm_errs[20] = '0;
+
+  // Generating resets for i3c0
+  // Power Domains: []
+  // Shadowed: False
+  assign resets_o.rst_i3c0_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[21][DomainAonSel] = '0;
+  assign fsm_errs[21][DomainAonSel] = '0;
+  assign rst_en_o.i3c0[DomainAonSel] = MuBi4True;
+  assign resets_o.rst_i3c0_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[21][DomainMainSel] = '0;
+  assign fsm_errs[21][DomainMainSel] = '0;
+  assign rst_en_o.i3c0[DomainMainSel] = MuBi4True;
+  assign shadow_cnsty_chk_errs[21] = '0;
+  assign shadow_fsm_errs[21] = '0;
+
+  // Generating resets for i3c1
+  // Power Domains: []
+  // Shadowed: False
+  assign resets_o.rst_i3c1_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[22][DomainAonSel] = '0;
+  assign fsm_errs[22][DomainAonSel] = '0;
+  assign rst_en_o.i3c1[DomainAonSel] = MuBi4True;
+  assign resets_o.rst_i3c1_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[22][DomainMainSel] = '0;
+  assign fsm_errs[22][DomainMainSel] = '0;
+  assign rst_en_o.i3c1[DomainMainSel] = MuBi4True;
+  assign shadow_cnsty_chk_errs[22] = '0;
+  assign shadow_fsm_errs[22] = '0;
 
 
   ////////////////////////////////////////////////////

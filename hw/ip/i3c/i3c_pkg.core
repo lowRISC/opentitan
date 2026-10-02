@@ -8,7 +8,10 @@ description: "I3C Package"
 filesets:
   files_rtl:
     files:
+      - rtl/i3c_consts_pkg.sv
+      - rtl/i3c_reg_pkg.sv
       - rtl/i3c_pkg.sv
+      - rtl/io_sep/i3c_io_pkg.sv
     file_type: systemVerilogSource
 
 targets:

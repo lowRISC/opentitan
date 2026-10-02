@@ -59,7 +59,7 @@ package i3c_io_pkg;
   endfunction
 
   // Controller-side driver signals.
-  typedef struct {
+  typedef struct packed {
     logic scl_en;
     logic scl;
     logic sda_pp_en;
@@ -68,22 +68,28 @@ package i3c_io_pkg;
   } i3c_ctrl_bus_drv_t;
 
   // Target-side driver signals.
-  typedef struct {
+  typedef struct packed {
     logic sda_pp_en;
     logic sda_od_en;
     logic [NumSDALanes-1:0] sda;
   } i3c_targ_bus_drv_t;
 
   // Observed bus signals on the Controller side.
-  typedef struct {
+  typedef struct packed {
   logic scl;
   logic [NumSDALanes-1:0] sda;
   } i3c_ctrl_bus_obs_t;
 
   // Observed bus signals on the Target side.
-  typedef struct {
+  typedef struct packed {
   logic scl;
   logic [NumSDALanes-1:0] sda;
   } i3c_targ_bus_obs_t;
+
+  // Default connectivity, when unused.
+  parameter i3c_ctrl_bus_drv_t I3C_CTRL_BUS_DRV_DEFAULT = '0;
+  parameter i3c_targ_bus_drv_t I3C_TARG_BUS_DRV_DEFAULT = '0;
+  parameter i3c_ctrl_bus_obs_t I3C_CTRL_BUS_OBS_DEFAULT = '0;
+  parameter i3c_targ_bus_obs_t I3C_TARG_BUS_OBS_DEFAULT = '0;
 
 endpackage
