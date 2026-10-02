@@ -36,6 +36,7 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
     jtag_riscv_dm_activation_seq jtag_dm_activation_seq =
         jtag_riscv_dm_activation_seq::type_id::create("jtag_dm_activation_seq");
 
+    wait_pwrmgr_strap_sampled();
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 1;
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
