@@ -14,12 +14,14 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   input  logic               enable_i,
 
   // Command interface request, arbitrated from command stages
-  input  logic               req_vld_i,
-  output logic               req_rdy_o,
-  input  csrng_core_data_t   req_data_i,
-  input  logic [SeedLen-1:0] req_entropy_i,
-  input  logic               req_entropy_fips_i,
-  input  logic               req_glast_i,
+  input  logic                       req_vld_i,
+  output logic                       req_rdy_o,
+  input  csrng_core_data_t           req_data_i,
+  input  logic [SeedLen-1:0]         req_entropy_i,
+  input  logic                       req_entropy_fips_i,
+  input  logic                       req_glast_i,
+  input  logic                       req_gen_first_i,
+  input  logic [GenBitsCtrWidth-1:0] req_glen_i,
 
   // Command interface response to state db and command stages
   output logic               state_db_wr_o,
@@ -120,19 +122,6 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   // Registers, including sequential process
   //--------------------------------------------
 
-  // adata flops for each app interface, plus one valid bit for each
-  // This rather large bank of flops is unfortunately required due to the way that we handle
-  // GENerate commands with more than one block of generated output bits: Instead of generating all
-  // blocks in one go, we always generate one block and then allow the arbiter to give another app
-  // interface access to the data path. However, on the last generated block, we require the adata
-  // that are supplied at the very beginning of the GENerate command for the final update() step
-  // (compare NIST specification). Since all app interfaces share a single packer for adata, its
-  // content can get overwritten after the first block of generated bits, and hence we must buffer
-  // adata for each app interface locally for the full "lifetime" of a multi-block GENerate command.
-  // TODO(#28153) Find a smaller solution (giving each app interface an unpacker does not help)
-  csrng_key_v_t [NumApps-1:0] generate_adata_q, generate_adata_d;
-  logic         [NumApps-1:0] generate_adata_vld_q, generate_adata_vld_d;
-
   // Scratch register for commands that call block_encrypt more than once and pointer into it
   logic        [SeedLen-1:0] concat_key_v_q, concat_key_v_d;
   logic [NumBlkPerUpdLg-1:0] concat_ctr_q, concat_ctr_d;
@@ -142,17 +131,13 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      generate_adata_q     <= '{default: '0};
-      generate_adata_vld_q <= '0;
-      concat_ctr_q         <= '0;
-      concat_key_v_q       <= '0;
-      gen_subcmd_q         <= UPD_BEGIN;
+      concat_ctr_q   <= '0;
+      concat_key_v_q <= '0;
+      gen_subcmd_q   <= UPD_BEGIN;
     end else begin
-      generate_adata_q     <= generate_adata_d;
-      generate_adata_vld_q <= generate_adata_vld_d;
-      concat_ctr_q         <= concat_ctr_d;
-      concat_key_v_q       <= concat_key_v_d;
-      gen_subcmd_q         <= gen_subcmd_d;
+      concat_ctr_q   <= concat_ctr_d;
+      concat_key_v_q <= concat_key_v_d;
+      gen_subcmd_q   <= gen_subcmd_d;
     end
   end
 
@@ -166,11 +151,11 @@ module csrng_ctr_drbg import csrng_pkg::*; (
     unique case (req_data_i.cmd)
       INS: begin
         // Reset key, v, and reseed counter; inject entropy and FIPS status
-        core_data.key    = '0;
-        core_data.v      = '0;
-        core_data.rs_ctr = '0;
-        core_data.pdata  = req_data_i.pdata ^ req_entropy_i;
-        core_data.fips   = req_entropy_fips_i;
+        core_data.key_v   = '0;
+        core_data.rs_ctr  = '0;
+        core_data.gen_ctr = '0;
+        core_data.pdata   = req_data_i.pdata ^ req_entropy_i;
+        core_data.fips    = req_entropy_fips_i;
       end
       RES: begin
         // Reset reseed counter; inject entropy and FIPS status
@@ -178,54 +163,35 @@ module csrng_ctr_drbg import csrng_pkg::*; (
         core_data.pdata  = req_data_i.pdata ^ req_entropy_i;
         core_data.fips   = req_entropy_fips_i;
       end
-      UPD, GEN: begin
+      UPD: begin
         /* leave everything as-is */
+      end
+      GEN: begin
+        // The first request of a GEN command starts the count of remaining requests
+        if (req_gen_first_i) begin
+          core_data.gen_ctr = req_glen_i;
+        end
+        // Capture adata for the final update() step if not already done
+        if (!req_data_i.gen_adata_vld) begin
+          core_data.gen_adata     = req_data_i.pdata;
+          core_data.gen_adata_vld = 1'b1;
+        end
       end
       UNI: begin
         // Set everything to zero
-        core_data.key    = '0;
-        core_data.v      = '0;
-        core_data.rs_ctr = '0;
-        core_data.pdata  = '0;
-        core_data.fips   = 1'b0;
+        core_data.key_v         = '0;
+        core_data.rs_ctr        = '0;
+        core_data.gen_ctr       = '0;
+        core_data.gen_adata     = '0;
+        core_data.gen_adata_vld = 1'b0;
+        core_data.pdata         = '0;
+        core_data.fips          = 1'b0;
       end
       default: begin
         // Invalid command, should never happen
         core_data.cmd = INV;
       end
     endcase
-  end
-
-  //--------------------------------------------
-  // Handling of generate_adata(_vld)
-  //--------------------------------------------
-
-  for (genvar i = 0; i < NumApps; i++) begin : g_assign_gen_adata
-    logic capt_adata;
-    logic clear_adata_vld;
-    // 1) Write adata to local buffer upon a GENerate command and _vld not being set
-    // 2) Clear _vld and zeroize the buffer when the last GENerate beat appears on the cmd_rsp
-    //    port, or on any Uninstantiate
-    assign capt_adata = req_vld_i && (core_data.cmd == GEN) && (core_data.inst_id == i) &&
-                        !generate_adata_vld_q[i];
-    assign clear_adata_vld = rsp_vld_o && (req_glast_i || (core_data.cmd == UNI)) &&
-                             (core_data.inst_id == i);
-
-    always_comb begin
-      generate_adata_vld_d[i] = generate_adata_vld_q[i];
-      generate_adata_d[i]     = generate_adata_q[i];
-
-      if (!enable_i) begin
-        generate_adata_vld_d[i] = 1'b0;
-        generate_adata_d[i]     = '0;
-      end else if (capt_adata) begin
-        generate_adata_vld_d[i] = 1'b1;
-        generate_adata_d[i]     = core_data.pdata;
-      end else if (clear_adata_vld) begin
-        generate_adata_vld_d[i] = 1'b0;
-        generate_adata_d[i]     = '0;
-      end
-    end
   end
 
   //--------------------------------------------
@@ -244,7 +210,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
     .clr_i    (!enable_i),
     .set_i    (v_ctr_load),
-    .set_cnt_i(core_data.v[CtrLen-1:0]),
+    .set_cnt_i(core_data.key_v.v[CtrLen-1:0]),
 
     .incr_en_i(v_ctr_inc),
     .decr_en_i(1'b0),
@@ -257,14 +223,14 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   );
 
   // Combine the MSBs of the initial v from the state db with the current counter value as LSBs
-  assign v_ctr_sized = {core_data.v[BlkLen-1:CtrLen], v_ctr};
+  assign v_ctr_sized = {core_data.key_v.v[BlkLen-1:CtrLen], v_ctr};
 
   //--------------------------------------------
   // Block encrypt request data assign
   //--------------------------------------------
 
   assign block_encrypt_req_data_o = '{
-    key: core_data.key,
+    key: core_data.key_v.key,
     v:   v_ctr_sized
   };
 
@@ -493,23 +459,24 @@ module csrng_ctr_drbg import csrng_pkg::*; (
     // For all commands that update the internal state, send new {key,v} to state db
     // For GENerate commands, we need a more involved handling of the three sub commands
     if (core_data.cmd inside {INS, RES, UPD}) begin
-      rsp_data_o.key = concat_key_v.key ^ core_data.pdata[BlkLen +: KeyLen];
-      rsp_data_o.v   = concat_key_v.v   ^ core_data.pdata[BlkLen-1:0];
+      rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
     end else if (core_data.cmd == GEN) begin
       unique case (gen_subcmd_q)
         UPD_BEGIN: begin
-          rsp_data_o.key = concat_key_v.key ^ core_data.pdata[BlkLen +: KeyLen];
-          rsp_data_o.v   = concat_key_v.v   ^ core_data.pdata[BlkLen-1:0];
+          rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
         end
         GEN_LOOP: begin
-          rsp_data_o.key = core_data.key; // Unchanged
-          rsp_data_o.v   = v_ctr_sized;   // Old value + 1
+          rsp_data_o.key_v.v = v_ctr_sized;           // Old value + 1, key unchanged
+          rsp_data_o.gen_ctr = core_data.gen_ctr - 1; // One less request remaining
         end
         UPD_FINAL: begin
-          rsp_data_o.key = concat_key_v.key ^ generate_adata_q[core_data.inst_id].key;
-          rsp_data_o.v   = concat_key_v.v   ^ generate_adata_q[core_data.inst_id].v;
+          rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.gen_adata);
           // Increase the reseed counter on the last beat of every GENerate
-          rsp_data_o.rs_ctr = core_data.rs_ctr + 1;
+          rsp_data_o.rs_ctr  = core_data.rs_ctr + 1;
+          rsp_data_o.gen_ctr = core_data.gen_ctr - 1;
+          // The adata is no longer needed once the GENerate has completed
+          rsp_data_o.gen_adata     = '0;
+          rsp_data_o.gen_adata_vld = 1'b0;
         end
         default: /* We should never get here */ ;
       endcase
