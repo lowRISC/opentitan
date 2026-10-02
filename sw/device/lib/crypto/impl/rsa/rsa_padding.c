@@ -428,6 +428,8 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   size_t salt_bytelen = digest_bytelen;
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   if (encoded_message_bytelen < salt_bytelen + digest_bytelen + 2) {
+    // COVERAGE (SW ERR) This is an internal function which is called with
+    // correct inputs that do not trigger this return.
     return OTCRYPTO_BAD_ARGS;
   }
 

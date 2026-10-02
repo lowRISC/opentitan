@@ -263,6 +263,9 @@ cc_library(
     local_defines = select({
         "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
         "//conditions:default": [],
+    }) + select({
+        "//sw/device/lib/crypto/configs:type_binary_blob": ["OTCRYPTO_BINARY_BLOB"],
+        "//conditions:default": [],
     }),
     deps = [
         ":cmvp",

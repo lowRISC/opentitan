@@ -122,6 +122,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
     case kOtcryptoRsaSize2048: {
       if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
           modulus->len != kRsa2048NumWords) {
+        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
@@ -131,6 +132,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
     case kOtcryptoRsaSize3072: {
       if (public_key->key_length != sizeof(rsa_3072_public_key_t) ||
           modulus->len != kRsa3072NumWords) {
+        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
@@ -140,6 +142,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
     case kOtcryptoRsaSize4096: {
       if (public_key->key_length != sizeof(rsa_4096_public_key_t) ||
           modulus->len != kRsa4096NumWords) {
+        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
@@ -147,6 +150,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       break;
     }
     default:
+      // COVERAGE (MISSING) We do not cover bad sizes.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -271,6 +275,7 @@ static status_t rsa_size_from_private_key(
       return OTCRYPTO_OK;
     default:
       // No matches.
+      // COVERAGE (MISSING) We do not cover bad key lengths.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -371,6 +376,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
   if (is_even(modulus->data[0])) {
+    // COVERAGE (MISSING) We do not cover even moduli.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -493,6 +499,8 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
                                    &signature_check, &verification_result));
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   if (verification_result != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) This check only fails if the signature generation was
+    // faulted.
     crypto_state_t state;
     if (status_ok(read_state(&state))) {
       state.locked_state = kHardenedByteBoolTrue;
@@ -560,17 +568,23 @@ static otcrypto_status_t rsa_pct_verify(
       sig_words = 2048 / 32;
       break;
     case kOtcryptoRsaSize3072:
+      // COVERAGE (MISSING) RSA-3072 keygen PCT is not run in coverage due to
+      // runtime.
       sig_words = 3072 / 32;
       break;
     case kOtcryptoRsaSize4096:
+      // COVERAGE (MISSING) RSA-4096 keygen PCT is not run in coverage due to
+      // runtime.
       sig_words = 4096 / 32;
       break;
     default:
+      // COVERAGE (FI CM) Unreachable as size is validated by caller.
       return OTCRYPTO_BAD_ARGS;
   }
 
   otcrypto_rsa_padding_t padding_mode = kOtcryptoRsaPaddingPkcs;
   if (private_key->config.key_mode == kOtcryptoKeyModeRsaSignPss) {
+    // COVERAGE (MISSING) RSA-PSS keygen PCT is not covered.
     padding_mode = kOtcryptoRsaPaddingPss;
   }
 
@@ -727,6 +741,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       if (cofactor_share0->len !=
               sizeof(rsa_3072_cofactor_t) / sizeof(uint32_t) ||
           modulus->len != kRsa3072NumWords) {
+        // COVERAGE (MISSING) We do not cover bad size.
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
@@ -737,6 +752,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       if (cofactor_share0->len !=
               sizeof(rsa_4096_cofactor_t) / sizeof(uint32_t) ||
           modulus->len != kRsa4096NumWords) {
+        // COVERAGE (MISSING) We do not cover bad size.
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
@@ -744,6 +760,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
+      // COVERAGE (MISSING) We do not cover bad size.
       return OTCRYPTO_BAD_ARGS;
   }
 

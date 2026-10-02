@@ -36,6 +36,8 @@ otcrypto_status_t otcrypto_security_config_check(
     // enabled in ibex.
     hardened_bool_t ibex_secure_config = ibex_check_security_config();
     if (launder32(ibex_secure_config) == kHardenedBoolFalse) {
+      // COVERAGE (MISSING) Mismatched Ibex security configuration is not
+      // covered.
       return OTCRYPTO_FATAL_ERR;
     }
     HARDENED_CHECK_EQ(ibex_secure_config, kHardenedBoolTrue);

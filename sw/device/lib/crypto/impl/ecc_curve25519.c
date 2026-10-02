@@ -123,18 +123,21 @@ static status_t curve25519_public_key_length_check(
     const otcrypto_unblinded_key_t *key, otcrypto_key_mode_t expected_mode) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->key == NULL) {
+    // COVERAGE (MISSING) Null public key pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   // Check the key struct and key length.
   if (key->key_length != kCurve25519KeyBytes ||
       launder32(key->key_mode) != expected_mode) {
+    // COVERAGE (MISSING) Invalid public key length or mode is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->key_mode, expected_mode);
 
   // Check the integrity of the key.
   if (otcrypto_integrity_unblinded_key_check(key) != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Corrupted public key checksum is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(otcrypto_integrity_unblinded_key_check(key)),
@@ -405,6 +408,8 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
                                        &result));
 
   if (result != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) Pairwise consistency check only fails under fault
+    // injection.
     crypto_state_t state;
     if (status_ok(read_state(&state))) {
       state.locked_state = kHardenedByteBoolTrue;
@@ -426,6 +431,7 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || public_key->key == NULL) {
+    // COVERAGE (MISSING) Null public key pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -499,6 +505,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
   OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
+    // COVERAGE (MISSING) Null verification_result pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -751,6 +758,8 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)signature));
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
+    // COVERAGE (FI CM) Redundant check; ed25519_signature_check already
+    // verifies signature->data != NULL.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -845,6 +854,7 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
+  // COVERAGE (MISSING) Invalid hw_backed boolean value is not covered.
   return OTCRYPTO_BAD_ARGS;
 }
 
@@ -891,6 +901,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
+  // COVERAGE (MISSING) Invalid hw_backed boolean value is not covered.
   return OTCRYPTO_BAD_ARGS;
 }
 

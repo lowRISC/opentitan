@@ -271,6 +271,7 @@ status_t otbn_busy_wait_for_done(void) {
 
   // If OTBN is idle (not locked), then return a recoverable error.
   if (launder32(status) == kOtbnStatusIdle) {
+    // COVERAGE (HW ERR) This requires the OTBN to reach an error.
     HARDENED_CHECK_EQ(status, kOtbnStatusIdle);
 #ifdef FIPS_MODE
     // If unimp (ILLEGAL_INSN) executed (such as for PCT), lock cryptolib state.
@@ -369,6 +370,8 @@ static status_t check_app_address_ranges(const otbn_app_t *app) {
 
   // Compressed DMEM must not be backwards.
   if (app->dmem_compressed_end < app->dmem_compressed_start) {
+    // COVERAGE (SW ERR) This is an internal function, we only provide it valid
+    // inputs.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LE((uintptr_t)app->dmem_compressed_start,
@@ -397,6 +400,8 @@ static status_t decompress_load(const uint8_t *src, const uint8_t *src_end,
   while (src < src_end) {
     // Check the header size
     if ((size_t)(src_end - src) < 4) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed OTBN images.
       return OTCRYPTO_FATAL_ERR;
     }
     // Parse the 4-byte chunk header as unsigned 32-bit integers
@@ -405,22 +410,30 @@ static status_t decompress_load(const uint8_t *src, const uint8_t *src_end,
     src += 4;
 
     if (comp_len > (size_t)(src_end - src)) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed OTBN images.
       return OTCRYPTO_FATAL_ERR;
     }
 
     if (uncomp_len % sizeof(uint32_t) != 0) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed OTBN images.
       return OTCRYPTO_FATAL_ERR;
     }
 
     if (LZ4_decompress((const char *)src, (char *)local_chunk_buf,
                        (int)comp_len,
                        (int)sizeof(local_chunk_buf)) != (int)uncomp_len) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed OTBN images.
       return OTCRYPTO_FATAL_ERR;
     }
 
     // Write the decompressed data portion to OTBN memory.
     uint32_t words = uncomp_len / (uint32_t)sizeof(uint32_t);
     if (words > expected_words - words_written) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed OTBN images.
       return OTCRYPTO_FATAL_ERR;
     }
 
@@ -434,6 +447,8 @@ static status_t decompress_load(const uint8_t *src, const uint8_t *src_end,
   }
 
   if (words_written != expected_words) {
+    // COVERAGE (SW ERR) Decompression is only called on valid build-time
+    // compressed OTBN images.
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -502,6 +517,8 @@ status_t otbn_load_app(const otbn_app_t app) {
     uint32_t checksum =
         abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
     if (launder32(checksum) != app.checksum) {
+      // COVERAGE (HW ERR) Checksum mismatch only occurs on hardware fault or
+      // memory corruption during IMEM load.
       if (has_state) {
         HARDENED_TRY(read_state(&state));
         state.imem_cache = 0;

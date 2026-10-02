@@ -12,8 +12,10 @@
 
 #ifdef FIPS_MODE
 
+#ifdef OTCRYPTO_BINARY_BLOB
 extern const uint8_t _libotcrypto_start_[];
 extern const uint8_t _libotcrypto_end_[];
+#endif  // OTCRYPTO_BINARY_BLOB
 
 otcrypto_status_t otcrypto_integrity_check(void) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_INTEGRITY_CHECK);
@@ -31,6 +33,10 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   // Re-read the state after running the SHA-2 KAT so we preserve kat_state.
   HARDENED_TRY(read_state(&state));
 
+#ifdef OTCRYPTO_BINARY_BLOB
+  // COVERAGE (MISSING) The binary-blob hash check is not covered because
+  // coverage builds link statically (type_flag="static") to relocate LLVM
+  // coverage counters in SRAM.
   const size_t lib_len = (size_t)(_libotcrypto_end_ - _libotcrypto_start_);
 
   uint32_t digest_content[12] = {0};
@@ -76,6 +82,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
     otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
+#endif  // OTCRYPTO_BINARY_BLOB
 
   // Set the stateful word that the self-integrity check is done
   state.self_check_state = kHardenedByteBoolTrue;

@@ -1215,8 +1215,12 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ] + select({
-        "//sw/device/lib/crypto/configs:hashed": ["//sw/device/lib/crypto/impl:kats"],
-        "//conditions:default": ["//sw/device/lib/crypto/impl:kats_hdrs"],
+        "//sw/device/lib/crypto/configs:type_binary_blob": [
+            "//sw/device/lib/crypto/impl:kats",
+        ],
+        "//conditions:default": [
+            "//sw/device/lib/crypto/impl:kats_hdrs",
+        ],
     }),
 )
 
@@ -1921,8 +1925,10 @@ test_suite(
         ":rsa_2048_key_from_cofactor_functest",
         ":rsa_2048_signature_functest",
         ":rsa_3072_encryption_functest",
+        ":rsa_3072_key_from_cofactor_functest",
         ":rsa_3072_signature_functest",
         ":rsa_4096_encryption_functest",
+        ":rsa_4096_key_from_cofactor_functest",
         ":rsa_4096_signature_functest",
         ":sha256_functest",
         ":sha384_functest",
@@ -1930,6 +1936,7 @@ test_suite(
         ":status_functest",
         ":symmetric_keygen_functest",
         ":x25519_functest",
+        ":x25519_sideload_functest",
     ],
 )
 
