@@ -288,6 +288,24 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
 
+  keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata;
+  for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
+    if (i < NumInstHwSlot) begin : gen_inst_slot
+      assign hw2reg.metadata_high[i].valid.d                = metadata[i].valid;
+      assign hw2reg.metadata_high[i].exportable_policy.d    = metadata[i].key_policy.exportable;
+      assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata[i].key_policy.retain_parent;
+      assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata[i].key_policy.allow_child;
+      assign hw2reg.metadata_high[i].boot_stage.d           = metadata[i].boot_stage;
+      assign hw2reg.metadata_low[i].d                       = metadata[i].max_key_version;
+    end else begin : gen_tieoff_slot
+      assign hw2reg.metadata_high[i].valid.d                = '0;
+      assign hw2reg.metadata_high[i].exportable_policy.d    = '0;
+      assign hw2reg.metadata_high[i].retain_parent_policy.d = '0;
+      assign hw2reg.metadata_high[i].allow_child_policy.d   = '0;
+      assign hw2reg.metadata_high[i].boot_stage.d           = '0;
+      assign hw2reg.metadata_low[i].d                       = '0;
+    end
+  end
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
@@ -363,6 +381,7 @@ module keymgr_dpe
     .max_key_version_i(reg2hw.max_key_ver_shadowed),
     .key_version_i(reg2hw.key_version),
     .key_version_vld_o(key_version_vld),
+    .metadata_o(metadata),
     .op_start_i(op_start),
     .op_done_o(op_done),
     .init_o(init),
@@ -924,6 +943,9 @@ module keymgr_dpe
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+
+  // Verify the metadata do not exceed the width of the sw registers
+  `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
 
   // Verify the number of instanciated HW slots
   `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)

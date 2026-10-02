@@ -1002,6 +1002,99 @@ countermeasures: [
       ]
     },
 
+    { multireg: {
+        cname: "KEYMGR",
+        name: "METADATA_LOW",
+        desc: '''
+          Read metadata (low word) for each HW slot.
+
+          Only the first `NumInstHwSlot` slots are instantiated.
+          Entries at index `NumInstHwSlot` and above always read as 0.
+          Together with !!METADATA_HIGH, this register lets software inspect the non-secret
+          metadata of the DPE context.
+        ''',
+        count: "NumMaxHwSlot",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+            { bits: "31:0",
+              name: "MAX_KEY_VERSION",
+              desc: '''
+                Maximum key version allowed for key derived from this DPE context.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "METADATA_HIGH",
+        desc: '''
+          Read metadata (high word) for each HW slot.
+
+          Only the first `NumInstHwSlot` slots are instantiated.
+          Entries at index `NumInstHwSlot` and above always read as 0.
+          Together with !!METADATA_LOW, this register lets software inspect the non-secret
+          metadata of the DPE context.
+        ''',
+        count: "NumMaxHwSlot",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+            { bits: "0",
+              name: "VALID",
+              desc: '''
+                Set if the DPE context held in this slot is valid.
+              ''',
+              resval: "0"
+            },
+            { bits: "2:1",
+              name: "BOOT_STAGE",
+              desc: '''
+                Boot stage associated with the DPE context held in this slot.
+
+                | Value | Boot stage        |
+                |:-----:|:------------------|
+                | 0     | BootStageCreator  |
+                | 1     | BootStageOwnerInt |
+                | 2     | BootStageOwner    |
+                | 3     | BootStageRuntime  |
+
+                The naming indicates the next bootstage after a successful key derivation
+                e.g. boot stage 1 means the context is the _CreatorRootKey_ and will be
+                derived into the _OwnerIntKey_.
+              ''',
+              resval: "0"
+            },
+            { bits: "3",
+              name: "ALLOW_CHILD_POLICY",
+              resval: "0"
+              desc: '''
+                Read the `allow_child` policy applied to the DPE context in this slot.
+              '''
+            },
+            { bits: "4",
+              name: "EXPORTABLE_POLICY",
+              resval: "0"
+              desc: '''
+                Read the `exportable` policy applied to the DPE context in this slot.
+              '''
+            },
+            { bits: "5",
+              name: "RETAIN_PARENT_POLICY",
+              resval: "0"
+              desc: '''
+                Read the `retain_parent` policy applied to the DPE context in this slot.
+              '''
+            },
+        ],
+      },
+    },
+
     { name: "ERR_CODE",
       desc: '''
         Key manager error code.

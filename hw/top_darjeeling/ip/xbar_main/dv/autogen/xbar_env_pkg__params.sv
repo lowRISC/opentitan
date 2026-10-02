@@ -62,7 +62,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h21130000, 32'h2113ffff}
     }},
     '{"keymgr_dpe", '{
-        '{32'h21140000, 32'h211400ff}
+        '{32'h21140000, 32'h211401ff}
     }},
     '{"rv_core_ibex__cfg", '{
         '{32'h211f0000, 32'h211f07ff}
