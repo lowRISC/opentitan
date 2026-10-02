@@ -325,6 +325,9 @@ module kmac
 
   prim_mubi_pkg::mubi4_t entropy_configured;
 
+  logic status_entropy_ready;
+  logic status_entropy_reseeding;
+
   // Message Masking
   logic msg_mask_en, cfg_msg_mask;
   logic [MsgWidth-1:0] msg_mask;
@@ -496,6 +499,9 @@ module kmac
   assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == sha3_pkg::StSqueeze;
   assign hw2reg.status.sha3_stopped.d  = sha3_fsm == sha3_pkg::StStop;
   assign hw2reg.status.state_write.d   = state_write_en;
+
+  assign hw2reg.status.entropy_ready.d     = status_entropy_ready;
+  assign hw2reg.status.entropy_reseeding.d = status_entropy_reseeding;
 
   // FIFO related status
   assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
@@ -1391,6 +1397,8 @@ module kmac
       .hash_threshold_i (entropy_hash_threshold),
 
       .entropy_configured_o (entropy_configured),
+      .entropy_ready_o      (status_entropy_ready),
+      .entropy_reseeding_o  (status_entropy_reseeding),
 
       // LC escalation
       .lc_escalate_en_i (lc_escalate_en[5]),
@@ -1445,6 +1453,12 @@ module kmac
 
     // If Masking is off, always entropy configured
     assign entropy_configured = prim_mubi_pkg::MuBi4True;
+
+    // Mirror the entropy_ready bit written by software to simplify DV and software.
+    assign status_entropy_ready = reg2hw.cfg_shadowed.entropy_ready.q;
+
+    // No reseed operation is ever happening.
+    assign status_entropy_reseeding = 1'b 0;
 
     logic unused_edn_clk_rst;
     assign unused_edn_clk_rst = ^{clk_edn_i, rst_edn_ni};

@@ -70,6 +70,8 @@ module kmac_entropy
   input        [HashCntW-1:0] hash_threshold_i,
 
   output prim_mubi_pkg::mubi4_t entropy_configured_o,
+  output logic                  entropy_ready_o,
+  output logic                  entropy_reseeding_o,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
@@ -297,7 +299,6 @@ module kmac_entropy
 
   // Hash Counter
   logic threshold_hit;
-  logic threshold_hit_q, threshold_hit_clr; // latched hit
 
   logic hash_progress_d, hash_progress_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -337,15 +338,29 @@ module kmac_entropy
   assign threshold_hit = |hash_threshold_i && (hash_threshold_i <= hash_cnt_o);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)                threshold_hit_q <= 1'b 0;
-    else if (threshold_hit_clr) threshold_hit_q <= 1'b 0;
-    else if (threshold_hit)     threshold_hit_q <= 1'b 1;
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)         mode_q <= EntropyModeNone;
     else if (mode_latch) mode_q <= mode_i;
   end
+
+  // EDN reseed triggering ====================================================
+  logic edn_trigger_clr;
+  logic edn_trigger_d, edn_trigger_q;
+
+  // The entropy_refresh_req_i input from software and the threshold_hit signal
+  // are both pulses. Latch them.
+  assign edn_trigger_d =
+      ((mode_q == EntropyModeEdn) &&
+          (entropy_refresh_req_i || threshold_hit)) ? 1'b1 :
+      edn_trigger_clr                               ? 1'b0 : edn_trigger_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      edn_trigger_q <= 1'b0;
+    end else begin
+      edn_trigger_q <= edn_trigger_d;
+    end
+  end
+  // EDN reseed triggering ----------------------------------------------------
 
   // PRNG primitive ===========================================================
 
@@ -497,7 +512,7 @@ module kmac_entropy
     timer_enable = 1'b 0;
     timer_update = 1'b 0;
 
-    threshold_hit_clr = 1'b 0;
+    edn_trigger_clr = 1'b 0;
 
     // rand is valid when this logic expands the entropy.
     // FSM sets the valid signal, the signal is cleared by `consume` signal
@@ -520,6 +535,10 @@ module kmac_entropy
     prng_en = 1'b 0;
     data_update = 1'b 0;
     aux_update = 1'b 0;
+
+    // Status
+    entropy_ready_o     = 1'b 0;
+    entropy_reseeding_o = 1'b 0;
 
     // Error
     err_o = '{valid: 1'b 0, code: ErrNone, info: '0};
@@ -570,6 +589,8 @@ module kmac_entropy
 
         prng_en = prng_en_rand_q[0];
 
+        entropy_ready_o = 1'b 1;
+
         if ((rand_update_i || rand_consumed_i) &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // If fast_process is set, don't clear the rand valid, even
@@ -586,17 +607,13 @@ module kmac_entropy
           end else begin
             st_d = StRandReady;
           end
-        end else if ((mode_q == EntropyModeEdn) &&
-            (entropy_refresh_req_i || threshold_hit_q)) begin
+        end else if (edn_trigger_q) begin
           // Start reseeding the PRNG via EDN.
           seed_en = 1'b 1;
           st_d = StRandEdn;
 
           // Timer reset
           timer_update = 1'b 1;
-
-          // Clear the threshold as it refreshes the hash
-          threshold_hit_clr = 1'b 1;
         end else begin
           st_d = StRandReady;
         end
@@ -609,6 +626,9 @@ module kmac_entropy
         // Wait timer
         timer_enable = 1'b 1;
 
+        // Status
+        entropy_reseeding_o = 1'b 1;
+
         if (timer_expired && non_zero_wait_timer_limit) begin
           // If timer count is non-zero and expired;
           st_d = StRandErrWaitExpired;
@@ -617,6 +637,7 @@ module kmac_entropy
           seed_ack = 1'b 1;
 
           if (seed_done) begin
+            edn_trigger_clr = 1'b 1;
             st_d = StRandGenerate;
 
             if ((fast_process_i && in_keyblock_i) || !fast_process_i) begin
@@ -648,6 +669,9 @@ module kmac_entropy
         // Forward ack driven by software.
         seed_ack = seed_req & seed_update_i;
 
+        // Status
+        entropy_reseeding_o = 1'b 1;
+
         if (seed_done) begin
           st_d = StRandGenerate;
 
@@ -677,6 +701,8 @@ module kmac_entropy
         aux_update = 1'b 1;
         rand_valid_set = 1'b 1;
         prng_en = prng_en_rand_q[0];
+
+        entropy_ready_o = 1'b 1;
 
         st_d = StRandReady;
       end
