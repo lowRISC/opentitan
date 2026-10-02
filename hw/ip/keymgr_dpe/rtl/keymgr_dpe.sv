@@ -311,6 +311,7 @@ module keymgr_dpe
   logic op_start;
   assign op_start = reg2hw.start.q;
   logic invalid_advance;
+  mubi4_t enforce_sw_binding_err;
 
   // TODO(#30682): Remove this assertion
   // Raise an assertion if the source / destination field provided by the
@@ -360,6 +361,7 @@ module keymgr_dpe
     .slot_src_sel_i(slot_src_sel_trunc),
     .slot_dst_sel_i(slot_dst_sel_trunc),
     .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
+    .enforce_sw_binding_err_i(enforce_sw_binding_err),
     .max_key_version_i(reg2hw.max_key_ver_shadowed),
     .key_version_i(reg2hw.key_version),
     .key_version_vld_o(key_version_vld),
@@ -558,7 +560,8 @@ module keymgr_dpe
     adv_matrix = {(2 ** DpeBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
     adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
 
-    if (reg2hw.control_shadowed.sw_binding_only.q == 1'b0) begin
+    if ((reg2hw.control_shadowed.sw_binding_only.q == 1'b0) &&
+        mubi4_test_false_strict(mubi4_t'(reg2hw.enforce_sw_binding.q))) begin
       // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
       adv_matrix[BootStageCreator] = adv_data_creator;
       adv_dvalid[BootStageCreator] = adv_data_creator_valid;
@@ -568,6 +571,33 @@ module keymgr_dpe
       adv_dvalid[BootStageOwner] = owner_seed_vld;
     end
   end
+
+  // Indicates if the advance operation will consume HW binding value
+  mubi4_t adv_consumes_hw_binding;
+  assign adv_consumes_hw_binding = mubi4_bool_to_mubi(
+      !reg2hw.control_shadowed.sw_binding_only.q &
+      (active_key_slot.boot_stage < BootStageRuntime));
+
+  // Raise a `invalid_op` error if `enforce_sw_binding` is active but the option
+  // is not set in the control register. Only boot stages that consume HW binding
+  // values are checked, as later stages use the SW binding only anyway.
+
+  // Truth table of `enforce_sw_binding_err` (Invalid = any encoding other than True / False):
+  //
+  // | # | enforce_sw_... | adv_consumes_... | enforce_sw_binding_err     | mubi4_test_true_loose |
+  // |---|----------------|------------------|----------------------------|-----------------------|
+  // | 1 | True           | True             | True                       | 1                     |
+  // | 2 | True           | False            | False                      | 0                     |
+  // | 3 | True           | Invalid          | Invalid (= consumes value) | 1                     |
+  // | 4 | False          | True             | False                      | 0                     |
+  // | 5 | False          | False            | False                      | 0                     |
+  // | 6 | False          | Invalid          | False                      | 0                     |
+  // | 7 | Invalid        | True             | Invalid (= enforce value)  | 1                     |
+  // | 8 | Invalid        | False            | False                      | 0                     |
+
+  // SEC_CM: ENFORCE_SW_BINDING.CTRL.CONSISTENCY, ENFORCE_SW_BINDING.CTRL.MUBI
+  assign enforce_sw_binding_err = mubi4_and_hi(
+      mubi4_t'(reg2hw.enforce_sw_binding.q), adv_consumes_hw_binding);
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;
