@@ -243,7 +243,6 @@ If the IP is parameterized for a bus width less than 256 bits, the upper, unused
 
 ### CONF . ENTROPY_DATA_REG_ENABLE
 Setting this field to `kMultiBitBool4True` will enable reading entropy values from the [`ENTROPY_DATA`](#entropy_data) register.
-This function also requires that the otp_en_entropy_src_fw_read input is set to `kMultiBitBool8True`.
 
 ### CONF . THRESHOLD_SCOPE
 This field controls the scope (either by-line or by-sum) of the Adaptive Proportion and the Markov health tests.
@@ -307,7 +306,6 @@ This enables the bypass / boot-time mode.
 When this field is `kMultiBitBool4False`, the generated entropy will be forwarded out of this module to the hardware interface.
 Setting this field to `kMultiBitBool4True` routes the generated entropy to the [`ENTROPY_DATA`](#entropy_data) register to be read by firmware.
 Note that for [`ENTROPY_DATA`](#entropy_data) to become readable, also [`CONF.ENTROPY_DATA_REG_ENABLE`](#conf) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitBool8True`.
 
 ## ENTROPY_DATA
 Entropy data bits
@@ -321,14 +319,9 @@ Entropy data bits
 {"reg": [{"name": "ENTROPY_DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                        |
-|:------:|:------:|:-------:|:--------------------------------------------|
-|  31:0  |   ro   |    x    | [ENTROPY_DATA](#entropy_data--entropy_data) |
-
-### ENTROPY_DATA . ENTROPY_DATA
-A read of this register provides generated entropy bits to firmware.
-For this to work also [`CONF.ENTROPY_DATA_REG_ENABLE`](#conf) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitBool8True`.
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                 |
+|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | ENTROPY_DATA | A read of this register provides generated entropy bits to firmware. For this to work also [`CONF.ENTROPY_DATA_REG_ENABLE`](#conf) needs to be set to `kMultiBitBool4True`. |
 
 ## HEALTH_TEST_WINDOWS
 Health test windows register
@@ -978,7 +971,6 @@ Firmware override control register
 Setting this field to `kMultiBitBool4True` allows firmware to extract entropy bits by reading the observe FIFO (see [`FW_OV_RD_DATA`](#fw_ov_rd_data)) and insert entropy bits into the entropy flow by writing the [`FW_OV_WR_DATA`](#fw_ov_wr_data) register.
 This is useful e.g. for performing additional health tests and/or firmware-based conditioning.
 For this to work, [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
 
 Firmware can use the hardware conditioning for the inserted entropy bits (see [`FW_OV_SHA3_START`](#fw_ov_sha3_start)).
 
@@ -996,7 +988,6 @@ Setting this field to `kMultiBitBool4True` will put the entropy flow in firmware
 In this mode, firmware can monitor the post-health test entropy by reading
 the observe FIFO (see [`FW_OV_RD_DATA`](#fw_ov_rd_data)).
 This includes the entropy bits used for the startup health testing.
-For this to work, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
 
 Note that the post-health test entropy bits collected in the observe FIFO continue to flow through the hardware pipeline and may eventually reach the block hardware interface.
 
@@ -1086,7 +1077,6 @@ Firmware override observe FIFO read register
 ### FW_OV_RD_DATA . FW_OV_RD_DATA
 A read of this register pops and returns the top of the observe FIFO.
 For this to work, the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) field needs to be set to `kMultiBitBool4True`
-In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
 Reading this register while the observe FIFO is empty results in a fatal error with [`ERR_CODE.FIFO_READ_ERR`](#err_code) and [`ERR_CODE.SFIFO_OBSERVE_ERR`](#err_code) going high.
 
 ## FW_OV_WR_DATA
@@ -1101,14 +1091,9 @@ Firmware override FIFO write register
 {"reg": [{"name": "FW_OV_WR_DATA", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:0  |   wo   |    x    | [FW_OV_WR_DATA](#fw_ov_wr_data--fw_ov_wr_data) |
-
-### FW_OV_WR_DATA . FW_OV_WR_DATA
-A write to this register will insert entropy back into the entropy source module flow.
-For this to work, both the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) and [`FW_OV_CONTROL.FW_OV_ENTROPY_INSERT`](#fw_ov_control) fields need to be set to `kMultiBitBool4True`.
-In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                                                                                                                                                                              |
+|:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   wo   |    x    | FW_OV_WR_DATA | A write to this register will insert entropy back into the entropy source module flow. For this to work, both the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) and [`FW_OV_CONTROL.FW_OV_ENTROPY_INSERT`](#fw_ov_control) fields need to be set to `kMultiBitBool4True`. |
 
 ## OBSERVE_FIFO_THRESH
 Observe FIFO threshold register

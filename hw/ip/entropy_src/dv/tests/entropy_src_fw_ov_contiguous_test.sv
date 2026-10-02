@@ -21,8 +21,7 @@ class entropy_src_fw_ov_contiguous_test extends entropy_src_base_test;
     cfg.dut_cfg.type_bypass_pct             = 50;
 
     cfg.dut_cfg.fw_read_pct                 = 100;
-    // To read from the observe FIFO, both otp_en_entropy_src_fw_over and
-    // FW_OV_CONTROL.FW_OV_MODE need to be enabled.
+    // To read from the observe FIFO, FW_OV_CONTROL.FW_OV_MODE needs to be enabled.
     cfg.dut_cfg.fw_over_pct                 = 50;
 
     cfg.dut_cfg.rng_bit_enable_pct          = 80;

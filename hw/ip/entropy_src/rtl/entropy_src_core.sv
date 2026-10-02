@@ -21,10 +21,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   input  entropy_src_reg_pkg::entropy_src_reg2hw_t reg2hw,
   output entropy_src_reg_pkg::entropy_src_hw2reg_t hw2reg,
 
-  // Efuse Interface
-  input prim_mubi_pkg::mubi8_t otp_en_entropy_src_fw_read_i,
-  input prim_mubi_pkg::mubi8_t otp_en_entropy_src_fw_over_i,
-
   // RNG Interface
   output logic rng_fips_o,
 
@@ -434,8 +430,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    es_cntr_err_sum;
   logic                    sha3_state_error_sum;
   logic                    sha3_rst_storage_err_sum;
-  logic                    efuse_es_sw_reg_en;
-  logic                    efuse_es_sw_ov_en;
 
   logic                    sha3_state_error;
   logic                    sha3_count_error;
@@ -458,9 +452,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_fw_ov_rd_data;
   logic                    unused_sfifo_esrng_not_full;
   logic                    unused_sfifo_esfinal_not_full;
-
-  prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
-  prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
 
   mubi4_t mubi_es_enable;
   mubi4_t mubi_module_en_pulse;
@@ -782,28 +773,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // firmware override controls
-  assign fw_ov_mode = efuse_es_sw_ov_en && fw_ov_mode_pfe;
+  assign fw_ov_mode = fw_ov_mode_pfe;
   assign fw_ov_mode_entropy_insert = fw_ov_mode && fw_ov_entropy_insert_pfe;
   assign fw_ov_fifo_rd_pulse = reg2hw.fw_ov_rd_data.re;
   assign hw2reg.fw_ov_rd_data.d = sfifo_observe_rdata;
   assign fw_ov_fifo_wr_pulse = reg2hw.fw_ov_wr_data.qe;
   assign fw_ov_wr_data = reg2hw.fw_ov_wr_data.q;
-
-  assign efuse_es_sw_ov_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_over);
-
-  prim_mubi8_sync #(
-    .NumCopies(1),
-    .AsyncOn(1) // must be set to one, see note below
-  ) u_prim_mubi8_sync_es_fw_over (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(otp_en_entropy_src_fw_over_i),
-    .mubi_o({en_entropy_src_fw_over})
-  );
-
-  // note: the input to the above sync module is from the OTP block.
-  //       It is assumed that the source is in a different time domain,
-  //       and requires the AsyncOn parameter to be set.
 
   // rng_enable is being used in other clock domains. Need to latch the
   // signal.
@@ -2972,20 +2947,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // software es read path via ENTROPY_DATA register
   //----------------------------------------------------
 
-  // Sync and evaluate the OTP input.
-  prim_mubi8_sync #(
-    .NumCopies(1),
-    .AsyncOn(1)
-  ) u_prim_mubi8_sync_es_fw_read (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(otp_en_entropy_src_fw_read_i),
-    .mubi_o({en_entropy_src_fw_read})
-  );
-  assign efuse_es_sw_reg_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_read);
-
   // Is the ENTROPY_DATA register readable?
-  assign es_data_reg_rd_en = es_enable_fo[17] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
+  assign es_data_reg_rd_en = es_enable_fo[17] && entropy_data_reg_en_pfe;
 
   // Interface the esfinal FIFO and cut its 384-bit output into 32-bit chunks for software.
   // We're done after the last read.
@@ -3015,8 +2978,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       esfinal_data[swread_idx_q * FullRegWidth +: FullRegWidth] : '0;
 
   // This primitive is used to place a size-only constraint on the buffers to act as a synthesis
-  // optimization barrier. This ensures ES_ROUTE and ENTROPY_DATA_REG_ENABLE together with the OTP
-  // input are taken into account in separately.
+  // optimization barrier. This ensures ES_ROUTE and ENTROPY_DATA_REG_ENABLE are taken into account
+  // in separately.
   prim_buf #(
     .Width(FullRegWidth)
   ) u_prim_buf_swread_data (
