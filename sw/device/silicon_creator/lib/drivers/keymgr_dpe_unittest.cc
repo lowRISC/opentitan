@@ -349,6 +349,30 @@ TEST_F(KeymgrDpeTest, GenerateKeyOtbn) {
   EXPECT_EQ(sc_keymgr_dpe_generate_key_otbn(diversification_), kErrorOk);
 }
 
+TEST_F(KeymgrDpeTest, GenerateKeyHmac) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_KEY_VERSION_REG_OFFSET,
+                     diversification_.version);
+  for (size_t i = 0; i < kScKeymgrDPESaltNumWords; ++i) {
+    EXPECT_ABS_WRITE32(
+        base_ + KEYMGR_DPE_SALT_0_REG_OFFSET + i * sizeof(uint32_t),
+        diversification_.salt[i]);
+  }
+  ExpectControlRegSet(
+      /*sw_binding_only=*/false,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+      KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_HMAC,
+      diversification_.sel_src_slot, /*dst_slot=*/0);
+  ExpectStartOperation();
+  ExpectWaitUntilDone(/*busy_cycles=*/2,
+                      KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+
+  EXPECT_EQ(sc_keymgr_dpe_generate_key(kScKeymgrDPEDestHmac, diversification_),
+            kErrorOk);
+}
+
 TEST_F(KeymgrDpeTest, GenerateKeyBadState) {
   ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
                     KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET,
