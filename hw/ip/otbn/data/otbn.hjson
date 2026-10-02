@@ -265,9 +265,24 @@
     // KMAC interface
     { struct:  "app"
       type:    "req_rsp"
-      name:    "kmac_data"
+      name:    "kmac_app"
       act:     "req"
       package: "kmac_pkg"
+    },
+
+    // Keymgr interface
+    { struct:  "app"
+      type:    "req_rsp"
+      name:    "keymgr_app"
+      act:     "rsp"
+      package: "kmac_pkg"
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "keymgr_sensitive_key",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
     },
   ],
   features: [

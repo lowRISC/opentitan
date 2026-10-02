@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -184,6 +185,25 @@ TEST_F(KeymgrDpeTest, EntropyReseedIntervalSet) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET, 0x1234u);
   sc_keymgr_dpe_entropy_reseed_interval_set(0x1234u);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineSetKmac) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+      {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, kMultiBitBool4False}});
+  sc_keymgr_dpe_kdf_engine_set(kScKeymgrDPEKdfEngineKmac);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineSetOtbn) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+      {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, kMultiBitBool4True}});
+  sc_keymgr_dpe_kdf_engine_set(kScKeymgrDPEKdfEngineOtbn);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineLock) {
+  EXPECT_SEC_WRITE32(base_ + KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
+  sc_keymgr_dpe_kdf_engine_lock();
 }
 
 TEST_F(KeymgrDpeTest, SwBindingValueSet) {

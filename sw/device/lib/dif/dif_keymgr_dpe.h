@@ -70,6 +70,20 @@ typedef struct dif_keymgr_dpe_config {
 } dif_keymgr_dpe_config_t;
 
 /**
+ * Engine used by keymgr dpe to perform key derivation.
+ */
+typedef enum dif_keymgr_dpe_kdf_engine {
+  /**
+   * Use KMAC as KDF engine (default after reset).
+   */
+  kDifKeymgrDpeKdfEngineKmac = 0,
+  /**
+   * Use OTBN as KDF engine (HKDF).
+   */
+  kDifKeymgrDpeKdfEngineOtbn = 1,
+} dif_keymgr_dpe_kdf_engine_t;
+
+/**
  * Input parameters for advancing a DPE context/slot.
  */
 typedef struct dif_keymgr_dpe_advance_params {
@@ -372,6 +386,31 @@ dif_result_t dif_keymgr_dpe_clear_sideload_key(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_dpe_configure(const dif_keymgr_dpe_t *keymgr_dpe,
                                       dif_keymgr_dpe_config_t config);
+
+/**
+ * Selects the engine used for key derivation.
+ *
+ * The hardware only takes over the new selection when no operation is
+ * ongoing, i.e. the selection can change during an operation but the change
+ * won't take effect until the operation has finished.
+ *
+ * @param keymgr_dpe A key manager handle.
+ * @param engine The KDF engine to be used.
+ * @return The result of the operation, `kDifLocked` if the selection is
+ * locked.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_dpe_set_kdf_engine(const dif_keymgr_dpe_t *keymgr_dpe,
+                                           dif_keymgr_dpe_kdf_engine_t engine);
+
+/**
+ * Locks the KDF engine selection until the next reset.
+ *
+ * @param keymgr_dpe A key manager handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_dpe_lock_kdf_engine(const dif_keymgr_dpe_t *keymgr_dpe);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -6,7 +6,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
+module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;#(
+  parameter bit SupportOtbnAsKdfEngine = 1'b0
+) (
   input clk_i,
   input rst_ni,
   input init_i,
@@ -15,6 +17,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   input [Shares-1:0][RandWidth-1:0] entropy_i,
   input keymgr_dpe_key_dest_e dest_sel_i,
   input prim_mubi_pkg::mubi4_t hw_key_sel_i,
+  input prim_mubi_pkg::mubi4_t otbn_as_kdf_engine_i,
   input data_en_i,
   input data_valid_i,
   input hw_key_req_t key_i,
@@ -131,6 +134,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   end
 
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_false_strict;
   prim_mubi_pkg::mubi4_t [LastIdx-1:0] hw_key_sel;
   prim_mubi4_sync #(
     .NumCopies(int'(LastIdx)),
@@ -160,6 +164,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .key_o(aes_key_o.key)
   );
 
+  wide_hw_key_req_t otbn_sideload_key;
   keymgr_dpe_sideload_key #(
     .Width(WideHwKeyWidth)
   ) u_otbn_key (
@@ -171,8 +176,8 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .clr_i(slot_clr[OtbnIdx]),
     .entropy_i(entropy_i),
     .key_i(data_truncated_wide),
-    .valid_o(otbn_key_o.valid),
-    .key_o(otbn_key_o.key)
+    .valid_o(otbn_sideload_key.valid),
+    .key_o(otbn_sideload_key.key)
   );
 
   hw_key_req_t kmac_sideload_key;
@@ -206,7 +211,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   logic [LastIdx-1:0] valids;
   assign valids[AesIdx] = aes_key_o.valid;
   assign valids[KmacIdx] = kmac_sideload_key.valid;
-  assign valids[OtbnIdx] = otbn_key_o.valid;
+  assign valids[OtbnIdx] = otbn_sideload_key.valid;
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.
@@ -215,8 +220,29 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   // 1 outside that window, then an error is triggered.
   assign sideload_sel_err_o = |(~valid_tracking_q & valids);
 
-  // when directed by keymgr_dpe_ctrl, switch over to internal key and feed to kmac
-  assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
+  // OTBN expects a `WideHwKeyWidth` key in the sideload interface while the
+  // size of the internal key is only `KeyWidth`.
+  wide_hw_key_req_t padded_key_in;
+  assign padded_key_in.valid = SupportOtbnAsKdfEngine ? key_i.valid : '0;
+  for (genvar i = 0; i < Shares; i++) begin : gen_padded_input_key
+    assign padded_key_in.key[i] = SupportOtbnAsKdfEngine ? WideHwKeyWidth'(key_i.key[i]) : '0;
+  end
+
+  // Forward the internal key to the kdf engine selected by `otbn_as_kdf_engine_i`.
+  // Otherwise, the respective sideload key is output.
+  logic kdf_engine_kmac, kdf_engine_otbn;
+  if (SupportOtbnAsKdfEngine) begin : gen_kdf_engine_sel
+    assign kdf_engine_kmac = key_i.valid & mubi4_test_false_strict(otbn_as_kdf_engine_i);
+    assign kdf_engine_otbn = key_i.valid & mubi4_test_true_strict(otbn_as_kdf_engine_i);
+  end else begin : gen_kdf_engine_kmac_only
+    assign kdf_engine_kmac = key_i.valid;
+    assign kdf_engine_otbn = 1'b0;
+    logic unused_sel;
+    assign unused_sel = ^otbn_as_kdf_engine_i;
+  end
+
+  assign kmac_key_o = kdf_engine_kmac ? key_i         : kmac_sideload_key;
+  assign otbn_key_o = kdf_engine_otbn ? padded_key_in : otbn_sideload_key;
 
   // when clearing, request prng
   assign prng_en_o = clr;
