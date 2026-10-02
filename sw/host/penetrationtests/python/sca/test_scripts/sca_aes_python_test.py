@@ -4,8 +4,10 @@
 
 from sw.host.penetrationtests.python.sca.host_scripts import sca_aes_functions
 from sw.host.penetrationtests.python.sca.communication.sca_aes_commands import OTAES
+from sw.host.penetrationtests.python.sca.communication.sca_trigger_commands import OTTRIGGER
 from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.util import targets
+from sw.host.penetrationtests.python.util import tvla
 from sw.host.penetrationtests.python.util import utils
 import json
 import random
@@ -135,6 +137,11 @@ class AesScaTest(unittest.TestCase):
             actual_result_json, expected_result_json, ignored_keys_set
         )
 
+        sensor_batch = OTTRIGGER(target).read_sensor_batch()
+        self.assertEqual(sensor_batch["total_captured"], iterations)
+        self.assertEqual(sensor_batch["num_samples"], iterations)
+        self.assertTrue(all(c > 0 for c in sensor_batch["mcycle_deltas"]))
+
     def test_char_aes_batch_daisy_chain(self):
         for num_segments in num_segments_list:
             masking = True
@@ -159,6 +166,11 @@ class AesScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+            sensor_batch = OTTRIGGER(target).read_sensor_batch()
+            self.assertEqual(
+                sensor_batch["total_captured"], iterations * num_segments
+            )
+
     def test_char_aes_batch_fvsr_data(self):
         for num_segments in num_segments_list:
             masking = True
@@ -174,9 +186,11 @@ class AesScaTest(unittest.TestCase):
             random.seed(batch_prng_seed)
 
             # Generate the batch data
+            fvsr_labels = []
             for _ in range(iterations):
                 sample_fixed = 1
                 for __ in range(num_segments):
+                    fvsr_labels.append(sample_fixed)
                     if sample_fixed == 1:
                         batch_data = text
                     else:
@@ -194,6 +208,11 @@ class AesScaTest(unittest.TestCase):
                 actual_result_json, expected_result_json, ignored_keys_set
             )
 
+            sensor_batch = OTTRIGGER(target).read_sensor_batch()
+            self.assertEqual(
+                sensor_batch["total_captured"], iterations * num_segments
+            )
+
     def test_char_aes_batch_fvsr_key(self):
         for num_segments in num_segments_list:
             masking = True
@@ -208,9 +227,11 @@ class AesScaTest(unittest.TestCase):
             random.seed(batch_prng_seed)
 
             # Generate the batch data
+            fvsr_labels = []
             for _ in range(iterations):
                 sample_fixed = 1
                 for __ in range(num_segments):
+                    fvsr_labels.append(sample_fixed)
                     if sample_fixed == 1:
                         batch_key = key
                     else:
@@ -227,6 +248,11 @@ class AesScaTest(unittest.TestCase):
             }
             utils.compare_json_data(
                 actual_result_json, expected_result_json, ignored_keys_set
+            )
+
+            sensor_batch = OTTRIGGER(target).read_sensor_batch()
+            self.assertEqual(
+                sensor_batch["total_captured"], iterations * num_segments
             )
 
     def test_char_aes_batch_random(self):
@@ -257,6 +283,50 @@ class AesScaTest(unittest.TestCase):
             utils.compare_json_data(
                 actual_result_json, expected_result_json, ignored_keys_set
             )
+
+            sensor_batch = OTTRIGGER(target).read_sensor_batch()
+            self.assertEqual(
+                sensor_batch["total_captured"], iterations * num_segments
+            )
+
+    def test_char_aes_sensor_fvsr_tvla(self):
+        tvla_iterations = 8
+        tvla_segments = 25
+        masking = True
+        key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        sca_aes_functions.char_aes_batch_fvsr_data(
+            target, tvla_iterations, tvla_segments, fpga, masking, key, text
+        )
+
+        random.seed(1)
+        fvsr_labels = []
+        for _ in range(tvla_iterations):
+            sample_fixed = 1
+            for __ in range(tvla_segments):
+                fvsr_labels.append(sample_fixed)
+                if sample_fixed != 1:
+                    for ___ in range(len(text)):
+                        random.randint(0, 255)
+                sample_fixed = random.randint(0, 255) & 0x1
+
+        tvla_res = tvla.compute_fvsr_tvla(
+            OTTRIGGER(target).read_sensor_batch(), fvsr_labels
+        )
+        print(
+            f"[SCA Sensor TVLA] captured={tvla_res['num_samples']}/{tvla_res['total_captured']} "
+            f"t_stats={tvla_res['t_stats']} "
+            f"sample[0]=(mcycle={tvla_res['mcycle_deltas'][0]}, "
+            f"clock_drift={tvla_res['clock_drift'][0]})"
+        )
+        self.assertEqual(
+            tvla_res["total_captured"], tvla_iterations * tvla_segments
+        )
+        self.assertEqual(
+            tvla_res["num_samples"], tvla_iterations * tvla_segments
+        )
+        self.assertLess(abs(tvla_res["t_stats"]["mcycle_deltas"]), 4.5)
+        self.assertLess(abs(tvla_res["t_stats"]["clock_drift"]), 4.5)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@
 
 from sw.host.penetrationtests.python.sca.communication.sca_ibex_commands import OTIbex
 from sw.host.penetrationtests.python.sca.communication.sca_prng_commands import OTPRNG
+from sw.host.penetrationtests.python.util import common_library
 
 
 def char_combi_operations_batch(
@@ -28,7 +29,14 @@ def char_combi_operations_batch(
 
 
 def char_combi_operations_batch_fvsr(
-    target, iterations, num_segments, trigger, fixed_data1, fixed_data2, reset = False
+    target,
+    iterations,
+    num_segments,
+    trigger,
+    fixed_data1,
+    fixed_data2,
+    reset = False,
+    core_config: dict = common_library.default_core_config,
 ):
     # Seed the prng to make synchronized randomness
     # This is the same as using python rand with seed 1
@@ -40,7 +48,9 @@ def char_combi_operations_batch_fvsr(
         # Clear the output from the reset
         target.dump_all()
     # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = ibexsca.init()
+    device_id, owner_page, boot_log, boot_measurements, version = ibexsca.init(
+        core_config=core_config
+    )
     for _ in range(iterations):
         ibexsca.ibex_sca_combi_operations_batch_fvsr(
             num_iterations=num_segments,

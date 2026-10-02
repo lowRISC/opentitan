@@ -37,9 +37,11 @@ class OTIbex:
         self._ujson_ibex_sca_cmd()
         # Init command.
         self.target.write(json.dumps("Init").encode("ascii"))
+        time.sleep(0.003)
 
         # Write each configuration block to the target.
         self.target.write(json.dumps(core_config).encode("ascii"))
+        time.sleep(0.01)
         self.target.write(json.dumps(sensor_config).encode("ascii"))
 
         device_id = self.target.read_response()

@@ -10,6 +10,14 @@ default_core_config = {
     "enable_sram_readback": True,
     "enable_data_ind_timing": True,
 }
+disabled_core_config = {
+    "enable_icache": False,
+    "enable_dummy_instr": False,
+    "dummy_instr_count": 3,
+    "enable_jittery_clock": False,
+    "enable_sram_readback": False,
+    "enable_data_ind_timing": False,
+}
 default_sensor_config = {
     "sensor_ctrl_enable": True,
     "sensor_ctrl_en_fatal": [

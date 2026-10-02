@@ -32,13 +32,37 @@ status_t handle_trigger_sca_select_source(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_trigger_sca_sensor_config(ujson_t *uj) {
+  cryptotest_trigger_sca_sensor_cfg_t uj_cfg;
+  TRY(ujson_deserialize_cryptotest_trigger_sca_sensor_cfg_t(uj, &uj_cfg));
+  pentest_sensor_sca_config(uj_cfg.enable, uj_cfg.clear);
+  return OK_STATUS();
+}
+
+status_t handle_trigger_sca_sensor_read_batch(ujson_t *uj) {
+  cryptotest_trigger_sca_sensor_batch_t uj_batch;
+  memset(&uj_batch, 0, sizeof(uj_batch));
+  uint32_t count = 0;
+  uint32_t total = 0;
+  pentest_sensor_sca_pop_batch(TRIGGERSCA_CMD_MAX_SENSOR_SAMPLES, &count,
+                               &total, uj_batch.mcycle_deltas,
+                               uj_batch.clock_drift);
+  uj_batch.num_samples = count;
+  uj_batch.total_triggers = total;
+  RESP_OK(ujson_serialize_cryptotest_trigger_sca_sensor_batch_t, uj, &uj_batch);
+  return OK_STATUS();
+}
+
 status_t handle_trigger_sca(ujson_t *uj) {
   trigger_sca_subcommand_t cmd;
   TRY(ujson_deserialize_trigger_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kTriggerScaSubcommandSelectTriggerSource:
       return handle_trigger_sca_select_source(uj);
-      break;
+    case kTriggerScaSubcommandSensorConfig:
+      return handle_trigger_sca_sensor_config(uj);
+    case kTriggerScaSubcommandSensorReadBatch:
+      return handle_trigger_sca_sensor_read_batch(uj);
     default:
       LOG_ERROR("Unrecognized TRIGGER SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
