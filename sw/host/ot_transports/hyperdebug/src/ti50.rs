@@ -20,6 +20,12 @@ impl Ti50Flavor {
 }
 
 impl Flavor for Ti50Flavor {
+    type FlavorData = ();
+
+    fn get_default_flavor_data() -> Self::FlavorData {
+        ()
+    }
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
     }

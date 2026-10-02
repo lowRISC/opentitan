@@ -8,7 +8,6 @@ use std::fs;
 use std::time::{Duration, Instant};
 
 use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
-use crate::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
 pub struct RusbDevice {
@@ -30,8 +29,9 @@ impl RusbContext {
 
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
-    fn scan(
-        usb_vid_pid: Option<(u16, u16)>,
+    fn scan_devices(
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
         usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
     ) -> Result<Vec<(rusb::Device<rusb::Context>, Option<String>)>> {
@@ -54,10 +54,12 @@ impl RusbContext {
                 }
             };
 
-            if let Some((vid, pid)) = usb_vid_pid {
+            if let Some(vid) = usb_vid {
                 if descriptor.vendor_id() != vid {
                     continue;
                 }
+            }
+            if let Some(pid) = usb_pid {
                 if descriptor.product_id() != pid {
                     continue;
                 }
@@ -141,101 +143,25 @@ impl RusbContext {
 }
 
 impl OtUsbContext for RusbContext {
-    fn device_by_id_with_timeout(
+    fn scan(
         &self,
-        usb_vid: u16,
-        usb_pid: u16,
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-        timeout: Duration,
-    ) -> Result<Box<dyn UsbDevice>> {
-        let deadline = Instant::now() + timeout;
-        let serial_str = if let Some(s) = usb_serial {
-            format!(" (serial={})", s)
-        } else {
-            String::new()
-        };
-        loop {
-            let mut devices = RusbContext::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
-            if devices.is_empty() {
-                if Instant::now() < deadline {
-                    std::thread::sleep(Duration::from_millis(100));
-                    continue;
-                } else {
-                    return Err(TransportError::NoDevice(format!(
-                        "vid:pid=0x{:04x}:0x{:04x}{}",
-                        usb_vid, usb_pid, serial_str
-                    ))
-                    .into());
-                }
-            }
-            if devices.len() > 1 {
-                return Err(TransportError::MultipleDevices(
-                    format!("{:?}", devices),
-                    format!("vid:pid=0x{:04x}:0x{:04x}{}", usb_vid, usb_pid, serial_str),
-                )
-                .into());
-            }
-
-            let (device, serial_number) = devices.remove(0);
-            return Ok(Box::new(RusbDevice::new(
-                device
-                    .open()
-                    .with_context(|| format!("Cannot open device {device:?}"))?,
-                serial_number,
-                Duration::from_millis(500),
-            )?));
-        }
-    }
-
-    fn device_by_interface_with_timeout(
-        &self,
-        class: u8,
-        subclass: u8,
-        protocol: u8,
-        usb_serial: Option<&str>,
-        timeout: Duration,
-    ) -> Result<Box<dyn UsbDevice>> {
-        let deadline = Instant::now() + timeout;
-        let serial_str = if let Some(s) = usb_serial {
-            format!(" (serial={})", s)
-        } else {
-            String::new()
-        };
-        loop {
-            let mut devices =
-                RusbContext::scan(None, Some((class, subclass, protocol)), usb_serial)?;
-            if devices.is_empty() {
-                if Instant::now() < deadline {
-                    std::thread::sleep(Duration::from_millis(100));
-                    continue;
-                } else {
-                    return Err(TransportError::NoDevice(format!(
-                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
-                        class, subclass, protocol, serial_str
-                    ))
-                    .into());
-                }
-            }
-            if devices.len() > 1 {
-                return Err(TransportError::MultipleDevices(
-                    format!("{:?}", devices),
-                    format!(
-                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
-                        class, subclass, protocol, serial_str
-                    ),
-                )
-                .into());
-            }
-
-            let (device, serial_number) = devices.remove(0);
-            return Ok(Box::new(RusbDevice::new(
-                device
-                    .open()
-                    .with_context(|| format!("Cannot open device {device:?}"))?,
-                serial_number,
-                Duration::from_millis(500),
-            )?));
-        }
+    ) -> Result<Vec<Box<dyn UsbDevice>>> {
+        RusbContext::scan_devices(usb_vid, usb_pid, usb_protocol, usb_serial)?
+            .into_iter()
+            .map(|(device, serial)| {
+                Ok(Box::new(RusbDevice::new(
+                    device
+                        .open()
+                        .with_context(|| format!("Cannot open device {device:?}"))?,
+                    serial,
+                    Duration::from_millis(500),
+                )?) as Box<dyn UsbDevice>)
+            })
+            .collect()
     }
 }
 
