@@ -54,7 +54,7 @@ runs:
     - name: Install Python
       shell: bash
       run: |
-        uv python install 3.9
+        uv python install 3.10
         # Create a virtual environment for UV
         uv venv ~/.local/share/venv
         echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
