@@ -13,6 +13,7 @@ module cheriot_regs_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
   output cheriot_reg_pkg::cheriot_regs_reg2hw_t reg2hw, // Write
+  input  cheriot_reg_pkg::cheriot_regs_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o
@@ -20,7 +21,7 @@ module cheriot_regs_reg_top (
 
   import cheriot_reg_pkg::* ;
 
-  localparam int AW = 2;
+  localparam int AW = 6;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -51,9 +52,9 @@ module cheriot_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [0:0] reg_we_check;
+  logic [9:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(1)
+    .OneHotWidth(10)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -120,10 +121,115 @@ module cheriot_regs_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic intr_state_we;
+  logic intr_state_qs;
+  logic intr_state_wd;
+  logic intr_enable_we;
+  logic intr_enable_qs;
+  logic intr_enable_wd;
+  logic intr_test_we;
+  logic intr_test_wd;
   logic alert_test_we;
   logic alert_test_wd;
+  logic trbe_regwen_re;
+  logic trbe_regwen_qs;
+  logic trbe_base_addr_we;
+  logic [28:0] trbe_base_addr_qs;
+  logic [28:0] trbe_base_addr_wd;
+  logic trbe_num_caps_we;
+  logic [30:0] trbe_num_caps_qs;
+  logic [30:0] trbe_num_caps_wd;
+  logic trbe_start_we;
+  logic trbe_start_wd;
+  logic trbe_status_we;
+  logic trbe_status_busy_qs;
+  logic trbe_status_start_err_qs;
+  logic trbe_status_start_err_wd;
+  logic trbe_status_sweep_err_qs;
+  logic trbe_status_sweep_err_wd;
+  logic trbe_epoch_re;
+  logic trbe_epoch_active_qs;
+  logic [30:0] trbe_epoch_count_qs;
 
   // Register instances
+  // R[intr_state]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.de),
+    .d      (hw2reg.intr_state.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_qs)
+  );
+
+
+  // R[intr_enable]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_qs)
+  );
+
+
+  // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [0:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[0]),
+    .q      (reg2hw.intr_test.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.qe = intr_test_qe;
+
+
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
@@ -144,10 +250,240 @@ module cheriot_regs_reg_top (
   assign reg2hw.alert_test.qe = alert_test_qe;
 
 
+  // R[trbe_regwen]: V(True)
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_trbe_regwen (
+    .re     (trbe_regwen_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.trbe_regwen.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (trbe_regwen_qs)
+  );
 
-  logic [0:0] addr_hit;
+
+  // R[trbe_base_addr]: V(False)
+  // Create REGWEN-gated WE signal
+  logic trbe_base_addr_gated_we;
+  assign trbe_base_addr_gated_we = trbe_base_addr_we & trbe_regwen_qs;
+  prim_subreg #(
+    .DW      (29),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (29'h0),
+    .Mubi    (1'b0)
+  ) u_trbe_base_addr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (trbe_base_addr_gated_we),
+    .wd     (trbe_base_addr_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.trbe_base_addr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (trbe_base_addr_qs)
+  );
+
+
+  // R[trbe_num_caps]: V(False)
+  // Create REGWEN-gated WE signal
+  logic trbe_num_caps_gated_we;
+  assign trbe_num_caps_gated_we = trbe_num_caps_we & trbe_regwen_qs;
+  prim_subreg #(
+    .DW      (31),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (31'h0),
+    .Mubi    (1'b0)
+  ) u_trbe_num_caps (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (trbe_num_caps_gated_we),
+    .wd     (trbe_num_caps_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.trbe_num_caps.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (trbe_num_caps_qs)
+  );
+
+
+  // R[trbe_start]: V(True)
+  logic trbe_start_qe;
+  logic [0:0] trbe_start_flds_we;
+  assign trbe_start_qe = &trbe_start_flds_we;
+  // Create REGWEN-gated WE signal
+  logic trbe_start_gated_we;
+  assign trbe_start_gated_we = trbe_start_we & trbe_regwen_qs;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_trbe_start (
+    .re     (1'b0),
+    .we     (trbe_start_gated_we),
+    .wd     (trbe_start_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (trbe_start_flds_we[0]),
+    .q      (reg2hw.trbe_start.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.trbe_start.qe = trbe_start_qe;
+
+
+  // R[trbe_status]: V(False)
+  //   F[busy]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_trbe_status_busy (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.trbe_status.busy.de),
+    .d      (hw2reg.trbe_status.busy.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (trbe_status_busy_qs)
+  );
+
+  //   F[start_err]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_trbe_status_start_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (trbe_status_we),
+    .wd     (trbe_status_start_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.trbe_status.start_err.de),
+    .d      (hw2reg.trbe_status.start_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (trbe_status_start_err_qs)
+  );
+
+  //   F[sweep_err]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_trbe_status_sweep_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (trbe_status_we),
+    .wd     (trbe_status_sweep_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.trbe_status.sweep_err.de),
+    .d      (hw2reg.trbe_status.sweep_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (trbe_status_sweep_err_qs)
+  );
+
+
+  // R[trbe_epoch]: V(True)
+  //   F[active]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_trbe_epoch_active (
+    .re     (trbe_epoch_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.trbe_epoch.active.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (trbe_epoch_active_qs)
+  );
+
+  //   F[count]: 31:1
+  prim_subreg_ext #(
+    .DW    (31)
+  ) u_trbe_epoch_count (
+    .re     (trbe_epoch_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.trbe_epoch.count.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (trbe_epoch_count_qs)
+  );
+
+
+
+  logic [9:0] addr_hit;
   always_comb begin
-    addr_hit[0] = (reg_addr == CHERIOT_ALERT_TEST_OFFSET);
+    addr_hit[0] = (reg_addr == CHERIOT_INTR_STATE_OFFSET);
+    addr_hit[1] = (reg_addr == CHERIOT_INTR_ENABLE_OFFSET);
+    addr_hit[2] = (reg_addr == CHERIOT_INTR_TEST_OFFSET);
+    addr_hit[3] = (reg_addr == CHERIOT_ALERT_TEST_OFFSET);
+    addr_hit[4] = (reg_addr == CHERIOT_TRBE_REGWEN_OFFSET);
+    addr_hit[5] = (reg_addr == CHERIOT_TRBE_BASE_ADDR_OFFSET);
+    addr_hit[6] = (reg_addr == CHERIOT_TRBE_NUM_CAPS_OFFSET);
+    addr_hit[7] = (reg_addr == CHERIOT_TRBE_START_OFFSET);
+    addr_hit[8] = (reg_addr == CHERIOT_TRBE_STATUS_OFFSET);
+    addr_hit[9] = (reg_addr == CHERIOT_TRBE_EPOCH_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -155,17 +491,60 @@ module cheriot_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(CHERIOT_REGS_PERMIT[0] & ~reg_be)))));
+              ((addr_hit[0] & (|(CHERIOT_REGS_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(CHERIOT_REGS_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(CHERIOT_REGS_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(CHERIOT_REGS_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(CHERIOT_REGS_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(CHERIOT_REGS_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(CHERIOT_REGS_PERMIT[6] & ~reg_be))) |
+               (addr_hit[7] & (|(CHERIOT_REGS_PERMIT[7] & ~reg_be))) |
+               (addr_hit[8] & (|(CHERIOT_REGS_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(CHERIOT_REGS_PERMIT[9] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+
+  assign intr_state_wd = reg_wdata[0];
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+
+  assign intr_enable_wd = reg_wdata[0];
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign intr_test_wd = reg_wdata[0];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
+  assign trbe_regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign trbe_base_addr_we = addr_hit[5] & reg_we & !reg_error;
+
+  assign trbe_base_addr_wd = reg_wdata[31:3];
+  assign trbe_num_caps_we = addr_hit[6] & reg_we & !reg_error;
+
+  assign trbe_num_caps_wd = reg_wdata[30:0];
+  assign trbe_start_we = addr_hit[7] & reg_we & !reg_error;
+
+  assign trbe_start_wd = reg_wdata[0];
+  assign trbe_status_we = addr_hit[8] & reg_we & !reg_error;
+
+  assign trbe_status_start_err_wd = reg_wdata[8];
+
+  assign trbe_status_sweep_err_wd = reg_wdata[9];
+  assign trbe_epoch_re = addr_hit[9] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check[0] = alert_test_we;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = trbe_base_addr_gated_we;
+    reg_we_check[6] = trbe_num_caps_gated_we;
+    reg_we_check[7] = trbe_start_gated_we;
+    reg_we_check[8] = trbe_status_we;
+    reg_we_check[9] = 1'b0;
   end
 
   // Read data return
@@ -173,7 +552,46 @@ module cheriot_regs_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[0] = intr_state_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[0] = intr_enable_qs;
+      end
+
+      addr_hit[2]: begin
         reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[0] = trbe_regwen_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[31:3] = trbe_base_addr_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[30:0] = trbe_num_caps_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[0] = trbe_status_busy_qs;
+        reg_rdata_next[8] = trbe_status_start_err_qs;
+        reg_rdata_next[9] = trbe_status_sweep_err_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[0] = trbe_epoch_active_qs;
+        reg_rdata_next[31:1] = trbe_epoch_count_qs;
       end
 
       default: begin

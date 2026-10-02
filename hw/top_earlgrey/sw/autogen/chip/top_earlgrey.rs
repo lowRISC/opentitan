@@ -649,7 +649,7 @@ pub const CHERIOT_REGS_BASE_ADDR: usize = 0x411B0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CHERIOT_REGS_BASE_ADDR and
 /// `CHERIOT_REGS_BASE_ADDR + CHERIOT_REGS_SIZE_BYTES`.
-pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x4;
+pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
 ///
@@ -774,6 +774,8 @@ pub enum PlicPeripheral {
     Edn0 = 28,
     /// edn1
     Edn1 = 29,
+    /// cheriot
+    Cheriot = 30,
 }
 
 impl TryFrom<u32> for PlicPeripheral {
@@ -810,6 +812,7 @@ impl TryFrom<u32> for PlicPeripheral {
             27 => Ok(Self::EntropySrc),
             28 => Ok(Self::Edn0),
             29 => Ok(Self::Edn1),
+            30 => Ok(Self::Cheriot),
             _ => Err(val),
         }
     }
@@ -1190,6 +1193,8 @@ pub enum PlicIrqId {
     Edn1EdnCmdReqDone = 182,
     /// edn1_edn_fatal_err
     Edn1EdnFatalErr = 183,
+    /// cheriot_trbe_done
+    CheriotTrbeDone = 184,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1380,6 +1385,7 @@ impl TryFrom<u32> for PlicIrqId {
             181 => Ok(Self::Edn0EdnFatalErr),
             182 => Ok(Self::Edn1EdnCmdReqDone),
             183 => Ok(Self::Edn1EdnFatalErr),
+            184 => Ok(Self::CheriotTrbeDone),
             _ => Err(val),
         }
     }
@@ -1400,7 +1406,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 185] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1769,6 +1775,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
     PlicPeripheral::Edn1,
     // Edn1EdnFatalErr -> PlicPeripheral::Edn1
     PlicPeripheral::Edn1,
+    // CheriotTrbeDone -> PlicPeripheral::Cheriot
+    PlicPeripheral::Cheriot,
 ];
 
 /// Alert Handler Source Peripheral.

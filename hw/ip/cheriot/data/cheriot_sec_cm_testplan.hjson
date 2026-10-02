@@ -47,11 +47,5 @@
       stage: V2S
       tests: []
     }
-    {
-      name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
-      stage: V2S
-      tests: []
-    }
   ]
 }
