@@ -32,6 +32,8 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
 
 otcrypto_status_t store_state(otcrypto_state_t *state) {
   if (state == NULL) {
+    // COVERAGE (SW ERR) Internal callers always provide a non-null state
+    // pointer.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t state_addr = (uint32_t)state;
@@ -53,6 +55,8 @@ otcrypto_status_t store_state(otcrypto_state_t *state) {
 
 status_t read_state_pointer(crypto_state_t **state) {
   if (state == NULL) {
+    // COVERAGE (SW ERR) Internal callers always provide a non-null state
+    // pointer.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -127,6 +131,7 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
 
     // If the KAT failed, lock the cryptolib
     if (result.value != kHardenedBoolTrue) {
+      // COVERAGE (HW ERR) KAT failure only occurs on hardware fault or FI.
       state->locked_state = kHardenedByteBoolTrue;
       return result;
     }

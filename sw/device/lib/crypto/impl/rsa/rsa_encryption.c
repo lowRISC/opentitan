@@ -87,6 +87,8 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   size_t aligned_offset =
       (sizeof(uint32_t) - (size_t)misalignment) % sizeof(uint32_t);
   if (plaintext_max_bytelen < aligned_offset) {
+    // COVERAGE (SW ERR) plaintext_max_bytelen is already checked against
+    // max_plaintext_bytelen (>= 62), so it is always >= aligned_offset (< 4).
     return OTCRYPTO_BAD_ARGS;
   }
   size_t num_aligned_full_words =

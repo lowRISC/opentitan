@@ -154,6 +154,8 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
   if (launder32(act_mode) != exp_mode) {
+    // COVERAGE (FI CM) The mode in OTBN DMEM only mismatches if faulted or
+    // called out of sequence.
     return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, exp_mode);

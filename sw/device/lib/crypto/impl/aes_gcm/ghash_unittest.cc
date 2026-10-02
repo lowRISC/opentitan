@@ -421,5 +421,47 @@ TEST(Ghash, McGrawViegaTestCase18) {
   EXPECT_THAT(result, testing::ElementsAreArray(exp_result));
 }
 
+TEST(Ghash, RefreshSubkeyMaskAfter64Blocks) {
+  std::array<uint32_t, 4> H = {
+      0xd44be966,
+      0x3b2c8aef,
+      0x59fa4c88,
+      0x2e2b34ca,
+  };
+  // 65 blocks (1040 bytes) triggers ghash_refresh_subkey_mask on the 65th
+  // block (when ghash_block_cnt == 64).
+  std::array<uint8_t, 65 *kGhashBlockNumBytes> data = {0};
+
+  ghash_context_t ctx;
+  rom_test::MockCrc32 crc32_;
+  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+
+  EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(testing::AtLeast(1));
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+      .Times(testing::AtLeast(1));
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
+      .Times(testing::AtLeast(1));
+  EXPECT_CALL(crc32_,
+              Add(testing::NotNull(), ctx.enc_initial_counter_block0.data, 16))
+      .Times(testing::AtLeast(1));
+  EXPECT_CALL(crc32_, Finish(testing::NotNull()))
+      .Times(testing::AtLeast(1))
+      .WillRepeatedly(testing::Return(0));
+
+  EXPECT_OK(
+      ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));
+  EXPECT_OK(ghash_init(&ctx));
+
+  otcrypto_const_byte_buf_t data_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data.data(), data.size());
+  EXPECT_OK(ghash_update(&ctx, &data_buf));
+  EXPECT_EQ(ctx.ghash_block_cnt, 65);
+
+  uint32_t result[kGhashBlockNumWords];
+  EXPECT_OK(ghash_final(&ctx, result));
+  EXPECT_THAT(result, testing::ElementsAreArray(Zero));
+}
+
 }  // namespace
 }  // namespace ghash_unittest

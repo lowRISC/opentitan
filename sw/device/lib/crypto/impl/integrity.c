@@ -13,6 +13,8 @@
 uint32_t otcrypto_integrity_unblinded_checksum(
     const otcrypto_unblinded_key_t *key) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return 0;
   }
   uint32_t ctx;
@@ -26,6 +28,8 @@ uint32_t otcrypto_integrity_unblinded_checksum(
 uint32_t otcrypto_integrity_blinded_checksum(
     const otcrypto_blinded_key_t *key) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return 0;
   }
   uint32_t ctx;
@@ -44,6 +48,8 @@ uint32_t otcrypto_integrity_blinded_checksum(
 hardened_bool_t otcrypto_integrity_unblinded_key_check(
     const otcrypto_unblinded_key_t *key) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return kHardenedBoolFalse;
   }
   if (key->checksum == launder32(otcrypto_integrity_unblinded_checksum(key))) {
@@ -57,6 +63,8 @@ hardened_bool_t otcrypto_integrity_unblinded_key_check(
 hardened_bool_t otcrypto_integrity_blinded_key_check(
     const otcrypto_blinded_key_t *key) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return kHardenedBoolFalse;
   }
   if (launder32((uint32_t)key->config.version) != (uint32_t)kCryptoLibVersion) {
@@ -95,6 +103,8 @@ typedef union {
 
 static buf_union_t make_buf_locked(const void *data, size_t len) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return (buf_union_t){
         .generic = {.data = NULL, .len = 0, .ptr_checksum = 0}};
   }
@@ -122,6 +132,8 @@ otcrypto_const_word32_buf_t otcrypto_make_const_word32_buf(const uint32_t *data,
 
 static hardened_bool_t check_buf_locked(const otcrypto_generic_buf_t *buf) {
   if (locked_state_check().value < 0) {
+    // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
+    // locked state.
     return kHardenedBoolFalse;
   }
   return OTCRYPTO_CHECK_BUF(buf);

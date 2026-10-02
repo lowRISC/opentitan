@@ -66,6 +66,20 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
   TRY_CHECK(unwrapped_key.keyblob_length == key_to_wrap->keyblob_length);
   TRY_CHECK(unwrapped_key.checksum == key_to_wrap->checksum);
 
+  // Unwrapping into a key struct with the wrong keyblob_length should fail.
+  otcrypto_blinded_key_t bad_len_key = {
+      .keyblob_length = (keyblob_words - 1) * sizeof(uint32_t),
+      .keyblob = unwrapped_key_keyblob,
+  };
+  TRY_CHECK(!status_ok(otcrypto_key_unwrap(&wrapped_key_data_buf, key_kek,
+                                           &success, &bad_len_key)));
+
+  // Unwrapping a corrupted ciphertext should return OK with success = false.
+  wrapped_key_data[0] ^= 1;
+  TRY(otcrypto_key_unwrap(&wrapped_key_data_buf, key_kek, &success,
+                          &unwrapped_key));
+  TRY_CHECK(success == kHardenedBoolFalse);
+
   return OK_STATUS();
 }
 

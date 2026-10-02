@@ -22,8 +22,11 @@ int LZ4_decompress(const char *src_in, char *dst_in, int compressed_size,
     if (lit_len == 15) {
       uint8_t s;
       do {
-        if (src >= src_end)
+        if (src >= src_end) {
+          // COVERAGE (SW ERR) Decompression is only called on valid build-time
+          // compressed data.
           return -1;  // Unexpected end of src
+        }
         s = *src++;
         lit_len += s;
       } while (s == 255);
@@ -32,6 +35,8 @@ int LZ4_decompress(const char *src_in, char *dst_in, int compressed_size,
     if (lit_len > 0) {
       if ((size_t)(src_end - src) < lit_len ||
           (size_t)(dst_end - dst_ptr) < lit_len) {
+        // COVERAGE (SW ERR) Decompression is only called on valid build-time
+        // compressed data.
         return -1;
       }
 
@@ -46,12 +51,17 @@ int LZ4_decompress(const char *src_in, char *dst_in, int compressed_size,
     }
 
     // Process match offset
-    if (src + 2 > src_end)
+    if (src + 2 > src_end) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed data.
       return -1;
+    }
     uint16_t offset = (uint16_t)(src[0] | (src[1] << 8));
     src += 2;
 
     if (offset == 0 || offset > (size_t)(dst_ptr - dst)) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed data.
       return -1;  // Offset out of bounds
     }
 
@@ -59,8 +69,11 @@ int LZ4_decompress(const char *src_in, char *dst_in, int compressed_size,
     if (match_len == 15) {
       uint8_t s;
       do {
-        if (src >= src_end)
+        if (src >= src_end) {
+          // COVERAGE (SW ERR) Decompression is only called on valid build-time
+          // compressed data.
           return -1;
+        }
         s = *src++;
         match_len += s;
       } while (s == 255);
@@ -69,6 +82,8 @@ int LZ4_decompress(const char *src_in, char *dst_in, int compressed_size,
 
     // Check bounds for match destination
     if ((size_t)(dst_end - dst_ptr) < match_len) {
+      // COVERAGE (SW ERR) Decompression is only called on valid build-time
+      // compressed data.
       return -1;
     }
 

@@ -29,6 +29,8 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
                       const size_t plaintext_len, uint32_t *ciphertext) {
   // The plaintext length is expected to be at most 2^32 bytes.
   if (plaintext_len > UINT32_MAX || plaintext_len == 0) {
+    // COVERAGE (SW ERR) Internal callers always pass a valid non-zero
+    // plaintext_len.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -39,6 +41,8 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
 
   if (plaintext_semiblocks < 2) {
     // Plaintext is too short.
+    // COVERAGE (SW ERR) Wrapped keys include metadata and are always at least
+    // 2 semiblocks long.
     return OTCRYPTO_BAD_ARGS;
   }
 

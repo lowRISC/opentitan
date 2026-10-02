@@ -71,6 +71,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     aes_key->key_shares[0] = share0;
     aes_key->key_shares[1] = share1;
   } else {
+    // COVERAGE (MISSING) Invalid hw_backed boolean value is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   aes_key->sideload = blinded_key->config.hw_backed;
@@ -104,6 +105,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
           launder32(blinded_key_mode_used) | kOtcryptoKeyModeAesCtr;
       break;
     default:
+      // COVERAGE (MISSING) Non-AES key mode input is not covered.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -370,6 +372,9 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_CHECK_EQ(cipher_output->len, input_nblocks * kAesBlockNumBytes);
   } else {
     if (cipher_input->len == 0) {
+      // COVERAGE (FI CM) Redundant check when cipher_output is NULL during
+      // redundant execution; cipher_input->len was already checked in the
+      // primary execution.
       return OTCRYPTO_BAD_ARGS;
     }
   }
@@ -473,6 +478,8 @@ static otcrypto_status_t otcrypto_aes_impl(
           &cipher_output->data[(i - block_offset) * kAesBlockNumBytes],
           block_out.data, kAesBlockNumBytes));
     } else {
+      // COVERAGE (MISSING) Multi-block redundant execution (>2 blocks with
+      // medium/high security level) is not covered.
       HARDENED_CHECK_EQ(cipher_output, NULL);
     }
   }

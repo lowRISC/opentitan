@@ -664,6 +664,8 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
     }
 
   } else {
+    // COVERAGE (SW ERR) Callers always verify output->len >= partial_block_len
+    // before calling aes_gcm_final.
     return OTCRYPTO_BAD_ARGS;
   }
 

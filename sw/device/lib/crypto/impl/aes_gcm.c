@@ -352,6 +352,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   // buffers.
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
       auth_tag == NULL || auth_tag->data == NULL) {
+    // COVERAGE (MISSING) Null required input pointers in decrypt are not
+    // covered.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -455,6 +457,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   aes_key_t aes_key;
   HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
   if (launder32(aes_key.sideload) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys with streaming decrypt_init are not
+    // covered.
     is_sideloaded = kHardenedBoolTrue;
   }
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
@@ -653,6 +657,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   aes_gcm_context_t internal_ctx;
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys with streaming decrypt_final are not
+    // covered.
     is_sideloaded = kHardenedBoolTrue;
   }
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
