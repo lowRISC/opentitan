@@ -449,7 +449,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
     // Disable assertions depending on error injection
     if (err_inj.clk_byp_error_rsp || err_inj.clk_byp_rsp_mubi_err ||
-        err_inj.security_escalation_err) begin
+        err_inj.security_escalation_err || err_inj.nvm_rma_error_rsp) begin
       `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 0)
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
@@ -979,55 +979,76 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         off_val,on_val), UVM_MEDIUM)
 
     set_nvm_rma_ack(off_val);
+    // injecting nvm_rma_error_rsp via a separate task for cleanliness
+    if (err_inj.nvm_rma_error_rsp) begin
+      run_nvm_rma_err_rsp();
+      return;
+    end
+
     forever begin
       lc_ctrl_pkg::lc_tx_t rsp = off_val;
-      while (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On &&
-          !err_inj.nvm_rma_error_rsp) begin
+      while (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On) begin
         @(cfg.lc_ctrl_vif.nvm_rma_req_o or err_inj);
         if(err_inj.nvm_rma_rsp_mubi_err &&
           cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On) begin
           set_nvm_rma_ack(rsp);
         end
       end
-      if (err_inj.nvm_rma_error_rsp) begin
-        // Error stream just alternates nvm_rma_ack_i every clock cycle. To get the timing right
-        // with this, we set max_delay_cycles to zero.
-        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        set_nvm_rma_ack(rsp, .max_delay_cycles(0));
-        cfg.clk_rst_vif.wait_clks(1);
-      end else begin
         // Normal behaviour
-        rsp = On;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        set_nvm_rma_ack(rsp);
-        // We can only inject error values after state NvmRmaSt starts
-        if(err_inj.nvm_rma_rsp_mubi_err) begin
-          wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {NvmRmaSt});
-          // Allow time to get through the synchronisation FFs
-          cfg.clk_rst_vif.wait_clks(NVM_RMA_ACK_SYNC_FFS);
-          // Now inject the bad value. When verifying MuBi errors in the NVM RMA response, our
-          // sequence seems to expect the invalid MuBi signal to arrive within at most 1 clock
-          // cycle.
-          rsp = on_val;
-          set_nvm_rma_ack(rsp, .max_delay_cycles(1));
-        end
+      rsp = On;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      set_nvm_rma_ack(rsp);
+      // We can only inject error values after state NvmRmaSt starts
+      if(err_inj.nvm_rma_rsp_mubi_err) begin
+        wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {NvmRmaSt});
+        // Allow time to get through the synchronisation FFs
+        cfg.clk_rst_vif.wait_clks(NVM_RMA_ACK_SYNC_FFS);
+        // Now inject the bad value. When verifying MuBi errors in the NVM RMA response, our
+        // sequence seems to expect the invalid MuBi signal to arrive within at most 1 clock
+        // cycle.
+        rsp = on_val;
+        set_nvm_rma_ack(rsp, .max_delay_cycles(1));
       end
-      wait (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On || err_inj.nvm_rma_error_rsp);
-      if (err_inj.nvm_rma_error_rsp) begin
-        // Error stream just alternates nvm_rma_ack_i every clock cycle. To get the timing right
-        // with this, we set max_delay_cycles to zero.
-        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
-        set_nvm_rma_ack(rsp, .max_delay_cycles(0));
-        cfg.clk_rst_vif.wait_clks(1);
-      end else begin
-        // Normal behaviour
-        rsp = off_val;
-        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
-        set_nvm_rma_ack(rsp);
-      end
+      wait (cfg.lc_ctrl_vif.nvm_rma_req_o != lc_ctrl_pkg::On);
+      // Normal behaviour
+      rsp = off_val;
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      set_nvm_rma_ack(rsp);
     end
   endtask
   // verilog_format: on
+
+  // Model an NVM controller that responds incorrectly to the RMA handshake. Each fault is driven
+  // once and then held, so it settles through the ack synchronisers even with CDC instrumentation
+  // enabled and is guaranteed to be seen by the FSM. The FSM is expected to detect the error in
+  // either the TokenCheck0St, TokenCheck1St, or TransProgSt states. This is where the FSM is expected
+  // to assert the nvm_rma_error_o signal.
+  virtual task run_nvm_rma_err_rsp();
+    @(cfg.transition_cmd_wr_ev);
+    if (next_lc_state != DecLcStRma) begin
+      // Acknowledge an RMA request that was never made. The FSM requires the ack to be Off in
+      // TokenCheck0St, TokenCheck1St and TransProgSt; the injection point picks which one fails.
+      // We set the ack to On earlier than the TokenCheck0St, TokenCheck1St and TransProgSt, due to
+      // the synchronisation FFs in the ack path.
+      randcase                                                          // | states where the FSM is expected to assert nvm_rma_error_o |
+        1: ;                                                            // TokenCheck0St
+        1: wait (cfg.lc_ctrl_vif.lc_ctrl_fsm_state == NvmRmaSt);        // TokenCheck1St/TransProgSt
+        1: wait (cfg.lc_ctrl_vif.lc_ctrl_fsm_state == TokenCheck0St);   // TransProgSt
+      endcase
+      set_nvm_rma_ack(lc_ctrl_pkg::On, .max_delay_cycles(0));
+    end else begin
+      // Acknowledge the request, then withdraw the ack once the FSM has accepted it and left
+      // NvmRmaSt. The FSM requires the ack to stay On in TransProgSt, where this is caught.
+      wait (cfg.lc_ctrl_vif.nvm_rma_req_o == lc_ctrl_pkg::On);
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+      set_nvm_rma_ack(lc_ctrl_pkg::On);
+      // Wait for FSM to leave NvmRmaSt so that it has accepted the request, meaning we can now withdraw the ack.
+      wait (cfg.lc_ctrl_vif.lc_ctrl_fsm_state != NvmRmaSt);
+      // The ack will propagate through the synchronisation FFs, so by withdrawing it now, the FSM will see it as Off in TransProgSt.
+      set_nvm_rma_ack(lc_ctrl_pkg::Off, .max_delay_cycles(0));
+    end
+  endtask
+
 
   // Security escalation injection task
   virtual task security_escalation_inject();
