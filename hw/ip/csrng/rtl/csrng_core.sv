@@ -118,6 +118,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        ctr_drbg_sm_err_sum;
   logic                        ctr_drbg_sm_err;
   logic                        ctr_drbg_v_ctr_err;
+  logic                        state_db_reg_ptr_err;
   logic                        block_encrypt_sm_err_sum;
   logic                        block_encrypt_sm_err;
 
@@ -334,7 +335,8 @@ module csrng_core import csrng_pkg::*; #(
   assign block_encrypt_sm_err_sum = block_encrypt_sm_err || err_code_test_bit[25];
 
   // Collective error signals for each type of error
-  assign ctr_err_sum         = ctr_drbg_v_ctr_err || err_code_test_bit[26];
+  assign ctr_err_sum         = ctr_drbg_v_ctr_err || state_db_reg_ptr_err ||
+                               err_code_test_bit[26];
   assign fifo_write_err_sum  = (|cmd_stage_sfifo_genbits_err_wr) || (|cmd_stage_sfifo_cmd_err_wr) ||
                                err_code_test_bit[28];
   assign fifo_read_err_sum   = (|cmd_stage_sfifo_genbits_err_rd) || (|cmd_stage_sfifo_cmd_err_rd) ||
@@ -907,7 +909,9 @@ module csrng_core import csrng_pkg::*; #(
     .reseed_counter_o(reseed_counter),
     .inst_state_o    (state_db_inst_state),
     .gen_cnt_o       (state_db_gen_cnt),
-    .gen_flag_o      (state_db_gen_flag)
+    .gen_flag_o      (state_db_gen_flag),
+
+    .reg_ptr_err_o(state_db_reg_ptr_err)
   );
 
   // Forward the reseed counter values to the register interface.

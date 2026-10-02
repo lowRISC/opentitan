@@ -41,33 +41,37 @@ module csrng_state_db
   output logic [NumApps-1:0][RsCtrWidth-1:0]      reseed_counter_o,
   output logic [NumApps-1:0]                      inst_state_o,
   output logic [NumApps-1:0][GenBitsCtrWidth-1:0] gen_cnt_o,
-  output logic [NumApps-1:0]                      gen_flag_o
+  output logic [NumApps-1:0]                      gen_flag_o,
+
+  output logic                                    reg_ptr_err_o
 );
 
   // Only the fields up to and including fips are readable via the register interface.
   localparam int unsigned RegStateWidth = RsCtrWidth + BlkLen + KeyLen + 2;
 
   // Number of registers per state with synthesis-friendly $ceil(RegStateWidth / RegWidth)
-  localparam int unsigned NumRegState   = (RegStateWidth + RegWidth - 1) / RegWidth;
-  localparam int unsigned NumRegStateLg = $clog2(NumRegState);
-  localparam int unsigned NumRegTotBits = NumRegState * RegWidth;
-  localparam int unsigned NumRegPadBits = NumRegTotBits - RegStateWidth;
+  localparam int unsigned            NumRegState   = (RegStateWidth + RegWidth - 1) / RegWidth;
+  localparam int unsigned            NumRegStateLg = $clog2(NumRegState);
+  localparam int unsigned            NumRegTotBits = NumRegState * RegWidth;
+  localparam int unsigned            NumRegPadBits = NumRegTotBits - RegStateWidth;
+  localparam bit [NumRegStateLg-1:0] LastRegState  = NumRegStateLg'(NumRegState - 1);
 
   // Internal signals
   logic                     write_en;
   logic                     instance_state;
   logic [NumRegTotBits-1:0] state_reg_readout;
+  logic [NumRegStateLg-1:0] reg_rd_ptr_q;
+  logic                     reg_rd_last;
+  logic                     reg_rd_ptr_clr;
+  logic                     reg_rd_ptr_incr_en;
 
   // Registers
-  logic [NumRegStateLg-1:0] reg_rd_ptr_q, reg_rd_ptr_d;
   logic     [NumAppsLg-1:0] reg_rd_id_q, reg_rd_id_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      reg_rd_ptr_q <= '0;
       reg_rd_id_q  <= '0;
     end else begin
-      reg_rd_ptr_q <= reg_rd_ptr_d;
       reg_rd_id_q  <= reg_rd_id_d;
     end
   end
@@ -95,17 +99,35 @@ module csrng_state_db
     end
   end
 
-  // Reset the regfile read pointer when a new instance is selected for readout
-  always_comb begin
-    reg_rd_ptr_d = reg_rd_ptr_q;
-    if (!enable_i || !reg_rd_en_i) begin
-      reg_rd_ptr_d = '1;
-    end else if (reg_rd_id_vld_i || (reg_rd_ptr_q == NumRegState)) begin
-      reg_rd_ptr_d = '0;
-    end else if (reg_rd_strb_i) begin
-      reg_rd_ptr_d = reg_rd_ptr_q + 1;
-    end
-  end
+  // The last word of the selected state is being read.
+  assign reg_rd_last = reg_rd_strb_i && (reg_rd_ptr_q == LastRegState);
+
+  // Reset the regfile read pointer when a new instance is selected for readout. The pointer wraps
+  // around after the last word.
+  assign reg_rd_ptr_clr = !enable_i || !reg_rd_en_i || reg_rd_id_vld_i || reg_rd_last;
+  assign reg_rd_ptr_incr_en = reg_rd_strb_i && !reg_rd_last;
+
+  // SEC_CM: STATE_DB.CTR.REDUN
+  prim_count #(
+    .Width(NumRegStateLg),
+    .PossibleActions(prim_count_pkg::Clr | prim_count_pkg::Incr)
+  ) u_prim_count_reg_ptr (
+    .clk_i,
+    .rst_ni,
+
+    .clr_i    (reg_rd_ptr_clr),
+    .set_i    (1'b0),
+    .set_cnt_i('0),
+
+    .incr_en_i(reg_rd_ptr_incr_en),
+    .decr_en_i(1'b0),
+    .step_i   (NumRegStateLg'(1)),
+    .commit_i (1'b1),
+
+    .cnt_o             (reg_rd_ptr_q),
+    .cnt_after_commit_o(),
+    .err_o             (reg_ptr_err_o)
+  );
 
   // Pad the logic representation of the selected state with zeros to the next multiple of 32
   assign state_reg_readout = (reg_rd_id_q < NumApps) ?
