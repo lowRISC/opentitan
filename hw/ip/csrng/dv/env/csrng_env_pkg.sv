@@ -134,11 +134,6 @@ package csrng_env_pkg;
   } which_fifo_err_e;
 
   typedef enum int {
-    cmd_gen_cnt_sel  = 0,
-    ctr_drbg_cnt_sel = 1
-  } which_cnt_e;
-
-  typedef enum int {
     fsm_sparse  = 0,
     fsm_redun   = 1,
     ctrl_sparse = 2,
