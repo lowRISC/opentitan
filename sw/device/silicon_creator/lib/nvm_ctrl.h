@@ -444,6 +444,7 @@ typedef enum nvm_data_id {
  * possibly including releasing acquired resources.
  *
  * This function blocks until the data is accessible from its final location.
+ * You should use nvm_data_load_start() to perform an asynchronous transfer.
  *
  * @param data_id Identifier for the data to load.
  * @return The success/error state of the operation.
@@ -452,9 +453,32 @@ OT_WARN_UNUSED_RESULT
 rom_error_t nvm_data_load(nvm_data_id_t data_id);
 
 /**
- * Undo a NVM data acquisition done via nvm_data_load().
+ * Start loading the specified NVM data (e.g. via DMA, if available).
  *
- * Release resources acquired in the corresponding call to nvm_data_load().
+ * This function is non-blocking. nvm_data_load_poll() must be used to check
+ * whether the transfer is complete.
+ *
+ * @param data_id Identifier for the data to load.
+ * @return Whether the transfer was started successfully.
+ */
+rom_error_t nvm_data_load_start(nvm_data_id_t data_id);
+
+/**
+ * Check the status of a data transfer initiated with nvm_data_load_start().
+ *
+ * @param data_id Identifier for the data transfer to check. This must have
+ *   been initiated with a previous call to nvm_data_load_start().
+ * @return kErrorOk if the data transfer is complete, kErrorNvmNotFinished if
+ *   the data transfer is ongoing, or any other value to indicate a transfer
+ *   error.
+ */
+rom_error_t nvm_data_load_poll(nvm_data_id_t data_id);
+
+/**
+ * Undo a NVM data load (e.g. done via nvm_data_load()).
+ *
+ * Release resources acquired in the corresponding call to nvm_data_load()
+ * or nvm_data_load_start()/nvm_data_load_poll().
  * The pointer returned by nvm_data_get() should be considered invalid
  * after this function returns.
  *
@@ -465,7 +489,8 @@ void nvm_data_unload(nvm_data_id_t data_id);
 /**
  * Get the pointer of previously loaded NVM data.
  *
- * @param data_id Identifier previously used with nvm_data_load().
+ * @param data_id Identifier previously used with nvm_data_load() or
+ *   nvm_data_load_start().
  * @param data_ptr If not NULL and if the operation succeeds, this is written
  *   with the pointer to the data. This lies in Ibex's address space.
  * @param data_size If not NULL and if the operation succeeds, this is written

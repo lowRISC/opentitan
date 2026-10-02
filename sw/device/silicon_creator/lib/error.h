@@ -278,7 +278,8 @@ enum module_ {
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
   \
-  X(kErrorNvmCtrlInvalidInfoPage,     ERROR_(1, kModuleNvmCtrl, kInvalidArgument)), \
+  X(kErrorNvmCtrlInvalidInfoPage,     ERROR_(0, kModuleNvmCtrl, kInvalidArgument)), \
+  X(kErrorNvmNotFinished,             ERROR_(1, kModuleNvmCtrl, kUnavailable)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
