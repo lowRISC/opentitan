@@ -156,17 +156,17 @@ static void keymgr_dpe_test(const dif_keymgr_dpe_t *keymgr_dpe) {
       CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(
           keymgr_dpe, &kCreatorRootKeyParams));
       // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
+      // hold keys with boot stage set to BootStageCreatorInt (1). (Note:
       // Current bootstage + 1)
     } else {
       LOG_INFO(
           "ROM identified - keymgr_dpe is in `kDifKeymgrDpeStateAvailable `"
-          "and has derived the `OwnerIntKey`");
+          "and has derived the `CreatorRootKey`");
       // Verify the keymgr dpe is in the reset state
       CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
           keymgr_dpe, kDifKeymgrDpeStateAvailable));
       // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
-      // hold keys with boot stage set to BootStageOwner (2). (Note:
+      // hold keys with boot stage set to BootStageCreatorInt (1). (Note:
       // Current bootstage + 1)
     }
 
