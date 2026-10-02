@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/pwrmgr.h"
+#include "hw/top/dt/rv_plic.h"
+#include "hw/top/dt/soc_proxy.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -29,10 +32,8 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .is_only_irq = true};
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
   // Enable global and external IRQ in Ibex.
   irq_global_ctrl(true);
@@ -50,8 +51,10 @@ bool test_main(void) {
                                               &wakeup_req_srcs));
 
   // Enable external wakeup request in Power Manager.
-  const dif_pwrmgr_request_sources_t ext_wkup_req =
-      (1u << kTopDarjeelingPowerManagerWakeUpsSocProxyWkupExternalReq);
+  dif_pwrmgr_request_sources_t ext_wkup_req;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_soc_proxy_instance_id(kDtSocProxy),
+      kDtSocProxyWakeupWkupExternalReq, &ext_wkup_req));
   wakeup_req_srcs |= ext_wkup_req;
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, wakeup_req_srcs, kDifToggleEnabled));
