@@ -233,12 +233,12 @@
     {
       name: lock_loading_uds_command
       desc: '''
-            Attempt to load the UDS when the load_key_lock hardware register is set.
+            Attempt to load the UDS when the `load_root_key_lock` register is set.
 
             Stimulus:
             - Bring keymgr_dpe out of the Reset state and into the Available state by
               issuing a single advance call.
-            - Set the load_key_lock register, then attempt to issue the load UDS command.
+            - Set the `load_root_key_lock` register, then attempt to issue the load UDS command.
 
             Checks:
             - Verify that 'INVALID_OP' is raised.

@@ -131,7 +131,7 @@ The only relevant registers (or register fields) during the first advance call a
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
-This initial latching can be repeated with the _Load Root Key_ operation unless locked with the `LOAD_KEY_LOCK` register.
+This initial latching can be repeated with the _Load Root Key_ operation unless locked with the `LOAD_ROOT_KEY_LOCK` register.
 If the OTP creator root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid`state.
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).

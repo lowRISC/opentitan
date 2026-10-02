@@ -174,7 +174,7 @@ package keymgr_dpe_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } keymgr_dpe_reg2hw_load_key_lock_reg_t;
+  } keymgr_dpe_reg2hw_load_root_key_lock_reg_t;
 
   typedef struct packed {
     logic [3:0]  q;
@@ -380,7 +380,7 @@ package keymgr_dpe_reg_pkg;
     keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [52:51]
     keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [50:19]
     keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [18:5]
-    keymgr_dpe_reg2hw_load_key_lock_reg_t load_key_lock; // [4:4]
+    keymgr_dpe_reg2hw_load_root_key_lock_reg_t load_root_key_lock; // [4:4]
     keymgr_dpe_reg2hw_enforce_sw_binding_reg_t enforce_sw_binding; // [3:0]
   } keymgr_dpe_reg2hw_t;
 
@@ -473,7 +473,7 @@ package keymgr_dpe_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_ERR_CODE_OFFSET = 9'h 108;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_FAULT_STATUS_OFFSET = 9'h 10c;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_DEBUG_OFFSET = 9'h 110;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET = 9'h 114;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET = 9'h 114;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET = 9'h 118;
 
   // Reset values for hwext registers and their fields
@@ -627,7 +627,7 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_ERR_CODE,
     KEYMGR_DPE_FAULT_STATUS,
     KEYMGR_DPE_DEBUG,
-    KEYMGR_DPE_LOAD_KEY_LOCK,
+    KEYMGR_DPE_LOAD_ROOT_KEY_LOCK,
     KEYMGR_DPE_ENFORCE_SW_BINDING
   } keymgr_dpe_id_e;
 
@@ -702,7 +702,7 @@ package keymgr_dpe_reg_pkg;
     4'b 0001, // index[66] KEYMGR_DPE_ERR_CODE
     4'b 0011, // index[67] KEYMGR_DPE_FAULT_STATUS
     4'b 0011, // index[68] KEYMGR_DPE_DEBUG
-    4'b 0001, // index[69] KEYMGR_DPE_LOAD_KEY_LOCK
+    4'b 0001, // index[69] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK
     4'b 0001  // index[70] KEYMGR_DPE_ENFORCE_SW_BINDING
   };
 
