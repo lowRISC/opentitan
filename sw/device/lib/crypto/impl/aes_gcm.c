@@ -421,7 +421,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the internal init operation.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv, &internal_ctx));
 
@@ -459,7 +460,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the internal init operation.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv, &internal_ctx));
 
@@ -490,7 +492,8 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
@@ -530,7 +533,8 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
@@ -592,7 +596,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
@@ -646,7 +651,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
+  aes_gcm_context_t internal_ctx
+      __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;

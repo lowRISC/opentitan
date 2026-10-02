@@ -59,6 +59,15 @@ static inline void block_inc32(aes_block_t *block) {
 }
 
 /**
+ * Overwrite an AES block with random data; used as a cleanup guard.
+ *
+ * @param block AES block to shred.
+ */
+static void aes_block_shred(aes_block_t *block) {
+  hardened_memshred(block->data, kAesBlockNumWords);
+}
+
+/**
  * One-shot version of the AES encryption API for a single block.
  */
 OT_WARN_UNUSED_RESULT
@@ -223,13 +232,13 @@ static status_t aes_gcm_hash_subkey(
   // AES-CTR's final XOR with the plaintext does nothing.
   aes_block_t zero;
   memset(zero.data, 0, kAesBlockNumBytes);
-  aes_block_t hash_subkey;
+  aes_block_t hash_subkey __attribute__((cleanup(aes_block_shred)));
   HARDENED_TRY(
       aes_encrypt_block(key, &zero, &zero, &hash_subkey, security_level));
 
   // Create two shares of the hash subkey.
-  aes_block_t hash_subkey_share0;
-  aes_block_t hash_subkey_share1;
+  aes_block_t hash_subkey_share0 __attribute__((cleanup(aes_block_shred)));
+  aes_block_t hash_subkey_share1 __attribute__((cleanup(aes_block_shred)));
 
   // Share 0: random data.
   hardened_memshred(hash_subkey_share0.data, kAesBlockNumWords);
@@ -241,9 +250,6 @@ static status_t aes_gcm_hash_subkey(
   // Set the key for the GHASH context.
   HARDENED_TRY(ghash_init_subkey(hash_subkey_share0.data, ctx->tbl0));
   ghash_init_subkey(hash_subkey_share1.data, ctx->tbl1);
-
-  hardened_memshred((uint32_t *)&hash_subkey,
-                    sizeof(hash_subkey) / sizeof(uint32_t));
 
   return OTCRYPTO_OK;
 }
@@ -351,7 +357,7 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx,
     ghash_update(&ctx->ghash_ctx, &last_block_buf);
   }
 
-  aes_block_t full_tag;
+  aes_block_t full_tag __attribute__((cleanup(aes_block_shred)));
   HARDENED_TRY(ghash_final(&ctx->ghash_ctx, full_tag.data));
 
   // Truncate the tag if needed. NIST requires we take the most significant
@@ -371,7 +377,7 @@ status_t aes_gcm_encrypt(const aes_key_t key,
                          otcrypto_word32_buf_t *tag,
                          otcrypto_key_security_level_t security_level,
                          otcrypto_byte_buf_t *ciphertext) {
-  aes_gcm_context_t ctx;
+  aes_gcm_context_t ctx __attribute__((cleanup(aes_gcm_context_shred)));
   ctx.security_level = security_level;
   HARDENED_TRY(aes_gcm_encrypt_init(key, iv, &ctx));
   HARDENED_TRY(aes_gcm_update_aad(&ctx, aad));
@@ -411,18 +417,21 @@ static status_t aes_gcm_init(const aes_key_t key,
   // Create the encrypted initial counter block S.
   aes_block_t zero;
   memset(zero.data, 0, kAesBlockNumBytes);
-  aes_block_t enc_initial_counter_block;
+  aes_block_t enc_initial_counter_block
+      __attribute__((cleanup(aes_block_shred)));
   HARDENED_TRY(aes_encrypt_block(key, &ctx->initial_counter_block, &zero,
                                  &enc_initial_counter_block,
                                  ctx->security_level));
 
   // Split the initial counter block S into two shares S0 and S1.
   // S0: random data.
-  aes_block_t enc_initial_counter_block0;
+  aes_block_t enc_initial_counter_block0
+      __attribute__((cleanup(aes_block_shred)));
   hardened_memshred(enc_initial_counter_block0.data, kAesBlockNumWords);
 
   // S1: S ^ S0
-  aes_block_t enc_initial_counter_block1;
+  aes_block_t enc_initial_counter_block1
+      __attribute__((cleanup(aes_block_shred)));
   hardened_xor(enc_initial_counter_block0.data, enc_initial_counter_block.data,
                kAesBlockNumWords, enc_initial_counter_block1.data);
 
@@ -682,7 +691,7 @@ status_t aes_gcm_decrypt(const aes_key_t key,
                          otcrypto_byte_buf_t *plaintext,
                          otcrypto_key_security_level_t security_level,
                          hardened_bool_t *success) {
-  aes_gcm_context_t ctx;
+  aes_gcm_context_t ctx __attribute__((cleanup(aes_gcm_context_shred)));
   ctx.security_level = security_level;
   HARDENED_TRY(aes_gcm_decrypt_init(key, iv, &ctx));
   HARDENED_TRY(aes_gcm_update_aad(&ctx, aad));
@@ -724,15 +733,15 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
                                size_t *bytes_written,
                                hardened_bool_t *success) {
   // Get the expected authentication tag.
-  uint32_t expected_tag[kAesBlockNumWords];
+  aes_block_t expected_tag __attribute__((cleanup(aes_block_shred)));
 
   otcrypto_word32_buf_t expected_tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, expected_tag, tag->len);
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, expected_tag.data, tag->len);
 
   HARDENED_TRY(aes_gcm_final(ctx, &expected_tag_buf, bytes_written, output));
 
   // Compare the expected tag to the actual tag (in constant time).
-  *success = hardened_memeq(expected_tag, tag->data, tag->len);
+  *success = hardened_memeq(expected_tag.data, tag->data, tag->len);
   if (*success != kHardenedBoolTrue) {
     *success = kHardenedBoolFalse;
   }
@@ -740,4 +749,9 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(tag));
 
   return OTCRYPTO_OK;
+}
+
+void aes_gcm_context_shred(aes_gcm_context_t *ctx) {
+  hardened_memshred((uint32_t *)ctx,
+                    sizeof(aes_gcm_context_t) / sizeof(uint32_t));
 }
