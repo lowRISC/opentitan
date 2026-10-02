@@ -357,7 +357,7 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx,
     ghash_update(&ctx->ghash_ctx, &last_block_buf);
   }
 
-  aes_block_t full_tag;
+  aes_block_t full_tag __attribute__((cleanup(aes_block_shred)));
   HARDENED_TRY(ghash_final(&ctx->ghash_ctx, full_tag.data));
 
   // Truncate the tag if needed. NIST requires we take the most significant
@@ -733,15 +733,15 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
                                size_t *bytes_written,
                                hardened_bool_t *success) {
   // Get the expected authentication tag.
-  uint32_t expected_tag[kAesBlockNumWords];
+  aes_block_t expected_tag __attribute__((cleanup(aes_block_shred)));
 
   otcrypto_word32_buf_t expected_tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, expected_tag, tag->len);
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, expected_tag.data, tag->len);
 
   HARDENED_TRY(aes_gcm_final(ctx, &expected_tag_buf, bytes_written, output));
 
   // Compare the expected tag to the actual tag (in constant time).
-  *success = hardened_memeq(expected_tag, tag->data, tag->len);
+  *success = hardened_memeq(expected_tag.data, tag->data, tag->len);
   if (*success != kHardenedBoolTrue) {
     *success = kHardenedBoolFalse;
   }
