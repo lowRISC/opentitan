@@ -52,7 +52,6 @@ package rstmgr_env_pkg;
     "u_dmain_i2c2",
     "u_dmain_lc",
     "u_dmain_lc_io",
-    "u_dmain_lc_io_div2",
     "u_dmain_lc_shadowed",
     "u_dmain_lc_usb",
     "u_dmain_spi_device",

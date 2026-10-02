@@ -124,9 +124,6 @@
     { name: "CLKMGR.MEAS_CTRL.IO",
       desc: "Frequency and timeout measurements of IO clock."
     }
-    { name: "CLKMGR.MEAS_CTRL.IO_DIV2",
-      desc: "Frequency and timeout measurements of IO_DIV2 clock."
-    }
     { name: "CLKMGR.MEAS_CTRL.IO_DIV4",
       desc: "Frequency and timeout measurements of IO_DIV4 clock."
     }
@@ -684,60 +681,6 @@
         },
       ]
     },
-    { name: "IO_DIV2_MEAS_CTRL_EN",
-      desc: '''
-        Enable for measurement control
-      ''',
-      regwen: "MEASURE_CTRL_REGWEN",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      async: "clk_io_div2_i",
-      fields: [
-        {
-          bits: "3:0",
-          name: "EN",
-          desc: "Enable measurement for io_div2",
-          mubi: true,
-          resval: false,
-        },
-      ]
-      // Measurements can cause recoverable errors depending on the
-      // thresholds which randomized CSR tests will not predict correctly.
-      // To provide better CSR coverage we allow writing the threshold
-      // fields, but not enabling the counters.
-      tags: ["excl:CsrAllTests:CsrExclWrite"]
-    },
-
-    { name: "IO_DIV2_MEAS_CTRL_SHADOWED",
-      desc: '''
-        Configuration controls for io_div2 measurement.
-
-        The threshold fields are made wider than required (by 1 bit) to ensure
-        there is room to adjust for measurement inaccuracies.
-      ''',
-      regwen: "MEASURE_CTRL_REGWEN",
-      swaccess: "rw",
-      hwaccess: "hro",
-      async: "clk_io_div2_i",
-      shadowed: "true",
-      update_err_alert: "recov_fault",
-      storage_err_alert: "fatal_fault",
-      fields: [
-        {
-          bits: "8:0",
-          name: "HI",
-          desc: "Max threshold for io_div2 measurement",
-          resval: "250"
-        },
-
-        {
-          bits: "17:9",
-          name: "LO",
-          desc: "Min threshold for io_div2 measurement",
-          resval: "230"
-        },
-      ]
-    },
     { name: "IO_DIV4_MEAS_CTRL_EN",
       desc: '''
         Enable for measurement control
@@ -923,14 +866,6 @@
         },
         {
           bits: "2",
-          name: "IO_DIV2_MEASURE_ERR",
-          resval: 0,
-          desc: '''
-            io_div2 has encountered a measurement error.
-          '''
-        },
-        {
-          bits: "3",
           name: "IO_DIV4_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -938,7 +873,7 @@
           '''
         },
         {
-          bits: "4",
+          bits: "3",
           name: "MAIN_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -946,7 +881,7 @@
           '''
         },
         {
-          bits: "5",
+          bits: "4",
           name: "USB_MEASURE_ERR",
           resval: 0,
           desc: '''
@@ -954,7 +889,7 @@
           '''
         },
         {
-          bits: "6",
+          bits: "5",
           name: "IO_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -962,15 +897,7 @@
           '''
         }
         {
-          bits: "7",
-          name: "IO_DIV2_TIMEOUT_ERR",
-          resval: 0,
-          desc: '''
-            io_div2 has timed out.
-          '''
-        }
-        {
-          bits: "8",
+          bits: "6",
           name: "IO_DIV4_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -978,7 +905,7 @@
           '''
         }
         {
-          bits: "9",
+          bits: "7",
           name: "MAIN_TIMEOUT_ERR",
           resval: 0,
           desc: '''
@@ -986,7 +913,7 @@
           '''
         }
         {
-          bits: "10",
+          bits: "8",
           name: "USB_TIMEOUT_ERR",
           resval: 0,
           desc: '''

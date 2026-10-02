@@ -200,13 +200,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         end
 
       forever
-        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_div2_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIoDiv2, cfg.clkmgr_vif.io_div2_freq_measurement,
-                                      cfg.clkmgr_vif.io_div2_timeout_err);
-        end
-
-      forever
         @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or
           posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
@@ -235,8 +228,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       forever
         @cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr if (cfg.en_cov) begin
           cov.recov_err_cg.sample(
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[10],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[9],
               cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[8],
               cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[7],
               cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[6],
@@ -343,8 +334,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "io_meas_ctrl_en": begin
       end
-      "io_div2_meas_ctrl_en": begin
-      end
       "io_div4_meas_ctrl_en": begin
       end
       "main_meas_ctrl_en": begin
@@ -352,8 +341,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "usb_meas_ctrl_en": begin
       end
       "io_meas_ctrl_shadowed": begin
-      end
-      "io_div2_meas_ctrl_shadowed": begin
       end
       "io_div4_meas_ctrl_shadowed": begin
       end

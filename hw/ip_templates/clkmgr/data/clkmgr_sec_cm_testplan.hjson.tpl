@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+from ipgen.clkmgr_gen import get_rg_srcs
+meas_clks = [f'clk_{src}' for src in get_rg_srcs(typed_clocks)]
+meas_clk_list = ' and '.join([', '.join(meas_clks[:-1]), meas_clks[-1]]) if len(meas_clks) > 1 else meas_clks[0]
+%>\
 
 // Security countermeasures testplan extracted from the IP Hjson using reggen.
 //
@@ -35,8 +40,8 @@
       name: sec_cm_meas_clk_bkgn_chk
       desc: '''Verify the countermeasure(s) MEAS.CLK.BKGN_CHK.
             - Test measurement feature of clkmgr_meas_chk modules.
-              For all test clocks (clk_main, clk_usb, clk_io, clk_io_div2
-              and clk_io_div4), do measurement with normal configuration.
+              For all measured clocks (${meas_clk_list}),
+              do measurement with normal configuration.
               Then change either min or max threshold value to see
               whether the module can detect measurement error for each test
               clock.
@@ -49,9 +54,9 @@
       name: sec_cm_timeout_clk_bkgn_chk
       desc: '''Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK.
             - Test timeout feature of clkmgr_meas_chk modules.
-              While frequency measurement, one of
-              clk_main, clk_usb, clk_io, clk_io_div2 and clk_io_div4 are choose
-              and stopped. This will leads to timeout event.
+              While frequency measurement, one of the measured clocks
+              (${meas_clk_list}) is chosen
+              and stopped. This leads to a timeout event.
             - Timeout should cause a recoverable alert
             '''
       stage: V2S

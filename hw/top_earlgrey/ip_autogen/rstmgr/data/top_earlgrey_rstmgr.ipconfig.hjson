@@ -65,7 +65,7 @@
     {
       spi_device: io_div4
       spi_host0: io
-      spi_host1: io_div2
+      spi_host1: io
       usb: usb
       usb_aon: aon
       i2c0: io_div4
@@ -209,7 +209,6 @@
         domains:
         [
           Aon
-          Main
         ]
         shadowed: false
         sw: false
@@ -315,7 +314,7 @@
         sw: true
         path: rst_spi_host1_n
         parent: lc_src
-        clock: io_div2
+        clock: io
       }
       {
         name: usb
@@ -511,7 +510,6 @@
         domains:
         [
           Aon
-          Main
         ]
         shadowed: false
         sw: false
@@ -617,7 +615,7 @@
         sw: true
         path: rst_spi_host1_n
         parent: lc_src
-        clock: io_div2
+        clock: io
       }
       {
         name: usb

@@ -248,17 +248,13 @@
     //////////////////////////
     {
       name: cg_en_io_peri
-      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to alert_handler's lpg_cg_en[7].'''
+      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to:
+            - alert_handler's lpg_cg_en[7]
+            - alert_handler's lpg_cg_en[8]
+            '''
       stage: V2
-      tests: ["clkmgr_io_peri_alert_7_cg_en"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: cg_en_io_div2_peri
-      desc: '''Verify clkmgr's cg_en_o.io_div2_peri is connected to alert_handler's lpg_cg_en[8].'''
-      stage: V2
-      tests: ["clkmgr_io_div2_peri_alert_8_cg_en"]
+      tests: ["clkmgr_io_peri_alert_7_cg_en",
+              "clkmgr_io_peri_alert_8_cg_en"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -434,22 +430,13 @@
     }
     {
       name: clkmgr_clk_io_infra
-      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following block's clock input:
+      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following blocks' clock inputs:
              - xbar_main's clk_spi_host0_i
+             - xbar_main's clk_spi_host1_i
             '''
       stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: clkmgr_clk_io_div2_infra
-      desc: '''Verify clkmgr's `clk_io_div2_infra` is connected to the following block's clock
-            input:
-            - xbar_main clk_spi_host1_i
-            '''
-      stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host1_clk"]
+      tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk",
+              "clkmgr_infra_clk_xbar_main_spi_host1_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -488,24 +475,24 @@
     }
     {
       name: clkmgr_clk_io_div2_peri
-      desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following blocks' clock
+      desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following block's clock
             input:
             - spi_device's scan_clk_i
-            - spi_host1 clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_device_scan_clk",
-              "clkmgr_peri_clk_spi_host1_clk"]
+      tests: ["clkmgr_peri_clk_spi_device_scan_clk"]
       si_stage: NA
       tags: ["conn"]
     }
     {
       name: clkmgr_clk_io_peri
-      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following block's clock input:
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock inputs:
             - spi_host0's clk_i
+            - spi_host1's clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_host0_clk"]
+      tests: ["clkmgr_peri_clk_spi_host0_clk",
+              "clkmgr_peri_clk_spi_host1_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1139,18 +1126,14 @@
       tags: ["conn"]
     }
     {
-      name: rst_sys_io_d0
-      desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to xbar_main's rst_spi_host0_ni.'''
+      name: rst_lc_io_d0
+      desc: '''Verify rstmgr's rst_lc_io_n[1] is connected to:
+            - xbar_main's rst_spi_host0_ni
+            - xbar_main's rst_spi_host1_ni
+            '''
       stage: V2
-      tests: ["rstmgr_sys_io_d0_xbar_main_rst_spi_host0_ni"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: rst_sys_io_div2_d0
-      desc: '''Verify rstmgr's rst_sys_io_div2_n[1] is connected to xbar_main's rst_spi_host1_ni.'''
-      stage: V2
-      tests: ["rstmgr_sys_io_div2_d0_xbar_main_rst_spi_host1_ni"]
+      tests: ["rstmgr_lc_io_d0_xbar_main_rst_spi_host0_ni",
+              "rstmgr_lc_io_d0_xbar_main_rst_spi_host1_ni"]
       si_stage: NA
       tags: ["conn"]
     }

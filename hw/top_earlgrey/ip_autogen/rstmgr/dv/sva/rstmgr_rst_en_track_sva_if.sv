@@ -188,19 +188,6 @@ interface rstmgr_rst_en_track_sva_if (
           clk_io_div2_i,
           !rst_por_ni)
 
-  `ASSERT(DMainRstLcIoDiv2EnTracksRstLcIoDiv2Active_A,
-          $fell(resets_i.rst_lc_io_div2_n[DomainMainSel]) |-> ##[0:DELAY]
-          reset_en_i.lc_io_div2[DomainMainSel] == prim_mubi_pkg::MuBi4True,
-          clk_io_div2_i,
-          !rst_por_ni)
-
-  `ASSERT(DMainRstLcIoDiv2EnTracksRstLcIoDiv2Inactive_A,
-          $rose(resets_i.rst_lc_io_div2_n[DomainMainSel]) |-> ##DELAY
-          !resets_i.rst_lc_io_div2_n[DomainMainSel] ||
-          reset_en_i.lc_io_div2[DomainMainSel] == prim_mubi_pkg::MuBi4False,
-          clk_io_div2_i,
-          !rst_por_ni)
-
   `ASSERT(DMainRstLcIoDiv4ShadowedEnTracksRstLcIoDiv4ShadowedActive_A,
           $fell(resets_i.rst_lc_io_div4_shadowed_n[DomainMainSel]) |-> ##[0:DELAY]
           reset_en_i.lc_io_div4_shadowed[DomainMainSel] == prim_mubi_pkg::MuBi4True,
@@ -308,14 +295,14 @@ interface rstmgr_rst_en_track_sva_if (
   `ASSERT(DMainRstSpiHost1EnTracksRstSpiHost1Active_A,
           $fell(resets_i.rst_spi_host1_n[DomainMainSel]) |-> ##[0:DELAY]
           reset_en_i.spi_host1[DomainMainSel] == prim_mubi_pkg::MuBi4True,
-          clk_io_div2_i,
+          clk_io_i,
           !rst_por_ni)
 
   `ASSERT(DMainRstSpiHost1EnTracksRstSpiHost1Inactive_A,
           $rose(resets_i.rst_spi_host1_n[DomainMainSel]) |-> ##DELAY
           !resets_i.rst_spi_host1_n[DomainMainSel] ||
           reset_en_i.spi_host1[DomainMainSel] == prim_mubi_pkg::MuBi4False,
-          clk_io_div2_i,
+          clk_io_i,
           !rst_por_ni)
 
   `ASSERT(DMainRstUsbEnTracksRstUsbActive_A,

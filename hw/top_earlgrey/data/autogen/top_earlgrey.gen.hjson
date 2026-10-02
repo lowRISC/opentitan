@@ -143,7 +143,6 @@
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
-          clk_io_div2_infra: io_div2
         }
       }
       {
@@ -344,7 +343,6 @@
         domains:
         [
           Aon
-          Main
         ]
         shadowed: false
         sw: false
@@ -450,7 +448,7 @@
         sw: true
         path: rst_spi_host1_n
         parent: lc_src
-        clock: io_div2
+        clock: io
       }
       {
         name: usb
@@ -3009,7 +3007,7 @@
       type: spi_host
       clock_srcs:
       {
-        clk_i: io_div2
+        clk_i: io
       }
       clock_group: peri
       reset_connections:
@@ -3023,7 +3021,7 @@
       domain: Main
       clock_connections:
       {
-        clk_i: clkmgr_clocks_i.clk_io_div2_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
       }
       param_decl: {}
       memory: {}
@@ -12573,7 +12571,7 @@
         clk_fixed_i: io_div4
         clk_usb_i: usb
         clk_spi_host0_i: io
-        clk_spi_host1_i: io_div2
+        clk_spi_host1_i: io
       }
       clock_group: infra
       reset: rst_main_ni
@@ -12601,7 +12599,7 @@
         }
         rst_spi_host1_ni:
         {
-          name: lc_io_div2
+          name: lc_io
           domain: Main
         }
       }
@@ -12612,7 +12610,7 @@
         clk_fixed_i: clkmgr_clocks_i.clk_io_div4_infra
         clk_usb_i: clkmgr_clocks_i.clk_usb_infra
         clk_spi_host0_i: clkmgr_clocks_i.clk_io_infra
-        clk_spi_host1_i: clkmgr_clocks_i.clk_io_div2_infra
+        clk_spi_host1_i: clkmgr_clocks_i.clk_io_infra
       }
       connections:
       {
@@ -22068,7 +22066,7 @@
           clk_aon_peri: aon
         }
       }
-      clock_connection: clkmgr_clocks_i.clk_io_div2_peri
+      clock_connection: clkmgr_clocks_i.clk_io_peri
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22244,7 +22242,6 @@
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
-          clk_io_div2_infra: io_div2
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_infra
@@ -22270,7 +22267,6 @@
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
-          clk_io_div2_infra: io_div2
         }
       }
       clock_connection: clkmgr_clocks.clk_io_div4_infra
@@ -22296,7 +22292,6 @@
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
-          clk_io_div2_infra: io_div2
         }
       }
       clock_connection: clkmgr_clocks_i.clk_main_infra
@@ -22322,7 +22317,6 @@
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
-          clk_io_div2_infra: io_div2
         }
       }
       clock_connection: clkmgr_clocks_i.clk_main_infra

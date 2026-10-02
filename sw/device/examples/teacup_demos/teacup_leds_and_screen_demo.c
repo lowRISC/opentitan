@@ -157,7 +157,7 @@ static status_t configure_led_i2c_controller(void) {
 static status_t configure_screen_spi_controller(void) {
   dif_spi_host_config_t config = {
       .spi_clock = 10000000,
-      .peripheral_clock_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+      .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
       .chip_select =
           {
               .idle = 1,

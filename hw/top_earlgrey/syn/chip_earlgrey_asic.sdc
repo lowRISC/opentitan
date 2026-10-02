@@ -163,16 +163,9 @@ append_to_collection IO_BANKS [get_ports IOB*]
 append_to_collection IO_BANKS [get_ports IOC*]
 append_to_collection IO_BANKS [get_ports IOR*]
 
-# constrain muxed IOs running on IO_DIV2_CLK and IO_DIV4_CLK
+# constrain muxed IOs running on IO_DIV4_CLK
 set IO_IN_DEL_FRACTION 0.40
 set IO_OUT_DEL_FRACTION 0.40
-
-# IO_DIV2_CLK
-set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
-set IO_DIV2_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
-
-set_input_delay ${IO_DIV2_IN_DEL}   ${IO_BANKS} -clock IO_DIV2_CLK -add_delay
-set_output_delay ${IO_DIV2_OUT_DEL} ${IO_BANKS} -clock IO_DIV2_CLK -add_delay
 
 # IO_DIV4_CLK
 set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
@@ -342,10 +335,11 @@ set spi_host_inp_min               -1
 set spi_host_out_val_max          [expr 5.5 + $out_val]
 set spi_host_out_val_min          -9
 
-set spi_host1_inp_max                8
-set spi_host1_inp_min                0
-set spi_host1_out_val_max          [expr 4.5 + $out_val]
-set spi_host1_out_val_min          -0.5
+# SPI_HOST1 is intended to be usable at the same frequencies as SPI_HOST0.
+set spi_host1_inp_max              $spi_host_inp_max
+set spi_host1_inp_min              $spi_host_inp_min
+set spi_host1_out_val_max          $spi_host_out_val_max
+set spi_host1_out_val_min          $spi_host_out_val_min
 
 set spi_dev_inp_max                 5
 set spi_dev_inp_min                -7
@@ -1220,15 +1214,15 @@ set_false_path -from SPI_DEV_CS_L -to SPI_DEV_D*
 # SPI HOST 1                             #
 ##########################################
 
-# 1. Rework the blanket constraints for the muxed I/Os to only apply to the IO_DIV4_CLK IPs. Only SPI_HOST1 is on IO_DIV2_CLK, and its constraints are special:
+# 1. Rework the blanket constraints for the muxed I/Os to only apply to the IO_DIV4_CLK IPs. SPI_HOST1 is on IO_CLK, and its constraints are special:
 # aggregate all IO banks
 set IO_BANKS [get_ports IOA*]
 append_to_collection IO_BANKS [get_ports IOB*]
 append_to_collection IO_BANKS [get_ports IOC*]
 append_to_collection IO_BANKS [get_ports IOR*]
 
-# constrain muxed IOs running on IO_DIV4_CLK. Note that IO_DIV2_CLK is only used
-# for SPI_HOST1, which has special constraints that are defined later.
+# constrain muxed IOs running on IO_DIV4_CLK. SPI_HOST1 runs on IO_CLK and has
+# special constraints that are defined later.
 set IO_IN_DEL_FRACTION 0.4
 set IO_OUT_DEL_FRACTION 0.4
 
@@ -1255,7 +1249,7 @@ set SPI_HOST1_DIV_CLK [get_pins top_earlgrey/earlgrey_pd_main/u_spi_host1/u_spi_
 # First model the clock divider that generates a new frequency internally.
 create_generated_clock -name SPI_HOST1_INTERNAL_CLK -divide_by 2 -add \
   -source ${SPI_HOST1_SRC_CLK} \
-  -master_clock [get_clocks IO_DIV2_CLK] \
+  -master_clock [get_clocks IO_CLK] \
   [get_pins ${SPI_HOST1_DIV_CLK}]
 
 # Then create a derived clock at the top-level port for input and output delays.
@@ -1288,25 +1282,25 @@ set_output_delay -max $spi_host1_out_val_max \
 # Multi-cycle path to adjust the hold edge, since launch and capture edges are
 # opposite in the SPI_HOST1_CLK domain.
 set_multicycle_path -setup -start 1 \
-    -from [get_clocks IO_DIV2_CLK] \
+    -from [get_clocks IO_CLK] \
     -to [get_clocks SPI_HOST1_CLK]
 set_multicycle_path -hold -start 1 \
-    -from [get_clocks IO_DIV2_CLK] \
+    -from [get_clocks IO_CLK] \
     -to [get_clocks SPI_HOST1_CLK]
 
 # set multicycle path for data going from SPI_HOST1_CLK to logic
 # the SPI host logic will read these paths at "full cycle"
 set_multicycle_path -setup -end 2 \
     -from [get_clocks SPI_HOST1_CLK] \
-    -to [get_clocks IO_DIV2_CLK]
+    -to [get_clocks IO_CLK]
 set_multicycle_path -hold -end 1 \
     -from [get_clocks SPI_HOST1_CLK] \
-    -to [get_clocks IO_DIV2_CLK]
+    -to [get_clocks IO_CLK]
 
-# 3. Adjust the asynchronous clock groups so SPI_HOST1_CLK is grouped with IO_DIV2_CLK.
+# 3. Adjust the asynchronous clock groups so SPI_HOST1_CLK is grouped with IO_CLK.
 
-# -    -group [get_clocks IO_DIV2_CLK                                  ] \
-# +    -group [get_clocks {IO_DIV2_CLK SPI_HOST1_CLK}                  ] \
+# -    -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
+# +    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
 
 # Approved by Ziv
 #  SPI_HOST_D0
@@ -1335,54 +1329,54 @@ set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_11__u_mio_pa
 set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 
 # For SPI_HOST1, I/O timing is only closed on pads IOB0, IOB1, IOB2, and IOB3 (see below for details).
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA0
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA1
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA2
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA3
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA4
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA5
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA6
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA7
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA8
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB10
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB11
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB12
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB4
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB5
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB6
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB7
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB8
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB9
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC0
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC1
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC10
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC11
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC12
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC2
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC3
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC4
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC5
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC6
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC7
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC8
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC9
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR0
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR10
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR11
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR12
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR13
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR2
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR3
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR4
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR5
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR6
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR7
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA0
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA1
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA2
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA3
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA4
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA5
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA6
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA7
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA8
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB10
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB11
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB12
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB4
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB5
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB6
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB7
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB8
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB9
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC0
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC1
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC10
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC11
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC12
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC2
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC3
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC4
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC5
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC6
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC7
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC8
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOC9
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR0
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR10
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR11
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR12
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR13
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR2
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR3
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR4
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR5
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR6
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOR7
 
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_DIV2_CLK
-set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_CLK
 
 ## begin: SPI Host 1 constraints for PrimeTime
 
@@ -1418,7 +1412,7 @@ set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_in
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[5]
 
 # SPI_HOST1 does not drive IOB2.
-set_false_path -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB2
+set_false_path -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB2
 
 # SPI_HOST1 SCK (MioOut 46 -> mux 49) drives IOB3 (MIO pad 12):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[0]
@@ -1429,9 +1423,9 @@ set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[5]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[6]
 
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_DIV2_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_CLK
 
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA0
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA1
@@ -1622,8 +1616,8 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
-    -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
-    -group [get_clocks {IO_DIV2_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK} ] \
+    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
+    -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
     -group [get_clocks AON_CLK                                      ]

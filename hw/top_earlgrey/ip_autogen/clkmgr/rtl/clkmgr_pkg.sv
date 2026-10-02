@@ -30,7 +30,6 @@ package clkmgr_pkg;
     logic clk_main_infra;
     logic clk_usb_infra;
     logic clk_io_infra;
-    logic clk_io_div2_infra;
     logic clk_io_div4_secure;
     logic clk_main_secure;
     logic clk_io_div4_timers;
@@ -59,7 +58,6 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_infra;
     prim_mubi_pkg::mubi4_t usb_infra;
     prim_mubi_pkg::mubi4_t io_infra;
-    prim_mubi_pkg::mubi4_t io_div2_infra;
     prim_mubi_pkg::mubi4_t io_div4_secure;
     prim_mubi_pkg::mubi4_t main_secure;
     prim_mubi_pkg::mubi4_t io_div4_timers;
@@ -69,7 +67,7 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t usb_peri;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 25;
+  parameter int NumOutputClk = 24;
 
 
   typedef struct packed {

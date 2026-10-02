@@ -61,7 +61,7 @@ module rstmgr_bind;
       clk_io_div4_i,
       clk_aon_i,
       clk_usb_i,
-      clk_io_div2_i,
+      clk_io_i,
       clk_io_i,
       clk_io_div4_i
     }),

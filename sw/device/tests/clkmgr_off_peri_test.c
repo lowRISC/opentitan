@@ -31,9 +31,12 @@ static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
 /**
  * The peripherals used to test when the peri clocks are disabled are
  * bit 0: clk_io_div4_peri: uart0
- * bit 1: clk_io_div2_peri: spi_host1
+ * bit 1: clk_io_div2_peri: none (only clocks spi_device's scan clock)
  * bit 2: clk_io_peri: spi_host0
  * bit 3: clk_usb_peri: usbdev
+ *
+ * Clocks without a peripheral are skipped, since no CSR access can show that
+ * they are disabled.
  */
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -52,7 +55,6 @@ enum { kPcSpread = 8 * 4 };
 
 static dif_aon_timer_t aon_timer;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
@@ -66,24 +68,38 @@ OT_NOINLINE static void spi_host0_csr_access(void) {
   CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
 }
 
-OT_NOINLINE static void spi_host1_csr_access(void) {
-  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host1, true));
-}
-
 OT_NOINLINE static void usbdev_csr_access(void) {
   dif_usbdev_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
 }
 
 peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
-    {"uart0", uart0_csr_access,
-     TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET},
-    {"spi_host1", spi_host1_csr_access,
-     TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_CONTROL_REG_OFFSET},
-    {"spi_host0", spi_host0_csr_access,
-     TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET},
-    {"usbdev", usbdev_csr_access,
-     TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
+    [kTopEarlgreyGateableClocksIoDiv4Peri] = {"uart0", uart0_csr_access,
+                                              TOP_EARLGREY_UART0_BASE_ADDR +
+                                                  UART_INTR_STATE_REG_OFFSET},
+    [kTopEarlgreyGateableClocksIoDiv2Peri] = {"none", NULL, 0},
+    [kTopEarlgreyGateableClocksIoPeri] = {"spi_host0", spi_host0_csr_access,
+                                          TOP_EARLGREY_SPI_HOST0_BASE_ADDR +
+                                              SPI_HOST_INTR_STATE_REG_OFFSET},
+    [kTopEarlgreyGateableClocksUsbPeri] = {
+        "usbdev", usbdev_csr_access,
+        TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
+
+/**
+ * Returns the next clock to test, starting from the clock stored in the
+ * retention SRAM counter and skipping clocks without a peripheral.
+ */
+static dif_clkmgr_gateable_clock_t next_clock_to_test(void) {
+  dif_clkmgr_gateable_clock_t clock = 0;
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
+  while (clock <= kTopEarlgreyGateableClocksLast &&
+         peri_context[clock].csr_access == NULL) {
+    LOG_INFO("Skipping clock %d, which has no peripheral to test", clock);
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
+  }
+  return clock;
+}
 
 /**
  * Test that disabling a 'gateable' unit's clock causes the unit to become
@@ -151,8 +167,6 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
   CHECK_DIF_OK(dif_usbdev_init(
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 
@@ -216,8 +230,8 @@ bool test_main(void) {
              peri_context[clock].peripheral_name);
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
 
-    if (clock < kTopEarlgreyGateableClocksLast) {
-      CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
+    clock = next_clock_to_test();
+    if (clock <= kTopEarlgreyGateableClocksLast) {
       LOG_INFO("Next clock to test %d", clock);
 
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));

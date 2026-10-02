@@ -14,7 +14,7 @@
     clk_fixed_i: io_div4
     clk_usb_i: usb
     clk_spi_host0_i: io
-    clk_spi_host1_i: io_div2
+    clk_spi_host1_i: io
   }
   clock_group: infra
   reset: rst_main_ni
@@ -42,7 +42,7 @@
     }
     rst_spi_host1_ni:
     {
-      name: lc_io_div2
+      name: lc_io
       domain: Main
     }
   }
@@ -53,7 +53,7 @@
     clk_fixed_i: clkmgr_clocks_i.clk_io_div4_infra
     clk_usb_i: clkmgr_clocks_i.clk_usb_infra
     clk_spi_host0_i: clkmgr_clocks_i.clk_io_infra
-    clk_spi_host1_i: clkmgr_clocks_i.clk_io_div2_infra
+    clk_spi_host1_i: clkmgr_clocks_i.clk_io_infra
   }
   connections:
   {

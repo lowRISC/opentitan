@@ -89,7 +89,6 @@
       lc_states: ["PROD"]
       features: [
         "CLKMGR.ENABLE.IO",
-        "CLKMGR.ENABLE.IO_DIV2",
         "CLKMGR.ENABLE.IO_DIV4",
         "CLKMGR.ENABLE.USB",
       ]
@@ -112,7 +111,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -235,7 +233,6 @@
         "CLKMGR.JITTER.ENABLE",
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -293,7 +290,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -318,7 +314,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -343,7 +338,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
