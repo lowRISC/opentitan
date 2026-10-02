@@ -2356,8 +2356,6 @@ module earlgrey_pd_main #(
     .entropy_src_xht_health_test_window_o(),
     .entropy_src_xht_meta_o(),
     .entropy_src_xht_meta_i(entropy_src_pkg::ENTROPY_SRC_XHT_META_RSP_DEFAULT),
-    .otp_en_entropy_src_fw_read_i(prim_mubi_pkg::MuBi8True),
-    .otp_en_entropy_src_fw_over_i(prim_mubi_pkg::MuBi8True),
     .rng_fips_o(es_rng_fips_o),
     .tl_i(entropy_src_tl_req),
     .tl_o(entropy_src_tl_rsp)

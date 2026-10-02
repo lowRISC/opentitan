@@ -35,9 +35,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   task pre_start();
-    cfg.otp_en_es_fw_read_vif.drive(.val(cfg.otp_en_es_fw_read));
-    cfg.otp_en_es_fw_over_vif.drive(.val(cfg.otp_en_es_fw_over));
-
     if (!uvm_config_db#(virtual entropy_src_cov_if)::get
         (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
       `uvm_fatal(`gfn, $sformatf("Failed to get entropy_src_cov_if from uvm_config_db"))

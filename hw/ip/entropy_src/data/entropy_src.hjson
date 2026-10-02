@@ -131,20 +131,6 @@
       act:     "req",
       package: "entropy_src_pkg",
     }
-    { struct:  "mubi8"
-      type:    "uni"
-      name:    "otp_en_entropy_src_fw_read"
-      act:     "rcv"
-      package: "prim_mubi_pkg"
-      default: "prim_mubi_pkg::MuBi8True"
-    }
-    { struct:  "mubi8"
-      type:    "uni"
-      name:    "otp_en_entropy_src_fw_over"
-      act:     "rcv"
-      package: "prim_mubi_pkg"
-      default: "prim_mubi_pkg::MuBi8True"
-    }
     { struct:  "logic"
       type:    "uni"
       name:    "rng_fips"
@@ -291,9 +277,7 @@
             By default, ENTROPY_SRC routes the generated entropy out of ENTROPY_SRC via the hardware interface for consumption by CSRNG.
             For validation testing, it is possible to instead route the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
 
-            Note that for this to work the `otp_en_entropy_src_fw_read` input from OTP needs to be `kMultiBitBool8True`.
-
-            Further note that when routing entropy to firmware, 1) no entropy is being passed to the hardware interface, and 2) it is possible to optionally bypass the hardware conditioner using !!ENTROPY_CONTROL.ES_TYPE.
+            Note that when routing entropy to firmware, 1) no entropy is being passed to the hardware interface, and 2) it is possible to optionally bypass the hardware conditioner using !!ENTROPY_CONTROL.ES_TYPE.
             '''
     },
     {
@@ -303,8 +287,6 @@
             This can be useful, e.g., for validation testing.
 
             Note that the post-health test entropy bits collected in the observe FIFO continue to flow through the hardware pipeline and may eventually reach the hardware interface.
-
-            Note that for this to work the `otp_en_entropy_src_fw_over` input from OTP needs to be set to `kMultiBitBool8True`.
             '''
     },
     {
@@ -318,8 +300,6 @@
 
             Note that the post-health test entropy bits collected in the observe FIFO do not continue to flow through the hardware pipeline.
             Only entropy bits inserted by firmware through !!FW_OV_WR_DATA may eventually reach the block hardware interface.
-
-            Note that for this feature to work the `otp_en_entropy_src_fw_over` input from OTP needs to be set to `kMultiBitBool8True`.
             '''
     },
   ],
@@ -332,9 +312,6 @@
     }
     { name: "CONFIG.REDUN"
       desc: "Threshold register has an inverted copy to compare against."
-    }
-    { name: "INTERSIG.MUBI"
-      desc: "OTP signal used to enable software access to registers."
     }
     { name: "MAIN_SM.FSM.SPARSE"
       desc: "The ENTROPY_SRC main state machine uses a sparse state encoding."
@@ -503,7 +480,6 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` will enable reading entropy values from the !!ENTROPY_DATA register.
-                This function also requires that the otp_en_entropy_src_fw_read input is set to `kMultiBitBool8True`.
                 '''
           resval: false
         }
@@ -531,7 +507,6 @@
                 When this field is `kMultiBitBool4False`, the generated entropy will be forwarded out of this module to the hardware interface.
                 Setting this field to `kMultiBitBool4True` routes the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
                 Note that for !!ENTROPY_DATA to become readable, also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitBool8True`.
                 '''
           resval: false
         },
@@ -560,7 +535,6 @@
           desc: '''
                 A read of this register provides generated entropy bits to firmware.
                 For this to work also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitBool8True`.
                 '''
         }
       ]
@@ -1233,7 +1207,6 @@
                 In this mode, firmware can monitor the post-health test entropy by reading
                 the observe FIFO (see !!FW_OV_RD_DATA).
                 This includes the entropy bits used for the startup health testing.
-                For this to work, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
 
                 Note that the post-health test entropy bits collected in the observe FIFO continue to flow through the hardware pipeline and may eventually reach the block hardware interface.
                 '''
@@ -1246,7 +1219,6 @@
                 Setting this field to `kMultiBitBool4True` allows firmware to extract entropy bits by reading the observe FIFO (see !!FW_OV_RD_DATA) and insert entropy bits into the entropy flow by writing the !!FW_OV_WR_DATA register.
                 This is useful e.g. for performing additional health tests and/or firmware-based conditioning.
                 For this to work, !!FW_OV_CONTROL.FW_OV_MODE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
 
                 Firmware can use the hardware conditioning for the inserted entropy bits (see !!FW_OV_SHA3_START).
 
@@ -1331,7 +1303,6 @@
           desc: '''
                 A read of this register pops and returns the top of the observe FIFO.
                 For this to work, the !!FW_OV_CONTROL.FW_OV_MODE field needs to be set to `kMultiBitBool4True`
-                In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
                 Reading this register while the observe FIFO is empty results in a fatal error with !!ERR_CODE.FIFO_READ_ERR and !!ERR_CODE.SFIFO_OBSERVE_ERR going high.
                 '''
         }
@@ -1348,7 +1319,6 @@
           desc: '''
                 A write to this register will insert entropy back into the entropy source module flow.
                 For this to work, both the !!FW_OV_CONTROL.FW_OV_MODE and !!FW_OV_CONTROL.FW_OV_ENTROPY_INSERT fields need to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
                 '''
         }
       ]

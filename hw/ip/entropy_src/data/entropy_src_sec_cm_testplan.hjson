@@ -60,15 +60,6 @@
       tests: ["entropy_src_rng"]
     }
     {
-      name: sec_cm_intersig_mubi
-      desc: '''
-            Verify the countermeasure(s) INTERSIG.MUBI.
-            Verify that unless the otp_en_entropy_src_fw_read or otp_en_entropy_src_fw_over input signals are equal to MuBi8True the DUT doesn't allow reading entropy from the ENTROPY_DATA register or from the FW_OV_RD_DATA register, respectively.
-            '''
-      stage: V2S
-      tests: ["entropy_src_rng", "entropy_src_fw_ov"]
-    }
-    {
       name: sec_cm_main_sm_fsm_sparse
       desc: '''
             Verify the countermeasure(s) MAIN_SM.FSM.SPARSE.

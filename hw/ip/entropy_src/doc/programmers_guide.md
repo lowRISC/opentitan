@@ -33,16 +33,14 @@ For more details on the individual modes, refer to [Theory of Operations](theory
 ### Firmware Override - Observe
 
 Using the firmware override function, firmware can observe post-health test entropy bits (including entropy bits used for startup health testing) by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register (observe FIFO), e.g., for validation testing.
-To this end, the `otp_en_entropy_src_fw_over` input needs to be set to `kMultiBitBool8True`.
-In addition, firmware has to set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
+To this end, firmware has to set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 
 Note that the post-health test entropy bits collected in the observe FIFO continue to flow through the hardware pipeline and may eventually reach the block hardware interface.
 
 ### Firmware Override - Extract & Insert
 
 Using the firmware override function, firmware can extract entropy bits by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register (observe FIFO), e.g., for performing additional health tests and/or firmware-based conditioning, and then insert entropy bits back into the entropy flow by writing the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register.
-To this end, the `otp_en_entropy_src_fw_over` input needs to be set to `kMultiBitBool8True`.
-In addition, firmware has to:
+To this end, firmware has to:
 1. Set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 1. Set the `FW_OV_ENTROPY_INSERT` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 
@@ -79,8 +77,7 @@ Note that in bypass or boot-time mode, health test window sizes other than 384 b
 ### Reading Entropy Output
 
 Firmware can read the entropy output of the ENTROPY_SRC block from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-To this end, the `otp_en_entropy_src_fw_read` input needs to be set to `kMultiBitBool8True`.
-In addition, firmware has to:
+To this end, firmware has to:
 1. Set the `ENTROPY_DATA_REG_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 1. Set the `ES_ROUTE` field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register to `kMultiBitBool4True`.
 

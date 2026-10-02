@@ -25,14 +25,11 @@ module tb;
   // triggering an assertion.
   wire csrng_rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [7:0]                    otp_en_es_fw_read, otp_en_es_fw_over;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if csrng_rst_if(.clk(), .rst_n(csrng_rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if#(8) otp_en_es_fw_read_if(otp_en_es_fw_read);
-  pins_if#(8) otp_en_es_fw_over_if(otp_en_es_fw_over);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(`RNG_BUS_WIDTH))
       rng_if(.clk(clk), .rst_n(csrng_rst_n));
@@ -55,8 +52,6 @@ module tb;
     .tl_i                         (tl_if.h2d  ),
     .tl_o                         (tl_if.d2h  ),
 
-    .otp_en_entropy_src_fw_read_i (prim_mubi_pkg::mubi8_t'(otp_en_es_fw_read)),
-    .otp_en_entropy_src_fw_over_i (prim_mubi_pkg::mubi8_t'(otp_en_es_fw_over)),
     .rng_fips_o                   (/* TODO(#18842) */),
 
     .entropy_src_hw_if_o          ({csrng_if.ack,
@@ -134,10 +129,6 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual entropy_src_cov_if)::set(null, "*.env", "entropy_src_cov_if",
         dut.u_entropy_src_cov_if);
-    uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_read_vif",
-        otp_en_es_fw_read_if);
-    uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_over_vif",
-        otp_en_es_fw_over_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::set(null, "*.env",
         "precon_fifo_vif", dut.u_entropy_src_core.u_prim_packer_fifo_precon.u_fifo_exc_if);
