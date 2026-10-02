@@ -15,6 +15,7 @@ PYTHON_REQS_OUT_FILE="$REPO_TOP/python-requirements.txt"
 uv pip compile \
   --allow-unsafe \
   --generate-hashes \
+  --python-version 3.10 \
   --no-annotate \
   --no-header \
   "$PYTHON_REQS_IN_FILE" \

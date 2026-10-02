@@ -53,7 +53,7 @@
     flake-utils.lib.eachDefaultSystem (system: let
       inherit (nixpkgs) lib;
       pkgs = nixpkgs.legacyPackages.${system};
-      # Some pins predate Python 3.12 support (libcst 1.1.0, mypy 0.971).
+      # Oldest Python in nixpkgs. Bazel and CI use 3.10, which nixpkgs dropped.
       python = pkgs.python311;
 
       workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};
