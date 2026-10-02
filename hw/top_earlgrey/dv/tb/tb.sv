@@ -84,7 +84,7 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(ast_base_clks.clk_aon),
+    .clk(top_earlgrey.earlgrey_pd_aon.ast_clk_src_aon),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)

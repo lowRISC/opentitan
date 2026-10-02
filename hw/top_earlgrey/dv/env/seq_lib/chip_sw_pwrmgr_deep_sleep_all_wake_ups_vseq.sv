@@ -6,8 +6,8 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq)
   `uvm_object_new
 
-  localparam string ADC_CHANNEL_OUT_HDL_PATH = "tb.dut.u_ast.u_ast_part_secondary.adc_o.data[9:0]";
-  localparam string ADC_CHANNEL_IN_SEL_HDL_PATH = "tb.dut.u_ast.u_ast_part_secondary.adc_i.channel_sel[1:0]";
+  localparam string ADC_CHANNEL_OUT_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.adc_o.data[9:0]";
+  localparam string ADC_CHANNEL_IN_SEL_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.adc_i.channel_sel[1:0]";
 
   event adc_valid_rising_edge_event;
   event adc_channel1_event;

@@ -49,6 +49,19 @@ module top_${top["name"]} #(
     outgoing_lpg_cg_en_englishbreakfast,
     outgoing_lpg_rst_en_englishbreakfast
   };
+% endif\
+
+  // Clockmgr and rstmgr info from AON to MAIN
+  // TODO: Manual wiring due to topgen limtation that signals defined as 'top' in the hjson are
+  //       local to the PD the IP is in.
+  clkmgr_pkg::clkmgr_out_t    clkmgr_clocks;
+  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_cg_en;
+  rstmgr_pkg::rstmgr_out_t    rstmgr_resets;
+  rstmgr_pkg::rstmgr_rst_en_t rstmgr_rst_en;
+
+% if feature_info["ast_is_internal"]:
+  // Expose scan clock to padring
+  assign padring_scan_clk_o = ast_clk_src_sys;
 % endif
 
 % for pd in reversed(top["power"]["domains"]):
