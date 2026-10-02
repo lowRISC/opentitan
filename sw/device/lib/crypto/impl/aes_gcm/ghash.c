@@ -276,6 +276,34 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
 }
 
 /**
+ * Overwrite a GHASH block with random data; used as a cleanup guard.
+ *
+ * @param block GHASH block to shred.
+ */
+static void ghash_block_shred(ghash_block_t *block) {
+  hardened_memshred(block->data, kGhashBlockNumWords);
+}
+
+/**
+ * Overwrite a GHASH product table with random data; used as a cleanup guard.
+ *
+ * @param tbl GHASH product table to shred.
+ */
+static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
+  hardened_memshred((*tbl)[0].data, 16 * kGhashBlockNumWords);
+}
+
+/**
+ * Overwrite a GHASH context with random data; used as a cleanup guard.
+ *
+ * @param ctx GHASH context to shred.
+ */
+static void ghash_context_shred(ghash_context_t *ctx) {
+  hardened_memshred((uint32_t *)ctx,
+                    sizeof(ghash_context_t) / sizeof(uint32_t));
+}
+
+/**
  * Refreshes the randomness used to mask the GHASH subkey tables (tbl0 and
  * tbl1).
  *
@@ -288,11 +316,11 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
   HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
                     kHardenedBoolTrue);
 
-  uint32_t delta_h[kGhashBlockNumWords];
-  HARDENED_TRY(hardened_memshred(delta_h, kGhashBlockNumWords));
+  ghash_block_t delta_h __attribute__((cleanup(ghash_block_shred)));
+  HARDENED_TRY(hardened_memshred(delta_h.data, kGhashBlockNumWords));
 
-  ghash_block_t tbl_delta[16];
-  HARDENED_TRY(ghash_init_subkey(delta_h, tbl_delta));
+  ghash_block_t tbl_delta[16] __attribute__((cleanup(ghash_table_shred)));
+  HARDENED_TRY(ghash_init_subkey(delta_h.data, tbl_delta));
 
   // Update tbl0 and tbl1 with tbl_delta.
   for (size_t i = 0; i < 16; ++i) {
@@ -302,13 +330,13 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
 
   // Update correction_term0 and correction_term1 (both shifted by S0 *
   // delta_h).
-  ghash_block_t s0_delta =
+  ghash_block_t s0_delta __attribute__((cleanup(ghash_block_shred))) =
       galois_mul_state_key(ctx->enc_initial_counter_block0, tbl_delta);
   block_xor(&ctx->correction_term0, &s0_delta, &ctx->correction_term0);
   block_xor(&ctx->correction_term1, &s0_delta, &ctx->correction_term1);
 
   // Update correction_term1_init (shifted by S1 * delta_h).
-  ghash_block_t s1_delta =
+  ghash_block_t s1_delta __attribute__((cleanup(ghash_block_shred))) =
       galois_mul_state_key(ctx->enc_initial_counter_block1, tbl_delta);
   block_xor(&ctx->correction_term1_init, &s1_delta,
             &ctx->correction_term1_init);
@@ -328,8 +356,8 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
  */
 static status_t ghash_process_block(ghash_context_t *ctx,
                                     ghash_block_t *block) {
-  ghash_block_t s0_tmp;
-  ghash_block_t s1_tmp;
+  ghash_block_t s0_tmp __attribute__((cleanup(ghash_block_shred)));
+  ghash_block_t s1_tmp __attribute__((cleanup(ghash_block_shred)));
 
   // Periodically refresh the subkey table mask every 64 blocks to limit
   // side-channel DPA/CPA trace accumulation on long messages.
@@ -371,7 +399,7 @@ static status_t ghash_process_block(ghash_context_t *ctx,
   } else {
     // Process share 0.
     // tmp = (share0+TN-1)+share1
-    ghash_block_t tmp;
+    ghash_block_t tmp __attribute__((cleanup(ghash_block_shred)));
     hardened_memcpy(tmp.data, block->data, kGhashBlockNumWords);
     hardened_xor_in_place(tmp.data, ctx->state0.data, kGhashBlockNumWords);
     hardened_xor_in_place(tmp.data, ctx->state1.data, kGhashBlockNumWords);
@@ -466,7 +494,7 @@ status_t ghash_update(ghash_context_t *ctx,
 status_t ghash_update_redundant(ghash_context_t *ctx,
                                 const otcrypto_const_byte_buf_t *input) {
   // Copy ctx.
-  ghash_context_t ctx_redundant;
+  ghash_context_t ctx_redundant __attribute__((cleanup(ghash_context_shred)));
   randomized_bytecopy(&ctx_redundant, ctx, sizeof(ctx_redundant));
 
   HARDENED_TRY(ghash_update(ctx, input));
@@ -484,9 +512,6 @@ status_t ghash_update_redundant(ghash_context_t *ctx,
       consttime_memeq_byte(diff0.data, diff1.data, kGhashBlockNumBytes),
       kHardenedBoolTrue);
 
-  hardened_memshred((uint32_t *)&ctx_redundant,
-                    sizeof(ctx_redundant) / sizeof(uint32_t));
-
   return OTCRYPTO_OK;
 }
 
@@ -494,16 +519,17 @@ status_t ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
   // correction_term0 = S0 * (H0 + 1).
-  ghash_block_t s0;
+  ghash_block_t s0 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s0.data, enc_initial_counter_block0, kGhashBlockNumWords);
-  ghash_block_t mul_tmp = galois_mul_state_key(s0, ctx->tbl0);
+  ghash_block_t mul_tmp __attribute__((cleanup(ghash_block_shred))) =
+      galois_mul_state_key(s0, ctx->tbl0);
   block_xor(&mul_tmp, &s0, &ctx->correction_term0);
 
   // correction_term1 = S0 * H1.
   ctx->correction_term1 = galois_mul_state_key(s0, ctx->tbl1);
 
   // correction_term1_init = S1 * H1.
-  ghash_block_t s1;
+  ghash_block_t s1 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s1.data, enc_initial_counter_block1, kGhashBlockNumWords);
   ctx->correction_term1_init = galois_mul_state_key(s1, ctx->tbl1);
 
