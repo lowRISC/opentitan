@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from itertools import chain
 from ipgen.clkmgr_gen import get_rg_srcs
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
@@ -313,11 +312,11 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       "measure_ctrl_regwen": begin
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
-% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+% for clk in sorted(rg_srcs):
       "${clk}_meas_ctrl_en": begin
       end
 % endfor
-% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+% for clk in sorted(rg_srcs):
       "${clk}_meas_ctrl_shadowed": begin
       end
 % endfor

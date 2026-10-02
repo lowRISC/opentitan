@@ -912,7 +912,7 @@ module earlgrey_pd_main #(
   assign lpg_cg_en[7] = clkmgr_cg_en_i.io_peri;
   assign lpg_rst_en[7] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
   // peri_spi_host1_Main
-  assign lpg_cg_en[8] = clkmgr_cg_en_i.io_div2_peri;
+  assign lpg_cg_en[8] = clkmgr_cg_en_i.io_peri;
   assign lpg_rst_en[8] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainMainSel];
   // peri_usb_Main
   assign lpg_cg_en[9] = clkmgr_cg_en_i.usb_peri;
@@ -970,7 +970,7 @@ module earlgrey_pd_main #(
   assign unused_cg_en[1] = clkmgr_cg_en_i.aon_powerup;
   assign unused_cg_en[2] = clkmgr_cg_en_i.aon_secure;
   assign unused_cg_en[3] = clkmgr_cg_en_i.aon_timers;
-  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div2_infra;
+  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div2_peri;
   assign unused_cg_en[5] = clkmgr_cg_en_i.io_div2_powerup;
   assign unused_cg_en[6] = clkmgr_cg_en_i.io_infra;
   assign unused_cg_en[7] = clkmgr_cg_en_i.io_powerup;
@@ -1020,16 +1020,15 @@ module earlgrey_pd_main #(
 // Tie off unused clocks and resets
 //VCS coverage off
 // pragma coverage off
-  logic [8:0] unused_clocks;
+  logic [7:0] unused_clocks;
   assign unused_clocks[0] = clkmgr_clocks_i.clk_aon_secure;
   assign unused_clocks[1] = clkmgr_clocks_i.clk_aon_timers;
-  assign unused_clocks[2] = clkmgr_clocks_i.clk_io_div2_infra;
-  assign unused_clocks[3] = clkmgr_clocks_i.clk_io_div2_powerup;
-  assign unused_clocks[4] = clkmgr_clocks_i.clk_io_infra;
-  assign unused_clocks[5] = clkmgr_clocks_i.clk_io_powerup;
-  assign unused_clocks[6] = clkmgr_clocks_i.clk_main_powerup;
-  assign unused_clocks[7] = clkmgr_clocks_i.clk_usb_infra;
-  assign unused_clocks[8] = clkmgr_clocks_i.clk_usb_powerup;
+  assign unused_clocks[2] = clkmgr_clocks_i.clk_io_div2_powerup;
+  assign unused_clocks[3] = clkmgr_clocks_i.clk_io_infra;
+  assign unused_clocks[4] = clkmgr_clocks_i.clk_io_powerup;
+  assign unused_clocks[5] = clkmgr_clocks_i.clk_main_powerup;
+  assign unused_clocks[6] = clkmgr_clocks_i.clk_usb_infra;
+  assign unused_clocks[7] = clkmgr_clocks_i.clk_usb_powerup;
 
   logic [31:0] unused_resets;
   assign unused_resets[0] = rstmgr_resets_i.rst_i2c0_n[rstmgr_pkg::DomainAonSel];
@@ -1711,7 +1710,7 @@ module earlgrey_pd_main #(
     .NumCS(SpiHost1NumCS)
   ) u_spi_host1 (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks_i.clk_io_div2_peri),
+    .clk_i(clkmgr_clocks_i.clk_io_peri),
     .rst_ni(rstmgr_resets_i.rst_spi_host1_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
@@ -2881,12 +2880,12 @@ module earlgrey_pd_main #(
     .clk_fixed_i(clkmgr_clocks_i.clk_io_div4_infra),
     .clk_usb_i(clkmgr_clocks_i.clk_usb_infra),
     .clk_spi_host0_i(clkmgr_clocks_i.clk_io_infra),
-    .clk_spi_host1_i(clkmgr_clocks_i.clk_io_div2_infra),
+    .clk_spi_host1_i(clkmgr_clocks_i.clk_io_infra),
     .rst_main_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_fixed_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
     .rst_usb_ni(rstmgr_resets_i.rst_lc_usb_n[rstmgr_pkg::DomainMainSel]),
     .rst_spi_host0_ni(rstmgr_resets_i.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
-    .rst_spi_host1_ni(rstmgr_resets_i.rst_lc_io_div2_n[rstmgr_pkg::DomainMainSel]),
+    .rst_spi_host1_ni(rstmgr_resets_i.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
 
     // port: tl_rv_core_ibex__corei
     .tl_rv_core_ibex__corei_i(main_tl_rv_core_ibex__corei_req),

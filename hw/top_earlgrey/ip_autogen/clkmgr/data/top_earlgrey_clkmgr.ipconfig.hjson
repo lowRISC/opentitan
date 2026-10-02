@@ -164,11 +164,6 @@
           src_name: io
           endpoint_ip: main
         }
-        clk_io_div2_infra:
-        {
-          src_name: io_div2
-          endpoint_ip: main
-        }
         clk_io_div4_secure:
         {
           src_name: io_div4

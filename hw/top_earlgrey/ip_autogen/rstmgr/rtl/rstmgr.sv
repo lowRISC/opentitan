@@ -649,7 +649,7 @@ module rstmgr
   assign shadow_fsm_errs[7] = '0;
 
   // Generating resets for lc_io_div2
-  // Power Domains: ['Aon', 'Main']
+  // Power Domains: ['Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -675,30 +675,10 @@ module rstmgr
     u_daon_lc_io_div2.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay),
-    .SwRstReq(1'b0)
-  ) u_dmain_lc_io_div2 (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_div2_i),
-    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
-    .sw_rst_req_ni(1'b1),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_en_o(rst_en_o.lc_io_div2[DomainMainSel]),
-    .leaf_rst_o(resets_o.rst_lc_io_div2_n[DomainMainSel]),
-    .err_o(cnsty_chk_errs[8][DomainMainSel]),
-    .fsm_err_o(fsm_errs[8][DomainMainSel])
-  );
-
-  if (SecCheck) begin : gen_dmain_lc_io_div2_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    DMainLcIoDiv2FsmCheck_A,
-    u_dmain_lc_io_div2.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
+  assign resets_o.rst_lc_io_div2_n[DomainMainSel] = '0;
+  assign cnsty_chk_errs[8][DomainMainSel] = '0;
+  assign fsm_errs[8][DomainMainSel] = '0;
+  assign rst_en_o.lc_io_div2[DomainMainSel] = MuBi4True;
   assign shadow_cnsty_chk_errs[8] = '0;
   assign shadow_fsm_errs[8] = '0;
 
@@ -982,7 +962,7 @@ module rstmgr
   ) u_dmain_spi_host1 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div2_i),
+    .leaf_clk_i(clk_io_i),
     .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_HOST1].q),
     .scan_rst_ni,

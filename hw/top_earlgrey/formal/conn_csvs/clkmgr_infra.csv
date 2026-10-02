@@ -34,5 +34,5 @@ CONNECTION, CLKMGR_INFRA_CLK_SYSRST_CTRL_CLK,     top_earlgrey.earlgrey_pd_aon.u
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_MAIN_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_main_infra,    top_earlgrey.earlgrey_pd_main.u_xbar_main, clk_main_i
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_FIXED_CLK,     top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_infra, top_earlgrey.earlgrey_pd_main.u_xbar_main, clk_fixed_i
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_SPI_HOST0_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_infra,      top_earlgrey.earlgrey_pd_main.u_xbar_main, clk_spi_host0_i
-CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_SPI_HOST1_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_infra, top_earlgrey.earlgrey_pd_main.u_xbar_main, clk_spi_host1_i
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_SPI_HOST1_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_infra, top_earlgrey.earlgrey_pd_main.u_xbar_main, clk_spi_host1_i
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_PERI_PERI_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_infra, top_earlgrey.earlgrey_pd_main.u_xbar_peri, clk_peri_i

@@ -38,6 +38,9 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 These clocks are then divided down and distributed to the rest of the system.
 See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
 
+In the low-speed external clock mode and during the life cycle clock bypass, the `io` clock drops to 48 MHz, while the clock manager steps down its dividers so that `io_div2` and `io_div4` keep their nominal frequencies (see [clock manager](../../ip_autogen/clkmgr/doc/theory_of_operation.md#clock-frequency-summary)).
+Peripherals on `io`, such as SPI_HOST0 and SPI_HOST1, therefore run at half their nominal frequency in these modes, and software must account for this when it configures their clock dividers.
+
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.
 - vcmain_pok: The main operating domain of the system is ready.

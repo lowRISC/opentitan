@@ -95,12 +95,10 @@ module tb;
         u_reg.u_recov_err_code_usb_timeout_err.qs,
         u_reg.u_recov_err_code_main_timeout_err.qs,
         u_reg.u_recov_err_code_io_div4_timeout_err.qs,
-        u_reg.u_recov_err_code_io_div2_timeout_err.qs,
         u_reg.u_recov_err_code_io_timeout_err.qs,
         u_reg.u_recov_err_code_usb_measure_err.qs,
         u_reg.u_recov_err_code_main_measure_err.qs,
         u_reg.u_recov_err_code_io_div4_measure_err.qs,
-        u_reg.u_recov_err_code_io_div2_measure_err.qs,
         u_reg.u_recov_err_code_io_measure_err.qs,
         u_reg.u_recov_err_code_shadow_update_err.qs
     }),

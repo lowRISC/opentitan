@@ -91,5 +91,5 @@ CONNECTION, RSTMGR_LC_D0_XBAR_MAIN_RST_MAIN_NI, top_earlgrey.earlgrey_pd_aon.u_r
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_XBAR_MAIN_RST_FIXED_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_main, rst_fixed_ni
 CONNECTION, RSTMGR_LC_USB_D0_XBAR_MAIN_RST_USB_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_usb_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_main, rst_usb_ni
 CONNECTION, RSTMGR_LC_IO_D0_XBAR_MAIN_RST_SPI_HOST0_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_main, rst_spi_host0_ni
-CONNECTION, RSTMGR_LC_IO_DIV2_D0_XBAR_MAIN_RST_SPI_HOST1_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div2_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_main, rst_spi_host1_ni
+CONNECTION, RSTMGR_LC_IO_D0_XBAR_MAIN_RST_SPI_HOST1_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_main, rst_spi_host1_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_XBAR_PERI_RST_PERI_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_xbar_peri, rst_peri_ni

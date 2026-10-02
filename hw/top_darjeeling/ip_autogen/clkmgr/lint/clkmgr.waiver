@@ -19,3 +19,8 @@ waive -rules OUTPUT_NOT_DRIVEN -location {prim_clock_gating.sv} -regexp {.*} \
 # clock mux errors
 waive -rules CLOCK_MUX -location {clkmgr.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "All divided clocks terminate with a scan mux"
+
+# unused root clocks
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {clkmgr.sv} \
+      -regexp {(Signal|Net) 'clk_io_div2_root' is not read from in module 'clkmgr'} \
+      -comment "In Earl Grey, clk_io_div2 only has software-gated consumers, which use clk_io_div2_en but not the root-gated clock"

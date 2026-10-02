@@ -49,7 +49,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \
@@ -83,7 +82,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \

@@ -32,8 +32,6 @@ wire clk_io;
 clk_rst_if clk_rst_if_io(.clk(clk_io), .rst_n(rst_n));
 wire clk_usb;
 clk_rst_if clk_rst_if_usb(.clk(clk_usb), .rst_n(rst_n));
-wire clk_io_div2;
-clk_rst_if clk_rst_if_io_div2(.clk(clk_io_div2), .rst_n(rst_n));
 wire clk_io_div4;
 clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
@@ -46,7 +44,7 @@ tl_if rv_dm__mem_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
-tl_if spi_host1_tl_if(clk_io_div2, rst_n);
+tl_if spi_host1_tl_if(clk_io, rst_n);
 tl_if usbdev_tl_if(clk_usb, rst_n);
 tl_if rram_ctrl__core_tl_if(clk_main, rst_n);
 tl_if rram_macro__prim_tl_if(clk_main, rst_n);
@@ -110,7 +108,7 @@ initial begin
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_fixed_i = clk_io_div4;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_usb_i = clk_usb;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_spi_host0_i = clk_io;
-    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_spi_host1_i = clk_io_div2;
+    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_spi_host1_i = clk_io;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_peri.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
@@ -191,8 +189,6 @@ initial begin
     clk_rst_if_io.set_freq_khz(96000000 / 1000);
     clk_rst_if_usb.set_active(.drive_rst_n_val(0));
     clk_rst_if_usb.set_freq_khz(48000000 / 1000);
-    clk_rst_if_io_div2.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div2.set_freq_khz(48000000 / 1000);
     clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
     clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
 

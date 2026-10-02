@@ -88,9 +88,8 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       if (cause_timeout) begin
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
-        if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4}) begin
+        if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv4}) begin
           expected_recov_timeout_err[ClkMesrIo] = 1;
-          expected_recov_timeout_err[ClkMesrIoDiv2] = 1;
           expected_recov_timeout_err[ClkMesrIoDiv4] = 1;
         end else begin
           expected_recov_timeout_err[clk_mesr_timeout] = 1;

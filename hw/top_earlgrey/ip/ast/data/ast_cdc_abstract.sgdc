@@ -315,7 +315,6 @@ abstract_port -ports "sns_clks_i[clk_io_div4_timers]" -ignore -comment "hanging 
 abstract_port -ports "sns_clks_i[clk_usb_secure]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_secure]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div4_secure]" -ignore -comment "hanging path"
-abstract_port -ports "sns_clks_i[clk_io_div2_infra]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_infra]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_main_infra]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div4_infra]" -ignore -comment "hanging path"

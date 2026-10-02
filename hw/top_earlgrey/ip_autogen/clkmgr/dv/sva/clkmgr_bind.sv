@@ -182,15 +182,6 @@ module clkmgr_bind;
   );
 
   // Non-AON clock gating enables with no software control.
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_infra (
-    .clk(clk_io_div2),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(clk_io_div2_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.io_div2_infra == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_infra (
     .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
@@ -341,13 +332,6 @@ module clkmgr_bind;
     .rst_n(rst_ni),
     .calib_rdy(calib_rdy_i),
     .meas_ctrl_en(u_reg.io_meas_ctrl_en_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div2_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_div2_meas_ctrl_en_qs)
   );
 
   bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div4_ctrl_en_sva_if (

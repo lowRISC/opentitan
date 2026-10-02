@@ -188,6 +188,9 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
   dt_clkmgr_t clkmgr_dt;
   TRY(dif_clkmgr_get_dt(clkmgr, &clkmgr_dt));
 
+#if defined(OPENTITAN_IS_EARLGREY)
+  expected_count_info_t low_speed_io_count_info;
+#endif
   for (size_t clk = 0; clk < dt_clkmgr_measurable_clock_count(clkmgr_dt);
        ++clk) {
     const expected_count_info_t *count_info;
@@ -203,17 +206,23 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       if (dt_actual_clk == kDtClockMain) {
         dt_actual_clk = kDtClockIo;
       }
-      // If software requests a low speed external clock, internal dividers are
-      // stepped down so that divide-by-2 and divide-by-4 remain at their
-      // nominal frequencies. On the other hand, the divide-by-1 (i.e. the IO
-      // clock) becomes equal to divide-by-2.
-      if (low_speed && dt_actual_clk == kDtClockIo) {
-        dt_actual_clk = kDtClockIoDiv2;
-      }
       CHECK(dt_clk_to_meas_clk[dt_actual_clk] <
                 dt_clkmgr_measurable_clock_count(clkmgr_dt),
             "this clock is not measurable!");
       count_info = &kNoJitterCountInfos[dt_clk_to_meas_clk[dt_actual_clk]];
+      // If software requests a low speed external clock, internal dividers are
+      // stepped down so that divide-by-2 and divide-by-4 remain at their
+      // nominal frequencies. On the other hand, the divide-by-1 (i.e. the IO
+      // clock) becomes equal to divide-by-2. The divide-by-2 clock is not
+      // measured, so derive its expected count from the nominal IO count.
+      if (low_speed && dt_actual_clk == kDtClockIo) {
+        uint32_t io_div2_count = (count_info->count + 1) / 2;
+        low_speed_io_count_info =
+            (expected_count_info_t){.count = io_div2_count - 1,
+                                    .variability = get_count_variability(
+                                        io_div2_count, kVariabilityPercentage)};
+        count_info = &low_speed_io_count_info;
+      }
 #elif defined(OPENTITAN_IS_DARJEELING)
       TRY_CHECK(false, "Darjeeling has no external clock");
       OT_UNREACHABLE();
