@@ -135,6 +135,32 @@ module ${top["name"]}_pd_${domain.lower()} #(
 
 <%include file="/toplevel_snippets/cio_assigns.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=domain" />\
 
+  // Tie-off unused clock gate signal
+  logic unused_cg_en_ast_ext;
+  assign unused_cg_en_ast_ext = ^cg_en_ast_ext_i;
+
+<%
+  # (struct field, flat inter-signal base name)
+  # for every memory-cfg consumer of this PD.
+  mem_cfg_consumers = [
+    ('otbn_imem',                'otbn_ram_cfg_imem'),
+    ('otbn_dmem',                'otbn_ram_cfg_dmem'),
+    ('i2c0',                     'i2c0_ram_cfg'),
+    ('i2c1',                     'i2c1_ram_cfg'),
+    ('i2c2',                     'i2c2_ram_cfg'),
+    ('usbdev_ram',               'usbdev_ram_cfg'),
+    ('rv_core_ibex_icache_tag',  'rv_core_ibex_ram_cfg_icache_tag'),
+    ('rv_core_ibex_icache_data', 'rv_core_ibex_ram_cfg_icache_data'),
+    ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg'),
+    ('sram_ctrl_sec',            'sram_ctrl_sec_ram_cfg'),
+    ('sram_ctrl_meta',           'sram_ctrl_meta_ram_cfg'),
+    ('spi_device_sys2spi',       'spi_device_ram_cfg_sys2spi'),
+    ('spi_device_spi2sys',       'spi_device_ram_cfg_spi2sys'),
+    ('rom_ctrl_rom',             'rom_ctrl_rom_cfg'),
+  ]
+%>\
+<%include file="/toplevel_snippets/mem_cfg_wiring.tpl" args="mem_cfg_consumers=mem_cfg_consumers" />\
+
 % if lib.find_module(top["module"], "clkmgr").get("domain") == domain:
   // Make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
