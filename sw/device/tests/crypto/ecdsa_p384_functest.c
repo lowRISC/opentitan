@@ -126,6 +126,15 @@ static status_t sign_then_verify_test(void) {
       &public_key, msg_digest, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
+  // Test hash_sign_verify and hash_verify.
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_sign_verify(
+      &private_key, &public_key, kOtcryptoHashModeSha384, &msg, &sig_buf));
+  verificationResult = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_verify(
+      &public_key, kOtcryptoHashModeSha384, &msg, &const_sig_buf,
+      &verificationResult));
+  TRY_CHECK(verificationResult == kHardenedBoolTrue);
+
   return OK_STATUS();
 }
 

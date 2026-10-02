@@ -100,6 +100,58 @@ TEST(IntegrityTest, BufferCreationAndCheck) {
   buf.len = data.size() + 1;
 
   EXPECT_EQ(otcrypto_check_byte_buf(&buf), kHardenedBoolFalse);
+
+  otcrypto_const_byte_buf_t const_byte_buf =
+      otcrypto_make_const_byte_buf(data.data(), data.size());
+  EXPECT_EQ(otcrypto_check_const_byte_buf(&const_byte_buf), kHardenedBoolTrue);
+  const_byte_buf.ptr_checksum ^= 1;
+  EXPECT_EQ(otcrypto_check_const_byte_buf(&const_byte_buf), kHardenedBoolFalse);
+
+  std::array<uint32_t, 4> word_data = {0};
+  otcrypto_word32_buf_t word_buf =
+      otcrypto_make_word32_buf(word_data.data(), word_data.size());
+  EXPECT_EQ(otcrypto_check_word32_buf(&word_buf), kHardenedBoolTrue);
+  word_buf.len = word_data.size() + 1;
+  EXPECT_EQ(otcrypto_check_word32_buf(&word_buf), kHardenedBoolFalse);
+
+  otcrypto_const_word32_buf_t const_word_buf =
+      otcrypto_make_const_word32_buf(word_data.data(), word_data.size());
+  EXPECT_EQ(otcrypto_check_const_word32_buf(&const_word_buf),
+            kHardenedBoolTrue);
+  const_word_buf.ptr_checksum ^= 1;
+  EXPECT_EQ(otcrypto_check_const_word32_buf(&const_word_buf),
+            kHardenedBoolFalse);
+}
+
+TEST(IntegrityTest, BlindedKeyBadVersion) {
+  std::array<uint32_t, 8> keyblob = {0x11111111, 0x22222222, 0x33333333,
+                                     0x44444444};
+  otcrypto_key_config_t bad_version_config = kValidConfig;
+  bad_version_config.version = static_cast<otcrypto_lib_version_t>(0);
+  otcrypto_blinded_key_t key = {
+      .config = bad_version_config,
+      .keyblob_length =
+          static_cast<uint32_t>(keyblob.size() * sizeof(uint32_t)),
+      .keyblob = keyblob.data(),
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  EXPECT_EQ(otcrypto_integrity_blinded_key_check(&key), kHardenedBoolFalse);
+}
+
+TEST(IntegrityTest, BuildInfoAndVersionDecode) {
+  uint32_t version = 0;
+  bool released = false;
+  uint32_t hash_low = 0;
+  uint32_t hash_high = 0;
+  EXPECT_EQ(
+      otcrypto_build_info(&version, &released, &hash_low, &hash_high).value,
+      kOtcryptoStatusValueOk);
+  EXPECT_EQ(version, static_cast<uint32_t>(otcrypto_lib_version()));
+
+  uint32_t major = 0, minor = 0, patch = 0;
+  otcrypto_version_decode(version, &major, &minor, &patch);
+  EXPECT_GT(major + minor + patch, 0u);
 }
 
 }  // namespace

@@ -21,6 +21,8 @@ static inline uint32_t otbn_base(void) {
 
 status_t store_state(const crypto_state_t *state) {
   if (state == NULL) {
+    // COVERAGE (SW ERR) Internal callers always provide a non-null state
+    // pointer.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t words[OTBN_SCRATCH_MULTIREG_COUNT] = {0};
@@ -34,6 +36,8 @@ status_t store_state(const crypto_state_t *state) {
 
 status_t read_state(crypto_state_t *state) {
   if (state == NULL) {
+    // COVERAGE (SW ERR) Internal callers always provide a non-null state
+    // pointer.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t words[OTBN_SCRATCH_MULTIREG_COUNT];
@@ -80,8 +84,7 @@ otcrypto_status_t locked_state_check(void) {
     return OTCRYPTO_FATAL_ERR;
   }
 
-  if ((state.kat_state & (1UL << kTestHashSha512Bit)) == 0 &&
-      state.self_check_state == kHardenedByteBoolFalse) {
+  if (state.self_check_state == kHardenedByteBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -116,6 +119,7 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
 
     // If the KAT failed, lock the cryptolib
     if (result.value != kHardenedBoolTrue) {
+      // COVERAGE (HW ERR) KAT failure only occurs on hardware fault or FI.
       HARDENED_TRY(read_state(&state));
       state.locked_state = kHardenedByteBoolTrue;
       HARDENED_TRY(store_state(&state));

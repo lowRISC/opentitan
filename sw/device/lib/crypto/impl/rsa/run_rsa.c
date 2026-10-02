@@ -95,6 +95,8 @@ static status_t rsa_check_otbn_status(void) {
 
   // Check if it matches the expected magic value
   if (launder32(ok) != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) This check only fails if OTBN execution was faulted or
+    // given invalid inputs.
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_RECOV_ERR;
   }
@@ -150,15 +152,21 @@ status_t rsa_modexp_wait(size_t *num_words) {
     *num_words = kRsa3072NumWords;
     exp_insn_cnt = (mode == kMode3072Modexp)     ? kModeRsa3072ModexpInsCnt
                    : (mode == kMode3072ModexpF4) ? kModeRsa3072ModexpF4InsCnt
-                   : (mode == kMode3072ModexpDE) ? kModeRsa3072ModexpDEInsCnt
-                                                 : kModeRsa3072ModexpEInsCnt;
+                   : (mode == kMode3072ModexpDE)
+                       ? kModeRsa3072ModexpDEInsCnt
+                       // COVERAGE (MISSING) We do not cover custom public
+                       // exponents for RSA-3072.
+                       : kModeRsa3072ModexpEInsCnt;
   } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4 ||
              mode == kMode4096ModexpDE || mode == kMode4096ModexpE) {
     *num_words = kRsa4096NumWords;
     exp_insn_cnt = (mode == kMode4096Modexp)     ? kModeRsa4096ModexpInsCnt
                    : (mode == kMode4096ModexpF4) ? kModeRsa4096ModexpF4InsCnt
-                   : (mode == kMode4096ModexpDE) ? kModeRsa4096ModexpDEInsCnt
-                                                 : kModeRsa4096ModexpEInsCnt;
+                   : (mode == kMode4096ModexpDE)
+                       ? kModeRsa4096ModexpDEInsCnt
+                       // COVERAGE (MISSING) We do not cover custom public
+                       // exponents for RSA-4096.
+                       : kModeRsa4096ModexpEInsCnt;
   } else {
     // Unrecognized mode.
     return OTCRYPTO_FATAL_ERR;
@@ -300,10 +308,14 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
   // Optionally read out the primes p and q.
   if (p != NULL) {
+    // COVERAGE (SW ERR) Testing-only prime readout is not used by standard
+    // keygen callers.
     const otbn_addr_t kOtbnVarRsaP = OTBN_ADDR_T_INIT(run_rsa, rsa_p);
     HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaP, p));
   }
   if (q != NULL) {
+    // COVERAGE (SW ERR) Testing-only prime readout is not used by standard
+    // keygen callers.
     const otbn_addr_t kOtbnVarRsaQ = OTBN_ADDR_T_INIT(run_rsa, rsa_q);
     HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaQ, q));
   }
@@ -358,6 +370,9 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
 
   // Verify the checksum over share 0 (exp0).
   if (checksum != launder32(crc32(exp0, num_words * sizeof(uint32_t)))) {
+    // COVERAGE (FI CM) The outer blinded key checksum is already verified, so
+    // the inner share checksum only fails under fault injection or memory
+    // corruption.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(checksum, crc32(exp0, num_words * sizeof(uint32_t)));

@@ -341,6 +341,8 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
 #endif
 
   if (key->config.key_length < 14) {
+    // COVERAGE (MISSING) Short keys (< 14 bytes) in streaming HMAC init are
+    // not covered.
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 
@@ -559,6 +561,8 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
             hmac_hmac_sha512_final_redundant(&redundant_ctx, &tag_redundant));
         break;
       default:
+        // COVERAGE (FI CM) Unreachable unless redundant_ctx.digest_wordlen was
+        // corrupted.
         return OTCRYPTO_BAD_ARGS;
     }
   }
