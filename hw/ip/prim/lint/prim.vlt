@@ -11,3 +11,6 @@ lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_ppc.sv" -match "*ppc_out*"
 // prim_lfsr
 // lfsr_perm_test is just used for an SVA
 lint_off -rule UNUSED -file "*/rtl/prim_lfsr.sv" -match "*lfsr_perm_test*"
+
+// prim_diff_decode
+lint_off -rule WIDTH -file "*/rtl/prim_diff_decode.sv" -match "Operator LT expects 32 bits on the LHS, but LHS's VARREF 'skew_cnt_q'*"
