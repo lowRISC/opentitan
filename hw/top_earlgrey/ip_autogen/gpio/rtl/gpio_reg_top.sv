@@ -31,7 +31,7 @@ module gpio_reg_top
 
   import gpio_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 10;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -62,9 +62,9 @@ module gpio_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [17:0] reg_we_check;
+  logic [81:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(18)
+    .OneHotWidth(82)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -173,23 +173,636 @@ module gpio_reg_top
   logic [15:0] masked_oe_upper_data_wd;
   logic [15:0] masked_oe_upper_mask_qs;
   logic [15:0] masked_oe_upper_mask_wd;
+  logic intr_ctrl_en_rising_re;
   logic intr_ctrl_en_rising_we;
   logic [31:0] intr_ctrl_en_rising_qs;
   logic [31:0] intr_ctrl_en_rising_wd;
+  logic intr_ctrl_en_falling_re;
   logic intr_ctrl_en_falling_we;
   logic [31:0] intr_ctrl_en_falling_qs;
   logic [31:0] intr_ctrl_en_falling_wd;
+  logic intr_ctrl_en_lvlhigh_re;
   logic intr_ctrl_en_lvlhigh_we;
   logic [31:0] intr_ctrl_en_lvlhigh_qs;
   logic [31:0] intr_ctrl_en_lvlhigh_wd;
+  logic intr_ctrl_en_lvllow_re;
   logic intr_ctrl_en_lvllow_we;
   logic [31:0] intr_ctrl_en_lvllow_qs;
   logic [31:0] intr_ctrl_en_lvllow_wd;
+  logic ctrl_en_input_filter_re;
   logic ctrl_en_input_filter_we;
   logic [31:0] ctrl_en_input_filter_qs;
   logic [31:0] ctrl_en_input_filter_wd;
   logic hw_straps_data_in_valid_qs;
   logic [31:0] hw_straps_data_in_qs;
+  logic per_pin_io_0_re;
+  logic per_pin_io_0_we;
+  logic per_pin_io_0_data_out_0_qs;
+  logic per_pin_io_0_data_out_0_wd;
+  logic per_pin_io_0_data_in_0_qs;
+  logic per_pin_io_1_re;
+  logic per_pin_io_1_we;
+  logic per_pin_io_1_data_out_1_qs;
+  logic per_pin_io_1_data_out_1_wd;
+  logic per_pin_io_1_data_in_1_qs;
+  logic per_pin_io_2_re;
+  logic per_pin_io_2_we;
+  logic per_pin_io_2_data_out_2_qs;
+  logic per_pin_io_2_data_out_2_wd;
+  logic per_pin_io_2_data_in_2_qs;
+  logic per_pin_io_3_re;
+  logic per_pin_io_3_we;
+  logic per_pin_io_3_data_out_3_qs;
+  logic per_pin_io_3_data_out_3_wd;
+  logic per_pin_io_3_data_in_3_qs;
+  logic per_pin_io_4_re;
+  logic per_pin_io_4_we;
+  logic per_pin_io_4_data_out_4_qs;
+  logic per_pin_io_4_data_out_4_wd;
+  logic per_pin_io_4_data_in_4_qs;
+  logic per_pin_io_5_re;
+  logic per_pin_io_5_we;
+  logic per_pin_io_5_data_out_5_qs;
+  logic per_pin_io_5_data_out_5_wd;
+  logic per_pin_io_5_data_in_5_qs;
+  logic per_pin_io_6_re;
+  logic per_pin_io_6_we;
+  logic per_pin_io_6_data_out_6_qs;
+  logic per_pin_io_6_data_out_6_wd;
+  logic per_pin_io_6_data_in_6_qs;
+  logic per_pin_io_7_re;
+  logic per_pin_io_7_we;
+  logic per_pin_io_7_data_out_7_qs;
+  logic per_pin_io_7_data_out_7_wd;
+  logic per_pin_io_7_data_in_7_qs;
+  logic per_pin_io_8_re;
+  logic per_pin_io_8_we;
+  logic per_pin_io_8_data_out_8_qs;
+  logic per_pin_io_8_data_out_8_wd;
+  logic per_pin_io_8_data_in_8_qs;
+  logic per_pin_io_9_re;
+  logic per_pin_io_9_we;
+  logic per_pin_io_9_data_out_9_qs;
+  logic per_pin_io_9_data_out_9_wd;
+  logic per_pin_io_9_data_in_9_qs;
+  logic per_pin_io_10_re;
+  logic per_pin_io_10_we;
+  logic per_pin_io_10_data_out_10_qs;
+  logic per_pin_io_10_data_out_10_wd;
+  logic per_pin_io_10_data_in_10_qs;
+  logic per_pin_io_11_re;
+  logic per_pin_io_11_we;
+  logic per_pin_io_11_data_out_11_qs;
+  logic per_pin_io_11_data_out_11_wd;
+  logic per_pin_io_11_data_in_11_qs;
+  logic per_pin_io_12_re;
+  logic per_pin_io_12_we;
+  logic per_pin_io_12_data_out_12_qs;
+  logic per_pin_io_12_data_out_12_wd;
+  logic per_pin_io_12_data_in_12_qs;
+  logic per_pin_io_13_re;
+  logic per_pin_io_13_we;
+  logic per_pin_io_13_data_out_13_qs;
+  logic per_pin_io_13_data_out_13_wd;
+  logic per_pin_io_13_data_in_13_qs;
+  logic per_pin_io_14_re;
+  logic per_pin_io_14_we;
+  logic per_pin_io_14_data_out_14_qs;
+  logic per_pin_io_14_data_out_14_wd;
+  logic per_pin_io_14_data_in_14_qs;
+  logic per_pin_io_15_re;
+  logic per_pin_io_15_we;
+  logic per_pin_io_15_data_out_15_qs;
+  logic per_pin_io_15_data_out_15_wd;
+  logic per_pin_io_15_data_in_15_qs;
+  logic per_pin_io_16_re;
+  logic per_pin_io_16_we;
+  logic per_pin_io_16_data_out_16_qs;
+  logic per_pin_io_16_data_out_16_wd;
+  logic per_pin_io_16_data_in_16_qs;
+  logic per_pin_io_17_re;
+  logic per_pin_io_17_we;
+  logic per_pin_io_17_data_out_17_qs;
+  logic per_pin_io_17_data_out_17_wd;
+  logic per_pin_io_17_data_in_17_qs;
+  logic per_pin_io_18_re;
+  logic per_pin_io_18_we;
+  logic per_pin_io_18_data_out_18_qs;
+  logic per_pin_io_18_data_out_18_wd;
+  logic per_pin_io_18_data_in_18_qs;
+  logic per_pin_io_19_re;
+  logic per_pin_io_19_we;
+  logic per_pin_io_19_data_out_19_qs;
+  logic per_pin_io_19_data_out_19_wd;
+  logic per_pin_io_19_data_in_19_qs;
+  logic per_pin_io_20_re;
+  logic per_pin_io_20_we;
+  logic per_pin_io_20_data_out_20_qs;
+  logic per_pin_io_20_data_out_20_wd;
+  logic per_pin_io_20_data_in_20_qs;
+  logic per_pin_io_21_re;
+  logic per_pin_io_21_we;
+  logic per_pin_io_21_data_out_21_qs;
+  logic per_pin_io_21_data_out_21_wd;
+  logic per_pin_io_21_data_in_21_qs;
+  logic per_pin_io_22_re;
+  logic per_pin_io_22_we;
+  logic per_pin_io_22_data_out_22_qs;
+  logic per_pin_io_22_data_out_22_wd;
+  logic per_pin_io_22_data_in_22_qs;
+  logic per_pin_io_23_re;
+  logic per_pin_io_23_we;
+  logic per_pin_io_23_data_out_23_qs;
+  logic per_pin_io_23_data_out_23_wd;
+  logic per_pin_io_23_data_in_23_qs;
+  logic per_pin_io_24_re;
+  logic per_pin_io_24_we;
+  logic per_pin_io_24_data_out_24_qs;
+  logic per_pin_io_24_data_out_24_wd;
+  logic per_pin_io_24_data_in_24_qs;
+  logic per_pin_io_25_re;
+  logic per_pin_io_25_we;
+  logic per_pin_io_25_data_out_25_qs;
+  logic per_pin_io_25_data_out_25_wd;
+  logic per_pin_io_25_data_in_25_qs;
+  logic per_pin_io_26_re;
+  logic per_pin_io_26_we;
+  logic per_pin_io_26_data_out_26_qs;
+  logic per_pin_io_26_data_out_26_wd;
+  logic per_pin_io_26_data_in_26_qs;
+  logic per_pin_io_27_re;
+  logic per_pin_io_27_we;
+  logic per_pin_io_27_data_out_27_qs;
+  logic per_pin_io_27_data_out_27_wd;
+  logic per_pin_io_27_data_in_27_qs;
+  logic per_pin_io_28_re;
+  logic per_pin_io_28_we;
+  logic per_pin_io_28_data_out_28_qs;
+  logic per_pin_io_28_data_out_28_wd;
+  logic per_pin_io_28_data_in_28_qs;
+  logic per_pin_io_29_re;
+  logic per_pin_io_29_we;
+  logic per_pin_io_29_data_out_29_qs;
+  logic per_pin_io_29_data_out_29_wd;
+  logic per_pin_io_29_data_in_29_qs;
+  logic per_pin_io_30_re;
+  logic per_pin_io_30_we;
+  logic per_pin_io_30_data_out_30_qs;
+  logic per_pin_io_30_data_out_30_wd;
+  logic per_pin_io_30_data_in_30_qs;
+  logic per_pin_io_31_re;
+  logic per_pin_io_31_we;
+  logic per_pin_io_31_data_out_31_qs;
+  logic per_pin_io_31_data_out_31_wd;
+  logic per_pin_io_31_data_in_31_qs;
+  logic per_pin_cfg_0_re;
+  logic per_pin_cfg_0_we;
+  logic per_pin_cfg_0_oe_0_qs;
+  logic per_pin_cfg_0_oe_0_wd;
+  logic per_pin_cfg_0_intr_ctrl_en_rising_0_qs;
+  logic per_pin_cfg_0_intr_ctrl_en_rising_0_wd;
+  logic per_pin_cfg_0_intr_ctrl_en_falling_0_qs;
+  logic per_pin_cfg_0_intr_ctrl_en_falling_0_wd;
+  logic per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_qs;
+  logic per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_wd;
+  logic per_pin_cfg_0_intr_ctrl_en_lvllow_0_qs;
+  logic per_pin_cfg_0_intr_ctrl_en_lvllow_0_wd;
+  logic per_pin_cfg_0_ctrl_en_input_filter_0_qs;
+  logic per_pin_cfg_0_ctrl_en_input_filter_0_wd;
+  logic per_pin_cfg_1_re;
+  logic per_pin_cfg_1_we;
+  logic per_pin_cfg_1_oe_1_qs;
+  logic per_pin_cfg_1_oe_1_wd;
+  logic per_pin_cfg_1_intr_ctrl_en_rising_1_qs;
+  logic per_pin_cfg_1_intr_ctrl_en_rising_1_wd;
+  logic per_pin_cfg_1_intr_ctrl_en_falling_1_qs;
+  logic per_pin_cfg_1_intr_ctrl_en_falling_1_wd;
+  logic per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_qs;
+  logic per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_wd;
+  logic per_pin_cfg_1_intr_ctrl_en_lvllow_1_qs;
+  logic per_pin_cfg_1_intr_ctrl_en_lvllow_1_wd;
+  logic per_pin_cfg_1_ctrl_en_input_filter_1_qs;
+  logic per_pin_cfg_1_ctrl_en_input_filter_1_wd;
+  logic per_pin_cfg_2_re;
+  logic per_pin_cfg_2_we;
+  logic per_pin_cfg_2_oe_2_qs;
+  logic per_pin_cfg_2_oe_2_wd;
+  logic per_pin_cfg_2_intr_ctrl_en_rising_2_qs;
+  logic per_pin_cfg_2_intr_ctrl_en_rising_2_wd;
+  logic per_pin_cfg_2_intr_ctrl_en_falling_2_qs;
+  logic per_pin_cfg_2_intr_ctrl_en_falling_2_wd;
+  logic per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_qs;
+  logic per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_wd;
+  logic per_pin_cfg_2_intr_ctrl_en_lvllow_2_qs;
+  logic per_pin_cfg_2_intr_ctrl_en_lvllow_2_wd;
+  logic per_pin_cfg_2_ctrl_en_input_filter_2_qs;
+  logic per_pin_cfg_2_ctrl_en_input_filter_2_wd;
+  logic per_pin_cfg_3_re;
+  logic per_pin_cfg_3_we;
+  logic per_pin_cfg_3_oe_3_qs;
+  logic per_pin_cfg_3_oe_3_wd;
+  logic per_pin_cfg_3_intr_ctrl_en_rising_3_qs;
+  logic per_pin_cfg_3_intr_ctrl_en_rising_3_wd;
+  logic per_pin_cfg_3_intr_ctrl_en_falling_3_qs;
+  logic per_pin_cfg_3_intr_ctrl_en_falling_3_wd;
+  logic per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_qs;
+  logic per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_wd;
+  logic per_pin_cfg_3_intr_ctrl_en_lvllow_3_qs;
+  logic per_pin_cfg_3_intr_ctrl_en_lvllow_3_wd;
+  logic per_pin_cfg_3_ctrl_en_input_filter_3_qs;
+  logic per_pin_cfg_3_ctrl_en_input_filter_3_wd;
+  logic per_pin_cfg_4_re;
+  logic per_pin_cfg_4_we;
+  logic per_pin_cfg_4_oe_4_qs;
+  logic per_pin_cfg_4_oe_4_wd;
+  logic per_pin_cfg_4_intr_ctrl_en_rising_4_qs;
+  logic per_pin_cfg_4_intr_ctrl_en_rising_4_wd;
+  logic per_pin_cfg_4_intr_ctrl_en_falling_4_qs;
+  logic per_pin_cfg_4_intr_ctrl_en_falling_4_wd;
+  logic per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_qs;
+  logic per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_wd;
+  logic per_pin_cfg_4_intr_ctrl_en_lvllow_4_qs;
+  logic per_pin_cfg_4_intr_ctrl_en_lvllow_4_wd;
+  logic per_pin_cfg_4_ctrl_en_input_filter_4_qs;
+  logic per_pin_cfg_4_ctrl_en_input_filter_4_wd;
+  logic per_pin_cfg_5_re;
+  logic per_pin_cfg_5_we;
+  logic per_pin_cfg_5_oe_5_qs;
+  logic per_pin_cfg_5_oe_5_wd;
+  logic per_pin_cfg_5_intr_ctrl_en_rising_5_qs;
+  logic per_pin_cfg_5_intr_ctrl_en_rising_5_wd;
+  logic per_pin_cfg_5_intr_ctrl_en_falling_5_qs;
+  logic per_pin_cfg_5_intr_ctrl_en_falling_5_wd;
+  logic per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_qs;
+  logic per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_wd;
+  logic per_pin_cfg_5_intr_ctrl_en_lvllow_5_qs;
+  logic per_pin_cfg_5_intr_ctrl_en_lvllow_5_wd;
+  logic per_pin_cfg_5_ctrl_en_input_filter_5_qs;
+  logic per_pin_cfg_5_ctrl_en_input_filter_5_wd;
+  logic per_pin_cfg_6_re;
+  logic per_pin_cfg_6_we;
+  logic per_pin_cfg_6_oe_6_qs;
+  logic per_pin_cfg_6_oe_6_wd;
+  logic per_pin_cfg_6_intr_ctrl_en_rising_6_qs;
+  logic per_pin_cfg_6_intr_ctrl_en_rising_6_wd;
+  logic per_pin_cfg_6_intr_ctrl_en_falling_6_qs;
+  logic per_pin_cfg_6_intr_ctrl_en_falling_6_wd;
+  logic per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_qs;
+  logic per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_wd;
+  logic per_pin_cfg_6_intr_ctrl_en_lvllow_6_qs;
+  logic per_pin_cfg_6_intr_ctrl_en_lvllow_6_wd;
+  logic per_pin_cfg_6_ctrl_en_input_filter_6_qs;
+  logic per_pin_cfg_6_ctrl_en_input_filter_6_wd;
+  logic per_pin_cfg_7_re;
+  logic per_pin_cfg_7_we;
+  logic per_pin_cfg_7_oe_7_qs;
+  logic per_pin_cfg_7_oe_7_wd;
+  logic per_pin_cfg_7_intr_ctrl_en_rising_7_qs;
+  logic per_pin_cfg_7_intr_ctrl_en_rising_7_wd;
+  logic per_pin_cfg_7_intr_ctrl_en_falling_7_qs;
+  logic per_pin_cfg_7_intr_ctrl_en_falling_7_wd;
+  logic per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_qs;
+  logic per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_wd;
+  logic per_pin_cfg_7_intr_ctrl_en_lvllow_7_qs;
+  logic per_pin_cfg_7_intr_ctrl_en_lvllow_7_wd;
+  logic per_pin_cfg_7_ctrl_en_input_filter_7_qs;
+  logic per_pin_cfg_7_ctrl_en_input_filter_7_wd;
+  logic per_pin_cfg_8_re;
+  logic per_pin_cfg_8_we;
+  logic per_pin_cfg_8_oe_8_qs;
+  logic per_pin_cfg_8_oe_8_wd;
+  logic per_pin_cfg_8_intr_ctrl_en_rising_8_qs;
+  logic per_pin_cfg_8_intr_ctrl_en_rising_8_wd;
+  logic per_pin_cfg_8_intr_ctrl_en_falling_8_qs;
+  logic per_pin_cfg_8_intr_ctrl_en_falling_8_wd;
+  logic per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_qs;
+  logic per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_wd;
+  logic per_pin_cfg_8_intr_ctrl_en_lvllow_8_qs;
+  logic per_pin_cfg_8_intr_ctrl_en_lvllow_8_wd;
+  logic per_pin_cfg_8_ctrl_en_input_filter_8_qs;
+  logic per_pin_cfg_8_ctrl_en_input_filter_8_wd;
+  logic per_pin_cfg_9_re;
+  logic per_pin_cfg_9_we;
+  logic per_pin_cfg_9_oe_9_qs;
+  logic per_pin_cfg_9_oe_9_wd;
+  logic per_pin_cfg_9_intr_ctrl_en_rising_9_qs;
+  logic per_pin_cfg_9_intr_ctrl_en_rising_9_wd;
+  logic per_pin_cfg_9_intr_ctrl_en_falling_9_qs;
+  logic per_pin_cfg_9_intr_ctrl_en_falling_9_wd;
+  logic per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_qs;
+  logic per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_wd;
+  logic per_pin_cfg_9_intr_ctrl_en_lvllow_9_qs;
+  logic per_pin_cfg_9_intr_ctrl_en_lvllow_9_wd;
+  logic per_pin_cfg_9_ctrl_en_input_filter_9_qs;
+  logic per_pin_cfg_9_ctrl_en_input_filter_9_wd;
+  logic per_pin_cfg_10_re;
+  logic per_pin_cfg_10_we;
+  logic per_pin_cfg_10_oe_10_qs;
+  logic per_pin_cfg_10_oe_10_wd;
+  logic per_pin_cfg_10_intr_ctrl_en_rising_10_qs;
+  logic per_pin_cfg_10_intr_ctrl_en_rising_10_wd;
+  logic per_pin_cfg_10_intr_ctrl_en_falling_10_qs;
+  logic per_pin_cfg_10_intr_ctrl_en_falling_10_wd;
+  logic per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_qs;
+  logic per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_wd;
+  logic per_pin_cfg_10_intr_ctrl_en_lvllow_10_qs;
+  logic per_pin_cfg_10_intr_ctrl_en_lvllow_10_wd;
+  logic per_pin_cfg_10_ctrl_en_input_filter_10_qs;
+  logic per_pin_cfg_10_ctrl_en_input_filter_10_wd;
+  logic per_pin_cfg_11_re;
+  logic per_pin_cfg_11_we;
+  logic per_pin_cfg_11_oe_11_qs;
+  logic per_pin_cfg_11_oe_11_wd;
+  logic per_pin_cfg_11_intr_ctrl_en_rising_11_qs;
+  logic per_pin_cfg_11_intr_ctrl_en_rising_11_wd;
+  logic per_pin_cfg_11_intr_ctrl_en_falling_11_qs;
+  logic per_pin_cfg_11_intr_ctrl_en_falling_11_wd;
+  logic per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_qs;
+  logic per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_wd;
+  logic per_pin_cfg_11_intr_ctrl_en_lvllow_11_qs;
+  logic per_pin_cfg_11_intr_ctrl_en_lvllow_11_wd;
+  logic per_pin_cfg_11_ctrl_en_input_filter_11_qs;
+  logic per_pin_cfg_11_ctrl_en_input_filter_11_wd;
+  logic per_pin_cfg_12_re;
+  logic per_pin_cfg_12_we;
+  logic per_pin_cfg_12_oe_12_qs;
+  logic per_pin_cfg_12_oe_12_wd;
+  logic per_pin_cfg_12_intr_ctrl_en_rising_12_qs;
+  logic per_pin_cfg_12_intr_ctrl_en_rising_12_wd;
+  logic per_pin_cfg_12_intr_ctrl_en_falling_12_qs;
+  logic per_pin_cfg_12_intr_ctrl_en_falling_12_wd;
+  logic per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_qs;
+  logic per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_wd;
+  logic per_pin_cfg_12_intr_ctrl_en_lvllow_12_qs;
+  logic per_pin_cfg_12_intr_ctrl_en_lvllow_12_wd;
+  logic per_pin_cfg_12_ctrl_en_input_filter_12_qs;
+  logic per_pin_cfg_12_ctrl_en_input_filter_12_wd;
+  logic per_pin_cfg_13_re;
+  logic per_pin_cfg_13_we;
+  logic per_pin_cfg_13_oe_13_qs;
+  logic per_pin_cfg_13_oe_13_wd;
+  logic per_pin_cfg_13_intr_ctrl_en_rising_13_qs;
+  logic per_pin_cfg_13_intr_ctrl_en_rising_13_wd;
+  logic per_pin_cfg_13_intr_ctrl_en_falling_13_qs;
+  logic per_pin_cfg_13_intr_ctrl_en_falling_13_wd;
+  logic per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_qs;
+  logic per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_wd;
+  logic per_pin_cfg_13_intr_ctrl_en_lvllow_13_qs;
+  logic per_pin_cfg_13_intr_ctrl_en_lvllow_13_wd;
+  logic per_pin_cfg_13_ctrl_en_input_filter_13_qs;
+  logic per_pin_cfg_13_ctrl_en_input_filter_13_wd;
+  logic per_pin_cfg_14_re;
+  logic per_pin_cfg_14_we;
+  logic per_pin_cfg_14_oe_14_qs;
+  logic per_pin_cfg_14_oe_14_wd;
+  logic per_pin_cfg_14_intr_ctrl_en_rising_14_qs;
+  logic per_pin_cfg_14_intr_ctrl_en_rising_14_wd;
+  logic per_pin_cfg_14_intr_ctrl_en_falling_14_qs;
+  logic per_pin_cfg_14_intr_ctrl_en_falling_14_wd;
+  logic per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_qs;
+  logic per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_wd;
+  logic per_pin_cfg_14_intr_ctrl_en_lvllow_14_qs;
+  logic per_pin_cfg_14_intr_ctrl_en_lvllow_14_wd;
+  logic per_pin_cfg_14_ctrl_en_input_filter_14_qs;
+  logic per_pin_cfg_14_ctrl_en_input_filter_14_wd;
+  logic per_pin_cfg_15_re;
+  logic per_pin_cfg_15_we;
+  logic per_pin_cfg_15_oe_15_qs;
+  logic per_pin_cfg_15_oe_15_wd;
+  logic per_pin_cfg_15_intr_ctrl_en_rising_15_qs;
+  logic per_pin_cfg_15_intr_ctrl_en_rising_15_wd;
+  logic per_pin_cfg_15_intr_ctrl_en_falling_15_qs;
+  logic per_pin_cfg_15_intr_ctrl_en_falling_15_wd;
+  logic per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_qs;
+  logic per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_wd;
+  logic per_pin_cfg_15_intr_ctrl_en_lvllow_15_qs;
+  logic per_pin_cfg_15_intr_ctrl_en_lvllow_15_wd;
+  logic per_pin_cfg_15_ctrl_en_input_filter_15_qs;
+  logic per_pin_cfg_15_ctrl_en_input_filter_15_wd;
+  logic per_pin_cfg_16_re;
+  logic per_pin_cfg_16_we;
+  logic per_pin_cfg_16_oe_16_qs;
+  logic per_pin_cfg_16_oe_16_wd;
+  logic per_pin_cfg_16_intr_ctrl_en_rising_16_qs;
+  logic per_pin_cfg_16_intr_ctrl_en_rising_16_wd;
+  logic per_pin_cfg_16_intr_ctrl_en_falling_16_qs;
+  logic per_pin_cfg_16_intr_ctrl_en_falling_16_wd;
+  logic per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_qs;
+  logic per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_wd;
+  logic per_pin_cfg_16_intr_ctrl_en_lvllow_16_qs;
+  logic per_pin_cfg_16_intr_ctrl_en_lvllow_16_wd;
+  logic per_pin_cfg_16_ctrl_en_input_filter_16_qs;
+  logic per_pin_cfg_16_ctrl_en_input_filter_16_wd;
+  logic per_pin_cfg_17_re;
+  logic per_pin_cfg_17_we;
+  logic per_pin_cfg_17_oe_17_qs;
+  logic per_pin_cfg_17_oe_17_wd;
+  logic per_pin_cfg_17_intr_ctrl_en_rising_17_qs;
+  logic per_pin_cfg_17_intr_ctrl_en_rising_17_wd;
+  logic per_pin_cfg_17_intr_ctrl_en_falling_17_qs;
+  logic per_pin_cfg_17_intr_ctrl_en_falling_17_wd;
+  logic per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_qs;
+  logic per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_wd;
+  logic per_pin_cfg_17_intr_ctrl_en_lvllow_17_qs;
+  logic per_pin_cfg_17_intr_ctrl_en_lvllow_17_wd;
+  logic per_pin_cfg_17_ctrl_en_input_filter_17_qs;
+  logic per_pin_cfg_17_ctrl_en_input_filter_17_wd;
+  logic per_pin_cfg_18_re;
+  logic per_pin_cfg_18_we;
+  logic per_pin_cfg_18_oe_18_qs;
+  logic per_pin_cfg_18_oe_18_wd;
+  logic per_pin_cfg_18_intr_ctrl_en_rising_18_qs;
+  logic per_pin_cfg_18_intr_ctrl_en_rising_18_wd;
+  logic per_pin_cfg_18_intr_ctrl_en_falling_18_qs;
+  logic per_pin_cfg_18_intr_ctrl_en_falling_18_wd;
+  logic per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_qs;
+  logic per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_wd;
+  logic per_pin_cfg_18_intr_ctrl_en_lvllow_18_qs;
+  logic per_pin_cfg_18_intr_ctrl_en_lvllow_18_wd;
+  logic per_pin_cfg_18_ctrl_en_input_filter_18_qs;
+  logic per_pin_cfg_18_ctrl_en_input_filter_18_wd;
+  logic per_pin_cfg_19_re;
+  logic per_pin_cfg_19_we;
+  logic per_pin_cfg_19_oe_19_qs;
+  logic per_pin_cfg_19_oe_19_wd;
+  logic per_pin_cfg_19_intr_ctrl_en_rising_19_qs;
+  logic per_pin_cfg_19_intr_ctrl_en_rising_19_wd;
+  logic per_pin_cfg_19_intr_ctrl_en_falling_19_qs;
+  logic per_pin_cfg_19_intr_ctrl_en_falling_19_wd;
+  logic per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_qs;
+  logic per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_wd;
+  logic per_pin_cfg_19_intr_ctrl_en_lvllow_19_qs;
+  logic per_pin_cfg_19_intr_ctrl_en_lvllow_19_wd;
+  logic per_pin_cfg_19_ctrl_en_input_filter_19_qs;
+  logic per_pin_cfg_19_ctrl_en_input_filter_19_wd;
+  logic per_pin_cfg_20_re;
+  logic per_pin_cfg_20_we;
+  logic per_pin_cfg_20_oe_20_qs;
+  logic per_pin_cfg_20_oe_20_wd;
+  logic per_pin_cfg_20_intr_ctrl_en_rising_20_qs;
+  logic per_pin_cfg_20_intr_ctrl_en_rising_20_wd;
+  logic per_pin_cfg_20_intr_ctrl_en_falling_20_qs;
+  logic per_pin_cfg_20_intr_ctrl_en_falling_20_wd;
+  logic per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_qs;
+  logic per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_wd;
+  logic per_pin_cfg_20_intr_ctrl_en_lvllow_20_qs;
+  logic per_pin_cfg_20_intr_ctrl_en_lvllow_20_wd;
+  logic per_pin_cfg_20_ctrl_en_input_filter_20_qs;
+  logic per_pin_cfg_20_ctrl_en_input_filter_20_wd;
+  logic per_pin_cfg_21_re;
+  logic per_pin_cfg_21_we;
+  logic per_pin_cfg_21_oe_21_qs;
+  logic per_pin_cfg_21_oe_21_wd;
+  logic per_pin_cfg_21_intr_ctrl_en_rising_21_qs;
+  logic per_pin_cfg_21_intr_ctrl_en_rising_21_wd;
+  logic per_pin_cfg_21_intr_ctrl_en_falling_21_qs;
+  logic per_pin_cfg_21_intr_ctrl_en_falling_21_wd;
+  logic per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_qs;
+  logic per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_wd;
+  logic per_pin_cfg_21_intr_ctrl_en_lvllow_21_qs;
+  logic per_pin_cfg_21_intr_ctrl_en_lvllow_21_wd;
+  logic per_pin_cfg_21_ctrl_en_input_filter_21_qs;
+  logic per_pin_cfg_21_ctrl_en_input_filter_21_wd;
+  logic per_pin_cfg_22_re;
+  logic per_pin_cfg_22_we;
+  logic per_pin_cfg_22_oe_22_qs;
+  logic per_pin_cfg_22_oe_22_wd;
+  logic per_pin_cfg_22_intr_ctrl_en_rising_22_qs;
+  logic per_pin_cfg_22_intr_ctrl_en_rising_22_wd;
+  logic per_pin_cfg_22_intr_ctrl_en_falling_22_qs;
+  logic per_pin_cfg_22_intr_ctrl_en_falling_22_wd;
+  logic per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_qs;
+  logic per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_wd;
+  logic per_pin_cfg_22_intr_ctrl_en_lvllow_22_qs;
+  logic per_pin_cfg_22_intr_ctrl_en_lvllow_22_wd;
+  logic per_pin_cfg_22_ctrl_en_input_filter_22_qs;
+  logic per_pin_cfg_22_ctrl_en_input_filter_22_wd;
+  logic per_pin_cfg_23_re;
+  logic per_pin_cfg_23_we;
+  logic per_pin_cfg_23_oe_23_qs;
+  logic per_pin_cfg_23_oe_23_wd;
+  logic per_pin_cfg_23_intr_ctrl_en_rising_23_qs;
+  logic per_pin_cfg_23_intr_ctrl_en_rising_23_wd;
+  logic per_pin_cfg_23_intr_ctrl_en_falling_23_qs;
+  logic per_pin_cfg_23_intr_ctrl_en_falling_23_wd;
+  logic per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_qs;
+  logic per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_wd;
+  logic per_pin_cfg_23_intr_ctrl_en_lvllow_23_qs;
+  logic per_pin_cfg_23_intr_ctrl_en_lvllow_23_wd;
+  logic per_pin_cfg_23_ctrl_en_input_filter_23_qs;
+  logic per_pin_cfg_23_ctrl_en_input_filter_23_wd;
+  logic per_pin_cfg_24_re;
+  logic per_pin_cfg_24_we;
+  logic per_pin_cfg_24_oe_24_qs;
+  logic per_pin_cfg_24_oe_24_wd;
+  logic per_pin_cfg_24_intr_ctrl_en_rising_24_qs;
+  logic per_pin_cfg_24_intr_ctrl_en_rising_24_wd;
+  logic per_pin_cfg_24_intr_ctrl_en_falling_24_qs;
+  logic per_pin_cfg_24_intr_ctrl_en_falling_24_wd;
+  logic per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_qs;
+  logic per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_wd;
+  logic per_pin_cfg_24_intr_ctrl_en_lvllow_24_qs;
+  logic per_pin_cfg_24_intr_ctrl_en_lvllow_24_wd;
+  logic per_pin_cfg_24_ctrl_en_input_filter_24_qs;
+  logic per_pin_cfg_24_ctrl_en_input_filter_24_wd;
+  logic per_pin_cfg_25_re;
+  logic per_pin_cfg_25_we;
+  logic per_pin_cfg_25_oe_25_qs;
+  logic per_pin_cfg_25_oe_25_wd;
+  logic per_pin_cfg_25_intr_ctrl_en_rising_25_qs;
+  logic per_pin_cfg_25_intr_ctrl_en_rising_25_wd;
+  logic per_pin_cfg_25_intr_ctrl_en_falling_25_qs;
+  logic per_pin_cfg_25_intr_ctrl_en_falling_25_wd;
+  logic per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_qs;
+  logic per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_wd;
+  logic per_pin_cfg_25_intr_ctrl_en_lvllow_25_qs;
+  logic per_pin_cfg_25_intr_ctrl_en_lvllow_25_wd;
+  logic per_pin_cfg_25_ctrl_en_input_filter_25_qs;
+  logic per_pin_cfg_25_ctrl_en_input_filter_25_wd;
+  logic per_pin_cfg_26_re;
+  logic per_pin_cfg_26_we;
+  logic per_pin_cfg_26_oe_26_qs;
+  logic per_pin_cfg_26_oe_26_wd;
+  logic per_pin_cfg_26_intr_ctrl_en_rising_26_qs;
+  logic per_pin_cfg_26_intr_ctrl_en_rising_26_wd;
+  logic per_pin_cfg_26_intr_ctrl_en_falling_26_qs;
+  logic per_pin_cfg_26_intr_ctrl_en_falling_26_wd;
+  logic per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_qs;
+  logic per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_wd;
+  logic per_pin_cfg_26_intr_ctrl_en_lvllow_26_qs;
+  logic per_pin_cfg_26_intr_ctrl_en_lvllow_26_wd;
+  logic per_pin_cfg_26_ctrl_en_input_filter_26_qs;
+  logic per_pin_cfg_26_ctrl_en_input_filter_26_wd;
+  logic per_pin_cfg_27_re;
+  logic per_pin_cfg_27_we;
+  logic per_pin_cfg_27_oe_27_qs;
+  logic per_pin_cfg_27_oe_27_wd;
+  logic per_pin_cfg_27_intr_ctrl_en_rising_27_qs;
+  logic per_pin_cfg_27_intr_ctrl_en_rising_27_wd;
+  logic per_pin_cfg_27_intr_ctrl_en_falling_27_qs;
+  logic per_pin_cfg_27_intr_ctrl_en_falling_27_wd;
+  logic per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_qs;
+  logic per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_wd;
+  logic per_pin_cfg_27_intr_ctrl_en_lvllow_27_qs;
+  logic per_pin_cfg_27_intr_ctrl_en_lvllow_27_wd;
+  logic per_pin_cfg_27_ctrl_en_input_filter_27_qs;
+  logic per_pin_cfg_27_ctrl_en_input_filter_27_wd;
+  logic per_pin_cfg_28_re;
+  logic per_pin_cfg_28_we;
+  logic per_pin_cfg_28_oe_28_qs;
+  logic per_pin_cfg_28_oe_28_wd;
+  logic per_pin_cfg_28_intr_ctrl_en_rising_28_qs;
+  logic per_pin_cfg_28_intr_ctrl_en_rising_28_wd;
+  logic per_pin_cfg_28_intr_ctrl_en_falling_28_qs;
+  logic per_pin_cfg_28_intr_ctrl_en_falling_28_wd;
+  logic per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_qs;
+  logic per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_wd;
+  logic per_pin_cfg_28_intr_ctrl_en_lvllow_28_qs;
+  logic per_pin_cfg_28_intr_ctrl_en_lvllow_28_wd;
+  logic per_pin_cfg_28_ctrl_en_input_filter_28_qs;
+  logic per_pin_cfg_28_ctrl_en_input_filter_28_wd;
+  logic per_pin_cfg_29_re;
+  logic per_pin_cfg_29_we;
+  logic per_pin_cfg_29_oe_29_qs;
+  logic per_pin_cfg_29_oe_29_wd;
+  logic per_pin_cfg_29_intr_ctrl_en_rising_29_qs;
+  logic per_pin_cfg_29_intr_ctrl_en_rising_29_wd;
+  logic per_pin_cfg_29_intr_ctrl_en_falling_29_qs;
+  logic per_pin_cfg_29_intr_ctrl_en_falling_29_wd;
+  logic per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_qs;
+  logic per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_wd;
+  logic per_pin_cfg_29_intr_ctrl_en_lvllow_29_qs;
+  logic per_pin_cfg_29_intr_ctrl_en_lvllow_29_wd;
+  logic per_pin_cfg_29_ctrl_en_input_filter_29_qs;
+  logic per_pin_cfg_29_ctrl_en_input_filter_29_wd;
+  logic per_pin_cfg_30_re;
+  logic per_pin_cfg_30_we;
+  logic per_pin_cfg_30_oe_30_qs;
+  logic per_pin_cfg_30_oe_30_wd;
+  logic per_pin_cfg_30_intr_ctrl_en_rising_30_qs;
+  logic per_pin_cfg_30_intr_ctrl_en_rising_30_wd;
+  logic per_pin_cfg_30_intr_ctrl_en_falling_30_qs;
+  logic per_pin_cfg_30_intr_ctrl_en_falling_30_wd;
+  logic per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_qs;
+  logic per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_wd;
+  logic per_pin_cfg_30_intr_ctrl_en_lvllow_30_qs;
+  logic per_pin_cfg_30_intr_ctrl_en_lvllow_30_wd;
+  logic per_pin_cfg_30_ctrl_en_input_filter_30_qs;
+  logic per_pin_cfg_30_ctrl_en_input_filter_30_wd;
+  logic per_pin_cfg_31_re;
+  logic per_pin_cfg_31_we;
+  logic per_pin_cfg_31_oe_31_qs;
+  logic per_pin_cfg_31_oe_31_wd;
+  logic per_pin_cfg_31_intr_ctrl_en_rising_31_qs;
+  logic per_pin_cfg_31_intr_ctrl_en_rising_31_wd;
+  logic per_pin_cfg_31_intr_ctrl_en_falling_31_qs;
+  logic per_pin_cfg_31_intr_ctrl_en_falling_31_wd;
+  logic per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_qs;
+  logic per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_wd;
+  logic per_pin_cfg_31_intr_ctrl_en_lvllow_31_qs;
+  logic per_pin_cfg_31_intr_ctrl_en_lvllow_31_wd;
+  logic per_pin_cfg_31_ctrl_en_input_filter_31_qs;
+  logic per_pin_cfg_31_ctrl_en_input_filter_31_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -507,149 +1120,104 @@ module gpio_reg_top
   assign reg2hw.masked_oe_upper.mask.qe = masked_oe_upper_qe;
 
 
-  // R[intr_ctrl_en_rising]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[intr_ctrl_en_rising]: V(True)
+  logic intr_ctrl_en_rising_qe;
+  logic [0:0] intr_ctrl_en_rising_flds_we;
+  assign intr_ctrl_en_rising_qe = &intr_ctrl_en_rising_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_intr_ctrl_en_rising (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (intr_ctrl_en_rising_re),
     .we     (intr_ctrl_en_rising_we),
     .wd     (intr_ctrl_en_rising_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (intr_ctrl_en_rising_flds_we[0]),
     .q      (reg2hw.intr_ctrl_en_rising.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (intr_ctrl_en_rising_qs)
   );
+  assign reg2hw.intr_ctrl_en_rising.qe = intr_ctrl_en_rising_qe;
 
 
-  // R[intr_ctrl_en_falling]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[intr_ctrl_en_falling]: V(True)
+  logic intr_ctrl_en_falling_qe;
+  logic [0:0] intr_ctrl_en_falling_flds_we;
+  assign intr_ctrl_en_falling_qe = &intr_ctrl_en_falling_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_intr_ctrl_en_falling (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (intr_ctrl_en_falling_re),
     .we     (intr_ctrl_en_falling_we),
     .wd     (intr_ctrl_en_falling_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (intr_ctrl_en_falling_flds_we[0]),
     .q      (reg2hw.intr_ctrl_en_falling.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (intr_ctrl_en_falling_qs)
   );
+  assign reg2hw.intr_ctrl_en_falling.qe = intr_ctrl_en_falling_qe;
 
 
-  // R[intr_ctrl_en_lvlhigh]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[intr_ctrl_en_lvlhigh]: V(True)
+  logic intr_ctrl_en_lvlhigh_qe;
+  logic [0:0] intr_ctrl_en_lvlhigh_flds_we;
+  assign intr_ctrl_en_lvlhigh_qe = &intr_ctrl_en_lvlhigh_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_intr_ctrl_en_lvlhigh (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (intr_ctrl_en_lvlhigh_re),
     .we     (intr_ctrl_en_lvlhigh_we),
     .wd     (intr_ctrl_en_lvlhigh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (intr_ctrl_en_lvlhigh_flds_we[0]),
     .q      (reg2hw.intr_ctrl_en_lvlhigh.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (intr_ctrl_en_lvlhigh_qs)
   );
+  assign reg2hw.intr_ctrl_en_lvlhigh.qe = intr_ctrl_en_lvlhigh_qe;
 
 
-  // R[intr_ctrl_en_lvllow]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[intr_ctrl_en_lvllow]: V(True)
+  logic intr_ctrl_en_lvllow_qe;
+  logic [0:0] intr_ctrl_en_lvllow_flds_we;
+  assign intr_ctrl_en_lvllow_qe = &intr_ctrl_en_lvllow_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_intr_ctrl_en_lvllow (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (intr_ctrl_en_lvllow_re),
     .we     (intr_ctrl_en_lvllow_we),
     .wd     (intr_ctrl_en_lvllow_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (intr_ctrl_en_lvllow_flds_we[0]),
     .q      (reg2hw.intr_ctrl_en_lvllow.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (intr_ctrl_en_lvllow_qs)
   );
+  assign reg2hw.intr_ctrl_en_lvllow.qe = intr_ctrl_en_lvllow_qe;
 
 
-  // R[ctrl_en_input_filter]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[ctrl_en_input_filter]: V(True)
+  logic ctrl_en_input_filter_qe;
+  logic [0:0] ctrl_en_input_filter_flds_we;
+  assign ctrl_en_input_filter_qe = &ctrl_en_input_filter_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_ctrl_en_input_filter (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (ctrl_en_input_filter_re),
     .we     (ctrl_en_input_filter_we),
     .wd     (ctrl_en_input_filter_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (ctrl_en_input_filter_flds_we[0]),
     .q      (reg2hw.ctrl_en_input_filter.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (ctrl_en_input_filter_qs)
   );
+  assign reg2hw.ctrl_en_input_filter.qe = ctrl_en_input_filter_qe;
 
 
   // R[hw_straps_data_in_valid]: V(False)
@@ -710,13 +1278,4557 @@ module gpio_reg_top
   );
 
 
+  // Subregister 0 of Multireg per_pin_io
+  // R[per_pin_io_0]: V(True)
+  logic per_pin_io_0_qe;
+  logic [1:0] per_pin_io_0_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_0_flds_we;
+  assign unused_per_pin_io_0_flds_we = ^(per_pin_io_0_flds_we & 2'h2);
+  assign per_pin_io_0_qe = &(per_pin_io_0_flds_we | 2'h2);
+  //   F[data_out_0]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_0_data_out_0 (
+    .re     (per_pin_io_0_re),
+    .we     (per_pin_io_0_we),
+    .wd     (per_pin_io_0_data_out_0_wd),
+    .d      (hw2reg.per_pin_io[0].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_0_flds_we[0]),
+    .q      (reg2hw.per_pin_io[0].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_0_data_out_0_qs)
+  );
+  assign reg2hw.per_pin_io[0].data_out.qe = per_pin_io_0_qe;
 
-  logic [17:0] addr_hit;
+  //   F[data_in_0]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_0_data_in_0 (
+    .re     (per_pin_io_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[0].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_0_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_0_data_in_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg per_pin_io
+  // R[per_pin_io_1]: V(True)
+  logic per_pin_io_1_qe;
+  logic [1:0] per_pin_io_1_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_1_flds_we;
+  assign unused_per_pin_io_1_flds_we = ^(per_pin_io_1_flds_we & 2'h2);
+  assign per_pin_io_1_qe = &(per_pin_io_1_flds_we | 2'h2);
+  //   F[data_out_1]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_1_data_out_1 (
+    .re     (per_pin_io_1_re),
+    .we     (per_pin_io_1_we),
+    .wd     (per_pin_io_1_data_out_1_wd),
+    .d      (hw2reg.per_pin_io[1].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_1_flds_we[0]),
+    .q      (reg2hw.per_pin_io[1].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_1_data_out_1_qs)
+  );
+  assign reg2hw.per_pin_io[1].data_out.qe = per_pin_io_1_qe;
+
+  //   F[data_in_1]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_1_data_in_1 (
+    .re     (per_pin_io_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[1].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_1_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_1_data_in_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg per_pin_io
+  // R[per_pin_io_2]: V(True)
+  logic per_pin_io_2_qe;
+  logic [1:0] per_pin_io_2_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_2_flds_we;
+  assign unused_per_pin_io_2_flds_we = ^(per_pin_io_2_flds_we & 2'h2);
+  assign per_pin_io_2_qe = &(per_pin_io_2_flds_we | 2'h2);
+  //   F[data_out_2]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_2_data_out_2 (
+    .re     (per_pin_io_2_re),
+    .we     (per_pin_io_2_we),
+    .wd     (per_pin_io_2_data_out_2_wd),
+    .d      (hw2reg.per_pin_io[2].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_2_flds_we[0]),
+    .q      (reg2hw.per_pin_io[2].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_2_data_out_2_qs)
+  );
+  assign reg2hw.per_pin_io[2].data_out.qe = per_pin_io_2_qe;
+
+  //   F[data_in_2]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_2_data_in_2 (
+    .re     (per_pin_io_2_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[2].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_2_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_2_data_in_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg per_pin_io
+  // R[per_pin_io_3]: V(True)
+  logic per_pin_io_3_qe;
+  logic [1:0] per_pin_io_3_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_3_flds_we;
+  assign unused_per_pin_io_3_flds_we = ^(per_pin_io_3_flds_we & 2'h2);
+  assign per_pin_io_3_qe = &(per_pin_io_3_flds_we | 2'h2);
+  //   F[data_out_3]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_3_data_out_3 (
+    .re     (per_pin_io_3_re),
+    .we     (per_pin_io_3_we),
+    .wd     (per_pin_io_3_data_out_3_wd),
+    .d      (hw2reg.per_pin_io[3].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_3_flds_we[0]),
+    .q      (reg2hw.per_pin_io[3].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_3_data_out_3_qs)
+  );
+  assign reg2hw.per_pin_io[3].data_out.qe = per_pin_io_3_qe;
+
+  //   F[data_in_3]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_3_data_in_3 (
+    .re     (per_pin_io_3_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[3].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_3_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_3_data_in_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg per_pin_io
+  // R[per_pin_io_4]: V(True)
+  logic per_pin_io_4_qe;
+  logic [1:0] per_pin_io_4_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_4_flds_we;
+  assign unused_per_pin_io_4_flds_we = ^(per_pin_io_4_flds_we & 2'h2);
+  assign per_pin_io_4_qe = &(per_pin_io_4_flds_we | 2'h2);
+  //   F[data_out_4]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_4_data_out_4 (
+    .re     (per_pin_io_4_re),
+    .we     (per_pin_io_4_we),
+    .wd     (per_pin_io_4_data_out_4_wd),
+    .d      (hw2reg.per_pin_io[4].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_4_flds_we[0]),
+    .q      (reg2hw.per_pin_io[4].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_4_data_out_4_qs)
+  );
+  assign reg2hw.per_pin_io[4].data_out.qe = per_pin_io_4_qe;
+
+  //   F[data_in_4]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_4_data_in_4 (
+    .re     (per_pin_io_4_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[4].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_4_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_4_data_in_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg per_pin_io
+  // R[per_pin_io_5]: V(True)
+  logic per_pin_io_5_qe;
+  logic [1:0] per_pin_io_5_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_5_flds_we;
+  assign unused_per_pin_io_5_flds_we = ^(per_pin_io_5_flds_we & 2'h2);
+  assign per_pin_io_5_qe = &(per_pin_io_5_flds_we | 2'h2);
+  //   F[data_out_5]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_5_data_out_5 (
+    .re     (per_pin_io_5_re),
+    .we     (per_pin_io_5_we),
+    .wd     (per_pin_io_5_data_out_5_wd),
+    .d      (hw2reg.per_pin_io[5].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_5_flds_we[0]),
+    .q      (reg2hw.per_pin_io[5].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_5_data_out_5_qs)
+  );
+  assign reg2hw.per_pin_io[5].data_out.qe = per_pin_io_5_qe;
+
+  //   F[data_in_5]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_5_data_in_5 (
+    .re     (per_pin_io_5_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[5].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_5_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_5_data_in_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg per_pin_io
+  // R[per_pin_io_6]: V(True)
+  logic per_pin_io_6_qe;
+  logic [1:0] per_pin_io_6_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_6_flds_we;
+  assign unused_per_pin_io_6_flds_we = ^(per_pin_io_6_flds_we & 2'h2);
+  assign per_pin_io_6_qe = &(per_pin_io_6_flds_we | 2'h2);
+  //   F[data_out_6]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_6_data_out_6 (
+    .re     (per_pin_io_6_re),
+    .we     (per_pin_io_6_we),
+    .wd     (per_pin_io_6_data_out_6_wd),
+    .d      (hw2reg.per_pin_io[6].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_6_flds_we[0]),
+    .q      (reg2hw.per_pin_io[6].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_6_data_out_6_qs)
+  );
+  assign reg2hw.per_pin_io[6].data_out.qe = per_pin_io_6_qe;
+
+  //   F[data_in_6]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_6_data_in_6 (
+    .re     (per_pin_io_6_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[6].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_6_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_6_data_in_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg per_pin_io
+  // R[per_pin_io_7]: V(True)
+  logic per_pin_io_7_qe;
+  logic [1:0] per_pin_io_7_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_7_flds_we;
+  assign unused_per_pin_io_7_flds_we = ^(per_pin_io_7_flds_we & 2'h2);
+  assign per_pin_io_7_qe = &(per_pin_io_7_flds_we | 2'h2);
+  //   F[data_out_7]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_7_data_out_7 (
+    .re     (per_pin_io_7_re),
+    .we     (per_pin_io_7_we),
+    .wd     (per_pin_io_7_data_out_7_wd),
+    .d      (hw2reg.per_pin_io[7].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_7_flds_we[0]),
+    .q      (reg2hw.per_pin_io[7].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_7_data_out_7_qs)
+  );
+  assign reg2hw.per_pin_io[7].data_out.qe = per_pin_io_7_qe;
+
+  //   F[data_in_7]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_7_data_in_7 (
+    .re     (per_pin_io_7_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[7].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_7_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_7_data_in_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg per_pin_io
+  // R[per_pin_io_8]: V(True)
+  logic per_pin_io_8_qe;
+  logic [1:0] per_pin_io_8_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_8_flds_we;
+  assign unused_per_pin_io_8_flds_we = ^(per_pin_io_8_flds_we & 2'h2);
+  assign per_pin_io_8_qe = &(per_pin_io_8_flds_we | 2'h2);
+  //   F[data_out_8]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_8_data_out_8 (
+    .re     (per_pin_io_8_re),
+    .we     (per_pin_io_8_we),
+    .wd     (per_pin_io_8_data_out_8_wd),
+    .d      (hw2reg.per_pin_io[8].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_8_flds_we[0]),
+    .q      (reg2hw.per_pin_io[8].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_8_data_out_8_qs)
+  );
+  assign reg2hw.per_pin_io[8].data_out.qe = per_pin_io_8_qe;
+
+  //   F[data_in_8]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_8_data_in_8 (
+    .re     (per_pin_io_8_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[8].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_8_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_8_data_in_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg per_pin_io
+  // R[per_pin_io_9]: V(True)
+  logic per_pin_io_9_qe;
+  logic [1:0] per_pin_io_9_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_9_flds_we;
+  assign unused_per_pin_io_9_flds_we = ^(per_pin_io_9_flds_we & 2'h2);
+  assign per_pin_io_9_qe = &(per_pin_io_9_flds_we | 2'h2);
+  //   F[data_out_9]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_9_data_out_9 (
+    .re     (per_pin_io_9_re),
+    .we     (per_pin_io_9_we),
+    .wd     (per_pin_io_9_data_out_9_wd),
+    .d      (hw2reg.per_pin_io[9].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_9_flds_we[0]),
+    .q      (reg2hw.per_pin_io[9].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_9_data_out_9_qs)
+  );
+  assign reg2hw.per_pin_io[9].data_out.qe = per_pin_io_9_qe;
+
+  //   F[data_in_9]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_9_data_in_9 (
+    .re     (per_pin_io_9_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[9].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_9_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_9_data_in_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg per_pin_io
+  // R[per_pin_io_10]: V(True)
+  logic per_pin_io_10_qe;
+  logic [1:0] per_pin_io_10_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_10_flds_we;
+  assign unused_per_pin_io_10_flds_we = ^(per_pin_io_10_flds_we & 2'h2);
+  assign per_pin_io_10_qe = &(per_pin_io_10_flds_we | 2'h2);
+  //   F[data_out_10]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_10_data_out_10 (
+    .re     (per_pin_io_10_re),
+    .we     (per_pin_io_10_we),
+    .wd     (per_pin_io_10_data_out_10_wd),
+    .d      (hw2reg.per_pin_io[10].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_10_flds_we[0]),
+    .q      (reg2hw.per_pin_io[10].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_10_data_out_10_qs)
+  );
+  assign reg2hw.per_pin_io[10].data_out.qe = per_pin_io_10_qe;
+
+  //   F[data_in_10]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_10_data_in_10 (
+    .re     (per_pin_io_10_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[10].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_10_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_10_data_in_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg per_pin_io
+  // R[per_pin_io_11]: V(True)
+  logic per_pin_io_11_qe;
+  logic [1:0] per_pin_io_11_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_11_flds_we;
+  assign unused_per_pin_io_11_flds_we = ^(per_pin_io_11_flds_we & 2'h2);
+  assign per_pin_io_11_qe = &(per_pin_io_11_flds_we | 2'h2);
+  //   F[data_out_11]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_11_data_out_11 (
+    .re     (per_pin_io_11_re),
+    .we     (per_pin_io_11_we),
+    .wd     (per_pin_io_11_data_out_11_wd),
+    .d      (hw2reg.per_pin_io[11].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_11_flds_we[0]),
+    .q      (reg2hw.per_pin_io[11].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_11_data_out_11_qs)
+  );
+  assign reg2hw.per_pin_io[11].data_out.qe = per_pin_io_11_qe;
+
+  //   F[data_in_11]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_11_data_in_11 (
+    .re     (per_pin_io_11_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[11].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_11_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_11_data_in_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg per_pin_io
+  // R[per_pin_io_12]: V(True)
+  logic per_pin_io_12_qe;
+  logic [1:0] per_pin_io_12_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_12_flds_we;
+  assign unused_per_pin_io_12_flds_we = ^(per_pin_io_12_flds_we & 2'h2);
+  assign per_pin_io_12_qe = &(per_pin_io_12_flds_we | 2'h2);
+  //   F[data_out_12]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_12_data_out_12 (
+    .re     (per_pin_io_12_re),
+    .we     (per_pin_io_12_we),
+    .wd     (per_pin_io_12_data_out_12_wd),
+    .d      (hw2reg.per_pin_io[12].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_12_flds_we[0]),
+    .q      (reg2hw.per_pin_io[12].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_12_data_out_12_qs)
+  );
+  assign reg2hw.per_pin_io[12].data_out.qe = per_pin_io_12_qe;
+
+  //   F[data_in_12]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_12_data_in_12 (
+    .re     (per_pin_io_12_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[12].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_12_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_12_data_in_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg per_pin_io
+  // R[per_pin_io_13]: V(True)
+  logic per_pin_io_13_qe;
+  logic [1:0] per_pin_io_13_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_13_flds_we;
+  assign unused_per_pin_io_13_flds_we = ^(per_pin_io_13_flds_we & 2'h2);
+  assign per_pin_io_13_qe = &(per_pin_io_13_flds_we | 2'h2);
+  //   F[data_out_13]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_13_data_out_13 (
+    .re     (per_pin_io_13_re),
+    .we     (per_pin_io_13_we),
+    .wd     (per_pin_io_13_data_out_13_wd),
+    .d      (hw2reg.per_pin_io[13].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_13_flds_we[0]),
+    .q      (reg2hw.per_pin_io[13].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_13_data_out_13_qs)
+  );
+  assign reg2hw.per_pin_io[13].data_out.qe = per_pin_io_13_qe;
+
+  //   F[data_in_13]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_13_data_in_13 (
+    .re     (per_pin_io_13_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[13].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_13_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_13_data_in_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg per_pin_io
+  // R[per_pin_io_14]: V(True)
+  logic per_pin_io_14_qe;
+  logic [1:0] per_pin_io_14_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_14_flds_we;
+  assign unused_per_pin_io_14_flds_we = ^(per_pin_io_14_flds_we & 2'h2);
+  assign per_pin_io_14_qe = &(per_pin_io_14_flds_we | 2'h2);
+  //   F[data_out_14]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_14_data_out_14 (
+    .re     (per_pin_io_14_re),
+    .we     (per_pin_io_14_we),
+    .wd     (per_pin_io_14_data_out_14_wd),
+    .d      (hw2reg.per_pin_io[14].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_14_flds_we[0]),
+    .q      (reg2hw.per_pin_io[14].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_14_data_out_14_qs)
+  );
+  assign reg2hw.per_pin_io[14].data_out.qe = per_pin_io_14_qe;
+
+  //   F[data_in_14]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_14_data_in_14 (
+    .re     (per_pin_io_14_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[14].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_14_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_14_data_in_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg per_pin_io
+  // R[per_pin_io_15]: V(True)
+  logic per_pin_io_15_qe;
+  logic [1:0] per_pin_io_15_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_15_flds_we;
+  assign unused_per_pin_io_15_flds_we = ^(per_pin_io_15_flds_we & 2'h2);
+  assign per_pin_io_15_qe = &(per_pin_io_15_flds_we | 2'h2);
+  //   F[data_out_15]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_15_data_out_15 (
+    .re     (per_pin_io_15_re),
+    .we     (per_pin_io_15_we),
+    .wd     (per_pin_io_15_data_out_15_wd),
+    .d      (hw2reg.per_pin_io[15].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_15_flds_we[0]),
+    .q      (reg2hw.per_pin_io[15].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_15_data_out_15_qs)
+  );
+  assign reg2hw.per_pin_io[15].data_out.qe = per_pin_io_15_qe;
+
+  //   F[data_in_15]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_15_data_in_15 (
+    .re     (per_pin_io_15_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[15].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_15_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_15_data_in_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg per_pin_io
+  // R[per_pin_io_16]: V(True)
+  logic per_pin_io_16_qe;
+  logic [1:0] per_pin_io_16_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_16_flds_we;
+  assign unused_per_pin_io_16_flds_we = ^(per_pin_io_16_flds_we & 2'h2);
+  assign per_pin_io_16_qe = &(per_pin_io_16_flds_we | 2'h2);
+  //   F[data_out_16]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_16_data_out_16 (
+    .re     (per_pin_io_16_re),
+    .we     (per_pin_io_16_we),
+    .wd     (per_pin_io_16_data_out_16_wd),
+    .d      (hw2reg.per_pin_io[16].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_16_flds_we[0]),
+    .q      (reg2hw.per_pin_io[16].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_16_data_out_16_qs)
+  );
+  assign reg2hw.per_pin_io[16].data_out.qe = per_pin_io_16_qe;
+
+  //   F[data_in_16]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_16_data_in_16 (
+    .re     (per_pin_io_16_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[16].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_16_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_16_data_in_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg per_pin_io
+  // R[per_pin_io_17]: V(True)
+  logic per_pin_io_17_qe;
+  logic [1:0] per_pin_io_17_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_17_flds_we;
+  assign unused_per_pin_io_17_flds_we = ^(per_pin_io_17_flds_we & 2'h2);
+  assign per_pin_io_17_qe = &(per_pin_io_17_flds_we | 2'h2);
+  //   F[data_out_17]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_17_data_out_17 (
+    .re     (per_pin_io_17_re),
+    .we     (per_pin_io_17_we),
+    .wd     (per_pin_io_17_data_out_17_wd),
+    .d      (hw2reg.per_pin_io[17].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_17_flds_we[0]),
+    .q      (reg2hw.per_pin_io[17].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_17_data_out_17_qs)
+  );
+  assign reg2hw.per_pin_io[17].data_out.qe = per_pin_io_17_qe;
+
+  //   F[data_in_17]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_17_data_in_17 (
+    .re     (per_pin_io_17_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[17].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_17_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_17_data_in_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg per_pin_io
+  // R[per_pin_io_18]: V(True)
+  logic per_pin_io_18_qe;
+  logic [1:0] per_pin_io_18_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_18_flds_we;
+  assign unused_per_pin_io_18_flds_we = ^(per_pin_io_18_flds_we & 2'h2);
+  assign per_pin_io_18_qe = &(per_pin_io_18_flds_we | 2'h2);
+  //   F[data_out_18]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_18_data_out_18 (
+    .re     (per_pin_io_18_re),
+    .we     (per_pin_io_18_we),
+    .wd     (per_pin_io_18_data_out_18_wd),
+    .d      (hw2reg.per_pin_io[18].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_18_flds_we[0]),
+    .q      (reg2hw.per_pin_io[18].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_18_data_out_18_qs)
+  );
+  assign reg2hw.per_pin_io[18].data_out.qe = per_pin_io_18_qe;
+
+  //   F[data_in_18]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_18_data_in_18 (
+    .re     (per_pin_io_18_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[18].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_18_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_18_data_in_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg per_pin_io
+  // R[per_pin_io_19]: V(True)
+  logic per_pin_io_19_qe;
+  logic [1:0] per_pin_io_19_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_19_flds_we;
+  assign unused_per_pin_io_19_flds_we = ^(per_pin_io_19_flds_we & 2'h2);
+  assign per_pin_io_19_qe = &(per_pin_io_19_flds_we | 2'h2);
+  //   F[data_out_19]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_19_data_out_19 (
+    .re     (per_pin_io_19_re),
+    .we     (per_pin_io_19_we),
+    .wd     (per_pin_io_19_data_out_19_wd),
+    .d      (hw2reg.per_pin_io[19].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_19_flds_we[0]),
+    .q      (reg2hw.per_pin_io[19].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_19_data_out_19_qs)
+  );
+  assign reg2hw.per_pin_io[19].data_out.qe = per_pin_io_19_qe;
+
+  //   F[data_in_19]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_19_data_in_19 (
+    .re     (per_pin_io_19_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[19].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_19_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_19_data_in_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg per_pin_io
+  // R[per_pin_io_20]: V(True)
+  logic per_pin_io_20_qe;
+  logic [1:0] per_pin_io_20_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_20_flds_we;
+  assign unused_per_pin_io_20_flds_we = ^(per_pin_io_20_flds_we & 2'h2);
+  assign per_pin_io_20_qe = &(per_pin_io_20_flds_we | 2'h2);
+  //   F[data_out_20]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_20_data_out_20 (
+    .re     (per_pin_io_20_re),
+    .we     (per_pin_io_20_we),
+    .wd     (per_pin_io_20_data_out_20_wd),
+    .d      (hw2reg.per_pin_io[20].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_20_flds_we[0]),
+    .q      (reg2hw.per_pin_io[20].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_20_data_out_20_qs)
+  );
+  assign reg2hw.per_pin_io[20].data_out.qe = per_pin_io_20_qe;
+
+  //   F[data_in_20]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_20_data_in_20 (
+    .re     (per_pin_io_20_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[20].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_20_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_20_data_in_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg per_pin_io
+  // R[per_pin_io_21]: V(True)
+  logic per_pin_io_21_qe;
+  logic [1:0] per_pin_io_21_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_21_flds_we;
+  assign unused_per_pin_io_21_flds_we = ^(per_pin_io_21_flds_we & 2'h2);
+  assign per_pin_io_21_qe = &(per_pin_io_21_flds_we | 2'h2);
+  //   F[data_out_21]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_21_data_out_21 (
+    .re     (per_pin_io_21_re),
+    .we     (per_pin_io_21_we),
+    .wd     (per_pin_io_21_data_out_21_wd),
+    .d      (hw2reg.per_pin_io[21].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_21_flds_we[0]),
+    .q      (reg2hw.per_pin_io[21].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_21_data_out_21_qs)
+  );
+  assign reg2hw.per_pin_io[21].data_out.qe = per_pin_io_21_qe;
+
+  //   F[data_in_21]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_21_data_in_21 (
+    .re     (per_pin_io_21_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[21].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_21_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_21_data_in_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg per_pin_io
+  // R[per_pin_io_22]: V(True)
+  logic per_pin_io_22_qe;
+  logic [1:0] per_pin_io_22_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_22_flds_we;
+  assign unused_per_pin_io_22_flds_we = ^(per_pin_io_22_flds_we & 2'h2);
+  assign per_pin_io_22_qe = &(per_pin_io_22_flds_we | 2'h2);
+  //   F[data_out_22]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_22_data_out_22 (
+    .re     (per_pin_io_22_re),
+    .we     (per_pin_io_22_we),
+    .wd     (per_pin_io_22_data_out_22_wd),
+    .d      (hw2reg.per_pin_io[22].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_22_flds_we[0]),
+    .q      (reg2hw.per_pin_io[22].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_22_data_out_22_qs)
+  );
+  assign reg2hw.per_pin_io[22].data_out.qe = per_pin_io_22_qe;
+
+  //   F[data_in_22]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_22_data_in_22 (
+    .re     (per_pin_io_22_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[22].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_22_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_22_data_in_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg per_pin_io
+  // R[per_pin_io_23]: V(True)
+  logic per_pin_io_23_qe;
+  logic [1:0] per_pin_io_23_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_23_flds_we;
+  assign unused_per_pin_io_23_flds_we = ^(per_pin_io_23_flds_we & 2'h2);
+  assign per_pin_io_23_qe = &(per_pin_io_23_flds_we | 2'h2);
+  //   F[data_out_23]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_23_data_out_23 (
+    .re     (per_pin_io_23_re),
+    .we     (per_pin_io_23_we),
+    .wd     (per_pin_io_23_data_out_23_wd),
+    .d      (hw2reg.per_pin_io[23].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_23_flds_we[0]),
+    .q      (reg2hw.per_pin_io[23].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_23_data_out_23_qs)
+  );
+  assign reg2hw.per_pin_io[23].data_out.qe = per_pin_io_23_qe;
+
+  //   F[data_in_23]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_23_data_in_23 (
+    .re     (per_pin_io_23_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[23].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_23_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_23_data_in_23_qs)
+  );
+
+
+  // Subregister 24 of Multireg per_pin_io
+  // R[per_pin_io_24]: V(True)
+  logic per_pin_io_24_qe;
+  logic [1:0] per_pin_io_24_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_24_flds_we;
+  assign unused_per_pin_io_24_flds_we = ^(per_pin_io_24_flds_we & 2'h2);
+  assign per_pin_io_24_qe = &(per_pin_io_24_flds_we | 2'h2);
+  //   F[data_out_24]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_24_data_out_24 (
+    .re     (per_pin_io_24_re),
+    .we     (per_pin_io_24_we),
+    .wd     (per_pin_io_24_data_out_24_wd),
+    .d      (hw2reg.per_pin_io[24].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_24_flds_we[0]),
+    .q      (reg2hw.per_pin_io[24].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_24_data_out_24_qs)
+  );
+  assign reg2hw.per_pin_io[24].data_out.qe = per_pin_io_24_qe;
+
+  //   F[data_in_24]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_24_data_in_24 (
+    .re     (per_pin_io_24_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[24].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_24_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_24_data_in_24_qs)
+  );
+
+
+  // Subregister 25 of Multireg per_pin_io
+  // R[per_pin_io_25]: V(True)
+  logic per_pin_io_25_qe;
+  logic [1:0] per_pin_io_25_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_25_flds_we;
+  assign unused_per_pin_io_25_flds_we = ^(per_pin_io_25_flds_we & 2'h2);
+  assign per_pin_io_25_qe = &(per_pin_io_25_flds_we | 2'h2);
+  //   F[data_out_25]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_25_data_out_25 (
+    .re     (per_pin_io_25_re),
+    .we     (per_pin_io_25_we),
+    .wd     (per_pin_io_25_data_out_25_wd),
+    .d      (hw2reg.per_pin_io[25].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_25_flds_we[0]),
+    .q      (reg2hw.per_pin_io[25].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_25_data_out_25_qs)
+  );
+  assign reg2hw.per_pin_io[25].data_out.qe = per_pin_io_25_qe;
+
+  //   F[data_in_25]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_25_data_in_25 (
+    .re     (per_pin_io_25_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[25].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_25_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_25_data_in_25_qs)
+  );
+
+
+  // Subregister 26 of Multireg per_pin_io
+  // R[per_pin_io_26]: V(True)
+  logic per_pin_io_26_qe;
+  logic [1:0] per_pin_io_26_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_26_flds_we;
+  assign unused_per_pin_io_26_flds_we = ^(per_pin_io_26_flds_we & 2'h2);
+  assign per_pin_io_26_qe = &(per_pin_io_26_flds_we | 2'h2);
+  //   F[data_out_26]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_26_data_out_26 (
+    .re     (per_pin_io_26_re),
+    .we     (per_pin_io_26_we),
+    .wd     (per_pin_io_26_data_out_26_wd),
+    .d      (hw2reg.per_pin_io[26].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_26_flds_we[0]),
+    .q      (reg2hw.per_pin_io[26].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_26_data_out_26_qs)
+  );
+  assign reg2hw.per_pin_io[26].data_out.qe = per_pin_io_26_qe;
+
+  //   F[data_in_26]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_26_data_in_26 (
+    .re     (per_pin_io_26_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[26].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_26_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_26_data_in_26_qs)
+  );
+
+
+  // Subregister 27 of Multireg per_pin_io
+  // R[per_pin_io_27]: V(True)
+  logic per_pin_io_27_qe;
+  logic [1:0] per_pin_io_27_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_27_flds_we;
+  assign unused_per_pin_io_27_flds_we = ^(per_pin_io_27_flds_we & 2'h2);
+  assign per_pin_io_27_qe = &(per_pin_io_27_flds_we | 2'h2);
+  //   F[data_out_27]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_27_data_out_27 (
+    .re     (per_pin_io_27_re),
+    .we     (per_pin_io_27_we),
+    .wd     (per_pin_io_27_data_out_27_wd),
+    .d      (hw2reg.per_pin_io[27].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_27_flds_we[0]),
+    .q      (reg2hw.per_pin_io[27].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_27_data_out_27_qs)
+  );
+  assign reg2hw.per_pin_io[27].data_out.qe = per_pin_io_27_qe;
+
+  //   F[data_in_27]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_27_data_in_27 (
+    .re     (per_pin_io_27_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[27].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_27_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_27_data_in_27_qs)
+  );
+
+
+  // Subregister 28 of Multireg per_pin_io
+  // R[per_pin_io_28]: V(True)
+  logic per_pin_io_28_qe;
+  logic [1:0] per_pin_io_28_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_28_flds_we;
+  assign unused_per_pin_io_28_flds_we = ^(per_pin_io_28_flds_we & 2'h2);
+  assign per_pin_io_28_qe = &(per_pin_io_28_flds_we | 2'h2);
+  //   F[data_out_28]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_28_data_out_28 (
+    .re     (per_pin_io_28_re),
+    .we     (per_pin_io_28_we),
+    .wd     (per_pin_io_28_data_out_28_wd),
+    .d      (hw2reg.per_pin_io[28].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_28_flds_we[0]),
+    .q      (reg2hw.per_pin_io[28].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_28_data_out_28_qs)
+  );
+  assign reg2hw.per_pin_io[28].data_out.qe = per_pin_io_28_qe;
+
+  //   F[data_in_28]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_28_data_in_28 (
+    .re     (per_pin_io_28_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[28].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_28_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_28_data_in_28_qs)
+  );
+
+
+  // Subregister 29 of Multireg per_pin_io
+  // R[per_pin_io_29]: V(True)
+  logic per_pin_io_29_qe;
+  logic [1:0] per_pin_io_29_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_29_flds_we;
+  assign unused_per_pin_io_29_flds_we = ^(per_pin_io_29_flds_we & 2'h2);
+  assign per_pin_io_29_qe = &(per_pin_io_29_flds_we | 2'h2);
+  //   F[data_out_29]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_29_data_out_29 (
+    .re     (per_pin_io_29_re),
+    .we     (per_pin_io_29_we),
+    .wd     (per_pin_io_29_data_out_29_wd),
+    .d      (hw2reg.per_pin_io[29].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_29_flds_we[0]),
+    .q      (reg2hw.per_pin_io[29].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_29_data_out_29_qs)
+  );
+  assign reg2hw.per_pin_io[29].data_out.qe = per_pin_io_29_qe;
+
+  //   F[data_in_29]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_29_data_in_29 (
+    .re     (per_pin_io_29_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[29].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_29_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_29_data_in_29_qs)
+  );
+
+
+  // Subregister 30 of Multireg per_pin_io
+  // R[per_pin_io_30]: V(True)
+  logic per_pin_io_30_qe;
+  logic [1:0] per_pin_io_30_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_30_flds_we;
+  assign unused_per_pin_io_30_flds_we = ^(per_pin_io_30_flds_we & 2'h2);
+  assign per_pin_io_30_qe = &(per_pin_io_30_flds_we | 2'h2);
+  //   F[data_out_30]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_30_data_out_30 (
+    .re     (per_pin_io_30_re),
+    .we     (per_pin_io_30_we),
+    .wd     (per_pin_io_30_data_out_30_wd),
+    .d      (hw2reg.per_pin_io[30].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_30_flds_we[0]),
+    .q      (reg2hw.per_pin_io[30].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_30_data_out_30_qs)
+  );
+  assign reg2hw.per_pin_io[30].data_out.qe = per_pin_io_30_qe;
+
+  //   F[data_in_30]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_30_data_in_30 (
+    .re     (per_pin_io_30_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[30].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_30_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_30_data_in_30_qs)
+  );
+
+
+  // Subregister 31 of Multireg per_pin_io
+  // R[per_pin_io_31]: V(True)
+  logic per_pin_io_31_qe;
+  logic [1:0] per_pin_io_31_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_per_pin_io_31_flds_we;
+  assign unused_per_pin_io_31_flds_we = ^(per_pin_io_31_flds_we & 2'h2);
+  assign per_pin_io_31_qe = &(per_pin_io_31_flds_we | 2'h2);
+  //   F[data_out_31]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_31_data_out_31 (
+    .re     (per_pin_io_31_re),
+    .we     (per_pin_io_31_we),
+    .wd     (per_pin_io_31_data_out_31_wd),
+    .d      (hw2reg.per_pin_io[31].data_out.d),
+    .qre    (),
+    .qe     (per_pin_io_31_flds_we[0]),
+    .q      (reg2hw.per_pin_io[31].data_out.q),
+    .ds     (),
+    .qs     (per_pin_io_31_data_out_31_qs)
+  );
+  assign reg2hw.per_pin_io[31].data_out.qe = per_pin_io_31_qe;
+
+  //   F[data_in_31]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_io_31_data_in_31 (
+    .re     (per_pin_io_31_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.per_pin_io[31].data_in.d),
+    .qre    (),
+    .qe     (per_pin_io_31_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (per_pin_io_31_data_in_31_qs)
+  );
+
+
+  // Subregister 0 of Multireg per_pin_cfg
+  // R[per_pin_cfg_0]: V(True)
+  logic per_pin_cfg_0_qe;
+  logic [5:0] per_pin_cfg_0_flds_we;
+  assign per_pin_cfg_0_qe = &per_pin_cfg_0_flds_we;
+  //   F[oe_0]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_oe_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_oe_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[0].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_oe_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].oe.qe = per_pin_cfg_0_qe;
+
+  //   F[intr_ctrl_en_rising_0]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_intr_ctrl_en_rising_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_intr_ctrl_en_rising_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[0].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_intr_ctrl_en_rising_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].intr_ctrl_en_rising.qe = per_pin_cfg_0_qe;
+
+  //   F[intr_ctrl_en_falling_0]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_intr_ctrl_en_falling_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_intr_ctrl_en_falling_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[0].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_intr_ctrl_en_falling_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].intr_ctrl_en_falling.qe = per_pin_cfg_0_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_0]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_intr_ctrl_en_lvlhigh_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[0].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_0_qe;
+
+  //   F[intr_ctrl_en_lvllow_0]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_intr_ctrl_en_lvllow_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_intr_ctrl_en_lvllow_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[0].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_intr_ctrl_en_lvllow_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].intr_ctrl_en_lvllow.qe = per_pin_cfg_0_qe;
+
+  //   F[ctrl_en_input_filter_0]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_0_ctrl_en_input_filter_0 (
+    .re     (per_pin_cfg_0_re),
+    .we     (per_pin_cfg_0_we),
+    .wd     (per_pin_cfg_0_ctrl_en_input_filter_0_wd),
+    .d      (hw2reg.per_pin_cfg[0].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_0_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[0].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_0_ctrl_en_input_filter_0_qs)
+  );
+  assign reg2hw.per_pin_cfg[0].ctrl_en_input_filter.qe = per_pin_cfg_0_qe;
+
+
+  // Subregister 1 of Multireg per_pin_cfg
+  // R[per_pin_cfg_1]: V(True)
+  logic per_pin_cfg_1_qe;
+  logic [5:0] per_pin_cfg_1_flds_we;
+  assign per_pin_cfg_1_qe = &per_pin_cfg_1_flds_we;
+  //   F[oe_1]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_oe_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_oe_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[1].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_oe_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].oe.qe = per_pin_cfg_1_qe;
+
+  //   F[intr_ctrl_en_rising_1]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_intr_ctrl_en_rising_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_intr_ctrl_en_rising_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[1].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_intr_ctrl_en_rising_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].intr_ctrl_en_rising.qe = per_pin_cfg_1_qe;
+
+  //   F[intr_ctrl_en_falling_1]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_intr_ctrl_en_falling_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_intr_ctrl_en_falling_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[1].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_intr_ctrl_en_falling_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].intr_ctrl_en_falling.qe = per_pin_cfg_1_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_1]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_intr_ctrl_en_lvlhigh_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[1].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_1_qe;
+
+  //   F[intr_ctrl_en_lvllow_1]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_intr_ctrl_en_lvllow_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_intr_ctrl_en_lvllow_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[1].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_intr_ctrl_en_lvllow_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].intr_ctrl_en_lvllow.qe = per_pin_cfg_1_qe;
+
+  //   F[ctrl_en_input_filter_1]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_1_ctrl_en_input_filter_1 (
+    .re     (per_pin_cfg_1_re),
+    .we     (per_pin_cfg_1_we),
+    .wd     (per_pin_cfg_1_ctrl_en_input_filter_1_wd),
+    .d      (hw2reg.per_pin_cfg[1].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_1_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[1].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_1_ctrl_en_input_filter_1_qs)
+  );
+  assign reg2hw.per_pin_cfg[1].ctrl_en_input_filter.qe = per_pin_cfg_1_qe;
+
+
+  // Subregister 2 of Multireg per_pin_cfg
+  // R[per_pin_cfg_2]: V(True)
+  logic per_pin_cfg_2_qe;
+  logic [5:0] per_pin_cfg_2_flds_we;
+  assign per_pin_cfg_2_qe = &per_pin_cfg_2_flds_we;
+  //   F[oe_2]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_oe_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_oe_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[2].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_oe_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].oe.qe = per_pin_cfg_2_qe;
+
+  //   F[intr_ctrl_en_rising_2]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_intr_ctrl_en_rising_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_intr_ctrl_en_rising_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[2].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_intr_ctrl_en_rising_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].intr_ctrl_en_rising.qe = per_pin_cfg_2_qe;
+
+  //   F[intr_ctrl_en_falling_2]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_intr_ctrl_en_falling_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_intr_ctrl_en_falling_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[2].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_intr_ctrl_en_falling_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].intr_ctrl_en_falling.qe = per_pin_cfg_2_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_2]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_intr_ctrl_en_lvlhigh_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[2].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_2_qe;
+
+  //   F[intr_ctrl_en_lvllow_2]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_intr_ctrl_en_lvllow_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_intr_ctrl_en_lvllow_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[2].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_intr_ctrl_en_lvllow_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].intr_ctrl_en_lvllow.qe = per_pin_cfg_2_qe;
+
+  //   F[ctrl_en_input_filter_2]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_2_ctrl_en_input_filter_2 (
+    .re     (per_pin_cfg_2_re),
+    .we     (per_pin_cfg_2_we),
+    .wd     (per_pin_cfg_2_ctrl_en_input_filter_2_wd),
+    .d      (hw2reg.per_pin_cfg[2].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_2_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[2].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_2_ctrl_en_input_filter_2_qs)
+  );
+  assign reg2hw.per_pin_cfg[2].ctrl_en_input_filter.qe = per_pin_cfg_2_qe;
+
+
+  // Subregister 3 of Multireg per_pin_cfg
+  // R[per_pin_cfg_3]: V(True)
+  logic per_pin_cfg_3_qe;
+  logic [5:0] per_pin_cfg_3_flds_we;
+  assign per_pin_cfg_3_qe = &per_pin_cfg_3_flds_we;
+  //   F[oe_3]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_oe_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_oe_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[3].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_oe_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].oe.qe = per_pin_cfg_3_qe;
+
+  //   F[intr_ctrl_en_rising_3]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_intr_ctrl_en_rising_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_intr_ctrl_en_rising_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[3].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_intr_ctrl_en_rising_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].intr_ctrl_en_rising.qe = per_pin_cfg_3_qe;
+
+  //   F[intr_ctrl_en_falling_3]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_intr_ctrl_en_falling_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_intr_ctrl_en_falling_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[3].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_intr_ctrl_en_falling_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].intr_ctrl_en_falling.qe = per_pin_cfg_3_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_3]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_intr_ctrl_en_lvlhigh_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[3].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_3_qe;
+
+  //   F[intr_ctrl_en_lvllow_3]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_intr_ctrl_en_lvllow_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_intr_ctrl_en_lvllow_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[3].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_intr_ctrl_en_lvllow_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].intr_ctrl_en_lvllow.qe = per_pin_cfg_3_qe;
+
+  //   F[ctrl_en_input_filter_3]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_3_ctrl_en_input_filter_3 (
+    .re     (per_pin_cfg_3_re),
+    .we     (per_pin_cfg_3_we),
+    .wd     (per_pin_cfg_3_ctrl_en_input_filter_3_wd),
+    .d      (hw2reg.per_pin_cfg[3].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_3_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[3].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_3_ctrl_en_input_filter_3_qs)
+  );
+  assign reg2hw.per_pin_cfg[3].ctrl_en_input_filter.qe = per_pin_cfg_3_qe;
+
+
+  // Subregister 4 of Multireg per_pin_cfg
+  // R[per_pin_cfg_4]: V(True)
+  logic per_pin_cfg_4_qe;
+  logic [5:0] per_pin_cfg_4_flds_we;
+  assign per_pin_cfg_4_qe = &per_pin_cfg_4_flds_we;
+  //   F[oe_4]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_oe_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_oe_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[4].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_oe_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].oe.qe = per_pin_cfg_4_qe;
+
+  //   F[intr_ctrl_en_rising_4]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_intr_ctrl_en_rising_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_intr_ctrl_en_rising_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[4].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_intr_ctrl_en_rising_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].intr_ctrl_en_rising.qe = per_pin_cfg_4_qe;
+
+  //   F[intr_ctrl_en_falling_4]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_intr_ctrl_en_falling_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_intr_ctrl_en_falling_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[4].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_intr_ctrl_en_falling_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].intr_ctrl_en_falling.qe = per_pin_cfg_4_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_4]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_intr_ctrl_en_lvlhigh_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[4].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_4_qe;
+
+  //   F[intr_ctrl_en_lvllow_4]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_intr_ctrl_en_lvllow_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_intr_ctrl_en_lvllow_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[4].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_intr_ctrl_en_lvllow_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].intr_ctrl_en_lvllow.qe = per_pin_cfg_4_qe;
+
+  //   F[ctrl_en_input_filter_4]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_4_ctrl_en_input_filter_4 (
+    .re     (per_pin_cfg_4_re),
+    .we     (per_pin_cfg_4_we),
+    .wd     (per_pin_cfg_4_ctrl_en_input_filter_4_wd),
+    .d      (hw2reg.per_pin_cfg[4].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_4_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[4].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_4_ctrl_en_input_filter_4_qs)
+  );
+  assign reg2hw.per_pin_cfg[4].ctrl_en_input_filter.qe = per_pin_cfg_4_qe;
+
+
+  // Subregister 5 of Multireg per_pin_cfg
+  // R[per_pin_cfg_5]: V(True)
+  logic per_pin_cfg_5_qe;
+  logic [5:0] per_pin_cfg_5_flds_we;
+  assign per_pin_cfg_5_qe = &per_pin_cfg_5_flds_we;
+  //   F[oe_5]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_oe_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_oe_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[5].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_oe_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].oe.qe = per_pin_cfg_5_qe;
+
+  //   F[intr_ctrl_en_rising_5]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_intr_ctrl_en_rising_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_intr_ctrl_en_rising_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[5].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_intr_ctrl_en_rising_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].intr_ctrl_en_rising.qe = per_pin_cfg_5_qe;
+
+  //   F[intr_ctrl_en_falling_5]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_intr_ctrl_en_falling_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_intr_ctrl_en_falling_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[5].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_intr_ctrl_en_falling_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].intr_ctrl_en_falling.qe = per_pin_cfg_5_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_5]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_intr_ctrl_en_lvlhigh_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[5].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_5_qe;
+
+  //   F[intr_ctrl_en_lvllow_5]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_intr_ctrl_en_lvllow_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_intr_ctrl_en_lvllow_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[5].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_intr_ctrl_en_lvllow_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].intr_ctrl_en_lvllow.qe = per_pin_cfg_5_qe;
+
+  //   F[ctrl_en_input_filter_5]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_5_ctrl_en_input_filter_5 (
+    .re     (per_pin_cfg_5_re),
+    .we     (per_pin_cfg_5_we),
+    .wd     (per_pin_cfg_5_ctrl_en_input_filter_5_wd),
+    .d      (hw2reg.per_pin_cfg[5].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_5_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[5].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_5_ctrl_en_input_filter_5_qs)
+  );
+  assign reg2hw.per_pin_cfg[5].ctrl_en_input_filter.qe = per_pin_cfg_5_qe;
+
+
+  // Subregister 6 of Multireg per_pin_cfg
+  // R[per_pin_cfg_6]: V(True)
+  logic per_pin_cfg_6_qe;
+  logic [5:0] per_pin_cfg_6_flds_we;
+  assign per_pin_cfg_6_qe = &per_pin_cfg_6_flds_we;
+  //   F[oe_6]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_oe_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_oe_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[6].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_oe_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].oe.qe = per_pin_cfg_6_qe;
+
+  //   F[intr_ctrl_en_rising_6]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_intr_ctrl_en_rising_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_intr_ctrl_en_rising_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[6].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_intr_ctrl_en_rising_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].intr_ctrl_en_rising.qe = per_pin_cfg_6_qe;
+
+  //   F[intr_ctrl_en_falling_6]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_intr_ctrl_en_falling_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_intr_ctrl_en_falling_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[6].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_intr_ctrl_en_falling_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].intr_ctrl_en_falling.qe = per_pin_cfg_6_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_6]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_intr_ctrl_en_lvlhigh_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[6].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_6_qe;
+
+  //   F[intr_ctrl_en_lvllow_6]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_intr_ctrl_en_lvllow_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_intr_ctrl_en_lvllow_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[6].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_intr_ctrl_en_lvllow_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].intr_ctrl_en_lvllow.qe = per_pin_cfg_6_qe;
+
+  //   F[ctrl_en_input_filter_6]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_6_ctrl_en_input_filter_6 (
+    .re     (per_pin_cfg_6_re),
+    .we     (per_pin_cfg_6_we),
+    .wd     (per_pin_cfg_6_ctrl_en_input_filter_6_wd),
+    .d      (hw2reg.per_pin_cfg[6].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_6_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[6].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_6_ctrl_en_input_filter_6_qs)
+  );
+  assign reg2hw.per_pin_cfg[6].ctrl_en_input_filter.qe = per_pin_cfg_6_qe;
+
+
+  // Subregister 7 of Multireg per_pin_cfg
+  // R[per_pin_cfg_7]: V(True)
+  logic per_pin_cfg_7_qe;
+  logic [5:0] per_pin_cfg_7_flds_we;
+  assign per_pin_cfg_7_qe = &per_pin_cfg_7_flds_we;
+  //   F[oe_7]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_oe_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_oe_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[7].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_oe_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].oe.qe = per_pin_cfg_7_qe;
+
+  //   F[intr_ctrl_en_rising_7]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_intr_ctrl_en_rising_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_intr_ctrl_en_rising_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[7].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_intr_ctrl_en_rising_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].intr_ctrl_en_rising.qe = per_pin_cfg_7_qe;
+
+  //   F[intr_ctrl_en_falling_7]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_intr_ctrl_en_falling_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_intr_ctrl_en_falling_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[7].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_intr_ctrl_en_falling_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].intr_ctrl_en_falling.qe = per_pin_cfg_7_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_7]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_intr_ctrl_en_lvlhigh_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[7].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_7_qe;
+
+  //   F[intr_ctrl_en_lvllow_7]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_intr_ctrl_en_lvllow_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_intr_ctrl_en_lvllow_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[7].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_intr_ctrl_en_lvllow_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].intr_ctrl_en_lvllow.qe = per_pin_cfg_7_qe;
+
+  //   F[ctrl_en_input_filter_7]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_7_ctrl_en_input_filter_7 (
+    .re     (per_pin_cfg_7_re),
+    .we     (per_pin_cfg_7_we),
+    .wd     (per_pin_cfg_7_ctrl_en_input_filter_7_wd),
+    .d      (hw2reg.per_pin_cfg[7].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_7_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[7].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_7_ctrl_en_input_filter_7_qs)
+  );
+  assign reg2hw.per_pin_cfg[7].ctrl_en_input_filter.qe = per_pin_cfg_7_qe;
+
+
+  // Subregister 8 of Multireg per_pin_cfg
+  // R[per_pin_cfg_8]: V(True)
+  logic per_pin_cfg_8_qe;
+  logic [5:0] per_pin_cfg_8_flds_we;
+  assign per_pin_cfg_8_qe = &per_pin_cfg_8_flds_we;
+  //   F[oe_8]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_oe_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_oe_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[8].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_oe_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].oe.qe = per_pin_cfg_8_qe;
+
+  //   F[intr_ctrl_en_rising_8]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_intr_ctrl_en_rising_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_intr_ctrl_en_rising_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[8].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_intr_ctrl_en_rising_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].intr_ctrl_en_rising.qe = per_pin_cfg_8_qe;
+
+  //   F[intr_ctrl_en_falling_8]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_intr_ctrl_en_falling_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_intr_ctrl_en_falling_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[8].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_intr_ctrl_en_falling_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].intr_ctrl_en_falling.qe = per_pin_cfg_8_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_8]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_intr_ctrl_en_lvlhigh_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[8].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_8_qe;
+
+  //   F[intr_ctrl_en_lvllow_8]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_intr_ctrl_en_lvllow_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_intr_ctrl_en_lvllow_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[8].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_intr_ctrl_en_lvllow_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].intr_ctrl_en_lvllow.qe = per_pin_cfg_8_qe;
+
+  //   F[ctrl_en_input_filter_8]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_8_ctrl_en_input_filter_8 (
+    .re     (per_pin_cfg_8_re),
+    .we     (per_pin_cfg_8_we),
+    .wd     (per_pin_cfg_8_ctrl_en_input_filter_8_wd),
+    .d      (hw2reg.per_pin_cfg[8].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_8_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[8].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_8_ctrl_en_input_filter_8_qs)
+  );
+  assign reg2hw.per_pin_cfg[8].ctrl_en_input_filter.qe = per_pin_cfg_8_qe;
+
+
+  // Subregister 9 of Multireg per_pin_cfg
+  // R[per_pin_cfg_9]: V(True)
+  logic per_pin_cfg_9_qe;
+  logic [5:0] per_pin_cfg_9_flds_we;
+  assign per_pin_cfg_9_qe = &per_pin_cfg_9_flds_we;
+  //   F[oe_9]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_oe_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_oe_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[9].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_oe_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].oe.qe = per_pin_cfg_9_qe;
+
+  //   F[intr_ctrl_en_rising_9]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_intr_ctrl_en_rising_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_intr_ctrl_en_rising_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[9].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_intr_ctrl_en_rising_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].intr_ctrl_en_rising.qe = per_pin_cfg_9_qe;
+
+  //   F[intr_ctrl_en_falling_9]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_intr_ctrl_en_falling_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_intr_ctrl_en_falling_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[9].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_intr_ctrl_en_falling_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].intr_ctrl_en_falling.qe = per_pin_cfg_9_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_9]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_intr_ctrl_en_lvlhigh_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[9].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_9_qe;
+
+  //   F[intr_ctrl_en_lvllow_9]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_intr_ctrl_en_lvllow_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_intr_ctrl_en_lvllow_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[9].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_intr_ctrl_en_lvllow_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].intr_ctrl_en_lvllow.qe = per_pin_cfg_9_qe;
+
+  //   F[ctrl_en_input_filter_9]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_9_ctrl_en_input_filter_9 (
+    .re     (per_pin_cfg_9_re),
+    .we     (per_pin_cfg_9_we),
+    .wd     (per_pin_cfg_9_ctrl_en_input_filter_9_wd),
+    .d      (hw2reg.per_pin_cfg[9].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_9_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[9].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_9_ctrl_en_input_filter_9_qs)
+  );
+  assign reg2hw.per_pin_cfg[9].ctrl_en_input_filter.qe = per_pin_cfg_9_qe;
+
+
+  // Subregister 10 of Multireg per_pin_cfg
+  // R[per_pin_cfg_10]: V(True)
+  logic per_pin_cfg_10_qe;
+  logic [5:0] per_pin_cfg_10_flds_we;
+  assign per_pin_cfg_10_qe = &per_pin_cfg_10_flds_we;
+  //   F[oe_10]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_oe_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_oe_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[10].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_oe_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].oe.qe = per_pin_cfg_10_qe;
+
+  //   F[intr_ctrl_en_rising_10]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_intr_ctrl_en_rising_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_intr_ctrl_en_rising_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[10].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_intr_ctrl_en_rising_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].intr_ctrl_en_rising.qe = per_pin_cfg_10_qe;
+
+  //   F[intr_ctrl_en_falling_10]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_intr_ctrl_en_falling_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_intr_ctrl_en_falling_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[10].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_intr_ctrl_en_falling_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].intr_ctrl_en_falling.qe = per_pin_cfg_10_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_10]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_intr_ctrl_en_lvlhigh_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[10].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_10_qe;
+
+  //   F[intr_ctrl_en_lvllow_10]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_intr_ctrl_en_lvllow_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_intr_ctrl_en_lvllow_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[10].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_intr_ctrl_en_lvllow_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].intr_ctrl_en_lvllow.qe = per_pin_cfg_10_qe;
+
+  //   F[ctrl_en_input_filter_10]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_10_ctrl_en_input_filter_10 (
+    .re     (per_pin_cfg_10_re),
+    .we     (per_pin_cfg_10_we),
+    .wd     (per_pin_cfg_10_ctrl_en_input_filter_10_wd),
+    .d      (hw2reg.per_pin_cfg[10].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_10_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[10].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_10_ctrl_en_input_filter_10_qs)
+  );
+  assign reg2hw.per_pin_cfg[10].ctrl_en_input_filter.qe = per_pin_cfg_10_qe;
+
+
+  // Subregister 11 of Multireg per_pin_cfg
+  // R[per_pin_cfg_11]: V(True)
+  logic per_pin_cfg_11_qe;
+  logic [5:0] per_pin_cfg_11_flds_we;
+  assign per_pin_cfg_11_qe = &per_pin_cfg_11_flds_we;
+  //   F[oe_11]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_oe_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_oe_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[11].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_oe_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].oe.qe = per_pin_cfg_11_qe;
+
+  //   F[intr_ctrl_en_rising_11]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_intr_ctrl_en_rising_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_intr_ctrl_en_rising_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[11].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_intr_ctrl_en_rising_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].intr_ctrl_en_rising.qe = per_pin_cfg_11_qe;
+
+  //   F[intr_ctrl_en_falling_11]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_intr_ctrl_en_falling_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_intr_ctrl_en_falling_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[11].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_intr_ctrl_en_falling_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].intr_ctrl_en_falling.qe = per_pin_cfg_11_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_11]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_intr_ctrl_en_lvlhigh_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[11].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_11_qe;
+
+  //   F[intr_ctrl_en_lvllow_11]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_intr_ctrl_en_lvllow_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_intr_ctrl_en_lvllow_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[11].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_intr_ctrl_en_lvllow_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].intr_ctrl_en_lvllow.qe = per_pin_cfg_11_qe;
+
+  //   F[ctrl_en_input_filter_11]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_11_ctrl_en_input_filter_11 (
+    .re     (per_pin_cfg_11_re),
+    .we     (per_pin_cfg_11_we),
+    .wd     (per_pin_cfg_11_ctrl_en_input_filter_11_wd),
+    .d      (hw2reg.per_pin_cfg[11].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_11_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[11].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_11_ctrl_en_input_filter_11_qs)
+  );
+  assign reg2hw.per_pin_cfg[11].ctrl_en_input_filter.qe = per_pin_cfg_11_qe;
+
+
+  // Subregister 12 of Multireg per_pin_cfg
+  // R[per_pin_cfg_12]: V(True)
+  logic per_pin_cfg_12_qe;
+  logic [5:0] per_pin_cfg_12_flds_we;
+  assign per_pin_cfg_12_qe = &per_pin_cfg_12_flds_we;
+  //   F[oe_12]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_oe_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_oe_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[12].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_oe_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].oe.qe = per_pin_cfg_12_qe;
+
+  //   F[intr_ctrl_en_rising_12]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_intr_ctrl_en_rising_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_intr_ctrl_en_rising_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[12].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_intr_ctrl_en_rising_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].intr_ctrl_en_rising.qe = per_pin_cfg_12_qe;
+
+  //   F[intr_ctrl_en_falling_12]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_intr_ctrl_en_falling_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_intr_ctrl_en_falling_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[12].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_intr_ctrl_en_falling_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].intr_ctrl_en_falling.qe = per_pin_cfg_12_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_12]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_intr_ctrl_en_lvlhigh_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[12].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_12_qe;
+
+  //   F[intr_ctrl_en_lvllow_12]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_intr_ctrl_en_lvllow_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_intr_ctrl_en_lvllow_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[12].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_intr_ctrl_en_lvllow_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].intr_ctrl_en_lvllow.qe = per_pin_cfg_12_qe;
+
+  //   F[ctrl_en_input_filter_12]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_12_ctrl_en_input_filter_12 (
+    .re     (per_pin_cfg_12_re),
+    .we     (per_pin_cfg_12_we),
+    .wd     (per_pin_cfg_12_ctrl_en_input_filter_12_wd),
+    .d      (hw2reg.per_pin_cfg[12].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_12_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[12].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_12_ctrl_en_input_filter_12_qs)
+  );
+  assign reg2hw.per_pin_cfg[12].ctrl_en_input_filter.qe = per_pin_cfg_12_qe;
+
+
+  // Subregister 13 of Multireg per_pin_cfg
+  // R[per_pin_cfg_13]: V(True)
+  logic per_pin_cfg_13_qe;
+  logic [5:0] per_pin_cfg_13_flds_we;
+  assign per_pin_cfg_13_qe = &per_pin_cfg_13_flds_we;
+  //   F[oe_13]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_oe_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_oe_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[13].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_oe_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].oe.qe = per_pin_cfg_13_qe;
+
+  //   F[intr_ctrl_en_rising_13]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_intr_ctrl_en_rising_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_intr_ctrl_en_rising_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[13].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_intr_ctrl_en_rising_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].intr_ctrl_en_rising.qe = per_pin_cfg_13_qe;
+
+  //   F[intr_ctrl_en_falling_13]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_intr_ctrl_en_falling_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_intr_ctrl_en_falling_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[13].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_intr_ctrl_en_falling_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].intr_ctrl_en_falling.qe = per_pin_cfg_13_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_13]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_intr_ctrl_en_lvlhigh_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[13].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_13_qe;
+
+  //   F[intr_ctrl_en_lvllow_13]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_intr_ctrl_en_lvllow_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_intr_ctrl_en_lvllow_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[13].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_intr_ctrl_en_lvllow_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].intr_ctrl_en_lvllow.qe = per_pin_cfg_13_qe;
+
+  //   F[ctrl_en_input_filter_13]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_13_ctrl_en_input_filter_13 (
+    .re     (per_pin_cfg_13_re),
+    .we     (per_pin_cfg_13_we),
+    .wd     (per_pin_cfg_13_ctrl_en_input_filter_13_wd),
+    .d      (hw2reg.per_pin_cfg[13].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_13_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[13].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_13_ctrl_en_input_filter_13_qs)
+  );
+  assign reg2hw.per_pin_cfg[13].ctrl_en_input_filter.qe = per_pin_cfg_13_qe;
+
+
+  // Subregister 14 of Multireg per_pin_cfg
+  // R[per_pin_cfg_14]: V(True)
+  logic per_pin_cfg_14_qe;
+  logic [5:0] per_pin_cfg_14_flds_we;
+  assign per_pin_cfg_14_qe = &per_pin_cfg_14_flds_we;
+  //   F[oe_14]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_oe_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_oe_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[14].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_oe_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].oe.qe = per_pin_cfg_14_qe;
+
+  //   F[intr_ctrl_en_rising_14]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_intr_ctrl_en_rising_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_intr_ctrl_en_rising_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[14].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_intr_ctrl_en_rising_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].intr_ctrl_en_rising.qe = per_pin_cfg_14_qe;
+
+  //   F[intr_ctrl_en_falling_14]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_intr_ctrl_en_falling_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_intr_ctrl_en_falling_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[14].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_intr_ctrl_en_falling_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].intr_ctrl_en_falling.qe = per_pin_cfg_14_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_14]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_intr_ctrl_en_lvlhigh_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[14].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_14_qe;
+
+  //   F[intr_ctrl_en_lvllow_14]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_intr_ctrl_en_lvllow_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_intr_ctrl_en_lvllow_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[14].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_intr_ctrl_en_lvllow_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].intr_ctrl_en_lvllow.qe = per_pin_cfg_14_qe;
+
+  //   F[ctrl_en_input_filter_14]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_14_ctrl_en_input_filter_14 (
+    .re     (per_pin_cfg_14_re),
+    .we     (per_pin_cfg_14_we),
+    .wd     (per_pin_cfg_14_ctrl_en_input_filter_14_wd),
+    .d      (hw2reg.per_pin_cfg[14].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_14_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[14].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_14_ctrl_en_input_filter_14_qs)
+  );
+  assign reg2hw.per_pin_cfg[14].ctrl_en_input_filter.qe = per_pin_cfg_14_qe;
+
+
+  // Subregister 15 of Multireg per_pin_cfg
+  // R[per_pin_cfg_15]: V(True)
+  logic per_pin_cfg_15_qe;
+  logic [5:0] per_pin_cfg_15_flds_we;
+  assign per_pin_cfg_15_qe = &per_pin_cfg_15_flds_we;
+  //   F[oe_15]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_oe_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_oe_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[15].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_oe_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].oe.qe = per_pin_cfg_15_qe;
+
+  //   F[intr_ctrl_en_rising_15]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_intr_ctrl_en_rising_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_intr_ctrl_en_rising_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[15].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_intr_ctrl_en_rising_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].intr_ctrl_en_rising.qe = per_pin_cfg_15_qe;
+
+  //   F[intr_ctrl_en_falling_15]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_intr_ctrl_en_falling_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_intr_ctrl_en_falling_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[15].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_intr_ctrl_en_falling_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].intr_ctrl_en_falling.qe = per_pin_cfg_15_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_15]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_intr_ctrl_en_lvlhigh_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[15].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_15_qe;
+
+  //   F[intr_ctrl_en_lvllow_15]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_intr_ctrl_en_lvllow_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_intr_ctrl_en_lvllow_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[15].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_intr_ctrl_en_lvllow_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].intr_ctrl_en_lvllow.qe = per_pin_cfg_15_qe;
+
+  //   F[ctrl_en_input_filter_15]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_15_ctrl_en_input_filter_15 (
+    .re     (per_pin_cfg_15_re),
+    .we     (per_pin_cfg_15_we),
+    .wd     (per_pin_cfg_15_ctrl_en_input_filter_15_wd),
+    .d      (hw2reg.per_pin_cfg[15].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_15_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[15].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_15_ctrl_en_input_filter_15_qs)
+  );
+  assign reg2hw.per_pin_cfg[15].ctrl_en_input_filter.qe = per_pin_cfg_15_qe;
+
+
+  // Subregister 16 of Multireg per_pin_cfg
+  // R[per_pin_cfg_16]: V(True)
+  logic per_pin_cfg_16_qe;
+  logic [5:0] per_pin_cfg_16_flds_we;
+  assign per_pin_cfg_16_qe = &per_pin_cfg_16_flds_we;
+  //   F[oe_16]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_oe_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_oe_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[16].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_oe_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].oe.qe = per_pin_cfg_16_qe;
+
+  //   F[intr_ctrl_en_rising_16]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_intr_ctrl_en_rising_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_intr_ctrl_en_rising_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[16].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_intr_ctrl_en_rising_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].intr_ctrl_en_rising.qe = per_pin_cfg_16_qe;
+
+  //   F[intr_ctrl_en_falling_16]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_intr_ctrl_en_falling_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_intr_ctrl_en_falling_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[16].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_intr_ctrl_en_falling_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].intr_ctrl_en_falling.qe = per_pin_cfg_16_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_16]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_intr_ctrl_en_lvlhigh_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[16].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_16_qe;
+
+  //   F[intr_ctrl_en_lvllow_16]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_intr_ctrl_en_lvllow_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_intr_ctrl_en_lvllow_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[16].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_intr_ctrl_en_lvllow_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].intr_ctrl_en_lvllow.qe = per_pin_cfg_16_qe;
+
+  //   F[ctrl_en_input_filter_16]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_16_ctrl_en_input_filter_16 (
+    .re     (per_pin_cfg_16_re),
+    .we     (per_pin_cfg_16_we),
+    .wd     (per_pin_cfg_16_ctrl_en_input_filter_16_wd),
+    .d      (hw2reg.per_pin_cfg[16].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_16_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[16].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_16_ctrl_en_input_filter_16_qs)
+  );
+  assign reg2hw.per_pin_cfg[16].ctrl_en_input_filter.qe = per_pin_cfg_16_qe;
+
+
+  // Subregister 17 of Multireg per_pin_cfg
+  // R[per_pin_cfg_17]: V(True)
+  logic per_pin_cfg_17_qe;
+  logic [5:0] per_pin_cfg_17_flds_we;
+  assign per_pin_cfg_17_qe = &per_pin_cfg_17_flds_we;
+  //   F[oe_17]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_oe_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_oe_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[17].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_oe_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].oe.qe = per_pin_cfg_17_qe;
+
+  //   F[intr_ctrl_en_rising_17]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_intr_ctrl_en_rising_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_intr_ctrl_en_rising_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[17].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_intr_ctrl_en_rising_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].intr_ctrl_en_rising.qe = per_pin_cfg_17_qe;
+
+  //   F[intr_ctrl_en_falling_17]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_intr_ctrl_en_falling_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_intr_ctrl_en_falling_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[17].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_intr_ctrl_en_falling_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].intr_ctrl_en_falling.qe = per_pin_cfg_17_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_17]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_intr_ctrl_en_lvlhigh_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[17].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_17_qe;
+
+  //   F[intr_ctrl_en_lvllow_17]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_intr_ctrl_en_lvllow_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_intr_ctrl_en_lvllow_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[17].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_intr_ctrl_en_lvllow_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].intr_ctrl_en_lvllow.qe = per_pin_cfg_17_qe;
+
+  //   F[ctrl_en_input_filter_17]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_17_ctrl_en_input_filter_17 (
+    .re     (per_pin_cfg_17_re),
+    .we     (per_pin_cfg_17_we),
+    .wd     (per_pin_cfg_17_ctrl_en_input_filter_17_wd),
+    .d      (hw2reg.per_pin_cfg[17].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_17_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[17].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_17_ctrl_en_input_filter_17_qs)
+  );
+  assign reg2hw.per_pin_cfg[17].ctrl_en_input_filter.qe = per_pin_cfg_17_qe;
+
+
+  // Subregister 18 of Multireg per_pin_cfg
+  // R[per_pin_cfg_18]: V(True)
+  logic per_pin_cfg_18_qe;
+  logic [5:0] per_pin_cfg_18_flds_we;
+  assign per_pin_cfg_18_qe = &per_pin_cfg_18_flds_we;
+  //   F[oe_18]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_oe_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_oe_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[18].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_oe_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].oe.qe = per_pin_cfg_18_qe;
+
+  //   F[intr_ctrl_en_rising_18]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_intr_ctrl_en_rising_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_intr_ctrl_en_rising_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[18].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_intr_ctrl_en_rising_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].intr_ctrl_en_rising.qe = per_pin_cfg_18_qe;
+
+  //   F[intr_ctrl_en_falling_18]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_intr_ctrl_en_falling_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_intr_ctrl_en_falling_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[18].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_intr_ctrl_en_falling_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].intr_ctrl_en_falling.qe = per_pin_cfg_18_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_18]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_intr_ctrl_en_lvlhigh_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[18].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_18_qe;
+
+  //   F[intr_ctrl_en_lvllow_18]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_intr_ctrl_en_lvllow_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_intr_ctrl_en_lvllow_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[18].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_intr_ctrl_en_lvllow_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].intr_ctrl_en_lvllow.qe = per_pin_cfg_18_qe;
+
+  //   F[ctrl_en_input_filter_18]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_18_ctrl_en_input_filter_18 (
+    .re     (per_pin_cfg_18_re),
+    .we     (per_pin_cfg_18_we),
+    .wd     (per_pin_cfg_18_ctrl_en_input_filter_18_wd),
+    .d      (hw2reg.per_pin_cfg[18].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_18_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[18].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_18_ctrl_en_input_filter_18_qs)
+  );
+  assign reg2hw.per_pin_cfg[18].ctrl_en_input_filter.qe = per_pin_cfg_18_qe;
+
+
+  // Subregister 19 of Multireg per_pin_cfg
+  // R[per_pin_cfg_19]: V(True)
+  logic per_pin_cfg_19_qe;
+  logic [5:0] per_pin_cfg_19_flds_we;
+  assign per_pin_cfg_19_qe = &per_pin_cfg_19_flds_we;
+  //   F[oe_19]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_oe_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_oe_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[19].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_oe_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].oe.qe = per_pin_cfg_19_qe;
+
+  //   F[intr_ctrl_en_rising_19]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_intr_ctrl_en_rising_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_intr_ctrl_en_rising_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[19].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_intr_ctrl_en_rising_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].intr_ctrl_en_rising.qe = per_pin_cfg_19_qe;
+
+  //   F[intr_ctrl_en_falling_19]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_intr_ctrl_en_falling_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_intr_ctrl_en_falling_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[19].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_intr_ctrl_en_falling_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].intr_ctrl_en_falling.qe = per_pin_cfg_19_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_19]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_intr_ctrl_en_lvlhigh_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[19].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_19_qe;
+
+  //   F[intr_ctrl_en_lvllow_19]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_intr_ctrl_en_lvllow_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_intr_ctrl_en_lvllow_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[19].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_intr_ctrl_en_lvllow_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].intr_ctrl_en_lvllow.qe = per_pin_cfg_19_qe;
+
+  //   F[ctrl_en_input_filter_19]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_19_ctrl_en_input_filter_19 (
+    .re     (per_pin_cfg_19_re),
+    .we     (per_pin_cfg_19_we),
+    .wd     (per_pin_cfg_19_ctrl_en_input_filter_19_wd),
+    .d      (hw2reg.per_pin_cfg[19].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_19_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[19].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_19_ctrl_en_input_filter_19_qs)
+  );
+  assign reg2hw.per_pin_cfg[19].ctrl_en_input_filter.qe = per_pin_cfg_19_qe;
+
+
+  // Subregister 20 of Multireg per_pin_cfg
+  // R[per_pin_cfg_20]: V(True)
+  logic per_pin_cfg_20_qe;
+  logic [5:0] per_pin_cfg_20_flds_we;
+  assign per_pin_cfg_20_qe = &per_pin_cfg_20_flds_we;
+  //   F[oe_20]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_oe_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_oe_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[20].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_oe_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].oe.qe = per_pin_cfg_20_qe;
+
+  //   F[intr_ctrl_en_rising_20]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_intr_ctrl_en_rising_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_intr_ctrl_en_rising_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[20].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_intr_ctrl_en_rising_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].intr_ctrl_en_rising.qe = per_pin_cfg_20_qe;
+
+  //   F[intr_ctrl_en_falling_20]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_intr_ctrl_en_falling_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_intr_ctrl_en_falling_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[20].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_intr_ctrl_en_falling_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].intr_ctrl_en_falling.qe = per_pin_cfg_20_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_20]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_intr_ctrl_en_lvlhigh_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[20].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_20_qe;
+
+  //   F[intr_ctrl_en_lvllow_20]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_intr_ctrl_en_lvllow_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_intr_ctrl_en_lvllow_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[20].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_intr_ctrl_en_lvllow_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].intr_ctrl_en_lvllow.qe = per_pin_cfg_20_qe;
+
+  //   F[ctrl_en_input_filter_20]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_20_ctrl_en_input_filter_20 (
+    .re     (per_pin_cfg_20_re),
+    .we     (per_pin_cfg_20_we),
+    .wd     (per_pin_cfg_20_ctrl_en_input_filter_20_wd),
+    .d      (hw2reg.per_pin_cfg[20].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_20_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[20].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_20_ctrl_en_input_filter_20_qs)
+  );
+  assign reg2hw.per_pin_cfg[20].ctrl_en_input_filter.qe = per_pin_cfg_20_qe;
+
+
+  // Subregister 21 of Multireg per_pin_cfg
+  // R[per_pin_cfg_21]: V(True)
+  logic per_pin_cfg_21_qe;
+  logic [5:0] per_pin_cfg_21_flds_we;
+  assign per_pin_cfg_21_qe = &per_pin_cfg_21_flds_we;
+  //   F[oe_21]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_oe_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_oe_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[21].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_oe_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].oe.qe = per_pin_cfg_21_qe;
+
+  //   F[intr_ctrl_en_rising_21]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_intr_ctrl_en_rising_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_intr_ctrl_en_rising_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[21].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_intr_ctrl_en_rising_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].intr_ctrl_en_rising.qe = per_pin_cfg_21_qe;
+
+  //   F[intr_ctrl_en_falling_21]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_intr_ctrl_en_falling_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_intr_ctrl_en_falling_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[21].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_intr_ctrl_en_falling_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].intr_ctrl_en_falling.qe = per_pin_cfg_21_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_21]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_intr_ctrl_en_lvlhigh_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[21].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_21_qe;
+
+  //   F[intr_ctrl_en_lvllow_21]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_intr_ctrl_en_lvllow_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_intr_ctrl_en_lvllow_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[21].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_intr_ctrl_en_lvllow_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].intr_ctrl_en_lvllow.qe = per_pin_cfg_21_qe;
+
+  //   F[ctrl_en_input_filter_21]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_21_ctrl_en_input_filter_21 (
+    .re     (per_pin_cfg_21_re),
+    .we     (per_pin_cfg_21_we),
+    .wd     (per_pin_cfg_21_ctrl_en_input_filter_21_wd),
+    .d      (hw2reg.per_pin_cfg[21].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_21_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[21].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_21_ctrl_en_input_filter_21_qs)
+  );
+  assign reg2hw.per_pin_cfg[21].ctrl_en_input_filter.qe = per_pin_cfg_21_qe;
+
+
+  // Subregister 22 of Multireg per_pin_cfg
+  // R[per_pin_cfg_22]: V(True)
+  logic per_pin_cfg_22_qe;
+  logic [5:0] per_pin_cfg_22_flds_we;
+  assign per_pin_cfg_22_qe = &per_pin_cfg_22_flds_we;
+  //   F[oe_22]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_oe_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_oe_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[22].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_oe_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].oe.qe = per_pin_cfg_22_qe;
+
+  //   F[intr_ctrl_en_rising_22]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_intr_ctrl_en_rising_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_intr_ctrl_en_rising_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[22].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_intr_ctrl_en_rising_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].intr_ctrl_en_rising.qe = per_pin_cfg_22_qe;
+
+  //   F[intr_ctrl_en_falling_22]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_intr_ctrl_en_falling_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_intr_ctrl_en_falling_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[22].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_intr_ctrl_en_falling_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].intr_ctrl_en_falling.qe = per_pin_cfg_22_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_22]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_intr_ctrl_en_lvlhigh_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[22].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_22_qe;
+
+  //   F[intr_ctrl_en_lvllow_22]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_intr_ctrl_en_lvllow_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_intr_ctrl_en_lvllow_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[22].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_intr_ctrl_en_lvllow_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].intr_ctrl_en_lvllow.qe = per_pin_cfg_22_qe;
+
+  //   F[ctrl_en_input_filter_22]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_22_ctrl_en_input_filter_22 (
+    .re     (per_pin_cfg_22_re),
+    .we     (per_pin_cfg_22_we),
+    .wd     (per_pin_cfg_22_ctrl_en_input_filter_22_wd),
+    .d      (hw2reg.per_pin_cfg[22].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_22_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[22].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_22_ctrl_en_input_filter_22_qs)
+  );
+  assign reg2hw.per_pin_cfg[22].ctrl_en_input_filter.qe = per_pin_cfg_22_qe;
+
+
+  // Subregister 23 of Multireg per_pin_cfg
+  // R[per_pin_cfg_23]: V(True)
+  logic per_pin_cfg_23_qe;
+  logic [5:0] per_pin_cfg_23_flds_we;
+  assign per_pin_cfg_23_qe = &per_pin_cfg_23_flds_we;
+  //   F[oe_23]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_oe_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_oe_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[23].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_oe_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].oe.qe = per_pin_cfg_23_qe;
+
+  //   F[intr_ctrl_en_rising_23]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_intr_ctrl_en_rising_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_intr_ctrl_en_rising_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[23].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_intr_ctrl_en_rising_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].intr_ctrl_en_rising.qe = per_pin_cfg_23_qe;
+
+  //   F[intr_ctrl_en_falling_23]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_intr_ctrl_en_falling_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_intr_ctrl_en_falling_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[23].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_intr_ctrl_en_falling_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].intr_ctrl_en_falling.qe = per_pin_cfg_23_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_23]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_intr_ctrl_en_lvlhigh_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[23].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_23_qe;
+
+  //   F[intr_ctrl_en_lvllow_23]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_intr_ctrl_en_lvllow_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_intr_ctrl_en_lvllow_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[23].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_intr_ctrl_en_lvllow_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].intr_ctrl_en_lvllow.qe = per_pin_cfg_23_qe;
+
+  //   F[ctrl_en_input_filter_23]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_23_ctrl_en_input_filter_23 (
+    .re     (per_pin_cfg_23_re),
+    .we     (per_pin_cfg_23_we),
+    .wd     (per_pin_cfg_23_ctrl_en_input_filter_23_wd),
+    .d      (hw2reg.per_pin_cfg[23].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_23_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[23].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_23_ctrl_en_input_filter_23_qs)
+  );
+  assign reg2hw.per_pin_cfg[23].ctrl_en_input_filter.qe = per_pin_cfg_23_qe;
+
+
+  // Subregister 24 of Multireg per_pin_cfg
+  // R[per_pin_cfg_24]: V(True)
+  logic per_pin_cfg_24_qe;
+  logic [5:0] per_pin_cfg_24_flds_we;
+  assign per_pin_cfg_24_qe = &per_pin_cfg_24_flds_we;
+  //   F[oe_24]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_oe_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_oe_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[24].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_oe_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].oe.qe = per_pin_cfg_24_qe;
+
+  //   F[intr_ctrl_en_rising_24]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_intr_ctrl_en_rising_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_intr_ctrl_en_rising_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[24].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_intr_ctrl_en_rising_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].intr_ctrl_en_rising.qe = per_pin_cfg_24_qe;
+
+  //   F[intr_ctrl_en_falling_24]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_intr_ctrl_en_falling_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_intr_ctrl_en_falling_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[24].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_intr_ctrl_en_falling_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].intr_ctrl_en_falling.qe = per_pin_cfg_24_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_24]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_intr_ctrl_en_lvlhigh_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[24].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_24_qe;
+
+  //   F[intr_ctrl_en_lvllow_24]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_intr_ctrl_en_lvllow_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_intr_ctrl_en_lvllow_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[24].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_intr_ctrl_en_lvllow_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].intr_ctrl_en_lvllow.qe = per_pin_cfg_24_qe;
+
+  //   F[ctrl_en_input_filter_24]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_24_ctrl_en_input_filter_24 (
+    .re     (per_pin_cfg_24_re),
+    .we     (per_pin_cfg_24_we),
+    .wd     (per_pin_cfg_24_ctrl_en_input_filter_24_wd),
+    .d      (hw2reg.per_pin_cfg[24].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_24_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[24].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_24_ctrl_en_input_filter_24_qs)
+  );
+  assign reg2hw.per_pin_cfg[24].ctrl_en_input_filter.qe = per_pin_cfg_24_qe;
+
+
+  // Subregister 25 of Multireg per_pin_cfg
+  // R[per_pin_cfg_25]: V(True)
+  logic per_pin_cfg_25_qe;
+  logic [5:0] per_pin_cfg_25_flds_we;
+  assign per_pin_cfg_25_qe = &per_pin_cfg_25_flds_we;
+  //   F[oe_25]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_oe_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_oe_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[25].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_oe_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].oe.qe = per_pin_cfg_25_qe;
+
+  //   F[intr_ctrl_en_rising_25]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_intr_ctrl_en_rising_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_intr_ctrl_en_rising_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[25].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_intr_ctrl_en_rising_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].intr_ctrl_en_rising.qe = per_pin_cfg_25_qe;
+
+  //   F[intr_ctrl_en_falling_25]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_intr_ctrl_en_falling_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_intr_ctrl_en_falling_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[25].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_intr_ctrl_en_falling_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].intr_ctrl_en_falling.qe = per_pin_cfg_25_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_25]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_intr_ctrl_en_lvlhigh_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[25].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_25_qe;
+
+  //   F[intr_ctrl_en_lvllow_25]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_intr_ctrl_en_lvllow_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_intr_ctrl_en_lvllow_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[25].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_intr_ctrl_en_lvllow_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].intr_ctrl_en_lvllow.qe = per_pin_cfg_25_qe;
+
+  //   F[ctrl_en_input_filter_25]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_25_ctrl_en_input_filter_25 (
+    .re     (per_pin_cfg_25_re),
+    .we     (per_pin_cfg_25_we),
+    .wd     (per_pin_cfg_25_ctrl_en_input_filter_25_wd),
+    .d      (hw2reg.per_pin_cfg[25].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_25_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[25].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_25_ctrl_en_input_filter_25_qs)
+  );
+  assign reg2hw.per_pin_cfg[25].ctrl_en_input_filter.qe = per_pin_cfg_25_qe;
+
+
+  // Subregister 26 of Multireg per_pin_cfg
+  // R[per_pin_cfg_26]: V(True)
+  logic per_pin_cfg_26_qe;
+  logic [5:0] per_pin_cfg_26_flds_we;
+  assign per_pin_cfg_26_qe = &per_pin_cfg_26_flds_we;
+  //   F[oe_26]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_oe_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_oe_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[26].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_oe_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].oe.qe = per_pin_cfg_26_qe;
+
+  //   F[intr_ctrl_en_rising_26]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_intr_ctrl_en_rising_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_intr_ctrl_en_rising_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[26].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_intr_ctrl_en_rising_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].intr_ctrl_en_rising.qe = per_pin_cfg_26_qe;
+
+  //   F[intr_ctrl_en_falling_26]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_intr_ctrl_en_falling_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_intr_ctrl_en_falling_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[26].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_intr_ctrl_en_falling_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].intr_ctrl_en_falling.qe = per_pin_cfg_26_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_26]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_intr_ctrl_en_lvlhigh_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[26].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_26_qe;
+
+  //   F[intr_ctrl_en_lvllow_26]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_intr_ctrl_en_lvllow_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_intr_ctrl_en_lvllow_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[26].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_intr_ctrl_en_lvllow_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].intr_ctrl_en_lvllow.qe = per_pin_cfg_26_qe;
+
+  //   F[ctrl_en_input_filter_26]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_26_ctrl_en_input_filter_26 (
+    .re     (per_pin_cfg_26_re),
+    .we     (per_pin_cfg_26_we),
+    .wd     (per_pin_cfg_26_ctrl_en_input_filter_26_wd),
+    .d      (hw2reg.per_pin_cfg[26].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_26_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[26].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_26_ctrl_en_input_filter_26_qs)
+  );
+  assign reg2hw.per_pin_cfg[26].ctrl_en_input_filter.qe = per_pin_cfg_26_qe;
+
+
+  // Subregister 27 of Multireg per_pin_cfg
+  // R[per_pin_cfg_27]: V(True)
+  logic per_pin_cfg_27_qe;
+  logic [5:0] per_pin_cfg_27_flds_we;
+  assign per_pin_cfg_27_qe = &per_pin_cfg_27_flds_we;
+  //   F[oe_27]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_oe_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_oe_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[27].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_oe_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].oe.qe = per_pin_cfg_27_qe;
+
+  //   F[intr_ctrl_en_rising_27]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_intr_ctrl_en_rising_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_intr_ctrl_en_rising_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[27].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_intr_ctrl_en_rising_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].intr_ctrl_en_rising.qe = per_pin_cfg_27_qe;
+
+  //   F[intr_ctrl_en_falling_27]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_intr_ctrl_en_falling_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_intr_ctrl_en_falling_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[27].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_intr_ctrl_en_falling_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].intr_ctrl_en_falling.qe = per_pin_cfg_27_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_27]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_intr_ctrl_en_lvlhigh_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[27].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_27_qe;
+
+  //   F[intr_ctrl_en_lvllow_27]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_intr_ctrl_en_lvllow_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_intr_ctrl_en_lvllow_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[27].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_intr_ctrl_en_lvllow_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].intr_ctrl_en_lvllow.qe = per_pin_cfg_27_qe;
+
+  //   F[ctrl_en_input_filter_27]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_27_ctrl_en_input_filter_27 (
+    .re     (per_pin_cfg_27_re),
+    .we     (per_pin_cfg_27_we),
+    .wd     (per_pin_cfg_27_ctrl_en_input_filter_27_wd),
+    .d      (hw2reg.per_pin_cfg[27].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_27_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[27].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_27_ctrl_en_input_filter_27_qs)
+  );
+  assign reg2hw.per_pin_cfg[27].ctrl_en_input_filter.qe = per_pin_cfg_27_qe;
+
+
+  // Subregister 28 of Multireg per_pin_cfg
+  // R[per_pin_cfg_28]: V(True)
+  logic per_pin_cfg_28_qe;
+  logic [5:0] per_pin_cfg_28_flds_we;
+  assign per_pin_cfg_28_qe = &per_pin_cfg_28_flds_we;
+  //   F[oe_28]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_oe_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_oe_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[28].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_oe_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].oe.qe = per_pin_cfg_28_qe;
+
+  //   F[intr_ctrl_en_rising_28]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_intr_ctrl_en_rising_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_intr_ctrl_en_rising_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[28].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_intr_ctrl_en_rising_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].intr_ctrl_en_rising.qe = per_pin_cfg_28_qe;
+
+  //   F[intr_ctrl_en_falling_28]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_intr_ctrl_en_falling_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_intr_ctrl_en_falling_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[28].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_intr_ctrl_en_falling_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].intr_ctrl_en_falling.qe = per_pin_cfg_28_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_28]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_intr_ctrl_en_lvlhigh_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[28].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_28_qe;
+
+  //   F[intr_ctrl_en_lvllow_28]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_intr_ctrl_en_lvllow_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_intr_ctrl_en_lvllow_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[28].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_intr_ctrl_en_lvllow_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].intr_ctrl_en_lvllow.qe = per_pin_cfg_28_qe;
+
+  //   F[ctrl_en_input_filter_28]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_28_ctrl_en_input_filter_28 (
+    .re     (per_pin_cfg_28_re),
+    .we     (per_pin_cfg_28_we),
+    .wd     (per_pin_cfg_28_ctrl_en_input_filter_28_wd),
+    .d      (hw2reg.per_pin_cfg[28].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_28_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[28].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_28_ctrl_en_input_filter_28_qs)
+  );
+  assign reg2hw.per_pin_cfg[28].ctrl_en_input_filter.qe = per_pin_cfg_28_qe;
+
+
+  // Subregister 29 of Multireg per_pin_cfg
+  // R[per_pin_cfg_29]: V(True)
+  logic per_pin_cfg_29_qe;
+  logic [5:0] per_pin_cfg_29_flds_we;
+  assign per_pin_cfg_29_qe = &per_pin_cfg_29_flds_we;
+  //   F[oe_29]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_oe_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_oe_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[29].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_oe_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].oe.qe = per_pin_cfg_29_qe;
+
+  //   F[intr_ctrl_en_rising_29]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_intr_ctrl_en_rising_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_intr_ctrl_en_rising_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[29].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_intr_ctrl_en_rising_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].intr_ctrl_en_rising.qe = per_pin_cfg_29_qe;
+
+  //   F[intr_ctrl_en_falling_29]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_intr_ctrl_en_falling_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_intr_ctrl_en_falling_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[29].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_intr_ctrl_en_falling_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].intr_ctrl_en_falling.qe = per_pin_cfg_29_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_29]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_intr_ctrl_en_lvlhigh_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[29].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_29_qe;
+
+  //   F[intr_ctrl_en_lvllow_29]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_intr_ctrl_en_lvllow_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_intr_ctrl_en_lvllow_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[29].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_intr_ctrl_en_lvllow_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].intr_ctrl_en_lvllow.qe = per_pin_cfg_29_qe;
+
+  //   F[ctrl_en_input_filter_29]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_29_ctrl_en_input_filter_29 (
+    .re     (per_pin_cfg_29_re),
+    .we     (per_pin_cfg_29_we),
+    .wd     (per_pin_cfg_29_ctrl_en_input_filter_29_wd),
+    .d      (hw2reg.per_pin_cfg[29].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_29_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[29].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_29_ctrl_en_input_filter_29_qs)
+  );
+  assign reg2hw.per_pin_cfg[29].ctrl_en_input_filter.qe = per_pin_cfg_29_qe;
+
+
+  // Subregister 30 of Multireg per_pin_cfg
+  // R[per_pin_cfg_30]: V(True)
+  logic per_pin_cfg_30_qe;
+  logic [5:0] per_pin_cfg_30_flds_we;
+  assign per_pin_cfg_30_qe = &per_pin_cfg_30_flds_we;
+  //   F[oe_30]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_oe_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_oe_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[30].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_oe_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].oe.qe = per_pin_cfg_30_qe;
+
+  //   F[intr_ctrl_en_rising_30]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_intr_ctrl_en_rising_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_intr_ctrl_en_rising_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[30].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_intr_ctrl_en_rising_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].intr_ctrl_en_rising.qe = per_pin_cfg_30_qe;
+
+  //   F[intr_ctrl_en_falling_30]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_intr_ctrl_en_falling_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_intr_ctrl_en_falling_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[30].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_intr_ctrl_en_falling_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].intr_ctrl_en_falling.qe = per_pin_cfg_30_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_30]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_intr_ctrl_en_lvlhigh_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[30].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_30_qe;
+
+  //   F[intr_ctrl_en_lvllow_30]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_intr_ctrl_en_lvllow_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_intr_ctrl_en_lvllow_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[30].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_intr_ctrl_en_lvllow_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].intr_ctrl_en_lvllow.qe = per_pin_cfg_30_qe;
+
+  //   F[ctrl_en_input_filter_30]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_30_ctrl_en_input_filter_30 (
+    .re     (per_pin_cfg_30_re),
+    .we     (per_pin_cfg_30_we),
+    .wd     (per_pin_cfg_30_ctrl_en_input_filter_30_wd),
+    .d      (hw2reg.per_pin_cfg[30].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_30_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[30].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_30_ctrl_en_input_filter_30_qs)
+  );
+  assign reg2hw.per_pin_cfg[30].ctrl_en_input_filter.qe = per_pin_cfg_30_qe;
+
+
+  // Subregister 31 of Multireg per_pin_cfg
+  // R[per_pin_cfg_31]: V(True)
+  logic per_pin_cfg_31_qe;
+  logic [5:0] per_pin_cfg_31_flds_we;
+  assign per_pin_cfg_31_qe = &per_pin_cfg_31_flds_we;
+  //   F[oe_31]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_oe_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_oe_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].oe.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[0]),
+    .q      (reg2hw.per_pin_cfg[31].oe.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_oe_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].oe.qe = per_pin_cfg_31_qe;
+
+  //   F[intr_ctrl_en_rising_31]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_intr_ctrl_en_rising_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_intr_ctrl_en_rising_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].intr_ctrl_en_rising.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[1]),
+    .q      (reg2hw.per_pin_cfg[31].intr_ctrl_en_rising.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_intr_ctrl_en_rising_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].intr_ctrl_en_rising.qe = per_pin_cfg_31_qe;
+
+  //   F[intr_ctrl_en_falling_31]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_intr_ctrl_en_falling_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_intr_ctrl_en_falling_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].intr_ctrl_en_falling.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[2]),
+    .q      (reg2hw.per_pin_cfg[31].intr_ctrl_en_falling.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_intr_ctrl_en_falling_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].intr_ctrl_en_falling.qe = per_pin_cfg_31_qe;
+
+  //   F[intr_ctrl_en_lvlhigh_31]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_intr_ctrl_en_lvlhigh_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].intr_ctrl_en_lvlhigh.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[3]),
+    .q      (reg2hw.per_pin_cfg[31].intr_ctrl_en_lvlhigh.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].intr_ctrl_en_lvlhigh.qe = per_pin_cfg_31_qe;
+
+  //   F[intr_ctrl_en_lvllow_31]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_intr_ctrl_en_lvllow_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_intr_ctrl_en_lvllow_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].intr_ctrl_en_lvllow.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[4]),
+    .q      (reg2hw.per_pin_cfg[31].intr_ctrl_en_lvllow.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_intr_ctrl_en_lvllow_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].intr_ctrl_en_lvllow.qe = per_pin_cfg_31_qe;
+
+  //   F[ctrl_en_input_filter_31]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_per_pin_cfg_31_ctrl_en_input_filter_31 (
+    .re     (per_pin_cfg_31_re),
+    .we     (per_pin_cfg_31_we),
+    .wd     (per_pin_cfg_31_ctrl_en_input_filter_31_wd),
+    .d      (hw2reg.per_pin_cfg[31].ctrl_en_input_filter.d),
+    .qre    (),
+    .qe     (per_pin_cfg_31_flds_we[5]),
+    .q      (reg2hw.per_pin_cfg[31].ctrl_en_input_filter.q),
+    .ds     (),
+    .qs     (per_pin_cfg_31_ctrl_en_input_filter_31_qs)
+  );
+  assign reg2hw.per_pin_cfg[31].ctrl_en_input_filter.qe = per_pin_cfg_31_qe;
+
+
+
+  logic [81:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [17:0] racl_addr_hit_read;
-  logic [17:0] racl_addr_hit_write;
+  logic [81:0] racl_addr_hit_read;
+  logic [81:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -755,9 +5867,73 @@ module gpio_reg_top
     addr_hit[15] = (reg_addr == GPIO_CTRL_EN_INPUT_FILTER_OFFSET);
     addr_hit[16] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_VALID_OFFSET);
     addr_hit[17] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_OFFSET);
+    addr_hit[18] = (reg_addr == GPIO_PER_PIN_IO_0_OFFSET);
+    addr_hit[19] = (reg_addr == GPIO_PER_PIN_IO_1_OFFSET);
+    addr_hit[20] = (reg_addr == GPIO_PER_PIN_IO_2_OFFSET);
+    addr_hit[21] = (reg_addr == GPIO_PER_PIN_IO_3_OFFSET);
+    addr_hit[22] = (reg_addr == GPIO_PER_PIN_IO_4_OFFSET);
+    addr_hit[23] = (reg_addr == GPIO_PER_PIN_IO_5_OFFSET);
+    addr_hit[24] = (reg_addr == GPIO_PER_PIN_IO_6_OFFSET);
+    addr_hit[25] = (reg_addr == GPIO_PER_PIN_IO_7_OFFSET);
+    addr_hit[26] = (reg_addr == GPIO_PER_PIN_IO_8_OFFSET);
+    addr_hit[27] = (reg_addr == GPIO_PER_PIN_IO_9_OFFSET);
+    addr_hit[28] = (reg_addr == GPIO_PER_PIN_IO_10_OFFSET);
+    addr_hit[29] = (reg_addr == GPIO_PER_PIN_IO_11_OFFSET);
+    addr_hit[30] = (reg_addr == GPIO_PER_PIN_IO_12_OFFSET);
+    addr_hit[31] = (reg_addr == GPIO_PER_PIN_IO_13_OFFSET);
+    addr_hit[32] = (reg_addr == GPIO_PER_PIN_IO_14_OFFSET);
+    addr_hit[33] = (reg_addr == GPIO_PER_PIN_IO_15_OFFSET);
+    addr_hit[34] = (reg_addr == GPIO_PER_PIN_IO_16_OFFSET);
+    addr_hit[35] = (reg_addr == GPIO_PER_PIN_IO_17_OFFSET);
+    addr_hit[36] = (reg_addr == GPIO_PER_PIN_IO_18_OFFSET);
+    addr_hit[37] = (reg_addr == GPIO_PER_PIN_IO_19_OFFSET);
+    addr_hit[38] = (reg_addr == GPIO_PER_PIN_IO_20_OFFSET);
+    addr_hit[39] = (reg_addr == GPIO_PER_PIN_IO_21_OFFSET);
+    addr_hit[40] = (reg_addr == GPIO_PER_PIN_IO_22_OFFSET);
+    addr_hit[41] = (reg_addr == GPIO_PER_PIN_IO_23_OFFSET);
+    addr_hit[42] = (reg_addr == GPIO_PER_PIN_IO_24_OFFSET);
+    addr_hit[43] = (reg_addr == GPIO_PER_PIN_IO_25_OFFSET);
+    addr_hit[44] = (reg_addr == GPIO_PER_PIN_IO_26_OFFSET);
+    addr_hit[45] = (reg_addr == GPIO_PER_PIN_IO_27_OFFSET);
+    addr_hit[46] = (reg_addr == GPIO_PER_PIN_IO_28_OFFSET);
+    addr_hit[47] = (reg_addr == GPIO_PER_PIN_IO_29_OFFSET);
+    addr_hit[48] = (reg_addr == GPIO_PER_PIN_IO_30_OFFSET);
+    addr_hit[49] = (reg_addr == GPIO_PER_PIN_IO_31_OFFSET);
+    addr_hit[50] = (reg_addr == GPIO_PER_PIN_CFG_0_OFFSET);
+    addr_hit[51] = (reg_addr == GPIO_PER_PIN_CFG_1_OFFSET);
+    addr_hit[52] = (reg_addr == GPIO_PER_PIN_CFG_2_OFFSET);
+    addr_hit[53] = (reg_addr == GPIO_PER_PIN_CFG_3_OFFSET);
+    addr_hit[54] = (reg_addr == GPIO_PER_PIN_CFG_4_OFFSET);
+    addr_hit[55] = (reg_addr == GPIO_PER_PIN_CFG_5_OFFSET);
+    addr_hit[56] = (reg_addr == GPIO_PER_PIN_CFG_6_OFFSET);
+    addr_hit[57] = (reg_addr == GPIO_PER_PIN_CFG_7_OFFSET);
+    addr_hit[58] = (reg_addr == GPIO_PER_PIN_CFG_8_OFFSET);
+    addr_hit[59] = (reg_addr == GPIO_PER_PIN_CFG_9_OFFSET);
+    addr_hit[60] = (reg_addr == GPIO_PER_PIN_CFG_10_OFFSET);
+    addr_hit[61] = (reg_addr == GPIO_PER_PIN_CFG_11_OFFSET);
+    addr_hit[62] = (reg_addr == GPIO_PER_PIN_CFG_12_OFFSET);
+    addr_hit[63] = (reg_addr == GPIO_PER_PIN_CFG_13_OFFSET);
+    addr_hit[64] = (reg_addr == GPIO_PER_PIN_CFG_14_OFFSET);
+    addr_hit[65] = (reg_addr == GPIO_PER_PIN_CFG_15_OFFSET);
+    addr_hit[66] = (reg_addr == GPIO_PER_PIN_CFG_16_OFFSET);
+    addr_hit[67] = (reg_addr == GPIO_PER_PIN_CFG_17_OFFSET);
+    addr_hit[68] = (reg_addr == GPIO_PER_PIN_CFG_18_OFFSET);
+    addr_hit[69] = (reg_addr == GPIO_PER_PIN_CFG_19_OFFSET);
+    addr_hit[70] = (reg_addr == GPIO_PER_PIN_CFG_20_OFFSET);
+    addr_hit[71] = (reg_addr == GPIO_PER_PIN_CFG_21_OFFSET);
+    addr_hit[72] = (reg_addr == GPIO_PER_PIN_CFG_22_OFFSET);
+    addr_hit[73] = (reg_addr == GPIO_PER_PIN_CFG_23_OFFSET);
+    addr_hit[74] = (reg_addr == GPIO_PER_PIN_CFG_24_OFFSET);
+    addr_hit[75] = (reg_addr == GPIO_PER_PIN_CFG_25_OFFSET);
+    addr_hit[76] = (reg_addr == GPIO_PER_PIN_CFG_26_OFFSET);
+    addr_hit[77] = (reg_addr == GPIO_PER_PIN_CFG_27_OFFSET);
+    addr_hit[78] = (reg_addr == GPIO_PER_PIN_CFG_28_OFFSET);
+    addr_hit[79] = (reg_addr == GPIO_PER_PIN_CFG_29_OFFSET);
+    addr_hit[80] = (reg_addr == GPIO_PER_PIN_CFG_30_OFFSET);
+    addr_hit[81] = (reg_addr == GPIO_PER_PIN_CFG_31_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 18; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 82; slice_idx++) begin
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
@@ -807,7 +5983,71 @@ module gpio_reg_top
                (racl_addr_hit_write[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
                (racl_addr_hit_write[15] & (|(GPIO_PERMIT[15] & ~reg_be))) |
                (racl_addr_hit_write[16] & (|(GPIO_PERMIT[16] & ~reg_be))) |
-               (racl_addr_hit_write[17] & (|(GPIO_PERMIT[17] & ~reg_be)))));
+               (racl_addr_hit_write[17] & (|(GPIO_PERMIT[17] & ~reg_be))) |
+               (racl_addr_hit_write[18] & (|(GPIO_PERMIT[18] & ~reg_be))) |
+               (racl_addr_hit_write[19] & (|(GPIO_PERMIT[19] & ~reg_be))) |
+               (racl_addr_hit_write[20] & (|(GPIO_PERMIT[20] & ~reg_be))) |
+               (racl_addr_hit_write[21] & (|(GPIO_PERMIT[21] & ~reg_be))) |
+               (racl_addr_hit_write[22] & (|(GPIO_PERMIT[22] & ~reg_be))) |
+               (racl_addr_hit_write[23] & (|(GPIO_PERMIT[23] & ~reg_be))) |
+               (racl_addr_hit_write[24] & (|(GPIO_PERMIT[24] & ~reg_be))) |
+               (racl_addr_hit_write[25] & (|(GPIO_PERMIT[25] & ~reg_be))) |
+               (racl_addr_hit_write[26] & (|(GPIO_PERMIT[26] & ~reg_be))) |
+               (racl_addr_hit_write[27] & (|(GPIO_PERMIT[27] & ~reg_be))) |
+               (racl_addr_hit_write[28] & (|(GPIO_PERMIT[28] & ~reg_be))) |
+               (racl_addr_hit_write[29] & (|(GPIO_PERMIT[29] & ~reg_be))) |
+               (racl_addr_hit_write[30] & (|(GPIO_PERMIT[30] & ~reg_be))) |
+               (racl_addr_hit_write[31] & (|(GPIO_PERMIT[31] & ~reg_be))) |
+               (racl_addr_hit_write[32] & (|(GPIO_PERMIT[32] & ~reg_be))) |
+               (racl_addr_hit_write[33] & (|(GPIO_PERMIT[33] & ~reg_be))) |
+               (racl_addr_hit_write[34] & (|(GPIO_PERMIT[34] & ~reg_be))) |
+               (racl_addr_hit_write[35] & (|(GPIO_PERMIT[35] & ~reg_be))) |
+               (racl_addr_hit_write[36] & (|(GPIO_PERMIT[36] & ~reg_be))) |
+               (racl_addr_hit_write[37] & (|(GPIO_PERMIT[37] & ~reg_be))) |
+               (racl_addr_hit_write[38] & (|(GPIO_PERMIT[38] & ~reg_be))) |
+               (racl_addr_hit_write[39] & (|(GPIO_PERMIT[39] & ~reg_be))) |
+               (racl_addr_hit_write[40] & (|(GPIO_PERMIT[40] & ~reg_be))) |
+               (racl_addr_hit_write[41] & (|(GPIO_PERMIT[41] & ~reg_be))) |
+               (racl_addr_hit_write[42] & (|(GPIO_PERMIT[42] & ~reg_be))) |
+               (racl_addr_hit_write[43] & (|(GPIO_PERMIT[43] & ~reg_be))) |
+               (racl_addr_hit_write[44] & (|(GPIO_PERMIT[44] & ~reg_be))) |
+               (racl_addr_hit_write[45] & (|(GPIO_PERMIT[45] & ~reg_be))) |
+               (racl_addr_hit_write[46] & (|(GPIO_PERMIT[46] & ~reg_be))) |
+               (racl_addr_hit_write[47] & (|(GPIO_PERMIT[47] & ~reg_be))) |
+               (racl_addr_hit_write[48] & (|(GPIO_PERMIT[48] & ~reg_be))) |
+               (racl_addr_hit_write[49] & (|(GPIO_PERMIT[49] & ~reg_be))) |
+               (racl_addr_hit_write[50] & (|(GPIO_PERMIT[50] & ~reg_be))) |
+               (racl_addr_hit_write[51] & (|(GPIO_PERMIT[51] & ~reg_be))) |
+               (racl_addr_hit_write[52] & (|(GPIO_PERMIT[52] & ~reg_be))) |
+               (racl_addr_hit_write[53] & (|(GPIO_PERMIT[53] & ~reg_be))) |
+               (racl_addr_hit_write[54] & (|(GPIO_PERMIT[54] & ~reg_be))) |
+               (racl_addr_hit_write[55] & (|(GPIO_PERMIT[55] & ~reg_be))) |
+               (racl_addr_hit_write[56] & (|(GPIO_PERMIT[56] & ~reg_be))) |
+               (racl_addr_hit_write[57] & (|(GPIO_PERMIT[57] & ~reg_be))) |
+               (racl_addr_hit_write[58] & (|(GPIO_PERMIT[58] & ~reg_be))) |
+               (racl_addr_hit_write[59] & (|(GPIO_PERMIT[59] & ~reg_be))) |
+               (racl_addr_hit_write[60] & (|(GPIO_PERMIT[60] & ~reg_be))) |
+               (racl_addr_hit_write[61] & (|(GPIO_PERMIT[61] & ~reg_be))) |
+               (racl_addr_hit_write[62] & (|(GPIO_PERMIT[62] & ~reg_be))) |
+               (racl_addr_hit_write[63] & (|(GPIO_PERMIT[63] & ~reg_be))) |
+               (racl_addr_hit_write[64] & (|(GPIO_PERMIT[64] & ~reg_be))) |
+               (racl_addr_hit_write[65] & (|(GPIO_PERMIT[65] & ~reg_be))) |
+               (racl_addr_hit_write[66] & (|(GPIO_PERMIT[66] & ~reg_be))) |
+               (racl_addr_hit_write[67] & (|(GPIO_PERMIT[67] & ~reg_be))) |
+               (racl_addr_hit_write[68] & (|(GPIO_PERMIT[68] & ~reg_be))) |
+               (racl_addr_hit_write[69] & (|(GPIO_PERMIT[69] & ~reg_be))) |
+               (racl_addr_hit_write[70] & (|(GPIO_PERMIT[70] & ~reg_be))) |
+               (racl_addr_hit_write[71] & (|(GPIO_PERMIT[71] & ~reg_be))) |
+               (racl_addr_hit_write[72] & (|(GPIO_PERMIT[72] & ~reg_be))) |
+               (racl_addr_hit_write[73] & (|(GPIO_PERMIT[73] & ~reg_be))) |
+               (racl_addr_hit_write[74] & (|(GPIO_PERMIT[74] & ~reg_be))) |
+               (racl_addr_hit_write[75] & (|(GPIO_PERMIT[75] & ~reg_be))) |
+               (racl_addr_hit_write[76] & (|(GPIO_PERMIT[76] & ~reg_be))) |
+               (racl_addr_hit_write[77] & (|(GPIO_PERMIT[77] & ~reg_be))) |
+               (racl_addr_hit_write[78] & (|(GPIO_PERMIT[78] & ~reg_be))) |
+               (racl_addr_hit_write[79] & (|(GPIO_PERMIT[79] & ~reg_be))) |
+               (racl_addr_hit_write[80] & (|(GPIO_PERMIT[80] & ~reg_be))) |
+               (racl_addr_hit_write[81] & (|(GPIO_PERMIT[81] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -855,21 +6095,602 @@ module gpio_reg_top
   assign masked_oe_upper_data_wd = reg_wdata[15:0];
 
   assign masked_oe_upper_mask_wd = reg_wdata[31:16];
+  assign intr_ctrl_en_rising_re = racl_addr_hit_read[11] & reg_re & !reg_error;
   assign intr_ctrl_en_rising_we = racl_addr_hit_write[11] & reg_we & !reg_error;
 
   assign intr_ctrl_en_rising_wd = reg_wdata[31:0];
+  assign intr_ctrl_en_falling_re = racl_addr_hit_read[12] & reg_re & !reg_error;
   assign intr_ctrl_en_falling_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
   assign intr_ctrl_en_falling_wd = reg_wdata[31:0];
+  assign intr_ctrl_en_lvlhigh_re = racl_addr_hit_read[13] & reg_re & !reg_error;
   assign intr_ctrl_en_lvlhigh_we = racl_addr_hit_write[13] & reg_we & !reg_error;
 
   assign intr_ctrl_en_lvlhigh_wd = reg_wdata[31:0];
+  assign intr_ctrl_en_lvllow_re = racl_addr_hit_read[14] & reg_re & !reg_error;
   assign intr_ctrl_en_lvllow_we = racl_addr_hit_write[14] & reg_we & !reg_error;
 
   assign intr_ctrl_en_lvllow_wd = reg_wdata[31:0];
+  assign ctrl_en_input_filter_re = racl_addr_hit_read[15] & reg_re & !reg_error;
   assign ctrl_en_input_filter_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
+  assign per_pin_io_0_re = racl_addr_hit_read[18] & reg_re & !reg_error;
+  assign per_pin_io_0_we = racl_addr_hit_write[18] & reg_we & !reg_error;
+
+  assign per_pin_io_0_data_out_0_wd = reg_wdata[0];
+  assign per_pin_io_1_re = racl_addr_hit_read[19] & reg_re & !reg_error;
+  assign per_pin_io_1_we = racl_addr_hit_write[19] & reg_we & !reg_error;
+
+  assign per_pin_io_1_data_out_1_wd = reg_wdata[0];
+  assign per_pin_io_2_re = racl_addr_hit_read[20] & reg_re & !reg_error;
+  assign per_pin_io_2_we = racl_addr_hit_write[20] & reg_we & !reg_error;
+
+  assign per_pin_io_2_data_out_2_wd = reg_wdata[0];
+  assign per_pin_io_3_re = racl_addr_hit_read[21] & reg_re & !reg_error;
+  assign per_pin_io_3_we = racl_addr_hit_write[21] & reg_we & !reg_error;
+
+  assign per_pin_io_3_data_out_3_wd = reg_wdata[0];
+  assign per_pin_io_4_re = racl_addr_hit_read[22] & reg_re & !reg_error;
+  assign per_pin_io_4_we = racl_addr_hit_write[22] & reg_we & !reg_error;
+
+  assign per_pin_io_4_data_out_4_wd = reg_wdata[0];
+  assign per_pin_io_5_re = racl_addr_hit_read[23] & reg_re & !reg_error;
+  assign per_pin_io_5_we = racl_addr_hit_write[23] & reg_we & !reg_error;
+
+  assign per_pin_io_5_data_out_5_wd = reg_wdata[0];
+  assign per_pin_io_6_re = racl_addr_hit_read[24] & reg_re & !reg_error;
+  assign per_pin_io_6_we = racl_addr_hit_write[24] & reg_we & !reg_error;
+
+  assign per_pin_io_6_data_out_6_wd = reg_wdata[0];
+  assign per_pin_io_7_re = racl_addr_hit_read[25] & reg_re & !reg_error;
+  assign per_pin_io_7_we = racl_addr_hit_write[25] & reg_we & !reg_error;
+
+  assign per_pin_io_7_data_out_7_wd = reg_wdata[0];
+  assign per_pin_io_8_re = racl_addr_hit_read[26] & reg_re & !reg_error;
+  assign per_pin_io_8_we = racl_addr_hit_write[26] & reg_we & !reg_error;
+
+  assign per_pin_io_8_data_out_8_wd = reg_wdata[0];
+  assign per_pin_io_9_re = racl_addr_hit_read[27] & reg_re & !reg_error;
+  assign per_pin_io_9_we = racl_addr_hit_write[27] & reg_we & !reg_error;
+
+  assign per_pin_io_9_data_out_9_wd = reg_wdata[0];
+  assign per_pin_io_10_re = racl_addr_hit_read[28] & reg_re & !reg_error;
+  assign per_pin_io_10_we = racl_addr_hit_write[28] & reg_we & !reg_error;
+
+  assign per_pin_io_10_data_out_10_wd = reg_wdata[0];
+  assign per_pin_io_11_re = racl_addr_hit_read[29] & reg_re & !reg_error;
+  assign per_pin_io_11_we = racl_addr_hit_write[29] & reg_we & !reg_error;
+
+  assign per_pin_io_11_data_out_11_wd = reg_wdata[0];
+  assign per_pin_io_12_re = racl_addr_hit_read[30] & reg_re & !reg_error;
+  assign per_pin_io_12_we = racl_addr_hit_write[30] & reg_we & !reg_error;
+
+  assign per_pin_io_12_data_out_12_wd = reg_wdata[0];
+  assign per_pin_io_13_re = racl_addr_hit_read[31] & reg_re & !reg_error;
+  assign per_pin_io_13_we = racl_addr_hit_write[31] & reg_we & !reg_error;
+
+  assign per_pin_io_13_data_out_13_wd = reg_wdata[0];
+  assign per_pin_io_14_re = racl_addr_hit_read[32] & reg_re & !reg_error;
+  assign per_pin_io_14_we = racl_addr_hit_write[32] & reg_we & !reg_error;
+
+  assign per_pin_io_14_data_out_14_wd = reg_wdata[0];
+  assign per_pin_io_15_re = racl_addr_hit_read[33] & reg_re & !reg_error;
+  assign per_pin_io_15_we = racl_addr_hit_write[33] & reg_we & !reg_error;
+
+  assign per_pin_io_15_data_out_15_wd = reg_wdata[0];
+  assign per_pin_io_16_re = racl_addr_hit_read[34] & reg_re & !reg_error;
+  assign per_pin_io_16_we = racl_addr_hit_write[34] & reg_we & !reg_error;
+
+  assign per_pin_io_16_data_out_16_wd = reg_wdata[0];
+  assign per_pin_io_17_re = racl_addr_hit_read[35] & reg_re & !reg_error;
+  assign per_pin_io_17_we = racl_addr_hit_write[35] & reg_we & !reg_error;
+
+  assign per_pin_io_17_data_out_17_wd = reg_wdata[0];
+  assign per_pin_io_18_re = racl_addr_hit_read[36] & reg_re & !reg_error;
+  assign per_pin_io_18_we = racl_addr_hit_write[36] & reg_we & !reg_error;
+
+  assign per_pin_io_18_data_out_18_wd = reg_wdata[0];
+  assign per_pin_io_19_re = racl_addr_hit_read[37] & reg_re & !reg_error;
+  assign per_pin_io_19_we = racl_addr_hit_write[37] & reg_we & !reg_error;
+
+  assign per_pin_io_19_data_out_19_wd = reg_wdata[0];
+  assign per_pin_io_20_re = racl_addr_hit_read[38] & reg_re & !reg_error;
+  assign per_pin_io_20_we = racl_addr_hit_write[38] & reg_we & !reg_error;
+
+  assign per_pin_io_20_data_out_20_wd = reg_wdata[0];
+  assign per_pin_io_21_re = racl_addr_hit_read[39] & reg_re & !reg_error;
+  assign per_pin_io_21_we = racl_addr_hit_write[39] & reg_we & !reg_error;
+
+  assign per_pin_io_21_data_out_21_wd = reg_wdata[0];
+  assign per_pin_io_22_re = racl_addr_hit_read[40] & reg_re & !reg_error;
+  assign per_pin_io_22_we = racl_addr_hit_write[40] & reg_we & !reg_error;
+
+  assign per_pin_io_22_data_out_22_wd = reg_wdata[0];
+  assign per_pin_io_23_re = racl_addr_hit_read[41] & reg_re & !reg_error;
+  assign per_pin_io_23_we = racl_addr_hit_write[41] & reg_we & !reg_error;
+
+  assign per_pin_io_23_data_out_23_wd = reg_wdata[0];
+  assign per_pin_io_24_re = racl_addr_hit_read[42] & reg_re & !reg_error;
+  assign per_pin_io_24_we = racl_addr_hit_write[42] & reg_we & !reg_error;
+
+  assign per_pin_io_24_data_out_24_wd = reg_wdata[0];
+  assign per_pin_io_25_re = racl_addr_hit_read[43] & reg_re & !reg_error;
+  assign per_pin_io_25_we = racl_addr_hit_write[43] & reg_we & !reg_error;
+
+  assign per_pin_io_25_data_out_25_wd = reg_wdata[0];
+  assign per_pin_io_26_re = racl_addr_hit_read[44] & reg_re & !reg_error;
+  assign per_pin_io_26_we = racl_addr_hit_write[44] & reg_we & !reg_error;
+
+  assign per_pin_io_26_data_out_26_wd = reg_wdata[0];
+  assign per_pin_io_27_re = racl_addr_hit_read[45] & reg_re & !reg_error;
+  assign per_pin_io_27_we = racl_addr_hit_write[45] & reg_we & !reg_error;
+
+  assign per_pin_io_27_data_out_27_wd = reg_wdata[0];
+  assign per_pin_io_28_re = racl_addr_hit_read[46] & reg_re & !reg_error;
+  assign per_pin_io_28_we = racl_addr_hit_write[46] & reg_we & !reg_error;
+
+  assign per_pin_io_28_data_out_28_wd = reg_wdata[0];
+  assign per_pin_io_29_re = racl_addr_hit_read[47] & reg_re & !reg_error;
+  assign per_pin_io_29_we = racl_addr_hit_write[47] & reg_we & !reg_error;
+
+  assign per_pin_io_29_data_out_29_wd = reg_wdata[0];
+  assign per_pin_io_30_re = racl_addr_hit_read[48] & reg_re & !reg_error;
+  assign per_pin_io_30_we = racl_addr_hit_write[48] & reg_we & !reg_error;
+
+  assign per_pin_io_30_data_out_30_wd = reg_wdata[0];
+  assign per_pin_io_31_re = racl_addr_hit_read[49] & reg_re & !reg_error;
+  assign per_pin_io_31_we = racl_addr_hit_write[49] & reg_we & !reg_error;
+
+  assign per_pin_io_31_data_out_31_wd = reg_wdata[0];
+  assign per_pin_cfg_0_re = racl_addr_hit_read[50] & reg_re & !reg_error;
+  assign per_pin_cfg_0_we = racl_addr_hit_write[50] & reg_we & !reg_error;
+
+  assign per_pin_cfg_0_oe_0_wd = reg_wdata[0];
+
+  assign per_pin_cfg_0_intr_ctrl_en_rising_0_wd = reg_wdata[8];
+
+  assign per_pin_cfg_0_intr_ctrl_en_falling_0_wd = reg_wdata[9];
+
+  assign per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_wd = reg_wdata[10];
+
+  assign per_pin_cfg_0_intr_ctrl_en_lvllow_0_wd = reg_wdata[11];
+
+  assign per_pin_cfg_0_ctrl_en_input_filter_0_wd = reg_wdata[12];
+  assign per_pin_cfg_1_re = racl_addr_hit_read[51] & reg_re & !reg_error;
+  assign per_pin_cfg_1_we = racl_addr_hit_write[51] & reg_we & !reg_error;
+
+  assign per_pin_cfg_1_oe_1_wd = reg_wdata[0];
+
+  assign per_pin_cfg_1_intr_ctrl_en_rising_1_wd = reg_wdata[8];
+
+  assign per_pin_cfg_1_intr_ctrl_en_falling_1_wd = reg_wdata[9];
+
+  assign per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_wd = reg_wdata[10];
+
+  assign per_pin_cfg_1_intr_ctrl_en_lvllow_1_wd = reg_wdata[11];
+
+  assign per_pin_cfg_1_ctrl_en_input_filter_1_wd = reg_wdata[12];
+  assign per_pin_cfg_2_re = racl_addr_hit_read[52] & reg_re & !reg_error;
+  assign per_pin_cfg_2_we = racl_addr_hit_write[52] & reg_we & !reg_error;
+
+  assign per_pin_cfg_2_oe_2_wd = reg_wdata[0];
+
+  assign per_pin_cfg_2_intr_ctrl_en_rising_2_wd = reg_wdata[8];
+
+  assign per_pin_cfg_2_intr_ctrl_en_falling_2_wd = reg_wdata[9];
+
+  assign per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_wd = reg_wdata[10];
+
+  assign per_pin_cfg_2_intr_ctrl_en_lvllow_2_wd = reg_wdata[11];
+
+  assign per_pin_cfg_2_ctrl_en_input_filter_2_wd = reg_wdata[12];
+  assign per_pin_cfg_3_re = racl_addr_hit_read[53] & reg_re & !reg_error;
+  assign per_pin_cfg_3_we = racl_addr_hit_write[53] & reg_we & !reg_error;
+
+  assign per_pin_cfg_3_oe_3_wd = reg_wdata[0];
+
+  assign per_pin_cfg_3_intr_ctrl_en_rising_3_wd = reg_wdata[8];
+
+  assign per_pin_cfg_3_intr_ctrl_en_falling_3_wd = reg_wdata[9];
+
+  assign per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_wd = reg_wdata[10];
+
+  assign per_pin_cfg_3_intr_ctrl_en_lvllow_3_wd = reg_wdata[11];
+
+  assign per_pin_cfg_3_ctrl_en_input_filter_3_wd = reg_wdata[12];
+  assign per_pin_cfg_4_re = racl_addr_hit_read[54] & reg_re & !reg_error;
+  assign per_pin_cfg_4_we = racl_addr_hit_write[54] & reg_we & !reg_error;
+
+  assign per_pin_cfg_4_oe_4_wd = reg_wdata[0];
+
+  assign per_pin_cfg_4_intr_ctrl_en_rising_4_wd = reg_wdata[8];
+
+  assign per_pin_cfg_4_intr_ctrl_en_falling_4_wd = reg_wdata[9];
+
+  assign per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_wd = reg_wdata[10];
+
+  assign per_pin_cfg_4_intr_ctrl_en_lvllow_4_wd = reg_wdata[11];
+
+  assign per_pin_cfg_4_ctrl_en_input_filter_4_wd = reg_wdata[12];
+  assign per_pin_cfg_5_re = racl_addr_hit_read[55] & reg_re & !reg_error;
+  assign per_pin_cfg_5_we = racl_addr_hit_write[55] & reg_we & !reg_error;
+
+  assign per_pin_cfg_5_oe_5_wd = reg_wdata[0];
+
+  assign per_pin_cfg_5_intr_ctrl_en_rising_5_wd = reg_wdata[8];
+
+  assign per_pin_cfg_5_intr_ctrl_en_falling_5_wd = reg_wdata[9];
+
+  assign per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_wd = reg_wdata[10];
+
+  assign per_pin_cfg_5_intr_ctrl_en_lvllow_5_wd = reg_wdata[11];
+
+  assign per_pin_cfg_5_ctrl_en_input_filter_5_wd = reg_wdata[12];
+  assign per_pin_cfg_6_re = racl_addr_hit_read[56] & reg_re & !reg_error;
+  assign per_pin_cfg_6_we = racl_addr_hit_write[56] & reg_we & !reg_error;
+
+  assign per_pin_cfg_6_oe_6_wd = reg_wdata[0];
+
+  assign per_pin_cfg_6_intr_ctrl_en_rising_6_wd = reg_wdata[8];
+
+  assign per_pin_cfg_6_intr_ctrl_en_falling_6_wd = reg_wdata[9];
+
+  assign per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_wd = reg_wdata[10];
+
+  assign per_pin_cfg_6_intr_ctrl_en_lvllow_6_wd = reg_wdata[11];
+
+  assign per_pin_cfg_6_ctrl_en_input_filter_6_wd = reg_wdata[12];
+  assign per_pin_cfg_7_re = racl_addr_hit_read[57] & reg_re & !reg_error;
+  assign per_pin_cfg_7_we = racl_addr_hit_write[57] & reg_we & !reg_error;
+
+  assign per_pin_cfg_7_oe_7_wd = reg_wdata[0];
+
+  assign per_pin_cfg_7_intr_ctrl_en_rising_7_wd = reg_wdata[8];
+
+  assign per_pin_cfg_7_intr_ctrl_en_falling_7_wd = reg_wdata[9];
+
+  assign per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_wd = reg_wdata[10];
+
+  assign per_pin_cfg_7_intr_ctrl_en_lvllow_7_wd = reg_wdata[11];
+
+  assign per_pin_cfg_7_ctrl_en_input_filter_7_wd = reg_wdata[12];
+  assign per_pin_cfg_8_re = racl_addr_hit_read[58] & reg_re & !reg_error;
+  assign per_pin_cfg_8_we = racl_addr_hit_write[58] & reg_we & !reg_error;
+
+  assign per_pin_cfg_8_oe_8_wd = reg_wdata[0];
+
+  assign per_pin_cfg_8_intr_ctrl_en_rising_8_wd = reg_wdata[8];
+
+  assign per_pin_cfg_8_intr_ctrl_en_falling_8_wd = reg_wdata[9];
+
+  assign per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_wd = reg_wdata[10];
+
+  assign per_pin_cfg_8_intr_ctrl_en_lvllow_8_wd = reg_wdata[11];
+
+  assign per_pin_cfg_8_ctrl_en_input_filter_8_wd = reg_wdata[12];
+  assign per_pin_cfg_9_re = racl_addr_hit_read[59] & reg_re & !reg_error;
+  assign per_pin_cfg_9_we = racl_addr_hit_write[59] & reg_we & !reg_error;
+
+  assign per_pin_cfg_9_oe_9_wd = reg_wdata[0];
+
+  assign per_pin_cfg_9_intr_ctrl_en_rising_9_wd = reg_wdata[8];
+
+  assign per_pin_cfg_9_intr_ctrl_en_falling_9_wd = reg_wdata[9];
+
+  assign per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_wd = reg_wdata[10];
+
+  assign per_pin_cfg_9_intr_ctrl_en_lvllow_9_wd = reg_wdata[11];
+
+  assign per_pin_cfg_9_ctrl_en_input_filter_9_wd = reg_wdata[12];
+  assign per_pin_cfg_10_re = racl_addr_hit_read[60] & reg_re & !reg_error;
+  assign per_pin_cfg_10_we = racl_addr_hit_write[60] & reg_we & !reg_error;
+
+  assign per_pin_cfg_10_oe_10_wd = reg_wdata[0];
+
+  assign per_pin_cfg_10_intr_ctrl_en_rising_10_wd = reg_wdata[8];
+
+  assign per_pin_cfg_10_intr_ctrl_en_falling_10_wd = reg_wdata[9];
+
+  assign per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_wd = reg_wdata[10];
+
+  assign per_pin_cfg_10_intr_ctrl_en_lvllow_10_wd = reg_wdata[11];
+
+  assign per_pin_cfg_10_ctrl_en_input_filter_10_wd = reg_wdata[12];
+  assign per_pin_cfg_11_re = racl_addr_hit_read[61] & reg_re & !reg_error;
+  assign per_pin_cfg_11_we = racl_addr_hit_write[61] & reg_we & !reg_error;
+
+  assign per_pin_cfg_11_oe_11_wd = reg_wdata[0];
+
+  assign per_pin_cfg_11_intr_ctrl_en_rising_11_wd = reg_wdata[8];
+
+  assign per_pin_cfg_11_intr_ctrl_en_falling_11_wd = reg_wdata[9];
+
+  assign per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_wd = reg_wdata[10];
+
+  assign per_pin_cfg_11_intr_ctrl_en_lvllow_11_wd = reg_wdata[11];
+
+  assign per_pin_cfg_11_ctrl_en_input_filter_11_wd = reg_wdata[12];
+  assign per_pin_cfg_12_re = racl_addr_hit_read[62] & reg_re & !reg_error;
+  assign per_pin_cfg_12_we = racl_addr_hit_write[62] & reg_we & !reg_error;
+
+  assign per_pin_cfg_12_oe_12_wd = reg_wdata[0];
+
+  assign per_pin_cfg_12_intr_ctrl_en_rising_12_wd = reg_wdata[8];
+
+  assign per_pin_cfg_12_intr_ctrl_en_falling_12_wd = reg_wdata[9];
+
+  assign per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_wd = reg_wdata[10];
+
+  assign per_pin_cfg_12_intr_ctrl_en_lvllow_12_wd = reg_wdata[11];
+
+  assign per_pin_cfg_12_ctrl_en_input_filter_12_wd = reg_wdata[12];
+  assign per_pin_cfg_13_re = racl_addr_hit_read[63] & reg_re & !reg_error;
+  assign per_pin_cfg_13_we = racl_addr_hit_write[63] & reg_we & !reg_error;
+
+  assign per_pin_cfg_13_oe_13_wd = reg_wdata[0];
+
+  assign per_pin_cfg_13_intr_ctrl_en_rising_13_wd = reg_wdata[8];
+
+  assign per_pin_cfg_13_intr_ctrl_en_falling_13_wd = reg_wdata[9];
+
+  assign per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_wd = reg_wdata[10];
+
+  assign per_pin_cfg_13_intr_ctrl_en_lvllow_13_wd = reg_wdata[11];
+
+  assign per_pin_cfg_13_ctrl_en_input_filter_13_wd = reg_wdata[12];
+  assign per_pin_cfg_14_re = racl_addr_hit_read[64] & reg_re & !reg_error;
+  assign per_pin_cfg_14_we = racl_addr_hit_write[64] & reg_we & !reg_error;
+
+  assign per_pin_cfg_14_oe_14_wd = reg_wdata[0];
+
+  assign per_pin_cfg_14_intr_ctrl_en_rising_14_wd = reg_wdata[8];
+
+  assign per_pin_cfg_14_intr_ctrl_en_falling_14_wd = reg_wdata[9];
+
+  assign per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_wd = reg_wdata[10];
+
+  assign per_pin_cfg_14_intr_ctrl_en_lvllow_14_wd = reg_wdata[11];
+
+  assign per_pin_cfg_14_ctrl_en_input_filter_14_wd = reg_wdata[12];
+  assign per_pin_cfg_15_re = racl_addr_hit_read[65] & reg_re & !reg_error;
+  assign per_pin_cfg_15_we = racl_addr_hit_write[65] & reg_we & !reg_error;
+
+  assign per_pin_cfg_15_oe_15_wd = reg_wdata[0];
+
+  assign per_pin_cfg_15_intr_ctrl_en_rising_15_wd = reg_wdata[8];
+
+  assign per_pin_cfg_15_intr_ctrl_en_falling_15_wd = reg_wdata[9];
+
+  assign per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_wd = reg_wdata[10];
+
+  assign per_pin_cfg_15_intr_ctrl_en_lvllow_15_wd = reg_wdata[11];
+
+  assign per_pin_cfg_15_ctrl_en_input_filter_15_wd = reg_wdata[12];
+  assign per_pin_cfg_16_re = racl_addr_hit_read[66] & reg_re & !reg_error;
+  assign per_pin_cfg_16_we = racl_addr_hit_write[66] & reg_we & !reg_error;
+
+  assign per_pin_cfg_16_oe_16_wd = reg_wdata[0];
+
+  assign per_pin_cfg_16_intr_ctrl_en_rising_16_wd = reg_wdata[8];
+
+  assign per_pin_cfg_16_intr_ctrl_en_falling_16_wd = reg_wdata[9];
+
+  assign per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_wd = reg_wdata[10];
+
+  assign per_pin_cfg_16_intr_ctrl_en_lvllow_16_wd = reg_wdata[11];
+
+  assign per_pin_cfg_16_ctrl_en_input_filter_16_wd = reg_wdata[12];
+  assign per_pin_cfg_17_re = racl_addr_hit_read[67] & reg_re & !reg_error;
+  assign per_pin_cfg_17_we = racl_addr_hit_write[67] & reg_we & !reg_error;
+
+  assign per_pin_cfg_17_oe_17_wd = reg_wdata[0];
+
+  assign per_pin_cfg_17_intr_ctrl_en_rising_17_wd = reg_wdata[8];
+
+  assign per_pin_cfg_17_intr_ctrl_en_falling_17_wd = reg_wdata[9];
+
+  assign per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_wd = reg_wdata[10];
+
+  assign per_pin_cfg_17_intr_ctrl_en_lvllow_17_wd = reg_wdata[11];
+
+  assign per_pin_cfg_17_ctrl_en_input_filter_17_wd = reg_wdata[12];
+  assign per_pin_cfg_18_re = racl_addr_hit_read[68] & reg_re & !reg_error;
+  assign per_pin_cfg_18_we = racl_addr_hit_write[68] & reg_we & !reg_error;
+
+  assign per_pin_cfg_18_oe_18_wd = reg_wdata[0];
+
+  assign per_pin_cfg_18_intr_ctrl_en_rising_18_wd = reg_wdata[8];
+
+  assign per_pin_cfg_18_intr_ctrl_en_falling_18_wd = reg_wdata[9];
+
+  assign per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_wd = reg_wdata[10];
+
+  assign per_pin_cfg_18_intr_ctrl_en_lvllow_18_wd = reg_wdata[11];
+
+  assign per_pin_cfg_18_ctrl_en_input_filter_18_wd = reg_wdata[12];
+  assign per_pin_cfg_19_re = racl_addr_hit_read[69] & reg_re & !reg_error;
+  assign per_pin_cfg_19_we = racl_addr_hit_write[69] & reg_we & !reg_error;
+
+  assign per_pin_cfg_19_oe_19_wd = reg_wdata[0];
+
+  assign per_pin_cfg_19_intr_ctrl_en_rising_19_wd = reg_wdata[8];
+
+  assign per_pin_cfg_19_intr_ctrl_en_falling_19_wd = reg_wdata[9];
+
+  assign per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_wd = reg_wdata[10];
+
+  assign per_pin_cfg_19_intr_ctrl_en_lvllow_19_wd = reg_wdata[11];
+
+  assign per_pin_cfg_19_ctrl_en_input_filter_19_wd = reg_wdata[12];
+  assign per_pin_cfg_20_re = racl_addr_hit_read[70] & reg_re & !reg_error;
+  assign per_pin_cfg_20_we = racl_addr_hit_write[70] & reg_we & !reg_error;
+
+  assign per_pin_cfg_20_oe_20_wd = reg_wdata[0];
+
+  assign per_pin_cfg_20_intr_ctrl_en_rising_20_wd = reg_wdata[8];
+
+  assign per_pin_cfg_20_intr_ctrl_en_falling_20_wd = reg_wdata[9];
+
+  assign per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_wd = reg_wdata[10];
+
+  assign per_pin_cfg_20_intr_ctrl_en_lvllow_20_wd = reg_wdata[11];
+
+  assign per_pin_cfg_20_ctrl_en_input_filter_20_wd = reg_wdata[12];
+  assign per_pin_cfg_21_re = racl_addr_hit_read[71] & reg_re & !reg_error;
+  assign per_pin_cfg_21_we = racl_addr_hit_write[71] & reg_we & !reg_error;
+
+  assign per_pin_cfg_21_oe_21_wd = reg_wdata[0];
+
+  assign per_pin_cfg_21_intr_ctrl_en_rising_21_wd = reg_wdata[8];
+
+  assign per_pin_cfg_21_intr_ctrl_en_falling_21_wd = reg_wdata[9];
+
+  assign per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_wd = reg_wdata[10];
+
+  assign per_pin_cfg_21_intr_ctrl_en_lvllow_21_wd = reg_wdata[11];
+
+  assign per_pin_cfg_21_ctrl_en_input_filter_21_wd = reg_wdata[12];
+  assign per_pin_cfg_22_re = racl_addr_hit_read[72] & reg_re & !reg_error;
+  assign per_pin_cfg_22_we = racl_addr_hit_write[72] & reg_we & !reg_error;
+
+  assign per_pin_cfg_22_oe_22_wd = reg_wdata[0];
+
+  assign per_pin_cfg_22_intr_ctrl_en_rising_22_wd = reg_wdata[8];
+
+  assign per_pin_cfg_22_intr_ctrl_en_falling_22_wd = reg_wdata[9];
+
+  assign per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_wd = reg_wdata[10];
+
+  assign per_pin_cfg_22_intr_ctrl_en_lvllow_22_wd = reg_wdata[11];
+
+  assign per_pin_cfg_22_ctrl_en_input_filter_22_wd = reg_wdata[12];
+  assign per_pin_cfg_23_re = racl_addr_hit_read[73] & reg_re & !reg_error;
+  assign per_pin_cfg_23_we = racl_addr_hit_write[73] & reg_we & !reg_error;
+
+  assign per_pin_cfg_23_oe_23_wd = reg_wdata[0];
+
+  assign per_pin_cfg_23_intr_ctrl_en_rising_23_wd = reg_wdata[8];
+
+  assign per_pin_cfg_23_intr_ctrl_en_falling_23_wd = reg_wdata[9];
+
+  assign per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_wd = reg_wdata[10];
+
+  assign per_pin_cfg_23_intr_ctrl_en_lvllow_23_wd = reg_wdata[11];
+
+  assign per_pin_cfg_23_ctrl_en_input_filter_23_wd = reg_wdata[12];
+  assign per_pin_cfg_24_re = racl_addr_hit_read[74] & reg_re & !reg_error;
+  assign per_pin_cfg_24_we = racl_addr_hit_write[74] & reg_we & !reg_error;
+
+  assign per_pin_cfg_24_oe_24_wd = reg_wdata[0];
+
+  assign per_pin_cfg_24_intr_ctrl_en_rising_24_wd = reg_wdata[8];
+
+  assign per_pin_cfg_24_intr_ctrl_en_falling_24_wd = reg_wdata[9];
+
+  assign per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_wd = reg_wdata[10];
+
+  assign per_pin_cfg_24_intr_ctrl_en_lvllow_24_wd = reg_wdata[11];
+
+  assign per_pin_cfg_24_ctrl_en_input_filter_24_wd = reg_wdata[12];
+  assign per_pin_cfg_25_re = racl_addr_hit_read[75] & reg_re & !reg_error;
+  assign per_pin_cfg_25_we = racl_addr_hit_write[75] & reg_we & !reg_error;
+
+  assign per_pin_cfg_25_oe_25_wd = reg_wdata[0];
+
+  assign per_pin_cfg_25_intr_ctrl_en_rising_25_wd = reg_wdata[8];
+
+  assign per_pin_cfg_25_intr_ctrl_en_falling_25_wd = reg_wdata[9];
+
+  assign per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_wd = reg_wdata[10];
+
+  assign per_pin_cfg_25_intr_ctrl_en_lvllow_25_wd = reg_wdata[11];
+
+  assign per_pin_cfg_25_ctrl_en_input_filter_25_wd = reg_wdata[12];
+  assign per_pin_cfg_26_re = racl_addr_hit_read[76] & reg_re & !reg_error;
+  assign per_pin_cfg_26_we = racl_addr_hit_write[76] & reg_we & !reg_error;
+
+  assign per_pin_cfg_26_oe_26_wd = reg_wdata[0];
+
+  assign per_pin_cfg_26_intr_ctrl_en_rising_26_wd = reg_wdata[8];
+
+  assign per_pin_cfg_26_intr_ctrl_en_falling_26_wd = reg_wdata[9];
+
+  assign per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_wd = reg_wdata[10];
+
+  assign per_pin_cfg_26_intr_ctrl_en_lvllow_26_wd = reg_wdata[11];
+
+  assign per_pin_cfg_26_ctrl_en_input_filter_26_wd = reg_wdata[12];
+  assign per_pin_cfg_27_re = racl_addr_hit_read[77] & reg_re & !reg_error;
+  assign per_pin_cfg_27_we = racl_addr_hit_write[77] & reg_we & !reg_error;
+
+  assign per_pin_cfg_27_oe_27_wd = reg_wdata[0];
+
+  assign per_pin_cfg_27_intr_ctrl_en_rising_27_wd = reg_wdata[8];
+
+  assign per_pin_cfg_27_intr_ctrl_en_falling_27_wd = reg_wdata[9];
+
+  assign per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_wd = reg_wdata[10];
+
+  assign per_pin_cfg_27_intr_ctrl_en_lvllow_27_wd = reg_wdata[11];
+
+  assign per_pin_cfg_27_ctrl_en_input_filter_27_wd = reg_wdata[12];
+  assign per_pin_cfg_28_re = racl_addr_hit_read[78] & reg_re & !reg_error;
+  assign per_pin_cfg_28_we = racl_addr_hit_write[78] & reg_we & !reg_error;
+
+  assign per_pin_cfg_28_oe_28_wd = reg_wdata[0];
+
+  assign per_pin_cfg_28_intr_ctrl_en_rising_28_wd = reg_wdata[8];
+
+  assign per_pin_cfg_28_intr_ctrl_en_falling_28_wd = reg_wdata[9];
+
+  assign per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_wd = reg_wdata[10];
+
+  assign per_pin_cfg_28_intr_ctrl_en_lvllow_28_wd = reg_wdata[11];
+
+  assign per_pin_cfg_28_ctrl_en_input_filter_28_wd = reg_wdata[12];
+  assign per_pin_cfg_29_re = racl_addr_hit_read[79] & reg_re & !reg_error;
+  assign per_pin_cfg_29_we = racl_addr_hit_write[79] & reg_we & !reg_error;
+
+  assign per_pin_cfg_29_oe_29_wd = reg_wdata[0];
+
+  assign per_pin_cfg_29_intr_ctrl_en_rising_29_wd = reg_wdata[8];
+
+  assign per_pin_cfg_29_intr_ctrl_en_falling_29_wd = reg_wdata[9];
+
+  assign per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_wd = reg_wdata[10];
+
+  assign per_pin_cfg_29_intr_ctrl_en_lvllow_29_wd = reg_wdata[11];
+
+  assign per_pin_cfg_29_ctrl_en_input_filter_29_wd = reg_wdata[12];
+  assign per_pin_cfg_30_re = racl_addr_hit_read[80] & reg_re & !reg_error;
+  assign per_pin_cfg_30_we = racl_addr_hit_write[80] & reg_we & !reg_error;
+
+  assign per_pin_cfg_30_oe_30_wd = reg_wdata[0];
+
+  assign per_pin_cfg_30_intr_ctrl_en_rising_30_wd = reg_wdata[8];
+
+  assign per_pin_cfg_30_intr_ctrl_en_falling_30_wd = reg_wdata[9];
+
+  assign per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_wd = reg_wdata[10];
+
+  assign per_pin_cfg_30_intr_ctrl_en_lvllow_30_wd = reg_wdata[11];
+
+  assign per_pin_cfg_30_ctrl_en_input_filter_30_wd = reg_wdata[12];
+  assign per_pin_cfg_31_re = racl_addr_hit_read[81] & reg_re & !reg_error;
+  assign per_pin_cfg_31_we = racl_addr_hit_write[81] & reg_we & !reg_error;
+
+  assign per_pin_cfg_31_oe_31_wd = reg_wdata[0];
+
+  assign per_pin_cfg_31_intr_ctrl_en_rising_31_wd = reg_wdata[8];
+
+  assign per_pin_cfg_31_intr_ctrl_en_falling_31_wd = reg_wdata[9];
+
+  assign per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_wd = reg_wdata[10];
+
+  assign per_pin_cfg_31_intr_ctrl_en_lvllow_31_wd = reg_wdata[11];
+
+  assign per_pin_cfg_31_ctrl_en_input_filter_31_wd = reg_wdata[12];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -891,6 +6712,70 @@ module gpio_reg_top
     reg_we_check[15] = ctrl_en_input_filter_we;
     reg_we_check[16] = 1'b0;
     reg_we_check[17] = 1'b0;
+    reg_we_check[18] = per_pin_io_0_we;
+    reg_we_check[19] = per_pin_io_1_we;
+    reg_we_check[20] = per_pin_io_2_we;
+    reg_we_check[21] = per_pin_io_3_we;
+    reg_we_check[22] = per_pin_io_4_we;
+    reg_we_check[23] = per_pin_io_5_we;
+    reg_we_check[24] = per_pin_io_6_we;
+    reg_we_check[25] = per_pin_io_7_we;
+    reg_we_check[26] = per_pin_io_8_we;
+    reg_we_check[27] = per_pin_io_9_we;
+    reg_we_check[28] = per_pin_io_10_we;
+    reg_we_check[29] = per_pin_io_11_we;
+    reg_we_check[30] = per_pin_io_12_we;
+    reg_we_check[31] = per_pin_io_13_we;
+    reg_we_check[32] = per_pin_io_14_we;
+    reg_we_check[33] = per_pin_io_15_we;
+    reg_we_check[34] = per_pin_io_16_we;
+    reg_we_check[35] = per_pin_io_17_we;
+    reg_we_check[36] = per_pin_io_18_we;
+    reg_we_check[37] = per_pin_io_19_we;
+    reg_we_check[38] = per_pin_io_20_we;
+    reg_we_check[39] = per_pin_io_21_we;
+    reg_we_check[40] = per_pin_io_22_we;
+    reg_we_check[41] = per_pin_io_23_we;
+    reg_we_check[42] = per_pin_io_24_we;
+    reg_we_check[43] = per_pin_io_25_we;
+    reg_we_check[44] = per_pin_io_26_we;
+    reg_we_check[45] = per_pin_io_27_we;
+    reg_we_check[46] = per_pin_io_28_we;
+    reg_we_check[47] = per_pin_io_29_we;
+    reg_we_check[48] = per_pin_io_30_we;
+    reg_we_check[49] = per_pin_io_31_we;
+    reg_we_check[50] = per_pin_cfg_0_we;
+    reg_we_check[51] = per_pin_cfg_1_we;
+    reg_we_check[52] = per_pin_cfg_2_we;
+    reg_we_check[53] = per_pin_cfg_3_we;
+    reg_we_check[54] = per_pin_cfg_4_we;
+    reg_we_check[55] = per_pin_cfg_5_we;
+    reg_we_check[56] = per_pin_cfg_6_we;
+    reg_we_check[57] = per_pin_cfg_7_we;
+    reg_we_check[58] = per_pin_cfg_8_we;
+    reg_we_check[59] = per_pin_cfg_9_we;
+    reg_we_check[60] = per_pin_cfg_10_we;
+    reg_we_check[61] = per_pin_cfg_11_we;
+    reg_we_check[62] = per_pin_cfg_12_we;
+    reg_we_check[63] = per_pin_cfg_13_we;
+    reg_we_check[64] = per_pin_cfg_14_we;
+    reg_we_check[65] = per_pin_cfg_15_we;
+    reg_we_check[66] = per_pin_cfg_16_we;
+    reg_we_check[67] = per_pin_cfg_17_we;
+    reg_we_check[68] = per_pin_cfg_18_we;
+    reg_we_check[69] = per_pin_cfg_19_we;
+    reg_we_check[70] = per_pin_cfg_20_we;
+    reg_we_check[71] = per_pin_cfg_21_we;
+    reg_we_check[72] = per_pin_cfg_22_we;
+    reg_we_check[73] = per_pin_cfg_23_we;
+    reg_we_check[74] = per_pin_cfg_24_we;
+    reg_we_check[75] = per_pin_cfg_25_we;
+    reg_we_check[76] = per_pin_cfg_26_we;
+    reg_we_check[77] = per_pin_cfg_27_we;
+    reg_we_check[78] = per_pin_cfg_28_we;
+    reg_we_check[79] = per_pin_cfg_29_we;
+    reg_we_check[80] = per_pin_cfg_30_we;
+    reg_we_check[81] = per_pin_cfg_31_we;
   end
 
   // Read data return
@@ -971,6 +6856,454 @@ module gpio_reg_top
 
       racl_addr_hit_read[17]: begin
         reg_rdata_next[31:0] = hw_straps_data_in_qs;
+      end
+
+      racl_addr_hit_read[18]: begin
+        reg_rdata_next[0] = per_pin_io_0_data_out_0_qs;
+        reg_rdata_next[8] = per_pin_io_0_data_in_0_qs;
+      end
+
+      racl_addr_hit_read[19]: begin
+        reg_rdata_next[0] = per_pin_io_1_data_out_1_qs;
+        reg_rdata_next[8] = per_pin_io_1_data_in_1_qs;
+      end
+
+      racl_addr_hit_read[20]: begin
+        reg_rdata_next[0] = per_pin_io_2_data_out_2_qs;
+        reg_rdata_next[8] = per_pin_io_2_data_in_2_qs;
+      end
+
+      racl_addr_hit_read[21]: begin
+        reg_rdata_next[0] = per_pin_io_3_data_out_3_qs;
+        reg_rdata_next[8] = per_pin_io_3_data_in_3_qs;
+      end
+
+      racl_addr_hit_read[22]: begin
+        reg_rdata_next[0] = per_pin_io_4_data_out_4_qs;
+        reg_rdata_next[8] = per_pin_io_4_data_in_4_qs;
+      end
+
+      racl_addr_hit_read[23]: begin
+        reg_rdata_next[0] = per_pin_io_5_data_out_5_qs;
+        reg_rdata_next[8] = per_pin_io_5_data_in_5_qs;
+      end
+
+      racl_addr_hit_read[24]: begin
+        reg_rdata_next[0] = per_pin_io_6_data_out_6_qs;
+        reg_rdata_next[8] = per_pin_io_6_data_in_6_qs;
+      end
+
+      racl_addr_hit_read[25]: begin
+        reg_rdata_next[0] = per_pin_io_7_data_out_7_qs;
+        reg_rdata_next[8] = per_pin_io_7_data_in_7_qs;
+      end
+
+      racl_addr_hit_read[26]: begin
+        reg_rdata_next[0] = per_pin_io_8_data_out_8_qs;
+        reg_rdata_next[8] = per_pin_io_8_data_in_8_qs;
+      end
+
+      racl_addr_hit_read[27]: begin
+        reg_rdata_next[0] = per_pin_io_9_data_out_9_qs;
+        reg_rdata_next[8] = per_pin_io_9_data_in_9_qs;
+      end
+
+      racl_addr_hit_read[28]: begin
+        reg_rdata_next[0] = per_pin_io_10_data_out_10_qs;
+        reg_rdata_next[8] = per_pin_io_10_data_in_10_qs;
+      end
+
+      racl_addr_hit_read[29]: begin
+        reg_rdata_next[0] = per_pin_io_11_data_out_11_qs;
+        reg_rdata_next[8] = per_pin_io_11_data_in_11_qs;
+      end
+
+      racl_addr_hit_read[30]: begin
+        reg_rdata_next[0] = per_pin_io_12_data_out_12_qs;
+        reg_rdata_next[8] = per_pin_io_12_data_in_12_qs;
+      end
+
+      racl_addr_hit_read[31]: begin
+        reg_rdata_next[0] = per_pin_io_13_data_out_13_qs;
+        reg_rdata_next[8] = per_pin_io_13_data_in_13_qs;
+      end
+
+      racl_addr_hit_read[32]: begin
+        reg_rdata_next[0] = per_pin_io_14_data_out_14_qs;
+        reg_rdata_next[8] = per_pin_io_14_data_in_14_qs;
+      end
+
+      racl_addr_hit_read[33]: begin
+        reg_rdata_next[0] = per_pin_io_15_data_out_15_qs;
+        reg_rdata_next[8] = per_pin_io_15_data_in_15_qs;
+      end
+
+      racl_addr_hit_read[34]: begin
+        reg_rdata_next[0] = per_pin_io_16_data_out_16_qs;
+        reg_rdata_next[8] = per_pin_io_16_data_in_16_qs;
+      end
+
+      racl_addr_hit_read[35]: begin
+        reg_rdata_next[0] = per_pin_io_17_data_out_17_qs;
+        reg_rdata_next[8] = per_pin_io_17_data_in_17_qs;
+      end
+
+      racl_addr_hit_read[36]: begin
+        reg_rdata_next[0] = per_pin_io_18_data_out_18_qs;
+        reg_rdata_next[8] = per_pin_io_18_data_in_18_qs;
+      end
+
+      racl_addr_hit_read[37]: begin
+        reg_rdata_next[0] = per_pin_io_19_data_out_19_qs;
+        reg_rdata_next[8] = per_pin_io_19_data_in_19_qs;
+      end
+
+      racl_addr_hit_read[38]: begin
+        reg_rdata_next[0] = per_pin_io_20_data_out_20_qs;
+        reg_rdata_next[8] = per_pin_io_20_data_in_20_qs;
+      end
+
+      racl_addr_hit_read[39]: begin
+        reg_rdata_next[0] = per_pin_io_21_data_out_21_qs;
+        reg_rdata_next[8] = per_pin_io_21_data_in_21_qs;
+      end
+
+      racl_addr_hit_read[40]: begin
+        reg_rdata_next[0] = per_pin_io_22_data_out_22_qs;
+        reg_rdata_next[8] = per_pin_io_22_data_in_22_qs;
+      end
+
+      racl_addr_hit_read[41]: begin
+        reg_rdata_next[0] = per_pin_io_23_data_out_23_qs;
+        reg_rdata_next[8] = per_pin_io_23_data_in_23_qs;
+      end
+
+      racl_addr_hit_read[42]: begin
+        reg_rdata_next[0] = per_pin_io_24_data_out_24_qs;
+        reg_rdata_next[8] = per_pin_io_24_data_in_24_qs;
+      end
+
+      racl_addr_hit_read[43]: begin
+        reg_rdata_next[0] = per_pin_io_25_data_out_25_qs;
+        reg_rdata_next[8] = per_pin_io_25_data_in_25_qs;
+      end
+
+      racl_addr_hit_read[44]: begin
+        reg_rdata_next[0] = per_pin_io_26_data_out_26_qs;
+        reg_rdata_next[8] = per_pin_io_26_data_in_26_qs;
+      end
+
+      racl_addr_hit_read[45]: begin
+        reg_rdata_next[0] = per_pin_io_27_data_out_27_qs;
+        reg_rdata_next[8] = per_pin_io_27_data_in_27_qs;
+      end
+
+      racl_addr_hit_read[46]: begin
+        reg_rdata_next[0] = per_pin_io_28_data_out_28_qs;
+        reg_rdata_next[8] = per_pin_io_28_data_in_28_qs;
+      end
+
+      racl_addr_hit_read[47]: begin
+        reg_rdata_next[0] = per_pin_io_29_data_out_29_qs;
+        reg_rdata_next[8] = per_pin_io_29_data_in_29_qs;
+      end
+
+      racl_addr_hit_read[48]: begin
+        reg_rdata_next[0] = per_pin_io_30_data_out_30_qs;
+        reg_rdata_next[8] = per_pin_io_30_data_in_30_qs;
+      end
+
+      racl_addr_hit_read[49]: begin
+        reg_rdata_next[0] = per_pin_io_31_data_out_31_qs;
+        reg_rdata_next[8] = per_pin_io_31_data_in_31_qs;
+      end
+
+      racl_addr_hit_read[50]: begin
+        reg_rdata_next[0] = per_pin_cfg_0_oe_0_qs;
+        reg_rdata_next[8] = per_pin_cfg_0_intr_ctrl_en_rising_0_qs;
+        reg_rdata_next[9] = per_pin_cfg_0_intr_ctrl_en_falling_0_qs;
+        reg_rdata_next[10] = per_pin_cfg_0_intr_ctrl_en_lvlhigh_0_qs;
+        reg_rdata_next[11] = per_pin_cfg_0_intr_ctrl_en_lvllow_0_qs;
+        reg_rdata_next[12] = per_pin_cfg_0_ctrl_en_input_filter_0_qs;
+      end
+
+      racl_addr_hit_read[51]: begin
+        reg_rdata_next[0] = per_pin_cfg_1_oe_1_qs;
+        reg_rdata_next[8] = per_pin_cfg_1_intr_ctrl_en_rising_1_qs;
+        reg_rdata_next[9] = per_pin_cfg_1_intr_ctrl_en_falling_1_qs;
+        reg_rdata_next[10] = per_pin_cfg_1_intr_ctrl_en_lvlhigh_1_qs;
+        reg_rdata_next[11] = per_pin_cfg_1_intr_ctrl_en_lvllow_1_qs;
+        reg_rdata_next[12] = per_pin_cfg_1_ctrl_en_input_filter_1_qs;
+      end
+
+      racl_addr_hit_read[52]: begin
+        reg_rdata_next[0] = per_pin_cfg_2_oe_2_qs;
+        reg_rdata_next[8] = per_pin_cfg_2_intr_ctrl_en_rising_2_qs;
+        reg_rdata_next[9] = per_pin_cfg_2_intr_ctrl_en_falling_2_qs;
+        reg_rdata_next[10] = per_pin_cfg_2_intr_ctrl_en_lvlhigh_2_qs;
+        reg_rdata_next[11] = per_pin_cfg_2_intr_ctrl_en_lvllow_2_qs;
+        reg_rdata_next[12] = per_pin_cfg_2_ctrl_en_input_filter_2_qs;
+      end
+
+      racl_addr_hit_read[53]: begin
+        reg_rdata_next[0] = per_pin_cfg_3_oe_3_qs;
+        reg_rdata_next[8] = per_pin_cfg_3_intr_ctrl_en_rising_3_qs;
+        reg_rdata_next[9] = per_pin_cfg_3_intr_ctrl_en_falling_3_qs;
+        reg_rdata_next[10] = per_pin_cfg_3_intr_ctrl_en_lvlhigh_3_qs;
+        reg_rdata_next[11] = per_pin_cfg_3_intr_ctrl_en_lvllow_3_qs;
+        reg_rdata_next[12] = per_pin_cfg_3_ctrl_en_input_filter_3_qs;
+      end
+
+      racl_addr_hit_read[54]: begin
+        reg_rdata_next[0] = per_pin_cfg_4_oe_4_qs;
+        reg_rdata_next[8] = per_pin_cfg_4_intr_ctrl_en_rising_4_qs;
+        reg_rdata_next[9] = per_pin_cfg_4_intr_ctrl_en_falling_4_qs;
+        reg_rdata_next[10] = per_pin_cfg_4_intr_ctrl_en_lvlhigh_4_qs;
+        reg_rdata_next[11] = per_pin_cfg_4_intr_ctrl_en_lvllow_4_qs;
+        reg_rdata_next[12] = per_pin_cfg_4_ctrl_en_input_filter_4_qs;
+      end
+
+      racl_addr_hit_read[55]: begin
+        reg_rdata_next[0] = per_pin_cfg_5_oe_5_qs;
+        reg_rdata_next[8] = per_pin_cfg_5_intr_ctrl_en_rising_5_qs;
+        reg_rdata_next[9] = per_pin_cfg_5_intr_ctrl_en_falling_5_qs;
+        reg_rdata_next[10] = per_pin_cfg_5_intr_ctrl_en_lvlhigh_5_qs;
+        reg_rdata_next[11] = per_pin_cfg_5_intr_ctrl_en_lvllow_5_qs;
+        reg_rdata_next[12] = per_pin_cfg_5_ctrl_en_input_filter_5_qs;
+      end
+
+      racl_addr_hit_read[56]: begin
+        reg_rdata_next[0] = per_pin_cfg_6_oe_6_qs;
+        reg_rdata_next[8] = per_pin_cfg_6_intr_ctrl_en_rising_6_qs;
+        reg_rdata_next[9] = per_pin_cfg_6_intr_ctrl_en_falling_6_qs;
+        reg_rdata_next[10] = per_pin_cfg_6_intr_ctrl_en_lvlhigh_6_qs;
+        reg_rdata_next[11] = per_pin_cfg_6_intr_ctrl_en_lvllow_6_qs;
+        reg_rdata_next[12] = per_pin_cfg_6_ctrl_en_input_filter_6_qs;
+      end
+
+      racl_addr_hit_read[57]: begin
+        reg_rdata_next[0] = per_pin_cfg_7_oe_7_qs;
+        reg_rdata_next[8] = per_pin_cfg_7_intr_ctrl_en_rising_7_qs;
+        reg_rdata_next[9] = per_pin_cfg_7_intr_ctrl_en_falling_7_qs;
+        reg_rdata_next[10] = per_pin_cfg_7_intr_ctrl_en_lvlhigh_7_qs;
+        reg_rdata_next[11] = per_pin_cfg_7_intr_ctrl_en_lvllow_7_qs;
+        reg_rdata_next[12] = per_pin_cfg_7_ctrl_en_input_filter_7_qs;
+      end
+
+      racl_addr_hit_read[58]: begin
+        reg_rdata_next[0] = per_pin_cfg_8_oe_8_qs;
+        reg_rdata_next[8] = per_pin_cfg_8_intr_ctrl_en_rising_8_qs;
+        reg_rdata_next[9] = per_pin_cfg_8_intr_ctrl_en_falling_8_qs;
+        reg_rdata_next[10] = per_pin_cfg_8_intr_ctrl_en_lvlhigh_8_qs;
+        reg_rdata_next[11] = per_pin_cfg_8_intr_ctrl_en_lvllow_8_qs;
+        reg_rdata_next[12] = per_pin_cfg_8_ctrl_en_input_filter_8_qs;
+      end
+
+      racl_addr_hit_read[59]: begin
+        reg_rdata_next[0] = per_pin_cfg_9_oe_9_qs;
+        reg_rdata_next[8] = per_pin_cfg_9_intr_ctrl_en_rising_9_qs;
+        reg_rdata_next[9] = per_pin_cfg_9_intr_ctrl_en_falling_9_qs;
+        reg_rdata_next[10] = per_pin_cfg_9_intr_ctrl_en_lvlhigh_9_qs;
+        reg_rdata_next[11] = per_pin_cfg_9_intr_ctrl_en_lvllow_9_qs;
+        reg_rdata_next[12] = per_pin_cfg_9_ctrl_en_input_filter_9_qs;
+      end
+
+      racl_addr_hit_read[60]: begin
+        reg_rdata_next[0] = per_pin_cfg_10_oe_10_qs;
+        reg_rdata_next[8] = per_pin_cfg_10_intr_ctrl_en_rising_10_qs;
+        reg_rdata_next[9] = per_pin_cfg_10_intr_ctrl_en_falling_10_qs;
+        reg_rdata_next[10] = per_pin_cfg_10_intr_ctrl_en_lvlhigh_10_qs;
+        reg_rdata_next[11] = per_pin_cfg_10_intr_ctrl_en_lvllow_10_qs;
+        reg_rdata_next[12] = per_pin_cfg_10_ctrl_en_input_filter_10_qs;
+      end
+
+      racl_addr_hit_read[61]: begin
+        reg_rdata_next[0] = per_pin_cfg_11_oe_11_qs;
+        reg_rdata_next[8] = per_pin_cfg_11_intr_ctrl_en_rising_11_qs;
+        reg_rdata_next[9] = per_pin_cfg_11_intr_ctrl_en_falling_11_qs;
+        reg_rdata_next[10] = per_pin_cfg_11_intr_ctrl_en_lvlhigh_11_qs;
+        reg_rdata_next[11] = per_pin_cfg_11_intr_ctrl_en_lvllow_11_qs;
+        reg_rdata_next[12] = per_pin_cfg_11_ctrl_en_input_filter_11_qs;
+      end
+
+      racl_addr_hit_read[62]: begin
+        reg_rdata_next[0] = per_pin_cfg_12_oe_12_qs;
+        reg_rdata_next[8] = per_pin_cfg_12_intr_ctrl_en_rising_12_qs;
+        reg_rdata_next[9] = per_pin_cfg_12_intr_ctrl_en_falling_12_qs;
+        reg_rdata_next[10] = per_pin_cfg_12_intr_ctrl_en_lvlhigh_12_qs;
+        reg_rdata_next[11] = per_pin_cfg_12_intr_ctrl_en_lvllow_12_qs;
+        reg_rdata_next[12] = per_pin_cfg_12_ctrl_en_input_filter_12_qs;
+      end
+
+      racl_addr_hit_read[63]: begin
+        reg_rdata_next[0] = per_pin_cfg_13_oe_13_qs;
+        reg_rdata_next[8] = per_pin_cfg_13_intr_ctrl_en_rising_13_qs;
+        reg_rdata_next[9] = per_pin_cfg_13_intr_ctrl_en_falling_13_qs;
+        reg_rdata_next[10] = per_pin_cfg_13_intr_ctrl_en_lvlhigh_13_qs;
+        reg_rdata_next[11] = per_pin_cfg_13_intr_ctrl_en_lvllow_13_qs;
+        reg_rdata_next[12] = per_pin_cfg_13_ctrl_en_input_filter_13_qs;
+      end
+
+      racl_addr_hit_read[64]: begin
+        reg_rdata_next[0] = per_pin_cfg_14_oe_14_qs;
+        reg_rdata_next[8] = per_pin_cfg_14_intr_ctrl_en_rising_14_qs;
+        reg_rdata_next[9] = per_pin_cfg_14_intr_ctrl_en_falling_14_qs;
+        reg_rdata_next[10] = per_pin_cfg_14_intr_ctrl_en_lvlhigh_14_qs;
+        reg_rdata_next[11] = per_pin_cfg_14_intr_ctrl_en_lvllow_14_qs;
+        reg_rdata_next[12] = per_pin_cfg_14_ctrl_en_input_filter_14_qs;
+      end
+
+      racl_addr_hit_read[65]: begin
+        reg_rdata_next[0] = per_pin_cfg_15_oe_15_qs;
+        reg_rdata_next[8] = per_pin_cfg_15_intr_ctrl_en_rising_15_qs;
+        reg_rdata_next[9] = per_pin_cfg_15_intr_ctrl_en_falling_15_qs;
+        reg_rdata_next[10] = per_pin_cfg_15_intr_ctrl_en_lvlhigh_15_qs;
+        reg_rdata_next[11] = per_pin_cfg_15_intr_ctrl_en_lvllow_15_qs;
+        reg_rdata_next[12] = per_pin_cfg_15_ctrl_en_input_filter_15_qs;
+      end
+
+      racl_addr_hit_read[66]: begin
+        reg_rdata_next[0] = per_pin_cfg_16_oe_16_qs;
+        reg_rdata_next[8] = per_pin_cfg_16_intr_ctrl_en_rising_16_qs;
+        reg_rdata_next[9] = per_pin_cfg_16_intr_ctrl_en_falling_16_qs;
+        reg_rdata_next[10] = per_pin_cfg_16_intr_ctrl_en_lvlhigh_16_qs;
+        reg_rdata_next[11] = per_pin_cfg_16_intr_ctrl_en_lvllow_16_qs;
+        reg_rdata_next[12] = per_pin_cfg_16_ctrl_en_input_filter_16_qs;
+      end
+
+      racl_addr_hit_read[67]: begin
+        reg_rdata_next[0] = per_pin_cfg_17_oe_17_qs;
+        reg_rdata_next[8] = per_pin_cfg_17_intr_ctrl_en_rising_17_qs;
+        reg_rdata_next[9] = per_pin_cfg_17_intr_ctrl_en_falling_17_qs;
+        reg_rdata_next[10] = per_pin_cfg_17_intr_ctrl_en_lvlhigh_17_qs;
+        reg_rdata_next[11] = per_pin_cfg_17_intr_ctrl_en_lvllow_17_qs;
+        reg_rdata_next[12] = per_pin_cfg_17_ctrl_en_input_filter_17_qs;
+      end
+
+      racl_addr_hit_read[68]: begin
+        reg_rdata_next[0] = per_pin_cfg_18_oe_18_qs;
+        reg_rdata_next[8] = per_pin_cfg_18_intr_ctrl_en_rising_18_qs;
+        reg_rdata_next[9] = per_pin_cfg_18_intr_ctrl_en_falling_18_qs;
+        reg_rdata_next[10] = per_pin_cfg_18_intr_ctrl_en_lvlhigh_18_qs;
+        reg_rdata_next[11] = per_pin_cfg_18_intr_ctrl_en_lvllow_18_qs;
+        reg_rdata_next[12] = per_pin_cfg_18_ctrl_en_input_filter_18_qs;
+      end
+
+      racl_addr_hit_read[69]: begin
+        reg_rdata_next[0] = per_pin_cfg_19_oe_19_qs;
+        reg_rdata_next[8] = per_pin_cfg_19_intr_ctrl_en_rising_19_qs;
+        reg_rdata_next[9] = per_pin_cfg_19_intr_ctrl_en_falling_19_qs;
+        reg_rdata_next[10] = per_pin_cfg_19_intr_ctrl_en_lvlhigh_19_qs;
+        reg_rdata_next[11] = per_pin_cfg_19_intr_ctrl_en_lvllow_19_qs;
+        reg_rdata_next[12] = per_pin_cfg_19_ctrl_en_input_filter_19_qs;
+      end
+
+      racl_addr_hit_read[70]: begin
+        reg_rdata_next[0] = per_pin_cfg_20_oe_20_qs;
+        reg_rdata_next[8] = per_pin_cfg_20_intr_ctrl_en_rising_20_qs;
+        reg_rdata_next[9] = per_pin_cfg_20_intr_ctrl_en_falling_20_qs;
+        reg_rdata_next[10] = per_pin_cfg_20_intr_ctrl_en_lvlhigh_20_qs;
+        reg_rdata_next[11] = per_pin_cfg_20_intr_ctrl_en_lvllow_20_qs;
+        reg_rdata_next[12] = per_pin_cfg_20_ctrl_en_input_filter_20_qs;
+      end
+
+      racl_addr_hit_read[71]: begin
+        reg_rdata_next[0] = per_pin_cfg_21_oe_21_qs;
+        reg_rdata_next[8] = per_pin_cfg_21_intr_ctrl_en_rising_21_qs;
+        reg_rdata_next[9] = per_pin_cfg_21_intr_ctrl_en_falling_21_qs;
+        reg_rdata_next[10] = per_pin_cfg_21_intr_ctrl_en_lvlhigh_21_qs;
+        reg_rdata_next[11] = per_pin_cfg_21_intr_ctrl_en_lvllow_21_qs;
+        reg_rdata_next[12] = per_pin_cfg_21_ctrl_en_input_filter_21_qs;
+      end
+
+      racl_addr_hit_read[72]: begin
+        reg_rdata_next[0] = per_pin_cfg_22_oe_22_qs;
+        reg_rdata_next[8] = per_pin_cfg_22_intr_ctrl_en_rising_22_qs;
+        reg_rdata_next[9] = per_pin_cfg_22_intr_ctrl_en_falling_22_qs;
+        reg_rdata_next[10] = per_pin_cfg_22_intr_ctrl_en_lvlhigh_22_qs;
+        reg_rdata_next[11] = per_pin_cfg_22_intr_ctrl_en_lvllow_22_qs;
+        reg_rdata_next[12] = per_pin_cfg_22_ctrl_en_input_filter_22_qs;
+      end
+
+      racl_addr_hit_read[73]: begin
+        reg_rdata_next[0] = per_pin_cfg_23_oe_23_qs;
+        reg_rdata_next[8] = per_pin_cfg_23_intr_ctrl_en_rising_23_qs;
+        reg_rdata_next[9] = per_pin_cfg_23_intr_ctrl_en_falling_23_qs;
+        reg_rdata_next[10] = per_pin_cfg_23_intr_ctrl_en_lvlhigh_23_qs;
+        reg_rdata_next[11] = per_pin_cfg_23_intr_ctrl_en_lvllow_23_qs;
+        reg_rdata_next[12] = per_pin_cfg_23_ctrl_en_input_filter_23_qs;
+      end
+
+      racl_addr_hit_read[74]: begin
+        reg_rdata_next[0] = per_pin_cfg_24_oe_24_qs;
+        reg_rdata_next[8] = per_pin_cfg_24_intr_ctrl_en_rising_24_qs;
+        reg_rdata_next[9] = per_pin_cfg_24_intr_ctrl_en_falling_24_qs;
+        reg_rdata_next[10] = per_pin_cfg_24_intr_ctrl_en_lvlhigh_24_qs;
+        reg_rdata_next[11] = per_pin_cfg_24_intr_ctrl_en_lvllow_24_qs;
+        reg_rdata_next[12] = per_pin_cfg_24_ctrl_en_input_filter_24_qs;
+      end
+
+      racl_addr_hit_read[75]: begin
+        reg_rdata_next[0] = per_pin_cfg_25_oe_25_qs;
+        reg_rdata_next[8] = per_pin_cfg_25_intr_ctrl_en_rising_25_qs;
+        reg_rdata_next[9] = per_pin_cfg_25_intr_ctrl_en_falling_25_qs;
+        reg_rdata_next[10] = per_pin_cfg_25_intr_ctrl_en_lvlhigh_25_qs;
+        reg_rdata_next[11] = per_pin_cfg_25_intr_ctrl_en_lvllow_25_qs;
+        reg_rdata_next[12] = per_pin_cfg_25_ctrl_en_input_filter_25_qs;
+      end
+
+      racl_addr_hit_read[76]: begin
+        reg_rdata_next[0] = per_pin_cfg_26_oe_26_qs;
+        reg_rdata_next[8] = per_pin_cfg_26_intr_ctrl_en_rising_26_qs;
+        reg_rdata_next[9] = per_pin_cfg_26_intr_ctrl_en_falling_26_qs;
+        reg_rdata_next[10] = per_pin_cfg_26_intr_ctrl_en_lvlhigh_26_qs;
+        reg_rdata_next[11] = per_pin_cfg_26_intr_ctrl_en_lvllow_26_qs;
+        reg_rdata_next[12] = per_pin_cfg_26_ctrl_en_input_filter_26_qs;
+      end
+
+      racl_addr_hit_read[77]: begin
+        reg_rdata_next[0] = per_pin_cfg_27_oe_27_qs;
+        reg_rdata_next[8] = per_pin_cfg_27_intr_ctrl_en_rising_27_qs;
+        reg_rdata_next[9] = per_pin_cfg_27_intr_ctrl_en_falling_27_qs;
+        reg_rdata_next[10] = per_pin_cfg_27_intr_ctrl_en_lvlhigh_27_qs;
+        reg_rdata_next[11] = per_pin_cfg_27_intr_ctrl_en_lvllow_27_qs;
+        reg_rdata_next[12] = per_pin_cfg_27_ctrl_en_input_filter_27_qs;
+      end
+
+      racl_addr_hit_read[78]: begin
+        reg_rdata_next[0] = per_pin_cfg_28_oe_28_qs;
+        reg_rdata_next[8] = per_pin_cfg_28_intr_ctrl_en_rising_28_qs;
+        reg_rdata_next[9] = per_pin_cfg_28_intr_ctrl_en_falling_28_qs;
+        reg_rdata_next[10] = per_pin_cfg_28_intr_ctrl_en_lvlhigh_28_qs;
+        reg_rdata_next[11] = per_pin_cfg_28_intr_ctrl_en_lvllow_28_qs;
+        reg_rdata_next[12] = per_pin_cfg_28_ctrl_en_input_filter_28_qs;
+      end
+
+      racl_addr_hit_read[79]: begin
+        reg_rdata_next[0] = per_pin_cfg_29_oe_29_qs;
+        reg_rdata_next[8] = per_pin_cfg_29_intr_ctrl_en_rising_29_qs;
+        reg_rdata_next[9] = per_pin_cfg_29_intr_ctrl_en_falling_29_qs;
+        reg_rdata_next[10] = per_pin_cfg_29_intr_ctrl_en_lvlhigh_29_qs;
+        reg_rdata_next[11] = per_pin_cfg_29_intr_ctrl_en_lvllow_29_qs;
+        reg_rdata_next[12] = per_pin_cfg_29_ctrl_en_input_filter_29_qs;
+      end
+
+      racl_addr_hit_read[80]: begin
+        reg_rdata_next[0] = per_pin_cfg_30_oe_30_qs;
+        reg_rdata_next[8] = per_pin_cfg_30_intr_ctrl_en_rising_30_qs;
+        reg_rdata_next[9] = per_pin_cfg_30_intr_ctrl_en_falling_30_qs;
+        reg_rdata_next[10] = per_pin_cfg_30_intr_ctrl_en_lvlhigh_30_qs;
+        reg_rdata_next[11] = per_pin_cfg_30_intr_ctrl_en_lvllow_30_qs;
+        reg_rdata_next[12] = per_pin_cfg_30_ctrl_en_input_filter_30_qs;
+      end
+
+      racl_addr_hit_read[81]: begin
+        reg_rdata_next[0] = per_pin_cfg_31_oe_31_qs;
+        reg_rdata_next[8] = per_pin_cfg_31_intr_ctrl_en_rising_31_qs;
+        reg_rdata_next[9] = per_pin_cfg_31_intr_ctrl_en_falling_31_qs;
+        reg_rdata_next[10] = per_pin_cfg_31_intr_ctrl_en_lvlhigh_31_qs;
+        reg_rdata_next[11] = per_pin_cfg_31_intr_ctrl_en_lvllow_31_qs;
+        reg_rdata_next[12] = per_pin_cfg_31_ctrl_en_input_filter_31_qs;
       end
 
       default: begin

@@ -15,7 +15,7 @@ The main address space, shared between the CPU and DM
 | Module         | Interface   | Base Address   | Size (bytes)   | Size (words)   | Description                   |
 |----------------|-------------|----------------|----------------|----------------|-------------------------------|
 | uart0          | default     | `0x30010000`   | `0x40`         | `0x10`         | uart0                         |
-| gpio           | default     | `0x30000000`   | `0x100`        | `0x40`         | gpio                          |
+| gpio           | default     | `0x30000000`   | `0x400`        | `0x100`        | gpio                          |
 | spi_device     | default     | `0x30310000`   | `0x2000`       | `0x800`        | spi_device                    |
 | i2c0           | default     | `0x30080000`   | `0x80`         | `0x20`         | i2c0                          |
 | rv_timer       | default     | `0x30100000`   | `0x200`        | `0x80`         | rv_timer                      |

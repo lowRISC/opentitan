@@ -16,7 +16,7 @@ The main address space, shared between the CPU and DM
 |----------------|-------------|----------------|----------------|----------------|-------------------------------|
 | uart0          | default     | `0x40000000`   | `0x40`         | `0x10`         | uart0                         |
 | uart1          | default     | `0x40010000`   | `0x40`         | `0x10`         | uart1                         |
-| gpio           | default     | `0x40040000`   | `0x80`         | `0x20`         | gpio                          |
+| gpio           | default     | `0x40040000`   | `0x400`        | `0x100`        | gpio                          |
 | spi_device     | default     | `0x40050000`   | `0x2000`       | `0x800`        | spi_device                    |
 | spi_host0      | default     | `0x40060000`   | `0x40`         | `0x10`         | spi_host0                     |
 | rv_timer       | default     | `0x40100000`   | `0x200`        | `0x80`         | rv_timer                      |
