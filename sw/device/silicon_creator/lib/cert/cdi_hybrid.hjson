@@ -44,25 +44,9 @@
             type: "byte-array",
             exact-size: 2420,
         },
-        tcb_model: {
-            type: "string",
-            range-size: [5, 7],
-        },
-        tcb_svn: {
+        raw_private_extensions: {
             type: "byte-array",
-            exact-size: 4,
-            tweak-msb: true,
-        },
-        tcb_layer: {
-            type: "integer",
-            exact-size: 4,
-        },
-        tcb_fw_ids: {
-            type: "byte-array",
-            range-size: [47, 141],
-        },
-        debug_flag: {
-            type: "boolean",
+            range-size: [0, 800],
         },
     },
 
@@ -97,22 +81,7 @@
         subject_key_identifier: { var: "pub_key_id" },
         basic_constraints: { ca: true },
         key_usage: { cert_sign: true },
-        private_extensions: [
-            {
-                type: "dice_tcb_info",
-                vendor: "OpenTitan",
-                model: { var: "tcb_model" },
-                svn: { var: "tcb_svn", convert: "big-endian" },
-                layer: { var: "tcb_layer" },
-                fw_ids: { var: "tcb_fw_ids" },
-                flags: {
-                    not_configured: false,
-                    not_secure: false,
-                    recovery: false,
-                    debug: { var: "debug_flag" },
-                }
-            },
-        ],
+        private_extensions: { var: "raw_private_extensions" },
         signature: {
             selector: "key_alg",
             choices: [
