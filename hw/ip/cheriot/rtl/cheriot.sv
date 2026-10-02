@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
-`include "prim_fifo_assert.svh"
 
 // SEC_CM: LOGIC.SHADOW
 // TODO: Implement lockstep operation for this module
@@ -93,7 +92,6 @@ module cheriot
 
   typedef struct packed {
     logic csr_intg;
-    logic tag_filter_fifo;
     logic meta_sram_intg;
     logic meta_sram_data_intg;
     logic rmw_error;
@@ -179,8 +177,7 @@ module cheriot
     .tl_m_i       (rmw_tl_d2h),
     .tag_m_i      (rmw_tag_d2h),
     .tl_h_o       (cored_tl_h_o),
-    .tl_h_i       (cored_tl_h_i),
-    .fifo_err_o   (cheriot_fatal_error.tag_filter_fifo)
+    .tl_h_i       (cored_tl_h_i)
   );
 
   // SEC_CM: BUS.INTEGRITY
@@ -304,10 +301,6 @@ module cheriot
   `ASSERT_KNOWN_IF(RegsTlDPayloadKnown_A, regs_tl_d_o, regs_tl_d_o.d_valid)
 
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CheriotTagFilterFifo_A,
-      u_cheriot_tag_filter.u_prim_fifo_sync_align,
-      alert_tx_o[0])
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A,
       u_reg_regs, alert_tx_o[0])

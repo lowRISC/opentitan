@@ -31,8 +31,8 @@ SRAM are stored using a `sram_ctrl`.
 - Exposes the revocation bitmap into the core's address map and serves the core's TRVK filter.
 - Per-port access checking: each of the three requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
-- Fatal alert on a CSR bus integrity fault, a meta SRAM response integrity fault, a meta SRAM
-  device error, or a hardened FIFO pointer error.
+- Fatal alert on a CSR bus integrity fault, a meta SRAM response integrity fault, or a meta SRAM
+  device error.
 
 ## Description
 

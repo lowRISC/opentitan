@@ -141,10 +141,9 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
-| Pointer error in the tag filter's hardened FIFO | `fatal_fault` alert |
 
 The first three are reachable by software and surface as a bus fault in the core, so they must not
-raise an alert. The last four latch the fatal alert until reset. There is no interrupt.
+raise an alert. The last three latch the fatal alert until reset. There is no interrupt.
 
 
 ## Timing

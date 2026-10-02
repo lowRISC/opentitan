@@ -37,9 +37,8 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-            This fatal alert is triggered when an integrity fault is detected, when the meta
-            SRAM path returns a device error, or when the tag filter's transaction FIFO reports
-            a pointer error.
+            This fatal alert is triggered when an integrity fault is detected, or when the meta
+            SRAM path returns a device error.
             '''
     }
   ],
@@ -227,6 +226,8 @@
     { name: "LOGIC.SHADOW",
       desc: '''
         The CHERIoT subsystem is instantiated in lockstep. Not implemented yet.
+        This also covers the pointers of the subsystem's FIFOs, which therefore are not
+        redundantly encoded (CTR.REDUN).
       '''
     },
     { name: "MEM.SW_NOACCESS",
@@ -237,11 +238,6 @@
     { name: "INTERSIG.MUBI",
       desc: '''
         The CHERIoT mode enable is multi-bit encoded.
-      '''
-    },
-    { name: "CTR.REDUN",
-      desc: '''
-        The tag filter's outstanding-transaction FIFO uses redundantly encoded read and write pointers.
       '''
     },
   ],

@@ -41,19 +41,18 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                           |
-|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, or when the tag filter's transaction FIFO reports a pointer error. |
+| Alert Name   | Description                                                                                                           |
+|:-------------|:----------------------------------------------------------------------------------------------------------------------|
+| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, or when the meta SRAM path returns a device error. |
 
 ## Security Countermeasures
 
-| Countermeasure ID       | Description                                                                                                                     |
-|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| CHERIOT.BUS.INTEGRITY   | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet. |
-| CHERIOT.LOGIC.SHADOW    | The CHERIoT subsystem is instantiated in lockstep. Not implemented yet.                                                         |
-| CHERIOT.MEM.SW_NOACCESS | The capability tag store is not memory mapped.                                                                                  |
-| CHERIOT.INTERSIG.MUBI   | The CHERIoT mode enable is multi-bit encoded.                                                                                   |
-| CHERIOT.CTR.REDUN       | The tag filter's outstanding-transaction FIFO uses redundantly encoded read and write pointers.                                 |
+| Countermeasure ID       | Description                                                                                                                                                                              |
+|:------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CHERIOT.BUS.INTEGRITY   | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet.                                                          |
+| CHERIOT.LOGIC.SHADOW    | The CHERIoT subsystem is instantiated in lockstep. Not implemented yet. This also covers the pointers of the subsystem's FIFOs, which therefore are not redundantly encoded (CTR.REDUN). |
+| CHERIOT.MEM.SW_NOACCESS | The capability tag store is not memory mapped.                                                                                                                                           |
+| CHERIOT.INTERSIG.MUBI   | The CHERIoT mode enable is multi-bit encoded.                                                                                                                                            |
 
 
 <!-- END CMDGEN -->
