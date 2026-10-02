@@ -1102,6 +1102,8 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
   if (bitfield_field32_read(
           reg, ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD) !=
       entropy_src_config->fips_test_window_size) {
+    // COVERAGE (HW ERR) This is only reached if the entropy_src register was
+    // unexpectedly modified or corrupted.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1202,6 +1204,7 @@ status_t entropy_csrng_generate_start(
   // Check whether the state is present and use it if so
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
     if (state->csrng_instantiated != kHardenedByteBoolTrue) {
+      // COVERAGE (SW ERR) Internal callers instantiate CSRNG before generating.
       return OTCRYPTO_RECOV_ERR;
     }
     HARDENED_CHECK_EQ(state->csrng_instantiated, kHardenedByteBoolTrue);

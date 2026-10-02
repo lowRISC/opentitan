@@ -39,6 +39,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p384_keygen_start(
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
+  // COVERAGE (FI CM) Unreachable code, all branches return above.
   return OTCRYPTO_OK;
 }
 
@@ -90,6 +91,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_private_key_length_check(
     const otcrypto_blinded_key_t *private_key) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key->keyblob == NULL) {
+    // COVERAGE (FI CM) Redundant check; callers already check
+    // private_key->keyblob != NULL.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -302,6 +305,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
       public_key, message_digest, &signature_check, &verification_result));
 
   if (verification_result != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) Verification of a freshly generated signature only
+    // fails under fault injection or a mismatched keypair.
     crypto_state_t *state = NULL;
     if (status_ok(read_state_pointer(&state)) && state != NULL) {
       state->locked_state = kHardenedByteBoolTrue;
@@ -702,6 +707,8 @@ static otcrypto_status_t ecdh_p384_pct_verify(
       .key = pk_buf,
   };
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Hardware-backed ECDH P-384 PCT is not covered in FIPS
+    // PCT tests.
     HARDENED_TRY_WIPE_DMEM(internal_p384_keygen_start(private_key));
     HARDENED_TRY_WIPE_DMEM(
         internal_p384_keygen_finalize(private_key, &check_pk));
@@ -711,6 +718,8 @@ static otcrypto_status_t ecdh_p384_pct_verify(
   hardened_bool_t result =
       hardened_memeq(public_key->key, check_pk.key, ARRAYSIZE(pk_buf));
   if (result != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) Pairwise consistency check only fails under fault
+    // injection.
     crypto_state_t *state = NULL;
     if (status_ok(read_state_pointer(&state)) && state != NULL) {
       state->locked_state = kHardenedByteBoolTrue;
@@ -1069,6 +1078,8 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
 
   // Check the integrity of the provided private key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Corrupted private key checksum on export is not
+    // covered.
     return OTCRYPTO_BAD_ARGS;
   }
 

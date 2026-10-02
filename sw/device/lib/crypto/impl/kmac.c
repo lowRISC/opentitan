@@ -68,6 +68,7 @@ otcrypto_status_t otcrypto_kmac(
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {
+    // COVERAGE (MISSING) Overflowing required_output_len is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   size_t required_output_words =

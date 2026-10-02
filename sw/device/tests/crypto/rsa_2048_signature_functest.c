@@ -280,6 +280,58 @@ status_t pkcs1v15_verify_valid_test(void) {
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // Also test otcrypto_rsa_hash_sign_verify and otcrypto_rsa_hash_verify.
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
+                        ARRAYSIZE(kTestPrivateExponent));
+  uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, ARRAYSIZE(share1));
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus,
+                                        &public_key));
+  otcrypto_key_config_t private_key_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t
+      keyblob[ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t))];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize2048, &modulus, &d_share0, &d_share1, &private_key));
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t sig[kRsa2048NumWords];
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  TRY(otcrypto_rsa_hash_sign_verify(&private_key, &public_key,
+                                    kOtcryptoHashModeSha256, &msg_buf,
+                                    kOtcryptoRsaPaddingPkcs, &sig_buf));
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
+  verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256, &msg_buf,
+                               kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                               &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
   return OK_STATUS();
 }
 

@@ -113,6 +113,8 @@ static status_t check_internal_state(
   if (memcmp(&got, expected, sizeof(entropy_csrng_internal_state_t)) == 0) {
     return OTCRYPTO_OK;
   }
+  // COVERAGE (HW ERR) CSRNG internal state mismatch only occurs on hardware
+  // fault.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -178,6 +180,7 @@ status_t entropy_csrng_kat(void) {
     return OTCRYPTO_OK;
   }
 
+  // COVERAGE (HW ERR) CSRNG KAT output mismatch only occurs on hardware fault.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -195,6 +198,8 @@ static status_t entropy_src_wait_idle(void) {
                             ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT)) {
       return OTCRYPTO_OK;
     }
+    // COVERAGE (HW ERR) Loop continuation and timeout only reached if
+    // ENTROPY_SRC state machine is busy or hangs.
     cycles_to_wait--;
   } while (cycles_to_wait > 0);
 
@@ -261,6 +266,7 @@ static status_t entropy_src_fifo_write(const uint32_t *data, size_t len) {
            --timeout > 0) {
     }
     if (timeout == 0) {
+      // COVERAGE (HW ERR) Timeout only reached if ENTROPY_SRC FIFO stalls.
       return OTCRYPTO_FATAL_ERR;
     }
     abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET,
@@ -285,6 +291,8 @@ static status_t entropy_src_fifo_read(uint32_t *data, size_t len) {
         --timeout > 0) {
     }
     if (timeout == 0) {
+      // COVERAGE (HW ERR) Timeout only reached if ENTROPY_SRC conditioner
+      // stalls.
       if (data == NULL) {
         break;
       }
@@ -309,6 +317,7 @@ status_t entropy_src_sha3_conditioning_kat(void) {
   // If the entropy source is already locked, we cannot run the KAT.
   if (abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_SW_REGUPD_REG_OFFSET) ==
       0) {
+    // COVERAGE (HW ERR) Only reached if ENTROPY_SRC registers are locked.
     return OTCRYPTO_OK;
   }
 
@@ -347,5 +356,7 @@ status_t entropy_src_sha3_conditioning_kat(void) {
     return OTCRYPTO_OK;
   }
 
+  // COVERAGE (HW ERR) SHA3 conditioning KAT mismatch only occurs on hardware
+  // fault.
   return OTCRYPTO_FATAL_ERR;
 }
