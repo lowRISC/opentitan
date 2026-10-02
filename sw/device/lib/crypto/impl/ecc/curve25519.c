@@ -323,6 +323,8 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   }
   HARDENED_CHECK_EQ(i, kCurve25519PointWords);
   if (launder32(rhs_bits_or) == 0) {
+    // COVERAGE (FI CM) An all-zero verification point only occurs on fault
+    // injection or degenerate input.
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_BAD_ARGS;
   }

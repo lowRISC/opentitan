@@ -19,9 +19,14 @@ status_t test_run_kats(void) {
 #ifdef FIPS_MODE
   LOG_INFO("Testing run_kats with kTestLastBit...");
 
-  // 1. Test out-of-bounds flag (>= 1UL << kTestLastBit)
+  // 1. Test zero and out-of-bounds flags (>= 1UL << kTestLastBit)
+  kat_id_t zero_id = {.flags = 0};
+  otcrypto_status_t status = run_kats(zero_id);
+  TRY_CHECK(status.value != kHardenedBoolTrue,
+            "Expected failure for zero test flags.");
+
   kat_id_t oob_id = {.flags = 1UL << kTestLastBit};
-  otcrypto_status_t status = run_kats(oob_id);
+  status = run_kats(oob_id);
   TRY_CHECK(status.value != kHardenedBoolTrue,
             "Expected failure for out of bounds test flags.");
 

@@ -119,6 +119,8 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
 static status_t hkdf_check_prk(size_t digest_words,
                                const otcrypto_blinded_key_t *prk) {
   if (launder32(prk->config.key_mode) >> 16 != kOtcryptoKeyTypeHmac) {
+    // COVERAGE (FI CM) Redundant check; callers already validate
+    // prk->config.key_mode via digest_num_words_from_key_mode.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(prk->config.key_mode >> 16, kOtcryptoKeyTypeHmac);
@@ -188,6 +190,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   size_t salt_wordlen = ceil_div(salt_bytelen, sizeof(uint32_t));
 
   if (salt_wordlen > kHkdfMaxSaltWords) {
+    // COVERAGE (MISSING) Oversized salt is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t salt_aligned_data[kHkdfMaxSaltWords];
@@ -203,6 +206,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   // Unmask the input key.
   size_t unmasked_ikm_wordlen = keyblob_share_num_words(ikm->config);
   if (unmasked_ikm_wordlen > kHkdfMaxIkmWords) {
+    // COVERAGE (MISSING) Oversized IKM is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t unmasked_ikm_data[kHkdfMaxIkmWords];
@@ -295,6 +299,8 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   size_t okm_wordlen = ceil_div(okm_bytelen, sizeof(uint32_t));
   size_t num_iterations = ceil_div(okm_wordlen, digest_words);
   if (launder32(num_iterations) > 255) {
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // bounds okm->config.key_length so num_iterations <= 49.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LE(num_iterations, 255);

@@ -64,10 +64,12 @@ static status_t rsa_digest_check_fips(
   // PSS).
   size_t digest_bits = message_digest.len * 32;
   if (launder32(message_digest.mode) == kOtcryptoHashXofModeShake128) {
+    // COVERAGE (FI CM) Unreachable as digest_check already rejects XOF modes.
     digest_bits = 256;
     if (padding_mode != kRsaSignaturePaddingPss)
       return OTCRYPTO_BAD_ARGS;
   } else if (launder32(message_digest.mode) == kOtcryptoHashXofModeShake256) {
+    // COVERAGE (FI CM) Unreachable as digest_check already rejects XOF modes.
     digest_bits = 512;
     if (padding_mode != kRsaSignaturePaddingPss)
       return OTCRYPTO_BAD_ARGS;

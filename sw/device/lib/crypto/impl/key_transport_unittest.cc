@@ -371,6 +371,67 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   // Bad KEK mode
   EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_mode, &success,
                                     &target_key));
+
+  // Bad KEK checksum
+  otcrypto_blinded_key_t bad_kek_chk = kek_key;
+  bad_kek_chk.checksum ^= 0xFFFFFFFF;
+  EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_chk, &success,
+                                    &target_key));
+
+  // Bad KEK hw_backed flag
+  otcrypto_key_config_t bad_kek_hw_cfg = kConfigAesKwp256;
+  bad_kek_hw_cfg.hw_backed = static_cast<hardened_bool_t>(0x12345678);
+  otcrypto_blinded_key_t bad_kek_hw = {
+      .config = bad_kek_hw_cfg,
+      .keyblob_length = sizeof(kek_keyblob),
+      .keyblob = kek_keyblob,
+      .checksum = 0,
+  };
+  bad_kek_hw.checksum = otcrypto_integrity_blinded_checksum(&bad_kek_hw);
+  EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_hw, &success,
+                                    &target_key));
+
+  // Mismatched key_to_wrap->keyblob_length when wrapped_buf.len == exp_len
+  size_t exp_wrapped_words = 0;
+  EXPECT_OK(otcrypto_wrapped_key_len(target_key.config, &exp_wrapped_words));
+  otcrypto_word32_buf_t valid_len_wrapped_buf = {
+      .data = wrapped_data,
+      .len = exp_wrapped_words,
+  };
+  otcrypto_blinded_key_t bad_target_len = {
+      .config = kConfigNonExportableAesCtr128,
+      .keyblob_length = sizeof(target_keyblob) - 4,
+      .keyblob = target_keyblob,
+      .checksum = 0,
+  };
+  bad_target_len.checksum =
+      otcrypto_integrity_blinded_checksum(&bad_target_len);
+  EXPECT_NOT_OK(
+      otcrypto_key_wrap(&bad_target_len, &kek_key, &valid_len_wrapped_buf));
+
+  // Unwrap with wrapped_key->len > kOtcryptoWrappedKeyMaxWords
+  otcrypto_const_word32_buf_t huge_wrapped_buf = {
+      .data = wrapped_data,
+      .len = 9999,
+  };
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&huge_wrapped_buf, &kek_key, &success, &target_key));
+
+  // Unwrap with odd number of words (not a multiple of 64-bit semiblock)
+  otcrypto_const_word32_buf_t odd_wrapped_buf = {
+      .data = wrapped_data,
+      .len = 3,
+  };
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&odd_wrapped_buf, &kek_key, &success, &target_key));
+
+  // Unwrap with too few semiblocks (< 3 semiblocks = 6 words)
+  otcrypto_const_word32_buf_t short_wrapped_buf = {
+      .data = wrapped_data,
+      .len = 4,
+  };
+  EXPECT_NOT_OK(
+      otcrypto_key_unwrap(&short_wrapped_buf, &kek_key, &success, &target_key));
 }
 
 TEST(KeyTransport, BlindedKeyMigrate) {
