@@ -11,6 +11,7 @@ otbn_library(
     srcs = [
         "mldsa87_ntt.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -18,6 +19,7 @@ otbn_library(
     srcs = [
         "mldsa87_arith.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -32,6 +34,7 @@ otbn_library(
     srcs = [
         "mldsa87_sample.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -39,6 +42,7 @@ otbn_library(
     srcs = [
         "mldsa87_expand.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -46,6 +50,7 @@ otbn_library(
     srcs = [
         "mldsa87_utils.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -53,6 +58,7 @@ otbn_library(
     srcs = [
         "mldsa87_encoding.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -60,6 +66,7 @@ otbn_library(
     srcs = [
         "mldsa87_decoding.s",
     ],
+    includes = ["mldsa87.inc"],
 )
 
 otbn_library(
@@ -68,4 +75,5 @@ otbn_library(
         "mldsa87_gadgets.s",
         "//sw/otbn/crypto:mai_gadgets.s",
     ],
+    includes = ["mldsa87.inc"],
 )

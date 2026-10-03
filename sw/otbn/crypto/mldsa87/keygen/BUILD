@@ -28,4 +28,5 @@ otbn_binary(
         "mldsa87_keygen_mem.s",
         "mldsa87_keygen.s",
     ],
+    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
 )

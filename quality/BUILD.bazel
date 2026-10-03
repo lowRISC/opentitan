@@ -48,6 +48,9 @@ licence_test(
 
         # Coremark Vendored Files
         "sw/device/benchmarks/coremark/top_earlgrey/*",
+        # Manually checked, OTBN assembly include file. The checker expects the
+        # C-style `//` header for `.inc` files, which is not allowed in `gnu-as`.
+        "sw/otbn/crypto/mldsa87/mldsa87.inc",
 
         ## Other Exclusions
 

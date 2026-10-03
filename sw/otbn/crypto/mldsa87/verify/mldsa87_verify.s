@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+.include "../mldsa87.inc"
+
 /* ML-DSA-87 verify OTBN app. */
 
 .globl mldsa87_verify
@@ -33,13 +35,13 @@ mldsa87_verify:
   la x3, mldsa87_verify_var_h
   la x4, mldsa87_verify_sig_z
   la x5, mldsa87_verify_vector_slot0
-  jal x1, sig_decode
+  jal_fi sig_decode, 14630
 
   /* Check the infinity norm of Z. */
   la x2, mldsa87_verify_vector_slot0
   la x3, mldsa87_verify_const_gamma1_beta_bound
   la x4, mldsa87_verify_poly_slot0
-  jal x1, check_infinity_norm_z
+  jal_fi check_infinity_norm_z, 1306
 
   bn.cmp w0, w31, FG0
   csrrs x2, FG0, x0

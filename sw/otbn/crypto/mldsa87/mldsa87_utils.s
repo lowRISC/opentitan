@@ -2,9 +2,12 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+.include "mldsa87.inc"
+
 .globl zeroize
 .globl unmask_boolean
 .globl unmask_arithmetic
+.globl fatal_error
 
 .text
 
@@ -60,3 +63,9 @@ unmask_arithmetic:
     bn.sid x23, 0(x20++)
     /* End of loop */
   ret
+
+/** Fatal error sink. */
+fatal_error:
+  unimp
+  unimp
+  unimp
