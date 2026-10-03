@@ -14,8 +14,15 @@ py_library(
         "lib.py",
         "renderer.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
+        "//util/reggen:countermeasure",
         "//util/reggen:gen_rtl",
+        "//util/reggen:ip_block",
         "//util/reggen:lib",
         "//util/reggen:params",
         requirement("hjson"),
@@ -26,8 +33,15 @@ py_library(
 py_test(
     name = "test_render",
     srcs = ["tests/test_render.py"],
+    imports = [
+        # //util:
+        #   util.ipgen
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":ipgen",
+        "//util/reggen:params",
         requirement("pytest"),
     ],
 )

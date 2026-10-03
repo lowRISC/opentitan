@@ -1531,7 +1531,6 @@ opentitan_test(
 py_binary(
     name = "ecdsa_p256_verify_set_testvectors",
     srcs = ["ecdsa_p256_verify_set_testvectors.py"],
-    imports = ["."],
     deps = [
         "//util/design/lib:common",
         requirement("hjson"),
@@ -1611,7 +1610,6 @@ opentitan_test(
 py_binary(
     name = "kdf_set_testvectors",
     srcs = ["kdf_set_testvectors.py"],
-    imports = ["."],
     deps = [
         "//util/design/lib:common",
         requirement("hjson"),
@@ -1622,7 +1620,6 @@ py_binary(
 py_binary(
     name = "kmac_set_testvectors",
     srcs = ["kmac_set_testvectors.py"],
-    imports = ["."],
     deps = [
         "//util/design/lib:common",
         requirement("hjson"),
@@ -1633,7 +1630,6 @@ py_binary(
 py_binary(
     name = "hmac_set_testvectors",
     srcs = ["hmac_set_testvectors.py"],
-    imports = ["."],
     deps = [
         "//util/design/lib:common",
         requirement("hjson"),
