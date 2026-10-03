@@ -14,7 +14,8 @@
     }
     {
       name: xcelium_otbn_tracer_build_opts
-      build_opts: ["-I{otbn_tracer_inc_dir}"]
+      // Xcelium compiles the sources in place, not the FuseSoC export, see dvsim/xcelium.hjson
+      build_opts: ["-I{proj_root}/hw/ip/otbn/dv/tracer/cpp"]
     }
     {
       name: dsim_otbn_tracer_build_opts

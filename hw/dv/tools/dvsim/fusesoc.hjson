@@ -4,8 +4,18 @@
 {
   sv_flist_gen_cmd:   fusesoc
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
+
+  // Whether FuseSoC exports the sources into the build tree.
+  //
+  // By default it copies every source file under {sv_flist_gen_dir}/src and points the file list
+  // at those copies. A tool whose GUI recompiles from that file list needs the sources referenced
+  // where they are instead, or an edit is never picked up, so such a tool overrides this with
+  // "--no-export". See hw/dv/tools/dvsim/xcelium.hjson.
+  fusesoc_export_opts: ""
+
   sv_flist_gen_opts:  ["{fusesoc_cores_root_dirs}",
                        "run",
+                       "{fusesoc_export_opts}",
                        "{sv_flist_gen_flags}",
                        "--target=sim",
                        "--work-root={build_dir}/fusesoc-work",
