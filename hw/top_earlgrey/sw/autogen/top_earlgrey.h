@@ -514,7 +514,7 @@ extern "C" {
  * address between #TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR and
  * `TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES 0x200u
+#define TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES 0x400u
 
 /**
  * Peripheral base address for prim device on rram_macro in top earlgrey.

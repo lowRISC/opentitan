@@ -397,7 +397,7 @@ pub const RRAM_CTRL_CORE_BASE_ADDR: usize = 0x41010000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RRAM_CTRL_CORE_BASE_ADDR and
 /// `RRAM_CTRL_CORE_BASE_ADDR + RRAM_CTRL_CORE_SIZE_BYTES`.
-pub const RRAM_CTRL_CORE_SIZE_BYTES: usize = 0x200;
+pub const RRAM_CTRL_CORE_SIZE_BYTES: usize = 0x400;
 
 /// Peripheral base address for prim device on rram_macro in top earlgrey.
 ///
