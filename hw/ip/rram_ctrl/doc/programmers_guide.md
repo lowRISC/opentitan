@@ -181,6 +181,25 @@ Pages 5 (creator seed), 6 (owner seed), and 7 (isolated partition) additionally 
 Both `INFO_PAGE_CFG_*` and the life cycle signal must permit the access, so life cycle can only further restrict access, never grant it beyond what `INFO_PAGE_CFG_*` allows.
 See [Memory Protection for LCMGR Hardware Plug](theory_of_operation.md#memory-protection-for-lcmgr-hardware-plug) in the theory of operation for details.
 
+### Emulated Info Pages
+
+Software can configure variable-sized subregions within up to two emulated info windows on the data partition, for additional info-page-like storage.
+
+Define a window's base and size and enable it via [`EMUL_INFO_REGION_*`](registers.md#emul_info_region), then lock the window by writing 0 to [`EMUL_INFO_REGWEN_*`](registers.md#emul_info_regwen).
+Until it is enabled, the window and all its subregions are inert.
+Once it is enabled, any access to the window that is not covered by an enabled subregion is denied.
+Subregions only become active once the window is also locked.
+
+Split a locked window into up to 12 subregions using [`EMUL_INFO_SUBREGION_*`](registers.md#emul_info_subregion).
+Each subregion register stores only the offset (`TOP`) of its own last page relative to the window's base.
+Subregion 0 covers offsets `[0, TOP_0]`, subregion 1 covers `(TOP_0, TOP_1]`, and so on.
+Configure subregions with strictly increasing `TOP` values, and lock each one (via [`EMUL_INFO_SUBREGION_REGWEN_*`](registers.md#emul_info_subregion_regwen)) starting from the first subregion of the window.
+The hardware only enables a subregion once its window is enabled and locked, its own placement and every lower-indexed subregion's placement in the same window are locked, and its `TOP` does not exceed the window's `SIZE`.
+
+Configure each subregion's access attributes (`rd_en`, `wr_en`, `scramble_en`, `ecc_en`) via [`EMUL_INFO_SUBREGION_CFG_*`](registers.md#emul_info_subregion_cfg).
+Locking them via [`EMUL_INFO_SUBREGION_CFG_REGWEN_*`](registers.md#emul_info_subregion_cfg_regwen) is optional and independent from the placement lock chain above.
+A subregion becomes accessible once its placement is locked, whether or not its permissions are also locked.
+
 ## Debugging Errors
 
 ### Error Encountered by Host Direct Read
