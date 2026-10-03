@@ -185,6 +185,26 @@ module otbn_predecode
   assign mac_bignum_elen_raw   = imem_rdata_i[25];
   assign mac_bignum_lane_index = imem_rdata_i[30:28];
 
+  // A vector instruction with an unsupported ELEN raises an illegal insn error in the decoder.
+  // Predecode it like an unknown opcode, without any register read or write, because a predecoded
+  // register access without a valid instruction is a fatal error (see rd_predec_error and
+  // rf_bignum_predec_error in otbn_core).
+  logic bignum_vec_elen_illegal;
+
+  always_comb begin
+    bignum_vec_elen_illegal = 1'b0;
+
+    if (imem_rdata_i[6:0] == InsnOpcodeBignumVec) begin
+      unique case (imem_rdata_i[14:12])
+        // BN.ADDV/BN.ADDVM/BN.SUBV/BN.SUBVM, BN.MULV/BN.MULVL, BN.MULVM/BN.MULVML, BN.SHV
+        3'b000, 3'b011, 3'b100, 3'b111: bignum_vec_elen_illegal = alu_bignum_elen_raw != 2'b00;
+        // BN.TRN1/BN.TRN2
+        3'b101:                         bignum_vec_elen_illegal = alu_bignum_elen_raw == 2'b11;
+        default: ;
+      endcase
+    end
+  end
+
   always_comb begin
     rf_ren_a_base   = 1'b0;
     rf_ren_b_base   = 1'b0;
@@ -253,7 +273,7 @@ module otbn_predecode
 
     ctrl_flow_target_predec_o = '0;
 
-    if (imem_rvalid_i) begin
+    if (imem_rvalid_i && !bignum_vec_elen_illegal) begin
       unique case (imem_rdata_i[6:0])
 
         //////////////
@@ -441,8 +461,7 @@ module otbn_predecode
               rf_we_bignum         = 1'b1;
               alu_bignum_shift_amt = '0;
 
-              // An invalid choice will raise an illegal insn error in the decoder.
-              // Predecode invalid choices as default ELEN.
+              // Unsupported choices are not predecoded, see bignum_vec_elen_illegal.
               unique case (alu_bignum_elen_raw)
                 2'b00:   alu_bignum_alu_elen = AluElen32;
                 default: alu_bignum_alu_elen = AluElen256;
@@ -483,8 +502,7 @@ module otbn_predecode
               alu_bignum_trn_en      = 1'b1;
               alu_bignum_trn_is_trn1 = ~imem_rdata_i[30];
 
-              // An invalid choice will raise an illegal insn error in the decoder.
-              // Predecode invalid choices as default ELEN.
+              // Unsupported choices are not predecoded, see bignum_vec_elen_illegal.
               unique case (alu_bignum_elen_raw)
                 2'b00:   alu_bignum_trn_elen = TrnElen32;
                 2'b01:   alu_bignum_trn_elen = TrnElen64;
@@ -506,8 +524,7 @@ module otbn_predecode
               alu_bignum_logic_shifter_en            = 1'b1;
               alu_bignum_logic_res_sel[AluOpLogicOr] = 1'b1;
 
-              // An invalid choice will raise an illegal insn error in the decoder.
-              // Predecode invalid choices as default ELEN.
+              // Unsupported choices are not predecoded, see bignum_vec_elen_illegal.
               unique case (alu_bignum_elen_raw)
                 2'b00:   alu_bignum_alu_elen = AluElen32;
                 default: alu_bignum_alu_elen = AluElen256;
@@ -524,8 +541,7 @@ module otbn_predecode
               mac_bignum_is_mod  = imem_rdata_i[14:12] == 3'b100;
               mac_bignum_is_lane = imem_rdata_i[27];
 
-              // An invalid choice will raise an illegal insn error in the decoder.
-              // Predecode invalid choices as default ELEN.
+              // Unsupported choices are not predecoded, see bignum_vec_elen_illegal.
               unique case (mac_bignum_elen_raw)
                 1'b0:    mac_bignum_elen = MacElen32;
                 default: mac_bignum_elen = MacElen64;
