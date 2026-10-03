@@ -53,8 +53,9 @@ package rram_ctrl_env_pkg;
     RdFull          = 2,
     RdLvl           = 3,
     OpDone          = 4,
-    CorrErr         = 5,
-    NumRramCtrlIntr = 6
+    Corr1Err        = 5,
+    Corr2Err        = 6,
+    NumRramCtrlIntr = 7
   } rram_ctrl_intr_e;
 
   // Functions
