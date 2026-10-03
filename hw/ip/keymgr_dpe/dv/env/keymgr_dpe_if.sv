@@ -539,6 +539,18 @@ interface keymgr_dpe_if(input clk, input rst_n);
     if (force_cmds[GenOpIdx]) release tb.dut.u_ctrl.gen_en_o;
   endtask
 
+  // Hold the decoy data that the KMAC interface drives outside a KMAC transaction at all zeros or
+  // all ones. The LFSR can produce these values, just rarely.
+  task automatic force_const_decoy(bit all_ones);
+    `uvm_info(msg_id, $sformatf("Force decoy data to all %0d", all_ones), UVM_LOW)
+    if (all_ones) force tb.dut.u_kmac_if.entropy_i = '1;
+    else          force tb.dut.u_kmac_if.entropy_i = '0;
+  endtask
+
+  task automatic release_const_decoy();
+    release tb.dut.u_kmac_if.entropy_i;
+  endtask
+
   bit trigger_force_hw_key_sel;
   for (genvar i = 0; i < 8; i++) begin : gen_force_hw_key_sel
     always @(trigger_force_hw_key_sel) begin

@@ -179,7 +179,7 @@ module keymgr_dpe_ctrl
   // error definition
   // check incoming kmac data validity
   // Only check during the periods when there is actual kmac output
-  assign invalid_kmac_out = (op_update | op_ack) &
+  assign invalid_kmac_out = (op_update | op_ack) & kmac_done_i &
                             (~valid_data_chk(kmac_data_i[0]) |
                             ~valid_data_chk(kmac_data_i[1]));
 
