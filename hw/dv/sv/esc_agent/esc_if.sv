@@ -16,6 +16,9 @@ interface esc_if(input clk, input rst_n);
   dv_utils_pkg::if_mode_e if_mode;
   clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
+  // Escalation drivers use this clock for both sender and receiver clocking blocks
+  assign async_clk = is_async ? 'z : clk;
+
   clocking sender_cb @(posedge async_clk);
     output esc_tx_int;
     input  esc_rx;

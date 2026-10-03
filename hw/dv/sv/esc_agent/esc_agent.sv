@@ -21,6 +21,7 @@ class esc_agent extends dv_reactive_agent #(
 
   extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
 
 endclass : esc_agent
 
@@ -54,3 +55,8 @@ function void esc_agent::build_phase(uvm_phase phase);
   cfg.vif.is_active = cfg.is_active;
   cfg.vif.if_mode   = cfg.if_mode;
 endfunction : build_phase
+
+function void esc_agent::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+  monitor.m_esc_port.connect(m_esc_port);
+endfunction : connect_phase
