@@ -142,8 +142,8 @@ Software should respond to `corr_err` by issuing a `Rewrite` operation on the af
 
 Uncorrectable multi-bit errors trigger `ecc_fatal_err`, which results in a fatal alert.
 The macro marks the data as uncorrectable, and the ECC decoder cannot recover the original data.
-A fatal alert is always raised, but this fault (`FAULT_STATUS.phy_relbl_err`) only disables RRAM access once [`DIS.RELBL_ERR_FATAL`](registers.md#dis--relbl_err_fatal) has been set to any value other than `MuBi4False`, its reset default.
-Since `DIS.RELBL_ERR_FATAL` is `rw1s`, once set it cannot be reverted by software.
+A fatal alert is always raised, but this fault (`FAULT_STATUS.phy_relbl_err`) only disables RRAM access once [`DIS.LOCAL_ESC_RELBL_ERR`](registers.md#dis--local_esc_relbl_err) has been set to any value other than `MuBi4False`, its reset default.
+Since `DIS.LOCAL_ESC_RELBL_ERR` is `rw1s`, once set it cannot be reverted by software.
 
 ## LCMGR Hardware Plug
 
@@ -244,11 +244,23 @@ For each entry, the inner FSM takes the following steps:
 All state transitions of the inner FSM are depicted below:
 <img src="../doc/rram_rma_fsm.svg" width="800"/>
 
-After all entries are wiped, the main FSM enters `StRmaRsp`, which asserts `rma_dis_access_o = On` to disable all further RRAM access and drives `rma_ack` with the error-free status.
-If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+From the start of the RMA entry process (`StEntropyReseed` and `StRmaWipe`), the main FSM asserts `rma_sw_dis_o = On`, which disables all software access to the RRAM:
+- Software initiated controller operations (including rewrite operations) are rejected by the memory protection with an error.
+  An operation that is still ongoing when the RMA entry process starts is terminated with an error.
+- Host reads, including instruction fetches, are answered with an error.
+- Accesses to the write and read FIFO windows are answered with an error.
 
-After RMA completes, the RRAM controller is [disabled](#rram-escalation--disable).
-When disabled, the RRAM controller registers can still be accessed but the memory macro cannot be written or read anymore.
+This prevents software from reading pages that are not yet wiped, or writing pages that were already wiped.
+After all entries are wiped, the main FSM enters `StRmaRsp` and stays there until the next reset.
+It drives `rma_ack` with the error-free status and keeps `rma_sw_dis_o = On`.
+
+The RRAM itself is not disabled, because the life cycle controller still accesses the OTP after the RMA wipe to program the new life cycle state.
+The OTP and lcmgr hardware interfaces are therefore not affected by `rma_sw_dis_o`.
+
+If any wipe or verify step encounters an error, the FSM transitions to `StInvalid` instead, which continuously asserts `rma_dis_access_o = On` and keeps `rma_ack` deasserted.
+In this case, the RRAM controller is [disabled](#rram-escalation--disable) completely and the life cycle controller does not complete the RMA transition.
+
+After a successful as well as a failed RMA entry, the RRAM controller registers can still be accessed.
 It is expected that the entire system will be rebooted after an RMA transition.
 
 
@@ -469,6 +481,14 @@ RRAM access can be disabled through escalation (global or local) or directly by 
 2. **Local escalation** is triggered by `all_fatal_esc = fatal_std_err | (|fault_status_masked)`, which aggregates the entire `fault_status`/`std_fault_status` register vectors, not just FSM state errors.
    This includes FIFO integrity errors, counter-redundancy errors, read/write bus-integrity errors, seed errors, spurious-done and host-grant consistency checks, and invalid/unreachable FSM states (`state_err`) across `rram_ctrl_lcmgr` and `rram_phy`.
    Any of these conditions causes an immediate transition to the invalid terminal state, which continuously asserts `rram_dis_access_o` and raises `fatal_err`.
+   All errors in `std_fault_status` and `fault_status` cause local escalation, with the exception of `fault_status.phy_relbl_err`.
+   It only causes local escalation once [`DIS.LOCAL_ESC_RELBL_ERR`](registers.md#dis--local_esc_relbl_err) has been set to any value other than `MuBi4False`, its reset default, see [Multi-Bit Error](#multi-bit-error-uncorrectable).
+   Since `DIS.LOCAL_ESC_RELBL_ERR` is `rw1s`, once set it cannot be reverted by software.
+
+   Once triggered, local escalation is latched and remains active until the next reset, even if the causing fault is cleared afterwards.
+   In particular, clearing `fault_status.phy_relbl_err` does not re-enable the RRAM once it has caused a local escalation.
+   Therefore, firmware must clear any `phy_relbl_err` left over from firmware selection before it sets `DIS.LOCAL_ESC_RELBL_ERR`.
+   The `fatal_err` alert is raised for `phy_relbl_err` regardless of `DIS.LOCAL_ESC_RELBL_ERR`.
 
 3. **Software disable** lets software kill RRAM directly, without going through escalation or fault detection: writing any value other than MuBi4False to [`DIS.SW_DIS`](registers.md#dis) asserts `rram_disable` immediately.
    Since this register is `rw1s`, this cannot be reverted by software.

@@ -93,6 +93,7 @@ module rram_ctrl
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   ////////////////////////////
   // Localparam definitions //
@@ -272,6 +273,10 @@ module rram_ctrl
 
   mubi4_t [RramDisableLast-1:0] rram_disable;
 
+  // software access disable (upon RMA entry)
+  lc_ctrl_pkg::lc_tx_t rma_sw_dis;
+  mubi4_t [RramSwDisableLast-1:0] rram_sw_disable;
+
   ///////////////////
   // RRAM_REGS_TOP //
   ///////////////////
@@ -426,6 +431,11 @@ module rram_ctrl
   tlul_pkg::tl_h2d_t wr_tl_h2d;
   tlul_pkg::tl_d2h_t wr_tl_d2h;
 
+  // The write FIFO window is disabled if the RRAM or its software access is disabled.
+  mubi4_t wr_fifo_disable;
+  assign wr_fifo_disable = prim_mubi_pkg::mubi4_or_hi(rram_disable[WrFifoIdx],
+                                                      rram_sw_disable[SwDisWrFifoIdx]);
+
   // The write path also needs an lc gate to error back when the RRAM is disabled.
   // This is because tlul_adapter_sram does not actually have a way of signaling
   // write errors, only read errors.
@@ -440,7 +450,7 @@ module rram_ctrl
     .flush_req_i   ('0),
     .flush_ack_o   (),
     .resp_pending_o(),
-    .lc_en_i       (lc_ctrl_pkg::mubi4_to_lc_inv(rram_disable[WrFifoIdx])),
+    .lc_en_i       (lc_ctrl_pkg::mubi4_to_lc_inv(wr_fifo_disable)),
     .err_o         (tl_wr_gate_intg_err)
   );
 
@@ -504,6 +514,11 @@ module rram_ctrl
   logic rd_fifo_adapter_req;
   logic rd_fifo_adapter_req_d, rd_fifo_adapter_req_q;
 
+  // The read FIFO window is disabled if the RRAM or its software access is disabled.
+  mubi4_t rd_fifo_disable;
+  assign rd_fifo_disable = prim_mubi_pkg::mubi4_or_hi(rram_disable[RdFifoIdx],
+                                                      rram_sw_disable[SwDisRdFifoIdx]);
+
   // A read request is seen from software but a read operation is not enabled
   // AND there are no pending entries to read from the fifo.
   // This indicates software has issued a read when it should not have.
@@ -512,10 +527,10 @@ module rram_ctrl
   assign ctrl_rd_op = reg2hw.control.start.q & (reg2hw.control.op.q == RramOpRead);
 
   // If software ever attempts to read when the FIFO is empty AND if it has never
-  // initiated a transaction, OR when RRAM is disabled, then it is a read that
-  // can never complete, error back immediately.
+  // initiated a transaction, OR when RRAM or its software access is disabled, then it
+  // is a read that can never complete, error back immediately.
   assign rd_no_op_d = rd_fifo_adapter_req & ((~ctrl_rd_op & ~rd_fifo_rvalid) |
-                      (prim_mubi_pkg::mubi4_test_true_loose(rram_disable[RdFifoIdx])));
+                      mubi4_test_true_loose(rd_fifo_disable));
 
   assign rd_fifo_adapter_req_d = rd_fifo_adapter_req & rd_fifo_rvalid;
 
@@ -657,6 +672,7 @@ module rram_ctrl
     .rand_data_key_o (rand_data_key),
     // Access controls and status
     .rma_dis_access_o(rma_dis_access),
+    .rma_sw_dis_o    (rma_sw_dis),
     .keys_valid_o    (lcmgr_keys_valid),
     .init_done_o     (lcmgr_init_done)
   );
@@ -952,6 +968,7 @@ module rram_ctrl
     .clk_i,
     .rst_ni,
     .rram_disable_i     (rram_disable[MpDisableIdx]),
+    .sw_disable_i       (rram_sw_disable[SwDisMpIdx]),
     // Interface selection
     .if_sel_i           (if_sel),
     // Memory protection configuration
@@ -1137,12 +1154,12 @@ module rram_ctrl
 
   rram_ctrl_reg_pkg::rram_ctrl_reg2hw_fault_status_reg_t fault_status_masked;
 
-  // If reg2hw.dis.relbl_err_fatal is MuBi4False (reset state) phy_relbl_err is excluded for
+  // If reg2hw.dis.local_esc_relbl_err is MuBi4False (reset state) phy_relbl_err is excluded for
   // local escalation. An alert is generated nevertheless.
   always_comb begin
     fault_status_masked = reg2hw.fault_status;
 
-    if (prim_mubi_pkg::mubi4_test_false_strict(mubi4_t'(reg2hw.dis.relbl_err_fatal))) begin
+    if (prim_mubi_pkg::mubi4_test_false_strict(mubi4_t'(reg2hw.dis.local_esc_relbl_err))) begin
       fault_status_masked.phy_relbl_err = 1'b0;
     end
   end
@@ -1151,8 +1168,20 @@ module rram_ctrl
   logic all_fatal_esc;
   assign all_fatal_esc = fatal_std_err | (|fault_status_masked);
 
-  lc_ctrl_pkg::lc_tx_t local_esc;
-  assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(all_fatal_esc);
+  // Local escalation is sticky until reset. Otherwise clearing FAULT_STATUS.PHY_RELBL_ERR (rw0c)
+  // would revoke an escalation and re-open the RRAM. The flop is only set if all_fatal_esc is
+  // asserted and holds its value otherwise. The escalation takes effect one cycle after the fault.
+  lc_ctrl_pkg::lc_tx_t local_esc_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      local_esc_q <= lc_ctrl_pkg::Off;
+    end else begin
+      if (all_fatal_esc) begin
+        local_esc_q <= lc_ctrl_pkg::On;
+      end
+    end
+  end
 
   // Escalation from lc_ctrl
   prim_lc_sync #(
@@ -1167,7 +1196,7 @@ module rram_ctrl
   lc_ctrl_pkg::lc_tx_t escalate_en;
 
   // SEC_CM: MEM.CTRL.LOCAL_ESC
-  assign escalate_en = lc_ctrl_pkg::lc_tx_or_hi(rma_dis_access, local_esc);
+  assign escalate_en = lc_ctrl_pkg::lc_tx_or_hi(rma_dis_access, local_esc_q);
 
   // RRAM functional disable
   lc_ctrl_pkg::lc_tx_t lc_disable;
@@ -1188,6 +1217,16 @@ module rram_ctrl
     .rst_ni,
     .mubi_i(rram_disable_in),
     .mubi_o(rram_disable)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(RramSwDisableLast)),
+    .AsyncOn(0)
+  ) u_sw_disable_buf (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(lc_ctrl_pkg::lc_to_mubi4(rma_sw_dis)),
+    .mubi_o(rram_sw_disable)
   );
 
   ////////////////
@@ -1334,6 +1373,11 @@ module rram_ctrl
   // The seeds stored in RRAM must match the seed width of the key manager.
   `ASSERT_INIT(CreatorSeedWidthMatch_A, $bits(keymgr_creator_seed_o.seed) == SeedWidth)
   `ASSERT_INIT(OwnerSeedWidthMatch_A, $bits(keymgr_owner_seed_o.seed) == SeedWidth)
+
+  // Local escalation is only set by a fatal fault and cannot be revoked until reset
+  `ASSERT(LocalEscSetByFault_A, local_esc_q != lc_ctrl_pkg::On |=>
+                                (local_esc_q == lc_ctrl_pkg::On) == $past(all_fatal_esc))
+  `ASSERT(LocalEscSticky_A, local_esc_q == lc_ctrl_pkg::On |=> local_esc_q == lc_ctrl_pkg::On)
 
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,

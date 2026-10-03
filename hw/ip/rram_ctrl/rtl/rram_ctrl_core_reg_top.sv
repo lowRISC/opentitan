@@ -213,8 +213,8 @@ module rram_ctrl_core_reg_top (
   logic dis_we;
   logic [3:0] dis_sw_dis_qs;
   logic [3:0] dis_sw_dis_wd;
-  logic [3:0] dis_relbl_err_fatal_qs;
-  logic [3:0] dis_relbl_err_fatal_wd;
+  logic [3:0] dis_local_esc_relbl_err_qs;
+  logic [3:0] dis_local_esc_relbl_err_wd;
   logic exec_we;
   logic [31:0] exec_qs;
   logic [31:0] exec_wd;
@@ -1210,20 +1210,20 @@ module rram_ctrl_core_reg_top (
     .qs     (dis_sw_dis_qs)
   );
 
-  //   F[relbl_err_fatal]: 7:4
+  //   F[local_esc_relbl_err]: 7:4
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (4'h9),
     .Mubi    (1'b1)
-  ) u_dis_relbl_err_fatal (
+  ) u_dis_local_esc_relbl_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(1'b0),
 
     // from register interface
     .we     (dis_we),
-    .wd     (dis_relbl_err_fatal_wd),
+    .wd     (dis_local_esc_relbl_err_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1231,11 +1231,11 @@ module rram_ctrl_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dis.relbl_err_fatal.q),
+    .q      (reg2hw.dis.local_esc_relbl_err.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (dis_relbl_err_fatal_qs)
+    .qs     (dis_local_esc_relbl_err_qs)
   );
 
 
@@ -7057,7 +7057,7 @@ module rram_ctrl_core_reg_top (
 
   assign dis_sw_dis_wd = reg_wdata[3:0];
 
-  assign dis_relbl_err_fatal_wd = reg_wdata[7:4];
+  assign dis_local_esc_relbl_err_wd = reg_wdata[7:4];
   assign exec_we = addr_hit[5] & reg_we & !reg_error;
 
   assign exec_wd = reg_wdata[31:0];
@@ -7545,7 +7545,7 @@ module rram_ctrl_core_reg_top (
 
       addr_hit[4]: begin
         reg_rdata_next[3:0] = dis_sw_dis_qs;
-        reg_rdata_next[7:4] = dis_relbl_err_fatal_qs;
+        reg_rdata_next[7:4] = dis_local_esc_relbl_err_qs;
       end
 
       addr_hit[5]: begin

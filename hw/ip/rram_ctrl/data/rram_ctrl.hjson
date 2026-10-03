@@ -234,7 +234,8 @@
     { name: "MEM.CTRL.LOCAL_ESC",
       desc: '''
             A subset of fatal errors cause memory to no longer be accessible.
-            This subset is defined in !!STD_FAULT_STATUS.
+            All errors in !!STD_FAULT_STATUS and !!FAULT_STATUS are part of this subset.
+            !!FAULT_STATUS.PHY_RELBL_ERR is only part of it once enabled via !!DIS.LOCAL_ESC_RELBL_ERR.
             '''
     }
     { name: "MEM_DISABLE.CONFIG.MUBI",
@@ -545,12 +546,13 @@
             resval: false,
           },
           { bits: "7:4",
-            name: "RELBL_ERR_FATAL",
+            name: "LOCAL_ESC_RELBL_ERR",
             mubi: true,
             desc: '''
-                  Configuration bit for reliability error.
-                  Once this config bit is set to MuBi4True, every fault in !!FAULT_STATUS will disable the RRAM immediately.
+                  Enables local escalation for reliability errors.
+                  Once this config bit is set to any value other than MuBi4False, !!FAULT_STATUS.PHY_RELBL_ERR will disable the RRAM until the next reset.
                   Otherwise !!FAULT_STATUS.PHY_RELBL_ERR is excluded from the local escalation, to deal with firmware selection during the boot process.
+                  The fatal_err alert is raised regardless of this setting.
                   Since this register is rw1s instead of rw, this configuration cannot be reverted.
                   '''
             resval: false,
@@ -1255,6 +1257,7 @@
 
                   Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
                   After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+                  Clearing this bit does not revoke a local escalation it has already caused while !!DIS.LOCAL_ESC_RELBL_ERR was set.
                   '''
           },
           { bits: "10",
