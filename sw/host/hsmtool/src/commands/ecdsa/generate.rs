@@ -5,8 +5,8 @@
 use anyhow::Result;
 use cryptoki::mechanism::Mechanism;
 use cryptoki::session::Session;
-use p256::elliptic_curve::pkcs8;
-use p256::elliptic_curve::pkcs8::der::Encode;
+use pkcs8;
+use pkcs8::der::Encode;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::str::FromStr;

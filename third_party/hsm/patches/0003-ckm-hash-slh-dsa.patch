@@ -1,0 +1,1345 @@
+From c65ec20ad585e75fb578eaaf4544dea4ca10046f Mon Sep 17 00:00:00 2001
+Date: Tue, 22 Sep 2026 18:31:00 +0100
+Subject: [PATCH] feat: Implement CKM_HASH_SLH_DSA mechanism type
+
+Implements the `CKM_HASH_SLH_DSA` mechanism type on top of the SLH-DSA
+implementation to SoftHSM. Note that this only covers the generic
+mechanism type that expects you to input pre-hashed data, and tell the
+HSM which hash function / XOF algorithm was used. This does **not**
+implement the various `CKM_HASH_SLH_DSA_*` variants in which the HSM
+performs the pre-hashing operation itself.
+
+diff --git a/src/lib/SoftHSM.cpp b/src/lib/SoftHSM.cpp
+index 59696e4..a1206bc 100644
+--- a/src/lib/SoftHSM.cpp
++++ b/src/lib/SoftHSM.cpp
+@@ -884,10 +884,13 @@ void SoftHSM::prepareSupportedMechanisms(std::map<std::string, CK_MECHANISM_TYPE
+ #ifdef WITH_ML_DSA
+ 	t["CKM_ML_DSA_KEY_PAIR_GEN"] = CKM_ML_DSA_KEY_PAIR_GEN;
+ 	t["CKM_ML_DSA"]			= CKM_ML_DSA;
++	/* TODO: all variants of CKM_HASH_ML_DSA* are not yet supported. */
+ #endif
+ #ifdef WITH_SLH_DSA
+ 	t["CKM_SLH_DSA_KEY_PAIR_GEN"] = CKM_SLH_DSA_KEY_PAIR_GEN;
+ 	t["CKM_SLH_DSA"]		= CKM_SLH_DSA;
++	t["CKM_HASH_SLH_DSA"]		= CKM_HASH_SLH_DSA;
++	/* TODO: the pre-hashed CKM_HASH_SLH_DSA_* variants are not yet supported. */
+ #endif
+ #ifdef WITH_ML_KEM
+ 	t["CKM_ML_KEM_KEY_PAIR_GEN"] = CKM_ML_KEM_KEY_PAIR_GEN;
+@@ -1446,6 +1449,7 @@ CK_RV SoftHSM::C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_
+ 			pInfo->flags = CKF_GENERATE_KEY_PAIR;
+ 			break;
+ 		case CKM_SLH_DSA:
++		case CKM_HASH_SLH_DSA:
+ 			pInfo->ulMinKeySize = slhdsaMinSize;
+ 			pInfo->ulMaxKeySize = slhdsaMaxSize;
+ 			pInfo->flags = CKF_SIGN | CKF_VERIFY;
+@@ -4687,20 +4691,66 @@ CK_RV SoftHSM::AsymSignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
+ 					return CKR_ARGUMENTS_BAD;
+ 				}
+ 				if (ckSignAdditionalContext->ulContextLen > 0) {
+-					if (ckSignAdditionalContext->pContext == NULL_PTR) {
+-						ERROR_MSG("Invalid parameters");
+-						return CKR_ARGUMENTS_BAD;
+-					}
+-					if (ckSignAdditionalContext->ulContextLen > 255) {
++					if (ckSignAdditionalContext->pContext == NULL_PTR ||
++					    ckSignAdditionalContext->ulContextLen > 255)
++					{
+ 						ERROR_MSG("Invalid parameters");
+ 						return CKR_ARGUMENTS_BAD;
+ 					}
+ 					slhdsaParam.additionalContext = ByteString(ckSignAdditionalContext->pContext, ckSignAdditionalContext->ulContextLen);
+-					DEBUG_MSG("Sign SLHDSA additionalContextLen=%lu, hedgeType=%d", (unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType);
+ 				}
++				DEBUG_MSG("Sign SLHDSA additionalContextLen=%lu, hedgeType=%d", (unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType);
+ 				mechanismParam = &slhdsaParam;
+ 			}
+ 			break;
++		case CKM_HASH_SLH_DSA:
++		{
++			mechanism = AsymMech::SLHDSA;
++			bAllowMultiPartOp = true;
++			isSLHDSA = true;
++
++			// The Pre-hashed SLH-DSA variants requires explicit parameters bundling
++			// the hash/XOF algorithm's OID, unlike Pure SLH-DSA (which can be empty).
++			if (pMechanism->pParameter == NULL_PTR ||
++				pMechanism->ulParameterLen != sizeof(CK_HASH_SIGN_ADDITIONAL_CONTEXT))
++			{
++				ERROR_MSG("Invalid parameters");
++				return CKR_ARGUMENTS_BAD;
++			}
++
++			CK_HASH_SIGN_ADDITIONAL_CONTEXT_PTR ckHashSignAdditionalContext = (CK_HASH_SIGN_ADDITIONAL_CONTEXT_PTR) pMechanism->pParameter;
++			CK_RV rv = SLHDSAUtil::setHedge(ckHashSignAdditionalContext->hedgeVariant, &slhdsaParam.hedgeType);
++			if (rv != CKR_OK) {
++				return rv;
++			}
++
++			rv = SLHDSAUtil::setHashOid(ckHashSignAdditionalContext->hash, &slhdsaParam.hashOid, &slhdsaParam.hashDigestLen);
++			if (rv != CKR_OK) {
++				return rv;
++			}
++			if (slhdsaParam.hashOid.size() == 0 || slhdsaParam.hashDigestLen == 0) {
++				ERROR_MSG("Invalid parameters");
++				return CKR_ARGUMENTS_BAD;
++			}
++
++			if (ckHashSignAdditionalContext->ulContextLen > 0) {
++				if (ckHashSignAdditionalContext->pContext == NULL_PTR ||
++					ckHashSignAdditionalContext->ulContextLen > 255)
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				slhdsaParam.additionalContext = ByteString(ckHashSignAdditionalContext->pContext, ckHashSignAdditionalContext->ulContextLen);
++			}
++
++			DEBUG_MSG(
++				"Sign HASH_SLHDSA additionalContextLen=%lu, hedgeType=%d, hash=%lu, digestLen=%zu",
++				(unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType,
++				(unsigned long)ckHashSignAdditionalContext->hash, slhdsaParam.hashDigestLen
++			);
++			mechanismParam = &slhdsaParam;
++			break;
++		}
+ #endif
+ 		default:
+ 			return CKR_MECHANISM_INVALID;
+@@ -5846,11 +5896,9 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ 					return CKR_ARGUMENTS_BAD;
+ 				}
+ 				if (ckSignAdditionalContext->ulContextLen > 0) {
+-					if (ckSignAdditionalContext->pContext == NULL_PTR) {
+-						ERROR_MSG("Invalid parameters");
+-						return CKR_ARGUMENTS_BAD;
+-					}
+-					if (ckSignAdditionalContext->ulContextLen > 255) {
++					if (ckSignAdditionalContext->pContext == NULL_PTR ||
++					    ckSignAdditionalContext->ulContextLen > 255)
++					{
+ 						ERROR_MSG("Invalid parameters");
+ 						return CKR_ARGUMENTS_BAD;
+ 					}
+@@ -5860,6 +5908,54 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ 				mechanismParam = &slhdsaParam;
+ 			}
+ 			break;
++		case CKM_HASH_SLH_DSA:
++		{
++			mechanism = AsymMech::SLHDSA;
++			bAllowMultiPartOp = true;
++			isSLHDSA = true;
++
++			// The Pre-hashed SLH-DSA variants requires explicit parameters bundling
++			// the hash/XOF algorithm's OID, unlike Pure SLH-DSA (which can be empty).
++			if (pMechanism->pParameter == NULL_PTR ||
++				pMechanism->ulParameterLen != sizeof(CK_HASH_SIGN_ADDITIONAL_CONTEXT))
++			{
++				ERROR_MSG("Invalid parameters");
++				return CKR_ARGUMENTS_BAD;
++			}
++
++			CK_HASH_SIGN_ADDITIONAL_CONTEXT_PTR ckHashSignAdditionalContext = (CK_HASH_SIGN_ADDITIONAL_CONTEXT_PTR) pMechanism->pParameter;
++			CK_RV rv = SLHDSAUtil::setHedge(ckHashSignAdditionalContext->hedgeVariant, &slhdsaParam.hedgeType);
++			if (rv != CKR_OK) {
++				return rv;
++			}
++
++			rv = SLHDSAUtil::setHashOid(ckHashSignAdditionalContext->hash, &slhdsaParam.hashOid, &slhdsaParam.hashDigestLen);
++			if (rv != CKR_OK) {
++				return rv;
++			}
++			if (slhdsaParam.hashOid.size() == 0 || slhdsaParam.hashDigestLen == 0) {
++				ERROR_MSG("Invalid parameters");
++				return CKR_ARGUMENTS_BAD;
++			}
++
++			if (ckHashSignAdditionalContext->ulContextLen > 0) {
++				if (ckHashSignAdditionalContext->pContext == NULL_PTR ||
++					ckHashSignAdditionalContext->ulContextLen > 255)
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				slhdsaParam.additionalContext = ByteString(ckHashSignAdditionalContext->pContext, ckHashSignAdditionalContext->ulContextLen);
++			}
++
++			DEBUG_MSG(
++				"Verify HASH_SLHDSA additionalContextLen=%lu, hedgeType=%d, hash=%lu, digestLen=%zu",
++				(unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType,
++				(unsigned long)ckHashSignAdditionalContext->hash, slhdsaParam.hashDigestLen
++			);
++			mechanismParam = &slhdsaParam;
++			break;
++		}
+ #endif
+ 		default:
+ 			return CKR_MECHANISM_INVALID;
+diff --git a/src/lib/crypto/OSSLSLHDSA.cpp b/src/lib/crypto/OSSLSLHDSA.cpp
+index 66dd492..4113c3e 100644
+--- a/src/lib/crypto/OSSLSLHDSA.cpp
++++ b/src/lib/crypto/OSSLSLHDSA.cpp
+@@ -27,6 +27,70 @@
+ #include <openssl/err.h>
+ #include <string.h>
+ 
++namespace Encoding
++{
++	// Tell OpenSSL not to encode the message itself, and instead let us do it:
++	//   "Setting it to 0 does not encode the message, which is used for testing,
++	//    but can also be used for 'Pre Hash SLH-DSA Signature Generation'"
++	const int OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING_RAW = 0;
++
++	const unsigned char SLH_DSA_PRE_HASH_DOMAIN_SEPARATOR = 0x01;
++
++	/** \brief Build the HashSLH-DSA message encoding:
++	 * 		M' = 01 || ctx.len || ctx || prf.oid || M
++	 * Where 01 is the pre-hash domain separator, ctx is the (default empty)
++	 * context string, prf is the pre-hash function and prf.oid is that
++	 * function's OID, and `M` is the pre-hashed message. */
++	bool encodeHashSlhDsaMessage(const SLHDSAMechanismParam *param, const ByteString& digest, ByteString& encoded)
++	{
++		const ByteString& context = param->additionalContext;
++		const size_t contextSize = context.size();
++		const size_t hashOidSize = param->hashOid.size();
++		const size_t digestSize = digest.size();
++
++		if (contextSize > 255)
++		{
++			ERROR_MSG("Invalid parameters, context length > 255");
++			return false;
++		}
++
++		if (hashOidSize == 0)
++		{
++			ERROR_MSG("Invalid parameters, empty hash OID");
++			return false;
++		}
++
++		if (param->hashDigestLen != 0 && digestSize != param->hashDigestLen)
++		{
++			ERROR_MSG(
++				"SLH-DSA pre-hashed message is %zu bytes, but %zu were expected based on "
++				"the specified pre-hash function.",
++				digest.size(), param->hashDigestLen
++			);
++			return false;
++		}
++
++		// 01 / ctx.len / ctx / prf / M
++		encoded.resize(1 + 1 + contextSize + hashOidSize + digestSize);
++		unsigned char* p = &encoded[0];
++		*p++ = SLH_DSA_PRE_HASH_DOMAIN_SEPARATOR;
++		*p++ = (unsigned char)contextSize;
++		if (contextSize > 0)
++		{
++			memcpy(p, context.const_byte_str(), contextSize);
++			p += contextSize;
++		}
++		memcpy(p, param->hashOid.const_byte_str(), hashOidSize);
++		p += hashOidSize;
++		if (digestSize > 0)
++		{
++			memcpy(p, digest.const_byte_str(), digestSize);
++		}
++
++		return true;
++	}
++}
++
+ 
+ // Signing functions
+ /** \brief sign */
+@@ -75,16 +139,31 @@ bool OSSLSLHDSA::sign(PrivateKey *privateKey, const ByteString &dataToSign,
+ 	// Perform the signature operation
+ 	size_t len = 0;
+ 
+-	OSSL_PARAM params[4], *p = params;
++	OSSL_PARAM params[5], *p = params;
+ 
+ 	int local_deterministic = 1;
+ 	int local_random = 0;
++	int local_encode_raw = Encoding::OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING_RAW;
+ 	const SLHDSAMechanismParam* slhdsaSignatureParam = dynamic_cast<const SLHDSAMechanismParam*>(mechanismParam);
+ 	ByteString context;
++	ByteString encodedMessage;
++	// Default (Pure SLH-DSA operation) just passes the message directly.
++	const ByteString* message = &dataToSign;
+ 	if (slhdsaSignatureParam != NULL)
+ 	{
+-		Hedge::Type type = slhdsaSignatureParam->hedgeType;
+-		if (slhdsaSignatureParam->additionalContext.size() > 0)
++		// If using Pure SLH-DSA, OpenSSL handles the message encoding, so we pass it the
++		// context string. If using HashSLH-DSA, the message encoding is instead built here
++		// to prepend the pre-hash OID along with the domain separator and context string.
++		if (slhdsaSignatureParam->hashOid.size() > 0)
++		{
++			if (!Encoding::encodeHashSlhDsaMessage(slhdsaSignatureParam, dataToSign, encodedMessage))
++			{
++				return false;
++			}
++			message = &encodedMessage;
++			*p++ = OSSL_PARAM_construct_int(OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING, &local_encode_raw);
++		}
++		else if (slhdsaSignatureParam->additionalContext.size() > 0)
+ 		{
+ 			context = slhdsaSignatureParam->additionalContext;
+ 			size_t contextSize = context.size();
+@@ -95,6 +174,8 @@ bool OSSLSLHDSA::sign(PrivateKey *privateKey, const ByteString &dataToSign,
+ 			}
+ 			*p++ = OSSL_PARAM_construct_octet_string(OSSL_SIGNATURE_PARAM_CONTEXT_STRING, context.byte_str(), contextSize);
+ 		}
++
++		Hedge::Type type = slhdsaSignatureParam->hedgeType;
+ 		switch (type)
+ 		{
+ 		case Hedge::Type::DETERMINISTIC_REQUIRED:
+@@ -148,7 +229,7 @@ bool OSSLSLHDSA::sign(PrivateKey *privateKey, const ByteString &dataToSign,
+ 		return false;
+ 	}
+ 	/* Calculate the required size for the signature by passing a NULL buffer. */
+-	if (EVP_PKEY_sign(sctx, NULL, &len, dataToSign.const_byte_str(), dataToSign.size()) <= 0)
++	if (EVP_PKEY_sign(sctx, NULL, &len, message->const_byte_str(), message->size()) <= 0)
+ 	{
+ 		ERROR_MSG("SLH-DSA sign size query failed (0x%08lX)", ERR_get_error());
+ 		EVP_SIGNATURE_free(sig_alg);
+@@ -156,7 +237,7 @@ bool OSSLSLHDSA::sign(PrivateKey *privateKey, const ByteString &dataToSign,
+ 		return false;
+ 	}
+ 	signature.resize(len);
+-	if (EVP_PKEY_sign(sctx, &signature[0], &len, dataToSign.const_byte_str(), dataToSign.size()) <= 0)
++	if (EVP_PKEY_sign(sctx, &signature[0], &len, message->const_byte_str(), message->size()) <= 0)
+ 	{
+ 		ERROR_MSG("SLH-DSA sign failed (0x%08lX)", ERR_get_error());
+ 		EVP_SIGNATURE_free(sig_alg);
+@@ -298,11 +379,28 @@ bool OSSLSLHDSA::verify(PublicKey *publicKey, const ByteString &originalData,
+ 	}
+ 
+ 	OSSL_PARAM params[3], *p = params;
++
++	int local_encode_raw = Encoding::OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING_RAW;
+ 	const SLHDSAMechanismParam* slhdsaSignatureParam = dynamic_cast<const SLHDSAMechanismParam*>(mechanismParam);
+ 	ByteString context;
++	ByteString encodedMessage;
++	// Default (Pure SLH-DSA operation) just passes the message directly.
++	const ByteString* message = &originalData;
+ 	if (slhdsaSignatureParam != NULL)
+ 	{
+-		if (slhdsaSignatureParam->additionalContext.size() > 0)
++		// If using Pure SLH-DSA, OpenSSL handles the message encoding, so we pass it the
++		// context string. If using HashSLH-DSA, the message encoding is instead built here
++		// to prepend the pre-hash OID along with the domain separator and context string.
++		if (slhdsaSignatureParam->hashOid.size() > 0)
++		{
++			if (!Encoding::encodeHashSlhDsaMessage(slhdsaSignatureParam, originalData, encodedMessage))
++			{
++				return false;
++			}
++			message = &encodedMessage;
++			*p++ = OSSL_PARAM_construct_int(OSSL_SIGNATURE_PARAM_MESSAGE_ENCODING, &local_encode_raw);
++		}
++		else if (slhdsaSignatureParam->additionalContext.size() > 0)
+ 		{
+ 			context = slhdsaSignatureParam->additionalContext;
+ 			size_t contextSize = context.size();
+@@ -362,7 +460,7 @@ bool OSSLSLHDSA::verify(PublicKey *publicKey, const ByteString &originalData,
+ 		return false;
+ 	}
+ 	int verifyRV = EVP_PKEY_verify(vctx, signature.const_byte_str(), signature.size(),
+-	                               originalData.const_byte_str(), originalData.size());
++	                               message->const_byte_str(), message->size());
+ 	EVP_PKEY_CTX_free(vctx);
+ 	EVP_SIGNATURE_free(sig_alg);
+ 	if (verifyRV != 1)
+diff --git a/src/lib/crypto/SLHDSAMechanismParam.cpp b/src/lib/crypto/SLHDSAMechanismParam.cpp
+index 045dff5..dd5327d 100644
+--- a/src/lib/crypto/SLHDSAMechanismParam.cpp
++++ b/src/lib/crypto/SLHDSAMechanismParam.cpp
+@@ -20,12 +20,14 @@
+ SLHDSAMechanismParam::SLHDSAMechanismParam()
+ {
+ 	this->hedgeType = Hedge::HEDGE_PREFERRED;
++	this->hashDigestLen = 0;
+ }
+ 
+ /** \brief SLHDSAMechanismParam */
+ SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType)
+ {
+ 	this->hedgeType = hedgeType;
++	this->hashDigestLen = 0;
+ }
+ 
+ /** \brief SLHDSAMechanismParam */
+@@ -33,6 +35,24 @@ SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteStri
+ {
+ 	this->hedgeType = hedgeType;
+ 	this->additionalContext = additionalContext;
++	this->hashDigestLen = 0;
++}
++
++/** \brief SLHDSAMechanismParam */
++SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& hashOid, size_t hashDigestLen)
++{
++	this->hedgeType = hedgeType;
++	this->hashOid = hashOid;
++	this->hashDigestLen = hashDigestLen;
++}
++
++/** \brief SLHDSAMechanismParam */
++SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& additionalContext, const ByteString& hashOid, size_t hashDigestLen)
++{
++	this->hedgeType = hedgeType;
++	this->additionalContext = additionalContext;
++	this->hashOid = hashOid;
++	this->hashDigestLen = hashDigestLen;
+ }
+ 
+ // Set the type
+diff --git a/src/lib/crypto/SLHDSAMechanismParam.h b/src/lib/crypto/SLHDSAMechanismParam.h
+index 297834c..0a39ef5 100644
+--- a/src/lib/crypto/SLHDSAMechanismParam.h
++++ b/src/lib/crypto/SLHDSAMechanismParam.h
+@@ -27,6 +27,10 @@ public:
+ 	Hedge::Type hedgeType;
+ 	/** \brief Additional Context */
+ 	ByteString additionalContext;
++	/** \brief The DER-encoded OID of the pre-hash algorithm, if applicable (otherwise empty). */
++	ByteString hashOid;
++	/** \brief The digest length expected for the given pre-hash algorithm, in bytes, if applicable. */
++	size_t hashDigestLen;
+ 
+ 	/** \brief The type */
+ 	static const char* type;
+@@ -40,6 +44,12 @@ public:
+ 	/** \brief Constructor with Hedge Type and Additional Context */
+ 	SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& additionalContext);
+ 
++	/** \brief Constructor with Hedge Type and Pre-Hash OID and Digest Length. */
++	SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& hashOid, size_t hashDigestLen);
++
++	/** \brief Constructor with Hedge Type, Additional Context and the Pre-Hash OID and Digest Length*/
++	SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& additionalContext, const ByteString& hashOid, size_t hashDigestLen);
++
+ 	/** \brief Clone */
+ 	virtual SLHDSAMechanismParam* clone() const override;
+ 
+diff --git a/src/lib/crypto/SLHDSAUtil.cpp b/src/lib/crypto/SLHDSAUtil.cpp
+index a779d8b..e77a904 100644
+--- a/src/lib/crypto/SLHDSAUtil.cpp
++++ b/src/lib/crypto/SLHDSAUtil.cpp
+@@ -201,4 +201,87 @@
+ 	return CKR_OK;
+ }
+ 
++/** \brief setHashOid */
++/*static*/ CK_RV SLHDSAUtil::setHashOid(CK_MECHANISM_TYPE inHash, ByteString* outOid, size_t* outDigestLen) {
++	if (outOid == NULL)
++	{
++		ERROR_MSG("Invalid parameters, outOid is NULL");
++		return CKR_ARGUMENTS_BAD;
++	}
++	if (outDigestLen == NULL)
++	{
++		ERROR_MSG("Invalid parameters, outDigestLen is NULL");
++		return CKR_ARGUMENTS_BAD;
++	}
++
++	unsigned char lastHashOidArc;
++	size_t digestLen;
++
++	// FIXME: This hard-codes the hash-function OIDs. Ideally, these should be fetched
++	// from the relevant crypto backend (OpenSSL, Botan) instead.
++	switch (inHash)
++	{
++	case CKM_SHA256:
++		lastHashOidArc = 0x01;
++		digestLen = 32;
++		break;
++	case CKM_SHA384:
++		lastHashOidArc = 0x02;
++		digestLen = 48;
++		break;
++	case CKM_SHA512:
++		lastHashOidArc = 0x03;
++		digestLen = 64;
++		break;
++	case CKM_SHA224:
++		lastHashOidArc = 0x04;
++		digestLen = 28;
++		break;
++	case CKM_SHA512_224:
++		lastHashOidArc = 0x05;
++		digestLen = 28;
++		break;
++	case CKM_SHA512_256:
++		lastHashOidArc = 0x06;
++		digestLen = 32;
++		break;
++	case CKM_SHA3_224:
++		lastHashOidArc = 0x07;
++		digestLen = 28;
++		break;
++	case CKM_SHA3_256:
++		lastHashOidArc = 0x08;
++		digestLen = 32;
++		break;
++	case CKM_SHA3_384:
++		lastHashOidArc = 0x09;
++		digestLen = 48;
++		break;
++	case CKM_SHA3_512:
++		lastHashOidArc = 0x0A;
++		digestLen = 64;
++		break;
++	// FIPS 205 supports SHAKE128 and SHAKE256 as approved XOFs algorithms for pre-hashing.
++	// However, PKCS#11 v3.2 only defines mechanisms for SHAKE key derivation, with no
++	// mechanisms for digests. As a result, there is currently no way for a caller to specify
++	// that these pre-hash functions were used. This is planned for support in v3.3 or later.
++	//
++	// See: https://groups.oasis-open.org/discussion/questions-about-the-hash-ml-dsa-signature-and-hash-slh-dsa-signature
++	case CKM_SHAKE_128_KEY_DERIVE:
++	case CKM_SHAKE_256_KEY_DERIVE:
++		ERROR_MSG("SLH-DSA: Invalid parameters, SHAKE pre-hash mechanisms are unsupported in PKCS#11 v3.2.");
++		return CKR_MECHANISM_PARAM_INVALID;
++	default:
++		ERROR_MSG("SLH-DSA: Invalid parameters, unsupported pre-hash mechanism (0x%08lX)", (unsigned long)inHash);
++		return CKR_MECHANISM_PARAM_INVALID;
++	}
++
++	const unsigned char oid[] = { 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, lastHashOidArc };
++	outOid->resize(sizeof(oid));
++	memcpy(&(*outOid)[0], oid, sizeof(oid));
++	*outDigestLen = digestLen;
++
++	return CKR_OK;
++}
++
+ #endif
+\ No newline at end of file
+diff --git a/src/lib/crypto/SLHDSAUtil.h b/src/lib/crypto/SLHDSAUtil.h
+index 85075db..4db8282 100644
+--- a/src/lib/crypto/SLHDSAUtil.h
++++ b/src/lib/crypto/SLHDSAUtil.h
+@@ -40,6 +40,9 @@ public:
+ 	/** \brief Set the hedge type */
+ 	static CK_RV setHedge(CK_HEDGE_TYPE inHedgeType, Hedge::Type* outHedgeType);
+ 
++	/** \brief Set the hash mechanism for HashSLH-DSA */
++	static CK_RV setHashOid(CK_MECHANISM_TYPE inHash, ByteString* outOid, size_t *outDigestLen);
++
+ };
+ 
+ #endif // WITH_SLH_DSA
+diff --git a/src/lib/crypto/test/SLHDSATests.cpp b/src/lib/crypto/test/SLHDSATests.cpp
+index 01cdbfb..13164e3 100644
+--- a/src/lib/crypto/test/SLHDSATests.cpp
++++ b/src/lib/crypto/test/SLHDSATests.cpp
+@@ -31,6 +31,33 @@ static const std::vector<unsigned long> allParameterSets =
+ 	CKP_SLH_DSA_SHA2_128S, CKP_SLH_DSA_SHAKE_128S, CKP_SLH_DSA_SHA2_128F, CKP_SLH_DSA_SHAKE_128F, CKP_SLH_DSA_SHA2_192S, CKP_SLH_DSA_SHAKE_192S, CKP_SLH_DSA_SHA2_192F, CKP_SLH_DSA_SHAKE_192F, CKP_SLH_DSA_SHA2_256S, CKP_SLH_DSA_SHAKE_256S, CKP_SLH_DSA_SHA2_256F, CKP_SLH_DSA_SHAKE_256F
+ };
+ 
++// Pre-hash functions used with the SHA2 parameter sets in `allParameterSets`,
++// as specified in the HashSLH-DSA OIDS.
++static const std::vector<CK_MECHANISM_TYPE> allPreHashFunctions =
++{
++	CKM_SHA256, CKM_SHA384, CKM_SHA512, CKM_SHA224, CKM_SHA512_224, CKM_SHA512_256, CKM_SHA3_224, CKM_SHA3_256, CKM_SHA3_384, CKM_SHA3_512
++};
++
++
++const std::pair<ByteString, size_t> getHashFunctionInfo(CK_MECHANISM_TYPE mechanismType) {
++	std::string oidStr = std::string();
++	size_t digestLen = 0;
++	switch (mechanismType) {
++		case CKM_SHA256: oidStr = std::string("0609608648016503040201"); digestLen = 32; break;
++		case CKM_SHA384: oidStr = std::string("0609608648016503040202"); digestLen = 48; break;
++		case CKM_SHA512: oidStr = std::string("0609608648016503040203"); digestLen = 64; break;
++		case CKM_SHA224: oidStr = std::string("0609608648016503040204"); digestLen = 28; break;
++		case CKM_SHA512_224: oidStr = std::string("0609608648016503040205"); digestLen = 28; break;
++		case CKM_SHA512_256: oidStr = std::string("0609608648016503040206"); digestLen = 32; break;
++		case CKM_SHA3_224: oidStr = std::string("0609608648016503040207"); digestLen = 28; break;
++		case CKM_SHA3_256: oidStr = std::string("0609608648016503040208"); digestLen = 32; break;
++		case CKM_SHA3_384: oidStr = std::string("0609608648016503040209"); digestLen = 48; break;
++		case CKM_SHA3_512: oidStr = std::string("060960864801650304020A"); digestLen = 64; break;
++	}
++	ByteString oid ((const unsigned char*)oidStr.c_str(), oidStr.size());
++	return std::pair<ByteString, size_t> (oid, digestLen);
++}
++
+ SLHDSATests::SLHDSATests() : slhdsa(NULL)
+ {
+ }
+@@ -206,7 +233,46 @@ void SLHDSATests::testSigningVerifying()
+ 	}
+ }
+ 
++void SLHDSATests::testSigningVerifyingPreHashed()
++{
++	for (const unsigned long parameterSet : allParameterSets)
++	{
++		for (const CK_MECHANISM_TYPE hashFunction: allPreHashFunctions) {
++			// Get domain parameters
++			SLHDSAParameters *p = new SLHDSAParameters();
++			CPPUNIT_ASSERT(p != NULL);
++			p->setParameterSet(parameterSet);
++
++			// Generate key-pair
++			AsymmetricKeyPair *kp;
++			CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++			// Get the pre-hash function parameters
++			const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(hashFunction);
++			const ByteString oid = hashFunctionInfo.first;
++			const size_t digestLen = hashFunctionInfo.second;
++			SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, oid, digestLen);
++
++			// Generate some data to sign
++			ByteString dataToSign;
++
++			RNG *rng = CryptoFactory::i()->getRNG();
++			CPPUNIT_ASSERT(rng != NULL);
++
++			CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++			// Sign the data
++			ByteString sig;
++			CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++			// And verify it
++			CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
+ 
++			slhdsa->recycleKeyPair(kp);
++			slhdsa->recycleParameters(p);
++		}
++	}
++}
+ 
+ void SLHDSATests::testSigningVerifyingHedgePreferred()
+ {
+@@ -308,6 +374,115 @@ void SLHDSATests::testSigningVerifyingHedgePreferredWithContextTooLong()
+ 	slhdsa->recycleParameters(p);
+ }
+ 
++void SLHDSATests::testSigningVerifyingHedgePreferredPreHashed()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgePreferredPreHashedWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("HEDGE_PREFERRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgePreferredPreHashedWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("HEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(!slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
+ void SLHDSATests::testSigningVerifyingHedgeRequired()
+ {
+ 	// Get domain parameters
+@@ -407,6 +582,115 @@ void SLHDSATests::testSigningVerifyingHedgeRequiredWithContextTooLong()
+ 	slhdsa->recycleParameters(p);
+ }
+ 
++void SLHDSATests::testSigningVerifyingHedgeRequiredPreHashed()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgeRequiredPreHashedWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("HEDGE_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgeRequiredPreHashedWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("HEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(!slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
+ void SLHDSATests::testSigningVerifyingDeterministic()
+ {
+ 	// Get domain parameters
+@@ -516,4 +800,113 @@ void SLHDSATests::testSigningVerifyingDeterministicWithContextTooLong()
+ 	slhdsa->recycleParameters(p);
+ }
+ 
++void SLHDSATests::testSigningVerifyingDeterministicPreHashed()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingDeterministicPreHashedWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("DETERMINISTIC_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingDeterministicPreHashedWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Get the pre-hash function parameters
++	const std::pair<ByteString, size_t> hashFunctionInfo = getHashFunctionInfo(CKM_SHA256);
++	const ByteString oid = hashFunctionInfo.first;
++	const size_t digestLen = hashFunctionInfo.second;
++	std::string contextStr = std::string("DETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++	SLHDSAMechanismParam params = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED, contextBS, oid, digestLen);
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, digestLen));
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(!slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, &params));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
+ #endif
+diff --git a/src/lib/crypto/test/SLHDSATests.h b/src/lib/crypto/test/SLHDSATests.h
+index c507851..fe182e1 100644
+--- a/src/lib/crypto/test/SLHDSATests.h
++++ b/src/lib/crypto/test/SLHDSATests.h
+@@ -23,16 +23,26 @@ class SLHDSATests : public CppUnit::TestFixture
+ 	CPPUNIT_TEST(testSerialisation);
+ 	CPPUNIT_TEST(testPKCS8);
+ 	CPPUNIT_TEST(testSigningVerifying);
++	CPPUNIT_TEST(testSigningVerifyingPreHashed);
+ 
+ 	CPPUNIT_TEST(testSigningVerifyingHedgePreferred);
+ 	CPPUNIT_TEST(testSigningVerifyingHedgePreferredWithContext);
+ 	CPPUNIT_TEST(testSigningVerifyingHedgePreferredWithContextTooLong);
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferredPreHashedWithContext);
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferredPreHashed);
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferredPreHashedWithContextTooLong);
+ 	CPPUNIT_TEST(testSigningVerifyingHedgeRequired);
+ 	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredWithContext);
+ 	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredWithContextTooLong);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredPreHashed);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredPreHashedWithContext);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredPreHashedWithContextTooLong);
+ 	CPPUNIT_TEST(testSigningVerifyingDeterministic);
+ 	CPPUNIT_TEST(testSigningVerifyingDeterministicWithContext);
+ 	CPPUNIT_TEST(testSigningVerifyingDeterministicWithContextTooLong);
++	CPPUNIT_TEST(testSigningVerifyingDeterministicPreHashed);
++	CPPUNIT_TEST(testSigningVerifyingDeterministicPreHashedWithContext);
++	CPPUNIT_TEST(testSigningVerifyingDeterministicPreHashedWithContextTooLong);
+ 	CPPUNIT_TEST_SUITE_END();
+ 
+ public:
+@@ -42,16 +52,26 @@ public:
+ 	void testSerialisation();
+ 	void testPKCS8();
+ 	void testSigningVerifying();
++	void testSigningVerifyingPreHashed();
+ 
+ 	void testSigningVerifyingHedgePreferred();
+ 	void testSigningVerifyingHedgePreferredWithContext();
+ 	void testSigningVerifyingHedgePreferredWithContextTooLong();
++	void testSigningVerifyingHedgePreferredPreHashed();
++	void testSigningVerifyingHedgePreferredPreHashedWithContext();
++	void testSigningVerifyingHedgePreferredPreHashedWithContextTooLong();
+ 	void testSigningVerifyingHedgeRequired();
+ 	void testSigningVerifyingHedgeRequiredWithContext();
+ 	void testSigningVerifyingHedgeRequiredWithContextTooLong();
++	void testSigningVerifyingHedgeRequiredPreHashed();
++	void testSigningVerifyingHedgeRequiredPreHashedWithContext();
++	void testSigningVerifyingHedgeRequiredPreHashedWithContextTooLong();
+ 	void testSigningVerifyingDeterministic();
+ 	void testSigningVerifyingDeterministicWithContext();
+ 	void testSigningVerifyingDeterministicWithContextTooLong();
++	void testSigningVerifyingDeterministicPreHashed();
++	void testSigningVerifyingDeterministicPreHashedWithContext();
++	void testSigningVerifyingDeterministicPreHashedWithContextTooLong();
+ 
+ 	void setUp();
+ 	void tearDown();
+diff --git a/src/lib/test/SignVerifyTests.cpp b/src/lib/test/SignVerifyTests.cpp
+index fe678ac..bbc9a77 100644
+--- a/src/lib/test/SignVerifyTests.cpp
++++ b/src/lib/test/SignVerifyTests.cpp
+@@ -321,7 +321,7 @@ void SignVerifyTests::signVerifySingle(CK_MECHANISM_TYPE mechanismType, CK_SESSI
+ {
+ 	CK_RV rv;
+ 	CK_MECHANISM mechanism = { mechanismType, param, paramLen };
+-	CK_BYTE data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,0x0C, 0x0D, 0x0F };
++	CK_BYTE data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F };
+ 	CK_BYTE signature[64 * 1024];
+ 	CK_ULONG ulSignatureLen = 0;
+ 
+@@ -352,14 +352,15 @@ void SignVerifyTests::signVerifySingleData(size_t dataSize, CK_MECHANISM_TYPE me
+ 	CK_RV rv;
+ 	CK_MECHANISM mechanism = { mechanismType, param, paramLen };
+ 	CK_BYTE *data = (CK_BYTE*)malloc(dataSize);
+-	CK_BYTE signature[1024];
++	CK_BYTE signature[64 * 1024];
+ 	CK_ULONG ulSignatureLen = 0;
+ 	unsigned i;
+ 
+ 	CPPUNIT_ASSERT(data != NULL);
+ 
+-	for (i=0;i<dataSize;i++)
++	for (i=0;i<dataSize;i++) {
+ 		data[i] = i;
++	}
+ 
+ 	rv = CRYPTOKI_F_PTR( C_SignInit(hSession,&mechanism,hPrivateKey) );
+ 	CPPUNIT_ASSERT(rv==CKR_OK);
+@@ -389,18 +390,18 @@ void SignVerifyTests::signVerifyMulti(CK_MECHANISM_TYPE mechanismType, CK_SESSIO
+ {
+ 	CK_RV rv;
+ 	CK_MECHANISM mechanism = { mechanismType, param, paramLen };
+-	CK_BYTE data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,0x0C, 0x0D, 0x0F };
++	CK_BYTE data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F };
+ 	CK_BYTE signature[64 * 1024];
+ 	CK_ULONG ulSignatureLen = 0;
+ 
+ 	rv = CRYPTOKI_F_PTR( C_SignInit(hSession,&mechanism,hPrivateKey) );
+ 	CPPUNIT_ASSERT(rv==CKR_OK);
+ 
+-	rv =CRYPTOKI_F_PTR( C_SignUpdate(hSession,data,sizeof(data)) );
++	rv = CRYPTOKI_F_PTR( C_SignUpdate(hSession,data,sizeof(data)) );
+ 	CPPUNIT_ASSERT(rv==CKR_OK);
+ 
+ 	ulSignatureLen = sizeof(signature);
+-	rv =CRYPTOKI_F_PTR( C_SignFinal(hSession,signature,&ulSignatureLen) );
++	rv = CRYPTOKI_F_PTR( C_SignFinal(hSession,signature,&ulSignatureLen) );
+ 	CPPUNIT_ASSERT(rv==CKR_OK);
+ 
+ 	rv = CRYPTOKI_F_PTR( C_VerifyInit(hSession,&mechanism,hPublicKey) );
+@@ -424,6 +425,52 @@ void SignVerifyTests::signVerifyMulti(CK_MECHANISM_TYPE mechanismType, CK_SESSIO
+ 	CPPUNIT_ASSERT(rv==CKR_SIGNATURE_INVALID);
+ }
+ 
++void SignVerifyTests::signVerifyMultiData(size_t dataSize, CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param /* = NULL_PTR */, CK_ULONG paramLen /* = 0 */)
++{
++	CK_RV rv;
++	CK_MECHANISM mechanism = { mechanismType, param, paramLen };
++	CK_BYTE *data = (CK_BYTE*)malloc(dataSize);
++	CK_BYTE signature[64 * 1024];
++	CK_ULONG ulSignatureLen = 0;
++	unsigned i;
++
++	CPPUNIT_ASSERT(data != NULL);
++
++	for (i=0;i<dataSize;i++) {
++		data[i] = i;
++	}
++
++	rv = CRYPTOKI_F_PTR( C_SignInit(hSession,&mechanism,hPrivateKey) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	rv = CRYPTOKI_F_PTR( C_SignUpdate(hSession,data,dataSize) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	ulSignatureLen = sizeof(signature);
++	rv = CRYPTOKI_F_PTR( C_SignFinal(hSession,signature,&ulSignatureLen) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	rv = CRYPTOKI_F_PTR( C_VerifyInit(hSession,&mechanism,hPublicKey) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	rv = CRYPTOKI_F_PTR( C_VerifyUpdate(hSession,data,dataSize) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	rv = CRYPTOKI_F_PTR( C_VerifyFinal(hSession,signature,ulSignatureLen) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	// verify again, but now change the input that is being signed.
++	rv = CRYPTOKI_F_PTR( C_VerifyInit(hSession,&mechanism,hPublicKey) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	data[0] = 0xff;
++	rv = CRYPTOKI_F_PTR( C_VerifyUpdate(hSession,data,dataSize) );
++	CPPUNIT_ASSERT(rv==CKR_OK);
++
++	rv = CRYPTOKI_F_PTR( C_VerifyFinal(hSession,signature,ulSignatureLen) );
++	CPPUNIT_ASSERT(rv==CKR_SIGNATURE_INVALID);
++}
++
+ void SignVerifyTests::testRsaSignVerify()
+ {
+ 	CK_RV rv;
+@@ -1016,90 +1063,95 @@ void SignVerifyTests::testSLHDSASignVerify(CK_ULONG parameterSet)
+ 	CK_OBJECT_HANDLE hPuk = CK_INVALID_HANDLE;
+ 	CK_OBJECT_HANDLE hPrk = CK_INVALID_HANDLE;
+ 
+-	CK_BYTE data[] = "context-context-context";
+-	CK_ULONG dataSize = (CK_ULONG)(sizeof(data) - 1); // exclude trailing NULL
++	CK_BYTE context[] = "context-context-context";
++	CK_ULONG contextSize = (CK_ULONG)(sizeof(context) - 1); // exclude trailing NULL
+ 
+-	CK_SIGN_ADDITIONAL_CONTEXT params[] =
++	CK_SIGN_ADDITIONAL_CONTEXT pureParams[] =
+ 	{
+-		{ CKH_HEDGE_PREFERRED,  NULL,   0  },
+-		{ CKH_HEDGE_PREFERRED,  data,   dataSize  },
+-		{ CKH_HEDGE_REQUIRED,  NULL,   0  },
+-		{ CKH_HEDGE_REQUIRED,  data,   dataSize  },
+-		{ CKH_DETERMINISTIC_REQUIRED,  NULL,   0  },
+-		{ CKH_DETERMINISTIC_REQUIRED,  data,   dataSize  },
++		{ CKH_HEDGE_PREFERRED, NULL, 0 },
++		{ CKH_HEDGE_PREFERRED, context, contextSize },
++		{ CKH_HEDGE_REQUIRED, NULL, 0 },
++		{ CKH_HEDGE_REQUIRED, context, contextSize },
++		{ CKH_DETERMINISTIC_REQUIRED, NULL, 0 },
++		{ CKH_DETERMINISTIC_REQUIRED, context, contextSize },
+ 	};
+ 
++	CK_HASH_SIGN_ADDITIONAL_CONTEXT preHashParams[] =
++	{
++		{ CKH_HEDGE_PREFERRED, NULL, 0, CKM_SHA256 },
++		{ CKH_HEDGE_PREFERRED, context, contextSize, CKM_SHA256 },
++		{ CKH_HEDGE_PREFERRED, NULL, 0, CKM_SHA3_512 },
++		{ CKH_HEDGE_PREFERRED, context, contextSize, CKM_SHA3_512 },
++		{ CKH_HEDGE_REQUIRED, NULL, 0, CKM_SHA224},
++		{ CKH_HEDGE_REQUIRED, context, contextSize, CKM_SHA224},
++		{ CKH_DETERMINISTIC_REQUIRED, NULL, 0, CKM_SHA3_384 },
++		{ CKH_DETERMINISTIC_REQUIRED, context, contextSize, CKM_SHA3_384 },
++	};
++	size_t digestSizes[sizeof(preHashParams)] = { 32, 32, 64, 64, 28, 28, 48, 48 };
++
+ 	// Public Session keys
+ 	rv = generateSLHDSA(parameterSet,hSessionRW,IN_SESSION,IS_PUBLIC,IN_SESSION,IS_PUBLIC,hPuk,hPrk);
+ 	CPPUNIT_ASSERT(rv == CKR_OK);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	for (size_t i = 0; i < sizeof(pureParams) / sizeof(pureParams[0]); i++)
++	{
++		signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++		signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++	}
++	for (size_t i = 0; i < sizeof(preHashParams) / sizeof(preHashParams[0]); i++)
++	{
++		signVerifySingleData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++		signVerifyMultiData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++	}
+ 
+ 	// Private Session Keys
+ 	rv = generateSLHDSA(parameterSet,hSessionRW,IN_SESSION,IS_PRIVATE,IN_SESSION,IS_PRIVATE,hPuk,hPrk);
+ 	CPPUNIT_ASSERT(rv == CKR_OK);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	for (size_t i = 0; i < sizeof(pureParams) / sizeof(pureParams[0]); i++)
++	{
++		signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++		signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++	}
++	for (size_t i = 0; i < sizeof(preHashParams) / sizeof(preHashParams[0]); i++)
++	{
++		signVerifySingleData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++		signVerifyMultiData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++	}
+ 
+ 	// Public Token Keys
+ 	rv = generateSLHDSA(parameterSet,hSessionRW,ON_TOKEN,IS_PUBLIC,ON_TOKEN,IS_PUBLIC,hPuk,hPrk);
+ 	CPPUNIT_ASSERT(rv == CKR_OK);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	for (size_t i = 0; i < sizeof(pureParams) / sizeof(pureParams[0]); i++)
++	{
++		signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++		signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++	}
++	for (size_t i = 0; i < sizeof(preHashParams) / sizeof(preHashParams[0]); i++)
++	{
++		signVerifySingleData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++		signVerifyMultiData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++	}
+ 
+ 	// Private Token Keys
+ 	rv = generateSLHDSA(parameterSet, hSessionRW,ON_TOKEN,IS_PRIVATE,ON_TOKEN,IS_PRIVATE,hPuk,hPrk);
+ 	CPPUNIT_ASSERT(rv == CKR_OK);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
+-	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
+-	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk);
++	for (size_t i = 0; i < sizeof(pureParams) / sizeof(pureParams[0]); i++)
++	{
++		signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++		signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk, hPrk, &pureParams[i], sizeof(pureParams[i]));
++	}
++	for (size_t i = 0; i < sizeof(preHashParams) / sizeof(preHashParams[0]); i++)
++	{
++		signVerifySingleData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++		signVerifyMultiData(digestSizes[i], CKM_HASH_SLH_DSA, hSessionRO, hPuk, hPrk, &preHashParams[i], sizeof(preHashParams[i]));
++	}
+ }
+ #endif
+ 
+@@ -1542,6 +1594,20 @@ void SignVerifyTests::testSignInitWrongKeyType()
+ 	}
+ #endif
+ 
++#ifdef WITH_SLH_DSA
++	// SLH-DSA mechanisms with RSA key
++	{
++		CK_MECHANISM mechanism = { CKM_SLH_DSA, NULL_PTR, 0 };
++		rv = CRYPTOKI_F_PTR( C_SignInit(hSession, &mechanism, hRsaPriv) );
++		CPPUNIT_ASSERT(rv == CKR_KEY_TYPE_INCONSISTENT);
++
++		CK_HASH_SIGN_ADDITIONAL_CONTEXT params = { CKH_HEDGE_PREFERRED, NULL, 0, CKM_SHA256 };
++		mechanism = { CKM_HASH_SLH_DSA, &params, sizeof(params) };
++		rv = CRYPTOKI_F_PTR( C_SignInit(hSession, &mechanism, hRsaPriv) );
++		CPPUNIT_ASSERT(rv == CKR_KEY_TYPE_INCONSISTENT);
++	}
++#endif
++
+ 	C_Logout(hSession);
+ 	C_CloseSession(hSession);
+ }
+@@ -1636,6 +1702,20 @@ void SignVerifyTests::testVerifyInitWrongKeyType()
+ 	}
+ #endif
+ 
++#ifdef WITH_SLH_DSA
++	// SLH-DSA mechanisms with RSA key
++	{
++		CK_MECHANISM mechanism = { CKM_SLH_DSA, NULL_PTR, 0 };
++		rv = CRYPTOKI_F_PTR( C_VerifyInit(hSession, &mechanism, hRsaPub) );
++		CPPUNIT_ASSERT(rv == CKR_KEY_TYPE_INCONSISTENT);
++
++		CK_HASH_SIGN_ADDITIONAL_CONTEXT params = { CKH_HEDGE_PREFERRED, NULL, 0, CKM_SHA256 };
++		mechanism = { CKM_HASH_SLH_DSA, &params, sizeof(params) };
++		rv = CRYPTOKI_F_PTR( C_VerifyInit(hSession, &mechanism, hRsaPub) );
++		CPPUNIT_ASSERT(rv == CKR_KEY_TYPE_INCONSISTENT);
++	}
++#endif
++
+ 	C_Logout(hSession);
+ 	C_CloseSession(hSession);
+ }
+diff --git a/src/lib/test/SignVerifyTests.h b/src/lib/test/SignVerifyTests.h
+index 55bc565..c4739bb 100644
+--- a/src/lib/test/SignVerifyTests.h
++++ b/src/lib/test/SignVerifyTests.h
+@@ -94,6 +94,7 @@ protected:
+ 	void signVerifySingle(CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
+ 	void signVerifySingleData(size_t dataSize, CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
+ 	void signVerifyMulti(CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
++	void signVerifyMultiData(size_t dataSize, CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
+ 	CK_RV generateKey(CK_SESSION_HANDLE hSession, CK_KEY_TYPE keyType, CK_BBOOL bToken, CK_BBOOL bPrivate, CK_OBJECT_HANDLE &hKey);
+ 	CK_RV generateDes2Key(CK_SESSION_HANDLE hSession, CK_BBOOL bToken, CK_BBOOL bPrivate, CK_OBJECT_HANDLE &hKey);
+ 	CK_RV generateDes3Key(CK_SESSION_HANDLE hSession, CK_BBOOL bToken, CK_BBOOL bPrivate, CK_OBJECT_HANDLE &hKey);

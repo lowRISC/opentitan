@@ -123,10 +123,15 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
-# Downstream targets may need access to SPX public key for e2e tests
+# Hsmtool testing & downstream targets may need access to SPHINCS+/SLH-DSA public keys for e2e test flows.
 filegroup(
     name = "app_prod_spx_pub",
     srcs = ["app_prod_spx.pub.pem"],
+)
+
+filegroup(
+    name = "app_prod_slh_dsa_pub",
+    srcs = ["app_prod_slh_dsa.pub.pem"],
 )
 
 pkg_files(
@@ -163,24 +168,29 @@ keyset(
     tool = "//signing/tokens:local",
 )
 
-keyset(
-    name = "spx_keyset",
-    build_setting_default = "",
-    keys = {
-        "app_prod_spx.pem": "app_prod_0",
-        "app_dev_spx.pem": "app_dev_0:domain=PreHashedSha256",
-    },
-    profile = "local",
-    tool = "//signing/tokens:local",
-)
+# All of the checked-in fake SLH-DSA keys are PKCS#8 / SubjectPublicKeyInfo standardized
+# PEM encodings of the existing `{}_spx` keys, since SLH-DSA is just the standardized form
+# of SPHINCS+. As such, we should use the same key configurations for these keysets.
+_SPX_APP_KEYS = {
+    "app_prod": "app_prod_0",
+    "app_dev": "app_dev_0:domain=PreHashedSha256",
+}
 
-keyset(
-    name = "slh_dsa_keyset",
-    build_setting_default = "",
-    keys = {
-        "app_prod_slh_dsa.pem": "app_prod_0",
-        "app_dev_slh_dsa.pem": "app_dev_0",
-    },
-    profile = "local",
-    tool = "//signing/tokens:local",
-)
+_SPX_HIERARCHIES = [
+    "spx",
+    "slh_dsa",
+]
+
+[
+    keyset(
+        name = "{}_keyset".format(algorithm),
+        build_setting_default = "",
+        keys = {
+            "{}_{}.pem".format(key, algorithm): key_params
+            for key, key_params in _SPX_APP_KEYS.items()
+        },
+        profile = "Local",
+        tool = "//signing/tokens:local",
+    )
+    for algorithm in _SPX_HIERARCHIES
+]

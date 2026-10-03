@@ -175,7 +175,18 @@ sh_test(
     deps = [":test_lib"],
 )
 
-_SPX_TESTS = {
+# Currently, there are two hierarchies in hsmtool implementing the same underlying algorithm:
+# SPX (SPHINCS+) and SLH-DSA. SPHINCS+ is the pre-standardization form of SLH-DSA, and is
+# supported for legacy reasons. We want to test that the implementations of SPHINCS+ and
+# SLH-DSA are equivalent from a signing perspective. Note that historically, the legacy
+# SPHINCS+ hierarchy has only accepted keys in OpenTitan's custom RAW PEM format, whereas
+# the newer SLH-DSA hierarchy only accepts key in the standardized PEM/DER formats.
+_SPX_HIERARCHIES = [
+    "spx",
+    "slh_dsa",
+]
+
+_SPX_TEST_CASES = {
     "pure": {
         "domain": "Pure",
         "format": "plain-text",
@@ -193,16 +204,16 @@ _SPX_TESTS = {
     },
 }
 
-# SPHINCS+-Sign a digest with opentitantool and then verify the signature with hsmtool.
+# SPHINCS+/SLH-DSA sign a digest with opentitantool and then verify the signature with hsmtool.
 [
     sh_test(
-        name = "spx_{}_opentitantool_sign_hsmtool_verify_test".format(name),
+        name = "{}_{}_opentitantool_sign_hsmtool_verify_test".format(algorithm, name),
         srcs = ["ot_hsm_runner.sh"],
         data = [
             ":tqbf_digest",
             "//signing/softhsm",
             "//signing/softhsm:conf",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:{}_keyset".format(algorithm),
             "//sw/host/hsmtool",
             "//sw/host/opentitantool",
             "@softhsm2//:gen_dir",
@@ -215,42 +226,45 @@ _SPX_TESTS = {
                 spx sign {rev_flag}
                     --domain={domain}
                     $(rootpath :tqbf_digest)
-                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.pem
-                    --output=tqbf.spx_sig
+                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_{algorithm}.pem
+                    --output=tqbf.{algorithm}_sig
             """.format(
+                algorithm = algorithm,
                 domain = param["domain"],
                 rev_flag = param["rev_flag"],
             ),
             "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
-            "HSMTOOL_SPX_MODULE": "pkcs11-ef",
             "HSMTOOL_ARGS": """
                 -t fake_keys -u user -p 123456
-                spx verify
-                    --label=fake_app_prod_spx
+                {cmd} verify
+                    --label=fake_app_prod_{algorithm}
                     --domain={domain}
                     --format={fmt}
                     $(rootpath :tqbf_digest)
-                    tqbf.spx_sig
+                    tqbf.{algorithm}_sig
             """.format(
+                algorithm = algorithm,
+                cmd = algorithm.replace("_", "-"),
                 domain = param["domain"],
                 fmt = param["format"],
             ),
-        },
+        } | ({"HSMTOOL_SPX_MODULE": "pkcs11-ef"} if algorithm == "spx" else {}),
         deps = [":test_lib"],
     )
-    for name, param in _SPX_TESTS.items()
+    for algorithm in _SPX_HIERARCHIES
+    for name, param in _SPX_TEST_CASES.items()
 ]
 
-# SPHINCS+-Sign a digest with hsmtool and then verify the signature with opentitantool.
+# SPHINCS+/SLH-DSA sign a digest with hsmtool and then verify the signature with opentitantool.
 [
     sh_test(
-        name = "spx_{}_hsmtool_sign_opentitantool_verify_test".format(name),
+        name = "{}_{}_hsmtool_sign_opentitantool_verify_test".format(algorithm, name),
         srcs = ["ot_hsm_runner.sh"],
         data = [
             ":tqbf_digest",
             "//signing/softhsm",
             "//signing/softhsm:conf",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_{}_pub".format(algorithm),
             "//sw/host/hsmtool",
             "//sw/host/opentitantool",
             "@softhsm2//:gen_dir",
@@ -262,31 +276,34 @@ _SPX_TESTS = {
                 --rcfile=
                 spx verify {rev_flag}
                     --domain={domain}
-                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.pem
+                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_{algorithm}.pub.pem
                     $(rootpath :tqbf_digest)
-                    tqbf.spx_sig
+                    tqbf.{algorithm}_sig
             """.format(
+                algorithm = algorithm,
                 domain = param["domain"],
                 rev_flag = param["rev_flag"],
             ),
             "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
-            "HSMTOOL_SPX_MODULE": "pkcs11-ef",
             "HSMTOOL_ARGS": """
                 -t fake_keys -u user -p 123456
-                spx sign
-                    --label=fake_app_prod_spx
+                {cmd} sign
+                    --label=fake_app_prod_{algorithm}
                     --domain={domain}
                     --format={fmt}
-                    --output=tqbf.spx_sig
+                    --output=tqbf.{algorithm}_sig
                     $(rootpath :tqbf_digest)
             """.format(
+                algorithm = algorithm,
+                cmd = algorithm.replace("_", "-"),
                 domain = param["domain"],
                 fmt = param["format"],
             ),
-        },
+        } | ({"HSMTOOL_SPX_MODULE": "pkcs11-ef"} if algorithm == "spx" else {}),
         deps = [":test_lib"],
     )
-    for name, param in _SPX_TESTS.items()
+    for algorithm in _SPX_HIERARCHIES
+    for name, param in _SPX_TEST_CASES.items()
 ]
 
 filegroup(
@@ -404,5 +421,49 @@ sh_test(
                 image.signed_bin
         """,
     },
+    deps = [":test_lib"],
+)
+
+# SLH-DSA PEM-format PKCS#8/SPKI encoded keys with RFC 9909 HashSLH-DSA OIDs.
+filegroup(
+    name = "hash_slh_dsa_keys",
+    testonly = True,
+    srcs = [
+        "hash-slh-dsa-{}-{}.pem".format(parameter_set, key_type)
+        for key_type in [
+            "public",
+            "private",
+        ]
+        for parameter_set in [
+            "sha2-128s",
+            "shake-128s",
+        ]
+    ],
+)
+
+# Verify that hsmtool can accept SLH-DSA keys with RFC9909 HashSLH-DSA
+# OIDs, since some exported PKCS#8/SPKI encoded keys might contain
+# algorithm OIDs describing key usage with HashSLH-DSA.
+sh_test(
+    name = "hsmtool_hash_slh_dsa_key_test",
+    srcs = ["hash_slh_dsa_key_test.sh"],
+    args = ["$(locations :hash_slh_dsa_keys)"],
+    data = [
+        ":hash_slh_dsa_keys",
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "//sw/host/hsmtool",
+        "@openssl",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "OPENSSL": "$(rootpath @openssl)",
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
+    # hsmtool currently does not recognize the HashSLH-DSA algorithm identifiers
+    # (OIDs) in the PKCS#8/SPKI ASN.1 encodings, despite the fact that it supports
+    # use of the underlying `CKM_HASH_SLH_DSA` mechanism type.
+    tags = ["broken"],
     deps = [":test_lib"],
 )
