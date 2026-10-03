@@ -1635,11 +1635,6 @@ module kmac
   // Parameter as desired
   `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
 
-  // Command input should be sparse
-  `ASSUME(CmdSparse_M, reg2hw.cmd.cmd.qe |->
-          reg2hw.cmd.cmd.q inside {CmdStart, CmdProcess, CmdManualRun, CmdDone, CmdNone,
-                                   CmdStop, CmdStateWrite, CmdContinue})
-
   // redundant counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
                                          alert_tx_o[1])
