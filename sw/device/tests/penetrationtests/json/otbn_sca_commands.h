@@ -11,6 +11,12 @@ extern "C" {
 
 #define OTBNSCA_CMD_MAX_BATCH_DIGEST_BYTES 40
 #define OTBNSCA_CMD_MAX_SEED_BYTES 40
+#define OTBNSCA_CMD_MAX_SHA2_MSG_BYTES 64
+#define OTBNSCA_CMD_MAX_SHA2_DIGEST_BYTES 64
+#define OTBNSCA_CMD_MAX_HKDF_IKM_BYTES 64
+#define OTBNSCA_CMD_MAX_HKDF_SALT_BYTES 64
+#define OTBNSCA_CMD_MAX_HKDF_INFO_BYTES 64
+#define OTBNSCA_CMD_MAX_HKDF_OKM_BYTES 64
 
 // clang-format off
 
@@ -30,7 +36,13 @@ extern "C" {
     value(_, InsnCarryFlag) \
     value(_, CombiOps) \
     value(_, KeySideloadFvsr) \
-    value(_, Rsa512Decrypt)
+    value(_, Rsa512Decrypt) \
+    value(_, Sha2Single) \
+    value(_, Sha2BatchFvsr) \
+    value(_, Sha2BatchRandom) \
+    value(_, HkdfSingle) \
+    value(_, HkdfBatchFvsr) \
+    value(_, HkdfBatchRandom)
 C_ONLY(UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
@@ -110,6 +122,34 @@ UJSON_SERDE_STRUCT(OtbnScaOpsResult, otbn_sca_ops_result_t, OTBN_SCA_OPS_RESULT)
 #define OTBN_SCA_EMPTY(field, string) \
     field(success, bool)
 UJSON_SERDE_STRUCT(OtbnScaEmpty, otbn_sca_empty_t, OTBN_SCA_EMPTY);
+
+#define OTBN_SCA_SHA2_CFG(field, string) \
+    field(msg, uint8_t, OTBNSCA_CMD_MAX_SHA2_MSG_BYTES) \
+    field(msg_len, uint32_t) \
+    field(mode, uint32_t) \
+    field(en_masks, bool)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaSha2Cfg, penetrationtest_otbn_sca_sha2_cfg_t, OTBN_SCA_SHA2_CFG);
+
+#define OTBN_SCA_SHA2_DIGEST(field, string) \
+    field(digest, uint8_t, OTBNSCA_CMD_MAX_SHA2_DIGEST_BYTES)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaSha2Digest, penetrationtest_otbn_sca_sha2_digest_t, OTBN_SCA_SHA2_DIGEST);
+
+#define OTBN_SCA_HKDF_CFG(field, string) \
+    field(ikm, uint8_t, OTBNSCA_CMD_MAX_HKDF_IKM_BYTES) \
+    field(ikm_len, uint32_t) \
+    field(salt, uint8_t, OTBNSCA_CMD_MAX_HKDF_SALT_BYTES) \
+    field(salt_len, uint32_t) \
+    field(info, uint8_t, OTBNSCA_CMD_MAX_HKDF_INFO_BYTES) \
+    field(info_len, uint32_t) \
+    field(okm_blocks, uint32_t) \
+    field(mode, uint32_t) \
+    field(en_masks, bool)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaHkdfCfg, penetrationtest_otbn_sca_hkdf_cfg_t, OTBN_SCA_HKDF_CFG);
+
+#define OTBN_SCA_HKDF_OUT(field, string) \
+    field(prk, uint8_t, OTBNSCA_CMD_MAX_HKDF_OKM_BYTES) \
+    field(okm, uint8_t, OTBNSCA_CMD_MAX_HKDF_OKM_BYTES)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaHkdfOut, penetrationtest_otbn_sca_hkdf_out_t, OTBN_SCA_HKDF_OUT);
 
 // clang-format on
 

@@ -32,6 +32,9 @@
  * @param[out] state_s1   : Share 1 of final hash state (256 bits)
  */
 sha256_masked:
+  /* Snapshot instruction counter for fault-injection check at exit */
+  csrrs    x29, INSN_CNT, x0
+
   /* Initialize zero register and 32-bit lane mask w20 <= 0x00...00ffffffff */
   bn.xor   w31, w31, w31
   bn.not   w20, w31
@@ -55,8 +58,12 @@ sha256_masked:
   li       x23, 23
   li       x6,  24
 
+  /* Initialize 256-bit round-propagated ECC / MISR shares (w9 == w10 = 0xff) */
+  bn.rshi  w9,  w31, w20 >> 24
+  bn.rshi  w10, w31, w8 >> 224
+
   /* Process each 512-bit message block */
-  beq      x30, x0, .L_done
+  beq      x30, x0, _fault
   loop     x30, 13
     /* Load and byte-swap Share 0 (2 WDRs -> w21, w22) */
     li       x5, 21
@@ -78,16 +85,36 @@ sha256_masked:
     nop
     /* End of block loop */
 
-.L_done:
+  /* Verify round-propagated 256-bit ECC / MISR syndrome (w9 == w10) */
+  bn.cmp   w9, w10
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 0x8
+  beq      x2, x0, _fault
+
+  /* Verify instruction count: delta == 34 + x30 * (18416 + 1) */
+  li       x3, 18417 /* change this if the code above changes */
+  /* OTBN does not have a mul for GPRs, but x30 is max ~20 */
+  loop     x30, 1
+    add      x29, x29, x3
+  add      x29, x29, x21
+  add      x29, x29, x23
+  add      x29, x29, x6
+  addi     x29, x29, -60
+  csrrs    x2, INSN_CNT, x0
+  bne      x2, x29, _fault   /* SCA_TEST_REPLACE: nop */
+
   /* Write back final state shares */
   la       x3, state_s0
   li       x2, 30
   bn.sid   x2, 0(x3)
   la       x3, state_s1
-  li       x2, 29
-  bn.sid   x2, 0(x3)
+  li       x18, 29
+  bn.sid   x18, 0(x3)
 
   ret
+
+_fault:
+  unimp
 
 /**
  * Byte-swaps all eight 32-bit words in w23 into w24.
@@ -217,20 +244,20 @@ isw_and:
  * @param[out] w26: Share 0 of Ch(e, f, g) (in low 32-bit lane).
  * @param[out] w16: Share 1 of Ch(e, f, g) (in low 32-bit lane).
  *
- * Clobbered registers: w0..w7, w9, w10, w16, w26, x7
+ * Clobbered registers: w0..w7, w14, w16, w24, w26, x7
  */
 sha256_ch:
-  bn.rshi  w9,  w31, w23 >> 32
-  bn.xor   w2,  w9,  w9 >> 32
+  bn.rshi  w24, w31, w23 >> 32
+  bn.xor   w2,  w24, w24 >> 32
   bn.xor   w31, w31, w31
-  bn.rshi  w10, w31, w13 >> 32
-  bn.xor   w3,  w10, w10 >> 32, FG1
+  bn.rshi  w14, w31, w13 >> 32
+  bn.xor   w3,  w14, w14 >> 32, FG1
   addi     x7,  x1,  0
   jal      x1,  isw_and
-  bn.xor   w26, w0,  w9
+  bn.xor   w26, w0,  w24
   bn.and   w26, w26, w20
   bn.xor   w31, w31, w31
-  bn.xor   w16, w1,  w10, FG1
+  bn.xor   w16, w1,  w14, FG1
   bn.and   w16, w16, w20, FG1
   jalr     x0,  x7,  0
 
@@ -276,38 +303,38 @@ sha256_expand_w_word:
   bn.and   w24, w20, w22 >> 192
   bn.rshi  w25, w24, w31 >> 32
   bn.rshi  w26, w24, w25 >> 17
-  bn.rshi  w9,  w24, w25 >> 19
+  bn.rshi  w2,  w24, w25 >> 19
   bn.rshi  w25, w31, w24 >> 10
   bn.xor   w27, w25, w26 >> 224
-  bn.xor   w27, w27, w9 >> 224
+  bn.xor   w27, w27, w2 >> 224
 
   /* sigma0(W[t+1]) on Share 0 -> w28 */
   bn.and   w24, w20, w21 >> 32
   bn.rshi  w25, w24, w31 >> 32
   bn.rshi  w26, w24, w25 >> 7
-  bn.rshi  w9,  w24, w25 >> 18
+  bn.rshi  w2,  w24, w25 >> 18
   bn.rshi  w25, w31, w24 >> 3
   bn.xor   w28, w25, w26 >> 224
-  bn.xor   w28, w28, w9 >> 224
+  bn.xor   w28, w28, w2 >> 224
   bn.xor   w31, w31, w31
 
   /* sigma1(W[t+14]) on Share 1 -> w17 */
   bn.and   w14, w20, w12 >> 192, FG1
   bn.rshi  w15, w14, w31 >> 32
   bn.rshi  w16, w14, w15 >> 17
-  bn.rshi  w10, w14, w15 >> 19
+  bn.rshi  w3,  w14, w15 >> 19
   bn.rshi  w15, w31, w14 >> 10
   bn.xor   w17, w15, w16 >> 224, FG1
-  bn.xor   w17, w17, w10 >> 224, FG1
+  bn.xor   w17, w17, w3 >> 224, FG1
 
   /* sigma0(W[t+1]) on Share 1 -> w18 */
   bn.and   w14, w20, w11 >> 32, FG1
   bn.rshi  w15, w14, w31 >> 32
   bn.rshi  w16, w14, w15 >> 7
-  bn.rshi  w10, w14, w15 >> 18
+  bn.rshi  w3,  w14, w15 >> 18
   bn.rshi  w15, w31, w14 >> 3
   bn.xor   w18, w15, w16 >> 224, FG1
-  bn.xor   w18, w18, w10 >> 224, FG1
+  bn.xor   w18, w18, w3 >> 224, FG1
 
   /* Pack Lane 0 = sigma1(W[t+14]) + W[t+9], Lane 1 = sigma0(W[t+1]) + W[t] */
   bn.or    w0,  w27, w28 << 32
@@ -342,10 +369,10 @@ sha256_process_block_masked:
   li       x22, 19
 
   /* Main 64-round compression loop (8 outer x 8 inner) */
-  loopi    8, 102   /* SCA_TEST_REPLACE: loopi 1, 102 */
+  loopi    8, 114   /* SCA_TEST_REPLACE: loopi 1, 114 */
     bn.lid   x22, 0(x18++)
 
-    loopi    8, 99
+    loopi    8, 111
       /* Part A: Share 0 e and S1(e) */
       bn.and   w0,  w20, w23 >> 96
       bn.rshi  w25, w0,  w31 >> 32
@@ -390,11 +417,11 @@ sha256_process_block_masked:
       bn.xor   w18, w18, w15 >> 224, FG1
       bn.xor   w17, w18, w17 >> 224, FG1
 
-      /* Pass 1 (4x32 SIMD):
-       * Lane 0: h + S1(e)
-       * Lane 1: W[t] + Ch(e, f, g)
-       * Lane 2: S0(a) + K[t]
-       * Lane 3: d + K[t]
+      /* Pass 1 (4x32 SIMD in Lanes 0..3, duplicated in Lanes 4..7):
+       * Lane 0, 4: h + S1(e)
+       * Lane 1, 5: W[t] + Ch(e, f, g)
+       * Lane 2, 6: S0(a) + K[t]
+       * Lane 3, 7: d + K[t]
        */
       bn.and   w0,  w20, w23
       bn.and   w4,  w20, w21
@@ -408,6 +435,8 @@ sha256_process_block_masked:
       bn.wsrr  w4,  URND
       bn.rshi  w4,  w31, w4 >> 192
       bn.xor   w2,  w2,  w4 << 64
+      bn.or    w0,  w0,  w0 << 128
+      bn.or    w2,  w2,  w2 << 128
       bn.xor   w31, w31, w31
 
       bn.and   w1,  w20, w13, FG1
@@ -417,6 +446,8 @@ sha256_process_block_masked:
       bn.and   w5,  w13, w20 << 128, FG1
       bn.or    w1,  w1,  w5 >> 32, FG1
       bn.or    w3,  w16, w4 << 64, FG1
+      bn.or    w1,  w1,  w1 << 128, FG1
+      bn.or    w3,  w3,  w3 << 128, FG1
       bn.wsrr  w4,  URND
       bn.wsrr  w5,  URND
       jal      x1, sec_add_start
@@ -425,28 +456,34 @@ sha256_process_block_masked:
       jal      x1, sha256_maj
       jal      x1, sec_add_finish
 
-      /* Pass 2 (4x32 SIMD):
-       * Lane 0: (h + S1(e)) + (W[t] + Ch) -> U
-       * Lane 2: (S0(a) + K[t]) + Maj      -> T2 + K[t]
-       * Lane 3: (d + K[t]) + 0            -> d + K[t]
+      /* Pass 2 (4x32 SIMD in Lanes 0..3, duplicated in Lanes 4..7):
+       * Lane 0, 4: (h + S1(e)) + (W[t] + Ch) -> U
+       * Lane 2, 6: (S0(a) + K[t]) + Maj      -> T2 + K[t]
+       * Lane 3, 7: (d + K[t]) + 0            -> d + K[t]
        */
       bn.and   w2,  w20, w0 >> 32
       bn.or    w2,  w2,  w26 << 64
+      bn.or    w2,  w2,  w2 << 128
       bn.xor   w31, w31, w31
       bn.and   w3,  w20, w1 >> 32, FG1
       bn.or    w3,  w3,  w16 << 64, FG1
+      bn.or    w3,  w3,  w3 << 128, FG1
       jal      x1, sec_add_start
 
-      /* While Pass 2 runs in MAI, shift K and clear d slot [159:128] */
+      /* While Pass 2 runs in MAI, shift K, clear d slot [159:128], and rotate ECC */
       bn.rshi  w19, w31, w19 >> 32
       bn.and   w24, w23, w20 << 128
       bn.xor   w24, w23, w24
+      bn.rshi  w9,  w9,  w9 >> 7
       bn.xor   w31, w31, w31
       bn.and   w14, w13, w20 << 128, FG1
       bn.xor   w14, w13, w14, FG1
+      bn.rshi  w10, w10, w10 >> 7
 
-      /* Collect Pass 2 and launch Pass 3 (8-lane SIMD state update) */
+      /* Collect Pass 2, accumulate upper/lower 128-bit ECC syndrome, and launch Pass 3 */
       jal      x1, sec_add_finish
+      bn.xor   w4,  w0,  w0 >> 128
+      bn.xor   w9,  w9,  w4 << 128
       bn.and   w25, w0,  w20
       bn.and   w26, w0,  w20 << 64
       bn.rshi  w2,  w26, w31 >> 96
@@ -456,6 +493,8 @@ sha256_process_block_masked:
       bn.rshi  w0,  w25, w24 >> 32
       bn.xor   w31, w31, w31
 
+      bn.xor   w5,  w1,  w1 >> 128, FG1
+      bn.xor   w10, w10, w5 << 128, FG1
       bn.and   w15, w1,  w20, FG1
       bn.and   w16, w1,  w20 << 64, FG1
       bn.rshi  w3,  w16, w31 >> 96
@@ -496,6 +535,7 @@ sha256_process_block_masked:
   bn.mov   w29, w1
 
   ret
+  unimp
 
 .data
 .balign 32

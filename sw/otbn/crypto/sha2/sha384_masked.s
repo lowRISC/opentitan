@@ -33,7 +33,9 @@
  * @param[out] state_s1   : Share 1 of final hash state (384 bits: abcd at 32, ef00 at 0)
  */
 sha384_masked:
-  beq      x30, x0, .L_done_384
+  /* Snapshot instruction counter for fault-injection check at exit */
+  csrrs    x29, INSN_CNT, x0
+  beq      x30, x0, _fault_384
 
   /* Initialize zero register. */
   bn.xor   w31, w31, w31
@@ -49,9 +51,9 @@ sha384_masked:
   la       x3, bswap32_mask
   li       x4, 8
   bn.lid   x4, 0(x3)
-  la       x3, swap32_in_64_mask
-  li       x4, 9
-  bn.lid   x4, 0(x3)
+  la       x4, swap32_in_64_mask
+  li       x3, 9
+  bn.lid   x3, 0(x4)
   la       x3, carry64_mask
   li       x4, 19
   bn.lid   x4, 0(x3)
@@ -83,8 +85,19 @@ sha384_masked:
     nop
     /* End of block loop */
 
-.L_done_384:
+  /* Verify instruction count: delta == 24 + x30 * (49270 + 1) */
+  li       x3, 49271 /* change this if the code above changes */
+  /* OTBN does not have a mul for GPRs, but x30 is max ~8 */
+  loop     x30, 1
+    add      x29, x29, x3
+  addi     x29, x29, 24
+  csrrs    x2, INSN_CNT, x0
+  bne      x2, x29, _fault_384 /* SCA_TEST_REPLACE: nop */
+
   ret
+
+_fault_384:
+  unimp
 
 /**
  * Byte-swaps all four 64-bit words in w0 in-place.
@@ -433,11 +446,15 @@ sha384_process_block_masked:
   li       x22, 18
   li       x28, 64
 
+  /* Initialize 256-bit round-propagated ECC / MISR shares (w8 == w9 = 0xff) */
+  bn.rshi  w8,  w31, w8 >> 224
+  bn.and   w9,  w20, w9 >> 216
+
   /* Main 80-round compression loop (20 outer iterations x 4 inner rounds) */
-  loopi    20, 99   /* SCA_TEST_REPLACE: loopi 1, 99 */
+  loopi    20, 115  /* SCA_TEST_REPLACE: loopi 1, 115 */
     bn.lid   x22, 0(x18++)
 
-    loopi    4, 96
+    loopi    4, 112
       /* Part A: Share 0 e and S1(e) */
       bn.and   w27, w20, w25 >> 192
       bn.rshi  w4,  w27, w25 >> 14
@@ -519,38 +536,55 @@ sha384_process_block_masked:
       bn.wsrr  w4,  URND
       jal      x1, sec_add64
 
-      /* Pass 2 (4x64 SIMD):
-       * Lane 0: (h + S1(e)) + (W[t] + Ch) -> U
+      /* Pass 2 (4x64 SIMD, with U duplicated across Lane 0 and Lane 1):
+       * Lane 0: (h + S1(e)) + (W[t] + Ch) -> U_0
+       * Lane 1: (W[t] + Ch) + (h + S1(e)) -> U_1
        * Lane 2: (d + K[t]) + 0            -> d + K[t]
        * Lane 3: T2 + K[t]                 -> T2 + K[t]
        */
       bn.and   w2,  w20, w0 >> 64
+      bn.and   w27, w20, w0
+      bn.or    w2,  w2,  w27 << 64
       bn.or    w2,  w2,  w18 << 192
       bn.xor   w31, w31, w31
       bn.and   w3,  w20, w1 >> 64, FG1
+      bn.and   w30, w20, w1, FG1
+      bn.or    w3,  w3,  w30 << 64, FG1
       jal      x1, sec_add64
 
-      /* Pass 3 (4x64 SIMD):
-       * Lane 0: U + (d + K[t])  -> new_e
-       * Lane 1: U + (T2 + K[t]) -> new_a
+      /* Pass 3 (2x64 SIMD in Lanes 0..1 from U_0, duplicated in Lanes 2..3 from U_1):
+       * Lane 0, 2: U + (d + K[t])  -> new_e
+       * Lane 1, 3: U + (T2 + K[t]) -> new_a
        */
       bn.rshi  w2,  w31, w0 >> 128
+      bn.or    w2,  w2,  w2 << 128
+      bn.and   w27, w0,  w20 << 64
       bn.and   w0,  w0,  w20
+      bn.or    w0,  w0,  w27 << 64
       bn.or    w0,  w0,  w0 << 64
       bn.xor   w31, w31, w31
       bn.rshi  w3,  w31, w1 >> 128
+      bn.or    w3,  w3,  w3 << 128, FG1
+      bn.and   w30, w1,  w20 << 64, FG1
       bn.and   w1,  w1,  w20, FG1
+      bn.or    w1,  w1,  w30 << 64, FG1
       bn.or    w1,  w1,  w1 << 64, FG1
       jal      x1, sec_add64
 
-      /* Shift working state and K on Share 0 */
+      /* Accumulate 128-bit ECC syndrome and shift working state and K on Share 0 */
+      bn.rshi  w8,  w8,  w8 >> 7
+      bn.xor   w27, w0,  w0 >> 128
+      bn.xor   w8,  w8,  w27 << 128
       bn.rshi  w25, w0,  w25 >> 64
       bn.rshi  w0,  w31, w0 >> 64
       bn.rshi  w26, w0,  w26 >> 64
       bn.rshi  w18, w31, w18 >> 64
       bn.xor   w31, w31, w31
 
-      /* Shift working state on Share 1 */
+      /* Accumulate 128-bit ECC syndrome and shift working state on Share 1 */
+      bn.rshi  w9,  w9,  w9 >> 7
+      bn.xor   w30, w1,  w1 >> 128, FG1
+      bn.xor   w9,  w9,  w30 << 128, FG1
       bn.rshi  w16, w1,  w16 >> 64
       bn.rshi  w1,  w31, w1 >> 64
       bn.rshi  w17, w1,  w17 >> 64
@@ -576,6 +610,21 @@ sha384_process_block_masked:
     nop
     /* End of outer loop */
 
+  /* Verify round-propagated 256-bit ECC / MISR syndrome (w8 == w9) */
+  bn.cmp   w8, w9
+  csrrs    x2, FG0, x0
+  and      x2, x2, x23
+  andi     x2, x2, 0x8
+  beq      x2, x0, _fault_384
+
+  /* Restore byte-swap masks into w8 and w9 for subsequent blocks */
+  la       x3, bswap32_mask
+  li       x4, 8
+  bn.lid   x4, 0(x3)
+  la       x3, swap32_in_64_mask
+  li       x4, 9
+  bn.lid   x4, 0(x3)
+
   /* Accumulate working variables into hash state in DMEM */
   la       x16, state_s0
   li       x2, 30
@@ -599,8 +648,8 @@ sha384_process_block_masked:
   li       x2, 0
   bn.sid   x2, 0(x16)
   la       x16, state_s1
-  li       x2, 1
-  bn.sid   x2, 0(x16)
+  li       x18, 1
+  bn.sid   x18, 0(x16)
 
   /* Add abcd: (w28, w29) + (w26, w17) */
   bn.mov   w0, w28
@@ -613,11 +662,12 @@ sha384_process_block_masked:
   li       x2, 0
   bn.sid   x2, 32(x16)
   la       x16, state_s1
-  li       x2, 1
-  bn.sid   x2, 32(x16)
+  li       x3, 1
+  bn.sid   x3, 32(x16)
   li       x2, 0
 
   ret
+  unimp
 
 .data
 .balign 32
