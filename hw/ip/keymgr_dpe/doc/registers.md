@@ -55,10 +55,26 @@
 | keymgr_dpe.[`SW_SHARE1_OUTPUT_7`](#sw_share1_output)               | 0xbc     |        4 | Key manager software output.                                               |
 | keymgr_dpe.[`WORKING_STATE`](#working_state)                       | 0xc0     |        4 | Key manager working state.                                                 |
 | keymgr_dpe.[`OP_STATUS`](#op_status)                               | 0xc4     |        4 | Key manager status.                                                        |
-| keymgr_dpe.[`ERR_CODE`](#err_code)                                 | 0xc8     |        4 | Key manager error code.                                                    |
-| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                         | 0xcc     |        4 | This register represents both synchronous and asynchronous fatal faults.   |
-| keymgr_dpe.[`DEBUG`](#debug)                                       | 0xd0     |        4 | The register holds some debug information that may be convenient if keymgr |
-| keymgr_dpe.[`LOAD_KEY_LOCK`](#load_key_lock)                       | 0xd4     |        4 | Register write lock for the LOAD_KEY command                               |
+| keymgr_dpe.[`METADATA_LOW_0`](#metadata_low)                       | 0xc8     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_1`](#metadata_low)                       | 0xcc     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_2`](#metadata_low)                       | 0xd0     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_3`](#metadata_low)                       | 0xd4     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_4`](#metadata_low)                       | 0xd8     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_5`](#metadata_low)                       | 0xdc     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_6`](#metadata_low)                       | 0xe0     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_LOW_7`](#metadata_low)                       | 0xe4     |        4 | Read metadata (low word) for each HW slot.                                 |
+| keymgr_dpe.[`METADATA_HIGH_0`](#metadata_high)                     | 0xe8     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_1`](#metadata_high)                     | 0xec     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_2`](#metadata_high)                     | 0xf0     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_3`](#metadata_high)                     | 0xf4     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_4`](#metadata_high)                     | 0xf8     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_5`](#metadata_high)                     | 0xfc     |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_6`](#metadata_high)                     | 0x100    |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`METADATA_HIGH_7`](#metadata_high)                     | 0x104    |        4 | Read metadata (high word) for each HW slot.                                |
+| keymgr_dpe.[`ERR_CODE`](#err_code)                                 | 0x108    |        4 | Key manager error code.                                                    |
+| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                         | 0x10c    |        4 | This register represents both synchronous and asynchronous fatal faults.   |
+| keymgr_dpe.[`DEBUG`](#debug)                                       | 0x110    |        4 | The register holds some debug information that may be convenient if keymgr |
+| keymgr_dpe.[`LOAD_KEY_LOCK`](#load_key_lock)                       | 0x114    |        4 | Register write lock for the LOAD_KEY command                               |
 
 ## INTR_STATE
 Interrupt State Register
@@ -610,6 +626,105 @@ Operation status.
 | 0x3     | DONE_ERROR   | Operation finished with errors, please see ERR_CODE register.             |
 
 
+## METADATA_LOW
+Read metadata (low word) for each HW slot.
+
+Only the first `NumInstHwSlot` slots are instantiated.
+Entries at index `NumInstHwSlot` and above always read as 0.
+Together with [`METADATA_HIGH`](#metadata_high), this register lets software inspect the non-secret
+metadata of the DPE context.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name           | Offset   |
+|:---------------|:---------|
+| METADATA_LOW_0 | 0xc8     |
+| METADATA_LOW_1 | 0xcc     |
+| METADATA_LOW_2 | 0xd0     |
+| METADATA_LOW_3 | 0xd4     |
+| METADATA_LOW_4 | 0xd8     |
+| METADATA_LOW_5 | 0xdc     |
+| METADATA_LOW_6 | 0xe0     |
+| METADATA_LOW_7 | 0xe4     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "MAX_KEY_VERSION", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name            | Description                                                        |
+|:------:|:------:|:-------:|:----------------|:-------------------------------------------------------------------|
+|  31:0  |   ro   |   0x0   | MAX_KEY_VERSION | Maximum key version allowed for key derived from this DPE context. |
+
+## METADATA_HIGH
+Read metadata (high word) for each HW slot.
+
+Only the first `NumInstHwSlot` slots are instantiated.
+Entries at index `NumInstHwSlot` and above always read as 0.
+Together with [`METADATA_LOW`](#metadata_low), this register lets software inspect the non-secret
+metadata of the DPE context.
+- Reset default: `0x0`
+- Reset mask: `0x3f`
+
+### Instances
+
+| Name            | Offset   |
+|:----------------|:---------|
+| METADATA_HIGH_0 | 0xe8     |
+| METADATA_HIGH_1 | 0xec     |
+| METADATA_HIGH_2 | 0xf0     |
+| METADATA_HIGH_3 | 0xf4     |
+| METADATA_HIGH_4 | 0xf8     |
+| METADATA_HIGH_5 | 0xfc     |
+| METADATA_HIGH_6 | 0x100    |
+| METADATA_HIGH_7 | 0x104    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BOOT_STAGE", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_CHILD_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXPORTABLE_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RETAIN_PARENT_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                                         |
+|:------:|:------:|:-------:|:-------------------------------------------------------------|
+|  31:6  |        |         | Reserved                                                     |
+|   5    |   ro   |   0x0   | [RETAIN_PARENT_POLICY](#metadata_high--retain_parent_policy) |
+|   4    |   ro   |   0x0   | [EXPORTABLE_POLICY](#metadata_high--exportable_policy)       |
+|   3    |   ro   |   0x0   | [ALLOW_CHILD_POLICY](#metadata_high--allow_child_policy)     |
+|  2:1   |   ro   |   0x0   | [BOOT_STAGE](#metadata_high--boot_stage)                     |
+|   0    |   ro   |   0x0   | [VALID](#metadata_high--valid)                               |
+
+### METADATA_HIGH . RETAIN_PARENT_POLICY
+Read the `retain_parent` policy applied to the DPE context in this slot.
+
+### METADATA_HIGH . EXPORTABLE_POLICY
+Read the `exportable` policy applied to the DPE context in this slot.
+
+### METADATA_HIGH . ALLOW_CHILD_POLICY
+Read the `allow_child` policy applied to the DPE context in this slot.
+
+### METADATA_HIGH . BOOT_STAGE
+Boot stage associated with the DPE context held in this slot.
+
+| Value | Boot stage        |
+|:-----:|:------------------|
+| 0     | BootStageCreator  |
+| 1     | BootStageOwnerInt |
+| 2     | BootStageOwner    |
+| 3     | BootStageRuntime  |
+
+The naming indicates the next bootstage after a successful key derivation
+e.g. boot stage 1 means the context is the _CreatorRootKey_ and will be
+derived into the _OwnerIntKey_.
+
+### METADATA_HIGH . VALID
+Set if the DPE context held in this slot is valid.
+
 ## ERR_CODE
 Key manager error code.
 This register must be explicitly cleared by software.
@@ -619,7 +734,7 @@ errors.
 
 Synchronous errors refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to errors that can happen at any time.
-- Offset: `0xc8`
+- Offset: `0x108`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
@@ -642,7 +757,7 @@ This register represents both synchronous and asynchronous fatal faults.
 Synchronous faults refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to faults that can happen at any time.
 
-- Offset: `0xcc`
+- Offset: `0x10c`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
 
@@ -673,7 +788,7 @@ invoked, while asynchronous refers to faults that can happen at any time.
 ## DEBUG
 The register holds some debug information that may be convenient if keymgr
 misbehaves.
-- Offset: `0xd0`
+- Offset: `0x110`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 
@@ -698,7 +813,7 @@ misbehaves.
 
 ## LOAD_KEY_LOCK
 Register write lock for the LOAD_KEY command
-- Offset: `0xd4`
+- Offset: `0x114`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 

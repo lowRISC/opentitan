@@ -496,7 +496,7 @@ extern "C" {
  * address between #TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR and
  * `TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR + TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES 0x100u
+#define TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES 0x200u
 
 /**
  * Peripheral base address for csrng in top darjeeling.
