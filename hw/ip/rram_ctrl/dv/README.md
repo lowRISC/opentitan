@@ -49,7 +49,7 @@ All common types and methods defined at the package level can be found in `rram_
 Some of them in use are:
 ```systemverilog
 typedef enum int {
-  WrEmpty, WrLvl, RdFull, RdLvl, OpDone, CorrErr, NumRramCtrlIntr
+  WrEmpty, WrLvl, RdFull, RdLvl, OpDone, Corr1Err, Corr2Err, NumRramCtrlIntr
 } rram_ctrl_intr_e;  // bit positions in intr_state/intr_enable/intr_test
 
 typedef enum bit [1:0] {

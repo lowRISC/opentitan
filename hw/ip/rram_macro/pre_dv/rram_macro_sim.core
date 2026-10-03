@@ -11,6 +11,8 @@ filesets:
       - lowrisc:virtual_ip:rram_macro
 
   files_dv:
+    depend:
+      - lowrisc:virtual_dv:rram_macro_vendor_tests
     files:
       - tb.sv
     file_type: systemVerilogSource
