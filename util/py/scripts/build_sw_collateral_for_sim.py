@@ -302,13 +302,13 @@ def _deploy_software_collateral(args) -> None:
     bazel_runner.cquery_opts_common += external_opts
 
     # In the air-gapped environment, the following environment variable will exist.
-    if ENV.get("BAZEL_PYTHON_WHEELS_REPO"):
+    if ENV.get("OT_AIRGAPPED"):
         # We need to change our bazel invocation as follows when running air-gapped.
         bazel_runner.cmd = "bazel"
         bazel_runner.airgapped_opts = [
             "--define",
             "SPECIFY_BINDGEN_LIBSTDCXX=true",
-            f"--distdir={ENV.get('BAZEL_DISTDIR')}",
+            f"--vendor_dir={ENV.get('BAZEL_VENDORDIR')}",
             f"--repository_cache={ENV.get('BAZEL_CACHE')}",
         ]
 
