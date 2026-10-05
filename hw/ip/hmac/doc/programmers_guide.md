@@ -104,6 +104,9 @@ Two restrictions apply, both because the intermediate hash state would allow sof
 
 The sideload interface carries a valid indication next to the key, with which the key manager signals that the key it drives can be used.
 This indication has to remain set for the entire operation.
+The key also has to remain unchanged for the entire operation.
+The key manager replaces the sideloaded key whenever a new key is generated for HMAC, without deasserting the valid indication, and HMAC does not detect this.
+Software therefore must not generate a new HMAC sideload key while an operation with a sideloaded key is in progress; otherwise the inner and outer key paddings are computed with different keys and the resulting digest is silently wrong.
 Starting while the key is invalid is blocked, and [`ERR_CODE`](registers.md#err_code) reports `SwInvalidConfig`.
 If the key manager revokes the key while an operation is running, that operation is aborted, the digest is cleared, and the same error is reported.
 In all of these cases the error is signalled through [`INTR_STATE.hmac_err`](registers.md#intr_state), as for any other HMAC error.
