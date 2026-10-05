@@ -80,13 +80,16 @@
 
     groups: [
       // the powerup group is used exclusively by clk/pwr/rstmgr/pinmux
-      { name: "ast",     src:"ext", sw_cg: "no"                   },
-      { name: "powerup", src:"top", sw_cg: "no"                   },
-      { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", },
-      { name: "infra",   src:"top", sw_cg: "no",                  },
-      { name: "secure",  src:"top", sw_cg: "no"                   },
-      { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   },
-      { name: "timers",  src:"top", sw_cg: "no"                   }
+      { name: "ast",       src:"ext", sw_cg: "no"                   },
+      { name: "powerup",   src:"top", sw_cg: "no"                   },
+      { name: "trans",     src:"top", sw_cg: "hint", unique: "yes", },
+      { name: "infra",     src:"top", sw_cg: "no",                  },
+      { name: "secure",    src:"top", sw_cg: "no"                   },
+      { name: "peri",      src:"top", sw_cg: "yes",  unique: "no"   },
+      // SPI_HOST1 has its own software-controlled clock gate, separate from
+      // that of SPI_HOST0 (peri group), so software can turn off either host.
+      { name: "spi_host1", src:"top", sw_cg: "yes",  unique: "no"   },
+      { name: "timers",    src:"top", sw_cg: "no"                   }
     ],
   },
 
@@ -461,7 +464,7 @@
     { name: "spi_host1",
       type: "spi_host",
       clock_srcs: {clk_i: "io"},
-      clock_group: "peri",
+      clock_group: "spi_host1",
       reset_connections: {rst_ni: "spi_host1"},
       base_addr: {
         hart: "0x40310000",

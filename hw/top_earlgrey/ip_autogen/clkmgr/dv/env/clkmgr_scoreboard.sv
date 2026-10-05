@@ -133,11 +133,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           end
         end
       forever
-        @cfg.clkmgr_vif.peri_io_cb begin
+        @cfg.clkmgr_vif.peri_io_peri_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
-                                            cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == MuBi4True);
+            cov.peri_cg_wrap[PeriIoPeri].sample(cfg.clkmgr_vif.peri_io_peri_cb.clk_enable,
+                                                cfg.clkmgr_vif.peri_io_peri_cb.ip_clk_en,
+                                                cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
       forever
@@ -146,6 +146,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
             cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
                                              cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
                                              cfg.clkmgr_vif.scanmode_i == MuBi4True);
+          end
+        end
+      forever
+        @cfg.clkmgr_vif.peri_io_spi_host1_cb begin
+          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
+            cov.peri_cg_wrap[PeriIoSpiHost1].sample(cfg.clkmgr_vif.peri_io_spi_host1_cb.clk_enable,
+                                                    cfg.clkmgr_vif.peri_io_spi_host1_cb.ip_clk_en,
+                                                    cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
     join

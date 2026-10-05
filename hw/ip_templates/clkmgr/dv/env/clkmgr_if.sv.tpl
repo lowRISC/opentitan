@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from ipgen.clkmgr_gen import get_all_srcs, get_hint_targets, get_rg_srcs
+from ipgen.clkmgr_gen import (get_all_srcs, get_hint_targets, get_rg_srcs,
+                               get_sw_clk_keys)
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
 hint_targets = get_hint_targets(typed_clocks)
+sw_clk_keys = get_sw_clk_keys(typed_clocks)
 %>\
 //
 // clkmgr interface.
@@ -72,12 +74,12 @@ interface clkmgr_if (
   clk_enables_t clk_enables_csr;
   always_comb
     clk_enables_csr = '{
-% for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
+% for clk_name in list(reversed(typed_clocks['sw_clks'])):
 <% sep = "" if loop.last else "," %>\
     % if len(typed_clocks['sw_clks']) == 1:
-      ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.q${sep}
+      ${clk_name.removeprefix('clk_')}_en: `CLKMGR_HIER.reg2hw.clk_enables.q${sep}
     % else:
-      ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+      ${clk_name.removeprefix('clk_')}_en: `CLKMGR_HIER.reg2hw.clk_enables.${clk_name}_en.q${sep}
     % endif
 % endfor
     };
@@ -221,28 +223,31 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
 
   // Pipelines and clocking blocks for peripheral clocks.
 
-%for clk in typed_clocks['sw_clks'].values():
+%for sw_clk, clk in typed_clocks['sw_clks'].items():
 <%
-  clk_name = clk['src_name']
-  if clk_name in derived_clks:
-    root_name = derived_clks[clk_name]['src']['name']
+  clk_name = sw_clk_keys[sw_clk]
+  src_name = clk['src_name']
+  if src_name in derived_clks:
+    root_name = derived_clks[src_name]['src']['name']
   else:
-    root_name = clk_name
+    root_name = src_name
 %>\
   logic [PIPELINE_DEPTH-1:0] clk_enable_${clk_name}_ffs;
   logic [PIPELINE_DEPTH-1:0] ip_clk_en_${clk_name}_ffs;
-  always @(posedge clocks_o.clk_${clk_name}_powerup or negedge rst_${root_name}_n) begin
+  always @(posedge clocks_o.clk_${src_name}_powerup or negedge rst_${root_name}_n) begin
     if (rst_${root_name}_n) begin
       clk_enable_${clk_name}_ffs <= {
-        clk_enable_${clk_name}_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.${clk_name}_peri_en
+        clk_enable_${clk_name}_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.${sw_clk.removeprefix('clk_')}_en
       };
-      ip_clk_en_${clk_name}_ffs <= {ip_clk_en_${clk_name}_ffs[PIPELINE_DEPTH-2:0], pwr_i.${root_name}_ip_clk_en};
+      ip_clk_en_${clk_name}_ffs <= {
+        ip_clk_en_${clk_name}_ffs[PIPELINE_DEPTH-2:0], pwr_i.${root_name}_ip_clk_en
+      };
     end else begin
       clk_enable_${clk_name}_ffs <= '0;
       ip_clk_en_${clk_name}_ffs  <= '0;
     end
   end
-  clocking peri_${clk_name}_cb @(posedge clocks_o.clk_${clk_name}_powerup or negedge rst_${root_name}_n);
+  clocking peri_${clk_name}_cb @(posedge clocks_o.clk_${src_name}_powerup or negedge rst_${root_name}_n);
     input ip_clk_en = ip_clk_en_${clk_name}_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_${clk_name}_ffs[PIPELINE_DEPTH-1];
   endclocking

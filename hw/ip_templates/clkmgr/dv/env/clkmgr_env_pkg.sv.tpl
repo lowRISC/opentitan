@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 <%
 from ipgen.clkmgr_gen import (config_clk_meas, get_all_srcs, get_hint_targets,
-                              get_rg_srcs)
+                              get_rg_srcs, get_sw_clk_keys)
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
 all_srcs = get_all_srcs(src_clks, derived_clks)
 clk_freqs = {v['name']: v['freq'] for v in all_srcs.values()}
 hint_targets = get_hint_targets(typed_clocks)
+sw_clk_keys = get_sw_clk_keys(typed_clocks)
 %>
 package clkmgr_env_pkg;
   // dep packages
@@ -62,14 +63,14 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-% for clk in typed_clocks['sw_clks'].values():
+% for clk_name in typed_clocks['sw_clks']:
 <% sep = "" if loop.last else "," %>\
-    Peri${Name.to_camel_case(clk['src_name'])}${sep}
+    Peri${Name.to_camel_case(sw_clk_keys[clk_name])}${sep}
 % endfor
   } peri_e;
   typedef struct packed {
-% for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
-    logic ${clk['src_name']}_peri_en;
+% for clk_name in list(reversed(typed_clocks['sw_clks'])):
+    logic ${clk_name.removeprefix('clk_')}_en;
 % endfor
   } clk_enables_t;
 

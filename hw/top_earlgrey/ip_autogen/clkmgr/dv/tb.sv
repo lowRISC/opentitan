@@ -108,6 +108,7 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
+        reg2hw.clk_enables.clk_io_spi_host1_en.q,
         reg2hw.clk_enables.clk_usb_peri_en.q,
         reg2hw.clk_enables.clk_io_peri_en.q,
         reg2hw.clk_enables.clk_io_div2_peri_en.q,

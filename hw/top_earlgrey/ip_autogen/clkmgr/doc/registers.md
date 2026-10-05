@@ -174,18 +174,19 @@ Enable jittery clock
 Clock enable for software gateable clocks.
 These clocks are directly controlled by software.
 - Offset: `0x18`
-- Reset default: `0xf`
-- Reset mask: `0xf`
+- Reset default: `0x1f`
+- Reset mask: `0x1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_SPI_HOST1_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                                    |
 |:------:|:------:|:-------:|:--------------------|:---------------------------------------------------------------|
-|  31:4  |        |         |                     | Reserved                                                       |
+|  31:5  |        |         |                     | Reserved                                                       |
+|   4    |   rw   |   0x1   | CLK_IO_SPI_HOST1_EN | 0 CLK_IO_SPI_HOST1 is disabled. 1 CLK_IO_SPI_HOST1 is enabled. |
 |   3    |   rw   |   0x1   | CLK_USB_PERI_EN     | 0 CLK_USB_PERI is disabled. 1 CLK_USB_PERI is enabled.         |
 |   2    |   rw   |   0x1   | CLK_IO_PERI_EN      | 0 CLK_IO_PERI is disabled. 1 CLK_IO_PERI is enabled.           |
 |   1    |   rw   |   0x1   | CLK_IO_DIV2_PERI_EN | 0 CLK_IO_DIV2_PERI is disabled. 1 CLK_IO_DIV2_PERI is enabled. |

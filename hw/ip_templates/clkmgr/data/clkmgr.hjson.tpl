@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
+from ipgen.clkmgr_gen import (config_clk_meas, get_all_srcs, get_rg_srcs,
+                               get_sw_clk_keys)
 all_srcs = get_all_srcs(src_clks, derived_clks)
 rg_srcs = get_rg_srcs(typed_clocks)
+sw_clk_keys = get_sw_clk_keys(typed_clocks)
 %>
 # CLKMGR register template
 #
@@ -96,12 +98,12 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ],
 
   features: [
-% for signal in typed_clocks['sw_clks'].values():
+% for clk_name in typed_clocks['sw_clks']:
 <%
-  src_name = signal['src_name'].upper()
+  feature_name = sw_clk_keys[clk_name].upper()
 %>\
-    { name: "CLKMGR.ENABLE.${src_name}",
-      desc: "Gating of ${src_name} peripheral clock."
+    { name: "CLKMGR.ENABLE.${feature_name}",
+      desc: "Gating of ${feature_name} peripheral clock."
     }
 % endfor
 % for sig in typed_clocks['hint_clks'].values():

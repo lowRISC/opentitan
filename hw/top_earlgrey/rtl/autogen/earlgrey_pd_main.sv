@@ -911,8 +911,8 @@ module earlgrey_pd_main #(
   // peri_spi_host0_Main
   assign lpg_cg_en[7] = clkmgr_cg_en_i.io_peri;
   assign lpg_rst_en[7] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
-  // peri_spi_host1_Main
-  assign lpg_cg_en[8] = clkmgr_cg_en_i.io_peri;
+  // spi_host1_spi_host1_Main
+  assign lpg_cg_en[8] = clkmgr_cg_en_i.io_spi_host1;
   assign lpg_rst_en[8] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainMainSel];
   // peri_usb_Main
   assign lpg_cg_en[9] = clkmgr_cg_en_i.usb_peri;
@@ -1710,7 +1710,7 @@ module earlgrey_pd_main #(
     .NumCS(SpiHost1NumCS)
   ) u_spi_host1 (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks_i.clk_io_peri),
+    .clk_i(clkmgr_clocks_i.clk_io_spi_host1),
     .rst_ni(rstmgr_resets_i.rst_spi_host1_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts

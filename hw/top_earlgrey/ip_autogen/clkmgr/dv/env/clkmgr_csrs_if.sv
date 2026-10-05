@@ -9,7 +9,7 @@ interface clkmgr_csrs_if (
   input logic clk,
   input logic [8:0] recov_err_csr,
   input logic [2:0] fatal_err_csr,
-  input logic [3:0] clk_enables,
+  input logic [4:0] clk_enables,
   input logic [3:0] clk_hints
 );
 
