@@ -479,6 +479,161 @@ static status_t run_mlkem1024_testvector_decaps_test(void) {
   return OTCRYPTO_OK;
 }
 
+enum {
+  // Size of an unmasked FIPS 203 ML-KEM-1024 decapsulation key.
+  kFips203DkBytes = 3168,
+  // Fill pattern of the guard after the secret key buffer.
+  kGuardWord = 0xa5a5a5a5,
+};
+
+// Secret key buffer followed by a guard that catches writes past its end.
+static struct {
+  uint32_t keyblob[kOtcryptoMlkem1024SkWords];
+  uint32_t guard[kOtcryptoMlkem1024SkWords];
+} sk_buf;
+
+static otcrypto_blinded_key_t secret_key(uint32_t keyblob_length) {
+  return (otcrypto_blinded_key_t){
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kOtcryptoMlkem1024SkBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = keyblob_length,
+      .keyblob = sk_buf.keyblob,
+  };
+}
+
+static otcrypto_blinded_key_t shared_secret(uint32_t *data,
+                                            uint32_t keyblob_length) {
+  return (otcrypto_blinded_key_t){
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kOtcryptoMlkem1024SharedSecretBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = keyblob_length,
+      .keyblob = data,
+  };
+}
+
+static bool is_bad_args(otcrypto_status_t status) {
+  return status_err(status) == kInvalidArgument;
+}
+
+// Runs keygen, encaps and decaps with every buffer sized from the public
+// header.
+static status_t run_mlkem1024_public_sizes_test(void) {
+  uint32_t pk_data[kOtcryptoMlkem1024PkWords];
+  otcrypto_unblinded_key_t pk = {
+      .key_mode = kOtcryptoKeyModePqcMlkem1024,
+      .key_length = kOtcryptoMlkem1024PkBytes,
+      .key = pk_data,
+  };
+  for (size_t i = 0; i < ARRAYSIZE(sk_buf.guard); ++i) {
+    sk_buf.guard[i] = kGuardWord;
+  }
+  otcrypto_blinded_key_t sk = secret_key(kOtcryptoMlkem1024SkBytes);
+  TRY(otcrypto_mlkem1024_keygen(&pk, &sk));
+  for (size_t i = 0; i < ARRAYSIZE(sk_buf.guard); ++i) {
+    TRY_CHECK(sk_buf.guard[i] == kGuardWord,
+              "Keygen wrote past the secret key buffer");
+  }
+
+  otcrypto_const_word32_buf_t m = {
+      .data = kRandomM,
+      .len = kOtcryptoMlkem1024SharedSecretWords,
+  };
+  uint32_t ct_data[kOtcryptoMlkem1024CtWords];
+  otcrypto_word32_buf_t ct = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords,
+  };
+  uint32_t ss1_data[kOtcryptoMlkem1024SharedSecretWords];
+  otcrypto_blinded_key_t ss1 =
+      shared_secret(ss1_data, kOtcryptoMlkem1024SharedSecretBytes);
+  TRY(otcrypto_mlkem1024_encaps(&pk, &m, &ct, &ss1));
+
+  otcrypto_const_word32_buf_t ct_const = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords,
+  };
+  uint32_t ss2_data[kOtcryptoMlkem1024SharedSecretWords];
+  otcrypto_blinded_key_t ss2 =
+      shared_secret(ss2_data, kOtcryptoMlkem1024SharedSecretBytes);
+  TRY(otcrypto_mlkem1024_decaps(&sk, &ct_const, &ss2));
+
+  TRY_CHECK_ARRAYS_EQ(ss1_data, ss2_data, kOtcryptoMlkem1024SharedSecretWords);
+  return OK_STATUS();
+}
+
+// Checks that each operation rejects a key, ciphertext or randomness buffer of
+// the wrong length, and a shared secret buffer that is too short.
+static status_t run_mlkem1024_bad_length_test(void) {
+  uint32_t pk_data[kOtcryptoMlkem1024PkWords] = {0};
+  otcrypto_unblinded_key_t pk = {
+      .key_mode = kOtcryptoKeyModePqcMlkem1024,
+      .key_length = kOtcryptoMlkem1024PkBytes,
+      .key = pk_data,
+  };
+  otcrypto_unblinded_key_t pk_short = {
+      .key_mode = kOtcryptoKeyModePqcMlkem1024,
+      .key_length = kOtcryptoMlkem1024PkBytes - sizeof(uint32_t),
+      .key = pk_data,
+  };
+  otcrypto_blinded_key_t sk = secret_key(kOtcryptoMlkem1024SkBytes);
+  otcrypto_blinded_key_t sk_fips = secret_key(kFips203DkBytes);
+  otcrypto_const_word32_buf_t m = {
+      .data = kRandomM,
+      .len = kOtcryptoMlkem1024SharedSecretWords,
+  };
+  otcrypto_const_word32_buf_t m_short = {
+      .data = kRandomM,
+      .len = kOtcryptoMlkem1024SharedSecretWords - 1,
+  };
+  uint32_t ct_data[kOtcryptoMlkem1024CtWords] = {0};
+  otcrypto_word32_buf_t ct = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords,
+  };
+  otcrypto_word32_buf_t ct_short = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords - 1,
+  };
+  otcrypto_const_word32_buf_t ct_const = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords,
+  };
+  otcrypto_const_word32_buf_t ct_const_short = {
+      .data = ct_data,
+      .len = kOtcryptoMlkem1024CtWords - 1,
+  };
+  uint32_t ss_data[kOtcryptoMlkem1024SharedSecretWords];
+  otcrypto_blinded_key_t ss =
+      shared_secret(ss_data, kOtcryptoMlkem1024SharedSecretBytes);
+  otcrypto_blinded_key_t ss_short = shared_secret(
+      ss_data, kOtcryptoMlkem1024SharedSecretBytes - sizeof(uint32_t));
+
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_keygen(&pk, &sk_fips)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_keygen(&pk_short, &sk)));
+
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_encaps(&pk_short, &m, &ct, &ss)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_encaps(&pk, &m_short, &ct, &ss)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_encaps(&pk, &m, &ct_short, &ss)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_encaps(&pk, &m, &ct, &ss_short)));
+
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_decaps(&sk_fips, &ct_const, &ss)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_decaps(&sk, &ct_const_short, &ss)));
+  TRY_CHECK(is_bad_args(otcrypto_mlkem1024_decaps(&sk, &ct_const, &ss_short)));
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -505,5 +660,8 @@ bool test_main(void) {
     return false;
   }
 
-  return true;
+  status_t test_result = OK_STATUS();
+  EXECUTE_TEST(test_result, run_mlkem1024_public_sizes_test);
+  EXECUTE_TEST(test_result, run_mlkem1024_bad_length_test);
+  return status_ok(test_result);
 }

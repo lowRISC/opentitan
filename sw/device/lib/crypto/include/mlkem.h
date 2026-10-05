@@ -23,9 +23,12 @@ enum {
   kOtcryptoMlkem1024PkBytes = 1568,
   kOtcryptoMlkem1024PkWords = kOtcryptoMlkem1024PkBytes / sizeof(uint32_t),
   /**
-   * Size of a ML-KEM-1024 secret key.
+   * Size of a ML-KEM-1024 secret key blob.
+   *
+   * The blob has two share slots each for the secret vector s and the seed z,
+   * so it is larger than the 3168-byte FIPS 203 decapsulation key.
    */
-  kOtcryptoMlkem1024SkBytes = 3168,
+  kOtcryptoMlkem1024SkBytes = 4736,
   kOtcryptoMlkem1024SkWords = kOtcryptoMlkem1024SkBytes / sizeof(uint32_t),
   /**
    * Size of a ML-KEM-1024 ciphertext.
