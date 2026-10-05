@@ -1314,12 +1314,11 @@ class BNWSRW(OTBNInsn):
             return None
 
         # Check if MAI is ready to accept new inputs. If not stop with MAI
-        # error.
+        # error. The RTL still writes the WSR in that case, so we do too.
         if self.wsr in [WsrAddrs.MAI_IN0_S0, WsrAddrs.MAI_IN0_S1,
                         WsrAddrs.MAI_IN1_S0, WsrAddrs.MAI_IN1_S1]:
             if not state.mai.ready_for_inputs():
                 state.stop_at_end_of_cycle(ErrBits.MAI_ERROR)
-                return None
 
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
 

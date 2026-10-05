@@ -573,10 +573,8 @@ class WSRFile:
         # WSRs from an instruction).
         self.MAI_RES_S0.commit()
         self.MAI_RES_S1.commit()
-        self.MAI_IN0_S0.abort()
-        self.MAI_IN0_S1.abort()
-        self.MAI_IN1_S0.abort()
-        self.MAI_IN1_S1.abort()
+        # The RTL writes the MAI input registers even if the instruction fails,
+        # so a pending write is kept and the commit that follows applies it.
         self.URND_STATE.abort()
 
     def changes(self) -> List[Trace]:
