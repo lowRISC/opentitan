@@ -103,9 +103,9 @@ static status_t handle_mlkem_decaps(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_mlkem_secret_key_t(uj, &uj_sk));
   TRY(ujson_deserialize_cryptotest_mlkem_ciphertext_t(uj, &uj_ct));
 
-  if (uj_sk.secret_key_len != kOtcryptoMlkem1024SkBytes) {
+  if (uj_sk.secret_key_len != MLKEM_CMD_MAX_SECRET_KEY_BYTES) {
     LOG_ERROR("Incorrect secret key length: expected = %d, got = %d",
-              kOtcryptoMlkem1024SkBytes, uj_sk.secret_key_len);
+              MLKEM_CMD_MAX_SECRET_KEY_BYTES, uj_sk.secret_key_len);
     cryptotest_mlkem_shared_secret_t uj_ss = {.shared_secret_len = 0};
     RESP_OK(ujson_serialize_cryptotest_mlkem_shared_secret_t, uj, &uj_ss);
     return OK_STATUS(0);
@@ -121,7 +121,7 @@ static status_t handle_mlkem_decaps(ujson_t *uj) {
   // Construct blinded secret key blob with 2 shares for s and z.
   // Layout: sk_s_share0 (1536B) | sk_s_share1 (1536B) | pk_t (1536B) | pk_rho
   // (32B) | hpk (32B) | z_share0 (32B) | z_share1 (32B)
-  uint32_t sk_data[1184] = {0};
+  uint32_t sk_data[kOtcryptoMlkem1024SkWords] = {0};
   memcpy(sk_data, uj_sk.secret_key, 1536);
   memcpy(sk_data + 768, uj_sk.secret_key + 1536, 1536);
   memcpy(sk_data + 1152, uj_sk.secret_key + 3072, 32);
