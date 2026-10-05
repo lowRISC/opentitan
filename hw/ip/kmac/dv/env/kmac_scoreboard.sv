@@ -562,7 +562,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
             kmac_app_fifo[app_mode].get(item);
 
-            cg_wrapper = cov.app_cg_wrappers[app_mode];
+            if (cfg.en_cov) cg_wrapper = cov.app_cg_wrappers[app_mode];
 
             foreach (item.m_req.m_reqs[i]) begin
               bit [keymgr_dpe_pkg::KmacDataIfWidth/8-1:0] strb;
