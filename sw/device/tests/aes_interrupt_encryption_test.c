@@ -71,6 +71,8 @@ status_t execute_test(void) {
         aes_mode = kDifAesModeCtr;
         memcpy(iv_mode.iv, kAesModesIvCtr, sizeof(kAesModesIvCtr));
         break;
+      default:
+        break;
     }
     // Initialise AES.
     dif_aes_t aes;
