@@ -29,6 +29,10 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
 
+    // The uncorrectable ECC error escalates all OTP partitions internally, which drops
+    // otp_lc_data.valid and hence lc_init_done before the LC FSM reaches EscalateSt.
+    `DV_ASSERT_CTRL_REQ("LcInitDoneSticky_A", 0)
+
     val = cfg.mem_bkdr_util_h[Otp].read32(hw_cfg_addr);
 
     // Inject 2 bits error in this hw_cfg_addr to trigger a ECC non-correctable error.
@@ -42,6 +46,12 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
 
     // Backdoor write back the original value so the chip can reboot successfully.
     cfg.mem_bkdr_util_h[Otp].write32(hw_cfg_addr, val);
+
+    // The escalation reset re-initialises lc_ctrl; once the ROM runs again lc_init_done has
+    // legitimately been re-asserted, so resume checking that it stays high.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom,
+             "Timeout waiting for the escalation reset.")
+    `DV_ASSERT_CTRL_REQ("LcInitDoneSticky_A", 1)
 
   endtask
 
